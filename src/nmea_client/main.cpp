@@ -69,7 +69,7 @@ int _tmain(int argc, _TCHAR* argv[])
     {
       cpu_count = 1;
     }
-	  std::size_t concurrent_count = 1 == cpu_count ? 2 : cpu_count;
+    std::size_t concurrent_count = 1 == cpu_count ? 2 : cpu_count;
     std::size_t thread_count = concurrent_count + 1;
 
     std::wcout << L"Found cpu(s)                 : " << cpu_count << L"\n"
