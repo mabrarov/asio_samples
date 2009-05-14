@@ -185,6 +185,14 @@ namespace ma
           {
             boost::throw_exception(std::runtime_error("too small read_buffer_size"));
           }
+          if (frame_head.length() > max_message_size)
+          {
+            boost::throw_exception(std::runtime_error("too large frame_head"));
+          }
+          if (frame_tail.length() > max_message_size)
+          {
+            boost::throw_exception(std::runtime_error("too large frame_tail"));
+          }
         }
 
         ~cyclic_reading_session()
@@ -402,20 +410,9 @@ namespace ma
           reading_ = false;
           if (!closed_)
           {
-            if (boost::asio::error::not_found == error)
-            {            
-              // We do not need in-between-frame-garbage and frame's head
-              read_buffer_.consume(bytes_transferred);
-              // Continue reading until frame head found
-              start_read_until_head();
-            }
-            else if (error)
+            if (error)
             {
-              last_read_error_ = error;
-              if (read_handler_)
-              {
-                read_handler_(error);
-              }            
+              handle_read_error(error);           
             }
             else
             {
@@ -434,11 +431,7 @@ namespace ma
           {
             if (error)
             {
-              last_read_error_ = error;
-              if (read_handler_)
-              {
-                read_handler_(error);
-              }            
+              handle_read_error(error);
             }
             else
             {
@@ -471,7 +464,19 @@ namespace ma
               }            
             }          
           }
-        }      
+        } 
+
+        void handle_read_error(const boost::system::error_code& error)
+        {
+          if (read_handler_)
+          {
+            read_handler_(error);
+          }
+          else 
+          {
+            last_read_error_ = error;
+          }
+        }
             
         std::string frame_head_;
         std::string frame_tail_;      
