@@ -12,14 +12,17 @@
 		<Platform
 			Name="Win32"
 		/>
+		<Platform
+			Name="x64"
+		/>
 	</Platforms>
 	<ToolFiles>
 	</ToolFiles>
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)\..\..\target\out\$(ProjectName)\$(ConfigurationName)"
-			IntermediateDirectory="..\..\target\out\$(ProjectName)\$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)\..\..\target\out32\$(ProjectName)\$(ConfigurationName)"
+			IntermediateDirectory="..\..\target\out32\$(ProjectName)\$(ConfigurationName)"
 			ConfigurationType="1"
 			CharacterSet="1"
 			>
@@ -60,7 +63,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\..\..\boost_1_39_0\lib"
+				AdditionalLibraryDirectories="..\..\..\boost_1_39_0\stage32\lib"
 				GenerateManifest="false"
 				GenerateDebugInformation="true"
 				GenerateMapFile="false"
@@ -95,9 +98,88 @@
 			/>
 		</Configuration>
 		<Configuration
+			Name="Debug|x64"
+			OutputDirectory="$(SolutionDir)\..\..\target\out64\$(ProjectName)\$(ConfigurationName)"
+			IntermediateDirectory="..\..\target\out64\$(ProjectName)\$(ConfigurationName)"
+			ConfigurationType="1"
+			CharacterSet="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				TargetEnvironment="3"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				AdditionalIncludeDirectories="..\..\include;..\..\..\boost_1_39_0"
+				PreprocessorDefinitions="WIN32;WIN32_LEAN_AND_MEAN;WINVER=0x0600;_WIN32_WINNT=0x0600;_WIN32_IE=0x0600;_DEBUG;_CONSOLE;BOOST_HAS_THREADS"
+				RuntimeLibrary="1"
+				UsePrecompiledHeader="0"
+				WarningLevel="4"
+				DebugInformationFormat="3"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				LinkIncremental="2"
+				AdditionalLibraryDirectories="..\..\..\boost_1_39_0\stage64\lib"
+				GenerateManifest="false"
+				GenerateDebugInformation="true"
+				GenerateMapFile="false"
+				MapFileName="$(TargetDir)$(TargetName).map"
+				SubSystem="1"
+				OptimizeReferences="0"
+				EnableCOMDATFolding="0"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+				TargetMachine="17"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)\..\..\target\out\$(ProjectName)\$(ConfigurationName)"
-			IntermediateDirectory="..\..\target\out\$(ProjectName)\$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)\..\..\target\out32\$(ProjectName)\$(ConfigurationName)"
+			IntermediateDirectory="..\..\target\out32\$(ProjectName)\$(ConfigurationName)"
 			ConfigurationType="1"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
@@ -139,7 +221,7 @@
 				Name="VCLinkerTool"
 				AdditionalOptions=""
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\..\..\boost_1_39_0\lib"
+				AdditionalLibraryDirectories="..\..\..\boost_1_39_0\stage32\lib"
 				GenerateManifest="false"
 				SubSystem="1"
 				OptimizeReferences="2"
@@ -147,6 +229,83 @@
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
 				TargetMachine="1"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Release|x64"
+			OutputDirectory="$(SolutionDir)\..\..\target\out64\$(ProjectName)\$(ConfigurationName)"
+			IntermediateDirectory="..\..\target\out64\$(ProjectName)\$(ConfigurationName)"
+			ConfigurationType="1"
+			CharacterSet="1"
+			WholeProgramOptimization="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				TargetEnvironment="3"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="3"
+				AdditionalIncludeDirectories="..\..\include;..\..\..\boost_1_39_0"
+				PreprocessorDefinitions="NDEBUG;WIN32;WIN32_LEAN_AND_MEAN;WINVER=0x0600;_WIN32_WINNT=0x0600;_WIN32_WINDOWS=0x0410;_WIN32_IE=0x0600;_CONSOLE;BOOST_HAS_THREADS"
+				RuntimeLibrary="0"
+				UsePrecompiledHeader="0"
+				WarningLevel="4"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalOptions=""
+				LinkIncremental="1"
+				AdditionalLibraryDirectories="..\..\..\boost_1_39_0\stage64\lib"
+				GenerateManifest="false"
+				SubSystem="1"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
+				TargetMachine="17"
 			/>
 			<Tool
 				Name="VCALinkTool"
