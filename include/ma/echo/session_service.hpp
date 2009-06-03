@@ -102,8 +102,8 @@ namespace ma
         // Insert impl into linked list of all implementations.
         register_impl(new_impl);
 
-		// Swap for copy
-		new_impl.swap(impl);
+        // Swap for copy
+        new_impl.swap(impl);
       }
 
       template <typename Arg1>
@@ -115,8 +115,8 @@ namespace ma
         // Insert impl into linked list of all implementations.
         register_impl(new_impl);
 
-		// Swap for copy
-		new_impl.swap(impl);
+        // Swap for copy
+        new_impl.swap(impl);
       }
 
       template <typename Arg1, typename Arg2>
@@ -128,8 +128,8 @@ namespace ma
         // Insert impl into linked list of all implementations.
         register_impl(new_impl);
 
-		// Swap for copy
-		new_impl.swap(impl);
+        // Swap for copy
+        new_impl.swap(impl);
       }
 
       template <typename Arg1, typename Arg2, typename Arg3>
@@ -141,8 +141,8 @@ namespace ma
         // Insert impl into linked list of all implementations.
         register_impl(new_impl);
 
-		// Swap for copy
-		new_impl.swap(impl);
+        // Swap for copy
+        new_impl.swap(impl);
       }
 
       template <typename Arg1, typename Arg2, typename Arg3, typename Arg4>
@@ -154,8 +154,8 @@ namespace ma
         // Insert impl into linked list of all implementations.
         register_impl(new_impl);
 
-		// Swap for copy
-		new_impl.swap(impl);
+        // Swap for copy
+        new_impl.swap(impl);
       }
 
       template <typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5>
@@ -167,8 +167,8 @@ namespace ma
         // Insert impl into linked list of all implementations.
         register_impl(new_impl);
 
-		// Swap for copy
-		new_impl.swap(impl);
+        // Swap for copy
+        new_impl.swap(impl);
       }
       
       void destroy(implementation_type& impl)
