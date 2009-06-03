@@ -96,61 +96,79 @@ namespace ma
 
       void construct(implementation_type& impl)
       { 
-        // Allocate memory and construct the impl
-        impl_type::create(this->get_io_service()).swap(impl);
+        // Allocate memory and construct the new impl
+        implementation_type new_impl(impl_type::create(this->get_io_service()));
 
         // Insert impl into linked list of all implementations.
-        register_impl(impl);
+        register_impl(new_impl);
+
+		// Swap for copy
+		new_impl.swap(impl);
       }
 
       template <typename Arg1>
       void construct(implementation_type& impl, Arg1 arg1)
       { 
-        // Allocate memory and construct the impl
-        impl_type::create(this->get_io_service(), arg1).swap(impl);
+        // Allocate memory and construct the new impl
+        implementation_type new_impl(impl_type::create(this->get_io_service(), arg1));
 
         // Insert impl into linked list of all implementations.
-        register_impl(impl);
+        register_impl(new_impl);
+
+		// Swap for copy
+		new_impl.swap(impl);
       }
 
       template <typename Arg1, typename Arg2>
       void construct(implementation_type& impl, Arg1 arg1, Arg2 arg2)
       { 
-        // Allocate memory and construct the impl
-        impl_type::create(this->get_io_service(), arg1, arg2).swap(impl);
+        // Allocate memory and construct the new impl
+        implementation_type new_impl(impl_type::create(this->get_io_service(), arg1, arg2));
 
         // Insert impl into linked list of all implementations.
-        register_impl(impl);
+        register_impl(new_impl);
+
+		// Swap for copy
+		new_impl.swap(impl);
       }
 
       template <typename Arg1, typename Arg2, typename Arg3>
       void construct(implementation_type& impl, Arg1 arg1, Arg2 arg2, Arg3 arg3)
       { 
-        // Allocate memory and construct the impl
-        impl_type::create(this->get_io_service(), arg1, arg2, arg3).swap(impl);
+        // Allocate memory and construct the new impl
+        implementation_type new_impl(impl_type::create(this->get_io_service(), arg1, arg2, arg3));
 
         // Insert impl into linked list of all implementations.
-        register_impl(impl);
+        register_impl(new_impl);
+
+		// Swap for copy
+		new_impl.swap(impl);
       }
 
       template <typename Arg1, typename Arg2, typename Arg3, typename Arg4>
       void construct(implementation_type& impl, Arg1 arg1, Arg2 arg2, Arg3 arg3, Arg4 arg4)
       { 
-        // Allocate memory and construct the impl
-        impl_type::create(this->get_io_service(), arg1, arg2, arg3, arg4).swap(impl);
+        // Allocate memory and construct the new impl
+        implementation_type new_impl(impl_type::create(this->get_io_service(), arg1, arg2, arg3, arg4));
 
         // Insert impl into linked list of all implementations.
-        register_impl(impl);
+        register_impl(new_impl);
+
+		// Swap for copy
+		new_impl.swap(impl);
       }
 
       template <typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5>
       void construct(implementation_type& impl, Arg1 arg1, Arg2 arg2, Arg3 arg3, Arg4 arg4, Arg5 arg5)
       { 
-        // Allocate memory and construct the impl        
-        impl_type::create(this->get_io_service(), arg1, arg2, arg3, arg4, arg5).swap(impl);        
+        // Allocate memory and construct the new impl
+        implementation_type new_impl(impl_type::create(this->get_io_service(), arg1, arg2, arg3, arg4, arg5));
 
         // Insert impl into linked list of all implementations.
-        register_impl(impl);
+        register_impl(new_impl);
+
+		// Swap for copy
+		new_impl.swap(impl);
       }
       
       void destroy(implementation_type& impl)
