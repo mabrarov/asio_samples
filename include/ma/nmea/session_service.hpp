@@ -33,6 +33,7 @@ namespace ma
         : boost::asio::io_service::service(io_service)        
         , mutex_()
         , impl_list_(0)
+        , shutdowned_(false)
       {
       }
 
@@ -42,10 +43,18 @@ namespace ma
 
       void shutdown_service()
       {
+        shutdowned_ = true;
         while (impl_list_)
-        {          
+        { 
+          // Take ownership
           implementation_type impl(impl_list_);          
-          destroy(impl);
+
+          // Remove impl from linked list of all implementations.
+          unregister_impl(impl);
+
+          // Terminate all user-defined pending operations.
+          boost::system::error_code ignored;
+          impl->close(ignored);
         }
       }
 
@@ -161,12 +170,15 @@ namespace ma
       
       void destroy(implementation_type& impl)
       {
-        // Remove impl from linked list of all implementations.
-        unregister_impl(impl);
+        if (!shutdowned_)
+        {
+          // Remove impl from linked list of all implementations.
+          unregister_impl(impl);
 
-        // Terminate all user-defined pending operations.
-        boost::system::error_code ignored;
-        impl->close(ignored);
+          // Terminate all user-defined pending operations.
+          boost::system::error_code ignored;
+          impl->close(ignored);
+        }
       }
 
       next_layer_type& next_layer(const implementation_type& impl) const
@@ -181,7 +193,7 @@ namespace ma
 
       template <typename Handler>
       void async_handshake(implementation_type& impl, Handler handler)
-      {        
+      {                
         impl->async_handshake(handler);
       }
 
@@ -205,12 +217,16 @@ namespace ma
 
       void close(implementation_type& impl, boost::system::error_code& error)
       {
-        impl->close(error);        
+        if (!shutdowned_)
+        {
+          impl->close(error);        
+        }
       }
       
     private:      
       boost::mutex mutex_;
       impl_type* impl_list_;    
+      bool shutdowned_;
     }; // class session_service
 
     template <typename ActiveSession>

@@ -95,25 +95,22 @@ namespace ma
         void close(boost::system::error_code& error)
         {
           error = boost::system::error_code();
-          boost::recursive_mutex::scoped_lock lock(mutex_);          
-          if (!closed_)
-          {
-            closed_ = true;
+          boost::mutex::scoped_lock lock(mutex_);                    
+          closed_ = true;
 
-            // Close all user operations.          
-            if (read_handler_)
-            {
-              read_handler_(boost::asio::error::operation_aborted);
-            }
-            if (write_handler_)
-            {
-              write_handler_(boost::asio::error::operation_aborted);
-            }
-            if (shutdown_handler_)
-            {
-              shutdown_handler_(boost::asio::error::operation_aborted);
-            }
+          // Close all user operations.          
+          if (read_handler_)
+          {
+            read_handler_(boost::asio::error::operation_aborted);
           }
+          if (write_handler_)
+          {
+            write_handler_(boost::asio::error::operation_aborted);
+          }
+          if (shutdown_handler_)
+          {
+            shutdown_handler_(boost::asio::error::operation_aborted);
+          }          
 
           // Close internal operations.        
           stream_.close(error);          
@@ -205,7 +202,7 @@ namespace ma
         template <typename Handler>
         void handshake(boost::tuple<Handler> handler)
         {        
-          boost::recursive_mutex::scoped_lock lock(mutex_);
+          boost::mutex::scoped_lock lock(mutex_);
           if (closed_)
           {          
             io_service_.post(boost::asio::detail::bind_handler(
@@ -232,7 +229,7 @@ namespace ma
         template <typename Handler>
         void shutdown(boost::tuple<Handler> handler)
         {
-          boost::recursive_mutex::scoped_lock lock(mutex_);
+          boost::mutex::scoped_lock lock(mutex_);
           if (closed_)
           {
             io_service_.post(boost::asio::detail::bind_handler(
@@ -271,7 +268,7 @@ namespace ma
         template <typename Handler>
         void write(const message_type& message, boost::tuple<Handler> handler)
         {
-          boost::recursive_mutex::scoped_lock lock(mutex_);
+          boost::mutex::scoped_lock lock(mutex_);
           if (closed_)
           {
             io_service_.post(boost::asio::detail::bind_handler(
@@ -306,7 +303,7 @@ namespace ma
         template <typename Handler>
         void read(message_type& message, boost::tuple<Handler> handler)
         {
-          boost::recursive_mutex::scoped_lock lock(mutex_);
+          boost::mutex::scoped_lock lock(mutex_);
           if (closed_)
           {
             io_service_.post(boost::asio::detail::bind_handler(
@@ -378,7 +375,7 @@ namespace ma
 
         void handle_write(const boost::system::error_code& error, const std::size_t bytes_transferred)
         {
-          boost::recursive_mutex::scoped_lock lock(mutex_);
+          boost::mutex::scoped_lock lock(mutex_);
           writing_ = false;
           if (!closed_)
           {
@@ -408,7 +405,7 @@ namespace ma
 
         void handle_read_head(const boost::system::error_code& error, const std::size_t bytes_transferred)
         {
-          boost::recursive_mutex::scoped_lock lock(mutex_);
+          boost::mutex::scoped_lock lock(mutex_);
           reading_ = false;
           if (!closed_)
           {
@@ -427,7 +424,7 @@ namespace ma
 
         void handle_read_tail(const boost::system::error_code& error, const std::size_t bytes_transferred)
         {
-          boost::recursive_mutex::scoped_lock lock(mutex_);
+          boost::mutex::scoped_lock lock(mutex_);
           reading_ = false;
           if (!closed_)
           {
@@ -486,7 +483,7 @@ namespace ma
         boost::asio::io_service& io_service_;
         boost::asio::io_service::strand strand_;
         next_layer_type stream_;       
-        boost::recursive_mutex mutex_;
+        boost::mutex mutex_;
         bool closed_;        
         handler_storage_type shutdown_handler_;
         handler_storage_type read_handler_;
