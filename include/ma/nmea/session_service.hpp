@@ -42,13 +42,10 @@ namespace ma
 
       void shutdown_service()
       {
-        boost::mutex::scoped_lock lock(mutex_);
-        impl_type* impl = impl_list_;
-        while (impl)
-        {
-          // Terminate all user-defined pending operations.
-          close_for_destruction(*impl);
-          impl = impl->next_;
+        while (impl_list_)
+        {          
+          implementation_type impl(impl_list_);          
+          destroy(impl);
         }
       }
 
@@ -70,29 +67,20 @@ namespace ma
         // Remove impl from linked list of all implementations.
         boost::mutex::scoped_lock lock(mutex_);
         if (impl_list_ == impl.get())
+        {
           impl_list_ = impl->next_;
+        }
         if (impl->prev_)
+        {
           impl->prev_->next_ = impl->next_;
+        }
         if (impl->next_)
+        {
           impl->next_->prev_= impl->prev_;
-      }
-
-      void close(impl_type& impl, boost::system::error_code& error)
-      {        
-        // Terminate all user-defined pending operations.
-        impl.close(error);
-      }            
-
-      void close_for_destruction(impl_type& impl)
-      {        
-        boost::system::error_code ignored_ec;
-        close(impl, ignored_ec);
-      }
-
-      void close_for_destruction(implementation_type& impl)
-      {                
-        close_for_destruction(*impl);
-      }
+        }
+        impl->prev_ = 0;
+        impl->next_ = 0;
+      }      
 
       void construct(implementation_type& impl)
       { 
@@ -177,7 +165,8 @@ namespace ma
         unregister_impl(impl);
 
         // Terminate all user-defined pending operations.
-        close_for_destruction(impl);
+        boost::system::error_code ignored;
+        impl->close(ignored);
       }
 
       next_layer_type& next_layer(const implementation_type& impl) const
@@ -216,7 +205,7 @@ namespace ma
 
       void close(implementation_type& impl, boost::system::error_code& error)
       {
-        close(*impl, error);
+        impl->close(error);        
       }
       
     private:      
