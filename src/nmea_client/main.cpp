@@ -106,7 +106,7 @@ int _tmain(int argc, _TCHAR* argv[])
     ma::console_controller console_controller(
       boost::bind(handle_console_close, boost::ref(sync_ostream), boost::ref(session)));        
 
-	  sync_ostream << L"Press Ctrl+C (Ctrl+Break) to exit...\n";    
+    sync_ostream << L"Press Ctrl+C (Ctrl+Break) to exit...\n";    
 
     boost::thread_group thread_group;
     for (std::size_t i = 0; i != thread_count; ++i)
