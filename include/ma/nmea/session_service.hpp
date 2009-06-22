@@ -216,11 +216,8 @@ namespace ma
       }
 
       void close(implementation_type& impl, boost::system::error_code& error)
-      {
-        if (!shutdowned_)
-        {
-          impl->close(error);        
-        }
+      {        
+        impl->close(error);
       }
       
     private:      
