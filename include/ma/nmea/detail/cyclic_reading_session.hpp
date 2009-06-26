@@ -107,12 +107,10 @@ namespace ma
         lowest_layer_type& lowest_layer()
         {
           return stream_.lowest_layer();
-        }        
-        
-        void shutdown(boost::system::error_code& error)
-        {          
-          shutdown_done_ = true;
+        }
 
+        void cancel_for_destroy()
+        {
           // Close all user operations.          
           if (read_handler_)
           {
@@ -125,11 +123,8 @@ namespace ma
           if (shutdown_handler_)
           {
             shutdown_handler_(boost::asio::error::operation_aborted);
-          }          
-
-          // Close internal operations.        
-          stream_.close(error);          
-        }        
+          }
+        }               
 
         template <typename Handler>
         void async_handshake(Handler handler)
@@ -217,8 +212,17 @@ namespace ma
               boost::get<0>(handler), boost::asio::error::not_connected));
           }          
           else 
-          {
-            shutdown(shutdown_error_);
+          {            
+            shutdown_done_ = true;            
+            if (read_handler_)
+            {
+              read_handler_(boost::asio::error::operation_aborted);
+            }
+            if (write_handler_)
+            {
+              write_handler_(boost::asio::error::operation_aborted);
+            }
+            stream_.close(shutdown_error_);
             if (!reading_ && !writing_)
             {
               io_service_.post(boost::asio::detail::bind_handler(

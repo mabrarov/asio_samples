@@ -46,9 +46,8 @@ namespace ma
         while (impl_list_)
         {                     
           implementation_type impl(impl_list_);
-          unregister_impl(impl);
-          boost::system::error_code ignored;
-          impl->shutdown(ignored);
+          unregister_impl(impl);          
+          impl->cancel_for_destroy();
         }
       }
 
