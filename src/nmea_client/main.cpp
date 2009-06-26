@@ -35,8 +35,7 @@ void handle_handshake(
   const boost::system::error_code&);
 
 void handle_shutdown(
-  sync_ostream_type&,  
-  session_type&,   
+  sync_ostream_type&,    
   const boost::system::error_code&);
 
 void handle_read(
@@ -127,8 +126,7 @@ void handle_console_close(
 {
   sync_ostream << L"User console close detected.\nStarting shutdown operation...\n";    
       
-  session.async_shutdown(boost::bind(handle_shutdown, 
-    boost::ref(sync_ostream), boost::ref(session), _1));
+  session.async_shutdown(boost::bind(handle_shutdown, boost::ref(sync_ostream), _1));
 
   sync_ostream << L"Shutdown operation (by user console closure) started.\n";
 }
@@ -159,8 +157,7 @@ void handle_handshake(
 }
 
 void handle_shutdown(
-  sync_ostream_type& sync_ostream,
-  session_type& session,   
+  sync_ostream_type& sync_ostream,  
   const boost::system::error_code& error)
 {   
   if (error)
@@ -170,23 +167,7 @@ void handle_shutdown(
   else
   {
     sync_ostream << L"Shutdown successful.\n";
-  }
-  
-  if (boost::asio::error::operation_aborted != error)
-  {
-    // Close all session operations        
-    sync_ostream << L"Closing session...\n";
-    boost::system::error_code close_error;
-    session.close(close_error);
-    if (close_error)
-    {
-      sync_ostream << L"Session closed with an error.\n";
-    }
-    else
-    {
-      sync_ostream << L"Session closed successful.\n";
-    }    
-  }
+  }   
 }
 
 void handle_read(
@@ -213,7 +194,7 @@ void handle_read(
     sync_ostream << L"Read unsuccessful. Starting shutdown operation...\n";      
     
     session.async_shutdown(ma::make_custom_alloc_handler(handler_allocator,
-      boost::bind(handle_shutdown, boost::ref(sync_ostream), boost::ref(session), _1)));
+      boost::bind(handle_shutdown, boost::ref(sync_ostream), _1)));
 
     sync_ostream << L"Shutdown operation started.\n";
   }
