@@ -32,6 +32,7 @@ namespace ma
 
       explicit session_service(boost::asio::io_service& io_service)
         : boost::asio::io_service::service(io_service)
+        , shutdown_(false)
       {
       }
 
@@ -40,7 +41,8 @@ namespace ma
       }
 
       void shutdown_service()
-      {        
+      {   
+        shutdown_ = true;
         while (impl_list_)
         {                     
           implementation_type impl(impl_list_);
@@ -162,8 +164,11 @@ namespace ma
       
       void destroy(implementation_type& impl)
       {
-        impl->async_shutdown(make_custom_alloc_handler(impl->service_handler_allocator_,
-          boost::bind(&this_type::unregister_impl, this, impl)));
+        if (!shutdown_)
+        {
+          impl->async_shutdown(make_custom_alloc_handler(impl->service_handler_allocator_,
+            boost::bind(&this_type::unregister_impl, this, impl)));
+        }        
       }
 
       next_layer_type& next_layer(const implementation_type& impl) const
@@ -203,7 +208,7 @@ namespace ma
     private:      
       boost::mutex mutex_;
       implementation_type impl_list_;    
-      bool shutdowned_;
+      bool shutdown_;
     }; // class session_service
 
     template <typename ActiveSession>
