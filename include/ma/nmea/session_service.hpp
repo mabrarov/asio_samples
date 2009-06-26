@@ -47,7 +47,7 @@ namespace ma
         {                     
           implementation_type impl(impl_list_);
           unregister_impl(impl);          
-          impl->cancel_for_destroy();
+          impl->prepare_for_destruction();
         }
       }
 
