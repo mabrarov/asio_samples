@@ -25,7 +25,7 @@ namespace ma
 
     public:
       typedef session_service<active_impl_type> service_type;
-      typedef typename active_impl_type::message_type message_type;
+      typedef typename active_impl_type::message_ptr message_ptr;
       typedef typename service_type::implementation_type implementation_type;
       typedef typename service_type::next_layer_type next_layer_type;
       typedef typename service_type::lowest_layer_type lowest_layer_type;    
@@ -85,13 +85,13 @@ namespace ma
       }
 
       template <typename Handler>
-      void async_write(const message_type& message, Handler handler)
+      void async_write(const message_ptr& message, Handler handler)
       {
         service_.async_write(implementation_, message, handler);
       }
 
       template <typename Handler>
-      void async_read(message_type& message, Handler handler)
+      void async_read(message_ptr& message, Handler handler)
       {
         service_.async_read(implementation_, message, handler);
       }

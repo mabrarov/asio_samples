@@ -24,7 +24,7 @@ namespace ma
 
     public:      
       typedef ActiveSession impl_type;
-      typedef typename impl_type::pointer implementation_type;
+      typedef typename impl_type::shared_ptr implementation_type;
       typedef typename impl_type::next_layer_type next_layer_type;
       typedef typename impl_type::lowest_layer_type lowest_layer_type;
 
@@ -182,26 +182,38 @@ namespace ma
 
       template <typename Handler>
       void async_handshake(implementation_type& impl, Handler handler)
-      {                
-        impl->async_handshake(handler);
+      {  
+        if (!shutdown_)
+        {
+          impl->async_handshake(handler);
+        }
       }
 
       template <typename Handler>
       void async_shutdown(implementation_type& impl, Handler handler)
       {
-        impl->async_shutdown(handler);
+        if (!shutdown_)
+        {
+          impl->async_shutdown(handler);
+        }
       }
       
       template <typename Message, typename Handler>
       void async_write(implementation_type& impl, const Message& message, Handler handler)
-      {        
-        impl->async_write(message, handler);
+      {  
+        if (!shutdown_)
+        {
+          impl->async_write(message, handler);
+        }
       }
 
       template <typename Message, typename Handler>
       void async_read(implementation_type& impl, Message& message, Handler handler)
-      {        
-        impl->async_read(message, handler);
+      {  
+        if (!shutdown_)
+        {
+          impl->async_read(message, handler);
+        }
       }      
       
     private:      

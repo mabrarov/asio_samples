@@ -39,25 +39,26 @@ namespace ma
       {
       public:
         typedef std::size_t size_type;
-        typedef boost::shared_ptr<std::string> message_type;
+        typedef boost::shared_ptr<std::string> message_ptr;
 
       private:
         typedef handler_storage<boost::system::error_code> handler_storage_type;
         typedef cyclic_reading_session<AsyncStream> this_type;      
-        typedef boost::circular_buffer<message_type> read_message_buffer_type;
+        typedef boost::circular_buffer<message_ptr> read_message_buffer_type;
         BOOST_STATIC_CONSTANT(size_type, max_message_size = 512);
         BOOST_STATIC_CONSTANT(size_type, read_continue_threhold = 64);      
 
       public:      
         typedef AsyncStream next_layer_type;
         typedef typename next_layer_type::lowest_layer_type lowest_layer_type;
-        typedef boost::shared_ptr<this_type> pointer;     
+        typedef this_type* raw_ptr;     
+        typedef boost::shared_ptr<this_type> shared_ptr;     
         typedef typename read_message_buffer_type::capacity_type read_capacity_type;
         BOOST_STATIC_CONSTANT(size_type, min_read_buffer_size = max_message_size);
         BOOST_STATIC_CONSTANT(read_capacity_type, min_read_message_buffer_capacity = 1);        
 
-        this_type* prev_;
-        pointer next_;    
+        raw_ptr prev_;
+        shared_ptr next_;    
         handler_allocator service_handler_allocator_;
 
         explicit cyclic_reading_session(
@@ -144,7 +145,7 @@ namespace ma
         }
         
         template <typename Handler>
-        void async_write(const message_type& message, Handler handler)
+        void async_write(const message_ptr& message, Handler handler)
         {        
           ++pending_calls_;
           strand_.dispatch(make_context_alloc_handler(handler,
@@ -152,7 +153,7 @@ namespace ma
         }
 
         template <typename Handler>
-        void async_read(message_type& message, Handler handler)
+        void async_read(message_ptr& message, Handler handler)
         {        
           ++pending_calls_;
           strand_.dispatch(make_context_alloc_handler(handler,
@@ -232,7 +233,7 @@ namespace ma
         }
         
         template <typename Handler>
-        void start_write(const message_type& message, boost::tuple<Handler> handler)
+        void start_write(const message_ptr& message, boost::tuple<Handler> handler)
         {          
           --pending_calls_;
           if (shutdown_handler_)
@@ -271,7 +272,7 @@ namespace ma
         }
 
         template <typename Handler>
-        void start_read(message_type& message, boost::tuple<Handler> handler)
+        void start_read(message_ptr& message, boost::tuple<Handler> handler)
         {        
           --pending_calls_;
           if (shutdown_handler_)
@@ -433,7 +434,7 @@ namespace ma
             const_buffers_type committed_buffers(read_buffer_.data());
             buffers_iterator data_begin(buffers_iterator::begin(committed_buffers));
             buffers_iterator data_end(data_begin + bytes_transferred - frame_tail_.length());
-            message_type parsed_message(new std::string(data_begin, data_end));              
+            message_ptr parsed_message(new std::string(data_begin, data_end));              
             // Consume processed data
             read_buffer_.consume(bytes_transferred);            
             // Start reading next frame
@@ -474,8 +475,8 @@ namespace ma
         handler_allocator read_handler_allocator_;
         boost::system::error_code last_read_error_;      
         boost::system::error_code shutdown_error_;      
-        message_type* read_target_;
-        message_type write_message_buffer_;
+        message_ptr* read_target_;
+        message_ptr write_message_buffer_;
         read_message_buffer_type read_message_buffer_;
         bool message_buffer_overflow_;
       }; // class cyclic_reading_session

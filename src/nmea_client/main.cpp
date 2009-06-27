@@ -22,8 +22,8 @@
 
 typedef std::codecvt<wchar_t, char, mbstate_t> wcodecvt_type;
 typedef ma::nmea::cyclic_reading_session<boost::asio::serial_port> session_type;
-typedef session_type::message_type message_type;
-typedef boost::shared_ptr<message_type> message_ptr;
+typedef session_type::message_ptr message_ptr;
+typedef boost::shared_ptr<message_ptr> ptr_to_message_ptr;
 typedef ma::sync_ostream<std::wostream> sync_ostream_type;
 
 void handle_handshake(
@@ -44,7 +44,7 @@ void handle_read(
   const wcodecvt_type&,
   session_type&, 
   ma::handler_allocator&, 
-  const message_ptr&, 
+  const ptr_to_message_ptr&, 
   const boost::system::error_code&);
 
 void handle_console_close(
@@ -124,10 +124,8 @@ void handle_console_close(
   sync_ostream_type& sync_ostream,
   session_type& session)
 {
-  sync_ostream << L"User console close detected.\nStarting shutdown operation...\n";    
-      
+  sync_ostream << L"User console close detected.\nStarting shutdown operation...\n";          
   session.async_shutdown(boost::bind(handle_shutdown, boost::ref(sync_ostream), _1));
-
   sync_ostream << L"Shutdown operation (by user console closure) started.\n";
 }
 
@@ -147,7 +145,7 @@ void handle_handshake(
   {    
     sync_ostream << L"Handshake successful. Starting read operation...\n";
 
-    message_ptr message(new message_type());
+    ptr_to_message_ptr message(new message_ptr());
     session.async_read(*message, ma::make_custom_alloc_handler(handler_allocator,
       boost::bind(handle_read, boost::ref(sync_ostream), boost::ref(locale), boost::cref(wcodecvt),
         boost::ref(session), boost::ref(handler_allocator), message, _1)));
@@ -176,7 +174,7 @@ void handle_read(
   const wcodecvt_type& wcodecvt,
   session_type& session, 
   ma::handler_allocator& handler_allocator, 
-  const message_ptr& message, 
+  const ptr_to_message_ptr& message, 
   const boost::system::error_code& error)
 {  
   if (boost::asio::error::eof == error)  
