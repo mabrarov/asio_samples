@@ -178,7 +178,7 @@ namespace ma
           else if (handshake_done_)          
           {
             io_service_.post(boost::asio::detail::bind_handler(
-              boost::get<0>(handler), boost::asio::error::already_connected));
+              boost::get<0>(handler), boost::asio::error::already_open));
           }
           else
           {  
@@ -199,7 +199,7 @@ namespace ma
           if (shutdown_handler_)
           {
             io_service_.post(boost::asio::detail::bind_handler(
-              boost::get<0>(handler), boost::asio::error::operation_aborted));
+              boost::get<0>(handler), boost::asio::error::already_started));
             if (!pending_calls_)
             {
               handshake_done_ = false;            
