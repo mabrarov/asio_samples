@@ -38,12 +38,7 @@ namespace ma
       ~session()
       {
         service_.destroy(implementation_);
-      }
-
-      void close(boost::system::error_code& error)
-      {
-        service_.close(implementation_, error);
-      }
+      }      
 
       boost::asio::io_service& io_service()
       {

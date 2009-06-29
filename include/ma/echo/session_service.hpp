@@ -10,6 +10,7 @@
 
 #include <boost/thread.hpp>
 #include <boost/asio.hpp>
+#include <ma/handler_allocation.hpp>
 
 namespace ma
 { 
@@ -23,16 +24,15 @@ namespace ma
 
     public:      
       typedef ActiveSession impl_type;
-      typedef typename impl_type::pointer implementation_type;
+      typedef typename impl_type::shared_ptr implementation_type;
       typedef typename impl_type::next_layer_type next_layer_type;
       typedef typename impl_type::lowest_layer_type lowest_layer_type;
 
       static boost::asio::io_service::id id;
 
       explicit session_service(boost::asio::io_service& io_service)
-        : boost::asio::io_service::service(io_service)        
-        , mutex_()
-        , impl_list_(0)
+        : boost::asio::io_service::service(io_service)
+        , shutdown_(false)
       {
       }
 
@@ -41,14 +41,13 @@ namespace ma
       }
 
       void shutdown_service()
-      {
-        boost::mutex::scoped_lock lock(mutex_);
-        impl_type* impl = impl_list_;
-        while (impl)
-        {
-          // Terminate all user-defined pending operations.
-          close_for_destruction(*impl);
-          impl = impl->next_;
+      {   
+        shutdown_ = true;
+        while (impl_list_)
+        {                     
+          implementation_type impl(impl_list_);
+          unregister_impl(impl);          
+          impl->prepare_for_destruction();
         }
       }
 
@@ -62,42 +61,33 @@ namespace ma
         {
           impl_list_->prev_ = impl.get();
         }
-        impl_list_ = impl.get();      
+        impl_list_ = impl;      
       }
 
       void unregister_impl(implementation_type& impl)
       {
         // Remove impl from linked list of all implementations.
         boost::mutex::scoped_lock lock(mutex_);
-        if (impl_list_ == impl.get())
+        if (impl_list_ == impl)
+        {
           impl_list_ = impl->next_;
+        }
         if (impl->prev_)
+        {
           impl->prev_->next_ = impl->next_;
+        }
         if (impl->next_)
+        {
           impl->next_->prev_= impl->prev_;
-      }
-
-      void close(impl_type& impl, boost::system::error_code& error)
-      {        
-        // Terminate all user-defined pending operations.
-        impl.close(error);
-      }            
-
-      void close_for_destruction(impl_type& impl)
-      {        
-        boost::system::error_code ignored_ec;
-        close(impl, ignored_ec);
-      }
-
-      void close_for_destruction(implementation_type& impl)
-      {                
-        close_for_destruction(*impl);
-      }
+        }
+        impl->prev_ = 0;        
+        impl->next_.reset();
+      }      
 
       void construct(implementation_type& impl)
       { 
         // Allocate memory and construct the new impl
-        implementation_type new_impl(impl_type::create(this->get_io_service()));
+        implementation_type new_impl(new impl_type(this->get_io_service()));
 
         // Insert impl into linked list of all implementations.
         register_impl(new_impl);
@@ -110,7 +100,7 @@ namespace ma
       void construct(implementation_type& impl, Arg1 arg1)
       { 
         // Allocate memory and construct the new impl
-        implementation_type new_impl(impl_type::create(this->get_io_service(), arg1));
+        implementation_type new_impl(new impl_type(this->get_io_service(), arg1));
 
         // Insert impl into linked list of all implementations.
         register_impl(new_impl);
@@ -123,7 +113,7 @@ namespace ma
       void construct(implementation_type& impl, Arg1 arg1, Arg2 arg2)
       { 
         // Allocate memory and construct the new impl
-        implementation_type new_impl(impl_type::create(this->get_io_service(), arg1, arg2));
+        implementation_type new_impl(new impl_type(this->get_io_service(), arg1, arg2));
 
         // Insert impl into linked list of all implementations.
         register_impl(new_impl);
@@ -136,7 +126,7 @@ namespace ma
       void construct(implementation_type& impl, Arg1 arg1, Arg2 arg2, Arg3 arg3)
       { 
         // Allocate memory and construct the new impl
-        implementation_type new_impl(impl_type::create(this->get_io_service(), arg1, arg2, arg3));
+        implementation_type new_impl(new impl_type(this->get_io_service(), arg1, arg2, arg3));
 
         // Insert impl into linked list of all implementations.
         register_impl(new_impl);
@@ -149,7 +139,7 @@ namespace ma
       void construct(implementation_type& impl, Arg1 arg1, Arg2 arg2, Arg3 arg3, Arg4 arg4)
       { 
         // Allocate memory and construct the new impl
-        implementation_type new_impl(impl_type::create(this->get_io_service(), arg1, arg2, arg3, arg4));
+        implementation_type new_impl(new impl_type(this->get_io_service(), arg1, arg2, arg3, arg4));
 
         // Insert impl into linked list of all implementations.
         register_impl(new_impl);
@@ -162,7 +152,7 @@ namespace ma
       void construct(implementation_type& impl, Arg1 arg1, Arg2 arg2, Arg3 arg3, Arg4 arg4, Arg5 arg5)
       { 
         // Allocate memory and construct the new impl
-        implementation_type new_impl(impl_type::create(this->get_io_service(), arg1, arg2, arg3, arg4, arg5));
+        implementation_type new_impl(new impl_type(this->get_io_service(), arg1, arg2, arg3, arg4, arg5));
 
         // Insert impl into linked list of all implementations.
         register_impl(new_impl);
@@ -170,14 +160,14 @@ namespace ma
         // Swap for copy
         new_impl.swap(impl);
       }
-      
+
       void destroy(implementation_type& impl)
       {
-        // Remove impl from linked list of all implementations.
-        unregister_impl(impl);
-
-        // Terminate all user-defined pending operations.
-        close_for_destruction(impl);
+        if (!shutdown_)
+        {
+          impl->async_shutdown(make_custom_alloc_handler(impl->service_handler_allocator_,
+            boost::bind(&this_type::unregister_impl, this, impl)));
+        }        
       }
 
       next_layer_type& next_layer(const implementation_type& impl) const
@@ -192,30 +182,35 @@ namespace ma
 
       template <typename Handler>
       void async_handshake(implementation_type& impl, Handler handler)
-      {        
-        impl->async_handshake(handler);
+      {  
+        if (!shutdown_)
+        {
+          impl->async_handshake(handler);
+        }
       }
 
       template <typename Handler>
       void async_shutdown(implementation_type& impl, Handler handler)
       {
-        impl->async_shutdown(handler);
+        if (!shutdown_)
+        {
+          impl->async_shutdown(handler);
+        }
       }
-      
+
       template <typename Handler>
       void async_wait(implementation_type& impl, Handler handler)
-      {       
-        impl->async_wait(handler);
-      }      
-
-      void close(implementation_type& impl, boost::system::error_code& error)
-      {
-        close(*impl, error);
+      {  
+        if (!shutdown_)
+        {
+          impl->async_wait(handler);
+        }
       }
       
     private:      
       boost::mutex mutex_;
-      impl_type* impl_list_;    
+      implementation_type impl_list_;    
+      bool shutdown_;
     }; // class session_service
 
     template <typename ActiveSession>
