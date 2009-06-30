@@ -71,7 +71,7 @@ namespace ma
           , next_()          
           , frame_head_(frame_head)
           , frame_tail_(frame_tail)          
-          , pending_calls_(0)
+          , pending_operations_(0)
           , io_service_(io_service)
           , strand_(io_service)
           , stream_(io_service)                    
@@ -131,7 +131,8 @@ namespace ma
         template <typename Handler>
         void async_handshake(Handler handler)
         {        
-          ++pending_calls_;
+          ++pending_operations_;
+
           strand_.dispatch(make_context_alloc_handler(handler,
             boost::bind(&this_type::start_handshake<Handler>, shared_from_this(), boost::make_tuple(handler))));
         }
@@ -139,7 +140,8 @@ namespace ma
         template <typename Handler>
         void async_shutdown(Handler handler)
         {
-          ++pending_calls_;
+          ++pending_operations_;
+
           strand_.dispatch(make_context_alloc_handler(handler,
             boost::bind(&this_type::start_shutdown<Handler>, shared_from_this(), boost::make_tuple(handler))));
         }
@@ -147,7 +149,8 @@ namespace ma
         template <typename Handler>
         void async_write(const message_ptr& message, Handler handler)
         {        
-          ++pending_calls_;
+          ++pending_operations_;
+
           strand_.dispatch(make_context_alloc_handler(handler,
             boost::bind(&this_type::start_write<Handler>, shared_from_this(), message, boost::make_tuple(handler))));
         }
@@ -155,7 +158,8 @@ namespace ma
         template <typename Handler>
         void async_read(message_ptr& message, Handler handler)
         {        
-          ++pending_calls_;
+          ++pending_operations_;
+
           strand_.dispatch(make_context_alloc_handler(handler,
             boost::bind(&this_type::start_read<Handler>, shared_from_this(), boost::ref(message), boost::make_tuple(handler))));
         }        
@@ -164,12 +168,13 @@ namespace ma
         template <typename Handler>
         void start_handshake(boost::tuple<Handler> handler)
         {         
-          --pending_calls_;
+          --pending_operations_;
+
           if (shutdown_handler_)
           {
             io_service_.post(boost::asio::detail::bind_handler(
               boost::get<0>(handler), boost::asio::error::operation_aborted));
-            if (!pending_calls_)
+            if (!pending_operations_)
             {
               handshake_done_ = false;            
               shutdown_handler_(shutdown_error_);
@@ -195,52 +200,50 @@ namespace ma
         template <typename Handler>
         void start_shutdown(boost::tuple<Handler> handler)
         {  
-          --pending_calls_;
+          --pending_operations_;
+
+          // Abort all user operations
+          if (read_handler_)
+          {
+            read_handler_(boost::asio::error::operation_aborted);
+          }
+          if (write_handler_)
+          {
+            write_handler_(boost::asio::error::operation_aborted);
+          }                        
           if (shutdown_handler_)
           {
-            io_service_.post(boost::asio::detail::bind_handler(
-              boost::get<0>(handler), boost::asio::error::already_started));
-            if (!pending_calls_)
-            {
-              handshake_done_ = false;            
-              shutdown_handler_(shutdown_error_);
-            }
-          }          
-          else 
+            shutdown_handler_(boost::asio::error::operation_aborted);
+          }                        
+
+          // Shutdown the next layer
+          stream_.close(shutdown_error_);
+
+          // Shutdown done - wait for completion of all pending operations
+          if (!pending_operations_)
           {
-            if (read_handler_)
-            {
-              read_handler_(boost::asio::error::operation_aborted);
-            }
-            if (write_handler_)
-            {
-              write_handler_(boost::asio::error::operation_aborted);
-            }
-            stream_.close(shutdown_error_);
-            if (!pending_calls_)
-            {
-              handshake_done_ = false;
-              io_service_.post(boost::asio::detail::bind_handler(
-                boost::get<0>(handler), shutdown_error_));
-            }
-            else
-            {              
-              handler_storage_type new_shutdown_handler(
-                make_work_handler(io_service_, boost::get<0>(handler)));
-              shutdown_handler_.swap(new_shutdown_handler);
-            }            
-          }          
+            handshake_done_ = false;
+            io_service_.post(boost::asio::detail::bind_handler(
+              boost::get<0>(handler), shutdown_error_));
+          }
+          else
+          {              
+            handler_storage_type new_shutdown_handler(
+              make_work_handler(io_service_, boost::get<0>(handler)));
+            shutdown_handler_.swap(new_shutdown_handler);
+          }
         }
         
         template <typename Handler>
         void start_write(const message_ptr& message, boost::tuple<Handler> handler)
         {          
-          --pending_calls_;
+          --pending_operations_;
+
           if (shutdown_handler_)
           {
             io_service_.post(boost::asio::detail::bind_handler(
               boost::get<0>(handler), boost::asio::error::operation_aborted));
-            if (!pending_calls_)
+            if (!pending_operations_)
             {
               handshake_done_ = false;            
               shutdown_handler_(shutdown_error_);
@@ -274,12 +277,13 @@ namespace ma
         template <typename Handler>
         void start_read(message_ptr& message, boost::tuple<Handler> handler)
         {        
-          --pending_calls_;
+          --pending_operations_;
+
           if (shutdown_handler_)
           {
             io_service_.post(boost::asio::detail::bind_handler(
               boost::get<0>(handler), boost::asio::error::operation_aborted));
-            if (!pending_calls_)
+            if (!pending_operations_)
             {
               handshake_done_ = false;            
               shutdown_handler_(shutdown_error_);
@@ -323,40 +327,44 @@ namespace ma
         }        
 
         void start_write_all()
-        {   
-          writing_ = true;
-          ++pending_calls_;          
+        {                       
           boost::asio::async_write(stream_, boost::asio::buffer(*write_message_buffer_), 
             strand_.wrap(make_custom_alloc_handler(write_handler_allocator_, 
               boost::bind(&this_type::handle_write, shared_from_this(), 
                 boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred))));          
+
+          ++pending_operations_;          
+          writing_ = true;
         }
 
         void start_read_until_head()
-        {                       
-          reading_ = true;
-          ++pending_calls_;          
+        {                                 
           boost::asio::async_read_until(stream_, read_buffer_, frame_head_,
             strand_.wrap(make_custom_alloc_handler(read_handler_allocator_, 
               boost::bind(&this_type::handle_read_head, shared_from_this(), 
                 boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred))));          
+
+          ++pending_operations_;          
+          reading_ = true;          
         }
 
         void start_read_until_tail()
-        {          
-          reading_ = true;
-          ++pending_calls_;         
+        {                    
           boost::asio::async_read_until(stream_, read_buffer_, frame_tail_,
             strand_.wrap(make_custom_alloc_handler(read_handler_allocator_, 
               boost::bind(&this_type::handle_read_tail, shared_from_this(), 
                 boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred))));          
+          
+          ++pending_operations_;         
+          reading_ = true;
         }
 
         void handle_write(const boost::system::error_code& error, const std::size_t bytes_transferred)
-        {          
-          writing_ = false;
-          --pending_calls_;
-          if (shutdown_handler_ && !pending_calls_)
+        { 
+          --pending_operations_;
+          writing_ = false;     
+
+          if (shutdown_handler_ && !pending_operations_)
           {
             handshake_done_ = false;            
             shutdown_handler_(shutdown_error_);          
@@ -379,10 +387,11 @@ namespace ma
         }   
 
         void handle_read_head(const boost::system::error_code& error, const std::size_t bytes_transferred)
-        {          
-          reading_ = false;
-          --pending_calls_;
-          if (shutdown_handler_ && !pending_calls_)
+        { 
+          --pending_operations_;
+          reading_ = false;          
+
+          if (shutdown_handler_ && !pending_operations_)
           {
             handshake_done_ = false;            
             shutdown_handler_(shutdown_error_);          
@@ -408,9 +417,10 @@ namespace ma
 
         void handle_read_tail(const boost::system::error_code& error, const std::size_t bytes_transferred)
         {          
-          reading_ = false;
-          --pending_calls_;
-          if (shutdown_handler_ && !pending_calls_)
+          --pending_operations_;
+          reading_ = false;          
+
+          if (shutdown_handler_ && !pending_operations_)
           {
             handshake_done_ = false;            
             shutdown_handler_(shutdown_error_);          
@@ -460,7 +470,7 @@ namespace ma
             
         std::string frame_head_;
         std::string frame_tail_;              
-        boost::detail::atomic_count pending_calls_;
+        boost::detail::atomic_count pending_operations_;
         boost::asio::io_service& io_service_;
         boost::asio::io_service::strand strand_;
         next_layer_type stream_;               
