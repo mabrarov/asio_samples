@@ -57,8 +57,7 @@ namespace ma
         explicit session(
           boost::asio::io_service& io_service,
           const size_type read_buffer_size)
-          : prev_(0)
-          , next_()                    
+          : prev_(0)          
           , pending_operations_(0)
           , io_service_(io_service)
           , strand_(io_service)

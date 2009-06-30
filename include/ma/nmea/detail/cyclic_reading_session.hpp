@@ -67,8 +67,7 @@ namespace ma
           const read_capacity_type read_message_buffer_capacity,
           const std::string& frame_head,
           const std::string& frame_tail)
-          : prev_(0)
-          , next_()          
+          : prev_(0)          
           , frame_head_(frame_head)
           , frame_tail_(frame_tail)          
           , pending_operations_(0)
