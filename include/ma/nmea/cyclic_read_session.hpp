@@ -42,7 +42,7 @@ namespace ma
       struct cancel_tag : private boost::noncopyable {};
       typedef boost::shared_ptr<cancel_tag> cancel_token;
       typedef boost::weak_ptr<cancel_tag> cancel_monitor;
-      typedef boost::tuple<message_ptr, boost::system::error_code> read_argument_type;      
+      typedef boost::tuple<message_ptr, boost::system::error_code> read_argument_type;
       typedef boost::system::error_code write_argument_type;
       typedef boost::system::error_code shutdown_argument_type;      
 
@@ -386,16 +386,97 @@ namespace ma
           return;
         }
 
-        //todo start write operation
-        io_service_.post
-        (
-          boost::asio::detail::bind_handler
+        if (stream_write_in_progress_)
+        {
+          // Never here
+          io_service_.post
           (
-            boost::get<0>(handler), 
-            boost::asio::error::operation_not_supported
+            boost::asio::detail::bind_handler
+            (
+              boost::get<0>(handler), 
+              boost::asio::error::operation_not_supported
+            )
+          );
+        }
+        else
+        {
+          start_write_full_message(message);
+        }
+
+        // Wait for the message write completion
+        write_condition_.async_wait
+        (
+          boost::asio::error::operation_aborted,          
+          make_context_alloc_handler
+          (
+            boost::get<0>(handler),
+            boost::bind
+            (
+              &this_type::write_handler_adaptor<Handler>, 
+              _1,
+              message, 
+              handler
+            )
+          )
+        ); 
+      }
+
+      void complete_write()
+      {
+        write_in_progress_ = false;
+      }
+
+      void complete_waiting_write(const boost::system::error_code& error)
+      {        
+        complete_write();
+        write_condition_.fire_now(error);
+      }      
+
+      template <typename Handler>
+      static void write_handler_adaptor(const boost::system::error_code& arg,
+        const message_ptr&, boost::tuple<Handler> handler)
+      {        
+        boost::get<0>(handler)(arg);
+      }
+
+      void start_write_full_message(const message_ptr& message)
+      {                                 
+        boost::asio::async_write
+        (
+          stream_, 
+          boost::asio::buffer(*message), 
+          strand_.wrap
+          (
+            make_custom_alloc_handler
+            (
+              stream_write_allocator_, 
+              boost::bind
+              (
+                &this_type::handle_write, 
+                shared_from_this(), 
+                boost::asio::placeholders::error, 
+                boost::asio::placeholders::bytes_transferred
+              )
+            )
           )
         );
+
+        stream_write_in_progress_ = true;
       }
+
+      void handle_write(const boost::system::error_code& error, const std::size_t bytes_transferred)
+      {         
+        stream_write_in_progress_ = false;
+        
+        // Check for write completion
+        if (write_in_progres_)
+        {
+          complete_waiting_write(error);         
+        }
+
+        // Check for shutdown completion
+        complete_waiting_shutdown();
+      } 
 
       template <typename Handler>
       void start_read(cancel_monitor op_monitor, 
@@ -506,19 +587,19 @@ namespace ma
       }
 
       void complete_waiting_read(const message_ptr& message_ptr, 
-        const boost::system::error_code error)
+        const boost::system::error_code& error)
       {        
         complete_read();
         read_condition_.fire_now(read_argument_type(message_ptr, error));
       }
 
-      void complete_waiting_read(const boost::system::error_code error)
+      void complete_waiting_read(const boost::system::error_code& error)
       {        
         complete_waiting_read(message_ptr(), error);
       }
 
       template <typename Handler>
-      static void read_handler_adaptor(read_argument_type arg, 
+      static void read_handler_adaptor(const read_argument_type& arg, 
         message_ptr& target, boost::tuple<Handler> handler)
       {
         target = boost::get<0>(arg);

@@ -54,7 +54,9 @@ namespace ma
     }
 
   private: 
-    boost::aligned_storage<256> storage_;    
+    BOOST_STATIC_CONSTANT(std::size_t cpu_word_size = sizeof(std::size_t));
+
+    boost::aligned_storage<cpu_word_size * 64> storage_;    
     bool in_use_;
   }; //class handler_allocator
 
