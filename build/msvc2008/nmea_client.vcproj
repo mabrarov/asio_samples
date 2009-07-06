@@ -367,6 +367,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\include\ma\condition.hpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\include\ma\condition_service.hpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\include\ma\handler_alloc_helpers.hpp"
 					>
 				</File>
@@ -378,33 +386,13 @@
 					RelativePath="..\..\include\ma\handler_invoke_helpers.hpp"
 					>
 				</File>
-				<File
-					RelativePath="..\..\include\ma\handler_storage.hpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\include\ma\work_handler.hpp"
-					>
-				</File>
 				<Filter
 					Name="nmea"
 					>
 					<File
-						RelativePath="..\..\include\ma\nmea\cyclic_reading_session.hpp"
+						RelativePath="..\..\include\ma\nmea\cyclic_read_session.hpp"
 						>
 					</File>
-					<File
-						RelativePath="..\..\include\ma\nmea\session_service.hpp"
-						>
-					</File>
-					<Filter
-						Name="detail"
-						>
-						<File
-							RelativePath="..\..\include\ma\nmea\detail\cyclic_reading_session.hpp"
-							>
-						</File>
-					</Filter>
 				</Filter>
 			</Filter>
 		</Filter>

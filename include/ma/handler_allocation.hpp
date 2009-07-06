@@ -273,14 +273,14 @@ namespace ma
   }; //class context_alloc_handler  
 
   template <typename Handler>
-  inline const custom_alloc_handler<Handler> 
+  inline custom_alloc_handler<Handler> 
   make_custom_alloc_handler(handler_allocator& allocator, Handler handler)
   {
     return custom_alloc_handler<Handler>(allocator, handler);
   }
 
   template <typename Context, typename Handler>
-  inline const context_alloc_handler<Context, Handler> 
+  inline context_alloc_handler<Context, Handler> 
   make_context_alloc_handler(Context context, Handler handler)
   {
     return context_alloc_handler<Context, Handler>(context, handler);
