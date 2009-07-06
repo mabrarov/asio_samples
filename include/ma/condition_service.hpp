@@ -244,7 +244,7 @@ namespace ma
     }
 
     template <typename Handler>
-    void async_wait(implementation_type impl, argument_type cancel_arg, Handler handler)
+    void async_wait(implementation_type& impl, argument_type cancel_arg, Handler handler)
     {      
       if (!shutdown_done_)
       {
