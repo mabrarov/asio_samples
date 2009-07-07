@@ -42,8 +42,7 @@ namespace ma
       struct cancel_tag : private boost::noncopyable {};
       typedef boost::shared_ptr<cancel_tag> cancel_token;
       typedef boost::weak_ptr<cancel_tag> cancel_monitor;
-      typedef boost::tuple<message_ptr, boost::system::error_code> read_argument_type;
-      typedef boost::system::error_code write_argument_type;
+      typedef boost::tuple<message_ptr, boost::system::error_code> read_argument_type;      
       typedef boost::system::error_code shutdown_argument_type;      
 
       BOOST_STATIC_CONSTANT(size_type, max_message_size = 512);
@@ -70,8 +69,7 @@ namespace ma
         , io_service_(io_service)
         , strand_(io_service)
         , stream_(io_service)
-        , read_condition_(io_service)
-        , write_condition_(io_service)
+        , read_condition_(io_service)        
         , shutdown_condition_(io_service)
         , handshake_done_(false)
         , read_in_progress_(false)
@@ -279,17 +277,12 @@ namespace ma
         // Start shutdown
         shutdown_in_progress_ = true;
 
-        // Do shutdown: abort outer operations
+        // Do shutdown: abort directly cancellable outer operations
         if (read_in_progress_)
         {          
           complete_read();
           read_condition_.cancel();
-        }
-        if (write_in_progress_)
-        {   
-          complete_write();
-          write_condition_.cancel();
-        }
+        }        
 
         // Do shutdown: abort inner operations
         stream_.close(shutdown_error_);        
@@ -385,7 +378,7 @@ namespace ma
           );
           return;
         }
-
+        
         if (stream_write_in_progress_)
         {
           // Never here
@@ -402,25 +395,12 @@ namespace ma
         {
           start_write_message(message, boost::get<0>(handler));
         }
-
-        // Wait for the message write completion
-        write_condition_.async_wait
-        (          
-          boost::asio::error::operation_aborted,
-          boost::get<0>(handler)
-        );
       }
 
       void complete_write()
       {
         write_in_progress_ = false;
-      }
-
-      void complete_waiting_write(const boost::system::error_code& error)
-      {        
-        complete_write();
-        write_condition_.fire_now(error);
-      }      
+      }           
 
       template <typename Handler>
       void start_write_message(const message_ptr& message, Handler handler)
@@ -453,15 +433,12 @@ namespace ma
       template <typename Handler>
       void handle_write(const boost::system::error_code& error, 
         const std::size_t bytes_transferred,
-        const message_ptr&, boost::tuple<Handler>)
+        const message_ptr&, boost::tuple<Handler> handler)
       {         
         stream_write_in_progress_ = false;
-        
-        // Check for write completion
-        if (write_in_progres_)
-        {
-          complete_waiting_write(error);         
-        }
+                
+        complete_write();
+        boost::get<0>(handler)(error);
 
         // Check for shutdown completion
         complete_waiting_shutdown();
@@ -727,8 +704,7 @@ namespace ma
       boost::asio::io_service& io_service_;
       boost::asio::io_service::strand strand_;
       next_layer_type stream_;               
-      ma::condition<read_argument_type> read_condition_;
-      ma::condition<write_argument_type> write_condition_;
+      ma::condition<read_argument_type> read_condition_;      
       ma::condition<shutdown_argument_type> shutdown_condition_;      
       bool handshake_done_;
       bool read_in_progress_;
