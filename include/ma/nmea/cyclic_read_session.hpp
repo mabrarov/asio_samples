@@ -643,7 +643,8 @@ namespace ma
         stream_read_in_progress_ = true;
       }      
 
-      void handle_read_head(const boost::system::error_code& error, const std::size_t bytes_transferred)
+      void handle_read_head(const boost::system::error_code& error, 
+        const std::size_t bytes_transferred)
       {         
         stream_read_in_progress_ = false;
         
@@ -671,7 +672,8 @@ namespace ma
         complete_waiting_shutdown();
       }   
 
-      void handle_read_tail(const boost::system::error_code& error, const std::size_t bytes_transferred)
+      void handle_read_tail(const boost::system::error_code& error, 
+        const std::size_t bytes_transferred)
       {                  
         stream_read_in_progress_ = false;
         
