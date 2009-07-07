@@ -54,7 +54,7 @@ namespace ma
     }
 
   private: 
-    BOOST_STATIC_CONSTANT(std::size_t cpu_word_size = sizeof(std::size_t));
+    BOOST_STATIC_CONSTANT(std::size_t, cpu_word_size = sizeof(std::size_t));
 
     boost::aligned_storage<cpu_word_size * 64> storage_;    
     bool in_use_;

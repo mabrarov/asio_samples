@@ -124,7 +124,7 @@ namespace ma
               &this_type::start_handshake<Handler>, 
               shared_from_this(), 
               cancel_monitor(cancel_token_),
-              boost::make_tuple(handler)              
+              boost::make_tuple(handler)
             )
           )
         );
@@ -282,12 +282,12 @@ namespace ma
         // Do shutdown: abort outer operations
         if (read_in_progress_)
         {          
-          read_in_progress_ = false;
+          complete_read();
           read_condition_.cancel();
         }
         if (write_in_progress_)
         {   
-          write_in_progress_ = false;
+          complete_write();
           write_condition_.cancel();
         }
 
@@ -400,25 +400,15 @@ namespace ma
         }
         else
         {
-          start_write_full_message(message);
+          start_write_message(message, boost::get<0>(handler));
         }
 
         // Wait for the message write completion
         write_condition_.async_wait
-        (
-          boost::asio::error::operation_aborted,          
-          make_context_alloc_handler
-          (
-            boost::get<0>(handler),
-            boost::bind
-            (
-              &this_type::write_handler_adaptor<Handler>, 
-              _1,
-              message, 
-              handler
-            )
-          )
-        ); 
+        (          
+          boost::asio::error::operation_aborted,
+          boost::get<0>(handler)
+        );
       }
 
       void complete_write()
@@ -433,13 +423,7 @@ namespace ma
       }      
 
       template <typename Handler>
-      static void write_handler_adaptor(const boost::system::error_code& arg,
-        const message_ptr&, boost::tuple<Handler> handler)
-      {        
-        boost::get<0>(handler)(arg);
-      }
-
-      void start_write_full_message(const message_ptr& message)
+      void start_write_message(const message_ptr& message, Handler handler)
       {                                 
         boost::asio::async_write
         (
@@ -452,10 +436,12 @@ namespace ma
               stream_write_allocator_, 
               boost::bind
               (
-                &this_type::handle_write, 
-                shared_from_this(), 
+                &this_type::handle_write<handler>, 
+                shared_from_this(),                
                 boost::asio::placeholders::error, 
-                boost::asio::placeholders::bytes_transferred
+                boost::asio::placeholders::bytes_transferred,
+                message,
+                boost::make_tuple(handler)
               )
             )
           )
@@ -464,7 +450,10 @@ namespace ma
         stream_write_in_progress_ = true;
       }
 
-      void handle_write(const boost::system::error_code& error, const std::size_t bytes_transferred)
+      template <typename Handler>
+      void handle_write(const boost::system::error_code& error, 
+        const std::size_t bytes_transferred,
+        const message_ptr&, boost::tuple<Handler>)
       {         
         stream_write_in_progress_ = false;
         
