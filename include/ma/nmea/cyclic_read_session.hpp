@@ -20,7 +20,7 @@
 #include <boost/tuple/tuple.hpp>
 #include <boost/circular_buffer.hpp>
 #include <ma/handler_allocation.hpp>
-#include <ma/condition.hpp>
+#include <ma/deferred_signal.hpp>
 
 namespace ma
 {
@@ -69,8 +69,8 @@ namespace ma
         , io_service_(io_service)
         , strand_(io_service)
         , stream_(io_service)
-        , read_condition_(io_service)        
-        , shutdown_condition_(io_service)
+        , read_signal_(io_service)        
+        , shutdown_signal_(io_service)
         , handshake_done_(false)
         , read_in_progress_(false)
         , write_in_progress_(false)
@@ -230,10 +230,10 @@ namespace ma
           start_read_until_head();
         }
 
-        // Complete handshake immidiately
+        // Complete handshake immediately
         handshake_done_ = true;
 
-        // Signal succesfull handshake completion.
+        // Signal successful handshake completion.
         io_service_.post
         (
           boost::asio::detail::bind_handler
@@ -281,20 +281,20 @@ namespace ma
         if (read_in_progress_)
         {          
           complete_read();
-          read_condition_.cancel();
+          read_signal_.cancel();
         }        
 
         // Do shutdown: abort inner operations
         stream_.close(shutdown_error_);        
 
-        // Check for immidiate completion
+        // Check for immediate completion
         if (read_in_progress_ 
           || write_in_progress_ 
           || stream_write_in_progress_ 
           || stream_read_in_progress_)
         {    
-          // If can't immidiately complete then start waiting for completion
-          shutdown_condition_.async_wait
+          // If can't immediately complete then start waiting for completion
+          shutdown_signal_.async_wait
           (
             boost::asio::error::operation_aborted,
             boost::get<0>(handler)
@@ -302,10 +302,10 @@ namespace ma
           return;
         }
 
-        // Complete shutdown immidiately
+        // Complete shutdown immediately
         complete_shutdown();
 
-        // Signal succesfull shutdown completion.
+        // Signal successful shutdown completion.
         io_service_.post
         (
           boost::asio::detail::bind_handler
@@ -338,11 +338,11 @@ namespace ma
           && !stream_write_in_progress_ 
           && !stream_read_in_progress_)
         {              
-          // Complete shutdown immidiately
+          // Complete shutdown immediately
           complete_shutdown();
 
-          // Signal succesfull shutdown completion.
-          shutdown_condition_.fire_now(shutdown_error_);
+          // Signal successfully shutdown completion.
+          shutdown_signal_.fire(shutdown_error_);
         }
       }
       
@@ -482,7 +482,7 @@ namespace ma
         // Start read operation
         read_in_progress_ = true;
 
-        // Check for immidiate completion: check for ready data        
+        // Check for immediate completion: check for ready data        
         if (!read_buf_.empty())
         {
           complete_read();
@@ -500,7 +500,7 @@ namespace ma
           return;
         }
 
-        // Check for immidiate completion: check for read error
+        // Check for immediate completion: check for read error
         if (read_error_)
         {
           complete_read();
@@ -518,7 +518,7 @@ namespace ma
           return;
         }
 
-        // If can't immidiately complete then start waiting for completion
+        // If can't immediately complete then start waiting for completion
         // Start message constructing
         if (!stream_read_in_progress_)
         {
@@ -526,7 +526,7 @@ namespace ma
         }
 
         // Wait for the ready message
-        read_condition_.async_wait
+        read_signal_.async_wait
         (
           read_argument_type
           (
@@ -556,7 +556,7 @@ namespace ma
         const boost::system::error_code& error)
       {        
         complete_read();
-        read_condition_.fire_now(read_argument_type(message_ptr, error));
+        read_signal_.fire(read_argument_type(message_ptr, error));
       }
 
       void complete_waiting_read(const boost::system::error_code& error)
@@ -668,7 +668,7 @@ namespace ma
             stream_read_buf_.consume(bytes_transferred);
             // Continue inner operations loop.
             start_read_until_head();
-            // If there is wating read operation - complete it            
+            // If there is waiting read operation - complete it            
             if (read_in_progress_)
             {              
               complete_waiting_read(parsed_message, error);
@@ -704,8 +704,8 @@ namespace ma
       boost::asio::io_service& io_service_;
       boost::asio::io_service::strand strand_;
       next_layer_type stream_;               
-      ma::condition<read_argument_type> read_condition_;      
-      ma::condition<shutdown_argument_type> shutdown_condition_;      
+      ma::deferred_signal<read_argument_type> read_signal_;      
+      ma::deferred_signal<shutdown_argument_type> shutdown_signal_;      
       bool handshake_done_;
       bool read_in_progress_;
       bool write_in_progress_;

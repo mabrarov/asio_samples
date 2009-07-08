@@ -367,11 +367,11 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\include\ma\condition.hpp"
+					RelativePath="..\..\include\ma\deferred_signal.hpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\include\ma\condition_service.hpp"
+					RelativePath="..\..\include\ma\deferred_signal_service.hpp"
 					>
 				</File>
 				<File
