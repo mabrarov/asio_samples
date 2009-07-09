@@ -5,31 +5,31 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef MA_DEFERRED_SIGNAL_HPP
-#define MA_DEFERRED_SIGNAL_HPP
+#ifndef MA_HANDLER_STORAGE_HPP
+#define MA_HANDLER_STORAGE_HPP
 
 #include <cstddef>
 #include <boost/utility.hpp>
-#include <ma/deferred_signal_service.hpp>
+#include <ma/handler_storage_service.hpp>
 
 namespace ma
 {
   template <typename Arg>
-  class deferred_signal : private boost::noncopyable
+  class handler_storage : private boost::noncopyable
   {
   public:
     typedef Arg argument_type;
     typedef typename boost::call_traits<argument_type>::param_type arg_param_type;
-    typedef deferred_signal_service<argument_type> service_type;
+    typedef handler_storage_service<argument_type> service_type;
     typedef typename service_type::implementation_type implementation_type;
 
-    explicit deferred_signal(boost::asio::io_service& io_service)
+    explicit handler_storage(boost::asio::io_service& io_service)
       : service_(boost::asio::use_service<service_type>(io_service))
     {
       service_.construct(implementation_);
     }
 
-    ~deferred_signal()
+    ~handler_storage()
     {
       service_.destroy(implementation_);
     } 
@@ -45,19 +45,19 @@ namespace ma
     }
 
     template <typename Handler>
-    void async_wait(arg_param_type cancel_arg, Handler handler)
+    void enqueue(arg_param_type cancel_arg, Handler handler)
     {      
-      service_.async_wait(implementation_, cancel_arg, handler);
+      service_.enqueue(implementation_, cancel_arg, handler);
     }
 
-    std::size_t fire(arg_param_type arg)
+    std::size_t post_all(arg_param_type arg)
     {
-      return service_.fire(implementation_, arg);
+      return service_.post_all(implementation_, arg);
     }
 
-    std::size_t cancel()
+    std::size_t cancel_all()
     {
-      return service_.cancel(implementation_);
+      return service_.cancel_all(implementation_);
     }    
 
   private:
@@ -66,8 +66,8 @@ namespace ma
 
     // The underlying implementation of the I/O object.
     implementation_type implementation_;
-  }; // class deferred_signal
+  }; // class handler_storage
 
 } // namespace ma
 
-#endif // MA_DEFERRED_SIGNAL_HPP
+#endif // MA_HANDLER_STORAGE_HPP

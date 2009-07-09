@@ -5,8 +5,8 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef MA_DEFERRED_SIGNAL_SERVICE_HPP
-#define MA_DEFERRED_SIGNAL_SERVICE_HPP
+#ifndef MA_HANDLER_STORAGE_SERVICE_HPP
+#define MA_HANDLER_STORAGE_SERVICE_HPP
 
 #include <cstddef>
 #include <boost/thread.hpp>
@@ -16,10 +16,10 @@
 namespace ma
 {
   template <typename Arg>
-  class deferred_signal_service : public boost::asio::io_service::service
+  class handler_storage_service : public boost::asio::io_service::service
   {
   private:
-    typedef deferred_signal_service<Arg> this_type;    
+    typedef handler_storage_service<Arg> this_type;    
     typedef boost::mutex mutex_type;
 
   public:
@@ -206,20 +206,20 @@ namespace ma
       }
 
     private:
-      friend class deferred_signal_service<argument_type>;
+      friend class handler_storage_service<argument_type>;
       implementation_type* prev_;
       implementation_type* next_;      
       handler_queue handler_queue_;
     };
 
-    explicit deferred_signal_service(boost::asio::io_service& io_service)
+    explicit handler_storage_service(boost::asio::io_service& io_service)
       : boost::asio::io_service::service(io_service)
       , impl_list_(0)
       , shutdown_done_(false)
     {
     }
 
-    ~deferred_signal_service()
+    ~handler_storage_service()
     {
     }
 
@@ -281,12 +281,15 @@ namespace ma
           impl.next_->prev_= impl.prev_;
         }
         lock.unlock();
-        impl.prev_ = impl.next_ = 0;        
+        impl.prev_ = impl.next_ = 0;
+
+        // Cancel pending calls
+        do_cancel_all(local_queue);
       }
     }
 
     template <typename Handler>
-    void async_wait(implementation_type& impl, arg_param_type cancel_arg, Handler handler)
+    void enqueue(implementation_type& impl, arg_param_type cancel_arg, Handler handler)
     {      
       if (!shutdown_done_)
       {
@@ -309,49 +312,55 @@ namespace ma
       }
     }
 
-    std::size_t fire(implementation_type& impl, arg_param_type arg)
+    std::size_t post_all(implementation_type& impl, arg_param_type arg)
     {      
       // Take the ownership
       handler_queue local_queue(impl.handler_queue_.release());      
+      return do_invoke_all(local_queue, arg);
+    }
 
+    std::size_t cancel_all(implementation_type& impl)
+    {      
+      // Take the ownership
+      handler_queue local_queue(impl.handler_queue_.release());      
+      return do_cancel_all(local_queue);
+    }    
+
+  private:
+    std::size_t do_invoke_all(handler_queue& queue, arg_param_type arg)
+    {
       std::size_t num_handlers = 0;      
-      while (!local_queue.empty())
+      while (!queue.empty())
       { 
-        handler_base* handler_ptr(local_queue.release());
-        handler_queue guard(handler_ptr->next_);
+        handler_base* handler_ptr(queue.release());
+        handler_queue(handler_ptr->next_).swap(queue);
         handler_ptr->invoke(arg);
-        ++num_handlers;
-        local_queue.swap(guard);
+        ++num_handlers;        
       }      
       return num_handlers;
     }
 
-    std::size_t cancel(implementation_type& impl)
-    {      
-      // Take the ownership
-      handler_queue local_queue(impl.handler_queue_.release());      
-
+    std::size_t do_cancel_all(handler_queue& queue)
+    {
       std::size_t num_handlers = 0;      
-      while (!local_queue.empty())
+      while (!queue.empty())
       { 
-        handler_base* handler_ptr(local_queue.release());
-        handler_queue guard(handler_ptr->next_);
+        handler_base* handler_ptr(queue.release());
+        handler_queue(handler_ptr->next_).swap(queue);
         handler_ptr->cancel();
-        ++num_handlers;
-        local_queue.swap(guard);
+        ++num_handlers;        
       }      
       return num_handlers;
-    }    
+    }
 
-  private:
     mutex_type mutex_;
     implementation_type* impl_list_;
     bool shutdown_done_;
-  }; // class deferred_signal_service
+  }; // class handler_storage_service
 
   template <typename Arg>
-  boost::asio::io_service::id deferred_signal_service<Arg>::id;
+  boost::asio::io_service::id handler_storage_service<Arg>::id;
 
 } // namespace ma
 
-#endif // MA_DEFERRED_SIGNAL_HPP
+#endif // MA_HANDLER_STORAGE_HPP
