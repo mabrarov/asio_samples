@@ -260,7 +260,7 @@ namespace ma
             )
           );          
         } 
-        else if (!started_ || stop_handler_.has_target())
+        else if (stop_handler_.has_target())
         {          
           io_service_.post
           (
