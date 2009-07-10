@@ -356,23 +356,11 @@
 				RelativePath="..\..\include\console_controller.hpp"
 				>
 			</File>
-			<File
-				RelativePath="..\..\include\sync_ostream.hpp"
-				>
-			</File>
 			<Filter
 				Name="ma"
 				>
 				<File
 					RelativePath="..\..\include\ma\codecvt_cast.hpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\include\ma\condition.hpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\include\ma\condition_service.hpp"
 					>
 				</File>
 				<File

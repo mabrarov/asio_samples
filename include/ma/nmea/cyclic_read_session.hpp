@@ -38,16 +38,10 @@ namespace ma
 
     private:
       typedef cyclic_read_session<AsyncStream> this_type;      
-      typedef boost::circular_buffer<message_ptr> read_buf_type;      
-      struct cancel_tag : private boost::noncopyable {};
-      typedef boost::shared_ptr<cancel_tag> cancel_token;
-      typedef boost::weak_ptr<cancel_tag> cancel_monitor;
-      typedef boost::tuple<message_ptr, boost::system::error_code> read_argument_type;      
-      typedef boost::system::error_code shutdown_argument_type;      
+      typedef boost::circular_buffer<message_ptr> read_buf_type;
+      typedef boost::tuple<message_ptr, boost::system::error_code> read_arg_type;            
 
-      BOOST_STATIC_CONSTANT(size_type, max_message_size = 512);
-      BOOST_STATIC_CONSTANT(size_type, read_continue_threhold = 64);
-      
+      BOOST_STATIC_CONSTANT(size_type, max_message_size = 512);           
 
     public:
       typedef boost::shared_ptr<this_type> pointer;
@@ -63,20 +57,17 @@ namespace ma
         const read_capacity_type read_buf_capacity,
         const std::string& frame_head,
         const std::string& frame_tail)
-        : cancel_token_(new cancel_tag())
-        , frame_head_(frame_head)
+        : frame_head_(frame_head)
         , frame_tail_(frame_tail)                  
         , io_service_(io_service)
         , strand_(io_service)
         , stream_(io_service)
-        , read_waiters_(io_service)        
-        , shutdown_waiters_(io_service)
-        , handshake_done_(false)
-        , read_in_progress_(false)
+        , read_handler_(io_service)        
+        , stop_handler_(io_service)
+        , started_(false)
+        , stopped_(false)        
         , write_in_progress_(false)
-        , shutdown_in_progress_(false)
-        , stream_write_in_progress_(false)
-        , stream_read_in_progress_(false)
+        , read_in_progress_(false)
         , stream_read_buf_(stream_read_buf_size)
         , read_buf_(read_buf_capacity)
         , read_buf_overflow_(false)
@@ -107,10 +98,33 @@ namespace ma
       lowest_layer_type& lowest_layer()
       {
         return stream_.lowest_layer();
-      }                
+      }
+
+      boost::asio::io_service& io_service()
+      {
+        return io_service_;
+      }
+
+      boost::asio::io_service& get_io_service()
+      {
+        return io_service_;
+      }
+
+      void resest()
+      {
+        read_buf_.clear();        
+        read_error_ = boost::system::error_code();
+        read_buf_overflow_ = false;
+
+        stream_read_buf_.consume(
+          boost::asio::buffer_size(stream_read_buf_.data()));        
+
+        started_ = false;
+        stopped_ = false;
+      }
 
       template <typename Handler>
-      void async_handshake(Handler handler)
+      void async_start(Handler handler)
       {        
         strand_.dispatch
         (
@@ -119,9 +133,8 @@ namespace ma
             handler,
             boost::bind
             (
-              &this_type::start_handshake<Handler>, 
-              shared_from_this(), 
-              cancel_monitor(cancel_token_),
+              &this_type::do_start<Handler>, 
+              shared_from_this(),
               boost::make_tuple(handler)
             )
           )
@@ -129,11 +142,8 @@ namespace ma
       }
 
       template <typename Handler>
-      void async_shutdown(Handler handler)
+      void async_stop(Handler handler)
       {
-        // Cancel all pending operations
-        cancel_token_.reset(new cancel_tag());
-
         strand_.dispatch
         (
           make_context_alloc_handler
@@ -141,9 +151,8 @@ namespace ma
             handler,
             boost::bind
             (
-              &this_type::start_shutdown<Handler>, 
-              shared_from_this(), 
-              cancel_monitor(cancel_token_),
+              &this_type::do_stop<Handler>, 
+              shared_from_this(),
               boost::make_tuple(handler)
             )
           )
@@ -160,9 +169,8 @@ namespace ma
             handler,
             boost::bind
             (
-              &this_type::start_write<Handler>, 
-              shared_from_this(), 
-              cancel_monitor(cancel_token_),
+              &this_type::do_write<Handler>, 
+              shared_from_this(),
               message, 
               boost::make_tuple(handler)              
             )
@@ -180,9 +188,8 @@ namespace ma
             handler,
             boost::bind
             (
-              &this_type::start_read<Handler>, 
-              shared_from_this(), 
-              cancel_monitor(cancel_token_),
+              &this_type::do_read<Handler>, 
+              shared_from_this(),
               boost::ref(message), 
               boost::make_tuple(handler)              
             )
@@ -192,177 +199,10 @@ namespace ma
     
     private:        
       template <typename Handler>
-      void start_handshake(cancel_monitor op_monitor, boost::tuple<Handler> handler)
-      {  
-        // Check operation cancellation.
-        if (op_monitor.expired())
-        {          
-          io_service_.post
-          (
-            boost::asio::detail::bind_handler
-            (
-              boost::get<0>(handler), 
-              boost::asio::error::operation_aborted
-            )
-          );
-          return;
-        }
-        // Check outer state.
-        if (handshake_done_ 
-          || read_in_progress_ 
-          || write_in_progress_ 
-          || shutdown_in_progress_)
-        {          
-          io_service_.post
-          (
-            boost::asio::detail::bind_handler
-            (
-              boost::get<0>(handler), 
-              boost::asio::error::operation_not_supported
-            )
-          );
-          return;
-        }
-
-        // Start handshake: start internal activity.
-        if (!stream_read_in_progress_)
-        {
-          start_read_until_head();
-        }
-
-        // Complete handshake immediately
-        handshake_done_ = true;
-
-        // Signal successful handshake completion.
-        io_service_.post
-        (
-          boost::asio::detail::bind_handler
-          (
-            boost::get<0>(handler), 
-            boost::system::error_code()
-          )
-        );        
-      } // start_handshake
-
-      template <typename Handler>
-      void start_shutdown(cancel_monitor op_monitor, boost::tuple<Handler> handler)
-      { 
-        // Check operation cancellation.
-        if (op_monitor.expired())
-        {          
-          io_service_.post
-          (
-            boost::asio::detail::bind_handler
-            (
-              boost::get<0>(handler), 
-              boost::asio::error::operation_aborted
-            )
-          );
-          return;
-        }
-        // Check outer state.
-        if (!handshake_done_)
-        {          
-          io_service_.post
-          (
-            boost::asio::detail::bind_handler
-            (
-              boost::get<0>(handler), 
-              boost::system::error_code()
-            )
-          );
-          return;
-        }
-        if (shutdown_in_progress_)
-        {          
-          // If can't immediately complete then start waiting for completion
-          shutdown_waiters_.enqueue
-          (
-            boost::asio::error::operation_aborted,
-            boost::get<0>(handler)
-          );
-          return;
-        }
-
-        // Start shutdown
-        shutdown_in_progress_ = true;
-
-        // Do shutdown: abort directly cancellable outer operations
-        if (read_in_progress_)
-        {          
-          complete_read();
-          read_waiters_.cancel_all();
-        }        
-
-        // Do shutdown: abort inner operations
-        stream_.close(shutdown_error_);        
-
-        // Check for immediate completion
-        if (read_in_progress_ 
-          || write_in_progress_ 
-          || stream_write_in_progress_ 
-          || stream_read_in_progress_)
-        {    
-          // If can't immediately complete then start waiting for completion
-          shutdown_waiters_.enqueue
-          (
-            boost::asio::error::operation_aborted,
-            boost::get<0>(handler)
-          );
-          return;
-        }
-
-        // Complete shutdown immediately
-        complete_shutdown();
-
-        // Signal successful shutdown completion.
-        io_service_.post
-        (
-          boost::asio::detail::bind_handler
-          (
-            boost::get<0>(handler), 
-            shutdown_error_
-          )
-        );
-      } // start_shutdown
-      
-      void complete_shutdown()
+      void do_start(boost::tuple<Handler> handler)
       {
-        shutdown_in_progress_ = false;
-        handshake_done_ = false;
-        
-        read_buf_.clear();        
-        read_error_ = boost::system::error_code();
-        read_buf_overflow_ = false;
-
-        stream_read_buf_.consume(
-          boost::asio::buffer_size(stream_read_buf_.data()));        
-      }
-
-      void complete_waiting_shutdown()
-      {
-        // Check for shutdown completion
-        if (shutdown_in_progress_
-          && !read_in_progress_ 
-          && !write_in_progress_ 
-          && !stream_write_in_progress_ 
-          && !stream_read_in_progress_)
-        {              
-          // Complete shutdown immediately
-          complete_shutdown();
-
-          // Signal successfully shutdown completion.
-          shutdown_waiters_.post_all(shutdown_error_);
-        }
-      }
-      
-      template <typename Handler>
-      void start_write(cancel_monitor op_monitor, 
-        const message_ptr& message, boost::tuple<Handler> handler)
-      {  
-        // Check operation cancellation.
-        if (op_monitor.expired())
-        {
+        if (stopped_)
+        {          
           io_service_.post
           (
             boost::asio::detail::bind_handler
@@ -370,13 +210,9 @@ namespace ma
               boost::get<0>(handler), 
               boost::asio::error::operation_aborted
             )
-          );
-          return;
-        }
-        // Check outer state.
-        if (!handshake_done_ 
-          || write_in_progress_ 
-          || shutdown_in_progress_)
+          );          
+        } 
+        else if (started_)
         {          
           io_service_.post
           (
@@ -385,83 +221,36 @@ namespace ma
               boost::get<0>(handler), 
               boost::asio::error::operation_not_supported
             )
-          );
-          return;
-        }
-        
-        if (stream_write_in_progress_)
-        {
-          // Never here
-          io_service_.post
-          (
-            boost::asio::detail::bind_handler
-            (
-              boost::get<0>(handler), 
-              boost::asio::error::operation_not_supported
-            )
-          );
+          );          
         }
         else
         {
-          start_write_message(message, boost::get<0>(handler));
-        }
-      }
+          // Start handshake: start internal activity.
+          if (!read_in_progress_)
+          {
+            read_until_head();
+          }
 
-      void complete_write()
-      {
-        write_in_progress_ = false;
-      }           
+          // Complete handshake immediately
+          started_ = true;
 
-      template <typename Handler>
-      void start_write_message(const message_ptr& message, Handler handler)
-      {                                 
-        boost::asio::async_write
-        (
-          stream_, 
-          boost::asio::buffer(*message), 
-          strand_.wrap
+          // Signal successful handshake completion.
+          io_service_.post
           (
-            make_custom_alloc_handler
+            boost::asio::detail::bind_handler
             (
-              stream_write_allocator_, 
-              boost::bind
-              (
-                &this_type::handle_write<handler>, 
-                shared_from_this(),                
-                boost::asio::placeholders::error, 
-                boost::asio::placeholders::bytes_transferred,
-                message,
-                boost::make_tuple(handler)
-              )
+              boost::get<0>(handler), 
+              boost::system::error_code()
             )
-          )
-        );
-
-        stream_write_in_progress_ = true;
-      }
+          );
+        }
+      } // do_start
 
       template <typename Handler>
-      void handle_write(const boost::system::error_code& error, 
-        const std::size_t bytes_transferred,
-        const message_ptr&, boost::tuple<Handler> handler)
-      {         
-        stream_write_in_progress_ = false;
-                
-        complete_write();
-        boost::get<0>(handler)(error);
-
-        // Check for shutdown completion
-        complete_waiting_shutdown();
-      } 
-
-      template <typename Handler>
-      void start_read(cancel_monitor op_monitor, 
-        message_ptr& message, boost::tuple<Handler> handler)
+      void do_stop(boost::tuple<Handler> handler)
       { 
-        // Check operation cancellation.
-        if (op_monitor.expired())
-        {
-          message = message_ptr();
+        if (stopped_)
+        {          
           io_service_.post
           (
             boost::asio::detail::bind_handler
@@ -469,15 +258,10 @@ namespace ma
               boost::get<0>(handler), 
               boost::asio::error::operation_aborted
             )
-          );
-          return;
-        }
-        // Check outer state.
-        if (!handshake_done_ 
-          || read_in_progress_ 
-          || shutdown_in_progress_)
+          );          
+        } 
+        else if (!started_ || stop_handler_.has_target())
         {          
-          message = message_ptr();
           io_service_.post
           (
             boost::asio::detail::bind_handler
@@ -486,103 +270,211 @@ namespace ma
               boost::asio::error::operation_not_supported
             )
           );
-          return;
-        }      
-
-        // Start read operation
-        read_in_progress_ = true;
-
-        // Check for immediate completion: check for ready data        
-        if (!read_buf_.empty())
+        }
+        else 
         {
-          complete_read();
+          // Start shutdown
 
-          message = read_buf_.front();
-          read_buf_.pop_front();
+          // Do shutdown - abort inner operations
+          stream_.close(shutdown_error_);
+          
+          // Check for shutdown continuation
+          if (read_handler_.has_target()
+            || write_in_progress_ 
+            || read_in_progress_)
+          {
+            read_handler_.cancel();
+            // Wait for others operations' completion
+            stop_handler_.store(
+              boost::asio::error::operation_aborted,
+              boost::get<0>(handler));
+          }        
+          else
+          {
+            stopped_ = true;
+            // Signal shutdown completion
+            io_service_.post
+            (
+              boost::asio::detail::bind_handler
+              (
+                boost::get<0>(handler), 
+                shutdown_error_
+              )
+            );
+          }
+        }        
+      } // do_stop
+      
+      template <typename Handler>
+      void do_write(const message_ptr& message, boost::tuple<Handler> handler)
+      {  
+        if (stopped_)
+        {          
           io_service_.post
           (
             boost::asio::detail::bind_handler
             (
               boost::get<0>(handler), 
-              boost::system::error_code()
+              boost::asio::error::operation_aborted
             )
           );          
-          return;
-        }
-
-        // Check for immediate completion: check for read error
-        if (read_error_)
-        {
-          complete_read();
-
-          message = message_ptr();
+        } 
+        else if (!started_ || write_in_progress_)
+        {          
           io_service_.post
           (
             boost::asio::detail::bind_handler
             (
               boost::get<0>(handler), 
-              read_error_
+              boost::asio::error::operation_not_supported
             )
           );
-          read_error_= boost::system::error_code();
-          return;
         }
-
-        // If can't immediately complete then start waiting for completion
-        // Start message constructing
-        if (!stream_read_in_progress_)
-        {
-          start_read_until_head();
-        }
-
-        // Wait for the ready message
-        read_waiters_.enqueue
-        (
-          read_argument_type
+        else 
+        {        
+          boost::asio::async_write
           (
-            message_ptr(),
-            boost::asio::error::operation_aborted
-          ),
-          make_context_alloc_handler
-          (
-            boost::get<0>(handler),
-            boost::bind
+            stream_, 
+            boost::asio::buffer(*message), 
+            strand_.wrap
             (
-              &this_type::read_handler_adaptor<Handler>, 
-              _1,
-              boost::ref(message), 
-              handler
+              make_custom_alloc_handler
+              (
+                stream_write_allocator_, 
+                boost::bind
+                (
+                  &this_type::handle_write<handler>, 
+                  shared_from_this(),                
+                  boost::asio::placeholders::error,                   
+                  message,
+                  handler
+                )
+              )
             )
-          )
-        );        
-      }
-
-      void complete_read()
-      {
-        read_in_progress_ = false;
-      }
-
-      void complete_waiting_read(const message_ptr& message_ptr, 
-        const boost::system::error_code& error)
-      {        
-        complete_read();
-        read_waiters_.post_all(read_argument_type(message_ptr, error));
-      }
-
-      void complete_waiting_read(const boost::system::error_code& error)
-      {        
-        complete_waiting_read(message_ptr(), error);
-      }
+          );
+          write_in_progress_ = true;
+        }
+      } // do_write
 
       template <typename Handler>
-      static void read_handler_adaptor(const read_argument_type& arg, 
+      void handle_write(const boost::system::error_code& error,         
+        const message_ptr&, boost::tuple<Handler> handler)
+      {         
+        write_in_progress_ = false;        
+        io_service_.post
+        (
+          boost::asio::detail::bind_handler
+          (
+            boost::get<0>(handler), 
+            error
+          )
+        );
+        if (stop_handler_.has_target() && !read_in_progress_)
+        {
+          stopped_ = true;
+          // Signal shutdown completion
+          stop_handler_.post(shutdown_error_);
+        }
+      } 
+
+      template <typename Handler>
+      void do_read(message_ptr& message, boost::tuple<Handler> handler)
+      {
+        if (stopped_)
+        {          
+          io_service_.post
+          (
+            boost::asio::detail::bind_handler
+            (
+              boost::get<0>(handler), 
+              boost::asio::error::operation_aborted
+            )
+          );          
+        }
+        else if (!started_ || read_handler_.has_target())
+        {          
+          io_service_.post
+          (
+            boost::asio::detail::bind_handler
+            (
+              boost::get<0>(handler), 
+              boost::asio::error::operation_not_supported
+            )
+          );
+        }
+        else 
+        {      
+          // Start read operation          
+
+          // Check for ready data        
+          if (!read_buf_.empty())
+          {
+            message = read_buf_.front();
+            read_buf_.pop_front();
+            io_service_.post
+            (
+              boost::asio::detail::bind_handler
+              (
+                boost::get<0>(handler), 
+                boost::system::error_code()
+              )
+            );
+          }
+          else if (read_error_)
+          {            
+            message = message_ptr();
+            io_service_.post
+            (
+              boost::asio::detail::bind_handler
+              (
+                boost::get<0>(handler), 
+                read_error_
+              )
+            );
+            read_error_= boost::system::error_code();          
+          }
+          else
+          {          
+            // If can't immediately complete then start waiting for completion
+            // Start message constructing
+            if (!read_in_progress_)
+            {
+              read_until_head();
+            }
+
+            // Wait for the ready message
+            read_handler_.store
+            (
+              read_arg_type
+              (
+                message_ptr(), 
+                boost::asio::error::operation_aborted
+              ),          
+              make_context_alloc_handler
+              (
+                boost::get<0>(handler), 
+                boost::bind
+                (
+                  &this_type::handle_read<Handler>, 
+                  _1,
+                  boost::ref(message), 
+                  handler
+                )
+              )          
+            );
+          }
+        }
+      }      
+      
+      template <typename Handler>
+      static void handle_read(const read_arg_type& arg, 
         message_ptr& target, boost::tuple<Handler> handler)
       {
         target = boost::get<0>(arg);
         boost::get<0>(handler)(boost::get<1>(arg));
       }
 
-      void start_read_until_head()
+      void read_until_head()
       {                                 
         boost::asio::async_read_until
         (
@@ -601,12 +493,11 @@ namespace ma
               )
             )
           )
-        );          
-        
-        stream_read_in_progress_ = true;          
+        );                  
+        read_in_progress_ = true;          
       }
 
-      void start_read_until_tail()
+      void read_until_tail()
       {                    
         boost::asio::async_read_until
         (
@@ -625,103 +516,104 @@ namespace ma
               )
             )
           )
-        );          
-                
-        stream_read_in_progress_ = true;
+        );
+        read_in_progress_ = true;
       }      
 
       void handle_read_head(const boost::system::error_code& error, 
         const std::size_t bytes_transferred)
       {         
-        stream_read_in_progress_ = false;
-        
-        if (!error)
+        read_in_progress_ = false;        
+        if (stop_handler_.has_target())
         {
-          // We do not need in-between-frame-garbage and frame's head
-          stream_read_buf_.consume(bytes_transferred);          
-          if (!shutdown_in_progress_)
-          {            
-            // Continue inner operations loop.
-            start_read_until_tail();
+          read_handler_.cancel();
+          if (!write_in_progress_)
+          {
+            stopped_ = true;
+            // Signal shutdown completion
+            stop_handler_.post(shutdown_error_);
           }
         }
-        else if (read_in_progress_)
+        else if (!error)
         {
-          complete_waiting_read(error);
+          // We do not need in-between-frame-garbage and frame's head
+          stream_read_buf_.consume(bytes_transferred);                    
+          read_until_tail();
+        }
+        else if (read_handler_.has_target())
+        {
+          read_handler_.post(read_arg_type(message_ptr(), error));
         }
         else
         {
           // Store error for the next outer read operation.
           read_error_ = error;          
         }
-
-        // Check for shutdown completion
-        complete_waiting_shutdown();
       }   
 
       void handle_read_tail(const boost::system::error_code& error, 
         const std::size_t bytes_transferred)
       {                  
-        stream_read_in_progress_ = false;
-        
-        if (!error)
-        {         
-          if (!shutdown_in_progress_)
-          {  
-            typedef boost::asio::streambuf::const_buffers_type const_buffers_type;
-            typedef boost::asio::buffers_iterator<const_buffers_type> buffers_iterator;
-            const_buffers_type committed_buffers(stream_read_buf_.data());
-            buffers_iterator data_begin(buffers_iterator::begin(committed_buffers));
-            buffers_iterator data_end(data_begin + bytes_transferred - frame_tail_.length());
-            message_ptr parsed_message(new message_type(data_begin, data_end));
-            // Consume processed data
-            stream_read_buf_.consume(bytes_transferred);
-            // Continue inner operations loop.
-            start_read_until_head();
-            // If there is waiting read operation - complete it            
-            if (read_in_progress_)
-            {              
-              complete_waiting_read(parsed_message, error);
-            } 
-            else
-            {
-              // else push ready message into the cyclic read buffer
-              if (read_buf_.full())
-              {                
-                read_buf_overflow_ = true;                
-              }
-              read_buf_.push_back(parsed_message);              
-            }            
+        read_in_progress_ = false;        
+        if (stop_handler_.has_target())
+        {
+          read_handler_.cancel();
+          if (!write_in_progress_)
+          {
+            stopped_ = true;
+            // Signal shutdown completion
+            stop_handler_.post(shutdown_error_);
           }
         }
-        else if (read_in_progress_)
+        else if (!error)        
+        {                   
+          typedef boost::asio::streambuf::const_buffers_type const_buffers_type;
+          typedef boost::asio::buffers_iterator<const_buffers_type> buffers_iterator;
+          const_buffers_type committed_buffers(stream_read_buf_.data());
+          buffers_iterator data_begin(buffers_iterator::begin(committed_buffers));
+          buffers_iterator data_end(data_begin + bytes_transferred - frame_tail_.length());
+          message_ptr new_message(new message_type(data_begin, data_end));
+          // Consume processed data
+          stream_read_buf_.consume(bytes_transferred);
+          // Continue inner operations loop.
+          read_until_head();
+          // If there is waiting read operation - complete it            
+          if (read_handler_.has_target())
+          {              
+            read_handler_.post(read_arg_type(new_message, error));
+          } 
+          else
+          {
+            // else push ready message into the cyclic read buffer
+            if (read_buf_.full())
+            {                
+              read_buf_overflow_ = true;                
+            }
+            read_buf_.push_back(new_message);              
+          }          
+        }
+        else if (read_handler_.has_target())
         {
-          complete_waiting_read(error);
+          read_handler_.post(read_arg_type(message_ptr(), error));
         }
         else
         {
           // Store error for the next outer read operation.
           read_error_ = error;          
         }
-
-        // Check for shutdown completion
-        complete_waiting_shutdown();
       }
-          
-      cancel_token cancel_token_;
+                
       std::string frame_head_;
       std::string frame_tail_;                    
       boost::asio::io_service& io_service_;
       boost::asio::io_service::strand strand_;
       next_layer_type stream_;               
-      ma::handler_storage<read_argument_type> read_waiters_;      
-      ma::handler_storage<shutdown_argument_type> shutdown_waiters_;      
-      bool handshake_done_;
-      bool read_in_progress_;
+      ma::handler_storage<read_arg_type> read_handler_;      
+      ma::handler_storage<boost::system::error_code> stop_handler_;      
+      bool started_;
+      bool stopped_;      
       bool write_in_progress_;
-      bool shutdown_in_progress_;
-      bool stream_write_in_progress_;
-      bool stream_read_in_progress_;
+      bool read_in_progress_;
       boost::asio::streambuf stream_read_buf_;        
       handler_allocator stream_write_allocator_;
       handler_allocator stream_read_allocator_;

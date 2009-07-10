@@ -44,20 +44,29 @@ namespace ma
       return service_.get_io_service();
     }
 
+    void cancel()
+    {
+      return service_.cancel(implementation_);
+    }   
+
+    bool has_target() const
+    {
+      return service_.has_target(implementation_);
+    }
+
     template <typename Handler>
-    void enqueue(arg_param_type cancel_arg, Handler handler)
+    void store(arg_param_type cancel_arg, Handler handler)
+    { 
+      if (has_target())
+      {
+        cancel();
+      }
+      service_.store(implementation_, cancel_arg, handler);
+    }    
+
+    void post(arg_param_type arg)
     {      
-      service_.enqueue(implementation_, cancel_arg, handler);
-    }
-
-    std::size_t post_all(arg_param_type arg)
-    {
-      return service_.post_all(implementation_, arg);
-    }
-
-    std::size_t cancel_all()
-    {
-      return service_.cancel_all(implementation_);
+      service_.post(implementation_, arg);
     }    
 
   private:

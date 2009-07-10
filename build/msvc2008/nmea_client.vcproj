@@ -355,10 +355,6 @@
 				RelativePath="..\..\include\console_controller.hpp"
 				>
 			</File>
-			<File
-				RelativePath="..\..\include\sync_ostream.hpp"
-				>
-			</File>
 			<Filter
 				Name="ma"
 				>

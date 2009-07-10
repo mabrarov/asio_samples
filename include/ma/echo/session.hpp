@@ -9,82 +9,148 @@
 #define MA_ECHO_SESSION_HPP
 
 #include <boost/utility.hpp>
+#include <boost/smart_ptr.hpp>
+#include <boost/tuple/tuple.hpp>
 #include <boost/asio.hpp>
-#include <ma/echo/session_service.hpp>
-#include <ma/echo/detail/session.hpp>
+#include <ma/handler_allocation.hpp>
 
 namespace ma
 {    
   namespace echo
   {
     template <typename AsyncStream>
-    class session : private boost::noncopyable 
+    class session 
+      : private boost::noncopyable 
+      , public boost::enable_shared_from_this<session<AsyncStream> >
     {
     private:
-      typedef detail::session<AsyncStream> active_impl_type;
+      typedef session<AsyncStream> this_type;
 
     public:
-      typedef session_service<active_impl_type> service_type;      
-      typedef typename service_type::implementation_type implementation_type;
-      typedef typename service_type::next_layer_type next_layer_type;
-      typedef typename service_type::lowest_layer_type lowest_layer_type;    
+      typedef AsyncStream next_layer_type;
+      typedef typename AsyncStream::lowest_layer_type lowest_layer_type;    
 
       explicit session(boost::asio::io_service& io_service)
-        : service_(boost::asio::use_service<service_type>(io_service))
-      {
-        service_.construct(implementation_);
+        : io_service_(io_service)
+        , strand_(io_service)
+        , stream_(io_service)
+      {        
       }
 
       ~session()
-      {
-        service_.destroy(implementation_);
+      {        
       }      
-
-      boost::asio::io_service& io_service()
-      {
-        return service_.get_io_service();
-      }
-
-      boost::asio::io_service& get_io_service()
-      {
-        return service_.get_io_service();
-      }
-
+      
       next_layer_type& next_layer() const
       {
-        return service_.next_layer(implementation_);
+        return stream_;
       }
 
       lowest_layer_type& lowest_layer() const
       {
-        return service_.lowest_layer(implementation_);
+        return stream_.lowest_layer();
       }
 
       template <typename Handler>
       void async_handshake(Handler handler)
       {
-        service_.async_handshake(implementation_, handler);
+        strand_.dispatch
+        (
+          ma::make_context_alloc_handler
+          (
+            handler, 
+            boost::bind
+            (
+              &this_type::start_handshake<Handler>,
+              shared_from_this(),
+              boost::make_tuple(handler)
+            )
+          )
+        );  
       }
 
       template <typename Handler>
       void async_shutdown(Handler handler)
       {
-        service_.async_shutdown(implementation_, handler);
+        strand_.dispatch
+        (
+          ma::make_context_alloc_handler
+          (
+            handler, 
+            boost::bind
+            (
+              &this_type::start_shutdown<Handler>,
+              shared_from_this(),
+              boost::make_tuple(handler)
+            )
+          )
+        );  
       }
 
       template <typename Handler>
-      void async_wait(Handler handler)
+      void async_serve(Handler handler)
       {
-        service_.async_wait(implementation_, handler);
+        strand_.dispatch
+        (
+          ma::make_context_alloc_handler
+          (
+            handler, 
+            boost::bind
+            (
+              &this_type::start_serve<Handler>,
+              shared_from_this(),
+              boost::make_tuple(handler)
+            )
+          )
+        );  
       }
       
     private:
-      // The service associated with the I/O object.
-      service_type& service_;
+      template <typename Handler>
+      void start_handshake(boost::tuple<Handler> handler)
+      {
+        //todo
+        io_service_.post
+        (
+          boost::asio::detail::bind_handler
+          (
+            handler, 
+            boost::asio::error::operation_not_supported
+          )
+        );
+      }      
 
-      // The underlying implementation of the I/O object.
-      implementation_type implementation_;
+      template <typename Handler>
+      void start_shutdown(boost::tuple<Handler> handler)
+      {
+        //todo
+        io_service_.post
+        (
+          boost::asio::detail::bind_handler
+          (
+            handler, 
+            boost::asio::error::operation_not_supported
+          )
+        );
+      }
 
+      template <typename Handler>
+      void start_serve(boost::tuple<Handler> handler)
+      {
+        //todo
+        io_service_.post
+        (
+          boost::asio::detail::bind_handler
+          (
+            handler, 
+            boost::asio::error::operation_not_supported
+          )
+        );
+      }
+
+      boost::asio::io_service& io_service_;
+      boost::asio::io_service::strand strand_;      
+      next_layer_type stream_;
     }; // class session
 
   } // namespace echo
