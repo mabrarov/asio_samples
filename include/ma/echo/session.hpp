@@ -128,7 +128,7 @@ namespace ma
         (
           boost::asio::detail::bind_handler
           (
-            handler, 
+            boost::get<0>(handler), 
             boost::asio::error::operation_not_supported
           )
         );
@@ -142,7 +142,7 @@ namespace ma
         (
           boost::asio::detail::bind_handler
           (
-            handler, 
+            boost::get<0>(handler), 
             boost::asio::error::operation_not_supported
           )
         );
@@ -156,7 +156,7 @@ namespace ma
         (
           boost::asio::detail::bind_handler
           (
-            handler, 
+            boost::get<0>(handler), 
             boost::asio::error::operation_not_supported
           )
         );
