@@ -9,6 +9,7 @@
 #include <windows.h>
 #include <iostream>
 #include <boost/smart_ptr.hpp>
+#include <boost/ref.hpp>
 #include <boost/bind.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/filesystem.hpp>
@@ -23,7 +24,21 @@ typedef ma::echo::server server_type;
 typedef server_type::pointer server_ptr;
 typedef server_type::endpoint_type endpoint_type;
 
-void handle_console_close();
+void handler_server_start(
+  const server_ptr&,
+  const boost::system::error_code&);
+
+void handler_server_serve(
+  const server_ptr&,
+  const boost::system::error_code&);
+
+void handler_server_stop(
+  const server_ptr&,
+  const boost::system::error_code&);
+
+void handle_console_close(
+  boost::asio::io_service& session_io_service,
+  boost::asio::io_service& server_io_service);
 
 int _tmain(int argc, _TCHAR* argv[])
 {
@@ -31,7 +46,7 @@ int _tmain(int argc, _TCHAR* argv[])
   if (argc < 2)
   {
     boost::filesystem::wpath app_path(argv[0]);
-    std::wcout << L"Usage: \"" << app_path.leaf() << L"\" port_1 [port_2 [port_3 .. [port_n] .. ]]\n";
+    std::wcout << L"Usage: \"" << app_path.leaf() << L"\" port\n";
   }
   else
   {
@@ -51,9 +66,15 @@ int _tmain(int argc, _TCHAR* argv[])
     boost::asio::io_service server_io_service(1);
 
     //todo
+    server_ptr server(new server_type(server_io_service, session_io_service));
+    server->async_start(
+      boost::bind(&handler_server_start, server, _1));
     
     // Setup console controller
-    ma::console_controller console_controller(handle_console_close);        
+    ma::console_controller console_controller(
+      boost::bind(&handle_console_close,
+      boost::ref(session_io_service), 
+      boost::ref(server_io_service)));        
 
     std::wcout << L"Press Ctrl+C (Ctrl+Break) to exit...\n";    
 
@@ -77,7 +98,39 @@ int _tmain(int argc, _TCHAR* argv[])
   return exit_code;
 }
 
-void handle_console_close()
+void handle_console_close(
+  boost::asio::io_service& session_io_service,
+  boost::asio::io_service& server_io_service)
 {
-  std::wcout << L"User console close detected.\nStarting shutdown operation...\n";
+  std::wcout << L"User console close detected.\nStarting stop operation...\n";
+  session_io_service.stop();
+  server_io_service.stop();
+}
+
+void handler_server_start(
+  const server_ptr& server,
+  const boost::system::error_code& error)
+{
+  //todo
+  if (!error)
+  {
+    server->async_serve(
+      boost::bind(&handler_server_serve, server, _1));
+  }
+}
+
+void handler_server_serve(
+  const server_ptr& server,
+  const boost::system::error_code&)
+{
+  //todo
+  server->async_stop(
+    boost::bind(&handler_server_stop, server, _1));  
+}
+
+void handler_server_stop(
+  const server_ptr&,
+  const boost::system::error_code&)
+{
+  //todo  
 }
