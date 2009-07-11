@@ -387,11 +387,11 @@
 					Name="echo"
 					>
 					<File
-						RelativePath="..\..\include\ma\echo\session.hpp"
+						RelativePath="..\..\include\ma\echo\server.hpp"
 						>
 					</File>
 					<File
-						RelativePath="..\..\include\ma\echo\session_manager.hpp"
+						RelativePath="..\..\include\ma\echo\session.hpp"
 						>
 					</File>
 				</Filter>

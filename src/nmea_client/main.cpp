@@ -120,7 +120,8 @@ int _tmain(int argc, _TCHAR* argv[])
     boost::thread_group thread_group;
     for (std::size_t i = 0; i != thread_count; ++i)
     {
-      thread_group.create_thread(boost::bind(&boost::asio::io_service::run, &io_service));
+      thread_group.create_thread(
+        boost::bind(&boost::asio::io_service::run, &io_service));
     }
     thread_group.join_all();
 

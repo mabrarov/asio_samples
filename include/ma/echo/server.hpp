@@ -5,8 +5,8 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef MA_ECHO_SESSION_HPP
-#define MA_ECHO_SESSION_HPP
+#ifndef MA_ECHO_SERVER_HPP
+#define MA_ECHO_SERVER_HPP
 
 #include <boost/utility.hpp>
 #include <boost/smart_ptr.hpp>
@@ -17,31 +17,34 @@
 #include <boost/circular_buffer.hpp>
 #include <ma/handler_allocation.hpp>
 #include <ma/handler_storage.hpp>
+#include <ma/echo/session.hpp>
 
 namespace ma
 {    
   namespace echo
   {    
-    class session 
+    class server 
       : private boost::noncopyable 
-      , public boost::enable_shared_from_this<session>
+      , public boost::enable_shared_from_this<server>
     {
     private:
-      typedef session this_type;
+      typedef server this_type;
 
     public:
-      typedef boost::asio::ip::tcp::socket next_layer_type;
-      typedef next_layer_type::lowest_layer_type lowest_layer_type;    
+      typedef boost::asio::ip::tcp::acceptor acceptor_type;
+      typedef boost::asio::ip::tcp::endpoint endpoint_type;
       typedef boost::shared_ptr<this_type> pointer;
-
-      explicit session(boost::asio::io_service& io_service)
+      
+      explicit server(boost::asio::io_service& io_service,
+        boost::asio::io_service& session_io_service)
         : io_service_(io_service)
+        , session_io_service_(session_io_service)
         , strand_(io_service)
-        , stream_(io_service)
+        , acceptor_(io_service)
       {        
       }
 
-      ~session()
+      ~server()
       {        
       } 
 
@@ -53,17 +56,17 @@ namespace ma
       boost::asio::io_service& get_io_service()
       {
         return io_service_;
-      }
-      
-      next_layer_type& next_layer()
+      }      
+
+      boost::asio::io_service& session_io_service()
       {
-        return stream_;
+        return session_io_service_;
       }
 
-      lowest_layer_type& lowest_layer()
+      boost::asio::io_service& get_session_io_service()
       {
-        return stream_.lowest_layer();
-      }
+        return session_io_service_;
+      }      
 
       template <typename Handler>
       void async_start(Handler handler)
@@ -118,7 +121,7 @@ namespace ma
           )
         );  
       } // async_serve
-      
+
     private:
       template <typename Handler>
       void do_start(boost::tuple<Handler> handler)
@@ -132,7 +135,7 @@ namespace ma
             boost::asio::error::operation_not_supported
           )
         );
-      }      
+      } // do_start
 
       template <typename Handler>
       void do_stop(boost::tuple<Handler> handler)
@@ -146,7 +149,7 @@ namespace ma
             boost::asio::error::operation_not_supported
           )
         );
-      }
+      } // do_stop
 
       template <typename Handler>
       void do_serve(boost::tuple<Handler> handler)
@@ -160,20 +163,19 @@ namespace ma
             boost::asio::error::operation_not_supported
           )
         );
-      }
+      } // do_serve
 
       boost::asio::io_service& io_service_;
+      boost::asio::io_service& session_io_service_;
       boost::asio::io_service::strand strand_;      
-      next_layer_type stream_;
+      acceptor_type acceptor_;
       bool started_;
       bool stopped_;      
-      bool write_in_progress_;
-      bool read_in_progress_;
-      handler_allocator stream_write_allocator_;
-      handler_allocator stream_read_allocator_;
-    }; // class session
+      bool accept_in_progress_;      
+      handler_allocator accept_allocator_;      
+    }; // class server
 
   } // namespace echo
 } // namespace ma
 
-#endif // MA_ECHO_SESSION_HPP
+#endif // MA_ECHO_SERVER_HPP
