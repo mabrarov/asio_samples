@@ -201,7 +201,7 @@ namespace ma
       template <typename Handler>
       void do_start(boost::tuple<Handler> handler)
       {
-        if (stopped_)
+        if (stopped_ || stop_handler_.has_target())
         {          
           io_service_.post
           (
@@ -308,7 +308,7 @@ namespace ma
       template <typename Handler>
       void do_write(const message_ptr& message, boost::tuple<Handler> handler)
       {  
-        if (stopped_)
+        if (stopped_ || stop_handler_.has_target())
         {          
           io_service_.post
           (
@@ -380,7 +380,7 @@ namespace ma
       template <typename Handler>
       void do_read(message_ptr& message, boost::tuple<Handler> handler)
       {
-        if (stopped_)
+        if (stopped_ || stop_handler_.has_target())
         {          
           io_service_.post
           (
@@ -402,68 +402,62 @@ namespace ma
             )
           );
         }
-        else 
-        {      
-          // Start read operation          
-
-          // Check for ready data        
-          if (!read_buf_.empty())
-          {
-            message = read_buf_.front();
-            read_buf_.pop_front();
-            io_service_.post
+        else if (!read_buf_.empty())
+        {
+          message = read_buf_.front();
+          read_buf_.pop_front();
+          io_service_.post
+          (
+            boost::asio::detail::bind_handler
             (
-              boost::asio::detail::bind_handler
-              (
-                boost::get<0>(handler), 
-                boost::system::error_code()
-              )
-            );
-          }
-          else if (read_error_)
-          {            
-            message = message_ptr();
-            io_service_.post
-            (
-              boost::asio::detail::bind_handler
-              (
-                boost::get<0>(handler), 
-                read_error_
-              )
-            );
-            read_error_= boost::system::error_code();          
-          }
-          else
-          {          
-            // If can't immediately complete then start waiting for completion
-            // Start message constructing
-            if (!read_in_progress_)
-            {
-              read_until_head();
-            }
-
-            // Wait for the ready message
-            read_handler_.store
-            (
-              read_arg_type
-              (
-                message_ptr(), 
-                boost::asio::error::operation_aborted
-              ),          
-              make_context_alloc_handler
-              (
-                boost::get<0>(handler), 
-                boost::bind
-                (
-                  &this_type::handle_read<Handler>, 
-                  _1,
-                  boost::ref(message), 
-                  handler
-                )
-              )          
-            );
-          }
+              boost::get<0>(handler), 
+              boost::system::error_code()
+            )
+          );
         }
+        else if (read_error_)
+        {            
+          message = message_ptr();
+          io_service_.post
+          (
+            boost::asio::detail::bind_handler
+            (
+              boost::get<0>(handler), 
+              read_error_
+            )
+          );
+          read_error_= boost::system::error_code();          
+        }
+        else
+        {          
+          // If can't immediately complete then start waiting for completion
+          // Start message constructing
+          if (!read_in_progress_)
+          {
+            read_until_head();
+          }
+
+          // Wait for the ready message
+          read_handler_.store
+          (
+            read_arg_type
+            (
+              message_ptr(), 
+              boost::asio::error::operation_aborted
+            ),          
+            make_context_alloc_handler
+            (
+              boost::get<0>(handler), 
+              boost::bind
+              (
+                &this_type::handle_read<Handler>, 
+                _1,
+                boost::ref(message), 
+                handler
+              )
+            )          
+          );
+        }        
       }      
       
       template <typename Handler>
