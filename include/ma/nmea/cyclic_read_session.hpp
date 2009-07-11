@@ -276,7 +276,7 @@ namespace ma
           // Start shutdown
 
           // Do shutdown - abort inner operations
-          stream_.close(shutdown_error_);
+          stream_.close(stop_error_);
           
           // Check for shutdown continuation
           if (read_handler_.has_target()
@@ -298,7 +298,7 @@ namespace ma
               boost::asio::detail::bind_handler
               (
                 boost::get<0>(handler), 
-                shutdown_error_
+                stop_error_
               )
             );
           }
@@ -373,7 +373,7 @@ namespace ma
         {
           stopped_ = true;
           // Signal shutdown completion
-          stop_handler_.post(shutdown_error_);
+          stop_handler_.post(stop_error_);
         }
       } 
 
@@ -531,7 +531,7 @@ namespace ma
           {
             stopped_ = true;
             // Signal shutdown completion
-            stop_handler_.post(shutdown_error_);
+            stop_handler_.post(stop_error_);
           }
         }
         else if (!error)
@@ -562,7 +562,7 @@ namespace ma
           {
             stopped_ = true;
             // Signal shutdown completion
-            stop_handler_.post(shutdown_error_);
+            stop_handler_.post(stop_error_);
           }
         }
         else if (!error)        
@@ -618,7 +618,7 @@ namespace ma
       handler_allocator stream_write_allocator_;
       handler_allocator stream_read_allocator_;
       boost::system::error_code read_error_;
-      boost::system::error_code shutdown_error_;
+      boost::system::error_code stop_error_;
       read_buf_type read_buf_;
       bool read_buf_overflow_;
     }; // class cyclic_read_session 
