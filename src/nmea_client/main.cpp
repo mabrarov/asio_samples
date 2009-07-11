@@ -64,25 +64,25 @@ int _tmain(int argc, _TCHAR* argv[])
     std::size_t concurrent_count = 1 == cpu_count ? 2 : cpu_count;
     std::size_t thread_count = concurrent_count + 1;
 
-    std::wcout << L"Found cpu(s)                 : " << cpu_count << L"\n"
-               << L"Concurrent IO thread count   : " << concurrent_count << L"\n"
-               << L"Total IO thread count        : " << thread_count << L"\n";
+    std::wcout << L"Found cpu(s)               : " << cpu_count << L"\n"
+               << L"Concurrent IO thread count : " << concurrent_count << L"\n"
+               << L"Total IO thread count      : " << thread_count << L"\n";
 
     std::wstring device_name(argv[1]);
-    session_type::size_type read_buffer_size(1024);
-    session_type::read_capacity_type read_message_buffer_capacity(32);
+    session_type::size_type stream_read_buf_size(1024);
+    session_type::read_capacity_type read_buf_capacity(32);
 
-    std::wcout << L"NMEA 0183 device name        : " << device_name << L"\n";
-    std::wcout << L"Read buffer size             : " << read_buffer_size << L"\n";
-    std::wcout << L"Read message buffer capacity : " << read_message_buffer_capacity << L"\n";
+    std::wcout << L"NMEA 0183 device name      : " << device_name << L"\n";
+    std::wcout << L"Stream read buffer size    : " << stream_read_buf_size << L"\n";
+    std::wcout << L"Read buffer capacity       : " << read_buf_capacity << L"\n";
 
     const wcodecvt_type& wcodecvt(std::use_facet<wcodecvt_type>(sys_locale));
     std::string ansi_device_name(ma::codecvt_cast::out(device_name, wcodecvt));
     ma::handler_allocator handler_allocator;
             
     boost::asio::io_service io_service(concurrent_count);   
-    session_ptr session(new session_type(io_service, read_buffer_size, 
-      read_message_buffer_capacity, "$", "\x0a"));
+    session_ptr session(new session_type(io_service, stream_read_buf_size, 
+      read_buf_capacity, "$", "\x0a"));
 
     // Prepare the lower layer - open the serial port
     session->next_layer().open(ansi_device_name);        

@@ -72,6 +72,10 @@ namespace ma
         , read_buf_(read_buf_capacity)
         , read_buf_overflow_(false)
       {
+        if (read_buf_capacity < min_read_buf_capacity)
+        {
+          boost::throw_exception(std::runtime_error("too small read_buf_capacity"));
+        }
         if (max_message_size > stream_read_buf_size)
         {
           boost::throw_exception(std::runtime_error("too small stream_read_buf_size"));
