@@ -8,9 +8,7 @@
 #ifndef MA_NMEA_CYCLIC_READ_SESSION_HPP
 #define MA_NMEA_CYCLIC_READ_SESSION_HPP
 
-#include <cstddef>
 #include <stdexcept>
-#include <utility>
 #include <string>
 #include <boost/utility.hpp>
 #include <boost/smart_ptr.hpp>
@@ -92,16 +90,6 @@ namespace ma
 
       ~cyclic_read_session()
       {          
-      }        
-
-      next_layer_type& next_layer()
-      {
-        return stream_;
-      }
-
-      lowest_layer_type& lowest_layer()
-      {
-        return stream_.lowest_layer();
       }
 
       boost::asio::io_service& io_service()
@@ -113,6 +101,16 @@ namespace ma
       {
         return io_service_;
       }
+
+      next_layer_type& next_layer()
+      {
+        return stream_;
+      }
+
+      lowest_layer_type& lowest_layer()
+      {
+        return stream_.lowest_layer();
+      }      
 
       void resest()
       {

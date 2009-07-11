@@ -10,25 +10,28 @@
 
 #include <boost/utility.hpp>
 #include <boost/smart_ptr.hpp>
-#include <boost/tuple/tuple.hpp>
+#include <boost/bind.hpp>
+#include <boost/ref.hpp>
 #include <boost/asio.hpp>
+#include <boost/tuple/tuple.hpp>
+#include <boost/circular_buffer.hpp>
 #include <ma/handler_allocation.hpp>
+#include <ma/handler_storage.hpp>
 
 namespace ma
 {    
   namespace echo
-  {
-    template <typename AsyncStream>
+  {    
     class session 
       : private boost::noncopyable 
-      , public boost::enable_shared_from_this<session<AsyncStream> >
+      , public boost::enable_shared_from_this<session>
     {
     private:
       typedef session<AsyncStream> this_type;
 
     public:
-      typedef AsyncStream next_layer_type;
-      typedef typename AsyncStream::lowest_layer_type lowest_layer_type;    
+      typedef boost::asio::ip::tcp::socket next_layer_type;
+      typedef typename next_layer_type::lowest_layer_type lowest_layer_type;    
 
       explicit session(boost::asio::io_service& io_service)
         : io_service_(io_service)
@@ -39,7 +42,17 @@ namespace ma
 
       ~session()
       {        
-      }      
+      } 
+
+      boost::asio::io_service& io_service()
+      {
+        return io_service_;
+      }
+
+      boost::asio::io_service& get_io_service()
+      {
+        return io_service_;
+      }
       
       next_layer_type& next_layer() const
       {
@@ -52,7 +65,7 @@ namespace ma
       }
 
       template <typename Handler>
-      void async_handshake(Handler handler)
+      void async_start(Handler handler)
       {
         strand_.dispatch
         (
@@ -61,16 +74,16 @@ namespace ma
             handler, 
             boost::bind
             (
-              &this_type::start_handshake<Handler>,
+              &this_type::do_start<Handler>,
               shared_from_this(),
               boost::make_tuple(handler)
             )
           )
         );  
-      }
+      } // async_start
 
       template <typename Handler>
-      void async_shutdown(Handler handler)
+      void async_stop(Handler handler)
       {
         strand_.dispatch
         (
@@ -79,13 +92,13 @@ namespace ma
             handler, 
             boost::bind
             (
-              &this_type::start_shutdown<Handler>,
+              &this_type::do_stop<Handler>,
               shared_from_this(),
               boost::make_tuple(handler)
             )
           )
-        );  
-      }
+        ); 
+      } // async_stop
 
       template <typename Handler>
       void async_serve(Handler handler)
@@ -97,7 +110,7 @@ namespace ma
             handler, 
             boost::bind
             (
-              &this_type::start_serve<Handler>,
+              &this_type::do_serve<Handler>,
               shared_from_this(),
               boost::make_tuple(handler)
             )
@@ -107,7 +120,7 @@ namespace ma
       
     private:
       template <typename Handler>
-      void start_handshake(boost::tuple<Handler> handler)
+      void do_start(boost::tuple<Handler> handler)
       {
         //todo
         io_service_.post
@@ -121,7 +134,7 @@ namespace ma
       }      
 
       template <typename Handler>
-      void start_shutdown(boost::tuple<Handler> handler)
+      void do_stop(boost::tuple<Handler> handler)
       {
         //todo
         io_service_.post
@@ -135,7 +148,7 @@ namespace ma
       }
 
       template <typename Handler>
-      void start_serve(boost::tuple<Handler> handler)
+      void do_serve(boost::tuple<Handler> handler)
       {
         //todo
         io_service_.post
@@ -151,6 +164,12 @@ namespace ma
       boost::asio::io_service& io_service_;
       boost::asio::io_service::strand strand_;      
       next_layer_type stream_;
+      bool started_;
+      bool stopped_;      
+      bool write_in_progress_;
+      bool read_in_progress_;
+      handler_allocator stream_write_allocator_;
+      handler_allocator stream_read_allocator_;
     }; // class session
 
   } // namespace echo
