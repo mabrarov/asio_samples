@@ -83,24 +83,26 @@ int _tmain(int argc, _TCHAR* argv[])
     {
       cpu_count = 1;
     }
-	  std::size_t session_thread_count = cpu_count;
+    std::size_t session_thread_count = cpu_count;
     std::size_t server_thread_count = 1;
 
-    std::wcout << L"Found cpu(s)   : " << cpu_count << L"\n"               
-               << L"Work thread(s) : " << session_thread_count + server_thread_count << L"\n";        
+    std::wcout << L"CPUs count        : " << cpu_count << L"\n"               
+               << L"Work threads count: " << session_thread_count + server_thread_count << L"\n";        
     
     boost::asio::io_service session_io_service(session_thread_count);
     boost::asio::io_service server_io_service(server_thread_count);        
     server_env_ptr server_env(new server_env_type(server_io_service, session_io_service));
     
     // Start the server
-    server_env->server_->async_start(boost::bind(&handle_server_start, server_env, _1));
-    std::wcout << L"Server is starting...\n";
+    server_env->server_->async_start(
+      boost::bind(&handle_server_start, server_env, _1));
+    std::wcout << L"Server is starting.\n";
     
     // Setup console controller
-    ma::console_controller console_controller(boost::bind(&handle_console_close, server_env));
+    ma::console_controller console_controller(
+      boost::bind(&handle_console_close, server_env));
 
-    std::wcout << L"Press Ctrl+C (Ctrl+Break) to exit...\n";
+    std::wcout << L"Press Ctrl+C (Ctrl+Break) to exit.\n";
 
     // Create work for sessions' io_service to prevent threads' stop
     boost::asio::io_service::work session_work(session_io_service);
@@ -110,16 +112,18 @@ int _tmain(int argc, _TCHAR* argv[])
     // Create work threads for session operations
     for (std::size_t i = 0; i != session_thread_count; ++i)
     {
-      thread_group.create_thread(boost::bind(&boost::asio::io_service::run, &session_io_service));
+      thread_group.create_thread(
+        boost::bind(&boost::asio::io_service::run, &session_io_service));
     }
     // Create work threads for server operations
     for (std::size_t i = 0; i != server_thread_count; ++i)
     {
-      thread_group.create_thread(boost::bind(&boost::asio::io_service::run, &server_io_service));
+      thread_group.create_thread(
+        boost::bind(&boost::asio::io_service::run, &server_io_service));
     }
 
     // Wait until server has stopped or aborted
-    std::wcout << L"Waiting for server stop.\n";
+    std::wcout << L"Waiting until the server will stop.\n";
     boost::unique_lock<boost::mutex> lock(server_env->mutex_);
     if (!server_env->stopped_)
     {
@@ -131,9 +135,9 @@ int _tmain(int argc, _TCHAR* argv[])
     server_io_service.stop();
     session_io_service.stop();
 
-    std::wcout << L"Waiting for work threads stop.\n";
+    std::wcout << L"Waiting until the work threads will stop.\n";
     thread_group.join_all();
-    std::wcout << L"Work threads stopped.\n";    
+    std::wcout << L"Work threads have stopped.\n";    
   }
 
   return exit_code;
@@ -145,12 +149,10 @@ void handle_console_close(
   boost::unique_lock<boost::mutex> lock(server_env->mutex_);
   if (server_env->stop_in_progress_)
   {
-    lock.unlock();
     std::wcout << L"User console close detected. Server is already stopping.\n";
   }
   else if (server_env->stopped_)
-  {
-    lock.unlock();
+  {    
     std::wcout << L"User console close detected. Server has already stopped.\n";
   }
   else
@@ -163,9 +165,8 @@ void handle_console_close(
     server_env->stop_timer_.async_wait(
       boost::bind(&handle_server_stop_timeout, server_env, _1));
     // Remember server state
-    server_env->stop_in_progress_ = true;
-    lock.unlock();
-    std::wcout << L"User console close detected. Server is stopping...\n";    
+    server_env->stop_in_progress_ = true;   
+    std::wcout << L"User console close detected. Server is stopping.\n";    
   }  
 }
 
@@ -180,18 +181,17 @@ void handle_server_start(
     {    
       // Remember server state
       server_env->stopped_ = true;
+      std::wcout << L"Server can't start due to error. Server stopped.\n";
       lock.unlock();
       // Notify main thread
-      server_env->stop_condition_.notify_all();
-      std::wcout << L"Server can't start due to error. Server has stopped.\n";
+      server_env->stop_condition_.notify_all();      
     }
     else
     {
       // Start waiting until server has done all the work
       server_env->server_->async_serve(
         boost::bind(&handle_server_serve, server_env, _1));
-      lock.unlock();
-      std::wcout << L"Server started.\n";          
+      std::wcout << L"Server started.\n";
     }
   }  
 }
@@ -211,9 +211,8 @@ void handle_server_serve(
     server_env->stop_timer_.async_wait(
       boost::bind(&handle_server_stop_timeout, server_env, _1));
     // Remember server state
-    server_env->stop_in_progress_ = true;
-    lock.unlock();
-    std::wcout << L"Server can't continue to work due to error. Server is stopping...\n";
+    server_env->stop_in_progress_ = true;    
+    std::wcout << L"Server can't continue to work due to error. Server is stopping.\n";
   }
 }
 
@@ -226,10 +225,10 @@ void handle_server_stop(
   {  
     // Remember server state
     server_env->stopped_ = true;
+    std::wcout << L"Server stopped.\n";
     lock.unlock();
     // Notify main thread
-    server_env->stop_condition_.notify_all();
-    std::wcout << L"Server has stopped.\n";
+    server_env->stop_condition_.notify_all();    
   }
 }
 
@@ -242,9 +241,9 @@ void handle_server_stop_timeout(
   {    
     // Remember server state
     server_env->stopped_ = true;
+    std::wcout << L"Server work is interrupted because of the stop timeout expiration.\n";
     lock.unlock();
     // Notify main thread
-    server_env->stop_condition_.notify_all();
-    std::wcout << L"Server was aborted due to stop timeout elapsed.\n";
+    server_env->stop_condition_.notify_all();    
   }
 }
