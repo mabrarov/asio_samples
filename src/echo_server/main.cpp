@@ -49,23 +49,23 @@ struct server_env_type
 
 typedef boost::shared_ptr<server_env_type> server_env_ptr;
 
-void handle_server_start(
+void on_server_start(
   const server_env_ptr&,
   const boost::system::error_code&);
 
-void handle_server_serve(
+void on_server_serve(
   const server_env_ptr&,
   const boost::system::error_code&);
 
-void handle_server_stop(
+void on_server_stop(
   const server_env_ptr&,
   const boost::system::error_code&);
 
-void handle_server_stop_timeout(
+void on_server_stop_timeout(
   const server_env_ptr&,
   const boost::system::error_code&);
 
-void handle_console_close(
+void on_console_close(
   const server_env_ptr&);
 
 int _tmain(int argc, _TCHAR* argv[])
@@ -95,12 +95,12 @@ int _tmain(int argc, _TCHAR* argv[])
     
     // Start the server
     server_env->server_->async_start(
-      boost::bind(&handle_server_start, server_env, _1));
+      boost::bind(&on_server_start, server_env, _1));
     std::wcout << L"Server is starting.\n";
     
     // Setup console controller
     ma::console_controller console_controller(
-      boost::bind(&handle_console_close, server_env));
+      boost::bind(&on_console_close, server_env));
 
     std::wcout << L"Press Ctrl+C (Ctrl+Break) to exit.\n";
 
@@ -143,7 +143,7 @@ int _tmain(int argc, _TCHAR* argv[])
   return exit_code;
 }
 
-void handle_console_close(
+void on_console_close(
   const server_env_ptr& server_env)
 {
   boost::unique_lock<boost::mutex> lock(server_env->mutex_);
@@ -159,18 +159,18 @@ void handle_console_close(
   {
     // Start server stop
     server_env->server_->async_stop(
-      boost::bind(&handle_server_stop, server_env, _1));
+      boost::bind(&on_server_stop, server_env, _1));
     // Set up stop timer
     server_env->stop_timer_.expires_from_now(stop_timeout);
     server_env->stop_timer_.async_wait(
-      boost::bind(&handle_server_stop_timeout, server_env, _1));
+      boost::bind(&on_server_stop_timeout, server_env, _1));
     // Remember server state
     server_env->stop_in_progress_ = true;   
     std::wcout << L"User console close detected. Server is stopping.\n";    
   }  
 }
 
-void handle_server_start(
+void on_server_start(
   const server_env_ptr& server_env,
   const boost::system::error_code& error)
 {  
@@ -190,13 +190,13 @@ void handle_server_start(
     {
       // Start waiting until server has done all the work
       server_env->server_->async_serve(
-        boost::bind(&handle_server_serve, server_env, _1));
+        boost::bind(&on_server_serve, server_env, _1));
       std::wcout << L"Server started.\n";
     }
   }  
 }
 
-void handle_server_serve(
+void on_server_serve(
   const server_env_ptr& server_env,
   const boost::system::error_code&)
 {
@@ -205,18 +205,18 @@ void handle_server_serve(
   {
     // Start server stop
     server_env->server_->async_stop(
-      boost::bind(&handle_server_stop, server_env, _1));
+      boost::bind(&on_server_stop, server_env, _1));
     // Set up stop timer
     server_env->stop_timer_.expires_from_now(stop_timeout);
     server_env->stop_timer_.async_wait(
-      boost::bind(&handle_server_stop_timeout, server_env, _1));
+      boost::bind(&on_server_stop_timeout, server_env, _1));
     // Remember server state
     server_env->stop_in_progress_ = true;    
     std::wcout << L"Server can't continue to work due to error. Server is stopping.\n";
   }
 }
 
-void handle_server_stop(
+void on_server_stop(
   const server_env_ptr& server_env,
   const boost::system::error_code&)
 {
@@ -232,7 +232,7 @@ void handle_server_stop(
   }
 }
 
-void handle_server_stop_timeout(
+void on_server_stop_timeout(
   const server_env_ptr& server_env,
   const boost::system::error_code& error)
 {
