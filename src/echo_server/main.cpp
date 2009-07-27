@@ -36,8 +36,7 @@ struct server_env_type
   bool stop_in_progress_;
   bool stopped_;  
 
-  server_env_type(
-    boost::asio::io_service& server_io_service,
+  server_env_type(boost::asio::io_service& server_io_service,
     boost::asio::io_service& session_io_service)
     : server_(new server_type(server_io_service, session_io_service))
     , stop_timer_(server_io_service)
@@ -49,24 +48,19 @@ struct server_env_type
 
 typedef boost::shared_ptr<server_env_type> server_env_ptr;
 
-void on_server_start(
-  const server_env_ptr&,
+void on_server_start(const server_env_ptr&,
   const boost::system::error_code&);
 
-void on_server_serve(
-  const server_env_ptr&,
+void on_server_serve(const server_env_ptr&,
   const boost::system::error_code&);
 
-void on_server_stop(
-  const server_env_ptr&,
+void on_server_stop(const server_env_ptr&,
   const boost::system::error_code&);
 
-void on_server_stop_timeout(
-  const server_env_ptr&,
+void on_server_stop_timeout(const server_env_ptr&,
   const boost::system::error_code&);
 
-void on_console_close(
-  const server_env_ptr&);
+void on_console_close(const server_env_ptr&);
 
 int _tmain(int argc, _TCHAR* argv[])
 {
@@ -143,8 +137,7 @@ int _tmain(int argc, _TCHAR* argv[])
   return exit_code;
 }
 
-void on_console_close(
-  const server_env_ptr& server_env)
+void on_console_close(const server_env_ptr& server_env)
 {
   boost::unique_lock<boost::mutex> lock(server_env->mutex_);
   if (server_env->stop_in_progress_)
@@ -170,8 +163,7 @@ void on_console_close(
   }  
 }
 
-void on_server_start(
-  const server_env_ptr& server_env,
+void on_server_start(const server_env_ptr& server_env,
   const boost::system::error_code& error)
 {  
   boost::unique_lock<boost::mutex> lock(server_env->mutex_);
@@ -196,8 +188,7 @@ void on_server_start(
   }  
 }
 
-void on_server_serve(
-  const server_env_ptr& server_env,
+void on_server_serve(const server_env_ptr& server_env,
   const boost::system::error_code&)
 {
   boost::unique_lock<boost::mutex> lock(server_env->mutex_);
@@ -216,8 +207,7 @@ void on_server_serve(
   }
 }
 
-void on_server_stop(
-  const server_env_ptr& server_env,
+void on_server_stop(const server_env_ptr& server_env,
   const boost::system::error_code&)
 {
   boost::unique_lock<boost::mutex> lock(server_env->mutex_);
@@ -232,8 +222,7 @@ void on_server_stop(
   }
 }
 
-void on_server_stop_timeout(
-  const server_env_ptr& server_env,
+void on_server_stop_timeout(const server_env_ptr& server_env,
   const boost::system::error_code& error)
 {
   boost::unique_lock<boost::mutex> lock(server_env->mutex_);
