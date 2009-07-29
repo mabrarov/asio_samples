@@ -14,13 +14,14 @@
 #include <boost/filesystem.hpp>
 #include <boost/thread.hpp>
 #include <boost/asio.hpp>
+#include <boost/lexical_cast.hpp>
 #include <ma/codecvt_cast.hpp>
 #include <ma/handler_allocation.hpp>
 #include <ma/nmea/cyclic_read_session.hpp>
 #include <console_controller.hpp>
 
 typedef std::codecvt<wchar_t, char, mbstate_t> wcodecvt_type;
-typedef ma::nmea::cyclic_read_session<boost::asio::serial_port> session_type;
+typedef ma::nmea::cyclic_read_session session_type;
 typedef session_type::pointer session_ptr;
 typedef session_type::message_ptr message_ptr;
 typedef boost::shared_ptr<message_ptr> ptr_to_message_ptr;
@@ -49,28 +50,32 @@ int _tmain(int argc, _TCHAR* argv[])
   int exit_code = EXIT_SUCCESS;
   std::locale sys_locale("");
 
-  if (argc != 2)
+  if (2 > argc || 4 < argc)
   {
     boost::filesystem::wpath app_path(argv[0]);
-    std::wcout << L"Usage: \"" << app_path.leaf() << L"\" <com_port>\n";
+    std::wcout << L"Usage: \"" << app_path.leaf() << L"\" <com_port> [<stream_read_buf_size> [<read_buf_capacity>] ]\n";
   }
   else
   {
-    std::size_t cpu_count(boost::thread::hardware_concurrency());
-    if (!cpu_count)
-    {
-      cpu_count = 1;
-    }
-    std::size_t concurrent_count = 1 == cpu_count ? 2 : cpu_count;
-    std::size_t thread_count = concurrent_count + 1;
+    std::size_t cpu_count = boost::thread::hardware_concurrency();
+    std::size_t concurrent_count = 1 >= cpu_count ? 2 : cpu_count;
+    std::size_t thread_count = 2;
 
     std::wcout << L"Found cpu(s)               : " << cpu_count << L"\n"
                << L"Concurrent IO thread count : " << concurrent_count << L"\n"
                << L"Total IO thread count      : " << thread_count << L"\n";
 
     std::wstring device_name(argv[1]);
-    session_type::size_type stream_read_buf_size(1024);
-    session_type::read_capacity_type read_buf_capacity(32);
+    session_type::size_type stream_read_buf_size = 1024;
+    session_type::read_capacity_type read_buf_capacity = 64;
+    if (2 < argc)
+    {
+      stream_read_buf_size = boost::lexical_cast<session_type::size_type>(argv[2]);
+      if (2 < argc)
+      {
+        read_buf_capacity = boost::lexical_cast<session_type::read_capacity_type>(argv[3]);
+      }
+    }    
 
     std::wcout << L"NMEA 0183 device name      : " << device_name << L"\n";
     std::wcout << L"Stream read buffer size    : " << stream_read_buf_size << L"\n";

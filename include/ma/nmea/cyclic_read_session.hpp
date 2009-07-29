@@ -23,11 +23,10 @@
 namespace ma
 {
   namespace nmea
-  {      
-    template <typename AsyncStream>
+  {          
     class cyclic_read_session 
       : private boost::noncopyable
-      , public boost::enable_shared_from_this<cyclic_read_session<AsyncStream> >
+      , public boost::enable_shared_from_this<cyclic_read_session>
     {
     public:
       typedef std::size_t size_type;
@@ -35,7 +34,7 @@ namespace ma
       typedef boost::shared_ptr<message_type> message_ptr;
 
     private:
-      typedef cyclic_read_session<AsyncStream> this_type;      
+      typedef cyclic_read_session this_type;      
       typedef boost::circular_buffer<message_ptr> read_buf_type;
       typedef boost::tuple<message_ptr, boost::system::error_code> read_arg_type;            
 
@@ -43,9 +42,9 @@ namespace ma
 
     public:
       typedef boost::shared_ptr<this_type> pointer;
-      typedef AsyncStream next_layer_type;
-      typedef typename next_layer_type::lowest_layer_type lowest_layer_type;      
-      typedef typename read_buf_type::capacity_type read_capacity_type;
+      typedef boost::asio::serial_port next_layer_type;
+      typedef next_layer_type::lowest_layer_type lowest_layer_type;      
+      typedef read_buf_type::capacity_type read_capacity_type;
       BOOST_STATIC_CONSTANT(size_type, min_stream_read_buf_size = max_message_size);
       BOOST_STATIC_CONSTANT(read_capacity_type, min_read_buf_capacity = 1);
 
@@ -67,8 +66,7 @@ namespace ma
         , write_in_progress_(false)
         , read_in_progress_(false)
         , stream_read_buf_(stream_read_buf_size)
-        , read_buf_(read_buf_capacity)
-        , read_buf_overflow_(false)
+        , read_buf_(read_buf_capacity)        
       {
         if (read_buf_capacity < min_read_buf_capacity)
         {
@@ -116,11 +114,8 @@ namespace ma
       {
         read_buf_.clear();        
         read_error_ = boost::system::error_code();
-        read_buf_overflow_ = false;
-
         stream_read_buf_.consume(
           boost::asio::buffer_size(stream_read_buf_.data()));        
-
         started_ = false;
         stopped_ = false;
       }
@@ -460,7 +455,7 @@ namespace ma
             )          
           );
         }        
-      }      
+      } // do_read
       
       template <typename Handler>
       static void handle_read(const read_arg_type& arg, 
@@ -491,7 +486,7 @@ namespace ma
           )
         );                  
         read_in_progress_ = true;          
-      }
+      } // read_until_head
 
       void read_until_tail()
       {                    
@@ -514,7 +509,7 @@ namespace ma
           )
         );
         read_in_progress_ = true;
-      }      
+      } // read_until_tail
 
       void handle_read_head(const boost::system::error_code& error, 
         const std::size_t bytes_transferred)
@@ -545,7 +540,7 @@ namespace ma
           // Store error for the next outer read operation.
           read_error_ = error;          
         }
-      }   
+      } // handle_read_head
 
       void handle_read_tail(const boost::system::error_code& error, 
         const std::size_t bytes_transferred)
@@ -568,7 +563,17 @@ namespace ma
           const_buffers_type committed_buffers(stream_read_buf_.data());
           buffers_iterator data_begin(buffers_iterator::begin(committed_buffers));
           buffers_iterator data_end(data_begin + bytes_transferred - frame_tail_.length());
-          message_ptr new_message(new message_type(data_begin, data_end));
+          bool newly_allocated = !read_buf_.full() || read_handler_.has_target();
+          message_ptr new_message;
+          if (newly_allocated)
+          {
+            new_message.reset(new message_type(data_begin, data_end));
+          }
+          else
+          {
+            new_message = read_buf_.front();
+            new_message->assign(data_begin, data_end);
+          }          
           // Consume processed data
           stream_read_buf_.consume(bytes_transferred);
           // Continue inner operations loop.
@@ -580,11 +585,7 @@ namespace ma
           } 
           else
           {
-            // else push ready message into the cyclic read buffer
-            if (read_buf_.full())
-            {                
-              read_buf_overflow_ = true;                
-            }
+            // else push ready message into the cyclic read buffer            
             read_buf_.push_back(new_message);              
           }          
         }
@@ -597,7 +598,7 @@ namespace ma
           // Store error for the next outer read operation.
           read_error_ = error;          
         }
-      }
+      } // handle_read_tail
                 
       std::string frame_head_;
       std::string frame_tail_;                    
@@ -615,8 +616,7 @@ namespace ma
       handler_allocator stream_read_allocator_;
       boost::system::error_code read_error_;
       boost::system::error_code stop_error_;
-      read_buf_type read_buf_;
-      bool read_buf_overflow_;
+      read_buf_type read_buf_;      
     }; // class cyclic_read_session 
 
   } // namespace nmea
