@@ -61,9 +61,9 @@ int _tmain(int argc, _TCHAR* argv[])
     std::size_t concurrent_count = 1 >= cpu_count ? 2 : cpu_count;
     std::size_t thread_count = 2;
 
-    std::wcout << L"Found cpu(s)               : " << cpu_count << L"\n"
-               << L"Concurrent IO thread count : " << concurrent_count << L"\n"
-               << L"Total IO thread count      : " << thread_count << L"\n";
+    std::wcout << L"Number of found CPUs: " << cpu_count << L"\n"
+               << L"Number of concurrent work threads: " << concurrent_count << L"\n"
+               << L"Total number of work threads     : " << thread_count << L"\n";
 
     std::wstring device_name(argv[1]);
     session_type::size_type stream_read_buf_size = 1024;
@@ -77,9 +77,9 @@ int _tmain(int argc, _TCHAR* argv[])
       }
     }    
 
-    std::wcout << L"NMEA 0183 device name      : " << device_name << L"\n";
-    std::wcout << L"Stream read buffer size    : " << stream_read_buf_size << L"\n";
-    std::wcout << L"Read buffer capacity       : " << read_buf_capacity << L"\n";
+    std::wcout << L"NMEA 0183 device name    : " << device_name << L"\n";
+    std::wcout << L"Read buffer size in bytes: " << stream_read_buf_size << L"\n";
+    std::wcout << L"Read buffer size in messages: " << read_buf_capacity << L"\n";
 
     const wcodecvt_type& wcodecvt(std::use_facet<wcodecvt_type>(sys_locale));
     std::string ansi_device_name(ma::codecvt_cast::out(device_name, wcodecvt));
@@ -130,7 +130,7 @@ int _tmain(int argc, _TCHAR* argv[])
     }
     thread_group.join_all();
 
-    std::wcout << L"IO threads stopped.\n";    
+    std::wcout << L"Work threads stopped.\n";    
   }
 
   return exit_code;
