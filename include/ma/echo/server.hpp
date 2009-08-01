@@ -30,63 +30,63 @@ namespace ma
     private:
       typedef server this_type;      
 
-      struct session_evironment_type : private boost::noncopyable
+      struct session_fsm : private boost::noncopyable
       {
-        typedef boost::shared_ptr<session_evironment_type> pointer;
-        typedef boost::weak_ptr<session_evironment_type> weak_pointer;
+        typedef boost::shared_ptr<session_fsm> pointer;
+        typedef boost::weak_ptr<session_fsm> weak_pointer;
 
         pointer next_;
         weak_pointer prev_;
         session::pointer session_;
         bool stop_in_progress_;
 
-        explicit session_evironment_type(boost::asio::io_service& io_service)
+        explicit session_fsm(boost::asio::io_service& io_service)
           : session_(new session(io_service))
           , stop_in_progress_(false)
         {
         }
-      }; // session_evironment_type
+      }; // session_fsm
 
-      class session_evironment_set : private boost::noncopyable
+      class session_fsm_set : private boost::noncopyable
       {
       public:
-        explicit session_evironment_set()
+        explicit session_fsm_set()
         {
         }
 
-        void insert(session_evironment_type::pointer session_evironment)
+        void insert(session_fsm::pointer session_fsm)
         {
-          session_evironment->next_ = front_;
-          session_evironment->prev_.reset();
+          session_fsm->next_ = front_;
+          session_fsm->prev_.reset();
           if (front_)
           {
-            front_->prev_ = session_evironment;
+            front_->prev_ = session_fsm;
           }
-          front_ = session_evironment;
+          front_ = session_fsm;
         }
 
-        void erase(session_evironment_type::pointer session_evironment)
+        void erase(session_fsm::pointer session_fsm)
         {
-          if (front_ == session_evironment)
+          if (front_ == session_fsm)
           {
             front_ = front_->next_;
           }
-          session_evironment_type::pointer prev = session_evironment->prev_.lock();
+          session_fsm::pointer prev = session_fsm->prev_.lock();
           if (prev)
           {
-            prev->next_ = session_evironment->next_;
+            prev->next_ = session_fsm->next_;
           }
-          if (session_evironment->next_)
+          if (session_fsm->next_)
           {
-            session_evironment->next_->prev_ = prev;
+            session_fsm->next_->prev_ = prev;
           }
-          session_evironment->prev_.reset();
-          session_evironment->next_.reset();
+          session_fsm->prev_.reset();
+          session_fsm->next_.reset();
         }
 
       private:
-        session_evironment_type::pointer front_;
-      }; // session_evironment_set
+        session_fsm::pointer front_;
+      }; // session_fsm_set
 
     public:
       typedef boost::asio::ip::tcp::acceptor acceptor_type;
@@ -193,6 +193,12 @@ namespace ma
             boost::asio::error::operation_not_supported
           )
         );
+
+        session_fsm::pointer session_fsm(
+          new session_fsm(session_io_service_));
+
+        session_fsm_set_.insert(session_fsm);
+
       } // do_start
 
       template <typename Handler>
@@ -231,7 +237,7 @@ namespace ma
       bool stopped_;      
       bool accept_in_progress_;      
       handler_allocator accept_allocator_;
-      session_evironment_set session_evironments_;
+      session_fsm_set session_fsm_set_;
     }; // class server
 
   } // namespace echo
