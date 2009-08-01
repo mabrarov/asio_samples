@@ -29,7 +29,7 @@ typedef session_manager_type::pointer session_manager_ptr;
 typedef session_manager_type::endpoint_type endpoint_type;
 typedef boost::function<void (void)> exception_handler_type;
 
-struct server_environment_type
+struct server_environment_type : private boost::noncopyable
 {
   boost::mutex mutex_;
   boost::condition_variable stop_condition_;
@@ -38,7 +38,7 @@ struct server_environment_type
   bool stop_in_progress_;
   bool stopped_;  
 
-  server_environment_type(boost::asio::io_service& server_io_service,
+  explicit server_environment_type(boost::asio::io_service& server_io_service,
     boost::asio::io_service& session_io_service)
     : session_manager_(new session_manager_type(server_io_service, session_io_service))
     , stop_timer_(server_io_service)
@@ -91,8 +91,8 @@ int _tmain(int argc, _TCHAR* argv[])
                << L"Number of sessions' threads        : " << session_thread_count << L"\n" 
                << L"Total number of work threads       : " << session_thread_count + session_manager_thread_count << L"\n";        
     
-    boost::asio::io_service session_io_service(session_thread_count);
-    boost::asio::io_service session_manager_io_service(session_manager_thread_count);        
+    boost::asio::io_service session_io_service;
+    boost::asio::io_service session_manager_io_service;        
     server_environment_ptr server_environment(
       new server_environment_type(session_manager_io_service, session_io_service));
     

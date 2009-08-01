@@ -28,7 +28,65 @@ namespace ma
       , public boost::enable_shared_from_this<server>
     {
     private:
-      typedef server this_type;
+      typedef server this_type;      
+
+      struct session_evironment_type : private boost::noncopyable
+      {
+        typedef boost::shared_ptr<session_evironment_type> pointer;
+        typedef boost::weak_ptr<session_evironment_type> weak_pointer;
+
+        pointer next_;
+        weak_pointer prev_;
+        session::pointer session_;
+        bool stop_in_progress_;
+
+        explicit session_evironment_type(boost::asio::io_service& io_service)
+          : session_(new session(io_service))
+          , stop_in_progress_(false)
+        {
+        }
+      }; // session_evironment_type
+
+      class session_evironment_set : private boost::noncopyable
+      {
+      public:
+        explicit session_evironment_set()
+        {
+        }
+
+        void insert(session_evironment_type::pointer session_evironment)
+        {
+          session_evironment->next_ = front_;
+          session_evironment->prev_.reset();
+          if (front_)
+          {
+            front_->prev_ = session_evironment;
+          }
+          front_ = session_evironment;
+        }
+
+        void erase(session_evironment_type::pointer session_evironment)
+        {
+          if (front_ == session_evironment)
+          {
+            front_ = front_->next_;
+          }
+          session_evironment_type::pointer prev = session_evironment->prev_.lock();
+          if (prev)
+          {
+            prev->next_ = session_evironment->next_;
+          }
+          if (session_evironment->next_)
+          {
+            session_evironment->next_->prev_ = prev;
+          }
+          session_evironment->prev_.reset();
+          session_evironment->next_.reset();
+        }
+
+      private:
+        session_evironment_type::pointer front_;
+      }; // session_evironment_set
 
     public:
       typedef boost::asio::ip::tcp::acceptor acceptor_type;
@@ -172,7 +230,8 @@ namespace ma
       bool started_;
       bool stopped_;      
       bool accept_in_progress_;      
-      handler_allocator accept_allocator_;      
+      handler_allocator accept_allocator_;
+      session_evironment_set session_evironments_;
     }; // class server
 
   } // namespace echo
