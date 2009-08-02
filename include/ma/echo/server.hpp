@@ -50,14 +50,14 @@ namespace ma
         }
       }; // session_state
 
-      class session_state_set : private boost::noncopyable
+      class session_state_list : private boost::noncopyable
       {
       public:
-        explicit session_state_set()
+        explicit session_state_list()
         {
         }
 
-        void insert(const session_state_ptr& session_state)
+        void push_front(const session_state_ptr& session_state)
         {
           session_state->next_ = front_;
           session_state->prev_.reset();
@@ -87,9 +87,14 @@ namespace ma
           session_state->next_.reset();
         }
 
+        session_state_ptr front() const
+        {
+          return front_;
+        }
+
       private:
         session_state_ptr front_;
-      }; // session_state_set
+      }; // session_state_list
 
     public:
       explicit server(boost::asio::io_service& io_service,
@@ -175,7 +180,8 @@ namespace ma
 
         session_ptr session(new session(session_io_service_));
         session_state_ptr session_state(new session_state(session));
-        sessions_.insert(session_state);
+        sessions_.push_front(session_state);
+        sessions_.erase(session_state);
 
       } // do_start
 
@@ -215,7 +221,7 @@ namespace ma
       bool stopped_;      
       bool accept_in_progress_;      
       handler_allocator accept_allocator_;
-      session_state_set sessions_;
+      session_state_list sessions_;
     }; // class server
 
   } // namespace echo
