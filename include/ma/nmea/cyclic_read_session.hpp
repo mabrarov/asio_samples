@@ -23,64 +23,58 @@
 namespace ma
 {
   namespace nmea
-  {          
+  { 
+    class cyclic_read_session;
+    typedef std::string message_type;
+    typedef boost::shared_ptr<message_type> message_ptr;    
+    typedef boost::shared_ptr<cyclic_read_session> cyclic_read_session_ptr;
+
     class cyclic_read_session 
       : private boost::noncopyable
       , public boost::enable_shared_from_this<cyclic_read_session>
     {
-    public:
-      typedef std::size_t size_type;
-      typedef std::string message_type;
-      typedef boost::shared_ptr<message_type> message_ptr;
-
     private:
-      typedef cyclic_read_session this_type;      
-      typedef boost::circular_buffer<message_ptr> read_buf_type;
-      typedef boost::tuple<message_ptr, boost::system::error_code> read_arg_type;            
-
-      BOOST_STATIC_CONSTANT(size_type, max_message_size = 512);           
+      typedef cyclic_read_session this_type;
+      typedef boost::tuple<message_ptr, boost::system::error_code> read_arg_type;
+      BOOST_STATIC_CONSTANT(std::size_t, max_message_size = 512);           
 
     public:
-      typedef boost::shared_ptr<this_type> pointer;
-      typedef boost::asio::serial_port next_layer_type;
-      typedef next_layer_type::lowest_layer_type lowest_layer_type;      
-      typedef read_buf_type::capacity_type read_capacity_type;
-      BOOST_STATIC_CONSTANT(size_type, min_stream_read_buf_size = max_message_size);
-      BOOST_STATIC_CONSTANT(read_capacity_type, min_read_buf_capacity = 1);
+      BOOST_STATIC_CONSTANT(std::size_t, min_read_buffer_size = max_message_size);
+      BOOST_STATIC_CONSTANT(std::size_t, min_message_queue_size = 1);
 
       explicit cyclic_read_session(
         boost::asio::io_service& io_service,
-        const size_type stream_read_buf_size,
-        const read_capacity_type read_buf_capacity,
+        const std::size_t read_buffer_size,
+        const std::size_t message_queue_size,
         const std::string& frame_head,
         const std::string& frame_tail)
         : frame_head_(frame_head)
         , frame_tail_(frame_tail)                  
         , io_service_(io_service)
         , strand_(io_service)
-        , stream_(io_service)
+        , serial_port_(io_service)
         , read_handler_(io_service)        
         , stop_handler_(io_service)
         , started_(false)
         , stopped_(false)        
         , write_in_progress_(false)
         , read_in_progress_(false)
-        , stream_read_buf_(stream_read_buf_size)
-        , read_buf_(read_buf_capacity)        
+        , read_buffer_(read_buffer_size)
+        , message_queue_(message_queue_size)        
       {
-        if (read_buf_capacity < min_read_buf_capacity)
+        if (message_queue_size < min_message_queue_size)
         {
-          boost::throw_exception(std::runtime_error("too small read_buf_capacity"));
+          boost::throw_exception(std::runtime_error("too small message_queue_size"));
         }
-        if (max_message_size > stream_read_buf_size)
+        if (max_message_size > read_buffer_size)
         {
-          boost::throw_exception(std::runtime_error("too small stream_read_buf_size"));
+          boost::throw_exception(std::runtime_error("too small read_buffer_size"));
         }
-        if (frame_head.length() > stream_read_buf_size)
+        if (frame_head.length() > read_buffer_size)
         {
           boost::throw_exception(std::runtime_error("too large frame_head"));
         }
-        if (frame_tail.length() > stream_read_buf_size)
+        if (frame_tail.length() > read_buffer_size)
         {
           boost::throw_exception(std::runtime_error("too large frame_tail"));
         }
@@ -88,34 +82,19 @@ namespace ma
 
       ~cyclic_read_session()
       {          
-      }
-
-      boost::asio::io_service& io_service()
-      {
-        return io_service_;
-      }
-
-      boost::asio::io_service& get_io_service()
-      {
-        return io_service_;
-      }
-
-      next_layer_type& next_layer()
-      {
-        return stream_;
-      }
-
-      lowest_layer_type& lowest_layer()
-      {
-        return stream_.lowest_layer();
       }      
 
+      boost::asio::serial_port& serial_port()
+      {
+        return serial_port_;
+      }
+      
       void resest()
       {
-        read_buf_.clear();        
+        message_queue_.clear();        
         read_error_ = boost::system::error_code();
-        stream_read_buf_.consume(
-          boost::asio::buffer_size(stream_read_buf_.data()));        
+        read_buffer_.consume(
+          boost::asio::buffer_size(read_buffer_.data()));        
         started_ = false;
         stopped_ = false;
       }
@@ -273,7 +252,7 @@ namespace ma
           // Start shutdown
 
           // Do shutdown - abort inner operations
-          stream_.close(stop_error_);
+          serial_port_.close(stop_error_);
           
           // Check for shutdown continuation
           if (read_handler_.has_target()
@@ -331,13 +310,13 @@ namespace ma
         {        
           boost::asio::async_write
           (
-            stream_, 
+            serial_port_, 
             boost::asio::buffer(*message), 
             strand_.wrap
             (
               make_custom_alloc_handler
               (
-                stream_write_allocator_, 
+                write_allocator_, 
                 boost::bind
                 (
                   &this_type::handle_write<handler>, 
@@ -399,10 +378,10 @@ namespace ma
             )
           );
         }
-        else if (!read_buf_.empty())
+        else if (!message_queue_.empty())
         {
-          message = read_buf_.front();
-          read_buf_.pop_front();
+          message = message_queue_.front();
+          message_queue_.pop_front();
           io_service_.post
           (
             boost::asio::detail::bind_handler
@@ -469,12 +448,12 @@ namespace ma
       {                                 
         boost::asio::async_read_until
         (
-          stream_, stream_read_buf_, frame_head_,
+          serial_port_, read_buffer_, frame_head_,
           strand_.wrap
           (
             make_custom_alloc_handler
             (
-              stream_read_allocator_, 
+              read_allocator_, 
               boost::bind
               (
                 &this_type::handle_read_head, 
@@ -492,12 +471,12 @@ namespace ma
       {                    
         boost::asio::async_read_until
         (
-          stream_, stream_read_buf_, frame_tail_,
+          serial_port_, read_buffer_, frame_tail_,
           strand_.wrap
           (
             make_custom_alloc_handler
             (
-              stream_read_allocator_, 
+              read_allocator_, 
               boost::bind
               (
                 &this_type::handle_read_tail, 
@@ -528,7 +507,7 @@ namespace ma
         else if (!error)
         {
           // We do not need in-between-frame-garbage and frame's head
-          stream_read_buf_.consume(bytes_transferred);                    
+          read_buffer_.consume(bytes_transferred);                    
           read_until_tail();
         }
         else if (read_handler_.has_target())
@@ -560,10 +539,10 @@ namespace ma
         {                   
           typedef boost::asio::streambuf::const_buffers_type const_buffers_type;
           typedef boost::asio::buffers_iterator<const_buffers_type> buffers_iterator;
-          const_buffers_type committed_buffers(stream_read_buf_.data());
+          const_buffers_type committed_buffers(read_buffer_.data());
           buffers_iterator data_begin(buffers_iterator::begin(committed_buffers));
           buffers_iterator data_end(data_begin + bytes_transferred - frame_tail_.length());
-          bool newly_allocated = !read_buf_.full() || read_handler_.has_target();
+          bool newly_allocated = !message_queue_.full() || read_handler_.has_target();
           message_ptr new_message;
           if (newly_allocated)
           {
@@ -571,11 +550,11 @@ namespace ma
           }
           else
           {
-            new_message = read_buf_.front();
+            new_message = message_queue_.front();
             new_message->assign(data_begin, data_end);
           }          
           // Consume processed data
-          stream_read_buf_.consume(bytes_transferred);
+          read_buffer_.consume(bytes_transferred);
           // Continue inner operations loop.
           read_until_head();
           // If there is waiting read operation - complete it            
@@ -586,7 +565,7 @@ namespace ma
           else
           {
             // else push ready message into the cyclic read buffer            
-            read_buf_.push_back(new_message);              
+            message_queue_.push_back(new_message);              
           }          
         }
         else if (read_handler_.has_target())
@@ -604,19 +583,19 @@ namespace ma
       std::string frame_tail_;                    
       boost::asio::io_service& io_service_;
       boost::asio::io_service::strand strand_;
-      next_layer_type stream_;               
+      boost::asio::serial_port serial_port_;               
       ma::handler_storage<read_arg_type> read_handler_;      
       ma::handler_storage<boost::system::error_code> stop_handler_;      
       bool started_;
       bool stopped_;      
       bool write_in_progress_;
       bool read_in_progress_;
-      boost::asio::streambuf stream_read_buf_;        
-      handler_allocator stream_write_allocator_;
-      handler_allocator stream_read_allocator_;
+      boost::asio::streambuf read_buffer_;        
+      handler_allocator write_allocator_;
+      handler_allocator read_allocator_;
       boost::system::error_code read_error_;
       boost::system::error_code stop_error_;
-      read_buf_type read_buf_;      
+      boost::circular_buffer<message_ptr> message_queue_;      
     }; // class cyclic_read_session 
 
   } // namespace nmea

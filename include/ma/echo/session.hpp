@@ -22,6 +22,9 @@ namespace ma
 {    
   namespace echo
   {    
+    class session;
+    typedef boost::shared_ptr<session> session_ptr;
+
     class session 
       : private boost::noncopyable 
       , public boost::enable_shared_from_this<session>
@@ -30,41 +33,22 @@ namespace ma
       typedef session this_type;
 
     public:
-      typedef boost::asio::ip::tcp::socket next_layer_type;
-      typedef next_layer_type::lowest_layer_type lowest_layer_type;    
-      typedef boost::shared_ptr<this_type> pointer;
-
       explicit session(boost::asio::io_service& io_service)
         : io_service_(io_service)
         , strand_(io_service)
-        , stream_(io_service)
+        , socket_(io_service)
       {        
       }
 
       ~session()
       {        
-      } 
-
-      boost::asio::io_service& io_service()
-      {
-        return io_service_;
-      }
-
-      boost::asio::io_service& get_io_service()
-      {
-        return io_service_;
       }
       
-      next_layer_type& next_layer()
+      boost::asio::ip::tcp::socket& socket()
       {
-        return stream_;
+        return socket_;
       }
-
-      lowest_layer_type& lowest_layer()
-      {
-        return stream_.lowest_layer();
-      }
-
+      
       template <typename Handler>
       void async_start(Handler handler)
       {
@@ -102,7 +86,7 @@ namespace ma
       } // async_stop
 
       template <typename Handler>
-      void async_serve(Handler handler)
+      void async_wait(Handler handler)
       {
         strand_.dispatch
         (
@@ -111,13 +95,13 @@ namespace ma
             handler, 
             boost::bind
             (
-              &this_type::do_serve<Handler>,
+              &this_type::do_wait<Handler>,
               shared_from_this(),
               boost::make_tuple(handler)
             )
           )
         );  
-      } // async_serve
+      } // async_wait
       
     private:
       template <typename Handler>
@@ -149,7 +133,7 @@ namespace ma
       }
 
       template <typename Handler>
-      void do_serve(boost::tuple<Handler> handler)
+      void do_wait(boost::tuple<Handler> handler)
       {
         //todo
         io_service_.post
@@ -164,13 +148,13 @@ namespace ma
 
       boost::asio::io_service& io_service_;
       boost::asio::io_service::strand strand_;      
-      next_layer_type stream_;
+      boost::asio::ip::tcp::socket socket_;
       bool started_;
       bool stopped_;      
       bool write_in_progress_;
       bool read_in_progress_;
-      handler_allocator stream_write_allocator_;
-      handler_allocator stream_read_allocator_;
+      handler_allocator write_allocator_;
+      handler_allocator read_allocator_;
     }; // class session
 
   } // namespace echo

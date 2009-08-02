@@ -23,76 +23,75 @@ namespace ma
 {    
   namespace echo
   {    
+    class server;
+    typedef boost::shared_ptr<server> server_ptr;
+
     class server 
       : private boost::noncopyable 
       , public boost::enable_shared_from_this<server>
     {
     private:
       typedef server this_type;      
+      struct session_state;
+      typedef boost::shared_ptr<session_state> session_state_ptr;
+      typedef boost::weak_ptr<session_state> session_state_weak_ptr;
 
-      struct session_fsm : private boost::noncopyable
-      {
-        typedef boost::shared_ptr<session_fsm> pointer;
-        typedef boost::weak_ptr<session_fsm> weak_pointer;
-
-        pointer next_;
-        weak_pointer prev_;
-        session::pointer session_;
+      struct session_state : private boost::noncopyable
+      {        
+        session_state_weak_ptr prev_;
+        session_state_ptr next_;
+        session_ptr session_;
         bool stop_in_progress_;
 
-        explicit session_fsm(boost::asio::io_service& io_service)
-          : session_(new session(io_service))
+        explicit session_state(const session_ptr& session)
+          : session_(session)
           , stop_in_progress_(false)
         {
         }
-      }; // session_fsm
+      }; // session_state
 
-      class session_fsm_set : private boost::noncopyable
+      class session_state_set : private boost::noncopyable
       {
       public:
-        explicit session_fsm_set()
+        explicit session_state_set()
         {
         }
 
-        void insert(session_fsm::pointer session_fsm)
+        void insert(const session_state_ptr& session_state)
         {
-          session_fsm->next_ = front_;
-          session_fsm->prev_.reset();
+          session_state->next_ = front_;
+          session_state->prev_.reset();
           if (front_)
           {
-            front_->prev_ = session_fsm;
+            front_->prev_ = session_state;
           }
-          front_ = session_fsm;
+          front_ = session_state;
         }
 
-        void erase(session_fsm::pointer session_fsm)
+        void erase(const session_state_ptr& session_state)
         {
-          if (front_ == session_fsm)
+          if (front_ == session_state)
           {
             front_ = front_->next_;
           }
-          session_fsm::pointer prev = session_fsm->prev_.lock();
+          session_state::pointer prev = session_state->prev_.lock();
           if (prev)
           {
-            prev->next_ = session_fsm->next_;
+            prev->next_ = session_state->next_;
           }
-          if (session_fsm->next_)
+          if (session_state->next_)
           {
-            session_fsm->next_->prev_ = prev;
+            session_state->next_->prev_ = prev;
           }
-          session_fsm->prev_.reset();
-          session_fsm->next_.reset();
+          session_state->prev_.reset();
+          session_state->next_.reset();
         }
 
       private:
-        session_fsm::pointer front_;
-      }; // session_fsm_set
+        session_state_ptr front_;
+      }; // session_state_set
 
     public:
-      typedef boost::asio::ip::tcp::acceptor acceptor_type;
-      typedef boost::asio::ip::tcp::endpoint endpoint_type;
-      typedef boost::shared_ptr<this_type> pointer;
-      
       explicit server(boost::asio::io_service& io_service,
         boost::asio::io_service& session_io_service)
         : io_service_(io_service)
@@ -104,27 +103,7 @@ namespace ma
 
       ~server()
       {        
-      } 
-
-      boost::asio::io_service& io_service()
-      {
-        return io_service_;
       }
-
-      boost::asio::io_service& get_io_service()
-      {
-        return io_service_;
-      }      
-
-      boost::asio::io_service& session_io_service()
-      {
-        return session_io_service_;
-      }
-
-      boost::asio::io_service& get_session_io_service()
-      {
-        return session_io_service_;
-      }      
 
       template <typename Handler>
       void async_start(Handler handler)
@@ -163,7 +142,7 @@ namespace ma
       } // async_stop
 
       template <typename Handler>
-      void async_serve(Handler handler)
+      void async_wait(Handler handler)
       {
         strand_.dispatch
         (
@@ -172,13 +151,13 @@ namespace ma
             handler, 
             boost::bind
             (
-              &this_type::do_serve<Handler>,
+              &this_type::do_wait<Handler>,
               shared_from_this(),
               boost::make_tuple(handler)
             )
           )
         );  
-      } // async_serve
+      } // async_wait
 
     private:
       template <typename Handler>
@@ -194,10 +173,9 @@ namespace ma
           )
         );
 
-        session_fsm::pointer session_fsm(
-          new session_fsm(session_io_service_));
-
-        session_fsm_set_.insert(session_fsm);
+        session_ptr session(new session(session_io_service_));
+        session_state_ptr session_state(new session_state(session));
+        sessions_.insert(session_state);
 
       } // do_start
 
@@ -216,7 +194,7 @@ namespace ma
       } // do_stop
 
       template <typename Handler>
-      void do_serve(boost::tuple<Handler> handler)
+      void do_wait(boost::tuple<Handler> handler)
       {
         //todo
         io_service_.post
@@ -227,17 +205,17 @@ namespace ma
             boost::asio::error::operation_not_supported
           )
         );
-      } // do_serve
+      } // do_wait
 
       boost::asio::io_service& io_service_;
       boost::asio::io_service& session_io_service_;
       boost::asio::io_service::strand strand_;      
-      acceptor_type acceptor_;
+      boost::asio::ip::tcp::acceptor acceptor_;
       bool started_;
       bool stopped_;      
       bool accept_in_progress_;      
       handler_allocator accept_allocator_;
-      session_fsm_set session_fsm_set_;
+      session_state_set sessions_;
     }; // class server
 
   } // namespace echo

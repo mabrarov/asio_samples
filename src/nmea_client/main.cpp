@@ -9,6 +9,7 @@
 #include <windows.h>
 #include <locale>
 #include <iostream>
+#include <utility>
 #include <boost/ref.hpp>
 #include <boost/bind.hpp>
 #include <boost/filesystem.hpp>
@@ -21,9 +22,9 @@
 #include <console_controller.hpp>
 
 typedef std::codecvt<wchar_t, char, mbstate_t> wcodecvt_type;
-typedef ma::nmea::cyclic_read_session session_type;
-typedef session_type::pointer session_ptr;
-typedef session_type::message_ptr message_ptr;
+typedef ma::nmea::cyclic_read_session session;
+typedef ma::nmea::cyclic_read_session_ptr session_ptr;
+typedef ma::nmea::message_ptr message_ptr;
 typedef boost::shared_ptr<message_ptr> ptr_to_message_ptr;
 
 void handle_start(
@@ -53,12 +54,12 @@ int _tmain(int argc, _TCHAR* argv[])
   if (2 > argc || 4 < argc)
   {
     boost::filesystem::wpath app_path(argv[0]);
-    std::wcout << L"Usage: \"" << app_path.leaf() << L"\" <com_port> [<stream_read_buf_size> [<read_buf_capacity>] ]\n";
+    std::wcout << L"Usage: \"" << app_path.leaf() << L"\" <com_port> [<read_buffer_size> [<message_queue_size>] ]\n";
   }
   else
   {
     std::size_t cpu_count = boost::thread::hardware_concurrency();
-    std::size_t concurrent_count = 1 >= cpu_count ? 2 : cpu_count;
+    std::size_t concurrent_count = 2 > cpu_count ? 2 : cpu_count;
     std::size_t thread_count = 2;
 
     std::wcout << L"Number of found CPUs: " << cpu_count << L"\n"
@@ -66,31 +67,31 @@ int _tmain(int argc, _TCHAR* argv[])
                << L"Total number of work threads     : " << thread_count << L"\n";
 
     std::wstring device_name(argv[1]);
-    session_type::size_type stream_read_buf_size = 1024;
-    session_type::read_capacity_type read_buf_capacity = 64;
+    std::size_t read_buffer_size = std::max<std::size_t>(1024, session::min_read_buffer_size);
+    std::size_t message_queue_size = std::max<std::size_t>(64, session::min_message_queue_size);
     if (2 < argc)
     {
-      stream_read_buf_size = boost::lexical_cast<session_type::size_type>(argv[2]);
-      if (2 < argc)
+      read_buffer_size = boost::lexical_cast<std::size_t>(argv[2]);
+      if (3 < argc)
       {
-        read_buf_capacity = boost::lexical_cast<session_type::read_capacity_type>(argv[3]);
+        message_queue_size = boost::lexical_cast<std::size_t>(argv[3]);
       }
     }    
 
     std::wcout << L"NMEA 0183 device name    : " << device_name << L"\n";
-    std::wcout << L"Read buffer size in bytes: " << stream_read_buf_size << L"\n";
-    std::wcout << L"Read buffer size in messages: " << read_buf_capacity << L"\n";
+    std::wcout << L"Read buffer size in bytes: " << read_buffer_size << L"\n";
+    std::wcout << L"Read buffer size in messages: " << message_queue_size << L"\n";
 
     const wcodecvt_type& wcodecvt(std::use_facet<wcodecvt_type>(sys_locale));
     std::string ansi_device_name(ma::codecvt_cast::out(device_name, wcodecvt));
     ma::handler_allocator handler_allocator;
             
     boost::asio::io_service io_service(concurrent_count);   
-    session_ptr session(new session_type(io_service, stream_read_buf_size, 
-      read_buf_capacity, "$", "\x0a"));
+    session_ptr session(new session(
+      io_service, read_buffer_size, message_queue_size, "$", "\x0a"));
 
     // Prepare the lower layer - open the serial port
-    session->next_layer().open(ansi_device_name);        
+    session->serial_port().open(ansi_device_name);        
 
     // Start session
     session->async_start
@@ -111,17 +112,10 @@ int _tmain(int argc, _TCHAR* argv[])
     );    
 
     // Setup console controller
-    ma::console_controller console_controller
-    (
-      boost::bind
-      (
-        &handle_console_close, 
-        session
-      )
-    );        
-
+    ma::console_controller console_controller(boost::bind(&handle_console_close, session));        
     std::wcout << L"Press Ctrl+C (Ctrl+Break) to exit...\n";    
 
+    // Create work threads
     boost::thread_group thread_group;
     for (std::size_t i = 0; i != thread_count; ++i)
     {
