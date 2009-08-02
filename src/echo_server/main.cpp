@@ -191,19 +191,24 @@ void handle_program_exit_request(const server_state_ptr& server_state)
   { 
     std::wcout << L"Program exit request detected. Server is already stopping. Server work will be aborted.\n";
     server_state->stop_in_progress_ = false;
-    server_state->stopped_ = true;
-    lock.unlock();
+    server_state->stopped_ = true;    
+
     // Notify main thread
+    lock.unlock();
     server_state->stop_in_progress_condition_.notify_all();
     server_state->stop_condition_.notify_all();
   }
   else
   {
     // Start server stop
-    server_state->server_->async_stop(boost::bind(server_stopped, server_state, _1));    
-    // Remember server state
-    server_state->stop_in_progress_ = true;   
+    server_state->server_->async_stop(
+      boost::bind(server_stopped, server_state, _1));        
+    server_state->stop_in_progress_ = true;
     std::wcout << L"Program exit request detected. Server is stopping. Press Ctrl+C (Ctrl+Break) to abort server work.\n";    
+
+    // Notify main thread
+    lock.unlock();
+    server_state->stop_in_progress_condition_.notify_all();
   }  
 }
 
@@ -217,9 +222,10 @@ void server_started(const server_state_ptr& server_state,
     {    
       // Remember server state      
       server_state->stopped_ = true;
-      std::wcout << L"Server can't start due to error. Server has stopped.\n";
-      lock.unlock();
+      std::wcout << L"Server can't start due to error. Server has stopped.\n";      
+
       // Notify main thread
+      lock.unlock();
       server_state->stop_in_progress_condition_.notify_all();
       server_state->stop_condition_.notify_all();
     }
@@ -245,9 +251,10 @@ void server_has_to_stop(const server_state_ptr& server_state,
     
     // Remember server state
     server_state->stop_in_progress_ = true;
-    std::wcout << L"Server can't continue its work due to error. Server is stopping.\n";
-    lock.unlock();
+    std::wcout << L"Server can't continue its work due to error. Server is stopping.\n";    
+
     // Notify main thread    
+    lock.unlock();
     server_state->stop_in_progress_condition_.notify_all();    
   }
 }
@@ -261,9 +268,10 @@ void server_stopped(const server_state_ptr& server_state,
     // Remember server state
     server_state->stop_in_progress_ = false;
     server_state->stopped_ = true;
-    std::wcout << L"Server has stopped.\n";
-    lock.unlock();
+    std::wcout << L"Server has stopped.\n";    
+
     // Notify main thread        
+    lock.unlock();
     server_state->stop_condition_.notify_all();
   }
 }

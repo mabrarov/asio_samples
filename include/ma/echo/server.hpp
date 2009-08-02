@@ -74,7 +74,7 @@ namespace ma
           {
             front_ = front_->next_;
           }
-          session_state::pointer prev = session_state->prev_.lock();
+          session_state_ptr prev = session_state->prev_.lock();
           if (prev)
           {
             prev->next_ = session_state->next_;
