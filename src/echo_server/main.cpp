@@ -183,26 +183,27 @@ void handle_work_exception(const server_state_ptr& server_state)
 void handle_program_exit_request(const server_state_ptr& server_state)
 {
   boost::unique_lock<boost::mutex> lock(server_state->mutex_);
-  if (server_state->stop_in_progress_)
+  if (server_state->stopped_)
   {
-    std::wcout << L"User console close detected. Server is already stopping.\n";
+    std::wcout << L"Program exit request detected. Server has already stopped.\n";
   }
-  else if (server_state->stopped_)
-  {    
-    std::wcout << L"User console close detected. Server has already stopped.\n";
+  else if (server_state->stop_in_progress_)
+  { 
+    std::wcout << L"Program exit request detected. Server is already stopping. Server work will be aborted.\n";
+    server_state->stop_in_progress_ = false;
+    server_state->stopped_ = true;
+    lock.unlock();
+    // Notify main thread
+    server_state->stop_in_progress_condition_.notify_all();
+    server_state->stop_condition_.notify_all();
   }
   else
   {
     // Start server stop
-    server_state->server_->async_stop(
-      boost::bind(&server_stopped, server_state, _1));
-    // Set up stop timer
-    server_state->stop_timer_.expires_from_now(stop_timeout);
-    server_state->stop_timer_.async_wait(
-      boost::bind(&on_server_stop_timeout, server_state, _1));
+    server_state->server_->async_stop(boost::bind(server_stopped, server_state, _1));    
     // Remember server state
     server_state->stop_in_progress_ = true;   
-    std::wcout << L"User console close detected. Server is stopping.\n";    
+    std::wcout << L"Program exit request detected. Server is stopping. Press Ctrl+C (Ctrl+Break) to abort server work.\n";    
   }  
 }
 
@@ -214,18 +215,19 @@ void server_started(const server_state_ptr& server_state,
   {   
     if (error)
     {    
-      // Remember server state
+      // Remember server state      
       server_state->stopped_ = true;
       std::wcout << L"Server can't start due to error. Server has stopped.\n";
       lock.unlock();
       // Notify main thread
-      server_state->stop_condition_.notify_all();      
+      server_state->stop_in_progress_condition_.notify_all();
+      server_state->stop_condition_.notify_all();
     }
     else
     {
-      // Start waiting until server has done all the work
+      // Wait until server has done all the work
       server_state->server_->async_wait(
-        boost::bind(&server_has_to_stop, server_state, _1));
+        boost::bind(server_has_to_stop, server_state, _1));
       std::wcout << L"Server has started.\n";
     }
   }  
@@ -239,14 +241,14 @@ void server_has_to_stop(const server_state_ptr& server_state,
   {
     // Start server stop
     server_state->server_->async_stop(
-      boost::bind(&server_stopped, server_state, _1));
-    // Set up stop timer
-    server_state->stop_timer_.expires_from_now(stop_timeout);
-    server_state->stop_timer_.async_wait(
-      boost::bind(&on_server_stop_timeout, server_state, _1));
+      boost::bind(server_stopped, server_state, _1));
+    
     // Remember server state
-    server_state->stop_in_progress_ = true;    
+    server_state->stop_in_progress_ = true;
     std::wcout << L"Server can't continue its work due to error. Server is stopping.\n";
+    lock.unlock();
+    // Notify main thread    
+    server_state->stop_in_progress_condition_.notify_all();    
   }
 }
 
@@ -254,28 +256,14 @@ void server_stopped(const server_state_ptr& server_state,
   const boost::system::error_code&)
 {
   boost::unique_lock<boost::mutex> lock(server_state->mutex_);
-  if (!server_state->stopped_ && server_state->stop_timer_.cancel())
+  if (!server_state->stopped_ && server_state->stop_in_progress_)
   {  
     // Remember server state
+    server_state->stop_in_progress_ = false;
     server_state->stopped_ = true;
     std::wcout << L"Server has stopped.\n";
     lock.unlock();
-    // Notify main thread
-    server_state->stop_condition_.notify_all();    
-  }
-}
-
-void on_server_stop_timeout(const server_state_ptr& server_state,
-  const boost::system::error_code& error)
-{
-  boost::unique_lock<boost::mutex> lock(server_state->mutex_);
-  if (!server_state->stopped_ && !error)
-  {    
-    // Remember server state
-    server_state->stopped_ = true;
-    std::wcout << L"Server work is interrupted because of the stop timeout expiration.\n";
-    lock.unlock();
-    // Notify main thread
-    server_state->stop_condition_.notify_all();    
+    // Notify main thread        
+    server_state->stop_condition_.notify_all();
   }
 }
