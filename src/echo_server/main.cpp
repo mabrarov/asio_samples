@@ -139,6 +139,7 @@ int _tmain(int argc, _TCHAR* argv[])
       if (!server_state->stop_condition_.timed_wait(lock, stop_timeout))      
       {
         std::wcout << L"Server stop timeout expiration. Server work will be aborted.\n";
+        exit_code = EXIT_FAILURE;
       }
     }
     lock.unlock();
