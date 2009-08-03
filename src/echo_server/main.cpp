@@ -37,8 +37,9 @@ struct wrapped_server : private boost::noncopyable
   bool stopped_;  
 
   explicit wrapped_server(boost::asio::io_service& io_service,
-    boost::asio::io_service& session_io_service)
-    : server_(new ma::echo::server(io_service, session_io_service))    
+    boost::asio::io_service& session_io_service,
+    ma::echo::server::settings settings)
+    : server_(new ma::echo::server(io_service, session_io_service, settings))    
     , stop_in_progress_(false) 
     , stopped_(false)
   {
@@ -86,6 +87,7 @@ int _tmain(int argc, _TCHAR* argv[])
                << L"Total number of work threads       : " << session_thread_count + session_manager_thread_count << L"\n";
 
     boost::uint16_t listen_port = boost::lexical_cast<boost::uint16_t>(argv[1]);
+    boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::tcp::v4(), listen_port);
     
     // Before server_io_service
     boost::asio::io_service session_io_service;
@@ -93,13 +95,13 @@ int _tmain(int argc, _TCHAR* argv[])
     boost::asio::io_service server_io_service;
     // Create server
     wrapped_server_ptr wrapped_server(
-      new wrapped_server(server_io_service, session_io_service));
-
-    boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::tcp::v4(), listen_port);
+      new wrapped_server(server_io_service, session_io_service,
+        ma::echo::server::settings(endpoint)));
+    
     std::wcout << L"Server is starting at port: " << listen_port << L"\n";              
     
     // Start the server
-    wrapped_server->server_->async_start(endpoint,
+    wrapped_server->server_->async_start(
       boost::bind(server_started, wrapped_server, _1));    
     
     // Setup console controller

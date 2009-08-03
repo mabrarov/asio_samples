@@ -8,6 +8,7 @@
 #ifndef MA_ECHO_SERVER_HPP
 #define MA_ECHO_SERVER_HPP
 
+#include <limits>
 #include <boost/utility.hpp>
 #include <boost/smart_ptr.hpp>
 #include <boost/bind.hpp>
@@ -22,9 +23,10 @@
 namespace ma
 {    
   namespace echo
-  {    
+  {
+    struct work_settings;
     class server;
-    typedef boost::shared_ptr<server> server_ptr;
+    typedef boost::shared_ptr<server> server_ptr;    
 
     class server 
       : private boost::noncopyable 
@@ -54,6 +56,7 @@ namespace ma
       {
       public:
         explicit wrapped_session_list()
+          : size_(0)
         {
         }
 
@@ -66,6 +69,7 @@ namespace ma
             front_->prev_ = wrapped_session;
           }
           front_ = wrapped_session;
+          ++size_;
         }
 
         void erase(const wrapped_session_ptr& wrapped_session)
@@ -85,6 +89,12 @@ namespace ma
           }
           wrapped_session->prev_.reset();
           wrapped_session->next_.reset();
+          --size_;
+        }
+
+        std::size_t size() const
+        {
+          return size_;
         }
 
         wrapped_session_ptr front() const
@@ -93,16 +103,36 @@ namespace ma
         }
 
       private:
+        std::size_t size_;
         wrapped_session_ptr front_;
       }; // wrapped_session_list
 
     public:
+      struct settings
+      {      
+        boost::asio::ip::tcp::endpoint endpoint_;
+        std::size_t max_sessions_;
+        int listen_backlog_;
+
+        explicit settings(
+          const boost::asio::ip::tcp::endpoint& endpoint,
+          std::size_t max_sessions = (std::numeric_limits<std::size_t>::max)(),
+          int listen_backlog = 4)
+          : endpoint_(endpoint)
+          , max_sessions_(max_sessions)
+          , listen_backlog_(listen_backlog)
+        {
+        }
+      }; // struct settings
+
       explicit server(boost::asio::io_service& io_service,
-        boost::asio::io_service& session_io_service)
+        boost::asio::io_service& session_io_service,
+        const settings& settings)
         : io_service_(io_service)
         , session_io_service_(session_io_service)
         , strand_(io_service)
         , acceptor_(io_service)
+        , settings_(settings)
       {        
       }
 
@@ -111,9 +141,7 @@ namespace ma
       }
 
       template <typename Handler>
-      void async_start(
-        const boost::asio::ip::tcp::endpoint& endpoint, 
-        Handler handler)
+      void async_start(Handler handler)
       {
         strand_.dispatch
         (
@@ -123,8 +151,7 @@ namespace ma
             boost::bind
             (
               &this_type::do_start<Handler>,
-              shared_from_this(),
-              endpoint,
+              shared_from_this(),              
               boost::make_tuple(handler)
             )
           )
@@ -169,18 +196,16 @@ namespace ma
 
     private:
       template <typename Handler>
-      void do_start(
-        const boost::asio::ip::tcp::endpoint endpoint, 
-        boost::tuple<Handler> handler)
+      void do_start(boost::tuple<Handler> handler)
       {
         boost::system::error_code error;
-        acceptor_.open(endpoint.protocol(), error);
+        acceptor_.open(settings_.endpoint_.protocol(), error);
         if (!error)
         {
-          acceptor_.bind(endpoint, error);
+          acceptor_.bind(settings_.endpoint_, error);
           if (!error)
           {
-            acceptor_.listen(4, error);
+            acceptor_.listen(settings_.listen_backlog_, error);
           }          
         }
 
@@ -250,6 +275,7 @@ namespace ma
       bool accept_in_progress_;      
       handler_allocator accept_allocator_;
       wrapped_session_list wrapped_sessions_;
+      settings settings_;
     }; // class server
 
   } // namespace echo

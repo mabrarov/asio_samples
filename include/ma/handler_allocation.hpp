@@ -89,7 +89,7 @@ namespace ma
     template <typename Function>
     friend void asio_handler_invoke(Function function, this_type* context)
     {
-      ma_invoke_helpers::invoke(function, &context->handler_);
+      ma_invoke_helpers::invoke(function, boost::addressof(context->handler_));
     }  
 
     void operator()()
@@ -185,18 +185,18 @@ namespace ma
 
     friend void* asio_handler_allocate(std::size_t size, this_type* context)
     {
-      return ma_alloc_helpers::allocate(size, &context->context_);
+      return ma_alloc_helpers::allocate(size, boost::addressof(context->context_));
     }
 
     friend void asio_handler_deallocate(void* pointer, std::size_t size, this_type* context)
     {
-      ma_alloc_helpers::deallocate(pointer, size, &context->context_);
+      ma_alloc_helpers::deallocate(pointer, size, boost::addressof(context->context_));
     }  
 
     template <typename Function>
     friend void asio_handler_invoke(Function function, this_type* context)
     {
-      ma_invoke_helpers::invoke(function, &context->handler_);
+      ma_invoke_helpers::invoke(function, boost::addressof(context->handler_));
     } 
     
     void operator()()
