@@ -111,7 +111,9 @@ namespace ma
       }
 
       template <typename Handler>
-      void async_start(Handler handler)
+      void async_start(
+        const boost::asio::ip::tcp::endpoint& endpoint, 
+        Handler handler)
       {
         strand_.dispatch
         (
@@ -122,6 +124,7 @@ namespace ma
             (
               &this_type::do_start<Handler>,
               shared_from_this(),
+              endpoint,
               boost::make_tuple(handler)
             )
           )
@@ -166,22 +169,47 @@ namespace ma
 
     private:
       template <typename Handler>
-      void do_start(boost::tuple<Handler> handler)
+      void do_start(
+        const boost::asio::ip::tcp::endpoint endpoint, 
+        boost::tuple<Handler> handler)
       {
-        //todo
+        boost::system::error_code error;
+        acceptor_.open(endpoint.protocol(), error);
+        if (!error)
+        {
+          acceptor_.bind(endpoint, error);
+          if (!error)
+          {
+            acceptor_.listen(4, error);
+          }          
+        }
+
+        if (!error)
+        {
+          //todo
+          error = boost::asio::error::operation_not_supported;
+        }
+
+        // For test only
+        wrapped_session_ptr wrapped_session(
+          new wrapped_session(session_io_service_));
+        wrapped_sessions_.push_front(wrapped_session);
+        wrapped_sessions_.erase(wrapped_session);
+
+        if (error)
+        {
+          boost::system::error_code ignored;
+          acceptor_.close(ignored);
+        }
+        
         io_service_.post
         (
           boost::asio::detail::bind_handler
           (
             boost::get<0>(handler), 
-            boost::asio::error::operation_not_supported
+            error
           )
-        );
-        
-        wrapped_session_ptr wrapped_session(
-          new wrapped_session(session_io_service_));
-        wrapped_sessions_.push_front(wrapped_session);
-        wrapped_sessions_.erase(wrapped_session);
+        );                        
 
       } // do_start
 

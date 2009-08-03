@@ -18,13 +18,12 @@
 #include <boost/date_time/posix_time/ptime.hpp>
 #include <boost/asio.hpp>
 #include <boost/cstdint.hpp>
+#include <boost/lexical_cast.hpp>
 #include <ma/handler_allocation.hpp>
 #include <ma/echo/server.hpp>
 #include <console_controller.hpp>
 
 struct wrapped_server;
-typedef boost::uint16_t port_type;
-typedef boost::asio::ip::tcp::endpoint endpoint;
 typedef boost::function<void (void)> exception_handler;
 typedef boost::shared_ptr<wrapped_server> wrapped_server_ptr;
 
@@ -84,7 +83,9 @@ int _tmain(int argc, _TCHAR* argv[])
     std::wcout << L"Number of found CPUs: " << cpu_count << L"\n"               
                << L"Number of session manager's threads: " << session_manager_thread_count << L"\n"
                << L"Number of sessions' threads        : " << session_thread_count << L"\n" 
-               << L"Total number of work threads       : " << session_thread_count + session_manager_thread_count << L"\n";        
+               << L"Total number of work threads       : " << session_thread_count + session_manager_thread_count << L"\n";
+
+    boost::uint16_t listen_port = boost::lexical_cast<boost::uint16_t>(argv[1]);
     
     // Before server_io_service
     boost::asio::io_service session_io_service;
@@ -93,11 +94,13 @@ int _tmain(int argc, _TCHAR* argv[])
     // Create server
     wrapped_server_ptr wrapped_server(
       new wrapped_server(server_io_service, session_io_service));
+
+    boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::tcp::v4(), listen_port);
+    std::wcout << L"Server is starting at port: " << listen_port << L"\n";              
     
     // Start the server
-    wrapped_server->server_->async_start(
-      boost::bind(server_started, wrapped_server, _1));
-    std::wcout << L"Server is starting.\n";
+    wrapped_server->server_->async_start(endpoint,
+      boost::bind(server_started, wrapped_server, _1));    
     
     // Setup console controller
     ma::console_controller console_controller(
