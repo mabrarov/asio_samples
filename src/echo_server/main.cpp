@@ -17,7 +17,6 @@
 #include <boost/thread.hpp>
 #include <boost/date_time/posix_time/ptime.hpp>
 #include <boost/asio.hpp>
-#include <boost/cstdint.hpp>
 #include <boost/lexical_cast.hpp>
 #include <ma/handler_allocation.hpp>
 #include <ma/echo/server.hpp>
@@ -86,7 +85,7 @@ int _tmain(int argc, _TCHAR* argv[])
                << L"Number of sessions' threads        : " << session_thread_count << L"\n" 
                << L"Total number of work threads       : " << session_thread_count + session_manager_thread_count << L"\n";
 
-    boost::uint16_t listen_port = boost::lexical_cast<boost::uint16_t>(argv[1]);
+    unsigned short listen_port = boost::lexical_cast<unsigned short>(argv[1]);
     boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::tcp::v4(), listen_port);
     
     // Before server_io_service
