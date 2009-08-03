@@ -32,69 +32,69 @@ namespace ma
     {
     private:
       typedef server this_type;      
-      struct session_state;
-      typedef boost::shared_ptr<session_state> session_state_ptr;
-      typedef boost::weak_ptr<session_state> session_state_weak_ptr;
+      struct wrapped_session;
+      typedef boost::shared_ptr<wrapped_session> wrapped_session_ptr;
+      typedef boost::weak_ptr<wrapped_session> wrapped_session_weak_ptr;
 
-      struct session_state : private boost::noncopyable
+      struct wrapped_session : private boost::noncopyable
       {        
-        session_state_weak_ptr prev_;
-        session_state_ptr next_;
+        wrapped_session_weak_ptr prev_;
+        wrapped_session_ptr next_;
         session_ptr session_;
         bool stop_in_progress_;
 
-        explicit session_state(const session_ptr& session)
-          : session_(session)
+        explicit wrapped_session(boost::asio::io_service& io_service)
+          : session_(new session(io_service))
           , stop_in_progress_(false)
         {
         }
-      }; // session_state
+      }; // wrapped_session
 
-      class session_state_list : private boost::noncopyable
+      class wrapped_session_list : private boost::noncopyable
       {
       public:
-        explicit session_state_list()
+        explicit wrapped_session_list()
         {
         }
 
-        void push_front(const session_state_ptr& session_state)
+        void push_front(const wrapped_session_ptr& wrapped_session)
         {
-          session_state->next_ = front_;
-          session_state->prev_.reset();
+          wrapped_session->next_ = front_;
+          wrapped_session->prev_.reset();
           if (front_)
           {
-            front_->prev_ = session_state;
+            front_->prev_ = wrapped_session;
           }
-          front_ = session_state;
+          front_ = wrapped_session;
         }
 
-        void erase(const session_state_ptr& session_state)
+        void erase(const wrapped_session_ptr& wrapped_session)
         {
-          if (front_ == session_state)
+          if (front_ == wrapped_session)
           {
             front_ = front_->next_;
           }
-          session_state_ptr prev = session_state->prev_.lock();
+          wrapped_session_ptr prev = wrapped_session->prev_.lock();
           if (prev)
           {
-            prev->next_ = session_state->next_;
+            prev->next_ = wrapped_session->next_;
           }
-          if (session_state->next_)
+          if (wrapped_session->next_)
           {
-            session_state->next_->prev_ = prev;
+            wrapped_session->next_->prev_ = prev;
           }
-          session_state->prev_.reset();
-          session_state->next_.reset();
+          wrapped_session->prev_.reset();
+          wrapped_session->next_.reset();
         }
 
-        session_state_ptr front() const
+        wrapped_session_ptr front() const
         {
           return front_;
         }
 
       private:
-        session_state_ptr front_;
-      }; // session_state_list
+        wrapped_session_ptr front_;
+      }; // wrapped_session_list
 
     public:
       explicit server(boost::asio::io_service& io_service,
@@ -177,11 +177,11 @@ namespace ma
             boost::asio::error::operation_not_supported
           )
         );
-
-        session_ptr session(new session(session_io_service_));
-        session_state_ptr session_state(new session_state(session));
-        sessions_.push_front(session_state);
-        sessions_.erase(session_state);
+        
+        wrapped_session_ptr wrapped_session(
+          new wrapped_session(session_io_service_));
+        wrapped_sessions_.push_front(wrapped_session);
+        wrapped_sessions_.erase(wrapped_session);
 
       } // do_start
 
@@ -221,7 +221,7 @@ namespace ma
       bool stopped_;      
       bool accept_in_progress_;      
       handler_allocator accept_allocator_;
-      session_state_list sessions_;
+      wrapped_session_list wrapped_sessions_;
     }; // class server
 
   } // namespace echo

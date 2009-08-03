@@ -22,13 +22,13 @@
 #include <ma/echo/server.hpp>
 #include <console_controller.hpp>
 
-struct server_state;
+struct wrapped_server;
 typedef boost::uint16_t port_type;
 typedef boost::asio::ip::tcp::endpoint endpoint;
 typedef boost::function<void (void)> exception_handler;
-typedef boost::shared_ptr<server_state> server_state_ptr;
+typedef boost::shared_ptr<wrapped_server> wrapped_server_ptr;
 
-struct server_state : private boost::noncopyable
+struct wrapped_server : private boost::noncopyable
 {
   ma::echo::server_ptr server_;
   boost::mutex mutex_;  
@@ -37,30 +37,31 @@ struct server_state : private boost::noncopyable
   bool stop_in_progress_;
   bool stopped_;  
 
-  explicit server_state(const ma::echo::server_ptr& server)
-    : server_(server)    
+  explicit wrapped_server(boost::asio::io_service& io_service,
+    boost::asio::io_service& session_io_service)
+    : server_(new ma::echo::server(io_service, session_io_service))    
     , stop_in_progress_(false) 
     , stopped_(false)
   {
   }
-}; // server_state
+}; // wrapped_server
 
 const boost::posix_time::time_duration stop_timeout = boost::posix_time::seconds(30);
 
-void server_started(const server_state_ptr&,
+void server_started(const wrapped_server_ptr&,
   const boost::system::error_code&);
 
-void server_has_to_stop(const server_state_ptr&,
+void server_has_to_stop(const wrapped_server_ptr&,
   const boost::system::error_code&);
 
-void server_stopped(const server_state_ptr&,
+void server_stopped(const wrapped_server_ptr&,
   const boost::system::error_code&);
 
-void handle_program_exit_request(const server_state_ptr&);
+void handle_program_exit_request(const wrapped_server_ptr&);
 
 void run_io_service(boost::asio::io_service&, exception_handler);
 
-void handle_work_exception(const server_state_ptr&);
+void handle_work_exception(const wrapped_server_ptr&);
 
 int _tmain(int argc, _TCHAR* argv[])
 {
@@ -89,23 +90,24 @@ int _tmain(int argc, _TCHAR* argv[])
     boost::asio::io_service session_io_service;
     // ... for the right destruction order
     boost::asio::io_service server_io_service;
-    ma::echo::server_ptr server(new ma::echo::server(server_io_service, session_io_service));
-    server_state_ptr server_state(new server_state(server));
+    // Create server
+    wrapped_server_ptr wrapped_server(
+      new wrapped_server(server_io_service, session_io_service));
     
     // Start the server
-    server_state->server_->async_start(
-      boost::bind(server_started, server_state, _1));
+    wrapped_server->server_->async_start(
+      boost::bind(server_started, wrapped_server, _1));
     std::wcout << L"Server is starting.\n";
     
     // Setup console controller
     ma::console_controller console_controller(
-      boost::bind(handle_program_exit_request, server_state));
+      boost::bind(handle_program_exit_request, wrapped_server));
 
     std::wcout << L"Press Ctrl+C (Ctrl+Break) to exit.\n";
 
     // Exception handler for automatic server aborting
     exception_handler work_thread_exception_handler(
-      boost::bind(handle_work_exception, server_state));
+      boost::bind(handle_work_exception, wrapped_server));
 
     // Create work for sessions' io_service to prevent threads' stop
     boost::asio::io_service::work session_work(session_io_service);
@@ -129,14 +131,14 @@ int _tmain(int argc, _TCHAR* argv[])
     }
 
     // Wait until server stops
-    boost::unique_lock<boost::mutex> lock(server_state->mutex_);
-    if (!server_state->stop_in_progress_ && !server_state->stopped_)
+    boost::unique_lock<boost::mutex> lock(wrapped_server->mutex_);
+    if (!wrapped_server->stop_in_progress_ && !wrapped_server->stopped_)
     {
-      server_state->stop_in_progress_condition_.wait(lock);
+      wrapped_server->stop_in_progress_condition_.wait(lock);
     }
-    if (!server_state->stopped_)
+    if (!wrapped_server->stopped_)
     {
-      if (!server_state->stop_condition_.timed_wait(lock, stop_timeout))      
+      if (!wrapped_server->stop_condition_.timed_wait(lock, stop_timeout))      
       {
         std::wcout << L"Server stop timeout expiration. Server work will be aborted.\n";
         exit_code = EXIT_FAILURE;
@@ -169,110 +171,110 @@ void run_io_service(boost::asio::io_service& io_service,
   }
 }
 
-void handle_work_exception(const server_state_ptr& server_state)
+void handle_work_exception(const wrapped_server_ptr& wrapped_server)
 {
-  boost::unique_lock<boost::mutex> lock(server_state->mutex_);
-  server_state->stop_in_progress_ = false;
-  server_state->stopped_ = true;
+  boost::unique_lock<boost::mutex> lock(wrapped_server->mutex_);
+  wrapped_server->stop_in_progress_ = false;
+  wrapped_server->stopped_ = true;
   std::wcout << L"Server work will be aborted due to unexpected exception.\n";
   lock.unlock();
   // Notify main thread
-  server_state->stop_in_progress_condition_.notify_all();    
-  server_state->stop_condition_.notify_all();    
+  wrapped_server->stop_in_progress_condition_.notify_all();    
+  wrapped_server->stop_condition_.notify_all();    
 }
 
-void handle_program_exit_request(const server_state_ptr& server_state)
+void handle_program_exit_request(const wrapped_server_ptr& wrapped_server)
 {
-  boost::unique_lock<boost::mutex> lock(server_state->mutex_);
-  if (server_state->stopped_)
+  boost::unique_lock<boost::mutex> lock(wrapped_server->mutex_);
+  if (wrapped_server->stopped_)
   {
     std::wcout << L"Program exit request detected. Server has already stopped.\n";
   }
-  else if (server_state->stop_in_progress_)
+  else if (wrapped_server->stop_in_progress_)
   { 
     std::wcout << L"Program exit request detected. Server is already stopping. Server work will be aborted.\n";
-    server_state->stop_in_progress_ = false;
-    server_state->stopped_ = true;    
+    wrapped_server->stop_in_progress_ = false;
+    wrapped_server->stopped_ = true;    
 
     // Notify main thread
     lock.unlock();
-    server_state->stop_in_progress_condition_.notify_all();
-    server_state->stop_condition_.notify_all();
+    wrapped_server->stop_in_progress_condition_.notify_all();
+    wrapped_server->stop_condition_.notify_all();
   }
   else
   {
     // Start server stop
-    server_state->server_->async_stop(
-      boost::bind(server_stopped, server_state, _1));        
-    server_state->stop_in_progress_ = true;
+    wrapped_server->server_->async_stop(
+      boost::bind(server_stopped, wrapped_server, _1));        
+    wrapped_server->stop_in_progress_ = true;
     std::wcout << L"Program exit request detected. Server is stopping. Press Ctrl+C (Ctrl+Break) to abort server work.\n";    
 
     // Notify main thread
     lock.unlock();
-    server_state->stop_in_progress_condition_.notify_all();
+    wrapped_server->stop_in_progress_condition_.notify_all();
   }  
 }
 
-void server_started(const server_state_ptr& server_state,
+void server_started(const wrapped_server_ptr& wrapped_server,
   const boost::system::error_code& error)
 {   
-  boost::unique_lock<boost::mutex> lock(server_state->mutex_);
-  if (!server_state->stop_in_progress_ && !server_state->stopped_)
+  boost::unique_lock<boost::mutex> lock(wrapped_server->mutex_);
+  if (!wrapped_server->stop_in_progress_ && !wrapped_server->stopped_)
   {   
     if (error)
     {    
       // Remember server state      
-      server_state->stopped_ = true;
+      wrapped_server->stopped_ = true;
       std::wcout << L"Server can't start due to error. Server has stopped.\n";      
 
       // Notify main thread
       lock.unlock();
-      server_state->stop_in_progress_condition_.notify_all();
-      server_state->stop_condition_.notify_all();
+      wrapped_server->stop_in_progress_condition_.notify_all();
+      wrapped_server->stop_condition_.notify_all();
     }
     else
     {
       // Wait until server has done all the work
-      server_state->server_->async_wait(
-        boost::bind(server_has_to_stop, server_state, _1));
+      wrapped_server->server_->async_wait(
+        boost::bind(server_has_to_stop, wrapped_server, _1));
       std::wcout << L"Server has started.\n";
     }
   }  
 }
 
-void server_has_to_stop(const server_state_ptr& server_state,
+void server_has_to_stop(const wrapped_server_ptr& wrapped_server,
   const boost::system::error_code&)
 {
-  boost::unique_lock<boost::mutex> lock(server_state->mutex_);
-  if (!server_state->stop_in_progress_ && !server_state->stopped_)
+  boost::unique_lock<boost::mutex> lock(wrapped_server->mutex_);
+  if (!wrapped_server->stop_in_progress_ && !wrapped_server->stopped_)
   {
     // Start server stop
-    server_state->server_->async_stop(
-      boost::bind(server_stopped, server_state, _1));
+    wrapped_server->server_->async_stop(
+      boost::bind(server_stopped, wrapped_server, _1));
     
     // Remember server state
-    server_state->stop_in_progress_ = true;
+    wrapped_server->stop_in_progress_ = true;
     std::wcout << L"Server can't continue its work due to error. Server is stopping.\n";    
 
     // Notify main thread    
     lock.unlock();
-    server_state->stop_in_progress_condition_.notify_all();    
+    wrapped_server->stop_in_progress_condition_.notify_all();    
   }
 }
 
-void server_stopped(const server_state_ptr& server_state,
+void server_stopped(const wrapped_server_ptr& wrapped_server,
   const boost::system::error_code&)
 {
-  boost::unique_lock<boost::mutex> lock(server_state->mutex_);
-  if (!server_state->stopped_ && server_state->stop_in_progress_)
+  boost::unique_lock<boost::mutex> lock(wrapped_server->mutex_);
+  if (!wrapped_server->stopped_ && wrapped_server->stop_in_progress_)
   {  
     // Remember server state
-    server_state->stop_in_progress_ = false;
-    server_state->stopped_ = true;
+    wrapped_server->stop_in_progress_ = false;
+    wrapped_server->stopped_ = true;
     std::wcout << L"Server has stopped.\n";    
 
     // Notify main thread        
     lock.unlock();
-    server_state->stop_condition_.notify_all();
+    wrapped_server->stop_condition_.notify_all();
   }
 }
