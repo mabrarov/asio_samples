@@ -39,14 +39,16 @@ namespace ma
 
       struct wrapped_session : private boost::noncopyable
       {        
-        wrapped_session_weak_ptr prev_;
-        wrapped_session_ptr next_;
-        session_ptr session_;
-        bool stop_in_progress_;
+        wrapped_session_weak_ptr prev;
+        wrapped_session_ptr next;
+        session_ptr session;
+        bool stop_in_progress;
+        bool stopped;
 
         explicit wrapped_session(boost::asio::io_service& io_service)
-          : session_(new session(io_service))
-          , stop_in_progress_(false)
+          : session(new ma::echo::session(io_service))
+          , stop_in_progress(false)
+          , stopped(false)
         {
         }
       }; // wrapped_session
@@ -61,11 +63,11 @@ namespace ma
 
         void push_front(const wrapped_session_ptr& wrapped_session)
         {
-          wrapped_session->next_ = front_;
-          wrapped_session->prev_.reset();
+          wrapped_session->next = front_;
+          wrapped_session->prev.reset();
           if (front_)
           {
-            front_->prev_ = wrapped_session;
+            front_->prev = wrapped_session;
           }
           front_ = wrapped_session;
           ++size_;
@@ -75,19 +77,19 @@ namespace ma
         {
           if (front_ == wrapped_session)
           {
-            front_ = front_->next_;
+            front_ = front_->next;
           }
-          wrapped_session_ptr prev = wrapped_session->prev_.lock();
+          wrapped_session_ptr prev = wrapped_session->prev.lock();
           if (prev)
           {
-            prev->next_ = wrapped_session->next_;
+            prev->next = wrapped_session->next;
           }
-          if (wrapped_session->next_)
+          if (wrapped_session->next)
           {
-            wrapped_session->next_->prev_ = prev;
+            wrapped_session->next->prev = prev;
           }
-          wrapped_session->prev_.reset();
-          wrapped_session->next_.reset();
+          wrapped_session->prev.reset();
+          wrapped_session->next.reset();
           --size_;
         }
 
@@ -109,17 +111,17 @@ namespace ma
     public:
       struct settings
       {      
-        boost::asio::ip::tcp::endpoint endpoint_;
-        std::size_t max_sessions_;
-        int listen_backlog_;
+        boost::asio::ip::tcp::endpoint endpoint;
+        std::size_t max_sessions;
+        int listen_backlog;
 
         explicit settings(
-          const boost::asio::ip::tcp::endpoint& endpoint,
-          std::size_t max_sessions = (std::numeric_limits<std::size_t>::max)(),
-          int listen_backlog = 4)
-          : endpoint_(endpoint)
-          , max_sessions_(max_sessions)
-          , listen_backlog_(listen_backlog)
+          const boost::asio::ip::tcp::endpoint& the_endpoint,
+          std::size_t the_max_sessions = (std::numeric_limits<std::size_t>::max)(),
+          int the_listen_backlog = 4)
+          : endpoint(the_endpoint)
+          , max_sessions(the_max_sessions)
+          , listen_backlog(the_listen_backlog)
         {
         }
       }; // struct settings
@@ -198,13 +200,13 @@ namespace ma
       void do_start(boost::tuple<Handler> handler)
       {
         boost::system::error_code error;
-        acceptor_.open(settings_.endpoint_.protocol(), error);
+        acceptor_.open(settings_.endpoint.protocol(), error);
         if (!error)
         {
-          acceptor_.bind(settings_.endpoint_, error);
+          acceptor_.bind(settings_.endpoint, error);
           if (!error)
           {
-            acceptor_.listen(settings_.listen_backlog_, error);
+            acceptor_.listen(settings_.listen_backlog, error);
           }          
         }
 
@@ -215,10 +217,10 @@ namespace ma
         }
 
         // For test only
-        wrapped_session_ptr wrapped_session(
+        wrapped_session_ptr new_session(
           new wrapped_session(session_io_service_));
-        wrapped_sessions_.push_front(wrapped_session);
-        wrapped_sessions_.erase(wrapped_session);
+        wrapped_sessions_.push_front(new_session);
+        wrapped_sessions_.erase(new_session);
 
         if (error)
         {
