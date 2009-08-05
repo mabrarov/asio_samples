@@ -23,8 +23,7 @@
 namespace ma
 {    
   namespace echo
-  {
-    struct work_settings;
+  {    
     class server;
     typedef boost::shared_ptr<server> server_ptr;    
 
