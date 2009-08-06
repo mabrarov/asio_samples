@@ -113,15 +113,15 @@ namespace ma
       {      
         boost::asio::ip::tcp::endpoint endpoint;
         std::size_t max_sessions;
-        int listen_backlog;
+        int backlog;
 
         explicit settings(
-          const boost::asio::ip::tcp::endpoint& the_endpoint,
-          std::size_t the_max_sessions = (std::numeric_limits<std::size_t>::max)(),
-          int the_listen_backlog = 4)
-          : endpoint(the_endpoint)
-          , max_sessions(the_max_sessions)
-          , listen_backlog(the_listen_backlog)
+          const boost::asio::ip::tcp::endpoint& listen_endpoint,
+          std::size_t max_sessions_number = (std::numeric_limits<std::size_t>::max)(),
+          int listen_backlog = 4)
+          : endpoint(listen_endpoint)
+          , max_sessions(max_sessions_number)
+          , backlog(listen_backlog)
         {
         }
       }; // struct settings
@@ -206,7 +206,7 @@ namespace ma
           acceptor_.bind(settings_.endpoint, error);
           if (!error)
           {
-            acceptor_.listen(settings_.listen_backlog, error);
+            acceptor_.listen(settings_.backlog, error);
           }          
         }
 
