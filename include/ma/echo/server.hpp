@@ -9,6 +9,7 @@
 #define MA_ECHO_SERVER_HPP
 
 #include <limits>
+#include <stdexcept>
 #include <boost/utility.hpp>
 #include <boost/smart_ptr.hpp>
 #include <boost/bind.hpp>
@@ -26,6 +27,7 @@ namespace ma
   {    
     class server;
     typedef boost::shared_ptr<server> server_ptr;    
+    typedef boost::weak_ptr<server> server_weak_ptr;    
 
     class server 
       : private boost::noncopyable 
@@ -33,63 +35,73 @@ namespace ma
     {
     private:
       typedef server this_type;      
-      struct wrapped_session;
-      typedef boost::shared_ptr<wrapped_session> wrapped_session_ptr;
-      typedef boost::weak_ptr<wrapped_session> wrapped_session_weak_ptr;
+      struct session_proxy_type;
+      typedef boost::shared_ptr<session_proxy_type> session_proxy_ptr;
+      typedef boost::weak_ptr<session_proxy_type> session_proxy_weak_ptr;
 
-      struct wrapped_session : private boost::noncopyable
+      enum session_lifecycle
+      {
+        none,
+        start_in_progress,
+        started,
+        stop_in_progress,
+        stopped
+      };
+      
+      struct session_proxy_type : private boost::noncopyable
       {        
-        wrapped_session_weak_ptr prev;
-        wrapped_session_ptr next;
+        session_proxy_weak_ptr prev;
+        session_proxy_ptr next;
         session_ptr session;
-        bool stop_in_progress;
-        bool stopped;
+        handler_allocator start_wait_allocator_;
+        handler_allocator stop_allocator_;
+        boost::asio::ip::tcp::endpoint endpoint;
+        session_lifecycle lifecycle;        
 
-        explicit wrapped_session(boost::asio::io_service& io_service)
+        explicit session_proxy_type(boost::asio::io_service& io_service)
           : session(new ma::echo::session(io_service))
-          , stop_in_progress(false)
-          , stopped(false)
+          , lifecycle(none)
         {
         }
       }; // wrapped_session
 
-      class wrapped_session_list : private boost::noncopyable
+      class session_proxy_list : private boost::noncopyable
       {
       public:
-        explicit wrapped_session_list()
+        explicit session_proxy_list()
           : size_(0)
         {
         }
 
-        void push_front(const wrapped_session_ptr& wrapped_session)
+        void push_front(const session_proxy_ptr& session_proxy)
         {
-          wrapped_session->next = front_;
-          wrapped_session->prev.reset();
+          session_proxy->next = front_;
+          session_proxy->prev.reset();
           if (front_)
           {
-            front_->prev = wrapped_session;
+            front_->prev = session_proxy;
           }
-          front_ = wrapped_session;
+          front_ = session_proxy;
           ++size_;
         }
 
-        void erase(const wrapped_session_ptr& wrapped_session)
+        void erase(const session_proxy_ptr& session_proxy)
         {
-          if (front_ == wrapped_session)
+          if (front_ == session_proxy)
           {
             front_ = front_->next;
           }
-          wrapped_session_ptr prev = wrapped_session->prev.lock();
+          session_proxy_ptr prev = session_proxy->prev.lock();
           if (prev)
           {
-            prev->next = wrapped_session->next;
+            prev->next = session_proxy->next;
           }
-          if (wrapped_session->next)
+          if (session_proxy->next)
           {
-            wrapped_session->next->prev = prev;
+            session_proxy->next->prev = prev;
           }
-          wrapped_session->prev.reset();
-          wrapped_session->next.reset();
+          session_proxy->prev.reset();
+          session_proxy->next.reset();
           --size_;
         }
 
@@ -98,15 +110,20 @@ namespace ma
           return size_;
         }
 
-        wrapped_session_ptr front() const
+        bool empty() const
+        {
+          return front_;
+        }
+
+        session_proxy_ptr front() const
         {
           return front_;
         }
 
       private:
         std::size_t size_;
-        wrapped_session_ptr front_;
-      }; // wrapped_session_list
+        session_proxy_ptr front_;
+      }; // session_proxy_list
 
     public:
       struct settings
@@ -133,8 +150,17 @@ namespace ma
         , session_io_service_(session_io_service)
         , strand_(io_service)
         , acceptor_(io_service)
+        , wait_handler_(io_service)
+        , stop_handler_(io_service)
+        , started_(false)        
+        , stopped_(false)      
+        , accept_in_progress_(false)
         , settings_(settings)
-      {        
+      {
+        if (settings.max_sessions < 1)
+        {
+          boost::throw_exception(std::runtime_error("maximum sessions number must be >= 1"));
+        }
       }
 
       ~server()
@@ -199,44 +225,59 @@ namespace ma
       template <typename Handler>
       void do_start(boost::tuple<Handler> handler)
       {
-        boost::system::error_code error;
-        acceptor_.open(settings_.endpoint.protocol(), error);
-        if (!error)
+        if (stopped_ || stop_handler_.has_target())
+        {          
+          io_service_.post
+          (
+            boost::asio::detail::bind_handler
+            (
+              boost::get<0>(handler), 
+              boost::asio::error::operation_aborted
+            )
+          );          
+        } 
+        else if (started_)
+        {          
+          io_service_.post
+          (
+            boost::asio::detail::bind_handler
+            (
+              boost::get<0>(handler), 
+              boost::asio::error::operation_not_supported
+            )
+          );          
+        }
+        else
         {
-          acceptor_.bind(settings_.endpoint, error);
+          boost::system::error_code error;
+          acceptor_.open(settings_.endpoint.protocol(), error);
           if (!error)
           {
-            acceptor_.listen(settings_.backlog, error);
+            acceptor_.bind(settings_.endpoint, error);
+            if (!error)
+            {
+              acceptor_.listen(settings_.backlog, error);
+            }          
           }          
-        }
-
-        if (!error)
-        {
-          //todo
-          error = boost::asio::error::operation_not_supported;
-        }
-
-        // For test only
-        wrapped_session_ptr new_session(
-          new wrapped_session(session_io_service_));
-        wrapped_sessions_.push_front(new_session);
-        wrapped_sessions_.erase(new_session);
-
-        if (error)
-        {
-          boost::system::error_code ignored;
-          acceptor_.close(ignored);
-        }
-        
-        io_service_.post
-        (
-          boost::asio::detail::bind_handler
+          if (error)
+          {
+            boost::system::error_code ignored;
+            acceptor_.close(ignored);
+          }
+          else
+          {
+            started_ = true;
+            accept_new_session();            
+          }
+          io_service_.post
           (
-            boost::get<0>(handler), 
-            error
-          )
-        );                        
-
+            boost::asio::detail::bind_handler
+            (
+              boost::get<0>(handler), 
+              error
+            )
+          );                        
+        }        
       } // do_start
 
       template <typename Handler>
@@ -267,16 +308,166 @@ namespace ma
         );
       } // do_wait
 
+      void accept_new_session()
+      {
+        session_proxy_ptr session_proxy(
+          new session_proxy_type(session_io_service_));
+
+        acceptor_.async_accept
+        (
+          session_proxy->session->socket(),
+          session_proxy->endpoint, 
+          strand_.wrap
+          (
+            make_custom_alloc_handler
+            (
+              accept_allocator_,
+              boost::bind
+              (
+                &this_type::handle_accept,
+                shared_from_this(),
+                _1
+              )
+            )
+          )
+        );
+        accept_in_progress_ = true;
+      }      
+
+      void handle_accept(const session_proxy_ptr& session_proxy,
+        const boost::system::error_code& error)
+      {
+        accept_in_progress_ = false;
+        if (stop_handler_.has_target())
+        {
+          if (session_proxies_.empty())  
+          {
+            stopped_ = true;
+            // Signal shutdown completion
+            stop_handler_.post(stop_error_);
+          }
+        }
+        else if (error)
+        {          
+          if (wait_handler_) 
+          {
+            wait_handler_.post(error);
+          }
+          else
+          {
+            wait_error_ = error;
+          }          
+        }
+        else
+        { 
+          // Save session
+          session_proxies_.push_front(session_proxy);
+          // Continue session acceptation
+          if (session_proxies_.size() < settings_.max_sessions)
+          {
+            accept_new_session();
+          }
+          // Start accepted session
+          session_proxy->lifecycle = start_in_progress;          
+          session_proxy->session->async_start
+          (            
+            make_custom_alloc_handler
+            (
+              session_proxy->start_wait_allocator_,
+              boost::bind
+              (
+                &this_type::dispatch_session_start,
+                server_weak_ptr(shared_from_this()),
+                session_proxy,
+                _1
+              )
+            )           
+          );                    
+        }        
+      }
+
+      static void dispatch_session_start(const server_weak_ptr& weak_server,
+        const session_proxy_ptr& session_proxy, const boost::system::error_code& error)
+      {
+        server_ptr the_server(weak_server.lock());
+        if (the_server)
+        {
+          the_server->strand_.dispatch
+          (
+            make_custom_alloc_handler
+            (
+              session_proxy->start_wait_allocator_,
+              boost::bind
+              (
+                &this_type::handle_session_start,
+                the_server,
+                session_proxy,
+                error
+              )
+            )
+          );
+        }
+      }
+
+      void handle_session_start(const session_proxy_ptr& session_proxy,
+        const boost::system::error_code& error)
+      {        
+        if (start_in_progress == session_proxy->lifecycle)
+        {        
+          if (error)
+          {          
+            session_proxy->lifecycle = stopped;
+            session_proxies_.erase(session_proxy);
+            if (stop_handler_.has_target())
+            {
+              if (!accept_in_progress_ && session_proxies_.empty())  
+              {
+                stopped_ = true;
+                // Signal shutdown completion
+                stop_handler_.post(stop_error_);
+              }
+            }
+            else
+            {
+              if (!accept_in_progress_ && !wait_error_
+                && session_proxies_.size() < settings_.max_sessions)
+              {
+                accept_new_session();
+              }
+            }         
+          }
+          else
+          {            
+            session_proxy->lifecycle = started;
+            if (stop_handler_.has_target())  
+            {
+              session_proxy->lifecycle = stop_in_progress;
+              //todo
+              //session->session->async_stop(...);
+            }
+            else
+            {
+              //todo
+              //session->session->async_wait(...);
+            }            
+          }
+        }
+      }
+
       boost::asio::io_service& io_service_;
       boost::asio::io_service& session_io_service_;
       boost::asio::io_service::strand strand_;      
       boost::asio::ip::tcp::acceptor acceptor_;
-      bool started_;
+      ma::handler_storage<boost::system::error_code> wait_handler_;
+      ma::handler_storage<boost::system::error_code> stop_handler_;
+      bool started_;      
       bool stopped_;      
       bool accept_in_progress_;      
       handler_allocator accept_allocator_;
-      wrapped_session_list wrapped_sessions_;
+      session_proxy_list session_proxies_;
       settings settings_;
+      boost::system::error_code wait_error_;
+      boost::system::error_code stop_error_;
     }; // class server
 
   } // namespace echo
