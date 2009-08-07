@@ -55,8 +55,8 @@ namespace ma
         , serial_port_(io_service)
         , read_handler_(io_service)        
         , stop_handler_(io_service)
-        , started_(false)
-        , stopped_(false)        
+        , start_done_(false)
+        , stop_done_(false)        
         , write_in_progress_(false)
         , read_in_progress_(false)
         , read_buffer_(read_buffer_size)
@@ -95,8 +95,8 @@ namespace ma
         read_error_ = boost::system::error_code();
         read_buffer_.consume(
           boost::asio::buffer_size(read_buffer_.data()));        
-        started_ = false;
-        stopped_ = false;
+        start_done_ = false;
+        stop_done_ = false;
       }
 
       template <typename Handler>
@@ -177,7 +177,7 @@ namespace ma
       template <typename Handler>
       void do_start(boost::tuple<Handler> handler)
       {
-        if (stopped_ || stop_handler_.has_target())
+        if (stop_done_ || stop_handler_.has_target())
         {          
           io_service_.post
           (
@@ -188,7 +188,7 @@ namespace ma
             )
           );          
         } 
-        else if (started_)
+        else if (start_done_)
         {          
           io_service_.post
           (
@@ -208,7 +208,7 @@ namespace ma
           }
 
           // Complete handshake immediately
-          started_ = true;
+          start_done_ = true;
 
           // Signal successful handshake completion.
           io_service_.post
@@ -225,7 +225,7 @@ namespace ma
       template <typename Handler>
       void do_stop(boost::tuple<Handler> handler)
       { 
-        if (stopped_)
+        if (stop_done_)
         {          
           io_service_.post
           (
@@ -267,7 +267,7 @@ namespace ma
           }        
           else
           {
-            stopped_ = true;
+            stop_done_ = true;
             // Signal shutdown completion
             io_service_.post
             (
@@ -284,7 +284,7 @@ namespace ma
       template <typename Handler>
       void do_write(const message_ptr& message, boost::tuple<Handler> handler)
       {  
-        if (stopped_ || stop_handler_.has_target())
+        if (stop_done_ || stop_handler_.has_target())
         {          
           io_service_.post
           (
@@ -295,7 +295,7 @@ namespace ma
             )
           );          
         } 
-        else if (!started_ || write_in_progress_)
+        else if (!start_done_ || write_in_progress_)
         {          
           io_service_.post
           (
@@ -347,7 +347,7 @@ namespace ma
         );
         if (stop_handler_.has_target() && !read_in_progress_)
         {
-          stopped_ = true;
+          stop_done_ = true;
           // Signal shutdown completion
           stop_handler_.post(stop_error_);
         }
@@ -356,7 +356,7 @@ namespace ma
       template <typename Handler>
       void do_read(message_ptr& message, boost::tuple<Handler> handler)
       {
-        if (stopped_ || stop_handler_.has_target())
+        if (stop_done_ || stop_handler_.has_target())
         {          
           io_service_.post
           (
@@ -367,7 +367,7 @@ namespace ma
             )
           );          
         }
-        else if (!started_ || read_handler_.has_target())
+        else if (!start_done_ || read_handler_.has_target())
         {          
           io_service_.post
           (
@@ -499,7 +499,7 @@ namespace ma
           read_handler_.cancel();
           if (!write_in_progress_)
           {
-            stopped_ = true;
+            stop_done_ = true;
             // Signal shutdown completion
             stop_handler_.post(stop_error_);
           }
@@ -530,7 +530,7 @@ namespace ma
           read_handler_.cancel();
           if (!write_in_progress_)
           {
-            stopped_ = true;
+            stop_done_ = true;
             // Signal shutdown completion
             stop_handler_.post(stop_error_);
           }
@@ -586,8 +586,8 @@ namespace ma
       boost::asio::serial_port serial_port_;               
       ma::handler_storage<read_arg_type> read_handler_;      
       ma::handler_storage<boost::system::error_code> stop_handler_;      
-      bool started_;
-      bool stopped_;      
+      bool start_done_;
+      bool stop_done_;      
       bool write_in_progress_;
       bool read_in_progress_;
       boost::asio::streambuf read_buffer_;        

@@ -39,9 +39,9 @@ namespace ma
       typedef boost::shared_ptr<session_proxy_type> session_proxy_ptr;
       typedef boost::weak_ptr<session_proxy_type> session_proxy_weak_ptr;
 
-      enum session_lifecycle
+      enum state_type
       {
-        none,
+        ready_to_start,
         start_in_progress,
         started,
         stop_in_progress,
@@ -56,11 +56,11 @@ namespace ma
         handler_allocator start_wait_allocator_;
         handler_allocator stop_allocator_;
         boost::asio::ip::tcp::endpoint endpoint;
-        session_lifecycle lifecycle;        
+        state_type state;        
 
         explicit session_proxy_type(boost::asio::io_service& io_service)
           : session(new ma::echo::session(io_service))
-          , lifecycle(none)
+          , state(ready_to_start)
         {
         }
 
@@ -156,8 +156,8 @@ namespace ma
         , acceptor_(io_service)
         , wait_handler_(io_service)
         , stop_handler_(io_service)
-        , started_(false)        
-        , stopped_(false)      
+        , start_done_(false)        
+        , stop_done_(false)      
         , accept_in_progress_(false)
         , settings_(settings)
       {
@@ -229,7 +229,7 @@ namespace ma
       template <typename Handler>
       void do_start(boost::tuple<Handler> handler)
       {
-        if (stopped_ || stop_handler_.has_target())
+        if (stop_done_ || stop_handler_.has_target())
         {          
           io_service_.post
           (
@@ -240,7 +240,7 @@ namespace ma
             )
           );          
         } 
-        else if (started_)
+        else if (start_done_)
         {          
           io_service_.post
           (
@@ -270,7 +270,7 @@ namespace ma
           }
           else
           {
-            started_ = true;
+            start_done_ = true;
             accept_new_session();            
           }
           io_service_.post
@@ -347,7 +347,7 @@ namespace ma
         {
           if (session_proxies_.empty())  
           {
-            stopped_ = true;
+            stop_done_ = true;
             // Signal shutdown completion
             stop_handler_.post(stop_error_);
           }
@@ -373,7 +373,7 @@ namespace ma
             accept_new_session();
           }
           // Start accepted session
-          session_proxy->lifecycle = start_in_progress;          
+          session_proxy->state = start_in_progress;          
           session_proxy->session->async_start
           (            
             make_custom_alloc_handler
@@ -417,17 +417,17 @@ namespace ma
       void handle_session_start(const session_proxy_ptr& session_proxy,
         const boost::system::error_code& error)
       {        
-        if (start_in_progress == session_proxy->lifecycle)
+        if (start_in_progress == session_proxy->state)
         {        
           if (error)
           {          
-            session_proxy->lifecycle = stopped;
+            session_proxy->state = stopped;
             session_proxies_.erase(session_proxy);
             if (stop_handler_.has_target())
             {
               if (!accept_in_progress_ && session_proxies_.empty())  
               {
-                stopped_ = true;
+                stop_done_ = true;
                 // Signal shutdown completion
                 stop_handler_.post(stop_error_);
               }
@@ -443,10 +443,10 @@ namespace ma
           }
           else
           {            
-            session_proxy->lifecycle = started;
+            session_proxy->state = started;
             if (stop_handler_.has_target())  
             {
-              session_proxy->lifecycle = stop_in_progress;
+              session_proxy->state = stop_in_progress;
               //todo
               //session->session->async_stop(...);
             }
@@ -465,8 +465,8 @@ namespace ma
       boost::asio::ip::tcp::acceptor acceptor_;
       ma::handler_storage<boost::system::error_code> wait_handler_;
       ma::handler_storage<boost::system::error_code> stop_handler_;
-      bool started_;      
-      bool stopped_;      
+      bool start_done_;      
+      bool stop_done_;      
       bool accept_in_progress_;      
       handler_allocator accept_allocator_;
       session_proxy_list session_proxies_;
