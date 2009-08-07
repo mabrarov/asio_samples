@@ -47,6 +47,10 @@ struct server_proxy_type : private boost::noncopyable
     , stop_state(none)
   {
   }
+
+  ~server_proxy_type()
+  {
+  }
 }; // server_proxy_type
 
 const boost::posix_time::time_duration stop_timeout = boost::posix_time::seconds(30);
@@ -143,11 +147,11 @@ int _tmain(int argc, _TCHAR* argv[])
     boost::unique_lock<boost::mutex> server_proxy_lock(server_proxy->mutex);
     if (none == server_proxy->stop_state)
     {
-      server_proxy->stop_state_changed.wait(lock);
+      server_proxy->stop_state_changed.wait(server_proxy_lock);
     }
     if (done != server_proxy->stop_state)
     {
-      if (!server_proxy->stop_state_changed.timed_wait(lock, stop_timeout))      
+      if (!server_proxy->stop_state_changed.timed_wait(server_proxy_lock, stop_timeout))      
       {
         std::wcout << L"Server stop timeout expiration. Server work will be aborted.\n";
         exit_code = EXIT_FAILURE;

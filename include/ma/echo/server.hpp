@@ -63,6 +63,10 @@ namespace ma
           , lifecycle(none)
         {
         }
+
+        ~session_proxy_type()
+        {
+        }
       }; // wrapped_session
 
       class session_proxy_list : private boost::noncopyable
@@ -326,6 +330,7 @@ namespace ma
               (
                 &this_type::handle_accept,
                 shared_from_this(),
+                session_proxy,
                 _1
               )
             )
@@ -349,7 +354,7 @@ namespace ma
         }
         else if (error)
         {          
-          if (wait_handler_) 
+          if (wait_handler_.has_target()) 
           {
             wait_handler_.post(error);
           }
