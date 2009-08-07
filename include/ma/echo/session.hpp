@@ -149,8 +149,8 @@ namespace ma
       boost::asio::io_service& io_service_;
       boost::asio::io_service::strand strand_;      
       boost::asio::ip::tcp::socket socket_;
-      bool started_;
-      bool stopped_;      
+      bool start_done_;
+      bool stop_done_;      
       bool write_in_progress_;
       bool read_in_progress_;
       handler_allocator write_allocator_;

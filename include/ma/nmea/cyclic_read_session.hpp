@@ -35,6 +35,14 @@ namespace ma
     {
     private:
       typedef cyclic_read_session this_type;
+      enum state_type
+      {
+        ready_to_start,
+        start_in_progress,
+        started,
+        stop_in_progress,
+        stopped
+      };
       typedef boost::tuple<message_ptr, boost::system::error_code> read_arg_type;
       BOOST_STATIC_CONSTANT(std::size_t, max_message_size = 512);           
 
@@ -55,10 +63,9 @@ namespace ma
         , serial_port_(io_service)
         , read_handler_(io_service)        
         , stop_handler_(io_service)
-        , start_done_(false)
-        , stop_done_(false)        
-        , write_in_progress_(false)
-        , read_in_progress_(false)
+        , state_(ready_to_start)
+        , port_write_in_progress_(false)
+        , port_read_in_progress_(false)
         , read_buffer_(read_buffer_size)
         , message_queue_(message_queue_size)        
       {
@@ -95,8 +102,7 @@ namespace ma
         read_error_ = boost::system::error_code();
         read_buffer_.consume(
           boost::asio::buffer_size(read_buffer_.data()));        
-        start_done_ = false;
-        stop_done_ = false;
+        state_ = ready_to_start;
       }
 
       template <typename Handler>
@@ -177,7 +183,7 @@ namespace ma
       template <typename Handler>
       void do_start(boost::tuple<Handler> handler)
       {
-        if (stop_done_ || stop_handler_.has_target())
+        if (stopped == state_ || stop_in_progress == state_)
         {          
           io_service_.post
           (
@@ -188,7 +194,7 @@ namespace ma
             )
           );          
         } 
-        else if (start_done_)
+        else if (ready_to_start != state_)
         {          
           io_service_.post
           (
@@ -201,14 +207,17 @@ namespace ma
         }
         else
         {
-          // Start handshake: start internal activity.
-          if (!read_in_progress_)
+          // Start handshake
+          state_ = start_in_progress;
+
+          // Start internal activity
+          if (!port_read_in_progress_)
           {
             read_until_head();
           }
 
-          // Complete handshake immediately
-          start_done_ = true;
+          // Handshake completed
+          state_ = started;
 
           // Signal successful handshake completion.
           io_service_.post
@@ -225,7 +234,7 @@ namespace ma
       template <typename Handler>
       void do_stop(boost::tuple<Handler> handler)
       { 
-        if (stop_done_)
+        if (stopped == state_)
         {          
           io_service_.post
           (
@@ -236,7 +245,7 @@ namespace ma
             )
           );          
         } 
-        else if (stop_handler_.has_target())
+        else if (stop_in_progress == state_)
         {          
           io_service_.post
           (
@@ -250,14 +259,15 @@ namespace ma
         else 
         {
           // Start shutdown
+          state_ = stop_in_progress;
 
           // Do shutdown - abort inner operations
           serial_port_.close(stop_error_);
           
           // Check for shutdown continuation
           if (read_handler_.has_target()
-            || write_in_progress_ 
-            || read_in_progress_)
+            || port_write_in_progress_ 
+            || port_read_in_progress_)
           {
             read_handler_.cancel();
             // Wait for others operations' completion
@@ -267,7 +277,8 @@ namespace ma
           }        
           else
           {
-            stop_done_ = true;
+            state_ = stopped;
+
             // Signal shutdown completion
             io_service_.post
             (
@@ -284,7 +295,7 @@ namespace ma
       template <typename Handler>
       void do_write(const message_ptr& message, boost::tuple<Handler> handler)
       {  
-        if (stop_done_ || stop_handler_.has_target())
+        if (stopped == state_ || stop_in_progress == state_)
         {          
           io_service_.post
           (
@@ -295,7 +306,7 @@ namespace ma
             )
           );          
         } 
-        else if (!start_done_ || write_in_progress_)
+        else if (started != state_ || port_write_in_progress_)
         {          
           io_service_.post
           (
@@ -328,7 +339,7 @@ namespace ma
               )
             )
           );
-          write_in_progress_ = true;
+          port_write_in_progress_ = true;
         }
       } // do_write
 
@@ -336,7 +347,7 @@ namespace ma
       void handle_write(const boost::system::error_code& error,         
         const message_ptr&, boost::tuple<Handler> handler)
       {         
-        write_in_progress_ = false;        
+        port_write_in_progress_ = false;        
         io_service_.post
         (
           boost::asio::detail::bind_handler
@@ -345,9 +356,9 @@ namespace ma
             error
           )
         );
-        if (stop_handler_.has_target() && !read_in_progress_)
+        if (stop_in_progress == state_ && !port_read_in_progress_)
         {
-          stop_done_ = true;
+          state_ = stopped;
           // Signal shutdown completion
           stop_handler_.post(stop_error_);
         }
@@ -356,7 +367,7 @@ namespace ma
       template <typename Handler>
       void do_read(message_ptr& message, boost::tuple<Handler> handler)
       {
-        if (stop_done_ || stop_handler_.has_target())
+        if (stopped == state_ || stop_in_progress == state_)
         {          
           io_service_.post
           (
@@ -367,7 +378,7 @@ namespace ma
             )
           );          
         }
-        else if (!start_done_ || read_handler_.has_target())
+        else if (started != state_ || read_handler_.has_target())
         {          
           io_service_.post
           (
@@ -408,7 +419,7 @@ namespace ma
         {          
           // If can't immediately complete then start waiting for completion
           // Start message constructing
-          if (!read_in_progress_)
+          if (!port_read_in_progress_)
           {
             read_until_head();
           }
@@ -464,7 +475,7 @@ namespace ma
             )
           )
         );                  
-        read_in_progress_ = true;          
+        port_read_in_progress_ = true;          
       } // read_until_head
 
       void read_until_tail()
@@ -487,19 +498,18 @@ namespace ma
             )
           )
         );
-        read_in_progress_ = true;
+        port_read_in_progress_ = true;
       } // read_until_tail
 
       void handle_read_head(const boost::system::error_code& error, 
         const std::size_t bytes_transferred)
       {         
-        read_in_progress_ = false;        
-        if (stop_handler_.has_target())
-        {
-          read_handler_.cancel();
-          if (!write_in_progress_)
+        port_read_in_progress_ = false;        
+        if (stop_in_progress == state_)
+        {          
+          if (!port_write_in_progress_)
           {
-            stop_done_ = true;
+            state_ = stopped;
             // Signal shutdown completion
             stop_handler_.post(stop_error_);
           }
@@ -524,13 +534,12 @@ namespace ma
       void handle_read_tail(const boost::system::error_code& error, 
         const std::size_t bytes_transferred)
       {                  
-        read_in_progress_ = false;        
-        if (stop_handler_.has_target())
+        port_read_in_progress_ = false;        
+        if (stop_in_progress == state_)
         {
-          read_handler_.cancel();
-          if (!write_in_progress_)
+          if (!port_write_in_progress_)
           {
-            stop_done_ = true;
+            state_ = stopped;
             // Signal shutdown completion
             stop_handler_.post(stop_error_);
           }
@@ -586,10 +595,9 @@ namespace ma
       boost::asio::serial_port serial_port_;               
       ma::handler_storage<read_arg_type> read_handler_;      
       ma::handler_storage<boost::system::error_code> stop_handler_;      
-      bool start_done_;
-      bool stop_done_;      
-      bool write_in_progress_;
-      bool read_in_progress_;
+      state_type state_;
+      bool port_write_in_progress_;
+      bool port_read_in_progress_;
       boost::asio::streambuf read_buffer_;        
       handler_allocator write_allocator_;
       handler_allocator read_allocator_;
