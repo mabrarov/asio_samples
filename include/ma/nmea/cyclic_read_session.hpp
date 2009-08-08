@@ -141,8 +141,8 @@ namespace ma
         );
       }
       
-      template <typename Handler>
-      void async_write(const message_ptr& message, Handler handler)
+      template <typename ConstBufferSequence, typename Handler>
+      void async_write(const ConstBufferSequence& buffer, Handler handler)
       {                
         strand_.dispatch
         (
@@ -151,9 +151,9 @@ namespace ma
             handler,
             boost::bind
             (
-              &this_type::do_write<Handler>, 
+              &this_type::do_write<ConstBufferSequence, Handler>, 
               shared_from_this(),
-              message, 
+              buffer, 
               boost::make_tuple(handler)              
             )
           )
@@ -292,8 +292,8 @@ namespace ma
         }        
       } // do_stop
       
-      template <typename Handler>
-      void do_write(const message_ptr& message, boost::tuple<Handler> handler)
+      template <typename ConstBufferSequence, typename Handler>
+      void do_write(const ConstBufferSequence& buffer, boost::tuple<Handler> handler)
       {  
         if (stopped == state_ || stop_in_progress == state_)
         {          
@@ -322,7 +322,7 @@ namespace ma
           boost::asio::async_write
           (
             serial_port_, 
-            boost::asio::buffer(*message), 
+            buffer, 
             strand_.wrap
             (
               make_custom_alloc_handler
@@ -330,10 +330,9 @@ namespace ma
                 write_allocator_, 
                 boost::bind
                 (
-                  &this_type::handle_write<handler>, 
-                  shared_from_this(),                
-                  boost::asio::placeholders::error,                   
-                  message,
+                  &this_type::handle_write<Handler>, 
+                  shared_from_this(),
+                  boost::asio::placeholders::error,
                   handler
                 )
               )
@@ -344,8 +343,7 @@ namespace ma
       } // do_write
 
       template <typename Handler>
-      void handle_write(const boost::system::error_code& error,         
-        const message_ptr&, boost::tuple<Handler> handler)
+      void handle_write(const boost::system::error_code& error, boost::tuple<Handler> handler)
       {         
         port_write_in_progress_ = false;        
         io_service_.post
