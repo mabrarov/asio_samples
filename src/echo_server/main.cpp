@@ -28,7 +28,7 @@ typedef boost::function<void (void)> exception_handler;
 
 enum operation_state
 {
-  none,
+  ready_to_start,
   in_progress,
   done
 };
@@ -44,7 +44,7 @@ struct server_proxy_type : private boost::noncopyable
     boost::asio::io_service& session_io_service,
     ma::echo::server::settings settings)
     : server(new ma::echo::server(io_service, session_io_service, settings))    
-    , stop_state(none)
+    , stop_state(ready_to_start)
   {
   }
 
@@ -145,7 +145,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
     // Wait until server stops
     boost::unique_lock<boost::mutex> server_proxy_lock(server_proxy->mutex);
-    if (none == server_proxy->stop_state)
+    if (ready_to_start == server_proxy->stop_state)
     {
       server_proxy->stop_state_changed.wait(server_proxy_lock);
     }
@@ -153,14 +153,13 @@ int _tmain(int argc, _TCHAR* argv[])
     {
       if (!server_proxy->stop_state_changed.timed_wait(server_proxy_lock, stop_timeout))      
       {
-        std::wcout << L"Server stop timeout expiration. Server work will be aborted.\n";
+        std::wcout << L"Server stop timeout expiration. Terminating server work.\n";
         exit_code = EXIT_FAILURE;
       }
       server_proxy->stop_state = done;
     }
     server_proxy_lock.unlock();
-    
-    std::wcout << L"Aborting server work.\n";
+        
     server_io_service.stop();
     session_io_service.stop();
 
@@ -187,9 +186,9 @@ void run_io_service(boost::asio::io_service& io_service,
 
 void handle_work_exception(const server_proxy_ptr& server_proxy)
 {
-  boost::unique_lock<boost::mutex> server_proxy_lock(server_proxy->mutex);
-  std::wcout << L"Server work will be aborted due to unexpected exception.\n";
+  boost::unique_lock<boost::mutex> server_proxy_lock(server_proxy->mutex);  
   server_proxy->stop_state = done;  
+  std::wcout << L"Terminating server work due to unexpected exception.\n";
   server_proxy_lock.unlock();
   server_proxy->stop_state_changed.notify_one();      
 }
@@ -197,24 +196,25 @@ void handle_work_exception(const server_proxy_ptr& server_proxy)
 void handle_program_exit(const server_proxy_ptr& server_proxy)
 {
   boost::unique_lock<boost::mutex> server_proxy_lock(server_proxy->mutex);
+  std::wcout << L"Program exit request detected.\n";
   if (done == server_proxy->stop_state)
   {    
-    std::wcout << L"Program exit request detected. Server has already done.\n";
+    std::wcout << L"Server has already done.\n";
   }
   else if (in_progress == server_proxy->stop_state)
-  {
-    std::wcout << L"Program exit request detected. Server is already stopping. Server work will be aborted.\n";    
-    server_proxy->stop_state = done;      
+  {    
+    server_proxy->stop_state = done;
+    std::wcout << L"Server was already stopping. Terminating server work.\n";
     server_proxy_lock.unlock();
     server_proxy->stop_state_changed.notify_one();       
   }
   else
-  {
-    std::wcout << L"Program exit request detected. Server is stopping. Press Ctrl+C (Ctrl+Break) to abort server work.\n";    
-    server_proxy->stop_state = in_progress;
+  {    
     server_proxy->server->async_stop(
-      boost::bind(server_stopped, server_proxy, _1));              
-    server_proxy_lock.unlock();
+      boost::bind(server_stopped, server_proxy, _1));
+    server_proxy->stop_state = in_progress;
+    std::wcout << L"Server is stopping. Press Ctrl+C (Ctrl+Break) to terminate server work.\n";
+    server_proxy_lock.unlock();    
     server_proxy->stop_state_changed.notify_one();
   }  
 }
@@ -223,20 +223,20 @@ void server_started(const server_proxy_ptr& server_proxy,
   const boost::system::error_code& error)
 {   
   boost::unique_lock<boost::mutex> server_proxy_lock(server_proxy->mutex);
-  if (none == server_proxy->stop_state)
+  if (ready_to_start == server_proxy->stop_state)
   {   
     if (error)
-    { 
-      std::wcout << L"Server can't start due to error. Server has done.\n";            
+    {       
       server_proxy->stop_state = done;
+      std::wcout << L"Server can't start due to error.\n";
       server_proxy_lock.unlock();
       server_proxy->stop_state_changed.notify_one();
     }
     else
-    {      
-      std::wcout << L"Server has started.\n";
+    {
       server_proxy->server->async_wait(
         boost::bind(server_has_to_stop, server_proxy, _1));      
+      std::wcout << L"Server has started.\n";
     }
   }
 }
@@ -245,13 +245,13 @@ void server_has_to_stop(const server_proxy_ptr& server_proxy,
   const boost::system::error_code&)
 {
   boost::unique_lock<boost::mutex> server_proxy_lock(server_proxy->mutex);
-  if (none == server_proxy->stop_state)
+  if (ready_to_start == server_proxy->stop_state)
   {
-    // Start server stop
-    std::wcout << L"Server can't continue its work due to error. Server is stopping.\n";
+    // Start server stop    
     server_proxy->server->async_stop(
       boost::bind(server_stopped, server_proxy, _1));    
     server_proxy->stop_state = in_progress;
+    std::wcout << L"Server can't continue work due to error. Server is stopping.\n";
     server_proxy_lock.unlock();
     server_proxy->stop_state_changed.notify_one();    
   }
@@ -261,10 +261,10 @@ void server_stopped(const server_proxy_ptr& server_proxy,
   const boost::system::error_code&)
 {
   boost::unique_lock<boost::mutex> server_proxy_lock(server_proxy->mutex);
-  if (none == server_proxy->stop_state)
-  {  
-    std::wcout << L"Server has done.\n";    
+  if (ready_to_start == server_proxy->stop_state)
+  {      
     server_proxy->stop_state = done;
+    std::wcout << L"Server has stopped.\n";    
     server_proxy_lock.unlock();
     server_proxy->stop_state_changed.notify_one();
   }

@@ -35,10 +35,6 @@ namespace ma
     {
     private:
       typedef server this_type;      
-      struct session_proxy_type;
-      typedef boost::shared_ptr<session_proxy_type> session_proxy_ptr;
-      typedef boost::weak_ptr<session_proxy_type> session_proxy_weak_ptr;
-
       enum state_type
       {
         ready_to_start,
@@ -47,6 +43,9 @@ namespace ma
         stop_in_progress,
         stopped
       };
+      struct session_proxy_type;
+      typedef boost::shared_ptr<session_proxy_type> session_proxy_ptr;
+      typedef boost::weak_ptr<session_proxy_type> session_proxy_weak_ptr;      
       
       struct session_proxy_type : private boost::noncopyable
       {        
@@ -156,8 +155,7 @@ namespace ma
         , acceptor_(io_service)
         , wait_handler_(io_service)
         , stop_handler_(io_service)
-        , start_done_(false)        
-        , stop_done_(false)      
+        , state_(ready_to_start)
         , accept_in_progress_(false)
         , settings_(settings)
       {
@@ -229,7 +227,7 @@ namespace ma
       template <typename Handler>
       void do_start(boost::tuple<Handler> handler)
       {
-        if (stop_done_ || stop_handler_.has_target())
+        if (stopped == state_ || stop_in_progress == state_)
         {          
           io_service_.post
           (
@@ -240,7 +238,7 @@ namespace ma
             )
           );          
         } 
-        else if (start_done_)
+        else if (ready_to_start != state_)
         {          
           io_service_.post
           (
@@ -253,6 +251,7 @@ namespace ma
         }
         else
         {
+          state_ = start_in_progress;
           boost::system::error_code error;
           acceptor_.open(settings_.endpoint.protocol(), error);
           if (!error)
@@ -264,14 +263,15 @@ namespace ma
             }          
           }          
           if (error)
-          {
+          {            
             boost::system::error_code ignored;
             acceptor_.close(ignored);
+            state_ = stopped;
           }
           else
-          {
-            start_done_ = true;
+          {            
             accept_new_session();            
+            state_ = started;
           }
           io_service_.post
           (
@@ -343,25 +343,25 @@ namespace ma
         const boost::system::error_code& error)
       {
         accept_in_progress_ = false;
-        if (stop_handler_.has_target())
+        if (stop_in_progress == state_)
         {
           if (session_proxies_.empty())  
           {
-            stop_done_ = true;
+            state_ = stopped;
             // Signal shutdown completion
             stop_handler_.post(stop_error_);
           }
         }
         else if (error)
-        {          
-          if (wait_handler_.has_target()) 
+        {             
+          if (wait_handler_.has_target() && session_proxies_.empty()) 
           {
             wait_handler_.post(error);
-          }
+          }       
           else
           {
-            wait_error_ = error;
-          }          
+            last_accept_error_ = error;
+          }
         }
         else
         { 
@@ -372,10 +372,9 @@ namespace ma
           {
             accept_new_session();
           }
-          // Start accepted session
-          session_proxy->state = start_in_progress;          
+          // Start accepted session          
           session_proxy->session->async_start
-          (            
+          (
             make_custom_alloc_handler
             (
               session_proxy->start_wait_allocator_,
@@ -387,7 +386,8 @@ namespace ma
                 _1
               )
             )           
-          );                    
+          );
+          session_proxy->state = start_in_progress;
         }        
       }
 
@@ -423,35 +423,35 @@ namespace ma
           {          
             session_proxy->state = stopped;
             session_proxies_.erase(session_proxy);
-            if (stop_handler_.has_target())
+            if (stop_in_progress == state_)
             {
               if (!accept_in_progress_ && session_proxies_.empty())  
               {
-                stop_done_ = true;
+                state_ = stopped;
                 // Signal shutdown completion
                 stop_handler_.post(stop_error_);
               }
             }
             else
             {
-              if (!accept_in_progress_ && !wait_error_
+              if (!accept_in_progress_ && !last_accept_error_
                 && session_proxies_.size() < settings_.max_sessions)
               {
                 accept_new_session();
               }
             }         
           }
-          else
-          {            
+          else // !error
+          {
             session_proxy->state = started;
-            if (stop_handler_.has_target())  
-            {
-              session_proxy->state = stop_in_progress;
+            if (stop_in_progress == state_)  
+            {              
               //todo
               //session->session->async_stop(...);
+              session_proxy->state = stop_in_progress;
             }
             else
-            {
+            {              
               //todo
               //session->session->async_wait(...);
             }            
@@ -465,13 +465,12 @@ namespace ma
       boost::asio::ip::tcp::acceptor acceptor_;
       ma::handler_storage<boost::system::error_code> wait_handler_;
       ma::handler_storage<boost::system::error_code> stop_handler_;
-      bool start_done_;      
-      bool stop_done_;      
+      state_type state_;
       bool accept_in_progress_;      
       handler_allocator accept_allocator_;
       session_proxy_list session_proxies_;
       settings settings_;
-      boost::system::error_code wait_error_;
+      boost::system::error_code last_accept_error_;
       boost::system::error_code stop_error_;
     }; // class server
 
