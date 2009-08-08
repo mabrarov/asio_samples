@@ -353,14 +353,11 @@ namespace ma
           }
         }
         else if (error)
-        {             
+        {   
+          last_accept_error_ = error;
           if (wait_handler_.has_target() && session_proxies_.empty()) 
           {
             wait_handler_.post(error);
-          }       
-          else
-          {
-            last_accept_error_ = error;
           }
         }
         else
