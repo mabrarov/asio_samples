@@ -456,6 +456,64 @@ namespace ma
         }
       }
 
+      static void dispatch_session_wait(const server_weak_ptr& weak_server,
+        const session_proxy_ptr& session_proxy, const boost::system::error_code& error)
+      {
+        server_ptr the_server(weak_server.lock());
+        if (the_server)
+        {
+          the_server->strand_.dispatch
+          (
+            make_custom_alloc_handler
+            (
+              session_proxy->start_wait_allocator_,
+              boost::bind
+              (
+                &this_type::handle_session_wait,
+                the_server,
+                session_proxy,
+                error
+              )
+            )
+          );
+        }
+      }
+
+      void handle_session_wait(const session_proxy_ptr& session_proxy,
+        const boost::system::error_code& error)
+      {
+
+      }
+
+      static void dispatch_session_stop(const server_weak_ptr& weak_server,
+        const session_proxy_ptr& session_proxy, const boost::system::error_code& error)
+      {
+        server_ptr the_server(weak_server.lock());
+        if (the_server)
+        {
+          the_server->strand_.dispatch
+          (
+            make_custom_alloc_handler
+            (
+              session_proxy->stop_allocator_,
+              boost::bind
+              (
+                &this_type::handle_session_stop,
+                the_server,
+                session_proxy,
+                error
+              )
+            )
+          );
+        }
+      }
+
+      void handle_session_stop(const session_proxy_ptr& session_proxy,
+        const boost::system::error_code& error)
+      {
+
+      }
+
       boost::asio::io_service& io_service_;
       boost::asio::io_service& session_io_service_;
       boost::asio::io_service::strand strand_;      
