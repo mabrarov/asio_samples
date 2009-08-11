@@ -157,7 +157,8 @@ namespace ma
         , stop_handler_(io_service)
         , settings_(settings)
         , state_(ready_to_start)
-        , accept_in_progress_(false)        
+        , accept_in_progress_(false) 
+        //, accept_allocator_(1024)
       {
         if (settings.max_sessions < 1)
         {
@@ -526,6 +527,7 @@ namespace ma
       settings settings_;
       state_type state_;
       bool accept_in_progress_;      
+      //in_heap_handler_allocator accept_allocator_;
       in_place_handler_allocator<sizeof(std::size_t) * 128> accept_allocator_;
     }; // class server
 
