@@ -597,8 +597,8 @@ namespace ma
       bool port_write_in_progress_;
       bool port_read_in_progress_;
       boost::asio::streambuf read_buffer_;        
-      handler_allocator write_allocator_;
-      handler_allocator read_allocator_;
+      handler_allocator<> write_allocator_;
+      handler_allocator<> read_allocator_;
       boost::system::error_code read_error_;
       boost::system::error_code stop_error_;
       boost::circular_buffer<message_ptr> message_queue_;      

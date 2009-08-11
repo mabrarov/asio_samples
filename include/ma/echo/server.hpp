@@ -52,8 +52,8 @@ namespace ma
         session_proxy_weak_ptr prev;
         session_proxy_ptr next;
         session_ptr session;
-        handler_allocator start_wait_allocator_;
-        handler_allocator stop_allocator_;
+        handler_allocator<> start_wait_allocator_;
+        handler_allocator<> stop_allocator_;
         boost::asio::ip::tcp::endpoint endpoint;
         state_type state;        
 
@@ -479,10 +479,10 @@ namespace ma
         }
       }
 
-      void handle_session_wait(const session_proxy_ptr& session_proxy,
-        const boost::system::error_code& error)
+      void handle_session_wait(const session_proxy_ptr& /*session_proxy*/,
+        const boost::system::error_code& /*error*/)
       {
-
+        //todo
       }
 
       static void dispatch_session_stop(const server_weak_ptr& weak_server,
@@ -508,10 +508,10 @@ namespace ma
         }
       }
 
-      void handle_session_stop(const session_proxy_ptr& session_proxy,
-        const boost::system::error_code& error)
+      void handle_session_stop(const session_proxy_ptr& /*session_proxy*/,
+        const boost::system::error_code& /*error*/)
       {
-
+        //todo
       }
 
       boost::asio::io_service& io_service_;
@@ -522,7 +522,7 @@ namespace ma
       ma::handler_storage<boost::system::error_code> stop_handler_;
       state_type state_;
       bool accept_in_progress_;      
-      handler_allocator accept_allocator_;
+      handler_allocator<sizeof(std::size_t) * 128> accept_allocator_;
       session_proxy_list session_proxies_;
       settings settings_;
       boost::system::error_code last_accept_error_;

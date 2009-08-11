@@ -153,8 +153,8 @@ namespace ma
       bool stop_done_;      
       bool write_in_progress_;
       bool read_in_progress_;
-      handler_allocator write_allocator_;
-      handler_allocator read_allocator_;
+      handler_allocator<> write_allocator_;
+      handler_allocator<> read_allocator_;
     }; // class session
 
   } // namespace echo

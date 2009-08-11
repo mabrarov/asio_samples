@@ -21,6 +21,7 @@
 #include <ma/nmea/cyclic_read_session.hpp>
 #include <console_controller.hpp>
 
+typedef ma::handler_allocator<> handler_allocator_type;
 typedef std::codecvt<wchar_t, char, mbstate_t> wcodecvt_type;
 typedef ma::nmea::cyclic_read_session session;
 typedef ma::nmea::cyclic_read_session_ptr session_ptr;
@@ -31,7 +32,7 @@ void handle_start(
   std::locale&,
   const wcodecvt_type&,
   const session_ptr&, 
-  ma::handler_allocator&, 
+  handler_allocator_type&, 
   const boost::system::error_code&);
 
 void handle_stop(const boost::system::error_code&);
@@ -40,7 +41,7 @@ void handle_read(
   std::locale&,
   const wcodecvt_type&,
   const session_ptr&, 
-  ma::handler_allocator&, 
+  handler_allocator_type&, 
   const ptr_to_message_ptr&, 
   const boost::system::error_code&);
 
@@ -84,7 +85,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
     const wcodecvt_type& wcodecvt(std::use_facet<wcodecvt_type>(sys_locale));
     std::string ansi_device_name(ma::codecvt_cast::out(device_name, wcodecvt));
-    ma::handler_allocator handler_allocator;
+    handler_allocator_type handler_allocator;
             
     boost::asio::io_service io_service(concurrent_count);   
     session_ptr session(new session(
@@ -141,7 +142,7 @@ void handle_start(
   std::locale& locale,
   const wcodecvt_type& wcodecvt,
   const session_ptr& session, 
-  ma::handler_allocator& handler_allocator, 
+  handler_allocator_type& handler_allocator, 
   const boost::system::error_code& error)
 {  
   if (error)  
@@ -189,7 +190,7 @@ void handle_read(
   std::locale& locale,
   const wcodecvt_type& wcodecvt,
   const session_ptr& session, 
-  ma::handler_allocator& handler_allocator, 
+  handler_allocator_type& handler_allocator, 
   const ptr_to_message_ptr& message, 
   const boost::system::error_code& error)
 {  

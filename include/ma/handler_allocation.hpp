@@ -10,15 +10,20 @@
 
 #include <cstddef>
 #include <boost/utility.hpp>
+#include <boost/call_traits.hpp>
 #include <boost/aligned_storage.hpp>
 #include <ma/handler_alloc_helpers.hpp>
 #include <ma/handler_invoke_helpers.hpp>
 
 namespace ma
 {  
+  template <std::size_t user_defined_size = std::size_t(-1)>
   class handler_allocator : private boost::noncopyable
-  {
+  {  
   public:
+    BOOST_STATIC_CONSTANT(std::size_t, default_size = sizeof(std::size_t) * 64);
+    BOOST_STATIC_CONSTANT(std::size_t, size = (user_defined_size == std::size_t(-1) ? default_size : user_defined_size));
+
     handler_allocator()
       : in_use_(false)
     {
@@ -53,24 +58,22 @@ namespace ma
       }
     }
 
-  private: 
-    BOOST_STATIC_CONSTANT(std::size_t, cpu_word_size = sizeof(std::size_t));
-
-    boost::aligned_storage<cpu_word_size * 64> storage_;    
+  private:    
+    boost::aligned_storage<size> storage_;    
     bool in_use_;
   }; //class handler_allocator
 
-  template <typename Handler>
+  template <typename Allocator, typename Handler>
   class custom_alloc_handler
   {
   private:
-    typedef custom_alloc_handler<Handler> this_type;
+    typedef custom_alloc_handler<Allocator, Handler> this_type;
     const this_type& operator=(const this_type&);
 
   public:
     typedef void result_type;
 
-    custom_alloc_handler(handler_allocator& allocator, Handler handler)
+    custom_alloc_handler(Allocator& allocator, Handler handler)
       : allocator_(allocator)
       , handler_(handler)
     {
@@ -163,7 +166,7 @@ namespace ma
     }
 
   private:
-    handler_allocator& allocator_;
+    Allocator& allocator_;
     Handler handler_;
   }; //class custom_alloc_handler 
 
@@ -274,11 +277,11 @@ namespace ma
     Handler handler_;
   }; //class context_alloc_handler  
 
-  template <typename Handler>
-  inline custom_alloc_handler<Handler> 
-  make_custom_alloc_handler(handler_allocator& allocator, Handler handler)
+  template <typename Allocator, typename Handler>
+  inline custom_alloc_handler<Allocator, Handler> 
+  make_custom_alloc_handler(Allocator& allocator, Handler handler)
   {
-    return custom_alloc_handler<Handler>(allocator, handler);
+    return custom_alloc_handler<Allocator, Handler>(allocator, handler);
   }
 
   template <typename Context, typename Handler>
