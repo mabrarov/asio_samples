@@ -158,7 +158,7 @@ namespace ma
         , settings_(settings)
         , state_(ready_to_start)
         , accept_in_progress_(false) 
-        //, accept_allocator_(1024)
+        //, accept_allocator_(1024, sizeof(std::size_t))
       {
         if (settings.max_sessions < 1)
         {
