@@ -12,6 +12,7 @@
 #include <boost/utility.hpp>
 #include <boost/call_traits.hpp>
 #include <boost/aligned_storage.hpp>
+#include <boost/cstdint.hpp>
 #include <ma/handler_alloc_helpers.hpp>
 #include <ma/handler_invoke_helpers.hpp>
 
@@ -35,15 +36,12 @@ namespace ma
 
     void* allocate(std::size_t size)
     {
-      if (!in_use_ && size < storage_.size)
+      if (!in_use_ && size <= storage_.size)
       {
         in_use_ = true;
         return storage_.address();
-      }
-      else
-      {
-        return ::operator new(size);
-      }
+      }      
+      return ::operator new(size);      
     }
 
     void deallocate(void* pointer)
@@ -51,11 +49,9 @@ namespace ma
       if (pointer == storage_.address())
       {
         in_use_ = false;
-      }
-      else
-      {
-        ::operator delete(pointer);
-      }
+        return;
+      }      
+      ::operator delete(pointer);      
     }
 
   private:    
@@ -63,55 +59,78 @@ namespace ma
     bool in_use_;
   }; //class in_place_handler_allocator
   
-  //class in_heap_handler_allocator : private boost::noncopyable
-  //{  
-  //public:
-  //  BOOST_STATIC_CONSTANT(std::size_t, default_size = sizeof(std::size_t) * 64);    
+  class in_heap_handler_allocator : private boost::noncopyable
+  {  
+  private:
+    typedef boost::uint8_t byte;
 
-  //  in_heap_handler_allocator(std::size_t size = default_size, bool lazy = true)
-  //    : size_(size)
-  //    , in_use_(false)
-  //  {
-  //    if (!lazy)
-  //    {
+    static byte* aligned_alloc(std::size_t /*size*/)
+    {
+      //todo allocate aligned storage with aligned part's size == size
+    }
 
-  //    }
-  //  }
+    bool storage_initialized() const
+    {
+      return 0 != storage_.get();
+    }
 
-  //  ~in_place_handler_allocator()
-  //  {
-  //  }
+    byte* get_storage_address()
+    {
+      if (!storage_.get())
+      {
+        storage_.reset(aligned_alloc(size_));
+      }
+      //todo return storage align part's address
+      return storage_.get();
+    }
 
-  //  void* allocate(std::size_t size)
-  //  {
-  //    if (!in_use_ && size < storage_.size)
-  //    {
-  //      in_use_ = true;
-  //      return storage_.address();
-  //    }
-  //    else
-  //    {
-  //      return ::operator new(size);
-  //    }
-  //  }
+  public:
+    BOOST_STATIC_CONSTANT(std::size_t, default_size = sizeof(std::size_t) * 64);    
 
-  //  void deallocate(void* pointer)
-  //  {
-  //    if (pointer == storage_.address())
-  //    {
-  //      in_use_ = false;
-  //    }
-  //    else
-  //    {
-  //      ::operator delete(pointer);
-  //    }
-  //  }
+    in_heap_handler_allocator(std::size_t size = default_size, bool lazy = true)
+      : storage_(lazy ? 0 : aligned_alloc(size))
+      , size_(size)
+      , in_use_(false)
+    {      
+    }
 
-  //private:    
-  //  boost::scoped_array<boost::uint8_t> storage_;
-  //  std::size_t size_;
-  //  bool in_use_;
-  //}; //class in_heap_handler_allocator
+    ~in_heap_handler_allocator()
+    {
+    }
+
+    void* allocate(std::size_t size)
+    {
+      if (!in_use_ && size <= size_)
+      {        
+        in_use_ = true;
+        return get_storage_address();
+      }      
+      return ::operator new(size);      
+    }
+
+    void deallocate(void* pointer)
+    {
+      if (storage_initialized())
+      {
+        if (pointer == get_storage_address())
+        {
+          in_use_ = false;
+          return;
+        }
+      }      
+      ::operator delete(pointer);      
+    }
+
+    std::size_t size() const
+    {
+      return size_;
+    }
+
+  private:    
+    boost::scoped_array<byte> storage_;
+    std::size_t size_;
+    bool in_use_;
+  }; //class in_heap_handler_allocator
 
   template <typename Allocator, typename Handler>
   class custom_alloc_handler
