@@ -54,8 +54,8 @@ namespace ma
         session_ptr session;        
         boost::asio::ip::tcp::endpoint endpoint;
         state_type state;
-        in_place_handler_allocator<64 * sizeof(std::size_t)> start_wait_allocator_;
-        in_place_handler_allocator<64 * sizeof(std::size_t)> stop_allocator_;
+        in_place_handler_allocator<256> start_wait_allocator_;
+        in_place_handler_allocator<256> stop_allocator_;
 
         explicit session_proxy_type(boost::asio::io_service& io_service)
           : session(new ma::echo::session(io_service))
@@ -528,7 +528,7 @@ namespace ma
       state_type state_;
       bool accept_in_progress_;      
       //in_heap_handler_allocator accept_allocator_;
-      in_place_handler_allocator<sizeof(std::size_t) * 128> accept_allocator_;
+      in_place_handler_allocator<512> accept_allocator_;
     }; // class server
 
   } // namespace echo
