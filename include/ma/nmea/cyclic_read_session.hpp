@@ -56,18 +56,18 @@ namespace ma
         const std::size_t message_queue_size,
         const std::string& frame_head,
         const std::string& frame_tail)
-        : frame_head_(frame_head)
-        , frame_tail_(frame_tail)                  
-        , io_service_(io_service)
+        : io_service_(io_service)        
         , strand_(io_service)
         , serial_port_(io_service)
         , read_handler_(io_service)        
         , stop_handler_(io_service)
+        , message_queue_(message_queue_size)
         , state_(ready_to_start)
         , port_write_in_progress_(false)
-        , port_read_in_progress_(false)
+        , port_read_in_progress_(false)                
         , read_buffer_(read_buffer_size)
-        , message_queue_(message_queue_size)        
+        , frame_head_(frame_head)
+        , frame_tail_(frame_tail)
       {
         if (message_queue_size < min_message_queue_size)
         {
@@ -585,23 +585,23 @@ namespace ma
           read_error_ = error;          
         }
       } // handle_read_tail
-                
-      std::string frame_head_;
-      std::string frame_tail_;                    
+      
       boost::asio::io_service& io_service_;
       boost::asio::io_service::strand strand_;
-      boost::asio::serial_port serial_port_;               
-      ma::handler_storage<read_arg_type> read_handler_;      
+      boost::asio::serial_port serial_port_;      
+      ma::handler_storage<read_arg_type> read_handler_;
       ma::handler_storage<boost::system::error_code> stop_handler_;      
+      boost::circular_buffer<message_ptr> message_queue_;      
+      boost::system::error_code read_error_;
+      boost::system::error_code stop_error_;
       state_type state_;
       bool port_write_in_progress_;
       bool port_read_in_progress_;
-      boost::asio::streambuf read_buffer_;        
-      handler_allocator<> write_allocator_;
-      handler_allocator<> read_allocator_;
-      boost::system::error_code read_error_;
-      boost::system::error_code stop_error_;
-      boost::circular_buffer<message_ptr> message_queue_;      
+      boost::asio::streambuf read_buffer_;
+      std::string frame_head_;
+      std::string frame_tail_;
+      in_place_handler_allocator<> write_allocator_;
+      in_place_handler_allocator<> read_allocator_;
     }; // class cyclic_read_session 
 
   } // namespace nmea

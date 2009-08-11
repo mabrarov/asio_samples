@@ -31,12 +31,23 @@ namespace ma
     {
     private:
       typedef session this_type;
+      enum state_type
+      {
+        ready_to_start,
+        start_in_progress,
+        started,
+        stop_in_progress,
+        stopped
+      };
 
     public:
       explicit session(boost::asio::io_service& io_service)
         : io_service_(io_service)
         , strand_(io_service)
         , socket_(io_service)
+        , state_(ready_to_start)
+        , socket_write_in_progress_(false)
+        , socket_read_in_progress_(false)
       {        
       }
 
@@ -149,12 +160,11 @@ namespace ma
       boost::asio::io_service& io_service_;
       boost::asio::io_service::strand strand_;      
       boost::asio::ip::tcp::socket socket_;
-      bool start_done_;
-      bool stop_done_;      
-      bool write_in_progress_;
-      bool read_in_progress_;
-      handler_allocator<> write_allocator_;
-      handler_allocator<> read_allocator_;
+      state_type state_;
+      bool socket_write_in_progress_;
+      bool socket_read_in_progress_;
+      in_place_handler_allocator<> write_allocator_;
+      in_place_handler_allocator<> read_allocator_;
     }; // class session
 
   } // namespace echo

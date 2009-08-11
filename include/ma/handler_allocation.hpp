@@ -18,18 +18,18 @@
 namespace ma
 {  
   template <std::size_t user_defined_size = std::size_t(-1)>
-  class handler_allocator : private boost::noncopyable
+  class in_place_handler_allocator : private boost::noncopyable
   {  
   public:
     BOOST_STATIC_CONSTANT(std::size_t, default_size = sizeof(std::size_t) * 64);
     BOOST_STATIC_CONSTANT(std::size_t, size = (user_defined_size == std::size_t(-1) ? default_size : user_defined_size));
 
-    handler_allocator()
+    in_place_handler_allocator()
       : in_use_(false)
     {
     }
 
-    ~handler_allocator()
+    ~in_place_handler_allocator()
     {
     }
 
@@ -61,7 +61,57 @@ namespace ma
   private:    
     boost::aligned_storage<size> storage_;    
     bool in_use_;
-  }; //class handler_allocator
+  }; //class in_place_handler_allocator
+  
+  //class in_heap_handler_allocator : private boost::noncopyable
+  //{  
+  //public:
+  //  BOOST_STATIC_CONSTANT(std::size_t, default_size = sizeof(std::size_t) * 64);    
+
+  //  in_heap_handler_allocator(std::size_t size = default_size, bool lazy = true)
+  //    : size_(size)
+  //    , in_use_(false)
+  //  {
+  //    if (!lazy)
+  //    {
+
+  //    }
+  //  }
+
+  //  ~in_place_handler_allocator()
+  //  {
+  //  }
+
+  //  void* allocate(std::size_t size)
+  //  {
+  //    if (!in_use_ && size < storage_.size)
+  //    {
+  //      in_use_ = true;
+  //      return storage_.address();
+  //    }
+  //    else
+  //    {
+  //      return ::operator new(size);
+  //    }
+  //  }
+
+  //  void deallocate(void* pointer)
+  //  {
+  //    if (pointer == storage_.address())
+  //    {
+  //      in_use_ = false;
+  //    }
+  //    else
+  //    {
+  //      ::operator delete(pointer);
+  //    }
+  //  }
+
+  //private:    
+  //  boost::scoped_array<boost::uint8_t> storage_;
+  //  std::size_t size_;
+  //  bool in_use_;
+  //}; //class in_heap_handler_allocator
 
   template <typename Allocator, typename Handler>
   class custom_alloc_handler

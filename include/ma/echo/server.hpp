@@ -51,11 +51,11 @@ namespace ma
       {        
         session_proxy_weak_ptr prev;
         session_proxy_ptr next;
-        session_ptr session;
-        handler_allocator<> start_wait_allocator_;
-        handler_allocator<> stop_allocator_;
+        session_ptr session;        
         boost::asio::ip::tcp::endpoint endpoint;
-        state_type state;        
+        state_type state;
+        in_place_handler_allocator<> start_wait_allocator_;
+        in_place_handler_allocator<> stop_allocator_;
 
         explicit session_proxy_type(boost::asio::io_service& io_service)
           : session(new ma::echo::session(io_service))
@@ -150,14 +150,14 @@ namespace ma
         boost::asio::io_service& session_io_service,
         const settings& settings)
         : io_service_(io_service)
-        , session_io_service_(session_io_service)
         , strand_(io_service)
         , acceptor_(io_service)
+        , session_io_service_(session_io_service)                
         , wait_handler_(io_service)
         , stop_handler_(io_service)
-        , state_(ready_to_start)
-        , accept_in_progress_(false)
         , settings_(settings)
+        , state_(ready_to_start)
+        , accept_in_progress_(false)        
       {
         if (settings.max_sessions < 1)
         {
@@ -515,18 +515,18 @@ namespace ma
       }
 
       boost::asio::io_service& io_service_;
-      boost::asio::io_service& session_io_service_;
       boost::asio::io_service::strand strand_;      
       boost::asio::ip::tcp::acceptor acceptor_;
+      boost::asio::io_service& session_io_service_;            
       ma::handler_storage<boost::system::error_code> wait_handler_;
       ma::handler_storage<boost::system::error_code> stop_handler_;
+      session_proxy_list session_proxies_;
+      boost::system::error_code last_accept_error_;
+      boost::system::error_code stop_error_;      
+      settings settings_;
       state_type state_;
       bool accept_in_progress_;      
-      handler_allocator<sizeof(std::size_t) * 128> accept_allocator_;
-      session_proxy_list session_proxies_;
-      settings settings_;
-      boost::system::error_code last_accept_error_;
-      boost::system::error_code stop_error_;
+      in_place_handler_allocator<sizeof(std::size_t) * 128> accept_allocator_;
     }; // class server
 
   } // namespace echo
