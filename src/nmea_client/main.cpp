@@ -21,7 +21,7 @@
 #include <ma/nmea/cyclic_read_session.hpp>
 #include <console_controller.hpp>
 
-typedef ma::in_place_handler_allocator<> handler_allocator_type;
+typedef ma::in_place_handler_allocator<64 * sizeof(std::size_t)> handler_allocator_type;
 typedef std::codecvt<wchar_t, char, mbstate_t> wcodecvt_type;
 typedef ma::nmea::cyclic_read_session session;
 typedef ma::nmea::cyclic_read_session_ptr session_ptr;

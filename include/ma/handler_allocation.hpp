@@ -18,14 +18,10 @@
 
 namespace ma
 {  
-  template <std::size_t user_defined_size = std::size_t(-1),
-    std::size_t alignment = std::size_t(-1)>
+  template <std::size_t size_, std::size_t alignment_ = std::size_t(-1)>
   class in_place_handler_allocator : private boost::noncopyable
   {  
   public:
-    BOOST_STATIC_CONSTANT(std::size_t, default_size = sizeof(std::size_t) * 64);
-    BOOST_STATIC_CONSTANT(std::size_t, size = (user_defined_size == std::size_t(-1) ? default_size : user_defined_size));
-
     in_place_handler_allocator()
       : in_use_(false)
     {
@@ -56,20 +52,14 @@ namespace ma
     }
 
   private:    
-    boost::aligned_storage<size, alignment> storage_;    
+    boost::aligned_storage<size_, alignment_> storage_;    
     bool in_use_;
   }; //class in_place_handler_allocator
   
   class in_heap_handler_allocator : private boost::noncopyable
   {  
   private:
-    typedef boost::uint8_t byte_type;
-
-    BOOST_STATIC_CONSTANT(std::size_t, 
-      default_alignment = sizeof(boost::mpl::eval_if_c<
-        true, 
-        boost::mpl::identity<boost::detail::max_align>, 
-        boost::mpl::identity<boost::detail::max_align> >::type));
+    typedef boost::uint8_t byte_type;    
 
     static byte_type* aligned_alloc(std::size_t size, std::size_t alignment)
     {      
@@ -102,6 +92,11 @@ namespace ma
 
   public:
     BOOST_STATIC_CONSTANT(std::size_t, default_size = sizeof(std::size_t) * 64);    
+    BOOST_STATIC_CONSTANT(std::size_t, 
+      default_alignment = sizeof(boost::mpl::eval_if_c<
+      true, 
+      boost::mpl::identity<boost::detail::max_align>, 
+      boost::mpl::identity<boost::detail::max_align> >::type));
 
     in_heap_handler_allocator(std::size_t size = default_size, 
       std::size_t alignment = default_alignment, bool lazy = true)
@@ -138,12 +133,7 @@ namespace ma
         }
       }      
       ::operator delete(pointer);      
-    }
-
-    std::size_t size() const
-    {
-      return size_;
-    }
+    }    
 
   private:    
     boost::scoped_array<byte_type> storage_;

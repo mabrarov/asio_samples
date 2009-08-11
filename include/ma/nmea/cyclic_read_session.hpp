@@ -600,8 +600,8 @@ namespace ma
       boost::asio::streambuf read_buffer_;
       std::string frame_head_;
       std::string frame_tail_;
-      in_place_handler_allocator<> write_allocator_;
-      in_place_handler_allocator<> read_allocator_;
+      in_place_handler_allocator<16 * sizeof(std::size_t)> write_allocator_;
+      in_place_handler_allocator<16 * sizeof(std::size_t)> read_allocator_;
     }; // class cyclic_read_session 
 
   } // namespace nmea

@@ -163,8 +163,8 @@ namespace ma
       state_type state_;
       bool socket_write_in_progress_;
       bool socket_read_in_progress_;
-      in_place_handler_allocator<> write_allocator_;
-      in_place_handler_allocator<> read_allocator_;
+      in_place_handler_allocator<64 * sizeof(std::size_t)> write_allocator_;
+      in_place_handler_allocator<64 * sizeof(std::size_t)> read_allocator_;
     }; // class session
 
   } // namespace echo
