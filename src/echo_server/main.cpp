@@ -40,7 +40,8 @@ struct server_proxy_type : private boost::noncopyable
   boost::mutex mutex;  
   ma::echo::server_ptr server;
   state_type state;
-  boost::condition_variable state_changed;
+  bool stopped_by_program_exit;
+  boost::condition_variable state_changed;  
   ma::in_place_handler_allocator<256> start_wait_allocator;
   ma::in_place_handler_allocator<256> stop_allocator;
 
@@ -49,6 +50,7 @@ struct server_proxy_type : private boost::noncopyable
     ma::echo::server::settings settings)
     : server(new ma::echo::server(io_service, session_io_service, settings))    
     , state(ready_to_start)
+    , stopped_by_program_exit(false)
   {
   }
 
@@ -172,6 +174,10 @@ int _tmain(int argc, _TCHAR* argv[])
       }
       server_proxy->state = stopped;
     }
+    if (!server_proxy->stopped_by_program_exit)
+    {
+      exit_code = EXIT_FAILURE;
+    }
     server_proxy_lock.unlock();
         
     server_io_service.stop();
@@ -234,6 +240,7 @@ void handle_program_exit(const server_proxy_ptr& server_proxy)
       )
     );
     server_proxy->state = stop_in_progress;
+    server_proxy->stopped_by_program_exit = true;
     std::wcout << L"Server is stopping. Press Ctrl+C (Ctrl+Break) to terminate server work.\n";
     server_proxy_lock.unlock();    
     server_proxy->state_changed.notify_one();
