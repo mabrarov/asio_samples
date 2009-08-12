@@ -40,7 +40,9 @@ struct server_proxy_type : private boost::noncopyable
   boost::mutex mutex;  
   ma::echo::server_ptr server;
   state_type state;
-  boost::condition_variable state_changed;    
+  boost::condition_variable state_changed;
+  ma::in_place_handler_allocator<256> start_wait_allocator;
+  ma::in_place_handler_allocator<256> stop_allocator;
 
   explicit server_proxy_type(boost::asio::io_service& io_service,
     boost::asio::io_service& session_io_service,
@@ -112,8 +114,14 @@ int _tmain(int argc, _TCHAR* argv[])
     
     // Start the server
     boost::unique_lock<boost::mutex> server_proxy_lock(server_proxy->mutex);    
-    server_proxy->server->async_start(
-      boost::bind(server_started, server_proxy, _1));
+    server_proxy->server->async_start
+    (
+      ma::make_custom_alloc_handler
+      (
+        server_proxy->start_wait_allocator,
+        boost::bind(server_started, server_proxy, _1)
+      )
+    );
     server_proxy->state = start_in_progress;
     server_proxy_lock.unlock();
     
@@ -217,8 +225,14 @@ void handle_program_exit(const server_proxy_ptr& server_proxy)
   else
   {    
     // Start server stop
-    server_proxy->server->async_stop(
-      boost::bind(server_stopped, server_proxy, _1));
+    server_proxy->server->async_stop
+    (
+      ma::make_custom_alloc_handler
+      (
+        server_proxy->stop_allocator,
+        boost::bind(server_stopped, server_proxy, _1)
+      )
+    );
     server_proxy->state = stop_in_progress;
     std::wcout << L"Server is stopping. Press Ctrl+C (Ctrl+Break) to terminate server work.\n";
     server_proxy_lock.unlock();    
@@ -242,8 +256,15 @@ void server_started(const server_proxy_ptr& server_proxy,
     else
     {
       server_proxy->state = started;
-      server_proxy->server->async_wait(
-        boost::bind(server_has_to_stop, server_proxy, _1));      
+      // Start server wait
+      server_proxy->server->async_wait()
+      (
+        ma::make_custom_alloc_handler
+        (
+          server_proxy->start_wait_allocator,
+          boost::bind(server_has_to_stop, server_proxy, _1)
+        )
+      );      
       std::wcout << L"Server has started.\n";
     }
   }
@@ -255,9 +276,15 @@ void server_has_to_stop(const server_proxy_ptr& server_proxy,
   boost::unique_lock<boost::mutex> server_proxy_lock(server_proxy->mutex);
   if (started == server_proxy->state)
   {
-    // Start server stop 
-    server_proxy->server->async_stop(
-      boost::bind(server_stopped, server_proxy, _1));    
+    // Start server stop
+    server_proxy->server->async_stop
+    (
+      ma::make_custom_alloc_handler
+      (
+        server_proxy->stop_allocator,
+        boost::bind(server_stopped, server_proxy, _1)
+      )
+    );      
     server_proxy->state = stop_in_progress;
     std::wcout << L"Server can't continue work due to error. Server is stopping.\n";
     server_proxy_lock.unlock();
