@@ -257,7 +257,7 @@ void server_started(const server_proxy_ptr& server_proxy,
     {
       server_proxy->state = started;
       // Start server wait
-      server_proxy->server->async_wait()
+      server_proxy->server->async_wait
       (
         ma::make_custom_alloc_handler
         (
