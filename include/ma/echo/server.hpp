@@ -305,7 +305,18 @@ namespace ma
           state_ = stop_in_progress;
 
           // Do shutdown - abort inner operations          
-          acceptor_.close(stop_error_);          
+          acceptor_.close(stop_error_); 
+
+          // Start stop for all active sessions
+          session_proxy_ptr session_proxy(active_session_proxies_.front());
+          while (session_proxy)
+          {
+            if (stop_in_progress != session_proxy->state_)
+            {
+              stop_session(session_proxy);
+            }
+            session_proxy = session_proxy->next_;
+          }
           
           // Do shutdown - abort outer operations
           wait_handler_.cancel();
