@@ -49,17 +49,17 @@ namespace ma
       
       struct session_proxy_type : private boost::noncopyable
       {        
-        session_proxy_weak_ptr prev;
-        session_proxy_ptr next;
-        session_ptr session;        
-        boost::asio::ip::tcp::endpoint endpoint;
-        state_type state;
+        session_proxy_weak_ptr prev_;
+        session_proxy_ptr next_;
+        session_ptr session_;        
+        boost::asio::ip::tcp::endpoint endpoint_;        
+        state_type state_;        
         in_place_handler_allocator<256> start_wait_allocator_;
         in_place_handler_allocator<256> stop_allocator_;
 
         explicit session_proxy_type(boost::asio::io_service& io_service)
-          : session(new ma::echo::session(io_service))
-          , state(ready_to_start)
+          : session_(new ma::echo::session(io_service))
+          , state_(ready_to_start)
         {
         }
 
@@ -78,11 +78,11 @@ namespace ma
 
         void push_front(const session_proxy_ptr& session_proxy)
         {
-          session_proxy->next = front_;
-          session_proxy->prev.reset();
+          session_proxy->next_ = front_;
+          session_proxy->prev_.reset();
           if (front_)
           {
-            front_->prev = session_proxy;
+            front_->prev_ = session_proxy;
           }
           front_ = session_proxy;
           ++size_;
@@ -92,19 +92,19 @@ namespace ma
         {
           if (front_ == session_proxy)
           {
-            front_ = front_->next;
+            front_ = front_->next_;
           }
-          session_proxy_ptr prev = session_proxy->prev.lock();
+          session_proxy_ptr prev = session_proxy->prev_.lock();
           if (prev)
           {
-            prev->next = session_proxy->next;
+            prev->next_ = session_proxy->next_;
           }
-          if (session_proxy->next)
+          if (session_proxy->next_)
           {
-            session_proxy->next->prev = prev;
+            session_proxy->next_->prev_ = prev;
           }
-          session_proxy->prev.reset();
-          session_proxy->next.reset();
+          session_proxy->prev_.reset();
+          session_proxy->next_.reset();
           --size_;
         }
 
@@ -320,8 +320,8 @@ namespace ma
 
         acceptor_.async_accept
         (
-          session_proxy->session->socket(),
-          session_proxy->endpoint, 
+          session_proxy->session_->socket(),
+          session_proxy->endpoint_, 
           strand_.wrap
           (
             make_custom_alloc_handler
@@ -346,7 +346,7 @@ namespace ma
         accept_in_progress_ = false;
         if (stop_in_progress == state_)
         {
-          if (session_proxies_.empty())  
+          if (active_session_proxies_.empty())  
           {
             state_ = stopped;
             // Signal shutdown completion
@@ -356,46 +356,90 @@ namespace ma
         else if (error)
         {   
           last_accept_error_ = error;
-          if (wait_handler_.has_target() && session_proxies_.empty()) 
+          if (wait_handler_.has_target() && active_session_proxies_.empty()) 
           {
             wait_handler_.post(error);
           }
         }
         else
         { 
-          // Save session
-          session_proxies_.push_front(session_proxy);
+          // Start accepted session 
+          start_session(session_proxy);          
+
+          // Save session as active
+          active_session_proxies_.push_front(session_proxy);
+
           // Continue session acceptation
-          if (session_proxies_.size() < settings_.max_sessions)
+          if (active_session_proxies_.size() < settings_.max_sessions)
           {
             accept_new_session();
-          }
-          // Start accepted session          
-          session_proxy->session->async_start
-          (
-            make_custom_alloc_handler
-            (
-              session_proxy->start_wait_allocator_,
-              boost::bind
-              (
-                &this_type::dispatch_session_start,
-                server_weak_ptr(shared_from_this()),
-                session_proxy,
-                _1
-              )
-            )           
-          );
-          session_proxy->state = start_in_progress;
+          }          
         }        
-      }
+      } // handle_accept
+
+      void start_session(const session_proxy_ptr& session_proxy)
+      {        
+        session_proxy->session_->async_start
+        (
+          make_custom_alloc_handler
+          (
+            session_proxy->start_wait_allocator_,
+            boost::bind
+            (
+              &this_type::dispatch_session_start,
+              server_weak_ptr(shared_from_this()),
+              session_proxy,
+              _1
+            )
+          )           
+        );          
+        session_proxy->state_ = start_in_progress;
+      } // start_session
+
+      void stop_session(const session_proxy_ptr& session_proxy)
+      {
+        session_proxy->session_->async_stop
+        (
+          make_custom_alloc_handler
+          (
+            session_proxy->stop_allocator_,
+            boost::bind
+            (
+              &this_type::dispatch_session_stop,
+              server_weak_ptr(shared_from_this()),
+              session_proxy,
+              _1
+            )
+          )
+        );
+        session_proxy->state_ = stop_in_progress;
+      } // stop_session
+
+      void wait_session(const session_proxy_ptr& session_proxy)
+      {
+        session_proxy->session_->async_wait
+        (
+          make_custom_alloc_handler
+          (
+            session_proxy->start_wait_allocator_,
+            boost::bind
+            (
+              &this_type::dispatch_session_wait,
+              server_weak_ptr(shared_from_this()),
+              session_proxy,
+              _1
+            )
+          )
+        );
+      } // wait_session
 
       static void dispatch_session_start(const server_weak_ptr& weak_server,
         const session_proxy_ptr& session_proxy, const boost::system::error_code& error)
       {
-        server_ptr the_server(weak_server.lock());
-        if (the_server)
+        server_ptr this_server(weak_server.lock());
+        if (this_server)
         {
-          the_server->strand_.dispatch
+          this_server->strand_.dispatch
           (
             make_custom_alloc_handler
             (
@@ -403,7 +447,7 @@ namespace ma
               boost::bind
               (
                 &this_type::handle_session_start,
-                the_server,
+                this_server,
                 session_proxy,
                 error
               )
@@ -414,44 +458,40 @@ namespace ma
 
       void handle_session_start(const session_proxy_ptr& session_proxy,
         const boost::system::error_code& error)
-      {        
-        if (start_in_progress == session_proxy->state)
-        {        
+      {                
+        if (start_in_progress == session_proxy->state_)        
+        {
           if (error)
           {          
-            session_proxy->state = stopped;
-            session_proxies_.erase(session_proxy);
+            session_proxy->state_ = stopped;
+            active_session_proxies_.erase(session_proxy);
             if (stop_in_progress == state_)
             {
-              if (!accept_in_progress_ && session_proxies_.empty())  
+              if (!accept_in_progress_ && active_session_proxies_.empty())  
               {
                 state_ = stopped;
                 // Signal shutdown completion
                 stop_handler_.post(stop_error_);
               }
             }
-            else
+            else if (!accept_in_progress_ && !last_accept_error_
+              && active_session_proxies_.size() < settings_.max_sessions)
             {
-              if (!accept_in_progress_ && !last_accept_error_
-                && session_proxies_.size() < settings_.max_sessions)
-              {
-                accept_new_session();
-              }
-            }         
+              // Continue session acceptation
+              accept_new_session();
+            }            
           }
           else // !error
           {
-            session_proxy->state = started;
+            session_proxy->state_ = started;
             if (stop_in_progress == state_)  
-            {              
-              //todo
-              //session->session->async_stop(...);
-              session_proxy->state = stop_in_progress;
+            {                            
+              stop_session(session_proxy);
             }
             else
-            {              
-              //todo
-              //session->session->async_wait(...);
+            { 
+              // Wait until session needs to stop
+              wait_session(session_proxy);
             }            
           }
         }
@@ -460,10 +500,10 @@ namespace ma
       static void dispatch_session_wait(const server_weak_ptr& weak_server,
         const session_proxy_ptr& session_proxy, const boost::system::error_code& error)
       {
-        server_ptr the_server(weak_server.lock());
-        if (the_server)
+        server_ptr this_server(weak_server.lock());
+        if (this_server)
         {
-          the_server->strand_.dispatch
+          this_server->strand_.dispatch
           (
             make_custom_alloc_handler
             (
@@ -471,7 +511,7 @@ namespace ma
               boost::bind
               (
                 &this_type::handle_session_wait,
-                the_server,
+                this_server,
                 session_proxy,
                 error
               )
@@ -480,19 +520,22 @@ namespace ma
         }
       }
 
-      void handle_session_wait(const session_proxy_ptr& /*session_proxy*/,
+      void handle_session_wait(const session_proxy_ptr& session_proxy,
         const boost::system::error_code& /*error*/)
       {
-        //todo
+        if (started == session_proxy->state_)
+        {
+          stop_session(session_proxy);
+        }
       }
 
       static void dispatch_session_stop(const server_weak_ptr& weak_server,
         const session_proxy_ptr& session_proxy, const boost::system::error_code& error)
       {
-        server_ptr the_server(weak_server.lock());
-        if (the_server)
+        server_ptr this_server(weak_server.lock());
+        if (this_server)
         {
-          the_server->strand_.dispatch
+          this_server->strand_.dispatch
           (
             make_custom_alloc_handler
             (
@@ -500,7 +543,7 @@ namespace ma
               boost::bind
               (
                 &this_type::handle_session_stop,
-                the_server,
+                this_server,
                 session_proxy,
                 error
               )
@@ -509,10 +552,29 @@ namespace ma
         }
       }
 
-      void handle_session_stop(const session_proxy_ptr& /*session_proxy*/,
+      void handle_session_stop(const session_proxy_ptr& session_proxy,
         const boost::system::error_code& /*error*/)
       {
-        //todo
+        if (stop_in_progress == session_proxy->state_)
+        {                  
+          session_proxy->state_ = stopped;
+          active_session_proxies_.erase(session_proxy);
+          if (stop_in_progress == state_)
+          {
+            if (!accept_in_progress_ && active_session_proxies_.empty())  
+            {
+              state_ = stopped;
+              // Signal shutdown completion
+              stop_handler_.post(stop_error_);
+            }
+          }
+          else if (!accept_in_progress_ && !last_accept_error_ 
+            && active_session_proxies_.size() < settings_.max_sessions)
+          {
+            // Continue session acceptation
+            accept_new_session();
+          }          
+        }
       }
 
       boost::asio::io_service& io_service_;
@@ -521,7 +583,7 @@ namespace ma
       boost::asio::io_service& session_io_service_;            
       ma::handler_storage<boost::system::error_code> wait_handler_;
       ma::handler_storage<boost::system::error_code> stop_handler_;
-      session_proxy_list session_proxies_;
+      session_proxy_list active_session_proxies_;
       boost::system::error_code last_accept_error_;
       boost::system::error_code stop_error_;      
       settings settings_;
