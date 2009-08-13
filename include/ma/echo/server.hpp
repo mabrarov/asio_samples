@@ -288,29 +288,93 @@ namespace ma
       template <typename Handler>
       void do_stop(boost::tuple<Handler> handler)
       {
-        //todo
-        io_service_.post
-        (
-          boost::asio::detail::bind_handler
+        if (stopped == state_ || stop_in_progress == state_)
+        {          
+          io_service_.post
           (
-            boost::get<0>(handler), 
-            boost::asio::error::operation_not_supported
-          )
-        );
+            boost::asio::detail::bind_handler
+            (
+              boost::get<0>(handler), 
+              boost::asio::error::operation_aborted
+            )
+          );          
+        }
+        else
+        {
+          // Start shutdown
+          state_ = stop_in_progress;
+
+          // Do shutdown - abort inner operations          
+          acceptor_.close(stop_error_);          
+          
+          // Do shutdown - abort outer operations
+          wait_handler_.cancel();
+
+          // Check for shutdown continuation
+          if (accept_in_progress_ || !active_session_proxies_.empty())
+          {
+            stop_handler_.store(
+              boost::asio::error::operation_aborted,                        
+              boost::get<0>(handler));
+          }
+          else
+          {                        
+            state_ = stopped;          
+            // Signal shutdown completion
+            io_service_.post
+            (
+              boost::asio::detail::bind_handler
+              (
+                boost::get<0>(handler), 
+                stop_error_
+              )
+            );
+          }
+        }
       } // do_stop
 
       template <typename Handler>
       void do_wait(boost::tuple<Handler> handler)
       {
-        //todo
-        io_service_.post
-        (
-          boost::asio::detail::bind_handler
+        if (stopped == state_ || stop_in_progress == state_)
+        {          
+          io_service_.post
           (
-            boost::get<0>(handler), 
-            boost::asio::error::operation_not_supported
-          )
-        );
+            boost::asio::detail::bind_handler
+            (
+              boost::get<0>(handler), 
+              boost::asio::error::operation_aborted
+            )
+          );          
+        } 
+        else if (started != state_)
+        {          
+          io_service_.post
+          (
+            boost::asio::detail::bind_handler
+            (
+              boost::get<0>(handler), 
+              boost::asio::error::operation_not_supported
+            )
+          );          
+        }
+        else if (last_accept_error_)
+        {
+          io_service_.post
+          (
+            boost::asio::detail::bind_handler
+            (
+              boost::get<0>(handler), 
+              last_accept_error_
+            )
+          );
+        }
+        else
+        {          
+          wait_handler_.store(
+            boost::asio::error::operation_aborted,                        
+            boost::get<0>(handler));
+        }  
       } // do_wait
 
       void accept_new_session()
