@@ -230,7 +230,7 @@ namespace ma
             )
           );          
         }
-        /*else if (!socket_read_in_progress_ && !socket_write_in_progress_)
+        else if (!socket_read_in_progress_ && !socket_write_in_progress_)
         {
           io_service_.post
           (
@@ -240,7 +240,7 @@ namespace ma
               error_
             )
           );
-        }*/
+        }
         else
         {          
           wait_handler_.store(
