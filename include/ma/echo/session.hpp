@@ -45,6 +45,8 @@ namespace ma
         : io_service_(io_service)
         , strand_(io_service)
         , socket_(io_service)
+        , wait_handler_(io_service)
+        , stop_handler_(io_service)
         , state_(ready_to_start)
         , socket_write_in_progress_(false)
         , socket_read_in_progress_(false)
@@ -118,48 +120,147 @@ namespace ma
       template <typename Handler>
       void do_start(boost::tuple<Handler> handler)
       {
-        //todo
-        io_service_.post
-        (
-          boost::asio::detail::bind_handler
+        if (stopped == state_ || stop_in_progress == state_)
+        {          
+          io_service_.post
           (
-            boost::get<0>(handler), 
-            boost::asio::error::operation_not_supported
-          )
-        );
+            boost::asio::detail::bind_handler
+            (
+              boost::get<0>(handler), 
+              boost::asio::error::operation_aborted
+            )
+          );          
+        } 
+        else if (ready_to_start != state_)
+        {          
+          io_service_.post
+          (
+            boost::asio::detail::bind_handler
+            (
+              boost::get<0>(handler), 
+              boost::asio::error::operation_not_supported
+            )
+          );          
+        }
+        else
+        {
+          state_ = started;
+          read_some();
+          io_service_.post
+          (
+            boost::asio::detail::bind_handler
+            (
+              boost::get<0>(handler), 
+              boost::system::error_code()
+            )
+          ); 
+        }
       }      
 
       template <typename Handler>
       void do_stop(boost::tuple<Handler> handler)
       {
-        //todo
-        io_service_.post
-        (
-          boost::asio::detail::bind_handler
+        if (stopped == state_ || stop_in_progress == state_)
+        {          
+          io_service_.post
           (
-            boost::get<0>(handler), 
-            boost::asio::error::operation_not_supported
-          )
-        );
-      }
+            boost::asio::detail::bind_handler
+            (
+              boost::get<0>(handler), 
+              boost::asio::error::operation_aborted
+            )
+          );          
+        }
+        else
+        {
+          // Start shutdown
+          state_ = stop_in_progress;
+
+          // Do shutdown - abort inner operations          
+          socket_.close(stop_error_);          
+          
+          // Do shutdown - abort outer operations
+          wait_handler_.cancel();
+
+          // Check for shutdown continuation
+          if (socket_read_in_progress_ || socket_write_in_progress_)
+          {
+            stop_handler_.store(
+              boost::asio::error::operation_aborted,                        
+              boost::get<0>(handler));
+          }
+          else
+          {                        
+            state_ = stopped;          
+            // Signal shutdown completion
+            io_service_.post
+            (
+              boost::asio::detail::bind_handler
+              (
+                boost::get<0>(handler), 
+                stop_error_
+              )
+            );
+          }
+        }
+      } // do_stop
 
       template <typename Handler>
       void do_wait(boost::tuple<Handler> handler)
       {
-        //todo
-        io_service_.post
-        (
-          boost::asio::detail::bind_handler
+        if (stopped == state_ || stop_in_progress == state_)
+        {          
+          io_service_.post
           (
-            boost::get<0>(handler), 
-            boost::asio::error::operation_not_supported
-          )
-        );
+            boost::asio::detail::bind_handler
+            (
+              boost::get<0>(handler), 
+              boost::asio::error::operation_aborted
+            )
+          );          
+        } 
+        else if (started != state_)
+        {          
+          io_service_.post
+          (
+            boost::asio::detail::bind_handler
+            (
+              boost::get<0>(handler), 
+              boost::asio::error::operation_not_supported
+            )
+          );          
+        }
+        /*else if (!socket_read_in_progress_ && !socket_write_in_progress_)
+        {
+          io_service_.post
+          (
+            boost::asio::detail::bind_handler
+            (
+              boost::get<0>(handler), 
+              error_
+            )
+          );
+        }*/
+        else
+        {          
+          wait_handler_.store(
+            boost::asio::error::operation_aborted,                        
+            boost::get<0>(handler));
+        } 
+      }
+
+      void read_some()
+      {
+        //todo
       }
 
       boost::asio::io_service& io_service_;
       boost::asio::io_service::strand strand_;      
       boost::asio::ip::tcp::socket socket_;
+      ma::handler_storage<boost::system::error_code> wait_handler_;
+      ma::handler_storage<boost::system::error_code> stop_handler_;
+      boost::system::error_code error_;
+      boost::system::error_code stop_error_;
       state_type state_;
       bool socket_write_in_progress_;
       bool socket_read_in_progress_;
