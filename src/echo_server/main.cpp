@@ -59,7 +59,7 @@ struct server_proxy_type : private boost::noncopyable
   }
 }; // server_proxy_type
 
-const boost::posix_time::time_duration stop_timeout = boost::posix_time::seconds(30);
+const boost::posix_time::time_duration stop_timeout = boost::posix_time::seconds(60);
 
 void start_server(const server_proxy_ptr&);
 
@@ -116,7 +116,7 @@ int _tmain(int argc, _TCHAR* argv[])
     // Create server
     server_proxy_ptr server_proxy(
       new server_proxy_type(server_io_service, session_io_service,
-        ma::echo::server::settings(endpoint)));
+        ma::echo::server::settings(endpoint, 1, 1)));
     
     std::wcout << L"Server is starting at port: " << listen_port << L"\n";              
     
