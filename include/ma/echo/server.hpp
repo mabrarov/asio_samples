@@ -68,7 +68,7 @@ namespace ma
         ~session_proxy_type()
         {
         }
-      }; // wrapped_session
+      }; // session_proxy_type
 
       class session_proxy_list : private boost::noncopyable
       {
@@ -328,7 +328,7 @@ namespace ma
           wait_handler_.cancel();
 
           // Check for shutdown continuation
-          if (can_stop_now())
+          if (may_stop())
           {
             state_ = stopped;          
             // Signal shutdown completion
@@ -438,7 +438,7 @@ namespace ma
         accept_in_progress_ = false;
         if (stop_in_progress == state_)
         {
-          if (can_stop_now())  
+          if (may_stop())  
           {
             state_ = stopped;
             // Signal shutdown completion
@@ -461,20 +461,20 @@ namespace ma
           // Save session as active
           active_session_proxies_.push_front(session_proxy);
           // Continue session acceptation if can
-          if (can_accept_more_sessions())
+          if (may_accept())
           {
             accept_session();
           }          
         }        
       } // handle_accept
 
-      bool can_accept_more_sessions() const
+      bool may_accept() const
       {
         return !accept_in_progress_ && !last_accept_error_
           && active_session_proxies_.size() < settings_.max_sessions_;
       }
 
-      bool can_stop_now() const
+      bool may_stop() const
       {
         return 0 == pending_operations_ && active_session_proxies_.empty();
       }      
@@ -577,7 +577,7 @@ namespace ma
             active_session_proxies_.erase(session_proxy);            
             if (stop_in_progress == state_)
             {
-              if (can_stop_now())  
+              if (may_stop())  
               {
                 state_ = stopped;
                 // Signal shutdown completion
@@ -588,7 +588,7 @@ namespace ma
             {
               recycle_session(session_proxy);
               // Continue session acceptation if can
-              if (can_accept_more_sessions())
+              if (may_accept())
               {                
                 accept_session();
               } 
@@ -610,7 +610,7 @@ namespace ma
         } 
         else if (stop_in_progress == state_) 
         {
-          if (can_stop_now())  
+          if (may_stop())  
           {
             state_ = stopped;
             // Signal shutdown completion
@@ -657,7 +657,7 @@ namespace ma
         }
         else if (stop_in_progress == state_)
         {
-          if (can_stop_now())  
+          if (may_stop())  
           {
             state_ = stopped;
             // Signal shutdown completion
@@ -704,7 +704,7 @@ namespace ma
           active_session_proxies_.erase(session_proxy);            
           if (stop_in_progress == state_)
           {
-            if (can_stop_now())  
+            if (may_stop())  
             {
               state_ = stopped;
               // Signal shutdown completion
@@ -715,7 +715,7 @@ namespace ma
           {
             recycle_session(session_proxy);
             // Continue session acceptation if can
-            if (can_accept_more_sessions())
+            if (may_accept())
             {                
               accept_session();
             } 
@@ -723,7 +723,7 @@ namespace ma
         }
         else if (stop_in_progress == state_)
         {
-          if (can_stop_now())  
+          if (may_stop())  
           {
             state_ = stopped;
             // Signal shutdown completion
