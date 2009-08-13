@@ -116,7 +116,7 @@ int _tmain(int argc, _TCHAR* argv[])
     // Create server
     server_proxy_ptr server_proxy(
       new server_proxy_type(server_io_service, session_io_service,
-        ma::echo::server::settings(endpoint, 1, 1)));
+        ma::echo::server::settings(endpoint, 10, 2)));
     
     std::wcout << L"Server is starting at port: " << listen_port << L"\n";              
     

@@ -50,11 +50,20 @@ namespace ma
         , state_(ready_to_start)
         , socket_write_in_progress_(false)
         , socket_read_in_progress_(false)
+        , socket_shutdown_done_(false)
       {        
       }
 
       ~session()
       {        
+      }
+
+      void reset()
+      {
+        error_ = boost::system::error_code();
+        stop_error_ = boost::system::error_code();        
+        state_ = ready_to_start;        
+        socket_shutdown_done_ = false;
       }
       
       boost::asio::ip::tcp::socket& socket()
@@ -144,7 +153,7 @@ namespace ma
         }
         else
         {
-          state_ = started;
+          state_ = started;          
           read_some();
           io_service_.post
           (
@@ -175,22 +184,25 @@ namespace ma
         {
           // Start shutdown
           state_ = stop_in_progress;
-
-          // Do shutdown - abort inner operations          
-          socket_.close(stop_error_);          
-          
           // Do shutdown - abort outer operations
           wait_handler_.cancel();
-
+          // Do shutdown - flush socket's write buffer
+          if (!socket_write_in_progress_) 
+          {
+            socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_send, stop_error_);            
+            socket_shutdown_done_ = true;
+          }
           // Check for shutdown continuation
-          if (socket_read_in_progress_ || socket_write_in_progress_)
+          if (socket_write_in_progress_ || socket_read_in_progress_)
           {
             stop_handler_.store(
               boost::asio::error::operation_aborted,                        
               boost::get<0>(handler));
           }
           else
-          {                        
+          {
+            // Do shutdown - free internal resources
+            close_socket(); 
             state_ = stopped;          
             // Signal shutdown completion
             io_service_.post
@@ -204,6 +216,16 @@ namespace ma
           }
         }
       } // do_stop
+
+      void close_socket()
+      {
+        boost::system::error_code error;
+        socket_.close(error);
+        if (!stop_error_)
+        {
+          stop_error_ = error;
+        }
+      }
 
       template <typename Handler>
       void do_wait(boost::tuple<Handler> handler)
@@ -264,6 +286,7 @@ namespace ma
       state_type state_;
       bool socket_write_in_progress_;
       bool socket_read_in_progress_;
+      bool socket_shutdown_done_;
       in_place_handler_allocator<256> write_allocator_;
       in_place_handler_allocator<256> read_allocator_;
     }; // class session
