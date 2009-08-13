@@ -115,7 +115,7 @@ namespace ma
 
         bool empty() const
         {
-          return front_;
+          return 0 == size_;
         }
 
         session_proxy_ptr front() const

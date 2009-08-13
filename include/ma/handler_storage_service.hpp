@@ -160,37 +160,10 @@ namespace ma
   private:
     class impl_list : private boost::noncopyable
     {
-    private:
-      typedef impl_list this_type;
-
-      explicit impl_list(implementation_type* front)
-        : front_(front)
-      {      
-      }
-
     public:
       explicit impl_list()
         : front_(0)
-      {      
-      }
-
-      void swap(this_type& other)
       {
-        std::swap(front_, other.front_);
-      }
-
-      ~impl_list()
-      {
-        while (front_)
-        {
-          this_type tmp(front_->next_);
-          if (front_->handler_ptr_)
-          {
-            front_->handler_ptr_->destroy();
-          }          
-          front_ = 0;
-          swap(tmp);
-        }
       }
 
       void push_front(implementation_type& impl)
@@ -226,6 +199,11 @@ namespace ma
         return front_;
       }
 
+      bool empty() const
+      {
+        return 0 == front_;
+      }
+
     private:
       implementation_type* front_;
     }; // class impl_list
@@ -244,45 +222,44 @@ namespace ma
     void shutdown_service()
     {   
       shutdown_done_ = true;
-      impl_list().swap(impl_list_);
+      while (!impl_list_.empty())
+      {
+        destroy(*impl_list_.front());
+      }      
     }    
 
     void construct(implementation_type& impl)
-    {
-      if (!shutdown_done_)
-      {        
-        mutex_type::scoped_lock lock(mutex_);
-        impl_list_.push_front(impl);
-      }
+    {      
+      mutex_type::scoped_lock lock(mutex_);
+      impl_list_.push_front(impl);     
     }
 
     void destroy(implementation_type& impl)
-    {
-      if (!shutdown_done_)
+    {   
+      mutex_type::scoped_lock lock(mutex_);        
+      impl_list_.erase(impl);
+      lock.unlock();
+
+      handler_base* handler_ptr = impl.handler_ptr_;
+      impl.handler_ptr_ = 0;      
+      if (handler_ptr)
       {
-        handler_base* handler_ptr(impl.handler_ptr_);
-        if (handler_ptr)
-        {
-          handler_ptr->destroy();
-        }        
-        mutex_type::scoped_lock lock(mutex_);        
-        impl_list_.erase(impl);
+        handler_ptr->destroy();
       }
     }
 
     template <typename Handler>
     void store(implementation_type& impl, arg_param_type cancel_arg, Handler handler)
-    {
+    {  
       if (!shutdown_done_)
-      {
+      {      
         typedef handler_wrapper<Handler> value_type;
         typedef boost::asio::detail::handler_alloc_traits<Handler, value_type> alloc_traits;
         // Allocate raw memory for handler
         boost::asio::detail::raw_handler_ptr<alloc_traits> raw_ptr(handler);
         // Wrap local handler and copy wrapper into allocated memory
         boost::asio::detail::handler_ptr<alloc_traits> ptr(raw_ptr, 
-          this->get_io_service(), cancel_arg, handler);               
-
+          this->get_io_service(), cancel_arg, handler);
         // Take the ownership
         impl.handler_ptr_ = ptr.release();
       }
@@ -293,7 +270,6 @@ namespace ma
       // Take the ownership
       handler_base* handler_ptr = impl.handler_ptr_;
       impl.handler_ptr_ = 0;
-
       if (handler_ptr)
       {
         handler_ptr->invoke(arg);
@@ -305,7 +281,6 @@ namespace ma
       // Take the ownership
       handler_base* handler_ptr = impl.handler_ptr_;
       impl.handler_ptr_ = 0;
-
       if (handler_ptr)
       {
         handler_ptr->cancel();
