@@ -41,7 +41,18 @@ namespace ma
       };
 
     public:
-      explicit session(boost::asio::io_service& io_service)
+      struct settings
+      {              
+        std::size_t buffer_size_;        
+
+        explicit settings(std::size_t buffer_size)
+          : buffer_size_(buffer_size)          
+        {
+        }
+      }; // struct settings
+
+      explicit session(boost::asio::io_service& io_service,
+        const settings& settings)
         : io_service_(io_service)
         , strand_(io_service)
         , socket_(io_service)
@@ -49,7 +60,8 @@ namespace ma
         , stop_handler_(io_service)
         , state_(ready_to_start)
         , socket_write_in_progress_(false)
-        , socket_read_in_progress_(false)        
+        , socket_read_in_progress_(false) 
+        , buffer_(new char[settings.buffer_size_])
       {        
       }
 
@@ -162,7 +174,7 @@ namespace ma
             )
           ); 
         }
-      }      
+      } // do_start
 
       template <typename Handler>
       void do_stop(boost::tuple<Handler> handler)
@@ -270,7 +282,7 @@ namespace ma
             boost::asio::error::operation_aborted,                        
             boost::get<0>(handler));
         } 
-      }
+      } // do_wait
 
       void read_some()
       {
@@ -309,7 +321,7 @@ namespace ma
         {
           //todo
         }
-      }
+      } // handle_read_some
 
       void handle_write(const boost::system::error_code& error,
         const std::size_t /*bytes_transferred*/)
@@ -337,7 +349,7 @@ namespace ma
         {
           //todo
         }
-      }      
+      } // handle_write
 
       boost::asio::io_service& io_service_;
       boost::asio::io_service::strand strand_;      
@@ -348,7 +360,8 @@ namespace ma
       boost::system::error_code stop_error_;
       state_type state_;
       bool socket_write_in_progress_;
-      bool socket_read_in_progress_;      
+      bool socket_read_in_progress_;
+      boost::scoped_array<char> buffer_;
       in_place_handler_allocator<256> write_allocator_;
       in_place_handler_allocator<256> read_allocator_;
     }; // class session

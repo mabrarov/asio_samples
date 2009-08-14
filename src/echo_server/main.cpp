@@ -88,9 +88,17 @@ int _tmain(int argc, _TCHAR* argv[])
   options_description.add_options()
     ("help", "produce help message")
     ("port", boost::program_options::value<unsigned short>(), "set port")
-    ("max_sessions", boost::program_options::value<std::size_t>()->default_value(10000), "set maximum number of active sessions")
-    ("recycled_sessions", boost::program_options::value<std::size_t>()->default_value(100), "set maximum number of inactive sessions used for new sessions' acceptation")
-    ("listen_backlog", boost::program_options::value<int>()->default_value(6), "set TCP listen backlog");
+    ("max_sessions", 
+      boost::program_options::value<std::size_t>()->default_value(10000), 
+      "set maximum number of active sessions")
+    ("recycled_sessions", 
+      boost::program_options::value<std::size_t>()->default_value(100), 
+      "set maximum number of inactive sessions used for new sessions' acceptation")
+    ("listen_backlog", 
+      boost::program_options::value<int>()->default_value(6), 
+      "set TCP listen backlog")
+    ("buffer_size", 
+      boost::program_options::value<std::size_t>()->default_value(1024));    
 
   int exit_code = EXIT_SUCCESS;
   try 
@@ -123,7 +131,8 @@ int _tmain(int argc, _TCHAR* argv[])
         listen_endpoint,
         options_values["max_sessions"].as<std::size_t>(),
         options_values["recycled_sessions"].as<std::size_t>(),
-        options_values["listen_backlog"].as<int>());      
+        options_values["listen_backlog"].as<int>(),
+        ma::echo::session::settings(options_values["buffer_size"].as<std::size_t>()));      
 
       std::cout << "Number of found CPU(s)             : " << cpu_count << '\n'               
                 << "Number of session manager's threads: " << session_manager_thread_count << '\n'

@@ -58,8 +58,9 @@ namespace ma
         in_place_handler_allocator<256> start_wait_allocator_;
         in_place_handler_allocator<256> stop_allocator_;
 
-        explicit session_proxy_type(boost::asio::io_service& io_service)
-          : session_(new ma::echo::session(io_service))
+        explicit session_proxy_type(boost::asio::io_service& io_service,
+          const session::settings& session_settings)
+          : session_(new ma::echo::session(io_service, session_settings))
           , pending_operations_(0)
           , state_(ready_to_start)
         {
@@ -136,17 +137,20 @@ namespace ma
         boost::asio::ip::tcp::endpoint endpoint_;
         std::size_t max_sessions_;
         std::size_t recycled_sessions_;
-        int listen_backlog_;        
+        int listen_backlog_;
+        session::settings session_settings_;
 
         explicit settings(
           const boost::asio::ip::tcp::endpoint& endpoint,
-          std::size_t max_sessions = (std::numeric_limits<std::size_t>::max)(),          
-          std::size_t recycled_sessions = 0,
-          int listen_backlog = 4)
+          std::size_t max_sessions,
+          std::size_t recycled_sessions,
+          int listen_backlog,
+          const session::settings& session_settings)
           : endpoint_(endpoint)
           , max_sessions_(max_sessions)
           , recycled_sessions_(recycled_sessions)
-          , listen_backlog_(listen_backlog)          
+          , listen_backlog_(listen_backlog)
+          , session_settings_(session_settings)
         {
         }
       }; // struct settings
@@ -400,7 +404,8 @@ namespace ma
         session_proxy_ptr session_proxy;
         if (recycled_session_proxies_.empty())
         {
-          session_proxy.reset(new session_proxy_type(session_io_service_));
+          session_proxy.reset(
+            new session_proxy_type(session_io_service_, settings_.session_settings_));
         }
         else
         {
@@ -429,7 +434,7 @@ namespace ma
         );
         ++pending_operations_;
         accept_in_progress_ = true;
-      }      
+      } // accept_session
 
       void handle_accept(const session_proxy_ptr& session_proxy,
         const boost::system::error_code& error)
@@ -562,7 +567,7 @@ namespace ma
             )
           );
         }
-      }
+      } // dispatch_session_start
 
       void handle_session_start(const session_proxy_ptr& session_proxy,
         const boost::system::error_code& error)
@@ -621,7 +626,7 @@ namespace ma
         {
           recycle_session(session_proxy);
         }        
-      }
+      } // handle_session_start
 
       static void dispatch_session_wait(const server_weak_ptr& weak_server,
         const session_proxy_ptr& session_proxy, const boost::system::error_code& error)
@@ -644,7 +649,7 @@ namespace ma
             )
           );
         }
-      }
+      } // dispatch_session_wait
 
       void handle_session_wait(const session_proxy_ptr& session_proxy,
         const boost::system::error_code& /*error*/)
@@ -668,7 +673,7 @@ namespace ma
         {
           recycle_session(session_proxy);
         }
-      }
+      } // handle_session_wait
 
       static void dispatch_session_stop(const server_weak_ptr& weak_server,
         const session_proxy_ptr& session_proxy, const boost::system::error_code& error)
@@ -691,7 +696,7 @@ namespace ma
             )
           );
         }
-      }
+      } // dispatch_session_stop
 
       void handle_session_stop(const session_proxy_ptr& session_proxy,
         const boost::system::error_code& /*error*/)
@@ -734,7 +739,7 @@ namespace ma
         {
           recycle_session(session_proxy);
         }
-      }
+      } // handle_session_stop
 
       void recycle_session(const session_proxy_ptr& session_proxy)
       {
@@ -745,7 +750,7 @@ namespace ma
           session_proxy->state_ = ready_to_start;
           recycled_session_proxies_.push_front(session_proxy);
         }        
-      }
+      } // recycle_session
 
       boost::asio::io_service& io_service_;
       boost::asio::io_service::strand strand_;      
