@@ -388,7 +388,7 @@ namespace ma
           state_ = stop_in_progress;
           // Do shutdown - abort outer operations
           wait_handler_.cancel();
-          // Do shutdown - flush socket's write buffer
+          // Do shutdown - flush socket's write_some buffer
           if (!socket_write_in_progress_) 
           {
             socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_send, stop_error_);            
@@ -505,16 +505,16 @@ namespace ma
         }        
       }
 
-      void write()
+      void write_some()
       {
         buffer_type::const_buffers_type buffers(buffer_.data());
         std::size_t buffers_size = boost::asio::buffers_end(buffers) - 
           boost::asio::buffers_begin(buffers);
         if (buffers_size)
         {
-          boost::asio::async_write
+          socket_.async_write_some
           (
-            socket_, buffers,
+            buffers,
             strand_.wrap
             (
               ma::make_custom_alloc_handler
@@ -522,7 +522,7 @@ namespace ma
                 write_allocator_,
                 boost::bind
                 (
-                  &this_type::handle_write,
+                  &this_type::handle_write_some,
                   shared_from_this(),
                   boost::asio::placeholders::error,
                   boost::asio::placeholders::bytes_transferred
@@ -561,12 +561,12 @@ namespace ma
           read_some();
           if (!socket_write_in_progress_)
           {
-            write();
+            write_some();
           }
         }
       } // handle_read_some
 
-      void handle_write(const boost::system::error_code& error,
+      void handle_write_some(const boost::system::error_code& error,
         const std::size_t bytes_transferred)
       {
         socket_write_in_progress_ = false;
@@ -591,13 +591,13 @@ namespace ma
         else
         {
           buffer_.commit(bytes_transferred);
-          write();
+          write_some();
           if (!socket_read_in_progress_)
           {
             read_some();
           }
         }
-      } // handle_write
+      } // handle_write_some
 
       boost::asio::io_service& io_service_;
       boost::asio::io_service::strand strand_;      
