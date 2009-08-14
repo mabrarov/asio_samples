@@ -87,7 +87,10 @@ int _tmain(int argc, _TCHAR* argv[])
   boost::program_options::options_description options_description("Allowed options");
   options_description.add_options()
     ("help", "produce help message")
-    ("port", boost::program_options::value<unsigned short>(), "set port");
+    ("port", boost::program_options::value<unsigned short>(), "set port")
+    ("max_sessions", boost::program_options::value<std::size_t>()->default_value(10000), "set maximum number of active sessions")
+    ("recycled_sessions", boost::program_options::value<std::size_t>()->default_value(100), "set maximum number of inactive sessions used for new sessions' acceptation")
+    ("listen_backlog", boost::program_options::value<int>()->default_value(6), "set TCP listen backlog");
 
   int exit_code = EXIT_SUCCESS;
   try 
@@ -109,21 +112,27 @@ int _tmain(int argc, _TCHAR* argv[])
     }
     else
     {        
-      std::size_t cpu_count(boost::thread::hardware_concurrency());
-      if (!cpu_count)
-      {
-        cpu_count = 1;
-      }
-      std::size_t session_thread_count = cpu_count;
+      std::size_t cpu_count = boost::thread::hardware_concurrency();
+      std::size_t session_thread_count = cpu_count ? cpu_count : 1;
       std::size_t session_manager_thread_count = 1;
 
-      std::cout << "Number of found CPUs: " << cpu_count << '\n'               
+      unsigned short listen_port = options_values["port"].as<unsigned short>();
+      boost::asio::ip::tcp::endpoint listen_endpoint(boost::asio::ip::tcp::v4(), listen_port);
+
+      ma::echo::server::settings server_settings(
+        listen_endpoint,
+        options_values["max_sessions"].as<std::size_t>(),
+        options_values["recycled_sessions"].as<std::size_t>(),
+        options_values["listen_backlog"].as<int>());      
+
+      std::cout << "Number of found CPU(s)             : " << cpu_count << '\n'               
                 << "Number of session manager's threads: " << session_manager_thread_count << '\n'
                 << "Number of sessions' threads        : " << session_thread_count << '\n' 
-                << "Total number of work threads       : " << session_thread_count + session_manager_thread_count << '\n';
-
-      unsigned short listen_port = options_values["port"].as<unsigned short>();
-      boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::tcp::v4(), listen_port);
+                << "Total number of work threads       : " << session_thread_count + session_manager_thread_count << '\n'
+                << "Server listen port                 : " << listen_port << '\n'
+                << "Maximum number of active sessions  : " << server_settings.max_sessions_ << '\n'
+                << "Maximum number of recycled sessions: " << server_settings.recycled_sessions_ << '\n'
+                << "TCP listen backlog                 : " << server_settings.listen_backlog_ << '\n';
       
       // Before server_io_service
       boost::asio::io_service session_io_service;
@@ -132,10 +141,9 @@ int _tmain(int argc, _TCHAR* argv[])
 
       // Create server
       server_proxy_ptr server_proxy(
-        new server_proxy_type(server_io_service, session_io_service,
-          ma::echo::server::settings(endpoint, 10, 2)));
+        new server_proxy_type(server_io_service, session_io_service, server_settings));
       
-      std::cout << "Server is starting at port: " << listen_port << '\n';              
+      std::cout << "Server is starting.\n";
       
       // Start the server
       boost::unique_lock<boost::mutex> server_proxy_lock(server_proxy->mutex_);    

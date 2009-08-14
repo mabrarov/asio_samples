@@ -136,17 +136,17 @@ namespace ma
         boost::asio::ip::tcp::endpoint endpoint_;
         std::size_t max_sessions_;
         std::size_t recycled_sessions_;
-        int backlog_;        
+        int listen_backlog_;        
 
         explicit settings(
           const boost::asio::ip::tcp::endpoint& endpoint,
           std::size_t max_sessions = (std::numeric_limits<std::size_t>::max)(),          
           std::size_t recycled_sessions = 0,
-          int backlog = 4)
+          int listen_backlog = 4)
           : endpoint_(endpoint)
           , max_sessions_(max_sessions)
           , recycled_sessions_(recycled_sessions)
-          , backlog_(backlog)          
+          , listen_backlog_(listen_backlog)          
         {
         }
       }; // struct settings
@@ -266,7 +266,7 @@ namespace ma
             acceptor_.bind(settings_.endpoint_, error);
             if (!error)
             {
-              acceptor_.listen(settings_.backlog_, error);
+              acceptor_.listen(settings_.listen_backlog_, error);
             }          
           }          
           if (error)
