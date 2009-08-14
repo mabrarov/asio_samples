@@ -17,7 +17,7 @@
 #include <boost/thread.hpp>
 #include <boost/date_time/posix_time/ptime.hpp>
 #include <boost/asio.hpp>
-#include <boost/lexical_cast.hpp>
+#include <boost/program_options.hpp>
 #include <ma/handler_allocation.hpp>
 #include <ma/echo/server.hpp>
 #include <console_controller.hpp>
@@ -83,109 +83,131 @@ void server_stopped(const server_proxy_ptr&,
   const boost::system::error_code&);
 
 int _tmain(int argc, _TCHAR* argv[])
-{
+{ 
+  boost::program_options::options_description options_description("Allowed options");
+  options_description.add_options()
+    ("help", "produce help message")
+    ("port", boost::program_options::value<unsigned short>(), "set port");
+
   int exit_code = EXIT_SUCCESS;
-  if (argc < 2)
+  try 
   {
-    boost::filesystem::wpath app_path(argv[0]);
-    std::wcout << L"Usage: \"" << app_path.leaf() << L"\" port\n";
-  }
-  else
-  {
-    std::size_t cpu_count(boost::thread::hardware_concurrency());
-    if (!cpu_count)
+    boost::program_options::variables_map options_values;  
+    boost::program_options::store(
+      boost::program_options::parse_command_line(argc, argv, options_description), 
+      options_values);
+    boost::program_options::notify(options_values);
+
+    if (options_values.count("help"))
     {
-      cpu_count = 1;
+      std::cout << options_description;
     }
-    std::size_t session_thread_count = cpu_count;
-    std::size_t session_manager_thread_count = 1;
-
-    std::wcout << L"Number of found CPUs: " << cpu_count << L"\n"               
-               << L"Number of session manager's threads: " << session_manager_thread_count << L"\n"
-               << L"Number of sessions' threads        : " << session_thread_count << L"\n" 
-               << L"Total number of work threads       : " << session_thread_count + session_manager_thread_count << L"\n";
-
-    unsigned short listen_port = boost::lexical_cast<unsigned short>(argv[1]);
-    boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::tcp::v4(), listen_port);
-    
-    // Before server_io_service
-    boost::asio::io_service session_io_service;
-    // ... for the right destruction order
-    boost::asio::io_service server_io_service;
-
-    // Create server
-    server_proxy_ptr server_proxy(
-      new server_proxy_type(server_io_service, session_io_service,
-        ma::echo::server::settings(endpoint, 10, 2)));
-    
-    std::wcout << L"Server is starting at port: " << listen_port << L"\n";              
-    
-    // Start the server
-    boost::unique_lock<boost::mutex> server_proxy_lock(server_proxy->mutex_);    
-    start_server(server_proxy);
-    server_proxy_lock.unlock();
-    
-    // Setup console controller
-    ma::console_controller console_controller(
-      boost::bind(handle_program_exit, server_proxy));
-
-    std::wcout << L"Press Ctrl+C (Ctrl+Break) to exit.\n";
-
-    // Exception handler for automatic server aborting
-    exception_handler work_exception_handler(
-      boost::bind(handle_work_exception, server_proxy));
-
-    // Create work for sessions' io_service to prevent threads' stop
-    boost::asio::io_service::work session_work(session_io_service);
-    // Create work for server's io_service to prevent threads' stop
-    boost::asio::io_service::work server_work(server_io_service);    
-
-    // Create work threads for session operations
-    boost::thread_group work_threads;    
-    for (std::size_t i = 0; i != session_thread_count; ++i)
-    {
-      work_threads.create_thread(
-        boost::bind(run_io_service, boost::ref(session_io_service), 
-          work_exception_handler));
+    else if (!options_values.count("port"))
+    {    
+      exit_code = EXIT_FAILURE;
+      std::cout << "Port not set.\n" << options_description;
     }
-    // Create work threads for server operations
-    for (std::size_t i = 0; i != session_manager_thread_count; ++i)
-    {
-      work_threads.create_thread(
-        boost::bind(run_io_service, boost::ref(server_io_service), 
-          work_exception_handler));      
-    }
-
-    // Wait until server stops
-    server_proxy_lock.lock();
-    while (server_proxy_type::stop_in_progress != server_proxy->state_ 
-      && server_proxy_type::stopped != server_proxy->state_)
-    {
-      server_proxy->state_changed_.wait(server_proxy_lock);
-    }
-    if (server_proxy_type::stopped != server_proxy->state_)
-    {
-      if (!server_proxy->state_changed_.timed_wait(server_proxy_lock, stop_timeout))      
+    else
+    {        
+      std::size_t cpu_count(boost::thread::hardware_concurrency());
+      if (!cpu_count)
       {
-        std::wcout << L"Server stop timeout expiration. Terminating server work.\n";
+        cpu_count = 1;
+      }
+      std::size_t session_thread_count = cpu_count;
+      std::size_t session_manager_thread_count = 1;
+
+      std::cout << "Number of found CPUs: " << cpu_count << '\n'               
+                << "Number of session manager's threads: " << session_manager_thread_count << '\n'
+                << "Number of sessions' threads        : " << session_thread_count << '\n' 
+                << "Total number of work threads       : " << session_thread_count + session_manager_thread_count << '\n';
+
+      unsigned short listen_port = options_values["port"].as<unsigned short>();
+      boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::tcp::v4(), listen_port);
+      
+      // Before server_io_service
+      boost::asio::io_service session_io_service;
+      // ... for the right destruction order
+      boost::asio::io_service server_io_service;
+
+      // Create server
+      server_proxy_ptr server_proxy(
+        new server_proxy_type(server_io_service, session_io_service,
+          ma::echo::server::settings(endpoint, 10, 2)));
+      
+      std::cout << "Server is starting at port: " << listen_port << '\n';              
+      
+      // Start the server
+      boost::unique_lock<boost::mutex> server_proxy_lock(server_proxy->mutex_);    
+      start_server(server_proxy);
+      server_proxy_lock.unlock();
+      
+      // Setup console controller
+      ma::console_controller console_controller(
+        boost::bind(handle_program_exit, server_proxy));
+
+      std::cout << "Press Ctrl+C (Ctrl+Break) to exit.\n";
+
+      // Exception handler for automatic server aborting
+      exception_handler work_exception_handler(
+        boost::bind(handle_work_exception, server_proxy));
+
+      // Create work for sessions' io_service to prevent threads' stop
+      boost::asio::io_service::work session_work(session_io_service);
+      // Create work for server's io_service to prevent threads' stop
+      boost::asio::io_service::work server_work(server_io_service);    
+
+      // Create work threads for session operations
+      boost::thread_group work_threads;    
+      for (std::size_t i = 0; i != session_thread_count; ++i)
+      {
+        work_threads.create_thread(
+          boost::bind(run_io_service, boost::ref(session_io_service), 
+            work_exception_handler));
+      }
+      // Create work threads for server operations
+      for (std::size_t i = 0; i != session_manager_thread_count; ++i)
+      {
+        work_threads.create_thread(
+          boost::bind(run_io_service, boost::ref(server_io_service), 
+            work_exception_handler));      
+      }
+
+      // Wait until server stops
+      server_proxy_lock.lock();
+      while (server_proxy_type::stop_in_progress != server_proxy->state_ 
+        && server_proxy_type::stopped != server_proxy->state_)
+      {
+        server_proxy->state_changed_.wait(server_proxy_lock);
+      }
+      if (server_proxy_type::stopped != server_proxy->state_)
+      {
+        if (!server_proxy->state_changed_.timed_wait(server_proxy_lock, stop_timeout))      
+        {
+          std::cout << "Server stop timeout expiration. Terminating server work.\n";
+          exit_code = EXIT_FAILURE;
+        }
+        server_proxy->state_ = server_proxy_type::stopped;
+      }
+      if (!server_proxy->stopped_by_program_exit_)
+      {
         exit_code = EXIT_FAILURE;
       }
-      server_proxy->state_ = server_proxy_type::stopped;
-    }
-    if (!server_proxy->stopped_by_program_exit_)
-    {
-      exit_code = EXIT_FAILURE;
-    }
-    server_proxy_lock.unlock();
-        
-    server_io_service.stop();
-    session_io_service.stop();
+      server_proxy_lock.unlock();
+          
+      server_io_service.stop();
+      session_io_service.stop();
 
-    std::wcout << L"Waiting until all of the work threads will stop.\n";
-    work_threads.join_all();
-    std::wcout << L"Work threads have stopped. Process will close.\n";    
+      std::cout << "Waiting until all of the work threads will stop.\n";
+      work_threads.join_all();
+      std::cout << "Work threads have stopped. Process will close.\n";    
+    }
   }
-
+  catch (const boost::program_options::error&)
+  {
+    exit_code = EXIT_FAILURE;
+    std::cout << "Invalid options.\n" << options_description;      
+  }  
   return exit_code;
 }
 
@@ -244,7 +266,7 @@ void handle_work_exception(const server_proxy_ptr& server_proxy)
 {
   boost::unique_lock<boost::mutex> server_proxy_lock(server_proxy->mutex_);  
   server_proxy->state_ = server_proxy_type::stopped;  
-  std::wcout << L"Terminating server work due to unexpected exception.\n";
+  std::cout << "Terminating server work due to unexpected exception.\n";
   server_proxy_lock.unlock();
   server_proxy->state_changed_.notify_one();      
 }
@@ -252,15 +274,15 @@ void handle_work_exception(const server_proxy_ptr& server_proxy)
 void handle_program_exit(const server_proxy_ptr& server_proxy)
 {
   boost::unique_lock<boost::mutex> server_proxy_lock(server_proxy->mutex_);
-  std::wcout << L"Program exit request detected.\n";
+  std::cout << "Program exit request detected.\n";
   if (server_proxy_type::stopped == server_proxy->state_)
   {    
-    std::wcout << L"Server has already stopped.\n";
+    std::cout << "Server has already stopped.\n";
   }
   else if (server_proxy_type::stop_in_progress == server_proxy->state_)
   {    
     server_proxy->state_ = server_proxy_type::stopped;
-    std::wcout << L"Server is already stopping. Terminating server work.\n";
+    std::cout << "Server is already stopping. Terminating server work.\n";
     server_proxy_lock.unlock();
     server_proxy->state_changed_.notify_one();       
   }
@@ -269,7 +291,7 @@ void handle_program_exit(const server_proxy_ptr& server_proxy)
     // Start server stop
     stop_server(server_proxy);
     server_proxy->stopped_by_program_exit_ = true;
-    std::wcout << L"Server is stopping. Press Ctrl+C (Ctrl+Break) to terminate server work.\n";
+    std::cout << "Server is stopping. Press Ctrl+C (Ctrl+Break) to terminate server work.\n";
     server_proxy_lock.unlock();    
     server_proxy->state_changed_.notify_one();
   }  
@@ -284,7 +306,7 @@ void server_started(const server_proxy_ptr& server_proxy,
     if (error)
     {       
       server_proxy->state_ = server_proxy_type::stopped;
-      std::wcout << L"Server can't start due to error.\n";
+      std::cout << "Server can't start due to error.\n";
       server_proxy_lock.unlock();
       server_proxy->state_changed_.notify_one();
     }
@@ -292,7 +314,7 @@ void server_started(const server_proxy_ptr& server_proxy,
     {
       server_proxy->state_ = server_proxy_type::started;
       wait_server(server_proxy);
-      std::wcout << L"Server has started.\n";
+      std::cout << "Server has started.\n";
     }
   }
 }
@@ -304,7 +326,7 @@ void server_has_to_stop(const server_proxy_ptr& server_proxy,
   if (server_proxy_type::started == server_proxy->state_)
   {
     stop_server(server_proxy);
-    std::wcout << L"Server can't continue work due to error. Server is stopping.\n";
+    std::cout << "Server can't continue work due to error. Server is stopping.\n";
     server_proxy_lock.unlock();
     server_proxy->state_changed_.notify_one();    
   }
@@ -317,7 +339,7 @@ void server_stopped(const server_proxy_ptr& server_proxy,
   if (server_proxy_type::stop_in_progress == server_proxy->state_)
   {      
     server_proxy->state_ = server_proxy_type::stopped;
-    std::wcout << L"Server has stopped.\n";    
+    std::cout << "Server has stopped.\n";    
     server_proxy_lock.unlock();
     server_proxy->state_changed_.notify_one();
   }
