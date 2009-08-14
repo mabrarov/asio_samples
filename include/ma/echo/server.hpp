@@ -742,6 +742,7 @@ namespace ma
           && recycled_session_proxies_.size() < settings_.recycled_sessions_)
         {
           session_proxy->session_->reset();
+          session_proxy->state_ = ready_to_start;
           recycled_session_proxies_.push_front(session_proxy);
         }        
       }
