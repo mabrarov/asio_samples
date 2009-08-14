@@ -11,6 +11,7 @@
 #include <vector>
 #include <stdexcept>
 #include <boost/utility.hpp>
+#include <boost/array.hpp>
 #include <boost/smart_ptr.hpp>
 #include <boost/bind.hpp>
 #include <boost/ref.hpp>
@@ -45,10 +46,87 @@ namespace ma
       class buffer_type : private boost::noncopyable
       {
       public:
-        typedef std::vector<boost::asio::const_buffer> const_buffers_type;
-        typedef std::vector<boost::asio::mutable_buffer> mutable_buffers_type;
+        class const_buffers_type
+        {
+        public:
+          typedef boost::asio::const_buffer value_type;
+          typedef const value_type* const_iterator;          
 
-        buffer_type(std::size_t size)
+          explicit const_buffers_type()
+            : buffers_count_(0)
+          {
+          }
+
+          explicit const_buffers_type(const value_type& buffer1)
+            : buffers_count_(1)
+          {
+            buffers_[0] = buffer1;            
+          }
+
+          explicit const_buffers_type(const value_type& buffer1,
+            const value_type& buffer2)
+            : buffers_count_(2)
+          {
+            buffers_[0] = buffer1;
+            buffers_[1] = buffer2;
+          }
+
+          const_iterator begin() const
+          {
+            return &buffers_[0];
+          }
+
+          const_iterator end() const
+          {
+            return &buffers_[0] + buffers_count_;
+          }
+
+        private:
+          boost::array<value_type, 2> buffers_;
+          std::size_t buffers_count_;
+        }; // const_buffers_type
+
+        class mutable_buffers_type
+        {
+        public:
+          typedef boost::asio::mutable_buffer value_type;
+          typedef const value_type* const_iterator;          
+
+          explicit mutable_buffers_type()
+            : buffers_count_(0)
+          {
+          }
+
+          explicit mutable_buffers_type(const value_type& buffer1)
+            : buffers_count_(1)
+          {
+            buffers_[0] = buffer1;            
+          }
+
+          explicit mutable_buffers_type(const value_type& buffer1,
+            const value_type& buffer2)
+            : buffers_count_(2)
+          {
+            buffers_[0] = buffer1;
+            buffers_[1] = buffer2;
+          }
+          
+          const_iterator begin() const
+          {
+            return &buffers_[0];
+          }
+          
+          const_iterator end() const
+          {
+            return &buffers_[0] + buffers_count_;
+          }
+
+        private:
+          boost::array<value_type, 2> buffers_;
+          std::size_t buffers_count_;
+        }; // mutable_buffers_type        
+
+        explicit buffer_type(std::size_t size)
           : data_(new char[size])
           , size_(size)
           , input_start_(0)
@@ -105,53 +183,43 @@ namespace ma
         }
 
         const_buffers_type data() const
-        {          
-          const_buffers_type buffers;          
-          if (output_size_)
+        {
+          if (!output_size_)
           {
-            std::size_t d = size_ - output_start_;
-            if (output_size_ > d)
-            {
-              buffers.push_back(
-                boost::asio::const_buffer(
-                data_.get() + output_start_, d));
-              buffers.push_back(
-                boost::asio::const_buffer(
-                data_.get(), output_size_ - d));
-            }
-            else
-            {
-              buffers.push_back(
-                boost::asio::const_buffer(
-                  data_.get() + output_start_, output_size_));
-            }
+            return const_buffers_type();
           }
-          return buffers;
+          std::size_t d = size_ - output_start_;
+          if (output_size_ > d)
+          {
+            return const_buffers_type(
+              boost::asio::const_buffer(
+                data_.get() + output_start_, d),
+              boost::asio::const_buffer(
+                data_.get(), output_size_ - d));
+          }          
+          return const_buffers_type(
+            boost::asio::const_buffer(
+              data_.get() + output_start_, output_size_));
         }
 
         mutable_buffers_type prepare() const
-        {          
-          mutable_buffers_type buffers;
-          if (input_size_)
+        {                    
+          if (!input_size_)
           {
-            std::size_t d = size_ - input_start_;
-            if (input_size_ > d)
-            {
-              buffers.push_back(
-                boost::asio::mutable_buffer(
-                data_.get() + input_start_, d));
-              buffers.push_back(
-                boost::asio::mutable_buffer(
+            return mutable_buffers_type();
+          }          
+          std::size_t d = size_ - input_start_;
+          if (input_size_ > d)
+          {
+            return mutable_buffers_type(
+              boost::asio::mutable_buffer(
+                data_.get() + input_start_, d),
+              boost::asio::mutable_buffer(
                 data_.get(), input_size_ - d));
-            }
-            else
-            {
-              buffers.push_back(
-                boost::asio::mutable_buffer(
-                  data_.get() + input_start_, input_size_));
-            }
           }
-          return buffers;
+          return mutable_buffers_type(
+            boost::asio::mutable_buffer(
+              data_.get() + input_start_, input_size_));          
         }
 
       private:
