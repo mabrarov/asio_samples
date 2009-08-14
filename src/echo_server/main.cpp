@@ -152,7 +152,7 @@ int _tmain(int argc, _TCHAR* argv[])
       server_proxy_ptr server_proxy(
         new server_proxy_type(server_io_service, session_io_service, server_settings));
       
-      std::cout << "Server is starting.\n";
+      std::cout << "Server is starting...\n";
       
       // Start the server
       boost::unique_lock<boost::mutex> server_proxy_lock(server_proxy->mutex_);    
@@ -201,7 +201,7 @@ int _tmain(int argc, _TCHAR* argv[])
       {
         if (!server_proxy->state_changed_.timed_wait(server_proxy_lock, stop_timeout))      
         {
-          std::cout << "Server stop timeout expiration. Terminating server work.\n";
+          std::cout << "Server stop timeout expiration. Terminating server work...\n";
           exit_code = EXIT_FAILURE;
         }
         server_proxy->state_ = server_proxy_type::stopped;
@@ -215,7 +215,8 @@ int _tmain(int argc, _TCHAR* argv[])
       server_io_service.stop();
       session_io_service.stop();
 
-      std::cout << "Waiting until all of the work threads will stop.\n";
+      std::cout << "Server work terminated.\n"
+                << "Waiting until all of the work threads will stop...\n";
       work_threads.join_all();
       std::cout << "Work threads have stopped. Process will close.\n";    
     }
@@ -283,7 +284,7 @@ void handle_work_exception(const server_proxy_ptr& server_proxy)
 {
   boost::unique_lock<boost::mutex> server_proxy_lock(server_proxy->mutex_);  
   server_proxy->state_ = server_proxy_type::stopped;  
-  std::cout << "Terminating server work due to unexpected exception.\n";
+  std::cout << "Terminating server work due to unexpected exception...\n";
   server_proxy_lock.unlock();
   server_proxy->state_changed_.notify_one();      
 }
@@ -299,7 +300,7 @@ void handle_program_exit(const server_proxy_ptr& server_proxy)
   else if (server_proxy_type::stop_in_progress == server_proxy->state_)
   {    
     server_proxy->state_ = server_proxy_type::stopped;
-    std::cout << "Server is already stopping. Terminating server work.\n";
+    std::cout << "Server is already stopping. Terminating server work...\n";
     server_proxy_lock.unlock();
     server_proxy->state_changed_.notify_one();       
   }
@@ -308,7 +309,7 @@ void handle_program_exit(const server_proxy_ptr& server_proxy)
     // Start server stop
     stop_server(server_proxy);
     server_proxy->stopped_by_program_exit_ = true;
-    std::cout << "Server is stopping. Press Ctrl+C (Ctrl+Break) to terminate server work.\n";
+    std::cout << "Server is stopping. Press Ctrl+C (Ctrl+Break) to terminate server work...\n";
     server_proxy_lock.unlock();    
     server_proxy->state_changed_.notify_one();
   }  
@@ -343,7 +344,7 @@ void server_has_to_stop(const server_proxy_ptr& server_proxy,
   if (server_proxy_type::started == server_proxy->state_)
   {
     stop_server(server_proxy);
-    std::cout << "Server can't continue work due to error. Server is stopping.\n";
+    std::cout << "Server can't continue work due to error. Server is stopping...\n";
     server_proxy_lock.unlock();
     server_proxy->state_changed_.notify_one();    
   }

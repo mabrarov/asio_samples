@@ -8,6 +8,8 @@
 #ifndef MA_ECHO_SESSION_HPP
 #define MA_ECHO_SESSION_HPP
 
+#include <vector>
+#include <stdexcept>
 #include <boost/utility.hpp>
 #include <boost/smart_ptr.hpp>
 #include <boost/bind.hpp>
@@ -40,6 +42,127 @@ namespace ma
         stopped
       };
 
+      class buffer_type : private boost::noncopyable
+      {
+      public:
+        typedef std::vector<boost::asio::const_buffer> const_buffers_type;
+        typedef std::vector<boost::asio::mutable_buffer> mutable_buffers_type;
+
+        buffer_type(std::size_t size)
+          : data_(new char[size])
+          , size_(size)
+          , input_start_(0)
+          , input_size_(size)
+          , output_start_(0)
+          , output_size_(0)
+        {
+        }
+
+        void reset()
+        {
+          input_size_  = size_;
+          input_start_ = output_start_ = output_size_ = 0;
+        }
+
+        void commit(std::size_t size)
+        {
+          if (size > output_size_)
+          {
+            boost::throw_exception(
+              std::length_error("output sequence size is too small to consume given size"));
+          }
+          output_size_ -= size;
+          input_size_  += size;
+          std::size_t d = size_ - output_start_;
+          if (size < d)
+          {
+            output_start_ += size;
+          }
+          else
+          {
+            output_start_ = size - d;
+          }
+        }
+
+        void consume(std::size_t size)         
+        {
+          if (size > input_size_)
+          {
+            boost::throw_exception(
+              std::length_error("input sequence size is too small to consume given size"));
+          }
+          output_size_ += size;
+          input_size_  -= size;
+          std::size_t d = size_ - input_start_;
+          if (size < d)
+          {
+            input_start_ += size;
+          }
+          else
+          {
+            input_start_ = size - d;
+          }
+        }
+
+        const_buffers_type data() const
+        {          
+          const_buffers_type buffers;          
+          if (output_size_)
+          {
+            std::size_t d = size_ - output_start_;
+            if (output_size_ > d)
+            {
+              buffers.push_back(
+                boost::asio::const_buffer(
+                data_.get() + output_start_, d));
+              buffers.push_back(
+                boost::asio::const_buffer(
+                data_.get(), output_size_ - d));
+            }
+            else
+            {
+              buffers.push_back(
+                boost::asio::const_buffer(
+                  data_.get() + output_start_, output_size_));
+            }
+          }
+          return buffers;
+        }
+
+        mutable_buffers_type prepare() const
+        {          
+          mutable_buffers_type buffers;
+          if (input_size_)
+          {
+            std::size_t d = size_ - input_start_;
+            if (input_size_ > d)
+            {
+              buffers.push_back(
+                boost::asio::mutable_buffer(
+                data_.get() + input_start_, d));
+              buffers.push_back(
+                boost::asio::mutable_buffer(
+                data_.get(), input_size_ - d));
+            }
+            else
+            {
+              buffers.push_back(
+                boost::asio::mutable_buffer(
+                  data_.get() + input_start_, input_size_));
+            }
+          }
+          return buffers;
+        }
+
+      private:
+        boost::scoped_array<char> data_;
+        std::size_t size_;
+        std::size_t input_start_;
+        std::size_t input_size_;
+        std::size_t output_start_;
+        std::size_t output_size_;
+      }; // class buffer_type
+      
     public:
       struct settings
       {              
@@ -61,7 +184,7 @@ namespace ma
         , state_(ready_to_start)
         , socket_write_in_progress_(false)
         , socket_read_in_progress_(false) 
-        , buffer_(new char[settings.buffer_size_])
+        , buffer_(settings.buffer_size_)
       {        
       }
 
@@ -74,6 +197,7 @@ namespace ma
         error_ = boost::system::error_code();
         stop_error_ = boost::system::error_code();        
         state_ = ready_to_start;
+        buffer_.reset();
       }
       
       boost::asio::ip::tcp::socket& socket()
@@ -286,18 +410,64 @@ namespace ma
 
       void read_some()
       {
-        //todo
-        socket_read_in_progress_ = true;
+        buffer_type::mutable_buffers_type buffers(buffer_.prepare());
+        std::size_t buffers_size = boost::asio::buffers_end(buffers) - 
+          boost::asio::buffers_begin(buffers);
+        if (buffers_size)
+        {
+          socket_.async_read_some
+          (
+            buffers,
+            strand_.wrap
+            (
+              ma::make_custom_alloc_handler
+              (
+                read_allocator_,
+                boost::bind
+                (
+                  &this_type::handle_read_some,
+                  shared_from_this(),
+                  boost::asio::placeholders::error,
+                  boost::asio::placeholders::bytes_transferred
+                )
+              )
+            )
+          );
+          socket_read_in_progress_ = true;
+        }        
       }
 
       void write()
       {
-        //todo
-        socket_write_in_progress_ = true;
+        buffer_type::const_buffers_type buffers(buffer_.data());
+        std::size_t buffers_size = boost::asio::buffers_end(buffers) - 
+          boost::asio::buffers_begin(buffers);
+        if (buffers_size)
+        {
+          boost::asio::async_write
+          (
+            socket_, buffers,
+            strand_.wrap
+            (
+              ma::make_custom_alloc_handler
+              (
+                write_allocator_,
+                boost::bind
+                (
+                  &this_type::handle_write,
+                  shared_from_this(),
+                  boost::asio::placeholders::error,
+                  boost::asio::placeholders::bytes_transferred
+                )
+              )
+            )
+          );
+          socket_write_in_progress_ = true;
+        }   
       }
 
       void handle_read_some(const boost::system::error_code& error,
-        const std::size_t /*bytes_transferred*/)
+        const std::size_t bytes_transferred)
       {
         socket_read_in_progress_ = false;
         if (stop_in_progress == state_)
@@ -319,12 +489,17 @@ namespace ma
         }
         else 
         {
-          //todo
+          buffer_.consume(bytes_transferred);
+          read_some();
+          if (!socket_write_in_progress_)
+          {
+            write();
+          }
         }
       } // handle_read_some
 
       void handle_write(const boost::system::error_code& error,
-        const std::size_t /*bytes_transferred*/)
+        const std::size_t bytes_transferred)
       {
         socket_write_in_progress_ = false;
         if (stop_in_progress == state_)
@@ -347,7 +522,12 @@ namespace ma
         }
         else
         {
-          //todo
+          buffer_.commit(bytes_transferred);
+          write();
+          if (!socket_read_in_progress_)
+          {
+            read_some();
+          }
         }
       } // handle_write
 
@@ -361,8 +541,8 @@ namespace ma
       state_type state_;
       bool socket_write_in_progress_;
       bool socket_read_in_progress_;
-      boost::scoped_array<char> buffer_;
-      in_place_handler_allocator<256> write_allocator_;
+      buffer_type buffer_;
+      in_place_handler_allocator<512> write_allocator_;
       in_place_handler_allocator<256> read_allocator_;
     }; // class session
 
