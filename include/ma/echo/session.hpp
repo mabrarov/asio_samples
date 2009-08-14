@@ -610,7 +610,7 @@ namespace ma
       bool socket_write_in_progress_;
       bool socket_read_in_progress_;
       buffer_type buffer_;
-      in_place_handler_allocator<512> write_allocator_;
+      in_place_handler_allocator<640> write_allocator_;
       in_place_handler_allocator<256> read_allocator_;
     }; // class session
 
