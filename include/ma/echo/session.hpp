@@ -43,29 +43,29 @@ namespace ma
         stopped
       };
 
-      class buffer_type : private boost::noncopyable
+      class io_buffer : private boost::noncopyable
       {
-      public:
-        class const_buffers_type
+      private:
+        template <typename Buffer>
+        class buffers2
         {
         public:
-          typedef boost::asio::const_buffer value_type;
-          typedef const value_type* const_iterator;          
+          typedef Buffer value_type;
+          typedef const value_type* const_iterator;
 
-          explicit const_buffers_type()
-            : buffers_count_(0)
+          explicit buffers2()
+            : filled_buffers_(0)
           {
           }
 
-          explicit const_buffers_type(const value_type& buffer1)
-            : buffers_count_(1)
+          explicit buffers2(const value_type& buffer1)
+            : filled_buffers_(1)
           {
-            buffers_[0] = buffer1;            
+            buffers_[0] = buffer1;
           }
 
-          explicit const_buffers_type(const value_type& buffer1,
-            const value_type& buffer2)
-            : buffers_count_(2)
+          explicit buffers2(const value_type& buffer1, const value_type& buffer2)
+            : filled_buffers_(2)
           {
             buffers_[0] = buffer1;
             buffers_[1] = buffer2;
@@ -78,55 +78,19 @@ namespace ma
 
           const_iterator end() const
           {
-            return &buffers_[0] + buffers_count_;
+            return &buffers_[0] + filled_buffers_;
           }
 
         private:
           boost::array<value_type, 2> buffers_;
-          std::size_t buffers_count_;
-        }; // const_buffers_type
+          std::size_t filled_buffers_;
+        }; // class buffers2
 
-        class mutable_buffers_type
-        {
-        public:
-          typedef boost::asio::mutable_buffer value_type;
-          typedef const value_type* const_iterator;          
+      public:        
+        typedef buffers2<boost::asio::const_buffer> const_buffers_type;
+        typedef buffers2<boost::asio::mutable_buffer> mutable_buffers_type;        
 
-          explicit mutable_buffers_type()
-            : buffers_count_(0)
-          {
-          }
-
-          explicit mutable_buffers_type(const value_type& buffer1)
-            : buffers_count_(1)
-          {
-            buffers_[0] = buffer1;            
-          }
-
-          explicit mutable_buffers_type(const value_type& buffer1,
-            const value_type& buffer2)
-            : buffers_count_(2)
-          {
-            buffers_[0] = buffer1;
-            buffers_[1] = buffer2;
-          }
-          
-          const_iterator begin() const
-          {
-            return &buffers_[0];
-          }
-          
-          const_iterator end() const
-          {
-            return &buffers_[0] + buffers_count_;
-          }
-
-        private:
-          boost::array<value_type, 2> buffers_;
-          std::size_t buffers_count_;
-        }; // mutable_buffers_type        
-
-        explicit buffer_type(std::size_t size)
+        explicit io_buffer(std::size_t size)
           : data_(new char[size])
           , size_(size)
           , input_start_(0)
@@ -229,7 +193,7 @@ namespace ma
         std::size_t input_size_;
         std::size_t output_start_;
         std::size_t output_size_;
-      }; // class buffer_type
+      }; // class io_buffer
       
     public:
       struct settings
@@ -478,7 +442,7 @@ namespace ma
 
       void read_some()
       {
-        buffer_type::mutable_buffers_type buffers(buffer_.prepare());
+        io_buffer::mutable_buffers_type buffers(buffer_.prepare());
         std::size_t buffers_size = boost::asio::buffers_end(buffers) - 
           boost::asio::buffers_begin(buffers);
         if (buffers_size)
@@ -507,7 +471,7 @@ namespace ma
 
       void write_some()
       {
-        buffer_type::const_buffers_type buffers(buffer_.data());
+        io_buffer::const_buffers_type buffers(buffer_.data());
         std::size_t buffers_size = boost::asio::buffers_end(buffers) - 
           boost::asio::buffers_begin(buffers);
         if (buffers_size)
@@ -609,7 +573,7 @@ namespace ma
       state_type state_;
       bool socket_write_in_progress_;
       bool socket_read_in_progress_;
-      buffer_type buffer_;
+      io_buffer buffer_;
       in_place_handler_allocator<640> write_allocator_;
       in_place_handler_allocator<256> read_allocator_;
     }; // class session
