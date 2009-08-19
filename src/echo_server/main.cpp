@@ -238,8 +238,7 @@ int _tmain(int argc, _TCHAR* argv[])
       server_io_service.stop();
       session_io_service.stop();
 
-      std::cout << "Server work terminated.\n"
-                << "Waiting until all of the work threads will stop...\n";
+      std::cout << "Server work was terminated. Waiting until all of the work threads will stop...\n";
       work_threads.join_all();
       std::cout << "Work threads have stopped. Process will close.\n";    
     }
