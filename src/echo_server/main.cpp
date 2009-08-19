@@ -59,8 +59,6 @@ struct server_proxy_type : private boost::noncopyable
   }
 }; // server_proxy_type
 
-const boost::posix_time::time_duration stop_timeout = boost::posix_time::seconds(60);
-
 void start_server(const server_proxy_ptr&);
 
 void wait_server(const server_proxy_ptr&);
@@ -86,19 +84,40 @@ int _tmain(int argc, _TCHAR* argv[])
 { 
   boost::program_options::options_description options_description("Allowed options");
   options_description.add_options()
-    ("help", "produce help message")
-    ("port", boost::program_options::value<unsigned short>(), "set port")
-    ("max_sessions", 
+    (
+      "help", 
+      "produce help message"
+    )
+    (
+      "port", 
+      boost::program_options::value<unsigned short>(), 
+      "set TCP port number for to listen for incoming connections"
+    )
+    (
+      "stop_timeout", 
+      boost::program_options::value<std::size_t>()->default_value(60), 
+      "set server stop timeout, at one's expiration server work will be terminated (seconds)"
+    )
+    (
+      "max_sessions", 
       boost::program_options::value<std::size_t>()->default_value(10000), 
-      "set maximum number of active sessions")
-    ("recycled_sessions", 
+      "set maximum number of simultaneously active sessions"
+    )
+    (
+      "recycled_sessions", 
       boost::program_options::value<std::size_t>()->default_value(100), 
-      "set maximum number of inactive sessions used for new sessions' acceptation")
-    ("listen_backlog", 
+      "set maximum number of inactive sessions used for new sessions' acceptation"
+    )
+    (
+      "listen_backlog", 
       boost::program_options::value<int>()->default_value(6), 
-      "set TCP listen backlog")
-    ("buffer_size", 
-      boost::program_options::value<std::size_t>()->default_value(1024));    
+      "set size of TCP listen backlog"
+    )
+    (
+      "buffer_size", 
+      boost::program_options::value<std::size_t>()->default_value(1024),
+      "set size of the session's buffer (bytes)"
+    );
 
   int exit_code = EXIT_SUCCESS;
   try 
@@ -126,6 +145,8 @@ int _tmain(int argc, _TCHAR* argv[])
 
       unsigned short listen_port = options_values["port"].as<unsigned short>();
       boost::asio::ip::tcp::endpoint listen_endpoint(boost::asio::ip::tcp::v4(), listen_port);
+      boost::posix_time::time_duration stop_timeout = 
+        boost::posix_time::seconds(options_values["stop_timeout"].as<std::size_t>());
 
       ma::echo::server::settings server_settings(
         listen_endpoint,
@@ -139,9 +160,11 @@ int _tmain(int argc, _TCHAR* argv[])
                 << "Number of sessions' threads        : " << session_thread_count << '\n' 
                 << "Total number of work threads       : " << session_thread_count + session_manager_thread_count << '\n'
                 << "Server listen port                 : " << listen_port << '\n'
+                << "Server stop timeout (seconds)      : " << stop_timeout.total_seconds() << '\n'
                 << "Maximum number of active sessions  : " << server_settings.max_sessions_ << '\n'
                 << "Maximum number of recycled sessions: " << server_settings.recycled_sessions_ << '\n'
-                << "TCP listen backlog                 : " << server_settings.listen_backlog_ << '\n';
+                << "TCP listen backlog size            : " << server_settings.listen_backlog_ << '\n'
+                << "Size of session's buffer (bytes)   : " << server_settings.session_settings_.buffer_size_ << '\n';
       
       // Before server_io_service
       boost::asio::io_service session_io_service;
