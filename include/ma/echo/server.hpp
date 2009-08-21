@@ -29,14 +29,12 @@ namespace ma
     typedef boost::shared_ptr<server> server_ptr;    
     typedef boost::weak_ptr<server> server_weak_ptr;    
 
-    class server : public boost::enable_shared_from_this<server>
+    class server 
+      : private boost::noncopyable
+      , public boost::enable_shared_from_this<server>
     {
     private:
-      typedef server this_type;      
-
-      server(const this_type&);
-      const this_type& operator=(const this_type&); 
-
+      typedef server this_type;
       enum state_type
       {
         ready_to_start,

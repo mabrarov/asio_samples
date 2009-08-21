@@ -28,14 +28,12 @@ namespace ma
     class session;
     typedef boost::shared_ptr<session> session_ptr;
 
-    class session : public boost::enable_shared_from_this<session>
+    class session 
+      : private boost::noncopyable
+      , public boost::enable_shared_from_this<session>
     {
     private:
       typedef session this_type;
-
-      session(const this_type&);
-      const this_type& operator=(const this_type&); 
-
       enum state_type
       {
         ready_to_start,
