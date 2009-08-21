@@ -35,6 +35,10 @@ namespace ma
     {
     private:
       typedef cyclic_read_session this_type;
+
+      cyclic_read_session(const this_type&);
+      const this_type& operator=(const this_type&); 
+
       enum state_type
       {
         ready_to_start,
