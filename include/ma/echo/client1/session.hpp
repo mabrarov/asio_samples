@@ -243,54 +243,54 @@ namespace ma
         void async_start(Handler handler)
         {
           strand_.dispatch
-            (
+          (
             ma::make_context_alloc_handler
             (
-            handler, 
-            boost::bind
-            (
-            &this_type::do_start<Handler>,
-            shared_from_this(),
-            boost::make_tuple(handler)
+              handler, 
+              boost::bind
+              (
+                &this_type::do_start<Handler>,
+                shared_from_this(),
+                boost::make_tuple(handler)
+              )
             )
-            )
-            );  
+          );  
         } // async_start
 
         template <typename Handler>
         void async_stop(Handler handler)
         {
           strand_.dispatch
-            (
+          (
             ma::make_context_alloc_handler
             (
-            handler, 
-            boost::bind
-            (
-            &this_type::do_stop<Handler>,
-            shared_from_this(),
-            boost::make_tuple(handler)
+              handler, 
+              boost::bind
+              (
+                &this_type::do_stop<Handler>,
+                shared_from_this(),
+                boost::make_tuple(handler)
+              )
             )
-            )
-            ); 
+          ); 
         } // async_stop
 
         template <typename Handler>
         void async_wait(Handler handler)
         {
           strand_.dispatch
-            (
+          (
             ma::make_context_alloc_handler
             (
-            handler, 
-            boost::bind
-            (
-            &this_type::do_wait<Handler>,
-            shared_from_this(),
-            boost::make_tuple(handler)
+              handler, 
+              boost::bind
+              (
+                &this_type::do_wait<Handler>,
+                shared_from_this(),
+                boost::make_tuple(handler)
+              )
             )
-            )
-            );  
+          );  
         } // async_wait
 
       private:
@@ -300,37 +300,37 @@ namespace ma
           if (stopped == state_ || stop_in_progress == state_)
           {          
             io_service_.post
-              (
+            (
               boost::asio::detail::bind_handler
               (
-              boost::get<0>(handler), 
-              boost::asio::error::operation_aborted
+                boost::get<0>(handler), 
+                boost::asio::error::operation_aborted
               )
-              );          
+            );          
           } 
           else if (ready_to_start != state_)
           {          
             io_service_.post
-              (
+            (
               boost::asio::detail::bind_handler
               (
-              boost::get<0>(handler), 
-              boost::asio::error::operation_not_supported
+                boost::get<0>(handler), 
+                boost::asio::error::operation_not_supported
               )
-              );          
+            );          
           }
           else
           {
             state_ = started;          
             read_some();
             io_service_.post
-              (
+            (
               boost::asio::detail::bind_handler
               (
-              boost::get<0>(handler), 
-              boost::system::error_code()
+                boost::get<0>(handler), 
+                boost::system::error_code()
               )
-              ); 
+            ); 
           }
         } // do_start
 
@@ -340,13 +340,13 @@ namespace ma
           if (stopped == state_ || stop_in_progress == state_)
           {          
             io_service_.post
-              (
+            (
               boost::asio::detail::bind_handler
               (
-              boost::get<0>(handler), 
-              boost::asio::error::operation_aborted
+                boost::get<0>(handler), 
+                boost::asio::error::operation_aborted
               )
-              );          
+            );          
           }
           else
           {
@@ -365,13 +365,13 @@ namespace ma
               complete_stop();
               // Signal shutdown completion
               io_service_.post
-                (
+              (
                 boost::asio::detail::bind_handler
                 (
-                boost::get<0>(handler), 
-                stop_error_
+                  boost::get<0>(handler), 
+                  stop_error_
                 )
-                );
+              );
             }
             else
             {
@@ -404,35 +404,35 @@ namespace ma
           if (stopped == state_ || stop_in_progress == state_)
           {          
             io_service_.post
-              (
+            (
               boost::asio::detail::bind_handler
               (
-              boost::get<0>(handler), 
-              boost::asio::error::operation_aborted
+                boost::get<0>(handler), 
+                boost::asio::error::operation_aborted
               )
-              );          
+            );          
           } 
           else if (started != state_)
           {          
             io_service_.post
-              (
+            (
               boost::asio::detail::bind_handler
               (
-              boost::get<0>(handler), 
-              boost::asio::error::operation_not_supported
+                boost::get<0>(handler), 
+                boost::asio::error::operation_not_supported
               )
-              );          
+            );          
           }
           else if (!socket_read_in_progress_ && !socket_write_in_progress_)
           {
             io_service_.post
-              (
+            (
               boost::asio::detail::bind_handler
               (
-              boost::get<0>(handler), 
-              error_
+                boost::get<0>(handler), 
+                error_
               )
-              );
+            );
           }
           else
           {          
@@ -450,23 +450,23 @@ namespace ma
           if (buffers_size)
           {
             socket_.async_read_some
-              (
+            (
               buffers,
               strand_.wrap
               (
-              ma::make_custom_alloc_handler
-              (
-              read_allocator_,
-              boost::bind
-              (
-              &this_type::handle_read_some,
-              shared_from_this(),
-              boost::asio::placeholders::error,
-              boost::asio::placeholders::bytes_transferred
+                ma::make_custom_alloc_handler
+                (
+                  read_allocator_,
+                  boost::bind
+                  (
+                    &this_type::handle_read_some,
+                    shared_from_this(),
+                    boost::asio::placeholders::error,
+                    boost::asio::placeholders::bytes_transferred
+                  )
+                )
               )
-              )
-              )
-              );
+            );
             socket_read_in_progress_ = true;
           }        
         }
@@ -479,23 +479,23 @@ namespace ma
           if (buffers_size)
           {
             socket_.async_write_some
-              (
+            (
               buffers,
               strand_.wrap
               (
-              ma::make_custom_alloc_handler
-              (
-              write_allocator_,
-              boost::bind
-              (
-              &this_type::handle_write_some,
-              shared_from_this(),
-              boost::asio::placeholders::error,
-              boost::asio::placeholders::bytes_transferred
+                ma::make_custom_alloc_handler
+                (
+                  write_allocator_,
+                  boost::bind
+                  (
+                    &this_type::handle_write_some,
+                    shared_from_this(),
+                    boost::asio::placeholders::error,
+                    boost::asio::placeholders::bytes_transferred
+                  )
+                )
               )
-              )
-              )
-              );
+            );
             socket_write_in_progress_ = true;
           }   
         }
