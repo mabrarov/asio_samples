@@ -5,6 +5,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "nmea_client", "nmea_client.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "echo_server", "echo_server.vcproj", "{7CE8CB18-679D-4DCB-B64B-6493E1DA8739}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "echo_client1", "echo_client1.vcproj", "{C41F6EDC-F8B1-4b64-9A17-D43D8696D7B1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -28,7 +30,15 @@ Global
 		{7CE8CB18-679D-4DCB-B64B-6493E1DA8739}.Release|Win32.ActiveCfg = Release|Win32
 		{7CE8CB18-679D-4DCB-B64B-6493E1DA8739}.Release|Win32.Build.0 = Release|Win32
 		{7CE8CB18-679D-4DCB-B64B-6493E1DA8739}.Release|x64.ActiveCfg = Release|x64
-		{7CE8CB18-679D-4DCB-B64B-6493E1DA8739}.Release|x64.Build.0 = Release|x64
+		{7CE8CB18-679D-4DCB-B64B-6493E1DA8739}.Release|x64.Build.0 = Release|x64		
+		{C41F6EDC-F8B1-4b64-9A17-D43D8696D7B1}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C41F6EDC-F8B1-4b64-9A17-D43D8696D7B1}.Debug|Win32.Build.0 = Debug|Win32
+		{C41F6EDC-F8B1-4b64-9A17-D43D8696D7B1}.Debug|x64.ActiveCfg = Debug|x64
+		{C41F6EDC-F8B1-4b64-9A17-D43D8696D7B1}.Debug|x64.Build.0 = Debug|x64
+		{C41F6EDC-F8B1-4b64-9A17-D43D8696D7B1}.Release|Win32.ActiveCfg = Release|Win32
+		{C41F6EDC-F8B1-4b64-9A17-D43D8696D7B1}.Release|Win32.Build.0 = Release|Win32
+		{C41F6EDC-F8B1-4b64-9A17-D43D8696D7B1}.Release|x64.ActiveCfg = Release|x64
+		{C41F6EDC-F8B1-4b64-9A17-D43D8696D7B1}.Release|x64.Build.0 = Release|x64	
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -47,7 +47,7 @@ struct server_proxy_type : private boost::noncopyable
 
   explicit server_proxy_type(boost::asio::io_service& io_service,
     boost::asio::io_service& session_io_service,
-    ma::echo::server::settings settings)
+    const ma::echo::server::settings& settings)
     : server_(new ma::echo::server(io_service, session_io_service, settings))    
     , state_(ready_to_start)
     , stopped_by_program_exit_(false)
@@ -95,7 +95,7 @@ int _tmain(int argc, _TCHAR* argv[])
     )
     (
       "stop_timeout", 
-      boost::program_options::value<std::size_t>()->default_value(60), 
+      boost::program_options::value<long>()->default_value(60), 
       "set server stop timeout, at one's expiration server work will be terminated (seconds)"
     )
     (
@@ -146,7 +146,7 @@ int _tmain(int argc, _TCHAR* argv[])
       unsigned short listen_port = options_values["port"].as<unsigned short>();
       boost::asio::ip::tcp::endpoint listen_endpoint(boost::asio::ip::tcp::v4(), listen_port);
       boost::posix_time::time_duration stop_timeout = 
-        boost::posix_time::seconds(options_values["stop_timeout"].as<std::size_t>());
+        boost::posix_time::seconds(options_values["stop_timeout"].as<long>());
 
       ma::echo::server::settings server_settings(
         listen_endpoint,

@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="nmea_client"
-	ProjectGUID="{0293302C-9C34-42AD-8EAA-61B7DFCBCFAD}"
-	RootNamespace="nmea_client"
+	Name="echo_client1"
+	ProjectGUID="{C41F6EDC-F8B1-4b64-9A17-D43D8696D7B1}"
+	RootNamespace="echo_client1"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
 	>
@@ -122,6 +122,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions=""
 				Optimization="0"
 				AdditionalIncludeDirectories="include;..\boost_1_39_0"
 				PreprocessorDefinitions="WIN32;WIN32_LEAN_AND_MEAN;WINVER=0x0501;_WIN32_WINNT=0x0501;_WIN32_WINDOWS=0x0501;_WIN32_IE=0x0600;_DEBUG;_CONSOLE;BOOST_HAS_THREADS"
@@ -201,6 +202,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				Optimization="3"
 				AdditionalIncludeDirectories="include;..\boost_1_39_0"
 				PreprocessorDefinitions="NDEBUG;WIN32;WIN32_LEAN_AND_MEAN;WINVER=0x0400;_WIN32_WINNT=0x0400;_WIN32_WINDOWS=0x0410;_WIN32_IE=0x0600;_CONSOLE;BOOST_HAS_THREADS"
 				RuntimeLibrary="0"
@@ -344,7 +346,7 @@
 				>
 			</File>
 			<File
-				RelativePath="src\nmea_client\main.cpp"
+				RelativePath=".\src\echo_client1\main.cpp"
 				>
 			</File>
 		</Filter>
@@ -360,10 +362,6 @@
 			<Filter
 				Name="ma"
 				>
-				<File
-					RelativePath="include\ma\codecvt_cast.hpp"
-					>
-				</File>
 				<File
 					RelativePath="include\ma\handler_alloc_helpers.hpp"
 					>
@@ -385,12 +383,16 @@
 					>
 				</File>
 				<Filter
-					Name="nmea"
+					Name="echo"
 					>
-					<File
-						RelativePath="include\ma\nmea\cyclic_read_session.hpp"
+					<Filter
+						Name="client1"
 						>
-					</File>
+						<File
+							RelativePath=".\include\ma\echo\client1\session.hpp"
+							>
+						</File>
+					</Filter>
 				</Filter>
 			</Filter>
 		</Filter>
