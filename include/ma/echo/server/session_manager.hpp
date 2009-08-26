@@ -37,7 +37,7 @@ namespace ma
       {
       private:
         typedef session_manager this_type;
-        enum state_type
+        enum state
         {
           ready_to_start,
           start_in_progress,
@@ -45,22 +45,22 @@ namespace ma
           stop_in_progress,
           stopped
         };
-        struct session_data_type;
-        typedef boost::shared_ptr<session_data_type> session_data_ptr;
-        typedef boost::weak_ptr<session_data_type>   session_data_weak_ptr;      
+        struct session_data;
+        typedef boost::shared_ptr<session_data> session_data_ptr;
+        typedef boost::weak_ptr<session_data>   session_data_weak_ptr;      
         
-        struct session_data_type : private boost::noncopyable
+        struct session_data : private boost::noncopyable
         {        
           session_data_weak_ptr prev_;
           session_data_ptr next_;
           session_ptr session_;        
           boost::asio::ip::tcp::endpoint endpoint_;        
           std::size_t pending_operations_;
-          state_type state_;        
+          state state_;        
           in_place_handler_allocator<256> start_wait_allocator_;
           in_place_handler_allocator<256> stop_allocator_;
 
-          explicit session_data_type(boost::asio::io_service& io_service,
+          explicit session_data(boost::asio::io_service& io_service,
             const session::settings& session_settings)
             : session_(new session(io_service, session_settings))
             , pending_operations_(0)
@@ -68,10 +68,10 @@ namespace ma
           {
           }
 
-          ~session_data_type()
+          ~session_data()
           {
           }
-        }; // session_data_type
+        }; // session_data
 
         class session_data_list : private boost::noncopyable
         {
@@ -81,35 +81,35 @@ namespace ma
           {
           }
 
-          void push_front(const session_data_ptr& session_data)
+          void push_front(const session_data_ptr& value)
           {
-            session_data->next_ = front_;
-            session_data->prev_.reset();
+            value->next_ = front_;
+            value->prev_.reset();
             if (front_)
             {
-              front_->prev_ = session_data;
+              front_->prev_ = value;
             }
-            front_ = session_data;
+            front_ = value;
             ++size_;
           }
 
-          void erase(const session_data_ptr& session_data)
+          void erase(const session_data_ptr& value)
           {
-            if (front_ == session_data)
+            if (front_ == value)
             {
               front_ = front_->next_;
             }
-            session_data_ptr prev = session_data->prev_.lock();
+            session_data_ptr prev = value->prev_.lock();
             if (prev)
             {
-              prev->next_ = session_data->next_;
+              prev->next_ = value->next_;
             }
-            if (session_data->next_)
+            if (value->next_)
             {
-              session_data->next_->prev_ = prev;
+              value->next_->prev_ = prev;
             }
-            session_data->prev_.reset();
-            session_data->next_.reset();
+            value->prev_.reset();
+            value->next_.reset();
             --size_;
           }
 
@@ -281,7 +281,7 @@ namespace ma
             }
             else
             {            
-              accept_session();            
+              accept_new_session();            
               state_ = started;
             }
             io_service_.post
@@ -318,14 +318,14 @@ namespace ma
             acceptor_.close(stop_error_); 
 
             // Start stop for all active sessions
-            session_data_ptr session_data(active_session_datas_.front());
-            while (session_data)
+            session_data_ptr curr_session_data(active_session_datas_.front());
+            while (curr_session_data)
             {
-              if (stop_in_progress != session_data->state_)
+              if (stop_in_progress != curr_session_data->state_)
               {
-                stop_session(session_data);
+                stop_session(curr_session_data);
               }
-              session_data = session_data->next_;
+              curr_session_data = curr_session_data->next_;
             }
             
             // Do shutdown - abort outer operations
@@ -398,25 +398,25 @@ namespace ma
           }  
         } // do_wait
 
-        void accept_session()
+        void accept_new_session()
         {
           // Get new ready to start session
-          session_data_ptr session_data;
+          session_data_ptr new_session_data;
           if (recycled_session_datas_.empty())
           {
-            session_data.reset(
-              new session_data_type(session_io_service_, settings_.session_settings_));
+            new_session_data.reset(
+              new session_data(session_io_service_, settings_.session_settings_));
           }
           else
           {
-            session_data = recycled_session_datas_.front();
-            recycled_session_datas_.erase(session_data);
+            new_session_data = recycled_session_datas_.front();
+            recycled_session_datas_.erase(new_session_data);
           }
           // Start session acceptation
           acceptor_.async_accept
           (
-            session_data->session_->socket(),
-            session_data->endpoint_, 
+            new_session_data->session_->socket(),
+            new_session_data->endpoint_, 
             strand_.wrap
             (
               make_custom_alloc_handler
@@ -426,7 +426,7 @@ namespace ma
                 (
                   &this_type::handle_accept,
                   shared_from_this(),
-                  session_data,
+                  new_session_data,
                   _1
                 )
               )
@@ -434,9 +434,9 @@ namespace ma
           );
           ++pending_operations_;
           accept_in_progress_ = true;
-        } // accept_session
+        } // accept_new_session
 
-        void handle_accept(const session_data_ptr& session_data,
+        void handle_accept(const session_data_ptr& new_session_data,
           const boost::system::error_code& error)
         {
           --pending_operations_;
@@ -462,13 +462,13 @@ namespace ma
           else
           { 
             // Start accepted session 
-            start_session(session_data);          
+            start_session(new_session_data);          
             // Save session as active
-            active_session_datas_.push_front(session_data);
+            active_session_datas_.push_front(new_session_data);
             // Continue session acceptation if can
             if (active_session_datas_.size() < settings_.max_sessions_)
             {
-              accept_session();
+              accept_new_session();
             }          
           }        
         } // handle_accept        
@@ -478,70 +478,70 @@ namespace ma
           return 0 == pending_operations_ && active_session_datas_.empty();
         }      
 
-        void start_session(const session_data_ptr& session_data)
+        void start_session(const session_data_ptr& accepted_session_data)
         {        
-          session_data->session_->async_start
+          accepted_session_data->session_->async_start
           (
             make_custom_alloc_handler
             (
-              session_data->start_wait_allocator_,
+              accepted_session_data->start_wait_allocator_,
               boost::bind
               (
                 &this_type::dispatch_session_start,
                 session_manager_weak_ptr(shared_from_this()),
-                session_data,
+                accepted_session_data,
                 _1
               )
             )           
           );  
           ++pending_operations_;
-          ++session_data->pending_operations_;
-          session_data->state_ = start_in_progress;
+          ++accepted_session_data->pending_operations_;
+          accepted_session_data->state_ = start_in_progress;
         } // start_session
 
-        void stop_session(const session_data_ptr& session_data)
+        void stop_session(const session_data_ptr& started_session_data)
         {
-          session_data->session_->async_stop
+          started_session_data->session_->async_stop
           (
             make_custom_alloc_handler
             (
-              session_data->stop_allocator_,
+              started_session_data->stop_allocator_,
               boost::bind
               (
                 &this_type::dispatch_session_stop,
                 session_manager_weak_ptr(shared_from_this()),
-                session_data,
+                started_session_data,
                 _1
               )
             )
           );
           ++pending_operations_;
-          ++session_data->pending_operations_;
-          session_data->state_ = stop_in_progress;
+          ++started_session_data->pending_operations_;
+          started_session_data->state_ = stop_in_progress;
         } // stop_session
 
-        void wait_session(const session_data_ptr& session_data)
+        void wait_session(const session_data_ptr& started_session_data)
         {
-          session_data->session_->async_wait
+          started_session_data->session_->async_wait
           (
             make_custom_alloc_handler
             (
-              session_data->start_wait_allocator_,
+              started_session_data->start_wait_allocator_,
               boost::bind
               (
                 &this_type::dispatch_session_wait,
                 session_manager_weak_ptr(shared_from_this()),
-                session_data,
+                started_session_data,
                 _1
               )
             )
           );
           ++pending_operations_;
-          ++session_data->pending_operations_;
+          ++started_session_data->pending_operations_;
         } // wait_session
 
         static void dispatch_session_start(const session_manager_weak_ptr& weak_session_manager,
-          const session_data_ptr& session_data, const boost::system::error_code& error)
+          const session_data_ptr& started_session_data, const boost::system::error_code& error)
         {
           session_manager_ptr this_ptr(weak_session_manager.lock());
           if (this_ptr)
@@ -550,12 +550,12 @@ namespace ma
             (
               make_custom_alloc_handler
               (
-                session_data->start_wait_allocator_,
+                started_session_data->start_wait_allocator_,
                 boost::bind
                 (
                   &this_type::handle_session_start,
                   this_ptr,
-                  session_data,
+                  started_session_data,
                   error
                 )
               )
@@ -563,17 +563,17 @@ namespace ma
           }
         } // dispatch_session_start
 
-        void handle_session_start(const session_data_ptr& session_data,
+        void handle_session_start(const session_data_ptr& started_session_data,
           const boost::system::error_code& error)
         {
           --pending_operations_;
-          --session_data->pending_operations_;
-          if (start_in_progress == session_data->state_)
+          --started_session_data->pending_operations_;
+          if (start_in_progress == started_session_data->state_)
           {          
             if (error)
             {
-              session_data->state_ = stopped;
-              active_session_datas_.erase(session_data);            
+              started_session_data->state_ = stopped;
+              active_session_datas_.erase(started_session_data);            
               if (stop_in_progress == state_)
               {
                 if (may_complete_stop())  
@@ -589,26 +589,26 @@ namespace ma
               }
               else
               {
-                recycle_session(session_data);
+                recycle_session(started_session_data);
                 // Continue session acceptation if can
                 if (!accept_in_progress_ && !last_accept_error_
                   && active_session_datas_.size() < settings_.max_sessions_)
                 {                
-                  accept_session();
+                  accept_new_session();
                 }                
               }
             }
             else // !error
             {
-              session_data->state_ = started;
+              started_session_data->state_ = started;
               if (stop_in_progress == state_)  
               {                            
-                stop_session(session_data);
+                stop_session(started_session_data);
               }
               else
               { 
                 // Wait until session needs to stop
-                wait_session(session_data);
+                wait_session(started_session_data);
               }            
             }  
           } 
@@ -623,12 +623,12 @@ namespace ma
           }
           else
           {
-            recycle_session(session_data);
+            recycle_session(started_session_data);
           }        
         } // handle_session_start
 
         static void dispatch_session_wait(const session_manager_weak_ptr& weak_session_manager,
-          const session_data_ptr& session_data, const boost::system::error_code& error)
+          const session_data_ptr& waited_session_data, const boost::system::error_code& error)
         {
           session_manager_ptr this_ptr(weak_session_manager.lock());
           if (this_ptr)
@@ -637,12 +637,12 @@ namespace ma
             (
               make_custom_alloc_handler
               (
-                session_data->start_wait_allocator_,
+                waited_session_data->start_wait_allocator_,
                 boost::bind
                 (
                   &this_type::handle_session_wait,
                   this_ptr,
-                  session_data,
+                  waited_session_data,
                   error
                 )
               )
@@ -650,14 +650,14 @@ namespace ma
           }
         } // dispatch_session_wait
 
-        void handle_session_wait(const session_data_ptr& session_data,
+        void handle_session_wait(const session_data_ptr& waited_session_data,
           const boost::system::error_code& /*error*/)
         {
           --pending_operations_;
-          --session_data->pending_operations_;
-          if (started == session_data->state_)
+          --waited_session_data->pending_operations_;
+          if (started == waited_session_data->state_)
           {
-            stop_session(session_data);
+            stop_session(waited_session_data);
           }
           else if (stop_in_progress == state_)
           {
@@ -670,12 +670,12 @@ namespace ma
           }
           else
           {
-            recycle_session(session_data);
+            recycle_session(waited_session_data);
           }
         } // handle_session_wait
 
         static void dispatch_session_stop(const session_manager_weak_ptr& weak_session_manager,
-          const session_data_ptr& session_data, const boost::system::error_code& error)
+          const session_data_ptr& stopped_session_data, const boost::system::error_code& error)
         {
           session_manager_ptr this_ptr(weak_session_manager.lock());
           if (this_ptr)
@@ -684,12 +684,12 @@ namespace ma
             (
               make_custom_alloc_handler
               (
-                session_data->stop_allocator_,
+                stopped_session_data->stop_allocator_,
                 boost::bind
                 (
                   &this_type::handle_session_stop,
                   this_ptr,
-                  session_data,
+                  stopped_session_data,
                   error
                 )
               )
@@ -697,15 +697,15 @@ namespace ma
           }
         } // dispatch_session_stop
 
-        void handle_session_stop(const session_data_ptr& session_data,
+        void handle_session_stop(const session_data_ptr& stopped_session_data,
           const boost::system::error_code& /*error*/)
         {
           --pending_operations_;
-          --session_data->pending_operations_;
-          if (stop_in_progress == session_data->state_)        
+          --stopped_session_data->pending_operations_;
+          if (stop_in_progress == stopped_session_data->state_)        
           {
-            session_data->state_ = stopped;
-            active_session_datas_.erase(session_data);            
+            stopped_session_data->state_ = stopped;
+            active_session_datas_.erase(stopped_session_data);            
             if (stop_in_progress == state_)
             {
               if (may_complete_stop())  
@@ -721,12 +721,12 @@ namespace ma
             }
             else
             {
-              recycle_session(session_data);
+              recycle_session(stopped_session_data);
               // Continue session acceptation if can
               if (!accept_in_progress_ && !last_accept_error_
                 && active_session_datas_.size() < settings_.max_sessions_)
               {                
-                accept_session();
+                accept_new_session();
               }              
             }
           }
@@ -741,18 +741,18 @@ namespace ma
           }
           else
           {
-            recycle_session(session_data);
+            recycle_session(stopped_session_data);
           }
         } // handle_session_stop
 
-        void recycle_session(const session_data_ptr& session_data)
+        void recycle_session(const session_data_ptr& recycled_session_data)
         {
-          if (0 == session_data->pending_operations_
+          if (0 == recycled_session_data->pending_operations_
             && recycled_session_datas_.size() < settings_.recycled_sessions_)
           {
-            session_data->session_->reset();
-            session_data->state_ = ready_to_start;
-            recycled_session_datas_.push_front(session_data);
+            recycled_session_data->session_->reset();
+            recycled_session_data->state_ = ready_to_start;
+            recycled_session_datas_.push_front(recycled_session_data);
           }        
         } // recycle_session
 
@@ -768,7 +768,7 @@ namespace ma
         boost::system::error_code stop_error_;      
         settings settings_;
         std::size_t pending_operations_;
-        state_type state_;
+        state state_;
         bool accept_in_progress_;
         in_place_handler_allocator<512> accept_allocator_;
       }; // class session_manager

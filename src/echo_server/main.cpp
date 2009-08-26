@@ -22,13 +22,13 @@
 #include <ma/echo/server/session_manager.hpp>
 #include <console_controller.hpp>
 
-struct session_manager_data_type;
-typedef boost::shared_ptr<session_manager_data_type> session_manager_data_ptr;
+struct session_manager_data;
+typedef boost::shared_ptr<session_manager_data> session_manager_data_ptr;
 typedef boost::function<void (void)> exception_handler;
 
-struct session_manager_data_type : private boost::noncopyable
+struct session_manager_data : private boost::noncopyable
 {  
-  enum state_type
+  enum state
   {
     ready_to_start,
     start_in_progress,
@@ -39,13 +39,13 @@ struct session_manager_data_type : private boost::noncopyable
 
   boost::mutex mutex_;  
   ma::echo::server::session_manager_ptr session_manager_;
-  state_type state_;
+  state state_;
   bool stopped_by_program_exit_;
   boost::condition_variable state_changed_;  
   ma::in_place_handler_allocator<256> start_wait_allocator_;
   ma::in_place_handler_allocator<256> stop_allocator_;
 
-  explicit session_manager_data_type(boost::asio::io_service& io_service,
+  explicit session_manager_data(boost::asio::io_service& io_service,
     boost::asio::io_service& session_io_service,
     const ma::echo::server::session_manager::settings& settings)
     : session_manager_(new ma::echo::server::session_manager(io_service, session_io_service, settings))    
@@ -54,10 +54,10 @@ struct session_manager_data_type : private boost::noncopyable
   {
   }
 
-  ~session_manager_data_type()
+  ~session_manager_data()
   {
   }
-}; // session_manager_data_type
+}; // session_manager_data
 
 void start_session_manager(const session_manager_data_ptr&);
 
@@ -172,25 +172,25 @@ int _tmain(int argc, _TCHAR* argv[])
       boost::asio::io_service session_manager_io_service;
 
       // Create session_manager
-      session_manager_data_ptr session_manager_data(
-        new session_manager_data_type(session_manager_io_service, session_io_service, server_settings));
+      session_manager_data_ptr sm_data(
+        new session_manager_data(session_manager_io_service, session_io_service, server_settings));
       
       std::cout << "Server is starting...\n";
       
       // Start the server
-      boost::unique_lock<boost::mutex> server_data_lock(session_manager_data->mutex_);    
-      start_session_manager(session_manager_data);
+      boost::unique_lock<boost::mutex> server_data_lock(sm_data->mutex_);    
+      start_session_manager(sm_data);
       server_data_lock.unlock();
       
       // Setup console controller
       ma::console_controller console_controller(
-        boost::bind(handle_program_exit, session_manager_data));
+        boost::bind(handle_program_exit, sm_data));
 
       std::cout << "Press Ctrl+C (Ctrl+Break) to exit.\n";
 
       // Exception handler for automatic server aborting
       exception_handler work_exception_handler(
-        boost::bind(handle_work_exception, session_manager_data));
+        boost::bind(handle_work_exception, sm_data));
 
       // Create work for sessions' io_service to prevent threads' stop
       boost::asio::io_service::work session_work(session_io_service);
@@ -215,21 +215,21 @@ int _tmain(int argc, _TCHAR* argv[])
 
       // Wait until server stops
       server_data_lock.lock();
-      while (session_manager_data_type::stop_in_progress != session_manager_data->state_ 
-        && session_manager_data_type::stopped != session_manager_data->state_)
+      while (session_manager_data::stop_in_progress != sm_data->state_ 
+        && session_manager_data::stopped != sm_data->state_)
       {
-        session_manager_data->state_changed_.wait(server_data_lock);
+        sm_data->state_changed_.wait(server_data_lock);
       }
-      if (session_manager_data_type::stopped != session_manager_data->state_)
+      if (session_manager_data::stopped != sm_data->state_)
       {
-        if (!session_manager_data->state_changed_.timed_wait(server_data_lock, stop_timeout))      
+        if (!sm_data->state_changed_.timed_wait(server_data_lock, stop_timeout))      
         {
           std::cout << "Server stop timeout expiration. Terminating server work...\n";
           exit_code = EXIT_FAILURE;
         }
-        session_manager_data->state_ = session_manager_data_type::stopped;
+        sm_data->state_ = session_manager_data::stopped;
       }
-      if (!session_manager_data->stopped_by_program_exit_)
+      if (!sm_data->stopped_by_program_exit_)
       {
         exit_code = EXIT_FAILURE;
       }
@@ -251,42 +251,42 @@ int _tmain(int argc, _TCHAR* argv[])
   return exit_code;
 }
 
-void start_session_manager(const session_manager_data_ptr& session_manager_data)
+void start_session_manager(const session_manager_data_ptr& sm_data)
 {
-  session_manager_data->session_manager_->async_start
+  sm_data->session_manager_->async_start
   (
     ma::make_custom_alloc_handler
     (
-      session_manager_data->start_wait_allocator_,
-      boost::bind(handle_session_manager_start, session_manager_data, _1)
+      sm_data->start_wait_allocator_,
+      boost::bind(handle_session_manager_start, sm_data, _1)
     )
   );
-  session_manager_data->state_ = session_manager_data_type::start_in_progress;
+  sm_data->state_ = session_manager_data::start_in_progress;
 }
 
-void wait_session_manager(const session_manager_data_ptr& session_manager_data)
+void wait_session_manager(const session_manager_data_ptr& sm_data)
 {
-  session_manager_data->session_manager_->async_wait
+  sm_data->session_manager_->async_wait
   (
     ma::make_custom_alloc_handler
     (
-      session_manager_data->start_wait_allocator_,
-      boost::bind(handle_session_manager_wait, session_manager_data, _1)
+      sm_data->start_wait_allocator_,
+      boost::bind(handle_session_manager_wait, sm_data, _1)
     )
   );
 }
 
-void stop_session_manager(const session_manager_data_ptr& session_manager_data)
+void stop_session_manager(const session_manager_data_ptr& sm_data)
 {
-  session_manager_data->session_manager_->async_stop
+  sm_data->session_manager_->async_stop
   (
     ma::make_custom_alloc_handler
     (
-      session_manager_data->stop_allocator_,
-      boost::bind(handle_session_manager_stop, session_manager_data, _1)
+      sm_data->stop_allocator_,
+      boost::bind(handle_session_manager_stop, sm_data, _1)
     )
   );
-  session_manager_data->state_ = session_manager_data_type::stop_in_progress;
+  sm_data->state_ = session_manager_data::stop_in_progress;
 }
 
 void run_io_service(boost::asio::io_service& io_service, 
@@ -302,85 +302,85 @@ void run_io_service(boost::asio::io_service& io_service,
   }
 }
 
-void handle_work_exception(const session_manager_data_ptr& session_manager_data)
+void handle_work_exception(const session_manager_data_ptr& sm_data)
 {
-  boost::unique_lock<boost::mutex> server_data_lock(session_manager_data->mutex_);  
-  session_manager_data->state_ = session_manager_data_type::stopped;  
+  boost::unique_lock<boost::mutex> server_data_lock(sm_data->mutex_);  
+  sm_data->state_ = session_manager_data::stopped;  
   std::cout << "Terminating server work due to unexpected exception...\n";
   server_data_lock.unlock();
-  session_manager_data->state_changed_.notify_one();      
+  sm_data->state_changed_.notify_one();      
 }
 
-void handle_program_exit(const session_manager_data_ptr& session_manager_data)
+void handle_program_exit(const session_manager_data_ptr& sm_data)
 {
-  boost::unique_lock<boost::mutex> server_data_lock(session_manager_data->mutex_);
+  boost::unique_lock<boost::mutex> server_data_lock(sm_data->mutex_);
   std::cout << "Program exit request detected.\n";
-  if (session_manager_data_type::stopped == session_manager_data->state_)
+  if (session_manager_data::stopped == sm_data->state_)
   {    
     std::cout << "Server has already stopped.\n";
   }
-  else if (session_manager_data_type::stop_in_progress == session_manager_data->state_)
+  else if (session_manager_data::stop_in_progress == sm_data->state_)
   {    
-    session_manager_data->state_ = session_manager_data_type::stopped;
+    sm_data->state_ = session_manager_data::stopped;
     std::cout << "Server is already stopping. Terminating server work...\n";
     server_data_lock.unlock();
-    session_manager_data->state_changed_.notify_one();       
+    sm_data->state_changed_.notify_one();       
   }
   else
   {    
     // Start server stop
-    stop_session_manager(session_manager_data);
-    session_manager_data->stopped_by_program_exit_ = true;
+    stop_session_manager(sm_data);
+    sm_data->stopped_by_program_exit_ = true;
     std::cout << "Server is stopping. Press Ctrl+C (Ctrl+Break) to terminate server work...\n";
     server_data_lock.unlock();    
-    session_manager_data->state_changed_.notify_one();
+    sm_data->state_changed_.notify_one();
   }  
 }
 
-void handle_session_manager_start(const session_manager_data_ptr& session_manager_data,
+void handle_session_manager_start(const session_manager_data_ptr& sm_data,
   const boost::system::error_code& error)
 {   
-  boost::unique_lock<boost::mutex> server_data_lock(session_manager_data->mutex_);
-  if (session_manager_data_type::start_in_progress == session_manager_data->state_)
+  boost::unique_lock<boost::mutex> server_data_lock(sm_data->mutex_);
+  if (session_manager_data::start_in_progress == sm_data->state_)
   {   
     if (error)
     {       
-      session_manager_data->state_ = session_manager_data_type::stopped;
+      sm_data->state_ = session_manager_data::stopped;
       std::cout << "Server can't start due to error.\n";
       server_data_lock.unlock();
-      session_manager_data->state_changed_.notify_one();
+      sm_data->state_changed_.notify_one();
     }
     else
     {
-      session_manager_data->state_ = session_manager_data_type::started;
-      wait_session_manager(session_manager_data);
+      sm_data->state_ = session_manager_data::started;
+      wait_session_manager(sm_data);
       std::cout << "Server has started.\n";
     }
   }
 }
 
-void handle_session_manager_wait(const session_manager_data_ptr& session_manager_data,
+void handle_session_manager_wait(const session_manager_data_ptr& sm_data,
   const boost::system::error_code&)
 {
-  boost::unique_lock<boost::mutex> server_data_lock(session_manager_data->mutex_);
-  if (session_manager_data_type::started == session_manager_data->state_)
+  boost::unique_lock<boost::mutex> server_data_lock(sm_data->mutex_);
+  if (session_manager_data::started == sm_data->state_)
   {
-    stop_session_manager(session_manager_data);
+    stop_session_manager(sm_data);
     std::cout << "Server can't continue work due to error. Server is stopping...\n";
     server_data_lock.unlock();
-    session_manager_data->state_changed_.notify_one();    
+    sm_data->state_changed_.notify_one();    
   }
 }
 
-void handle_session_manager_stop(const session_manager_data_ptr& session_manager_data,
+void handle_session_manager_stop(const session_manager_data_ptr& sm_data,
   const boost::system::error_code&)
 {
-  boost::unique_lock<boost::mutex> server_data_lock(session_manager_data->mutex_);
-  if (session_manager_data_type::stop_in_progress == session_manager_data->state_)
+  boost::unique_lock<boost::mutex> server_data_lock(sm_data->mutex_);
+  if (session_manager_data::stop_in_progress == sm_data->state_)
   {      
-    session_manager_data->state_ = session_manager_data_type::stopped;
+    sm_data->state_ = session_manager_data::stopped;
     std::cout << "Server has stopped.\n";    
     server_data_lock.unlock();
-    session_manager_data->state_changed_.notify_one();
+    sm_data->state_changed_.notify_one();
   }
 }
