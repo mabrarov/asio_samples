@@ -385,14 +385,18 @@
 				<Filter
 					Name="echo"
 					>
-					<File
-						RelativePath="include\ma\echo\server.hpp"
+					<Filter
+						Name="server"
 						>
-					</File>
-					<File
-						RelativePath="include\ma\echo\session.hpp"
-						>
-					</File>
+						<File
+							RelativePath=".\include\ma\echo\server\session.hpp"
+							>
+						</File>
+						<File
+							RelativePath=".\include\ma\echo\server\session_manager.hpp"
+							>
+						</File>
+					</Filter>
 				</Filter>
 			</Filter>
 		</Filter>

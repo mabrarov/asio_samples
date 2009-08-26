@@ -5,8 +5,8 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef MA_ECHO_CLIENT1_SESSION_HPP
-#define MA_ECHO_CLIENT1_SESSION_HPP
+#ifndef MA_ECHO_SERVER_SESSION_HPP
+#define MA_ECHO_SERVER_SESSION_HPP
 
 #include <vector>
 #include <stdexcept>
@@ -25,7 +25,7 @@ namespace ma
 {    
   namespace echo
   {
-    namespace client1
+    namespace server
     {    
       class session;
       typedef boost::shared_ptr<session> session_ptr;
@@ -159,13 +159,13 @@ namespace ma
             {
               return const_buffers_type(
                 boost::asio::const_buffer(
-                data_.get() + output_start_, d),
+                  data_.get() + output_start_, d),
                 boost::asio::const_buffer(
-                data_.get(), output_size_ - d));
+                  data_.get(), output_size_ - d));
             }          
             return const_buffers_type(
               boost::asio::const_buffer(
-              data_.get() + output_start_, output_size_));
+                data_.get() + output_start_, output_size_));
           }
 
           mutable_buffers_type prepare() const
@@ -179,13 +179,13 @@ namespace ma
             {
               return mutable_buffers_type(
                 boost::asio::mutable_buffer(
-                data_.get() + input_start_, d),
+                  data_.get() + input_start_, d),
                 boost::asio::mutable_buffer(
-                data_.get(), input_size_ - d));
+                  data_.get(), input_size_ - d));
             }
             return mutable_buffers_type(
               boost::asio::mutable_buffer(
-              data_.get() + input_start_, input_size_));          
+                data_.get() + input_start_, input_size_));          
           }
 
         private:
@@ -196,7 +196,7 @@ namespace ma
           std::size_t output_start_;
           std::size_t output_size_;
         }; // class io_buffer
-
+        
       public:
         struct settings
         {              
@@ -233,12 +233,12 @@ namespace ma
           state_ = ready_to_start;
           buffer_.reset();
         }
-
+        
         boost::asio::ip::tcp::socket& socket()
         {
           return socket_;
         }
-
+        
         template <typename Handler>
         void async_start(Handler handler)
         {
@@ -292,7 +292,7 @@ namespace ma
             )
           );  
         } // async_wait
-
+        
       private:
         template <typename Handler>
         void do_start(boost::tuple<Handler> handler)
@@ -580,8 +580,8 @@ namespace ma
         in_place_handler_allocator<256> read_allocator_;
       }; // class session
 
-    } // namespace client1
+    } // namespace server
   } // namespace echo
 } // namespace ma
 
-#endif // MA_ECHO_CLIENT1_SESSION_HPP
+#endif // MA_ECHO_SERVER_SESSION_HPP
