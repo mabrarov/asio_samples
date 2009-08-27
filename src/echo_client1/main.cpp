@@ -12,8 +12,6 @@
 #include <boost/ref.hpp>
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/filesystem.hpp>
 #include <boost/thread.hpp>
 #include <boost/date_time/posix_time/ptime.hpp>
 #include <boost/asio.hpp>
@@ -102,11 +100,9 @@ int _tmain(int argc, _TCHAR* argv[])
       std::cout << options_description;
     }
     else
-    {    
-      //todo
+    {
       std::size_t cpu_count = boost::thread::hardware_concurrency();
-      std::size_t session_thread_count = cpu_count ? cpu_count : 2;
-      std::size_t session_manager_thread_count = 1;      
+      std::size_t session_thread_count = cpu_count > 1 ? cpu_count : 2;
     }
   }
   catch (const boost::program_options::error&)

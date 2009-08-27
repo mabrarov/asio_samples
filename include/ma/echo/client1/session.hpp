@@ -37,7 +37,7 @@ namespace ma
       {
       private:
         typedef session this_type;
-        enum state_type
+        enum state
         {
           ready_to_start,
           start_in_progress,
@@ -60,6 +60,14 @@ namespace ma
             , max_message_size_(max_message_size)
             , max_messages_(max_messages)
           {
+            if (1 > min_message_size)
+            {
+              boost::throw_exception(std::invalid_argument("too small min_message_size"));
+            }
+            if (1 > max_messages)
+            {
+              boost::throw_exception(std::invalid_argument("too small max_messages"));
+            }
           }
         }; // struct settings
 
@@ -73,21 +81,14 @@ namespace ma
           , state_(ready_to_start)
           , socket_write_in_progress_(false)
           , socket_read_in_progress_(false) 
-          , buffer_(settings.buffer_size_)
-        {        
+          , writed_message_queue_(settings.max_messages_)
+          , read_buffer_(new char[settings.max_message_size_])
+        {
         }
 
         ~session()
         {        
-        }
-
-        void reset()
-        {
-          error_ = boost::system::error_code();
-          stop_error_ = boost::system::error_code();        
-          state_ = ready_to_start;
-          buffer_.reset();
-        }
+        }        
 
         boost::asio::ip::tcp::socket& socket()
         {
@@ -177,7 +178,7 @@ namespace ma
           else
           {
             state_ = started;          
-            read_some();
+            //todo
             io_service_.post
             (
               boost::asio::detail::bind_handler
@@ -296,130 +297,7 @@ namespace ma
               boost::get<0>(handler));
           } 
         } // do_wait
-
-        void read_some()
-        {
-          io_buffer::mutable_buffers_type buffers(buffer_.prepare());
-          std::size_t buffers_size = boost::asio::buffers_end(buffers) - 
-            boost::asio::buffers_begin(buffers);
-          if (buffers_size)
-          {
-            socket_.async_read_some
-            (
-              buffers,
-              strand_.wrap
-              (
-                ma::make_custom_alloc_handler
-                (
-                  read_allocator_,
-                  boost::bind
-                  (
-                    &this_type::handle_read_some,
-                    shared_from_this(),
-                    boost::asio::placeholders::error,
-                    boost::asio::placeholders::bytes_transferred
-                  )
-                )
-              )
-            );
-            socket_read_in_progress_ = true;
-          }        
-        }
-
-        void write_some()
-        {
-          io_buffer::const_buffers_type buffers(buffer_.data());
-          std::size_t buffers_size = boost::asio::buffers_end(buffers) - 
-            boost::asio::buffers_begin(buffers);
-          if (buffers_size)
-          {
-            socket_.async_write_some
-            (
-              buffers,
-              strand_.wrap
-              (
-                ma::make_custom_alloc_handler
-                (
-                  write_allocator_,
-                  boost::bind
-                  (
-                    &this_type::handle_write_some,
-                    shared_from_this(),
-                    boost::asio::placeholders::error,
-                    boost::asio::placeholders::bytes_transferred
-                  )
-                )
-              )
-            );
-            socket_write_in_progress_ = true;
-          }   
-        }
-
-        void handle_read_some(const boost::system::error_code& error,
-          const std::size_t bytes_transferred)
-        {
-          socket_read_in_progress_ = false;
-          if (stop_in_progress == state_)
-          {  
-            if (may_complete_stop())
-            {
-              complete_stop();       
-              // Signal shutdown completion
-              stop_handler_.post(stop_error_);
-            }
-          }
-          else if (error)
-          {
-            if (!error_)
-            {
-              error_ = error;
-            }                    
-            wait_handler_.post(error);
-          }
-          else 
-          {
-            buffer_.consume(bytes_transferred);
-            read_some();
-            if (!socket_write_in_progress_)
-            {
-              write_some();
-            }
-          }
-        } // handle_read_some
-
-        void handle_write_some(const boost::system::error_code& error,
-          const std::size_t bytes_transferred)
-        {
-          socket_write_in_progress_ = false;
-          if (stop_in_progress == state_)
-          {
-            socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_send, stop_error_);
-            if (may_complete_stop())
-            {
-              complete_stop();       
-              // Signal shutdown completion
-              stop_handler_.post(stop_error_);
-            }
-          }
-          else if (error)
-          {
-            if (!error_)
-            {
-              error_ = error;
-            }                    
-            wait_handler_.post(error);
-          }
-          else
-          {
-            buffer_.commit(bytes_transferred);
-            write_some();
-            if (!socket_read_in_progress_)
-            {
-              read_some();
-            }
-          }
-        } // handle_write_some
-
+        
         boost::asio::io_service& io_service_;
         boost::asio::io_service::strand strand_;      
         boost::asio::ip::tcp::socket socket_;
@@ -427,10 +305,11 @@ namespace ma
         ma::handler_storage<boost::system::error_code> stop_handler_;
         boost::system::error_code error_;
         boost::system::error_code stop_error_;
-        state_type state_;
+        state state_;
         bool socket_write_in_progress_;
         bool socket_read_in_progress_;
-        io_buffer buffer_;
+        boost::circular_buffer<message_ptr> writed_message_queue_;
+        boost::scoped_array<char> read_buffer_;
         in_place_handler_allocator<640> write_allocator_;
         in_place_handler_allocator<256> read_allocator_;
       }; // class session

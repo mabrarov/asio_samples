@@ -35,7 +35,7 @@ namespace ma
     {
     private:
       typedef cyclic_read_session this_type;
-      enum state_type
+      enum state
       {
         ready_to_start,
         start_in_progress,
@@ -594,7 +594,7 @@ namespace ma
       boost::circular_buffer<message_ptr> message_queue_;      
       boost::system::error_code read_error_;
       boost::system::error_code stop_error_;
-      state_type state_;
+      state state_;
       bool port_write_in_progress_;
       bool port_read_in_progress_;
       boost::asio::streambuf read_buffer_;

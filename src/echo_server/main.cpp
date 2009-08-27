@@ -12,8 +12,6 @@
 #include <boost/ref.hpp>
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/filesystem.hpp>
 #include <boost/thread.hpp>
 #include <boost/date_time/posix_time/ptime.hpp>
 #include <boost/asio.hpp>
