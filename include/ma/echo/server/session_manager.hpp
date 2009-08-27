@@ -8,15 +8,12 @@
 #ifndef MA_ECHO_SERVER_SESSION_MANAGER_HPP
 #define MA_ECHO_SERVER_SESSION_MANAGER_HPP
 
-#include <limits>
 #include <stdexcept>
 #include <boost/utility.hpp>
 #include <boost/smart_ptr.hpp>
 #include <boost/bind.hpp>
-#include <boost/ref.hpp>
 #include <boost/asio.hpp>
 #include <boost/tuple/tuple.hpp>
-#include <boost/circular_buffer.hpp>
 #include <ma/handler_allocation.hpp>
 #include <ma/handler_storage.hpp>
 #include <ma/echo/server/session.hpp>
@@ -153,6 +150,10 @@ namespace ma
             , listen_backlog_(listen_backlog)
             , session_settings_(session_settings)
           {
+            if (1 > max_sessions_)
+            {
+              boost::throw_exception(std::invalid_argument("maximum sessions number must be >= 1"));
+            }
           }
         }; // struct settings
 
@@ -169,11 +170,7 @@ namespace ma
           , pending_operations_(0)
           , state_(ready_to_start)
           , accept_in_progress_(false)
-        {
-          if (settings.max_sessions_ < 1)
-          {
-            boost::throw_exception(std::runtime_error("maximum sessions number must be >= 1"));
-          }
+        {          
         }
 
         ~session_manager()

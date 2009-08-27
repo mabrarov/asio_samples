@@ -8,16 +8,13 @@
 #ifndef MA_ECHO_SERVER_SESSION_HPP
 #define MA_ECHO_SERVER_SESSION_HPP
 
-#include <vector>
 #include <stdexcept>
 #include <boost/utility.hpp>
 #include <boost/array.hpp>
 #include <boost/smart_ptr.hpp>
 #include <boost/bind.hpp>
-#include <boost/ref.hpp>
 #include <boost/asio.hpp>
 #include <boost/tuple/tuple.hpp>
-#include <boost/circular_buffer.hpp>
 #include <ma/handler_allocation.hpp>
 #include <ma/handler_storage.hpp>
 
@@ -205,6 +202,10 @@ namespace ma
           explicit settings(std::size_t buffer_size)
             : buffer_size_(buffer_size)          
           {
+            if (1 > buffer_size)
+            {
+              boost::throw_exception(std::invalid_argument("too small buffer_size"));
+            }
           }
         }; // struct settings
 

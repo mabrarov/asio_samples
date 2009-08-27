@@ -71,19 +71,19 @@ namespace ma
       {
         if (message_queue_size < min_message_queue_size)
         {
-          boost::throw_exception(std::runtime_error("too small message_queue_size"));
+          boost::throw_exception(std::invalid_argument("too small message_queue_size"));
         }
         if (max_message_size > read_buffer_size)
         {
-          boost::throw_exception(std::runtime_error("too small read_buffer_size"));
+          boost::throw_exception(std::invalid_argument("too small read_buffer_size"));
         }
         if (frame_head.length() > read_buffer_size)
         {
-          boost::throw_exception(std::runtime_error("too large frame_head"));
+          boost::throw_exception(std::invalid_argument("too large frame_head"));
         }
         if (frame_tail.length() > read_buffer_size)
         {
-          boost::throw_exception(std::runtime_error("too large frame_tail"));
+          boost::throw_exception(std::invalid_argument("too large frame_tail"));
         }
       }
 

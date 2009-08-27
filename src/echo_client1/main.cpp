@@ -22,13 +22,13 @@
 #include <ma/echo/client1/session.hpp>
 #include <console_controller.hpp>
 
-struct session_proxy_type;
-typedef boost::shared_ptr<session_proxy_type> session_proxy_ptr;
-typedef boost::function<void (void)> exception_handler;
+struct  session_data;
+typedef boost::shared_ptr<session_data> session_data_ptr;
+typedef boost::function<void (void)>    exception_handler;
 
-struct session_proxy_type : private boost::noncopyable
+struct session_data : private boost::noncopyable
 {  
-  enum state_type
+  enum state
   {
     ready_to_start,
     start_in_progress,
@@ -39,13 +39,13 @@ struct session_proxy_type : private boost::noncopyable
 
   boost::mutex mutex_;  
   ma::echo::client1::session_ptr session_;
-  state_type state_;
+  state state_;
   bool stopped_by_program_exit_;
   boost::condition_variable state_changed_;  
   ma::in_place_handler_allocator<256> start_wait_allocator_;
   ma::in_place_handler_allocator<256> stop_allocator_;
 
-  explicit session_proxy_type(boost::asio::io_service& io_service,    
+  explicit session_data(boost::asio::io_service& io_service,    
     const ma::echo::client1::session::settings& settings)
     : session_(new ma::echo::client1::session(io_service, settings))    
     , state_(ready_to_start)
@@ -53,30 +53,30 @@ struct session_proxy_type : private boost::noncopyable
   {
   }
 
-  ~session_proxy_type()
+  ~session_data()
   {
   }
-}; // session_proxy_type
+}; // session_data
 
-void start_session(const session_proxy_ptr&);
+void start_session(const session_data_ptr&);
 
-void wait_session(const session_proxy_ptr&);
+void wait_session(const session_data_ptr&);
 
-void stop_session(const session_proxy_ptr&);
+void stop_session(const session_data_ptr&);
 
 void run_io_service(boost::asio::io_service&, exception_handler);
 
-void handle_work_exception(const session_proxy_ptr&);
+void handle_work_exception(const session_data_ptr&);
 
-void handle_program_exit(const session_proxy_ptr&);
+void handle_program_exit(const session_data_ptr&);
 
-void session_started(const session_proxy_ptr&,
+void handle_session_start(const session_data_ptr&,
   const boost::system::error_code&);
 
-void session_has_to_stop(const session_proxy_ptr&,
+void handle_session_wait(const session_data_ptr&,
   const boost::system::error_code&);
 
-void session_stopped(const session_proxy_ptr&,
+void handle_session_stop(const session_data_ptr&,
   const boost::system::error_code&);
 
 int _tmain(int argc, _TCHAR* argv[])
@@ -117,42 +117,42 @@ int _tmain(int argc, _TCHAR* argv[])
   return exit_code;
 }
 
-void start_session(const session_proxy_ptr& session_proxy)
+void start_session(const session_data_ptr& ready_session_data)
 {
-  session_proxy->session_->async_start
+  ready_session_data->session_->async_start
   (
     ma::make_custom_alloc_handler
     (
-      session_proxy->start_wait_allocator_,
-      boost::bind(session_started, session_proxy, _1)
+      ready_session_data->start_wait_allocator_,
+      boost::bind(handle_session_start, ready_session_data, _1)
     )
   );
-  session_proxy->state_ = session_proxy_type::start_in_progress;
+  ready_session_data->state_ = session_data::start_in_progress;
 }
 
-void wait_session(const session_proxy_ptr& session_proxy)
+void wait_session(const session_data_ptr& started_session_data)
 {
-  session_proxy->session_->async_wait
+  started_session_data->session_->async_wait
   (
     ma::make_custom_alloc_handler
     (
-      session_proxy->start_wait_allocator_,
-      boost::bind(session_has_to_stop, session_proxy, _1)
+      started_session_data->start_wait_allocator_,
+      boost::bind(handle_session_wait, started_session_data, _1)
     )
   );
 }
 
-void stop_session(const session_proxy_ptr& session_proxy)
+void stop_session(const session_data_ptr& started_session_data)
 {
-  session_proxy->session_->async_stop
+  started_session_data->session_->async_stop
   (
     ma::make_custom_alloc_handler
     (
-      session_proxy->stop_allocator_,
-      boost::bind(session_stopped, session_proxy, _1)
+      started_session_data->stop_allocator_,
+      boost::bind(handle_session_stop, started_session_data, _1)
     )
   );
-  session_proxy->state_ = session_proxy_type::stop_in_progress;
+  started_session_data->state_ = session_data::stop_in_progress;
 }
 
 void run_io_service(boost::asio::io_service& io_service, 
@@ -168,85 +168,85 @@ void run_io_service(boost::asio::io_service& io_service,
   }
 }
 
-void handle_work_exception(const session_proxy_ptr& session_proxy)
+void handle_work_exception(const session_data_ptr& working_session_data)
 {
-  boost::unique_lock<boost::mutex> session_proxy_lock(session_proxy->mutex_);  
-  session_proxy->state_ = session_proxy_type::stopped;  
+  boost::unique_lock<boost::mutex> session_proxy_lock(working_session_data->mutex_);  
+  working_session_data->state_ = session_data::stopped;  
   std::cout << "Terminating client work due to unexpected exception...\n";
   session_proxy_lock.unlock();
-  session_proxy->state_changed_.notify_one();      
+  working_session_data->state_changed_.notify_one();      
 }
 
-void handle_program_exit(const session_proxy_ptr& session_proxy)
+void handle_program_exit(const session_data_ptr& working_session_data)
 {
-  boost::unique_lock<boost::mutex> session_proxy_lock(session_proxy->mutex_);
+  boost::unique_lock<boost::mutex> session_proxy_lock(working_session_data->mutex_);
   std::cout << "Program exit request detected.\n";
-  if (session_proxy_type::stopped == session_proxy->state_)
+  if (session_data::stopped == working_session_data->state_)
   {    
     std::cout << "Client has already stopped.\n";
   }
-  else if (session_proxy_type::stop_in_progress == session_proxy->state_)
+  else if (session_data::stop_in_progress == working_session_data->state_)
   {    
-    session_proxy->state_ = session_proxy_type::stopped;
+    working_session_data->state_ = session_data::stopped;
     std::cout << "Client is already stopping. Terminating client work...\n";
     session_proxy_lock.unlock();
-    session_proxy->state_changed_.notify_one();       
+    working_session_data->state_changed_.notify_one();       
   }
   else
   {    
     // Start session stop
-    stop_session(session_proxy);
-    session_proxy->stopped_by_program_exit_ = true;
+    stop_session(working_session_data);
+    working_session_data->stopped_by_program_exit_ = true;
     std::cout << "Client is stopping. Press Ctrl+C (Ctrl+Break) to terminate client work...\n";
     session_proxy_lock.unlock();    
-    session_proxy->state_changed_.notify_one();
+    working_session_data->state_changed_.notify_one();
   }  
 }
 
-void session_started(const session_proxy_ptr& session_proxy,
+void handle_session_start(const session_data_ptr& started_session_data,
   const boost::system::error_code& error)
 {   
-  boost::unique_lock<boost::mutex> session_proxy_lock(session_proxy->mutex_);
-  if (session_proxy_type::start_in_progress == session_proxy->state_)
+  boost::unique_lock<boost::mutex> session_proxy_lock(started_session_data->mutex_);
+  if (session_data::start_in_progress == started_session_data->state_)
   {   
     if (error)
     {       
-      session_proxy->state_ = session_proxy_type::stopped;
+      started_session_data->state_ = session_data::stopped;
       std::cout << "Client can't start due to error.\n";
       session_proxy_lock.unlock();
-      session_proxy->state_changed_.notify_one();
+      started_session_data->state_changed_.notify_one();
     }
     else
     {
-      session_proxy->state_ = session_proxy_type::started;
-      wait_session(session_proxy);
+      started_session_data->state_ = session_data::started;
+      wait_session(started_session_data);
       std::cout << "Client has started.\n";
     }
   }
 }
 
-void session_has_to_stop(const session_proxy_ptr& session_proxy,
+void handle_session_wait(const session_data_ptr& waited_session_data,
   const boost::system::error_code&)
 {
-  boost::unique_lock<boost::mutex> session_proxy_lock(session_proxy->mutex_);
-  if (session_proxy_type::started == session_proxy->state_)
+  boost::unique_lock<boost::mutex> session_proxy_lock(waited_session_data->mutex_);
+  if (session_data::started == waited_session_data->state_)
   {
-    stop_session(session_proxy);
+    stop_session(waited_session_data);
     std::cout << "Client can't continue work due to error. Client is stopping...\n";
     session_proxy_lock.unlock();
-    session_proxy->state_changed_.notify_one();    
+    waited_session_data->state_changed_.notify_one();    
   }
 }
 
-void session_stopped(const session_proxy_ptr& session_proxy,
+void handle_session_stop(const session_data_ptr& stopped_session_data,
   const boost::system::error_code&)
 {
-  boost::unique_lock<boost::mutex> session_proxy_lock(session_proxy->mutex_);
-  if (session_proxy_type::stop_in_progress == session_proxy->state_)
+  boost::unique_lock<boost::mutex> session_proxy_lock(stopped_session_data->mutex_);
+  if (session_data::stop_in_progress == stopped_session_data->state_)
   {      
-    session_proxy->state_ = session_proxy_type::stopped;
+    stopped_session_data->state_ = session_data::stopped;
     std::cout << "Client has stopped.\n";    
     session_proxy_lock.unlock();
-    session_proxy->state_changed_.notify_one();
+    stopped_session_data->state_changed_.notify_one();
   }
 }
