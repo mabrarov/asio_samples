@@ -18,15 +18,15 @@
 namespace ma
 {  
   template <std::size_t size_, std::size_t alignment_ = std::size_t(-1)>
-  class in_place_handler_allocator : private boost::noncopyable
+  class in_place_allocator : private boost::noncopyable
   {  
   public:
-    in_place_handler_allocator()
+    in_place_allocator()
       : in_use_(false)
     {
     }
 
-    ~in_place_handler_allocator()
+    ~in_place_allocator()
     {
     }
 
@@ -53,9 +53,9 @@ namespace ma
   private:    
     boost::aligned_storage<size_, alignment_> storage_;    
     bool in_use_;
-  }; //class in_place_handler_allocator
+  }; //class in_place_allocator
   
-  class in_heap_handler_allocator : private boost::noncopyable
+  class in_heap_allocator : private boost::noncopyable
   {  
   private:
     typedef boost::uint8_t byte_type;    
@@ -93,7 +93,7 @@ namespace ma
     BOOST_STATIC_CONSTANT(std::size_t, default_size = sizeof(std::size_t) * 64);    
     BOOST_STATIC_CONSTANT(std::size_t, default_alignment = sizeof(boost::detail::max_align));
 
-    in_heap_handler_allocator(std::size_t size = default_size, 
+    in_heap_allocator(std::size_t size = default_size, 
       std::size_t alignment = default_alignment, bool lazy = true)
       : storage_(lazy ? 0 : aligned_alloc(size, alignment))
       , aligned_address_(0)
@@ -103,7 +103,7 @@ namespace ma
     {      
     }
 
-    ~in_heap_handler_allocator()
+    ~in_heap_allocator()
     {
     }
 
@@ -136,7 +136,7 @@ namespace ma
     std::size_t size_;
     std::size_t alignment_;
     bool in_use_;
-  }; //class in_heap_handler_allocator
+  }; //class in_heap_allocator
 
   template <typename Allocator, typename Handler>
   class custom_alloc_handler

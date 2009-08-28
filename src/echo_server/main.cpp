@@ -40,8 +40,8 @@ struct session_manager_data : private boost::noncopyable
   state state_;
   bool stopped_by_program_exit_;
   boost::condition_variable state_changed_;  
-  ma::in_place_handler_allocator<256> start_wait_allocator_;
-  ma::in_place_handler_allocator<256> stop_allocator_;
+  ma::in_place_allocator<256> start_wait_allocator_;
+  ma::in_place_allocator<256> stop_allocator_;
 
   explicit session_manager_data(boost::asio::io_service& io_service,
     boost::asio::io_service& session_io_service,

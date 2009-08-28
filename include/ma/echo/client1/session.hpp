@@ -310,8 +310,8 @@ namespace ma
         bool socket_read_in_progress_;
         boost::circular_buffer<message_ptr> writed_message_queue_;
         boost::scoped_array<char> read_buffer_;
-        in_place_handler_allocator<640> write_allocator_;
-        in_place_handler_allocator<256> read_allocator_;
+        in_place_allocator<640> write_allocator_;
+        in_place_allocator<256> read_allocator_;
       }; // class session
 
     } // namespace client1
