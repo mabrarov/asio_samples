@@ -10,6 +10,7 @@
 
 #include <cstddef>
 #include <boost/utility.hpp>
+#include <boost/call_traits.hpp>
 #include <ma/handler_storage_service.hpp>
 
 namespace ma
@@ -56,11 +57,7 @@ namespace ma
 
     template <typename Handler>
     void store(arg_param_type cancel_arg, Handler handler)
-    { 
-      if (has_target())
-      {
-        cancel();
-      }
+    {
       service_.store(implementation_, cancel_arg, handler);
     }    
 

@@ -11,6 +11,7 @@
 #include <cstddef>
 #include <boost/thread.hpp>
 #include <boost/asio.hpp>
+#include <boost/assert.hpp>
 #include <boost/call_traits.hpp>
 
 namespace ma
@@ -251,6 +252,7 @@ namespace ma
     template <typename Handler>
     void store(implementation_type& impl, arg_param_type cancel_arg, Handler handler)
     {  
+      BOOST_ASSERT(!impl.handler_ptr_);
       if (!shutdown_done_)
       {      
         typedef handler_wrapper<Handler> value_type;

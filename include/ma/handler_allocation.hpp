@@ -10,7 +10,6 @@
 
 #include <cstddef>
 #include <boost/utility.hpp>
-#include <boost/call_traits.hpp>
 #include <boost/aligned_storage.hpp>
 #include <boost/cstdint.hpp>
 #include <ma/handler_alloc_helpers.hpp>
@@ -92,11 +91,7 @@ namespace ma
 
   public:
     BOOST_STATIC_CONSTANT(std::size_t, default_size = sizeof(std::size_t) * 64);    
-    BOOST_STATIC_CONSTANT(std::size_t, 
-      default_alignment = sizeof(boost::mpl::eval_if_c<
-      true, 
-      boost::mpl::identity<boost::detail::max_align>, 
-      boost::mpl::identity<boost::detail::max_align> >::type));
+    BOOST_STATIC_CONSTANT(std::size_t, default_alignment = sizeof(boost::detail::max_align));
 
     in_heap_handler_allocator(std::size_t size = default_size, 
       std::size_t alignment = default_alignment, bool lazy = true)
