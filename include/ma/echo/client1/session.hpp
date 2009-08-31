@@ -27,7 +27,7 @@ namespace ma
     namespace client1
     {
       typedef std::string message_type;    
-      class session;
+      class   session;
       typedef boost::shared_ptr<message_type> message_ptr;
       typedef boost::shared_ptr<session>      session_ptr;      
 
