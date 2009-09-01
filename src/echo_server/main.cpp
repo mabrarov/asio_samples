@@ -216,7 +216,7 @@ int _tmain(int argc, _TCHAR* argv[])
   catch (const boost::program_options::error& e)
   {
     exit_code = EXIT_FAILURE;
-    std::cout << "Invalid options: " << e.what();      
+    std::cout << "Error reading options: " << e.what();      
   }
   catch (const std::exception& e)
   {
