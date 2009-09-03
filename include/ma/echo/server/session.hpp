@@ -577,8 +577,8 @@ namespace ma
         bool socket_write_in_progress_;
         bool socket_read_in_progress_;
         io_buffer buffer_;
-        handler_allocator<640> write_allocator_;
-        handler_allocator<256> read_allocator_;
+        in_place_handler_allocator<640> write_allocator_;
+        in_place_handler_allocator<256> read_allocator_;
       }; // class session
 
     } // namespace server

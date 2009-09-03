@@ -18,15 +18,15 @@
 namespace ma
 {  
   template <std::size_t size_, std::size_t alignment_ = std::size_t(-1)>
-  class handler_allocator : private boost::noncopyable
+  class in_place_handler_allocator : private boost::noncopyable
   {  
   public:
-    handler_allocator()
+    in_place_handler_allocator()
       : in_use_(false)
     {
     }
 
-    ~handler_allocator()
+    ~in_place_handler_allocator()
     {
     }
 
@@ -53,7 +53,90 @@ namespace ma
   private:    
     boost::aligned_storage<size_, alignment_> storage_;    
     bool in_use_;
-  }; //class handler_allocator    
+  }; //class in_place_handler_allocator
+  
+  class in_heap_handler_allocator : private boost::noncopyable
+  {  
+  private:
+    typedef boost::uint8_t byte_type;    
+
+    static byte_type* aligned_alloc(std::size_t size, std::size_t alignment)
+    {      
+      std::size_t alloc_size = alignment - 1 + size;
+      return new byte_type[alloc_size];      
+    }
+
+    bool storage_initialized() const
+    {
+      return 0 != storage_.get();
+    }
+
+    byte_type* retrieve_aligned_address()
+    {
+      if (!storage_.get())
+      {
+        storage_.reset(aligned_alloc(size_, alignment_));
+      }
+      if (!aligned_address_)
+      {
+        aligned_address_ = storage_.get();
+        std::size_t mod = reinterpret_cast<std::size_t>(aligned_address_) % alignment_;
+        if (mod)
+        {
+          aligned_address_ += (alignment_ - mod);
+        }        
+      }
+      return aligned_address_;
+    }
+
+  public:
+    BOOST_STATIC_CONSTANT(std::size_t, default_size = sizeof(std::size_t) * 64);    
+    BOOST_STATIC_CONSTANT(std::size_t, default_alignment = sizeof(boost::detail::max_align));
+
+    in_heap_handler_allocator(std::size_t size = default_size, 
+      std::size_t alignment = default_alignment, bool lazy = true)
+      : storage_(lazy ? 0 : aligned_alloc(size, alignment))
+      , aligned_address_(0)
+      , size_(size)
+      , alignment_(alignment)
+      , in_use_(false)
+    {      
+    }
+
+    ~in_heap_handler_allocator()
+    {
+    }
+
+    void* allocate(std::size_t size)
+    {
+      if (!in_use_ && size <= size_)
+      {        
+        in_use_ = true;
+        return retrieve_aligned_address();
+      }      
+      return ::operator new(size);      
+    }
+
+    void deallocate(void* pointer)
+    {
+      if (storage_initialized())
+      {
+        if (pointer == retrieve_aligned_address())
+        {
+          in_use_ = false;
+          return;
+        }
+      }      
+      ::operator delete(pointer);      
+    }    
+
+  private:    
+    boost::scoped_array<byte_type> storage_;
+    byte_type* aligned_address_;
+    std::size_t size_;
+    std::size_t alignment_;
+    bool in_use_;
+  }; //class in_heap_handler_allocator
 
   template <typename Allocator, typename Handler>
   class custom_alloc_handler

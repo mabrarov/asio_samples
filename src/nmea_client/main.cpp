@@ -21,7 +21,7 @@
 #include <ma/nmea/cyclic_read_session.hpp>
 #include <console_controller.hpp>
 
-typedef ma::handler_allocator<256> handler_allocator_type;
+typedef ma::in_place_handler_allocator<256> handler_allocator_type;
 typedef std::codecvt<wchar_t, char, mbstate_t> wcodecvt_type;
 typedef ma::nmea::cyclic_read_session session;
 typedef ma::nmea::cyclic_read_session_ptr session_ptr;
@@ -85,7 +85,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
     const wcodecvt_type& wcodecvt(std::use_facet<wcodecvt_type>(sys_locale));
     std::string ansi_device_name(ma::codecvt_cast::out(device_name, wcodecvt));
-    handler_allocator_type handler_allocator;
+    handler_allocator_type in_place_handler_allocator;
             
     boost::asio::io_service io_service(concurrent_count);   
     session_ptr session(new session(
@@ -99,14 +99,14 @@ int _tmain(int argc, _TCHAR* argv[])
     (
       ma::make_custom_alloc_handler
       (
-        handler_allocator, 
+        in_place_handler_allocator, 
         boost::bind
         (
           &handle_start,
           boost::ref(sys_locale), 
           boost::cref(wcodecvt),
           session, 
-          boost::ref(handler_allocator), 
+          boost::ref(in_place_handler_allocator), 
           _1
         )
       )
@@ -142,7 +142,7 @@ void handle_start(
   std::locale& locale,
   const wcodecvt_type& wcodecvt,
   const session_ptr& session, 
-  handler_allocator_type& handler_allocator, 
+  handler_allocator_type& in_place_handler_allocator, 
   const boost::system::error_code& error)
 {  
   if (error)  
@@ -158,14 +158,14 @@ void handle_start(
       *message, 
       ma::make_custom_alloc_handler
       (
-        handler_allocator,
+        in_place_handler_allocator,
         boost::bind
         (
           &handle_read,
           boost::ref(locale), 
           boost::cref(wcodecvt),
           session, 
-          boost::ref(handler_allocator), 
+          boost::ref(in_place_handler_allocator), 
           message, 
           _1
         )
@@ -190,7 +190,7 @@ void handle_read(
   std::locale& locale,
   const wcodecvt_type& wcodecvt,
   const session_ptr& session, 
-  handler_allocator_type& handler_allocator, 
+  handler_allocator_type& in_place_handler_allocator, 
   const ptr_to_message_ptr& message, 
   const boost::system::error_code& error)
 {  
@@ -202,14 +202,14 @@ void handle_read(
       *message, 
       ma::make_custom_alloc_handler
       (
-        handler_allocator,
+        in_place_handler_allocator,
         boost::bind
         (
           &handle_read,
           boost::ref(locale), 
           boost::cref(wcodecvt),
           session, 
-          boost::ref(handler_allocator), 
+          boost::ref(in_place_handler_allocator), 
           message, 
           _1
         )
@@ -223,7 +223,7 @@ void handle_read(
     (
       ma::make_custom_alloc_handler
       (
-        handler_allocator,
+        in_place_handler_allocator,
         boost::bind(&handle_stop, _1)
       )
     );
@@ -237,14 +237,14 @@ void handle_read(
       *message, 
       ma::make_custom_alloc_handler
       (
-        handler_allocator,
+        in_place_handler_allocator,
         boost::bind
         (
           &handle_read,
           boost::ref(locale), 
           boost::cref(wcodecvt),
           session, 
-          boost::ref(handler_allocator), 
+          boost::ref(in_place_handler_allocator), 
           message, 
           _1
         )

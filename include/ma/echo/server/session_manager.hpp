@@ -54,8 +54,8 @@ namespace ma
           boost::asio::ip::tcp::endpoint endpoint_;        
           std::size_t pending_operations_;
           state_type state_;        
-          handler_allocator<256> start_wait_allocator_;
-          handler_allocator<256> stop_allocator_;
+          in_place_handler_allocator<256> start_wait_allocator_;
+          in_place_handler_allocator<256> stop_allocator_;
 
           explicit session_data(boost::asio::io_service& io_service,
             const session::settings& session_settings)
@@ -767,7 +767,7 @@ namespace ma
         std::size_t pending_operations_;
         state_type state_;
         bool accept_in_progress_;
-        handler_allocator<512> accept_allocator_;
+        in_place_handler_allocator<512> accept_allocator_;
       }; // class session_manager
 
     } // namespace server
