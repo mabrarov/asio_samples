@@ -33,7 +33,7 @@ namespace ma
       {
       private:
         typedef session this_type;
-        enum state
+        enum state_type
         {
           ready_to_start,
           start_in_progress,
@@ -573,7 +573,7 @@ namespace ma
         ma::handler_storage<boost::system::error_code> stop_handler_;
         boost::system::error_code error_;
         boost::system::error_code stop_error_;
-        state state_;
+        state_type state_;
         bool socket_write_in_progress_;
         bool socket_read_in_progress_;
         io_buffer buffer_;

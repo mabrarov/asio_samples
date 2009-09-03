@@ -34,7 +34,7 @@ namespace ma
       {
       private:
         typedef session_manager this_type;
-        enum state
+        enum state_type
         {
           ready_to_start,
           start_in_progress,
@@ -53,7 +53,7 @@ namespace ma
           session_ptr session_;        
           boost::asio::ip::tcp::endpoint endpoint_;        
           std::size_t pending_operations_;
-          state state_;        
+          state_type state_;        
           in_place_allocator<256> start_wait_allocator_;
           in_place_allocator<256> stop_allocator_;
 
@@ -765,7 +765,7 @@ namespace ma
         boost::system::error_code stop_error_;      
         settings settings_;
         std::size_t pending_operations_;
-        state state_;
+        state_type state_;
         bool accept_in_progress_;
         in_place_allocator<512> accept_allocator_;
       }; // class session_manager

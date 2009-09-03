@@ -26,7 +26,7 @@ typedef boost::function<void (void)>    exception_handler;
 
 struct session_data : private boost::noncopyable
 {  
-  enum state
+  enum state_type
   {
     ready_to_start,
     start_in_progress,
@@ -37,7 +37,7 @@ struct session_data : private boost::noncopyable
 
   boost::mutex mutex_;  
   ma::echo::client1::session_ptr session_;
-  state state_;
+  state_type state_;
   bool stopped_by_program_exit_;
   boost::condition_variable state_changed_;  
   ma::in_place_allocator<256> start_wait_allocator_;
