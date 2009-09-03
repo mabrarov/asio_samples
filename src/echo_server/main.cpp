@@ -22,6 +22,7 @@
 
 const char *help_param = "help"; 
 const char *port_param = "port";
+const char *session_threads_param   = "session_threads";
 const char *stop_timeout_param      = "stop_timeout";
 const char *max_sessions_param      = "max_sessions";
 const char *recycled_sessions_param = "recycled_sessions";
@@ -113,7 +114,11 @@ int _tmain(int argc, _TCHAR* argv[])
     else
     {        
       std::size_t cpu_count = boost::thread::hardware_concurrency();
-      std::size_t session_thread_count = cpu_count ? cpu_count : 2;
+      std::size_t session_thread_count = options_values[session_threads_param].as<std::size_t>();
+      if (!session_thread_count) 
+      {
+        session_thread_count = cpu_count ? cpu_count : 1;
+      }
       std::size_t session_manager_thread_count = 1;
 
       unsigned short listen_port = options_values[port_param].as<unsigned short>();      
@@ -238,6 +243,11 @@ void fill_options_description(boost::program_options::options_description& optio
       boost::program_options::value<unsigned short>(), 
       "set TCP port number for to listen for incoming connections"
     )
+    (
+      session_threads_param, 
+      boost::program_options::value<std::size_t>()->default_value(0), 
+      "set the number of sessions' threads, zero means set it equal to the number of CPUs"
+    )    
     (
       stop_timeout_param, 
       boost::program_options::value<long>()->default_value(60), 
