@@ -27,7 +27,9 @@ const char *stop_timeout_param      = "stop_timeout";
 const char *max_sessions_param      = "max_sessions";
 const char *recycled_sessions_param = "recycled_sessions";
 const char *listen_backlog_param    = "listen_backlog";
-const char *buffer_size_param       = "buffer_size";
+const char *buffer_size_param       = "buffer";
+const char *socket_recv_buffer_size_param = "socket_recv_buffer";
+const char *socket_send_buffer_size_param = "socket_send_buffer";
 
 struct session_manager_data;
 typedef boost::shared_ptr<session_manager_data> session_manager_data_ptr;
@@ -125,12 +127,17 @@ int _tmain(int argc, _TCHAR* argv[])
       boost::posix_time::time_duration stop_timeout = 
         boost::posix_time::seconds(options_values[stop_timeout_param].as<long>());
 
+      ma::echo::server::session::settings session_settings(
+        options_values[buffer_size_param].as<std::size_t>(), 
+        options_values[socket_recv_buffer_size_param].as<int>(), 
+        options_values[socket_send_buffer_size_param].as<int>());
+
       ma::echo::server::session_manager::settings server_settings(
         boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), listen_port),
         options_values[max_sessions_param].as<std::size_t>(),
         options_values[recycled_sessions_param].as<std::size_t>(),
         options_values[listen_backlog_param].as<int>(),
-        ma::echo::server::session::settings(options_values[buffer_size_param].as<std::size_t>()));      
+        session_settings);      
 
       std::cout << "Number of found CPU(s)             : " << cpu_count << '\n'               
                 << "Number of session manager's threads: " << session_manager_thread_count << '\n'
@@ -141,7 +148,9 @@ int _tmain(int argc, _TCHAR* argv[])
                 << "Maximum number of active sessions  : " << server_settings.max_sessions_ << '\n'
                 << "Maximum number of recycled sessions: " << server_settings.recycled_sessions_ << '\n'
                 << "TCP listen backlog size            : " << server_settings.listen_backlog_ << '\n'
-                << "Size of session's buffer (bytes)   : " << server_settings.session_settings_.buffer_size_ << '\n';
+                << "Size of session's buffer (bytes)   : " << session_settings.buffer_size_ << '\n'
+                << "Size of session's socket receive buffer (bytes): " << session_settings.socket_recv_buffer_size_ << '\n'
+                << "Size of session's socket send buffer (bytes)   : " << session_settings.socket_send_buffer_size_ << '\n';
       
       // Before session_manager_io_service
       boost::asio::io_service session_io_service;
@@ -241,7 +250,7 @@ void fill_options_description(boost::program_options::options_description& optio
     (
       port_param, 
       boost::program_options::value<unsigned short>(), 
-      "set TCP port number for to listen for incoming connections"
+      "set the TCP port number for incoming connections' listening"
     )
     (
       session_threads_param, 
@@ -251,28 +260,38 @@ void fill_options_description(boost::program_options::options_description& optio
     (
       stop_timeout_param, 
       boost::program_options::value<long>()->default_value(60), 
-      "set server stop timeout, at one's expiration server work will be terminated (seconds)"
+      "set the server stop timeout, at one's expiration server work will be terminated (seconds)"
     )
     (
       max_sessions_param, 
       boost::program_options::value<std::size_t>()->default_value(10000), 
-      "set maximum number of simultaneously active sessions"
+      "set the maximum number of simultaneously active sessions"
     )
     (
       recycled_sessions_param, 
       boost::program_options::value<std::size_t>()->default_value(100), 
-      "set maximum number of inactive sessions used for new sessions' acceptation"
+      "set the maximum number of pooled inactive sessions"
     )
     (
       listen_backlog_param, 
       boost::program_options::value<int>()->default_value(6), 
-      "set size of TCP listen backlog"
+      "set the size of TCP listen backlog"
     )
     (
       buffer_size_param, 
       boost::program_options::value<std::size_t>()->default_value(1024),
-      "set size of the session's buffer (bytes)"
-    );
+      "set the session's buffer size (bytes)"
+    )
+    (
+      socket_recv_buffer_size_param, 
+      boost::program_options::value<int>()->default_value(0),
+      "set the size of session's socket receive buffer (bytes)"
+    )  
+    (
+      socket_send_buffer_size_param, 
+      boost::program_options::value<int>()->default_value(0),
+      "set the size of session's socket send buffer (bytes)"
+    );  
 }
 
 void start_session_manager(const session_manager_data_ptr& ready_session_manager_data)

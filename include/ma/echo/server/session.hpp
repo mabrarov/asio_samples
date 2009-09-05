@@ -197,14 +197,28 @@ namespace ma
       public:
         struct settings
         {              
-          std::size_t buffer_size_;        
+          std::size_t buffer_size_;
+          int socket_recv_buffer_size_;
+          int socket_send_buffer_size_;
 
-          explicit settings(std::size_t buffer_size)
-            : buffer_size_(buffer_size)          
+          explicit settings(std::size_t buffer_size,
+            int socket_recv_buffer_size,
+            int socket_send_buffer_size)
+            : buffer_size_(buffer_size)         
+            , socket_recv_buffer_size_(socket_recv_buffer_size)
+            , socket_send_buffer_size_(socket_send_buffer_size)
           {
             if (1 > buffer_size)
             {
               boost::throw_exception(std::invalid_argument("too small buffer_size"));
+            }
+            if (0 > socket_recv_buffer_size)
+            {
+              boost::throw_exception(std::invalid_argument("socket_recv_buffer_size must be non negative"));
+            }
+            if (0 > socket_send_buffer_size)
+            {
+              boost::throw_exception(std::invalid_argument("socket_send_buffer_size must be non negative"));
             }
           }
         }; // struct settings
@@ -216,11 +230,12 @@ namespace ma
           , socket_(io_service)
           , wait_handler_(io_service)
           , stop_handler_(io_service)
+          , settings_(settings)
           , state_(ready_to_start)
           , socket_write_in_progress_(false)
           , socket_read_in_progress_(false) 
           , buffer_(settings.buffer_size_)
-        {        
+        {          
         }
 
         ~session()
@@ -322,6 +337,10 @@ namespace ma
           }
           else
           {
+            using boost::asio::ip::tcp;           
+            socket_.set_option(tcp::socket::receive_buffer_size(settings_.socket_recv_buffer_size_));
+            socket_.set_option(tcp::socket::send_buffer_size(settings_.socket_recv_buffer_size_));
+
             state_ = started;          
             read_some();
             io_service_.post
@@ -573,6 +592,7 @@ namespace ma
         ma::handler_storage<boost::system::error_code> stop_handler_;
         boost::system::error_code error_;
         boost::system::error_code stop_error_;
+        settings settings_;
         state_type state_;
         bool socket_write_in_progress_;
         bool socket_read_in_progress_;
