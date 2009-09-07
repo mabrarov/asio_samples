@@ -30,6 +30,7 @@ const char *listen_backlog_param    = "listen_backlog";
 const char *buffer_size_param       = "buffer";
 const char *socket_recv_buffer_size_param = "socket_recv_buffer";
 const char *socket_send_buffer_size_param = "socket_send_buffer";
+const char *socket_no_delay_param   = "socket_no_delay";
 
 struct session_manager_data;
 typedef boost::shared_ptr<session_manager_data> session_manager_data_ptr;
@@ -130,7 +131,8 @@ int _tmain(int argc, _TCHAR* argv[])
       ma::echo::server::session::settings session_settings(
         options_values[buffer_size_param].as<std::size_t>(), 
         options_values[socket_recv_buffer_size_param].as<int>(), 
-        options_values[socket_send_buffer_size_param].as<int>());
+        options_values[socket_send_buffer_size_param].as<int>(),
+        0 != options_values.count(socket_no_delay_param));
 
       ma::echo::server::session_manager::settings server_settings(
         boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), listen_port),
@@ -150,7 +152,8 @@ int _tmain(int argc, _TCHAR* argv[])
                 << "TCP listen backlog size            : " << server_settings.listen_backlog_ << '\n'
                 << "Size of session's buffer (bytes)   : " << session_settings.buffer_size_ << '\n'
                 << "Size of session's socket receive buffer (bytes): " << session_settings.socket_recv_buffer_size_ << '\n'
-                << "Size of session's socket send buffer (bytes)   : " << session_settings.socket_send_buffer_size_ << '\n';
+                << "Size of session's socket send buffer (bytes)   : " << session_settings.socket_send_buffer_size_ << '\n'
+                << "Session's socket Nagle algorithm is: " << (session_settings.no_delay_ ? "off" : "OS default") << '\n';
       
       // Before session_manager_io_service
       boost::asio::io_service session_io_service;
@@ -291,6 +294,10 @@ void fill_options_description(boost::program_options::options_description& optio
       socket_send_buffer_size_param, 
       boost::program_options::value<int>()->default_value(0),
       "set the size of session's socket send buffer (bytes)"
+    )
+    (
+      socket_no_delay_param, 
+      "set TCP_NODELAY option of session's socket"
     );  
 }
 

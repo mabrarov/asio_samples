@@ -200,13 +200,16 @@ namespace ma
           std::size_t buffer_size_;
           int socket_recv_buffer_size_;
           int socket_send_buffer_size_;
+          bool no_delay_;
 
           explicit settings(std::size_t buffer_size,
             int socket_recv_buffer_size,
-            int socket_send_buffer_size)
+            int socket_send_buffer_size,
+            bool no_delay)
             : buffer_size_(buffer_size)         
             , socket_recv_buffer_size_(socket_recv_buffer_size)
             , socket_send_buffer_size_(socket_send_buffer_size)
+            , no_delay_(no_delay)
           {
             if (1 > buffer_size)
             {
@@ -343,6 +346,10 @@ namespace ma
             if (!start_error)
             {
               socket_.set_option(tcp::socket::send_buffer_size(settings_.socket_recv_buffer_size_), start_error);
+            }
+            if (!start_error && settings_.no_delay_)
+            {
+              socket_.set_option(tcp::no_delay(true), start_error);
             }
             if (!start_error) 
             {
