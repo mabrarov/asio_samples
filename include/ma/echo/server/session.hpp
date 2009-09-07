@@ -346,16 +346,19 @@ namespace ma
             if (!start_error)
             {
               socket_.set_option(tcp::socket::send_buffer_size(settings_.socket_recv_buffer_size_), start_error);
-            }
-            if (!start_error && settings_.no_delay_)
-            {
-              socket_.set_option(tcp::no_delay(true), start_error);
-            }
-            if (!start_error) 
-            {
-              state_ = started;          
-              read_some();
-            }
+              if (!start_error)
+              {
+                if (settings_.no_delay_)
+                {
+                  socket_.set_option(tcp::no_delay(true), start_error);
+                }
+                if (!start_error) 
+                {
+                  state_ = started;          
+                  read_some();
+                }
+              }
+            }                        
             io_service_.post
             (
               boost::asio::detail::bind_handler
