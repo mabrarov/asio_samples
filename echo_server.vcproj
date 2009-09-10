@@ -362,6 +362,10 @@
 				Name="ma"
 				>
 				<File
+					RelativePath=".\include\ma\cyclic_buffer.hpp"
+					>
+				</File>
+				<File
 					RelativePath="include\ma\handler_alloc_helpers.hpp"
 					>
 				</File>
