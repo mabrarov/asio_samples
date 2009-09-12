@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="nmea_client"
-	ProjectGUID="{0293302C-9C34-42AD-8EAA-61B7DFCBCFAD}"
-	RootNamespace="nmea_client"
+	Name="echo_client1"
+	ProjectGUID="{C41F6EDC-F8B1-4b64-9A17-D43D8696D7B1}"
+	RootNamespace="echo_client1"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
 	>
@@ -21,8 +21,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)\target\out32\$(ProjectName)\$(ConfigurationName)"
-			IntermediateDirectory="target\out32\$(ProjectName)\$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)\x86\$(ProjectName)\$(ConfigurationName)"
+			IntermediateDirectory="x86\$(ProjectName)\$(ConfigurationName)"
 			ConfigurationType="1"
 			CharacterSet="1"
 			>
@@ -44,7 +44,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="include;..\boost_1_40_0"
+				AdditionalIncludeDirectories="..\..\include;..\..\..\boost_1_40_0"
 				PreprocessorDefinitions="WIN32;WIN32_LEAN_AND_MEAN;WINVER=0x0400;_WIN32_WINNT=0x0400;_WIN32_WINDOWS=0x0410;_WIN32_IE=0x0600;_DEBUG;_CONSOLE;BOOST_HAS_THREADS"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="0"
@@ -63,7 +63,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\boost_1_40_0\stage32\lib"
+				AdditionalLibraryDirectories="..\..\..\boost_1_40_0\stage32\lib"
 				GenerateManifest="false"
 				GenerateDebugInformation="true"
 				GenerateMapFile="false"
@@ -99,8 +99,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|x64"
-			OutputDirectory="$(SolutionDir)\target\out64\$(ProjectName)\$(ConfigurationName)"
-			IntermediateDirectory="target\out64\$(ProjectName)\$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)\x64\$(ProjectName)\$(ConfigurationName)"
+			IntermediateDirectory="x64\$(ProjectName)\$(ConfigurationName)"
 			ConfigurationType="1"
 			CharacterSet="1"
 			>
@@ -122,9 +122,9 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions=""
 				Optimization="0"
-				AdditionalIncludeDirectories="include;..\boost_1_40_0"
-				AdditionalUsingDirectories="--port 2230"
+				AdditionalIncludeDirectories="..\..\include;..\..\..\boost_1_40_0"
 				PreprocessorDefinitions="WIN32;WIN32_LEAN_AND_MEAN;WINVER=0x0501;_WIN32_WINNT=0x0501;_WIN32_WINDOWS=0x0501;_WIN32_IE=0x0600;_DEBUG;_CONSOLE;BOOST_HAS_THREADS"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="0"
@@ -143,7 +143,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\boost_1_40_0\stage64\lib"
+				AdditionalLibraryDirectories="..\..\..\boost_1_40_0\stage64\lib"
 				GenerateManifest="false"
 				GenerateDebugInformation="true"
 				GenerateMapFile="false"
@@ -179,8 +179,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)\target\out32\$(ProjectName)\$(ConfigurationName)"
-			IntermediateDirectory="target\out32\$(ProjectName)\$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)\x86\$(ProjectName)\$(ConfigurationName)"
+			IntermediateDirectory="x86\$(ProjectName)\$(ConfigurationName)"
 			ConfigurationType="1"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
@@ -202,7 +202,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="include;..\boost_1_40_0"
+				AdditionalIncludeDirectories="..\..\include;..\..\..\boost_1_40_0"
 				PreprocessorDefinitions="NDEBUG;WIN32;WIN32_LEAN_AND_MEAN;WINVER=0x0400;_WIN32_WINNT=0x0400;_WIN32_WINDOWS=0x0410;_WIN32_IE=0x0600;_CONSOLE;BOOST_HAS_THREADS"
 				RuntimeLibrary="0"
 				BufferSecurityCheck="false"
@@ -222,7 +222,7 @@
 				Name="VCLinkerTool"
 				AdditionalOptions=""
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\boost_1_40_0\stage32\lib"
+				AdditionalLibraryDirectories="..\..\..\boost_1_40_0\stage32\lib"
 				GenerateManifest="false"
 				SubSystem="1"
 				OptimizeReferences="2"
@@ -255,8 +255,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|x64"
-			OutputDirectory="$(SolutionDir)\target\out64\$(ProjectName)\$(ConfigurationName)"
-			IntermediateDirectory="target\out64\$(ProjectName)\$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)\x64\$(ProjectName)\$(ConfigurationName)"
+			IntermediateDirectory="x64\$(ProjectName)\$(ConfigurationName)"
 			ConfigurationType="1"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
@@ -279,7 +279,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="include;..\boost_1_40_0"
+				AdditionalIncludeDirectories="..\..\include;..\..\..\boost_1_40_0"
 				PreprocessorDefinitions="NDEBUG;WIN32;WIN32_LEAN_AND_MEAN;WINVER=0x0501;_WIN32_WINNT=0x0501;_WIN32_WINDOWS=0x0501;_WIN32_IE=0x0600;_CONSOLE;BOOST_HAS_THREADS"
 				RuntimeLibrary="0"
 				BufferSecurityCheck="false"
@@ -299,7 +299,7 @@
 				Name="VCLinkerTool"
 				AdditionalOptions=""
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\boost_1_40_0\stage64\lib"
+				AdditionalLibraryDirectories="..\..\..\boost_1_40_0\stage64\lib"
 				GenerateManifest="false"
 				SubSystem="1"
 				OptimizeReferences="2"
@@ -340,11 +340,11 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="src\console_controller.cpp"
+				RelativePath="..\..\src\console_controller.cpp"
 				>
 			</File>
 			<File
-				RelativePath="src\nmea_client\main.cpp"
+				RelativePath=".\..\..\src\echo_client1\main.cpp"
 				>
 			</File>
 		</Filter>
@@ -354,43 +354,43 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="include\console_controller.hpp"
+				RelativePath="..\..\include\console_controller.hpp"
 				>
 			</File>
 			<Filter
 				Name="ma"
 				>
 				<File
-					RelativePath="include\ma\codecvt_cast.hpp"
+					RelativePath="..\..\include\ma\handler_alloc_helpers.hpp"
 					>
 				</File>
 				<File
-					RelativePath="include\ma\handler_alloc_helpers.hpp"
+					RelativePath="..\..\include\ma\handler_allocation.hpp"
 					>
 				</File>
 				<File
-					RelativePath="include\ma\handler_allocation.hpp"
+					RelativePath="..\..\include\ma\handler_invoke_helpers.hpp"
 					>
 				</File>
 				<File
-					RelativePath="include\ma\handler_invoke_helpers.hpp"
+					RelativePath="..\..\include\ma\handler_storage.hpp"
 					>
 				</File>
 				<File
-					RelativePath="include\ma\handler_storage.hpp"
-					>
-				</File>
-				<File
-					RelativePath="include\ma\handler_storage_service.hpp"
+					RelativePath="..\..\include\ma\handler_storage_service.hpp"
 					>
 				</File>
 				<Filter
-					Name="nmea"
+					Name="echo"
 					>
-					<File
-						RelativePath="include\ma\nmea\cyclic_read_session.hpp"
+					<Filter
+						Name="client1"
 						>
-					</File>
+						<File
+							RelativePath=".\..\..\include\ma\echo\client1\session.hpp"
+							>
+						</File>
+					</Filter>
 				</Filter>
 			</Filter>
 		</Filter>
