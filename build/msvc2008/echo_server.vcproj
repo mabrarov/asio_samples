@@ -21,8 +21,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)\x86\$(ProjectName)\$(ConfigurationName)"
-			IntermediateDirectory="x86\$(ProjectName)\$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)\$(ConfigurationName)\x86\$(ProjectName)"
+			IntermediateDirectory="$(ConfigurationName)\x86\$(ProjectName)"
 			ConfigurationType="1"
 			CharacterSet="1"
 			>
@@ -64,7 +64,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\..\..\boost_1_40_0\stage32\lib"
+				AdditionalLibraryDirectories="..\..\..\boost_1_40_0\lib\x86"
 				GenerateManifest="false"
 				GenerateDebugInformation="true"
 				GenerateMapFile="false"
@@ -100,8 +100,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|x64"
-			OutputDirectory="$(SolutionDir)\x64\$(ProjectName)\$(ConfigurationName)"
-			IntermediateDirectory="x64\$(ProjectName)\$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)\$(ConfigurationName)\x64\$(ProjectName)"
+			IntermediateDirectory="$(ConfigurationName)\x64\$(ProjectName)"
 			ConfigurationType="1"
 			CharacterSet="1"
 			>
@@ -144,7 +144,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\..\..\boost_1_40_0\stage64\lib"
+				AdditionalLibraryDirectories="..\..\..\boost_1_40_0\lib\x64"
 				GenerateManifest="false"
 				GenerateDebugInformation="true"
 				GenerateMapFile="false"
@@ -180,8 +180,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)\x86\$(ProjectName)\$(ConfigurationName)"
-			IntermediateDirectory="x86\$(ProjectName)\$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)\$(ConfigurationName)\x86\$(ProjectName)"
+			IntermediateDirectory="$(ConfigurationName)\x86\$(ProjectName)"
 			ConfigurationType="1"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
@@ -223,7 +223,7 @@
 				Name="VCLinkerTool"
 				AdditionalOptions=""
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\..\..\boost_1_40_0\stage32\lib"
+				AdditionalLibraryDirectories="..\..\..\boost_1_40_0\lib\x86"
 				GenerateManifest="false"
 				SubSystem="1"
 				OptimizeReferences="2"
@@ -256,8 +256,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|x64"
-			OutputDirectory="$(SolutionDir)\x64\$(ProjectName)\$(ConfigurationName)"
-			IntermediateDirectory="x64\$(ProjectName)\$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)\$(ConfigurationName)\x64\$(ProjectName)"
+			IntermediateDirectory="$(ConfigurationName)\x64\$(ProjectName)"
 			ConfigurationType="1"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
@@ -300,7 +300,7 @@
 				Name="VCLinkerTool"
 				AdditionalOptions=""
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\..\..\boost_1_40_0\stage64\lib"
+				AdditionalLibraryDirectories="..\..\..\boost_1_40_0\lib\x64"
 				GenerateManifest="false"
 				SubSystem="1"
 				OptimizeReferences="2"
