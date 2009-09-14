@@ -287,12 +287,12 @@ void fill_options_description(boost::program_options::options_description& optio
     )
     (
       socket_recv_buffer_size_param, 
-      boost::program_options::value<int>()->default_value(0),
+      boost::program_options::value<int>()->default_value(1024),
       "set the size of session's socket receive buffer (bytes)"
     )  
     (
       socket_send_buffer_size_param, 
-      boost::program_options::value<int>()->default_value(0),
+      boost::program_options::value<int>()->default_value(1024),
       "set the size of session's socket send buffer (bytes)"
     )
     (
