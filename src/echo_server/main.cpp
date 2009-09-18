@@ -49,8 +49,8 @@ struct session_manager_data : private boost::noncopyable
 
   boost::mutex mutex_;  
   ma::echo::server::session_manager_ptr session_manager_;
-  state_type state_;
-  bool stopped_by_program_exit_;
+  volatile state_type state_;
+  volatile bool stopped_by_program_exit_;
   boost::condition_variable state_changed_;  
   ma::in_place_handler_allocator<256> start_wait_allocator_;
   ma::in_place_handler_allocator<256> stop_allocator_;
