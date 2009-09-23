@@ -456,7 +456,7 @@ namespace ma
               wait_handler_.post(error);
             }
           }
-          else
+          else if (active_session_datas_.size() < settings_.max_sessions_)
           { 
             // Start accepted session 
             start_session(new_session_data);          
@@ -467,7 +467,11 @@ namespace ma
             {
               accept_new_session();
             }          
-          }        
+          }
+          else
+          {
+            recycle_session(new_session_data);
+          }
         } // handle_accept        
 
         bool may_complete_stop() const

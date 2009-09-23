@@ -95,10 +95,11 @@ namespace ma
 
         void reset()
         {
-          error_ = boost::system::error_code();
-          stop_error_ = boost::system::error_code();        
+          boost::system::error_code ignored;
+          socket_.close(ignored);
+          error_ = stop_error_ = boost::system::error_code();          
           state_ = ready_to_start;
-          buffer_.reset();
+          buffer_.reset();          
         }
         
         boost::asio::ip::tcp::socket& socket()
