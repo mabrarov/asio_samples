@@ -203,6 +203,9 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="..\..\include;..\..\..\boost_1_40_0"
 				PreprocessorDefinitions="NDEBUG;WIN32;WIN32_LEAN_AND_MEAN;WINVER=0x0400;_WIN32_WINNT=0x0400;_WIN32_WINDOWS=0x0410;_WIN32_IE=0x0600;_CONSOLE;BOOST_HAS_THREADS"
 				RuntimeLibrary="0"
@@ -231,6 +234,7 @@
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
 				TargetMachine="1"
+				Profile="true"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -280,6 +284,9 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="..\..\include;..\..\..\boost_1_40_0"
 				PreprocessorDefinitions="NDEBUG;WIN32;WIN32_LEAN_AND_MEAN;WINVER=0x0501;_WIN32_WINNT=0x0501;_WIN32_WINDOWS=0x0501;_WIN32_IE=0x0600;_CONSOLE;BOOST_HAS_THREADS"
 				RuntimeLibrary="0"
@@ -308,6 +315,7 @@
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
 				TargetMachine="17"
+				Profile="true"
 			/>
 			<Tool
 				Name="VCALinkTool"
