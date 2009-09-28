@@ -329,7 +329,7 @@ namespace ma
 
         void read_some()
         {
-          ma::cyclic_buffer::mutable_buffers_type buffers(buffer_.prepare());
+          ma::cyclic_buffer::mutable_buffers_type buffers(buffer_.prepared());
           std::size_t buffers_size = boost::asio::buffers_end(buffers) - 
             boost::asio::buffers_begin(buffers);
           if (buffers_size)

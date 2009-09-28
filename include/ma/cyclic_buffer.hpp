@@ -139,7 +139,7 @@ namespace ma
           data_.get() + output_start_, output_size_));
     }
 
-    mutable_buffers_type prepare() const
+    mutable_buffers_type prepared() const
     {                    
       if (!input_size_)
       {
