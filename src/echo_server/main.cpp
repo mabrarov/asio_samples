@@ -8,6 +8,7 @@
 #include <tchar.h>
 #include <windows.h>
 #include <iostream>
+#include <cstdlib>
 #include <boost/smart_ptr.hpp>
 #include <boost/ref.hpp>
 #include <boost/bind.hpp>

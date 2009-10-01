@@ -7,6 +7,7 @@
 
 #include <tchar.h>
 #include <windows.h>
+#include <cstdlib>
 #include <locale>
 #include <iostream>
 #include <utility>
