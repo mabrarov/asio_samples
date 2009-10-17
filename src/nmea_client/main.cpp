@@ -56,7 +56,7 @@ int _tmain(int argc, _TCHAR* argv[])
   if (2 > argc || 4 < argc)
   {
     boost::filesystem::wpath app_path(argv[0]);
-    std::wcout << L"Usage: \"" << app_path.leaf() << L"\" <com_port> [<read_buffer_size> [<message_queue_size>] ]\n";
+    std::wcout << L"Usage: \"" << app_path.leaf() << L"\" <com_port> [<read_buffer_size> [<message_queue_size>] ]" << std::endl;
   }
   else
   {
@@ -64,9 +64,9 @@ int _tmain(int argc, _TCHAR* argv[])
     std::size_t concurrent_count = 2 > cpu_count ? 2 : cpu_count;
     std::size_t thread_count = 2;
 
-    std::wcout << L"Number of found CPUs: " << cpu_count << L"\n"
-               << L"Number of concurrent work threads: " << concurrent_count << L"\n"
-               << L"Total number of work threads     : " << thread_count << L"\n";
+    std::wcout << L"Number of found CPUs             : " << cpu_count        << std::endl
+               << L"Number of concurrent work threads: " << concurrent_count << std::endl
+               << L"Total number of work threads     : " << thread_count     << std::endl;
 
     std::wstring device_name(argv[1]);
     std::size_t read_buffer_size = std::max<std::size_t>(1024, session::min_read_buffer_size);
@@ -80,9 +80,9 @@ int _tmain(int argc, _TCHAR* argv[])
       }
     }    
 
-    std::wcout << L"NMEA 0183 device name    : " << device_name << L"\n";
-    std::wcout << L"Read buffer size in bytes: " << read_buffer_size << L"\n";
-    std::wcout << L"Read buffer size in messages: " << message_queue_size << L"\n";
+    std::wcout << L"NMEA 0183 device name       : " << device_name        << std::endl
+               << L"Read buffer size in bytes   : " << read_buffer_size   << std::endl
+               << L"Read buffer size in messages: " << message_queue_size << std::endl;
 
     const wcodecvt_type& wcodecvt(std::use_facet<wcodecvt_type>(sys_locale));
     std::string ansi_device_name(ma::codecvt_cast::out(device_name, wcodecvt));
@@ -126,7 +126,7 @@ int _tmain(int argc, _TCHAR* argv[])
     }
     thread_group.join_all();
 
-    std::wcout << L"Work threads stopped.\n";    
+    std::wcout << L"Work threads stopped." << std::endl;    
   }
 
   return exit_code;

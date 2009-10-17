@@ -113,7 +113,8 @@ int _tmain(int argc, _TCHAR* argv[])
     else if (!options_values.count(port_param))
     {    
       exit_code = EXIT_FAILURE;
-      std::cout << "Port must be specified.\n" << options_description;
+      std::cout << "Port must be specified" << std::endl 
+                << options_description;
     }
     else
     {        
@@ -142,19 +143,19 @@ int _tmain(int argc, _TCHAR* argv[])
         options_values[listen_backlog_param].as<int>(),
         session_settings);      
 
-      std::cout << "Number of found CPU(s)             : " << cpu_count << '\n'               
-                << "Number of session manager's threads: " << session_manager_thread_count << '\n'
-                << "Number of sessions' threads        : " << session_thread_count << '\n' 
-                << "Total number of work threads       : " << session_thread_count + session_manager_thread_count << '\n'
-                << "Server listen port                 : " << listen_port << '\n'
-                << "Server stop timeout (seconds)      : " << stop_timeout.total_seconds() << '\n'
-                << "Maximum number of active sessions  : " << server_settings.max_sessions_ << '\n'
-                << "Maximum number of recycled sessions: " << server_settings.recycled_sessions_ << '\n'
-                << "TCP listen backlog size            : " << server_settings.listen_backlog_ << '\n'
-                << "Size of session's buffer (bytes)   : " << session_settings.buffer_size_ << '\n'
-                << "Size of session's socket receive buffer (bytes): " << session_settings.socket_recv_buffer_size_ << '\n'
-                << "Size of session's socket send buffer (bytes)   : " << session_settings.socket_send_buffer_size_ << '\n'
-                << "Session's socket Nagle algorithm is: " << (session_settings.no_delay_ ? "off" : "OS default") << '\n';
+      std::cout << "Number of found CPU(s)             : " << cpu_count                     << std::endl
+                << "Number of session manager's threads: " << session_manager_thread_count  << std::endl
+                << "Number of sessions' threads        : " << session_thread_count          << std::endl
+                << "Total number of work threads       : " << session_thread_count + session_manager_thread_count << std::endl
+                << "Server listen port                 : " << listen_port                   << std::endl
+                << "Server stop timeout (seconds)      : " << stop_timeout.total_seconds()  << std::endl
+                << "Maximum number of active sessions  : " << server_settings.max_sessions_ << std::endl
+                << "Maximum number of recycled sessions: " << server_settings.recycled_sessions_ << std::endl
+                << "TCP listen backlog size            : " << server_settings.listen_backlog_    << std::endl
+                << "Size of session's buffer (bytes)   : " << session_settings.buffer_size_      << std::endl
+                << "Size of session's socket receive buffer (bytes): " << session_settings.socket_recv_buffer_size_ << std::endl
+                << "Size of session's socket send buffer (bytes)   : " << session_settings.socket_send_buffer_size_ << std::endl
+                << "Session's socket Nagle algorithm is: " << (session_settings.no_delay_ ? "off" : "OS default")   << std::endl;
       
       // Before session_manager_io_service
       boost::asio::io_service session_io_service;
@@ -228,18 +229,23 @@ int _tmain(int argc, _TCHAR* argv[])
 
       std::cout << "Server work was terminated. Waiting until all of the work threads will stop...\n";
       server_work_threads.join_all();
-      std::cout << "Work threads have stopped. Process will close.\n";    
+      std::cout << "Work threads have stopped. Process will close." << std::endl;    
     }
   }
   catch (const boost::program_options::error& e)
   {
     exit_code = EXIT_FAILURE;
-    std::cout << "Error reading options: " << e.what();      
+    std::cerr << "Error reading options: " << e.what() << std::endl;      
   }
   catch (const std::exception& e)
   {
     exit_code = EXIT_FAILURE;
-    std::cout << "Unexpected exception: " << e.what();      
+    std::cerr << "Unexpected exception: " << e.what() << std::endl;      
+  }
+  catch (...)
+  {
+    exit_code = EXIT_FAILURE;
+    std::cerr << "Unknown exception" << std::endl;
   }
   return exit_code;
 }
