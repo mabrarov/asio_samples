@@ -251,8 +251,7 @@ namespace ma
 
     template <typename Handler>
     void store(implementation_type& impl, arg_param_type cancel_arg, Handler handler)
-    {  
-      BOOST_ASSERT(!impl.handler_ptr_);
+    {
       if (!shutdown_done_)
       {      
         typedef handler_wrapper<Handler> value_type;
@@ -262,8 +261,14 @@ namespace ma
         // Wrap local handler and copy wrapper into allocated memory
         boost::asio::detail::handler_ptr<alloc_traits> ptr(raw_ptr, 
           this->get_io_service(), cancel_arg, handler);
+        // Copy current handler ptr
+        handler_base* handler_ptr = impl.handler_ptr_;
         // Take the ownership
         impl.handler_ptr_ = ptr.release();
+        if (handler_ptr)
+        {
+          handler_ptr->destroy();
+        }
       }
     }
 
