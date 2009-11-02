@@ -326,7 +326,10 @@ namespace ma
             }
             
             // Do shutdown - abort outer operations
-            wait_handler_.cancel();
+            if (wait_handler_.has_target())
+            {
+              wait_handler_.post(boost::asio::error::operation_aborted);
+            }
 
             // Check for shutdown continuation
             if (may_complete_stop())
@@ -344,9 +347,7 @@ namespace ma
             }
             else
             { 
-              stop_handler_.store(
-                boost::asio::error::operation_aborted,                        
-                boost::get<0>(handler));            
+              stop_handler_.store(boost::get<0>(handler));            
             }
           }
         } // do_stop
@@ -389,9 +390,7 @@ namespace ma
           }
           else
           {          
-            wait_handler_.store(
-              boost::asio::error::operation_aborted,                        
-              boost::get<0>(handler));
+            wait_handler_.store(boost::get<0>(handler));
           }  
         } // do_wait
 

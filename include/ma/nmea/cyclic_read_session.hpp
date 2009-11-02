@@ -42,8 +42,7 @@ namespace ma
         started,
         stop_in_progress,
         stopped
-      };
-      typedef boost::tuple<message_ptr, boost::system::error_code> read_arg_type;
+      };      
       BOOST_STATIC_CONSTANT(std::size_t, max_message_size = 512);           
 
     public:
@@ -269,11 +268,12 @@ namespace ma
             || port_write_in_progress_ 
             || port_read_in_progress_)
           {
-            read_handler_.cancel();
+            if (read_handler_.has_target())
+            {
+              read_handler_.post(boost::asio::error::operation_aborted);
+            }            
             // Wait for others operations' completion
-            stop_handler_.store(
-              boost::asio::error::operation_aborted,
-              boost::get<0>(handler));
+            stop_handler_.store(boost::get<0>(handler));
           }        
           else
           {
@@ -423,35 +423,9 @@ namespace ma
           }
 
           // Wait for the ready message
-          read_handler_.store
-          (
-            read_arg_type
-            (
-              message_ptr(), 
-              boost::asio::error::operation_aborted
-            ),          
-            make_context_alloc_handler
-            (
-              boost::get<0>(handler), 
-              boost::bind
-              (
-                &this_type::handle_read<Handler>, 
-                _1,
-                boost::ref(message), 
-                handler
-              )
-            )          
-          );
+          read_handler_.store(message, boost::get<0>(handler));          
         }        
-      } // do_read
-      
-      template <typename Handler>
-      static void handle_read(const read_arg_type& arg, 
-        message_ptr& target, boost::tuple<Handler> handler)
-      {
-        target = boost::get<0>(arg);
-        boost::get<0>(handler)(boost::get<1>(arg));
-      }
+      } // do_read          
 
       void read_until_head()
       {                                 
@@ -520,7 +494,8 @@ namespace ma
         }
         else if (read_handler_.has_target())
         {
-          read_handler_.post(read_arg_type(message_ptr(), error));
+          read_handler_.data() = message_ptr();
+          read_handler_.post(error);
         }
         else
         {
@@ -566,8 +541,9 @@ namespace ma
           read_until_head();
           // If there is waiting read operation - complete it            
           if (read_handler_.has_target())
-          {              
-            read_handler_.post(read_arg_type(new_message, error));
+          {   
+            read_handler_.data() = new_message;
+            read_handler_.post(error);
           } 
           else
           {
@@ -577,7 +553,8 @@ namespace ma
         }
         else if (read_handler_.has_target())
         {
-          read_handler_.post(read_arg_type(message_ptr(), error));
+          read_handler_.data() = message_ptr();
+          read_handler_.post(error);
         }
         else
         {
@@ -589,7 +566,7 @@ namespace ma
       boost::asio::io_service& io_service_;
       boost::asio::io_service::strand strand_;
       boost::asio::serial_port serial_port_;      
-      ma::handler_storage<read_arg_type> read_handler_;
+      ma::handler_storage2<boost::system::error_code, message_ptr&> read_handler_;
       ma::handler_storage<boost::system::error_code> stop_handler_;      
       boost::circular_buffer<message_ptr> message_queue_;      
       boost::system::error_code read_error_;

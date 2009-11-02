@@ -238,7 +238,10 @@ namespace ma
             // Start shutdown
             state_ = stop_in_progress;
             // Do shutdown - abort outer operations
-            wait_handler_.cancel();
+            if (wait_handler_.has_target())
+            {
+              wait_handler_.post(boost::asio::error::operation_aborted);
+            }
             // Do shutdown - flush socket's write_some buffer
             if (!socket_write_in_progress_) 
             {
@@ -260,9 +263,7 @@ namespace ma
             }
             else
             {
-              stop_handler_.store(
-                boost::asio::error::operation_aborted,                        
-                boost::get<0>(handler));
+              stop_handler_.store(boost::get<0>(handler));
             }
           }
         } // do_stop
@@ -321,9 +322,7 @@ namespace ma
           }
           else
           {          
-            wait_handler_.store(
-              boost::asio::error::operation_aborted,                        
-              boost::get<0>(handler));
+            wait_handler_.store(boost::get<0>(handler));
           } 
         } // do_wait
 
