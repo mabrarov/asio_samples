@@ -47,7 +47,16 @@ namespace ma
         typedef boost::weak_ptr<session_data>   session_data_weak_ptr;      
         
         struct session_data : private boost::noncopyable
-        {        
+        {
+          enum state_type
+          {
+            ready_to_start,
+            start_in_progress,
+            started,
+            stop_in_progress,
+            stopped
+          };
+
           session_data_weak_ptr prev_;
           session_data_ptr next_;
           session_ptr session_;        
@@ -496,7 +505,7 @@ namespace ma
           );  
           ++pending_operations_;
           ++accepted_session_data->pending_operations_;
-          accepted_session_data->state_ = start_in_progress;
+          accepted_session_data->state_ = session_data::start_in_progress;
         } // start_session
 
         void stop_session(const session_data_ptr& started_session_data)
@@ -517,7 +526,7 @@ namespace ma
           );
           ++pending_operations_;
           ++started_session_data->pending_operations_;
-          started_session_data->state_ = stop_in_progress;
+          started_session_data->state_ = session_data::stop_in_progress;
         } // stop_session
 
         void wait_session(const session_data_ptr& started_session_data)
@@ -568,11 +577,11 @@ namespace ma
         {
           --pending_operations_;
           --started_session_data->pending_operations_;
-          if (start_in_progress == started_session_data->state_)
+          if (session_data::start_in_progress == started_session_data->state_)
           {          
             if (error)
             {
-              started_session_data->state_ = stopped;
+              started_session_data->state_ = session_data::stopped;
               active_session_datas_.erase(started_session_data);            
               if (stop_in_progress == state_)
               {
@@ -600,7 +609,7 @@ namespace ma
             }
             else // !error
             {
-              started_session_data->state_ = started;
+              started_session_data->state_ = session_data::started;
               if (stop_in_progress == state_)  
               {                            
                 stop_session(started_session_data);
@@ -655,7 +664,7 @@ namespace ma
         {
           --pending_operations_;
           --waited_session_data->pending_operations_;
-          if (started == waited_session_data->state_)
+          if (session_data::started == waited_session_data->state_)
           {
             stop_session(waited_session_data);
           }
@@ -702,9 +711,9 @@ namespace ma
         {
           --pending_operations_;
           --stopped_session_data->pending_operations_;
-          if (stop_in_progress == stopped_session_data->state_)        
+          if (session_data::stop_in_progress == stopped_session_data->state_)        
           {
-            stopped_session_data->state_ = stopped;
+            stopped_session_data->state_ = session_data::stopped;
             active_session_datas_.erase(stopped_session_data);            
             if (stop_in_progress == state_)
             {
@@ -751,7 +760,7 @@ namespace ma
             && recycled_session_datas_.size() < settings_.recycled_sessions_)
           {
             recycled_session_data->session_->reset();
-            recycled_session_data->state_ = ready_to_start;
+            recycled_session_data->state_ = session_data::ready_to_start;
             recycled_session_datas_.push_front(recycled_session_data);
           }        
         } // recycle_session
