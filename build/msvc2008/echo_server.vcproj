@@ -70,10 +70,6 @@
 				GenerateMapFile="false"
 				MapFileName="$(TargetDir)$(TargetName).map"
 				SubSystem="1"
-				OptimizeReferences="0"
-				EnableCOMDATFolding="0"
-				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -150,10 +146,6 @@
 				GenerateMapFile="false"
 				MapFileName="$(TargetDir)$(TargetName).map"
 				SubSystem="1"
-				OptimizeReferences="0"
-				EnableCOMDATFolding="0"
-				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				TargetMachine="17"
 			/>
 			<Tool
@@ -229,12 +221,7 @@
 				AdditionalLibraryDirectories="..\..\..\boost_1_40_0\lib\x86"
 				GenerateManifest="false"
 				SubSystem="1"
-				OptimizeReferences="2"
-				EnableCOMDATFolding="2"
-				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				TargetMachine="1"
-				Profile="true"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -310,10 +297,6 @@
 				AdditionalLibraryDirectories="..\..\..\boost_1_40_0\lib\x64"
 				GenerateManifest="false"
 				SubSystem="1"
-				OptimizeReferences="2"
-				EnableCOMDATFolding="2"
-				RandomizedBaseAddress="1"
-				DataExecutionPrevention="0"
 				TargetMachine="17"
 				Profile="true"
 			/>
