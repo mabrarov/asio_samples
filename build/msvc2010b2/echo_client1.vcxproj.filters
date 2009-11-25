@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Header Files\ma">
+      <UniqueIdentifier>{7494e277-006f-4b60-b90c-26cf674e957d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ma\echo">
+      <UniqueIdentifier>{d0dadb2d-898e-4528-8eee-c950bec06f87}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ma\echo\client1">
+      <UniqueIdentifier>{7ccf2bcb-5ad4-4e64-900e-20609b6e2bcc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\console_controller.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\echo_client1\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\include\console_controller.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\ma\echo\client1\session.hpp">
+      <Filter>Header Files\ma\echo\client1</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\ma\handler_allocation.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\ma\handler_alloc_helpers.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\ma\handler_invoke_helpers.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\ma\handler_storage.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\ma\handler_storage_service.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
