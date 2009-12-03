@@ -18,7 +18,7 @@
 #include <boost/program_options.hpp>
 #include <ma/handler_allocation.hpp>
 #include <ma/echo/client1/session.hpp>
-#include <console_controller.hpp>
+#include <ma/console_controller.hpp>
 
 struct  session_data;
 typedef boost::shared_ptr<session_data> session_data_ptr;

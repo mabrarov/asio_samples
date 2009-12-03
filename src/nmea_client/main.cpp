@@ -20,7 +20,7 @@
 #include <ma/codecvt_cast.hpp>
 #include <ma/handler_allocation.hpp>
 #include <ma/nmea/cyclic_read_session.hpp>
-#include <console_controller.hpp>
+#include <ma/console_controller.hpp>
 
 typedef ma::in_place_handler_allocator<256> handler_allocator_type;
 typedef std::codecvt<wchar_t, char, mbstate_t> wcodecvt_type;

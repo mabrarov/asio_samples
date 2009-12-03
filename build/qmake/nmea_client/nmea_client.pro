@@ -4,7 +4,7 @@ CONFIG   += console
 CONFIG   -= app_bundle
 TEMPLATE =  app
 
-SOURCES  += ../../../src/console_controller.cpp \
+SOURCES  += ../../../src/ma/console_controller.cpp \
             ../../../src/nmea_client/main.cpp
 
 HEADERS  += ../../../include/ma/handler_storage_service.hpp \
@@ -13,7 +13,7 @@ HEADERS  += ../../../include/ma/handler_storage_service.hpp \
             ../../../include/ma/handler_allocation.hpp \
             ../../../include/ma/handler_alloc_helpers.hpp \
             ../../../include/ma/codecvt_cast.hpp \
-            ../../../include/console_controller.hpp \
+            ../../../include/ma/console_controller.hpp \
             ../../../include/ma/nmea/cyclic_read_session.hpp
 
 LIBS        += -L../../../../boost_1_40_0/lib/x86

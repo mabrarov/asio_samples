@@ -340,26 +340,30 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\src\console_controller.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\..\..\src\echo_client1\main.cpp"
 				>
 			</File>
+			<Filter
+				Name="ma"
+				>
+				<File
+					RelativePath="..\..\src\ma\console_controller.cpp"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
-			<File
-				RelativePath="..\..\include\console_controller.hpp"
-				>
-			</File>
 			<Filter
 				Name="ma"
 				>
+				<File
+					RelativePath="..\..\include\ma\console_controller.hpp"
+					>
+				</File>
 				<File
 					RelativePath="..\..\include\ma\handler_alloc_helpers.hpp"
 					>

@@ -19,7 +19,7 @@
 #include <boost/program_options.hpp>
 #include <ma/handler_allocation.hpp>
 #include <ma/echo/server/session_manager.hpp>
-#include <console_controller.hpp>
+#include <ma/console_controller.hpp>
 
 const char *help_param = "help"; 
 const char *port_param = "port";

@@ -6,30 +6,25 @@
       <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
     <Filter Include="Header Files\ma">
-      <UniqueIdentifier>{df95f273-ba59-4cf0-9c15-fa9854ce1986}</UniqueIdentifier>
+      <UniqueIdentifier>{1937971b-5e03-43b0-a4f1-98b1d62b5ee9}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\ma\echo">
-      <UniqueIdentifier>{e5c21e81-6942-463d-a331-6c224960912b}</UniqueIdentifier>
+      <UniqueIdentifier>{e7f7b963-e81b-4d61-8b89-95716b6536a9}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\ma\echo\server">
-      <UniqueIdentifier>{3febb97c-a66b-4bb1-8cdb-fc00ea78b515}</UniqueIdentifier>
+      <UniqueIdentifier>{e34949a4-fc7d-475c-9be9-94a6b53d9406}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files">
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
+    <Filter Include="Source Files\ma">
+      <UniqueIdentifier>{f5ac3ed1-601d-49c5-9777-35ee7e0eebdb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\console_controller.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\echo_server\main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\include\console_controller.hpp">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\include\ma\console_controller.hpp">
+      <Filter>Header Files\ma</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\ma\cyclic_buffer.hpp">
       <Filter>Header Files\ma</Filter>
@@ -55,5 +50,13 @@
     <ClInclude Include="..\..\include\ma\handler_storage_service.hpp">
       <Filter>Header Files\ma</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\echo_server\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ma\console_controller.cpp">
+      <Filter>Source Files\ma</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

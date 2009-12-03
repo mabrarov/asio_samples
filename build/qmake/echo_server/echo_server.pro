@@ -4,7 +4,7 @@ CONFIG   += console
 CONFIG   -= app_bundle
 TEMPLATE =  app
 
-SOURCES  += ../../../src/console_controller.cpp \
+SOURCES  += ../../../src/ma/console_controller.cpp \
             ../../../src/echo_server/main.cpp
 
 HEADERS  += ../../../include/ma/handler_storage_service.hpp \
@@ -13,7 +13,7 @@ HEADERS  += ../../../include/ma/handler_storage_service.hpp \
             ../../../include/ma/handler_allocation.hpp \
             ../../../include/ma/handler_alloc_helpers.hpp \
             ../../../include/ma/cyclic_buffer.hpp \
-            ../../../include/console_controller.hpp \
+            ../../../include/ma/console_controller.hpp \
             ../../../include/ma/echo/server/session.hpp \
             ../../../include/ma/echo/server/session_manager.hpp
 

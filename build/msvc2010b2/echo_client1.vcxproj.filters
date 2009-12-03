@@ -6,30 +6,33 @@
       <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
     <Filter Include="Header Files\ma">
-      <UniqueIdentifier>{7494e277-006f-4b60-b90c-26cf674e957d}</UniqueIdentifier>
+      <UniqueIdentifier>{25733e26-a684-4ecc-95c0-bc1133e03340}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\ma\echo">
-      <UniqueIdentifier>{d0dadb2d-898e-4528-8eee-c950bec06f87}</UniqueIdentifier>
+      <UniqueIdentifier>{8f172521-97a9-4a1a-9555-bd9adde5d2ac}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\ma\echo\client1">
-      <UniqueIdentifier>{7ccf2bcb-5ad4-4e64-900e-20609b6e2bcc}</UniqueIdentifier>
+      <UniqueIdentifier>{7a7f71ff-4f70-47f9-9818-64863d130dd1}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files">
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
+    <Filter Include="Source Files\ma">
+      <UniqueIdentifier>{eb038c64-d8f8-454a-bd39-ae3fb6df722a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\console_controller.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\echo_client1\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\ma\console_controller.cpp">
+      <Filter>Source Files\ma</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\include\console_controller.hpp">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\include\ma\console_controller.hpp">
+      <Filter>Header Files\ma</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\ma\echo\client1\session.hpp">
       <Filter>Header Files\ma\echo\client1</Filter>

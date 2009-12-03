@@ -6,29 +6,32 @@
       <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
     <Filter Include="Header Files\ma">
-      <UniqueIdentifier>{f4a56860-c9c9-4257-909a-5d1c71a0c621}</UniqueIdentifier>
+      <UniqueIdentifier>{330460be-cd3e-4049-a9fe-69629d68cfec}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\ma\nmea">
-      <UniqueIdentifier>{38bdfe3f-ac45-49ea-8815-06b27c1f4d0a}</UniqueIdentifier>
+      <UniqueIdentifier>{fe849553-aeac-43ba-840a-340a1c888ed6}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files">
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
+    <Filter Include="Source Files\ma">
+      <UniqueIdentifier>{6e66f5b1-6ddc-4587-9c42-439cefa1b15e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\console_controller.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="..\..\src\ma\console_controller.cpp">
+      <Filter>Source Files\ma</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\nmea_client\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\include\console_controller.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\ma\codecvt_cast.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\ma\console_controller.hpp">
       <Filter>Header Files\ma</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\ma\handler_allocation.hpp">

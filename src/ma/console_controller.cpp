@@ -6,7 +6,7 @@
 //
 
 #include <stdexcept>
-#include <console_controller.hpp>
+#include <ma/console_controller.hpp>
 
 namespace ma
 {

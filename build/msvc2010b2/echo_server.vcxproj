@@ -179,11 +179,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\console_controller.cpp" />
-    <ClCompile Include="..\..\src\echo_server\main.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\include\console_controller.hpp" />
+    <ClInclude Include="..\..\include\ma\console_controller.hpp" />
     <ClInclude Include="..\..\include\ma\cyclic_buffer.hpp" />
     <ClInclude Include="..\..\include\ma\handler_alloc_helpers.hpp" />
     <ClInclude Include="..\..\include\ma\handler_allocation.hpp" />
@@ -192,6 +188,10 @@
     <ClInclude Include="..\..\include\ma\handler_storage_service.hpp" />
     <ClInclude Include="..\..\include\ma\echo\server\session.hpp" />
     <ClInclude Include="..\..\include\ma\echo\server\session_manager.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\echo_server\main.cpp" />
+    <ClCompile Include="..\..\src\ma\console_controller.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

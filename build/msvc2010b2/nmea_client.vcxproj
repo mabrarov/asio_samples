@@ -174,12 +174,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\console_controller.cpp" />
     <ClCompile Include="..\..\src\nmea_client\main.cpp" />
+    <ClCompile Include="..\..\src\ma\console_controller.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\include\console_controller.hpp" />
     <ClInclude Include="..\..\include\ma\codecvt_cast.hpp" />
+    <ClInclude Include="..\..\include\ma\console_controller.hpp" />
     <ClInclude Include="..\..\include\ma\handler_alloc_helpers.hpp" />
     <ClInclude Include="..\..\include\ma\handler_allocation.hpp" />
     <ClInclude Include="..\..\include\ma\handler_invoke_helpers.hpp" />
