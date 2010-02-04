@@ -11,7 +11,7 @@
 #include <locale>
 #include <string>
 #include <stdexcept>
-#include <boost/exception.hpp>
+#include <boost/exception/all.hpp>
 #include <boost/smart_ptr.hpp>
 
 namespace ma
