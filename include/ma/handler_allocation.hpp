@@ -143,7 +143,7 @@ namespace ma
   {
   private:
     typedef custom_alloc_handler<Allocator, Handler> this_type;
-    const this_type& operator=(const this_type&);
+    this_type& operator=(const this_type&);
 
   public:
     typedef void result_type;
@@ -250,7 +250,7 @@ namespace ma
   {
   private:
     typedef context_alloc_handler<Context, Handler> this_type;
-    const this_type& operator=(const this_type&);
+    this_type& operator=(const this_type&);
 
   public:
     typedef void result_type;

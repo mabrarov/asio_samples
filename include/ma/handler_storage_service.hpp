@@ -32,6 +32,10 @@ namespace ma
 
     class handler_base
     {
+    private:
+      typedef handler_base this_type;
+      this_type& operator=(const this_type&);
+
     public:
       typedef void (*invoke_func_type)(handler_base*, arg_param_type);
       typedef void (*destroy_func_type)(handler_base*);
@@ -67,7 +71,7 @@ namespace ma
     {
     private:
       typedef handler_wrapper<Handler> this_type;
-      const this_type& operator=(const this_type&);    
+      this_type& operator=(const this_type&);    
 
     public:
       explicit handler_wrapper(boost::asio::io_service& io_service, Handler handler)
@@ -304,6 +308,10 @@ namespace ma
 
     class handler_base
     {
+    private:
+      typedef handler_base this_type;
+      this_type& operator=(const this_type&);    
+
     public:
       typedef void (*invoke_func_type)(handler_base*, arg_param_type);
       typedef void (*destroy_func_type)(handler_base*);
@@ -347,7 +355,7 @@ namespace ma
     {
     private:
       typedef handler_wrapper<Handler> this_type;
-      const this_type& operator=(const this_type&);    
+      this_type& operator=(const this_type&);    
 
     public:
       explicit handler_wrapper(boost::asio::io_service& io_service,
