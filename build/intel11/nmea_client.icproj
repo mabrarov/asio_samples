@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="windows-1251"?>
+<VisualStudioProject
+	ProjectType="Intel C++ Project"
+	Version="11.1"
+	Name="nmea_client"
+	ProjectGUID="{FEAB6830-0373-4DF2-8619-A6E210E6E290}"
+	VCNestedProjectGUID="{0293302C-9C34-42AD-8EAA-61B7DFCBCFAD}"
+	VCNestedProjectFileName="nmea_client.vcproj">
+	<Configurations/>
+	<Files/>
+</VisualStudioProject>
