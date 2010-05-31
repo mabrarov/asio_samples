@@ -10,6 +10,7 @@
 
 #include <stdexcept>
 #include <string>
+#include <boost/make_shared.hpp>
 #include <boost/utility.hpp>
 #include <boost/smart_ptr.hpp>
 #include <boost/bind.hpp>
@@ -528,7 +529,7 @@ namespace ma
           message_ptr new_message;
           if (newly_allocated)
           {
-            new_message.reset(new message_type(data_begin, data_end));
+            new_message = boost::make_shared<message_type>(data_begin, data_end);
           }
           else
           {

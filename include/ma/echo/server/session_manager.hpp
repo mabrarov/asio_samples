@@ -10,6 +10,8 @@
 
 #include <stdexcept>
 #include <boost/utility.hpp>
+#include <boost/ref.hpp>
+#include <boost/make_shared.hpp>
 #include <boost/smart_ptr.hpp>
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
@@ -68,7 +70,7 @@ namespace ma
 
           explicit session_proxy(boost::asio::io_service& io_service,
             const session::settings& session_settings)
-            : session_(new session(io_service, session_settings))
+            : session_(boost::make_shared<session>(boost::ref(io_service), session_settings))
             , pending_operations_(0)
             , state_(ready_to_start)
           {
@@ -409,8 +411,8 @@ namespace ma
           session_proxy_ptr new_session_proxy;
           if (recycled_session_proxies_.empty())
           {
-            new_session_proxy.reset(
-              new session_proxy(session_io_service_, settings_.session_settings_));
+            new_session_proxy = boost::make_shared<session_proxy>(
+              boost::ref(session_io_service_), settings_.session_settings_);
           }
           else
           {

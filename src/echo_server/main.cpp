@@ -10,6 +10,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <boost/smart_ptr.hpp>
+#include <boost/make_shared.hpp>
 #include <boost/ref.hpp>
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
@@ -59,7 +60,8 @@ struct session_manager_proxy : private boost::noncopyable
   explicit session_manager_proxy(boost::asio::io_service& io_service,
     boost::asio::io_service& session_io_service,
     const ma::echo::server::session_manager::settings& settings)
-    : session_manager_(new ma::echo::server::session_manager(io_service, session_io_service, settings))    
+    : session_manager_(boost::make_shared<ma::echo::server::session_manager>(
+        boost::ref(io_service), boost::ref(session_io_service), settings))
     , state_(ready_to_start)
     , stopped_by_program_exit_(false)
   {
@@ -163,8 +165,8 @@ int _tmain(int argc, _TCHAR* argv[])
       boost::asio::io_service session_manager_io_service;
 
       // Create session_manager
-      session_manager_proxy_ptr main_session_manager_proxy(
-        new session_manager_proxy(session_manager_io_service, session_io_service, server_settings));
+      session_manager_proxy_ptr main_session_manager_proxy(boost::make_shared<session_manager_proxy>(
+        boost::ref(session_manager_io_service), boost::ref(session_io_service), server_settings));
       
       std::cout << "Server is starting...\n";
       

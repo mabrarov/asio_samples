@@ -206,6 +206,7 @@
 				BufferSecurityCheck="false"
 				UsePrecompiledHeader="0"
 				WarningLevel="4"
+				DebugInformationFormat="0"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -222,6 +223,7 @@
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="..\..\..\boost_1_43_0\lib\x86"
 				GenerateManifest="false"
+				GenerateDebugInformation="false"
 				SubSystem="1"
 				TargetMachine="1"
 			/>

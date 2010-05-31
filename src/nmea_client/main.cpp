@@ -11,6 +11,7 @@
 #include <locale>
 #include <iostream>
 #include <utility>
+#include <boost/make_shared.hpp>
 #include <boost/ref.hpp>
 #include <boost/bind.hpp>
 #include <boost/filesystem.hpp>
@@ -89,8 +90,8 @@ int _tmain(int argc, _TCHAR* argv[])
     handler_allocator_type in_place_handler_allocator;
             
     boost::asio::io_service io_service(concurrent_count);   
-    session_ptr session(new session(
-      io_service, read_buffer_size, message_queue_size, "$", "\x0a"));
+    session_ptr session(boost::make_shared<session>(
+      boost::ref(io_service), read_buffer_size, message_queue_size, "$", "\x0a"));
 
     // Prepare the lower layer - open the serial port
     session->serial_port().open(ansi_device_name);        
@@ -153,7 +154,7 @@ void handle_start(
   else
   {    
     std::wcout << L"Session started successful. Starting read operation...\n";
-    ptr_to_message_ptr message(new message_ptr());
+    ptr_to_message_ptr message = boost::make_shared<message_ptr>();
     session->async_read
     (
       *message, 
