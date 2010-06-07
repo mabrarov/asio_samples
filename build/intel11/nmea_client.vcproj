@@ -352,6 +352,10 @@
 				Name="ma"
 				>
 				<File
+					RelativePath="..\..\include\ma\bind_asio_handler.hpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\include\ma\codecvt_cast.hpp"
 					>
 				</File>
