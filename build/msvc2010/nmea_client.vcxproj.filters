@@ -52,5 +52,8 @@
     <ClInclude Include="..\..\include\ma\nmea\cyclic_read_session.hpp">
       <Filter>Header Files\ma\nmea</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\ma\bind_asio_handler.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -50,6 +50,9 @@
     <ClInclude Include="..\..\include\ma\handler_storage_service.hpp">
       <Filter>Header Files\ma</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\ma\bind_asio_handler.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\echo_server\main.cpp">

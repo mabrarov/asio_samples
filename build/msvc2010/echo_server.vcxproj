@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -179,6 +179,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\include\ma\bind_asio_handler.hpp" />
     <ClInclude Include="..\..\include\ma\console_controller.hpp" />
     <ClInclude Include="..\..\include\ma\cyclic_buffer.hpp" />
     <ClInclude Include="..\..\include\ma\handler_alloc_helpers.hpp" />
