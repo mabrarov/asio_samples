@@ -14,6 +14,8 @@
 #include <boost/asio.hpp>
 #include <boost/assert.hpp>
 #include <boost/call_traits.hpp>
+#include <ma/handler_alloc_helpers.hpp>
+#include <ma/bind_asio_handler.hpp>
 
 namespace ma
 {  
@@ -90,8 +92,8 @@ namespace ma
       {
         // Take ownership of the handler object.
         this_type* h(static_cast<this_type*>(base));
-        typedef boost::asio::detail::handler_alloc_traits<Handler, this_type> alloc_traits;
-        boost::asio::detail::handler_ptr<alloc_traits> ptr(h->handler_, h);          
+        typedef detail::handler_alloc_traits<Handler, this_type> alloc_traits;
+        detail::handler_ptr<alloc_traits> ptr(h->handler_, h);          
 
         // Make a copy of the handler so that the memory can be deallocated before
         // the upcall is made.
@@ -104,15 +106,14 @@ namespace ma
         ptr.reset();          
 
         // Make the upcall.
-        io_service.post(boost::asio::detail::bind_handler(
-          handler, arg));
+        io_service.post(detail::bind_handler(handler, arg));
       }
 
       static void do_destroy(handler_base* base)
       {          
         this_type* h(static_cast<this_type*>(base));
-        typedef boost::asio::detail::handler_alloc_traits<Handler, this_type> alloc_traits;
-        boost::asio::detail::handler_ptr<alloc_traits> ptr(h->handler_, h);
+        typedef detail::handler_alloc_traits<Handler, this_type> alloc_traits;
+        detail::handler_ptr<alloc_traits> ptr(h->handler_, h);
 
         // A sub-object of the handler may be the true owner of the memory
         // associated with the handler. Consequently, a local copy of the handler
@@ -248,12 +249,11 @@ namespace ma
       if (!shutdown_done_)
       {      
         typedef handler_wrapper<Handler> value_type;
-        typedef boost::asio::detail::handler_alloc_traits<Handler, value_type> alloc_traits;
+        typedef detail::handler_alloc_traits<Handler, value_type> alloc_traits;
         // Allocate raw memory for handler
-        boost::asio::detail::raw_handler_ptr<alloc_traits> raw_ptr(handler);
+        detail::raw_handler_ptr<alloc_traits> raw_ptr(handler);
         // Wrap local handler and copy wrapper into allocated memory
-        boost::asio::detail::handler_ptr<alloc_traits> ptr(raw_ptr, 
-          this->get_io_service(), handler);
+        detail::handler_ptr<alloc_traits> ptr(raw_ptr, this->get_io_service(), handler);
         // Copy current handler ptr
         handler_base* handler_ptr = impl.handler_ptr_;
         // Take the ownership
@@ -375,8 +375,8 @@ namespace ma
       {
         // Take ownership of the handler object.          
         this_type* h(static_cast<this_type*>(base));
-        typedef boost::asio::detail::handler_alloc_traits<Handler, this_type> alloc_traits;
-        boost::asio::detail::handler_ptr<alloc_traits> ptr(h->handler_, h);          
+        typedef detail::handler_alloc_traits<Handler, this_type> alloc_traits;
+        detail::handler_ptr<alloc_traits> ptr(h->handler_, h);          
 
         // Make a copy of the handler so that the memory can be deallocated before
         // the upcall is made.
@@ -389,15 +389,14 @@ namespace ma
         ptr.reset();          
 
         // Make the upcall.
-        io_service.post(boost::asio::detail::bind_handler(
-          handler, arg));
+        io_service.post(detail::bind_handler(handler, arg));
       }
 
       static void do_destroy(handler_base* base)
       {          
         this_type* h(static_cast<this_type*>(base));
-        typedef boost::asio::detail::handler_alloc_traits<Handler, this_type> alloc_traits;
-        boost::asio::detail::handler_ptr<alloc_traits> ptr(h->handler_, h);
+        typedef detail::handler_alloc_traits<Handler, this_type> alloc_traits;
+        detail::handler_ptr<alloc_traits> ptr(h->handler_, h);
 
         // A sub-object of the handler may be the true owner of the memory
         // associated with the handler. Consequently, a local copy of the handler
@@ -533,11 +532,11 @@ namespace ma
       if (!shutdown_done_)
       {      
         typedef handler_wrapper<Handler> value_type;
-        typedef boost::asio::detail::handler_alloc_traits<Handler, value_type> alloc_traits;
+        typedef detail::handler_alloc_traits<Handler, value_type> alloc_traits;
         // Allocate raw memory for handler
-        boost::asio::detail::raw_handler_ptr<alloc_traits> raw_ptr(handler);
+        detail::raw_handler_ptr<alloc_traits> raw_ptr(handler);
         // Wrap local handler and copy wrapper into allocated memory
-        boost::asio::detail::handler_ptr<alloc_traits> ptr(raw_ptr, 
+        detail::handler_ptr<alloc_traits> ptr(raw_ptr, 
           this->get_io_service(), data, handler);
         // Copy current handler ptr
         handler_base* handler_ptr = impl.handler_ptr_;

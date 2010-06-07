@@ -8,12 +8,13 @@
 #ifndef MA_HANDLER_INVOKE_HELPERS_HPP
 #define MA_HANDLER_INVOKE_HELPERS_HPP
 
+#include <boost/utility.hpp>
 #include <boost/asio.hpp>
 
-namespace ma_invoke_helpers
+namespace ma_asio_handler_invoke_helpers
 {
   template <typename Function, typename Context>
-  inline void invoke(const Function& function, Context* context)
+  inline void invoke(const Function& function, Context& context)
   {
     using namespace boost::asio;
     asio_handler_invoke(function, context);
