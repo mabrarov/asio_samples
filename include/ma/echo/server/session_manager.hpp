@@ -93,11 +93,7 @@ namespace ma
           {
             value->next_ = front_;
             value->prev_.reset();
-#ifdef BOOST_INTEL_WIN
-            if (front_.get())
-#else
             if (front_)
-#endif // BOOST_INTEL_WIN
             {
               front_->prev_ = value;
             }
@@ -112,19 +108,11 @@ namespace ma
               front_ = front_->next_;
             }
             session_proxy_ptr prev = value->prev_.lock();
-#ifdef BOOST_INTEL_WIN
-            if (prev.get())
-#else
             if (prev)
-#endif // BOOST_INTEL_WIN
             {
               prev->next_ = value->next_;
             }
-#ifdef BOOST_INTEL_WIN
-            if (value->next_.get())
-#else
             if (value->next_)
-#endif // BOOST_INTEL_WIN
             {
               value->next_->prev_ = prev;
             }
@@ -339,11 +327,7 @@ namespace ma
 
             // Start stop for all active sessions
             session_proxy_ptr curr_session_proxy(active_session_proxies_.front());
-#ifdef BOOST_INTEL_WIN
-            while (curr_session_proxy.get())
-#else
             while (curr_session_proxy)
-#endif // BOOST_INTEL_WIN
             {
               if (stop_in_progress != curr_session_proxy->state_)
               {
@@ -571,11 +555,7 @@ namespace ma
           const session_proxy_ptr& started_session_proxy, const boost::system::error_code& error)
         {
           session_manager_ptr this_ptr(weak_session_manager.lock());
-#ifdef BOOST_INTEL_WIN
-          if (this_ptr.get())
-#else
           if (this_ptr)
-#endif
           {
             this_ptr->strand_.dispatch
             (
@@ -662,11 +642,7 @@ namespace ma
           const session_proxy_ptr& waited_session_proxy, const boost::system::error_code& error)
         {
           session_manager_ptr this_ptr(weak_session_manager.lock());
-#ifdef BOOST_INTEL_WIN
-          if (this_ptr.get())
-#else
           if (this_ptr)
-#endif // BOOST_INTEL_WIN
           {
             this_ptr->strand_.dispatch
             (
@@ -713,11 +689,7 @@ namespace ma
           const session_proxy_ptr& stopped_session_proxy, const boost::system::error_code& error)
         {
           session_manager_ptr this_ptr(weak_session_manager.lock());
-#ifdef BOOST_INTEL_WIN
-          if (this_ptr.get())
-#else
           if (this_ptr)
-#endif // BOOST_INTEL_WIN
           {
             this_ptr->strand_.dispatch
             (
