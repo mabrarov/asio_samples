@@ -6,6 +6,26 @@
 	ProjectGUID="{5DF4759E-D494-4B9C-AFBE-0B73D14705A6}"
 	VCNestedProjectGUID="{7CE8CB18-679D-4DCB-B64B-6493E1DA8739}"
 	VCNestedProjectFileName="echo_server.vcproj">
-	<Configurations/>
+	<Configurations>
+		<Configuration
+			Name="Release|Win32">
+			<Tool
+				Name="CppCmplrTool"
+				Optimization="1000"
+				GlobalOptimizations="true"
+				OptimizeForWindowsApplication="true"
+				EnableEnhancedInstructionSet="1000"
+				UseIntelOptimizedHeaders="true"/>
+		</Configuration>
+		<Configuration
+			Name="Release|x64">
+			<Tool
+				Name="CppCmplrTool"
+				GlobalOptimizations="true"
+				OptimizeForWindowsApplication="true"
+				EnableEnhancedInstructionSet="1000"
+				UseIntelOptimizedHeaders="true"/>
+		</Configuration>
+	</Configurations>
 	<Files/>
 </VisualStudioProject>
