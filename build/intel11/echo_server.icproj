@@ -8,6 +8,12 @@
 	VCNestedProjectFileName="echo_server.vcproj">
 	<Configurations>
 		<Configuration
+			Name="Debug|Win32">
+			<Tool
+				Name="CppCmplrTool"
+				Cpp0xSupport="true"/>
+		</Configuration>
+		<Configuration
 			Name="Release|Win32">
 			<Tool
 				Name="CppCmplrTool"
@@ -15,7 +21,8 @@
 				GlobalOptimizations="true"
 				OptimizeForWindowsApplication="true"
 				EnableEnhancedInstructionSet="1000"
-				UseIntelOptimizedHeaders="true"/>
+				UseIntelOptimizedHeaders="true"
+				Cpp0xSupport="true"/>
 		</Configuration>
 		<Configuration
 			Name="Release|x64">

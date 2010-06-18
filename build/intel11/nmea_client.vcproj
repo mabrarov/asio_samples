@@ -63,6 +63,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="libboost_thread-iw-mt-sgd-1_43.lib libboost_program_options-iw-mt-sgd-1_43.lib libboost_system-iw-mt-sgd-1_43.lib"
 				LinkIncremental="2"
 				AdditionalLibraryDirectories="..\..\..\boost_1_43_0\lib\x86"
 				GenerateManifest="false"
@@ -219,6 +220,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions=""
+				AdditionalDependencies="libboost_thread-iw-mt-s-1_43.lib libboost_program_options-iw-mt-s-1_43.lib libboost_system-iw-mt-s-1_43.lib"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="..\..\..\boost_1_43_0\lib\x86"
 				GenerateManifest="false"
