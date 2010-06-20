@@ -14,7 +14,20 @@
 				Cpp0xSupport="true"/>
 		</Configuration>
 		<Configuration
+			Name="Debug|x64">
+			<Tool
+				Name="CppCmplrTool"
+				Cpp0xSupport="true"/>
+		</Configuration>
+		<Configuration
 			Name="Release|Win32">
+			<Tool
+				Name="CppCmplrTool"
+				UseIntelOptimizedHeaders="true"
+				Cpp0xSupport="true"/>
+		</Configuration>
+		<Configuration
+			Name="Release|x64">
 			<Tool
 				Name="CppCmplrTool"
 				Cpp0xSupport="true"/>
