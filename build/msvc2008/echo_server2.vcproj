@@ -444,19 +444,19 @@
 						Name="server2"
 						>
 						<File
-							RelativePath="..\..\src\echo_server2\session.cpp"
+							RelativePath="..\..\src\ma\echo\server2\session.cpp"
 							>
 						</File>
 						<File
-							RelativePath="..\..\src\echo_server2\session_manager.cpp"
+							RelativePath="..\..\src\ma\echo\server2\session_manager.cpp"
 							>
 						</File>
 						<File
-							RelativePath="..\..\src\echo_server2\session_proxy.cpp"
+							RelativePath="..\..\src\ma\echo\server2\session_proxy.cpp"
 							>
 						</File>
 						<File
-							RelativePath="..\..\src\echo_server2\session_proxy_list.cpp"
+							RelativePath="..\..\src\ma\echo\server2\session_proxy_list.cpp"
 							>
 						</File>
 					</Filter>
