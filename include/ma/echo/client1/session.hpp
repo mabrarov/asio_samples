@@ -19,6 +19,7 @@
 #include <boost/circular_buffer.hpp>
 #include <ma/handler_allocation.hpp>
 #include <ma/handler_storage.hpp>
+#include <ma/bind_asio_handler.hpp>
 
 namespace ma
 {    
@@ -157,7 +158,7 @@ namespace ma
           {          
             io_service_.post
             (
-              boost::asio::detail::bind_handler
+              detail::bind_handler
               (
                 boost::get<0>(handler), 
                 boost::asio::error::operation_aborted
@@ -168,7 +169,7 @@ namespace ma
           {          
             io_service_.post
             (
-              boost::asio::detail::bind_handler
+              detail::bind_handler
               (
                 boost::get<0>(handler), 
                 boost::asio::error::operation_not_supported
@@ -181,7 +182,7 @@ namespace ma
             //todo
             io_service_.post
             (
-              boost::asio::detail::bind_handler
+              detail::bind_handler
               (
                 boost::get<0>(handler), 
                 boost::system::error_code()
@@ -197,7 +198,7 @@ namespace ma
           {          
             io_service_.post
             (
-              boost::asio::detail::bind_handler
+              detail::bind_handler
               (
                 boost::get<0>(handler), 
                 boost::asio::error::operation_aborted
@@ -225,7 +226,7 @@ namespace ma
               // Signal shutdown completion
               io_service_.post
               (
-                boost::asio::detail::bind_handler
+                detail::bind_handler
                 (
                   boost::get<0>(handler), 
                   stop_error_
@@ -262,7 +263,7 @@ namespace ma
           {          
             io_service_.post
             (
-              boost::asio::detail::bind_handler
+              detail::bind_handler
               (
                 boost::get<0>(handler), 
                 boost::asio::error::operation_aborted
@@ -273,7 +274,7 @@ namespace ma
           {          
             io_service_.post
             (
-              boost::asio::detail::bind_handler
+              detail::bind_handler
               (
                 boost::get<0>(handler), 
                 boost::asio::error::operation_not_supported
@@ -284,7 +285,7 @@ namespace ma
           {
             io_service_.post
             (
-              boost::asio::detail::bind_handler
+              detail::bind_handler
               (
                 boost::get<0>(handler), 
                 error_

@@ -16,6 +16,7 @@
 #include <boost/tuple/tuple.hpp>
 #include <ma/handler_allocation.hpp>
 #include <ma/handler_storage.hpp>
+#include <ma/bind_asio_handler.hpp>
 #include <ma/cyclic_buffer.hpp>
 
 namespace ma
@@ -163,13 +164,13 @@ namespace ma
         
       private:
         template <typename Handler>
-        void do_start(boost::tuple<Handler> handler)
+        void do_start(const boost::tuple<Handler>& handler)
         {
           if (stopped == state_ || stop_in_progress == state_)
           {          
             io_service_.post
             (
-              boost::asio::detail::bind_handler
+              detail::bind_handler
               (
                 boost::get<0>(handler), 
                 boost::asio::error::operation_aborted
@@ -180,7 +181,7 @@ namespace ma
           {          
             io_service_.post
             (
-              boost::asio::detail::bind_handler
+              detail::bind_handler
               (
                 boost::get<0>(handler), 
                 boost::asio::error::operation_not_supported
@@ -210,7 +211,7 @@ namespace ma
             }                        
             io_service_.post
             (
-              boost::asio::detail::bind_handler
+              detail::bind_handler
               (
                 boost::get<0>(handler), 
                 start_error
@@ -220,13 +221,13 @@ namespace ma
         } // do_start
 
         template <typename Handler>
-        void do_stop(boost::tuple<Handler> handler)
+        void do_stop(const boost::tuple<Handler>& handler)
         {
           if (stopped == state_ || stop_in_progress == state_)
           {          
             io_service_.post
             (
-              boost::asio::detail::bind_handler
+              detail::bind_handler
               (
                 boost::get<0>(handler), 
                 boost::asio::error::operation_aborted
@@ -254,7 +255,7 @@ namespace ma
               // Signal shutdown completion
               io_service_.post
               (
-                boost::asio::detail::bind_handler
+                detail::bind_handler
                 (
                   boost::get<0>(handler), 
                   stop_error_
@@ -285,13 +286,13 @@ namespace ma
         }      
 
         template <typename Handler>
-        void do_wait(boost::tuple<Handler> handler)
+        void do_wait(const boost::tuple<Handler>& handler)
         {
           if (stopped == state_ || stop_in_progress == state_)
           {          
             io_service_.post
             (
-              boost::asio::detail::bind_handler
+              detail::bind_handler
               (
                 boost::get<0>(handler), 
                 boost::asio::error::operation_aborted
@@ -302,7 +303,7 @@ namespace ma
           {          
             io_service_.post
             (
-              boost::asio::detail::bind_handler
+              detail::bind_handler
               (
                 boost::get<0>(handler), 
                 boost::asio::error::operation_not_supported
@@ -313,7 +314,7 @@ namespace ma
           {
             io_service_.post
             (
-              boost::asio::detail::bind_handler
+              detail::bind_handler
               (
                 boost::get<0>(handler), 
                 error_
