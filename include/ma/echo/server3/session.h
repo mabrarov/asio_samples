@@ -13,9 +13,10 @@
 #include <boost/system/error_code.hpp>
 #include <boost/smart_ptr.hpp>
 #include <boost/asio.hpp>
+#include <ma/cyclic_buffer.hpp>
+#include <ma/handler_allocation.hpp>
 #include <ma/echo/server3/allocator.h>
 #include <ma/echo/server3/session_handler_fwd.h>
-#include <ma/handler_allocation.hpp>
 
 namespace ma
 {    
@@ -52,9 +53,9 @@ namespace ma
         void async_start(const boost::shared_ptr<allocator>& operation_allocator,
           const boost::weak_ptr<session_start_handler>& handler);
         void async_stop(const boost::shared_ptr<allocator>& operation_allocator,
-          const boost::weak_ptr<session_start_handler>& handler);
+          const boost::weak_ptr<session_stop_handler>& handler);
         void async_wait(const boost::shared_ptr<allocator>& operation_allocator,
-          const boost::weak_ptr<session_start_handler>& handler);
+          const boost::weak_ptr<session_wait_handler>& handler);
 
       private:        
         enum state_type
@@ -88,7 +89,8 @@ namespace ma
         boost::asio::io_service::strand strand_;
         boost::asio::ip::tcp::socket socket_;
         stop_handler_type  stop_handler_;
-        wait_handler_type  wait_handler_;
+        wait_handler_type  wait_handler_;        
+        bool has_wait_handler_;
         boost::system::error_code error_;
         boost::system::error_code stop_error_;
         settings settings_;
