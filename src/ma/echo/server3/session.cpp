@@ -6,9 +6,10 @@
 //
 
 #include <stdexcept>
-#include <boost/throw_exception.hpp>
 #include <boost/bind.hpp>
-#include <ma/bind_asio_handler.hpp>
+#include <boost/throw_exception.hpp>
+#include <ma/handler_allocation.hpp>
+#include <ma/echo/server3/allocator.h>
 #include <ma/echo/server3/session_handler.h>
 #include <ma/echo/server3/session.h>
 
@@ -41,9 +42,8 @@ namespace ma
         }
       } // session::settings::settings
 
-      session::session(boost::asio::io_service& io_service, const settings& settings)
-        : io_service_(io_service)
-        , strand_(io_service)
+      session::session(boost::asio::io_service& io_service, const settings& settings)        
+        : strand_(io_service)
         , socket_(io_service)
         , has_wait_handler_(false)
         , settings_(settings)
@@ -72,31 +72,31 @@ namespace ma
         return socket_;
       } // session::socket
 
-      void session::async_start(const boost::shared_ptr<allocator>& operation_allocator,
-        const boost::weak_ptr<session_start_handler>& handler)
+      void session::async_start(const allocator_ptr& operation_allocator,
+        const session_start_handler_weak_ptr& handler)
       {
         strand_.dispatch
         (
-           ma::make_custom_alloc_handler
-           (
-             *operation_allocator, 
-             boost::bind
-             (
-               &this_type::do_start,
-               shared_from_this(),
-               operation_allocator,
-               handler
-             )
-           )
+          make_custom_alloc_handler
+          (
+            *operation_allocator, 
+            boost::bind
+            (
+              &this_type::do_start,
+              shared_from_this(),
+              operation_allocator,
+              handler
+            )
+          )
         );  
       } // session::async_start
 
-      void session::async_stop(const boost::shared_ptr<allocator>& operation_allocator,
-        const boost::weak_ptr<session_stop_handler>& handler)
+      void session::async_stop(const allocator_ptr& operation_allocator,
+        const session_stop_handler_weak_ptr& handler)
       {
         strand_.dispatch
         (
-          ma::make_custom_alloc_handler
+          make_custom_alloc_handler
           (
             *operation_allocator, 
             boost::bind
@@ -110,12 +110,12 @@ namespace ma
         ); 
       } // session::async_stop
 
-      void session::async_wait(const boost::shared_ptr<allocator>& operation_allocator,
-        const boost::weak_ptr<session_wait_handler>& handler)
+      void session::async_wait(const allocator_ptr& operation_allocator,
+        const session_wait_handler_weak_ptr& handler)
       {
         strand_.dispatch
         (
-          ma::make_custom_alloc_handler
+          make_custom_alloc_handler
           (
             *operation_allocator, 
             boost::bind
@@ -129,8 +129,8 @@ namespace ma
         ); 
       } // session::async_wait
 
-      void session::do_start(const boost::shared_ptr<allocator>& operation_allocator,
-        const boost::weak_ptr<session_start_handler>& handler)
+      void session::do_start(const allocator_ptr& operation_allocator,
+        const session_start_handler_weak_ptr& handler)
       {
         if (stopped == state_ || stop_in_progress == state_)
         {          
@@ -167,8 +167,8 @@ namespace ma
         }
       } // session::do_start
 
-      void session::do_stop(const boost::shared_ptr<allocator>& operation_allocator,
-        const boost::weak_ptr<session_stop_handler>& handler)
+      void session::do_stop(const allocator_ptr& operation_allocator,
+        const session_stop_handler_weak_ptr& handler)
       {
         if (stopped == state_ || stop_in_progress == state_)
         { 
@@ -222,8 +222,8 @@ namespace ma
         state_ = stopped;  
       } // session::complete_stop
 
-      void session::do_wait(const boost::shared_ptr<allocator>& operation_allocator,
-        const boost::weak_ptr<session_wait_handler>& handler)
+      void session::do_wait(const allocator_ptr& operation_allocator,
+        const session_wait_handler_weak_ptr& handler)
       {
         if (stopped == state_ || stop_in_progress == state_)
         {          
@@ -254,7 +254,7 @@ namespace ma
 
       void session::read_some()
       {
-        ma::cyclic_buffer::mutable_buffers_type buffers(buffer_.prepared());
+        cyclic_buffer::mutable_buffers_type buffers(buffer_.prepared());
         std::size_t buffers_size = boost::asio::buffers_end(buffers) - 
           boost::asio::buffers_begin(buffers);
         if (buffers_size)
@@ -264,7 +264,7 @@ namespace ma
             buffers,
             strand_.wrap
             (
-              ma::make_custom_alloc_handler
+              make_custom_alloc_handler
               (
                 read_allocator_,
                 boost::bind
@@ -283,7 +283,7 @@ namespace ma
 
       void session::write_some()
       {
-        ma::cyclic_buffer::const_buffers_type buffers(buffer_.data());
+        cyclic_buffer::const_buffers_type buffers(buffer_.data());
         std::size_t buffers_size = boost::asio::buffers_end(buffers) - 
           boost::asio::buffers_begin(buffers);
         if (buffers_size)
@@ -293,7 +293,7 @@ namespace ma
             buffers,
             strand_.wrap
             (
-              ma::make_custom_alloc_handler
+              make_custom_alloc_handler
               (
                 write_allocator_,
                 boost::bind

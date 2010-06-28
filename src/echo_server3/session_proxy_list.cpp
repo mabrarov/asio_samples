@@ -5,14 +5,14 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include <ma/echo/server2/session_proxy.h>
-#include <ma/echo/server2/session_proxy_list.h>
+#include <ma/echo/server3/session_proxy.h>
+#include <ma/echo/server3/session_proxy_list.h>
 
 namespace ma
 {    
   namespace echo
   {
-    namespace server2
+    namespace server3
     {      
       session_proxy_list::session_proxy_list()
         : size_(0)
@@ -69,7 +69,7 @@ namespace ma
       {
         return front_;
       } // session_proxy_list::front
-      
-    } // namespace server2
+
+    } // namespace server3
   } // namespace echo
 } // namespace ma

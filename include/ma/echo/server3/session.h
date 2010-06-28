@@ -17,6 +17,7 @@
 #include <ma/handler_allocation.hpp>
 #include <ma/echo/server3/allocator.h>
 #include <ma/echo/server3/session_handler_fwd.h>
+#include <ma/echo/server3/session_fwd.h>
 
 namespace ma
 {    
@@ -50,12 +51,12 @@ namespace ma
 
         void reset();
         boost::asio::ip::tcp::socket& session::socket();
-        void async_start(const boost::shared_ptr<allocator>& operation_allocator,
-          const boost::weak_ptr<session_start_handler>& handler);
-        void async_stop(const boost::shared_ptr<allocator>& operation_allocator,
-          const boost::weak_ptr<session_stop_handler>& handler);
-        void async_wait(const boost::shared_ptr<allocator>& operation_allocator,
-          const boost::weak_ptr<session_wait_handler>& handler);
+        void async_start(const allocator_ptr& operation_allocator,
+          const session_start_handler_weak_ptr& handler);
+        void async_stop(const allocator_ptr& operation_allocator,
+          const session_stop_handler_weak_ptr& handler);
+        void async_wait(const allocator_ptr& operation_allocator,
+          const session_wait_handler_weak_ptr& handler);
 
       private:        
         enum state_type
@@ -67,15 +68,15 @@ namespace ma
           stopped
         }; 
         
-        typedef std::pair<boost::weak_ptr<session_stop_handler>, boost::shared_ptr<allocator> >  stop_handler_type;
-        typedef std::pair<boost::weak_ptr<session_wait_handler>, boost::shared_ptr<allocator> >  wait_handler_type;
+        typedef std::pair<session_stop_handler_weak_ptr, allocator_ptr >  stop_handler_type;
+        typedef std::pair<session_wait_handler_weak_ptr, allocator_ptr >  wait_handler_type;
         
-        void do_start(const boost::shared_ptr<allocator>& operation_allocator,
-          const boost::weak_ptr<session_start_handler>& handler);
-        void do_wait(const boost::shared_ptr<allocator>& operation_allocator,
-          const boost::weak_ptr<session_wait_handler>& handler);
-        void do_stop(const boost::shared_ptr<allocator>& operation_allocator,
-          const boost::weak_ptr<session_stop_handler>& handler);
+        void do_start(const allocator_ptr& operation_allocator,
+          const session_start_handler_weak_ptr& handler);
+        void do_wait(const allocator_ptr& operation_allocator,
+          const session_wait_handler_weak_ptr& handler);
+        void do_stop(const allocator_ptr& operation_allocator,
+          const session_stop_handler_weak_ptr& handler);
         bool may_complete_stop() const;
         void complete_stop();        
         void read_some();
@@ -84,12 +85,11 @@ namespace ma
           const std::size_t bytes_transferred);
         void handle_write_some(const boost::system::error_code& error,
           const std::size_t bytes_transferred);
-
-        boost::asio::io_service& io_service_;
+        
         boost::asio::io_service::strand strand_;
         boost::asio::ip::tcp::socket socket_;
-        stop_handler_type  stop_handler_;
-        wait_handler_type  wait_handler_;        
+        stop_handler_type stop_handler_;
+        wait_handler_type wait_handler_;        
         bool has_wait_handler_;
         boost::system::error_code error_;
         boost::system::error_code stop_error_;

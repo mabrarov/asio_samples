@@ -113,7 +113,7 @@ namespace ma
         {
           strand_.dispatch
           (
-            ma::make_context_alloc_handler
+            make_context_alloc_handler
             (
               handler, 
               boost::bind
@@ -131,7 +131,7 @@ namespace ma
         {
           strand_.dispatch
           (
-            ma::make_context_alloc_handler
+            make_context_alloc_handler
             (
               handler, 
               boost::bind
@@ -149,7 +149,7 @@ namespace ma
         {
           strand_.dispatch
           (
-            ma::make_context_alloc_handler
+            make_context_alloc_handler
             (
               handler, 
               boost::bind
@@ -340,7 +340,7 @@ namespace ma
 
         void read_some()
         {
-          ma::cyclic_buffer::mutable_buffers_type buffers(buffer_.prepared());
+          cyclic_buffer::mutable_buffers_type buffers(buffer_.prepared());
           std::size_t buffers_size = boost::asio::buffers_end(buffers) - 
             boost::asio::buffers_begin(buffers);
           if (buffers_size)
@@ -350,7 +350,7 @@ namespace ma
               buffers,
               strand_.wrap
               (
-                ma::make_custom_alloc_handler
+                make_custom_alloc_handler
                 (
                   read_allocator_,
                   boost::bind
@@ -369,7 +369,7 @@ namespace ma
 
         void write_some()
         {
-          ma::cyclic_buffer::const_buffers_type buffers(buffer_.data());
+          cyclic_buffer::const_buffers_type buffers(buffer_.data());
           std::size_t buffers_size = boost::asio::buffers_end(buffers) - 
             boost::asio::buffers_begin(buffers);
           if (buffers_size)
@@ -379,7 +379,7 @@ namespace ma
               buffers,
               strand_.wrap
               (
-                ma::make_custom_alloc_handler
+                make_custom_alloc_handler
                 (
                   write_allocator_,
                   boost::bind
@@ -464,15 +464,15 @@ namespace ma
         boost::asio::io_service& io_service_;
         boost::asio::io_service::strand strand_;      
         boost::asio::ip::tcp::socket socket_;
-        ma::handler_storage<boost::system::error_code> wait_handler_;
-        ma::handler_storage<boost::system::error_code> stop_handler_;
+        handler_storage<boost::system::error_code> wait_handler_;
+        handler_storage<boost::system::error_code> stop_handler_;
         boost::system::error_code error_;
         boost::system::error_code stop_error_;
         settings settings_;
         state_type state_;
         bool socket_write_in_progress_;
         bool socket_read_in_progress_;
-        ma::cyclic_buffer buffer_;
+        cyclic_buffer buffer_;
         in_place_handler_allocator<640> write_allocator_;
         in_place_handler_allocator<256> read_allocator_;
       }; // class session

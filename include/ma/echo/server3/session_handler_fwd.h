@@ -8,6 +8,8 @@
 #ifndef MA_ECHO_SERVER3_SESSION_HANDLER_FWD_H
 #define MA_ECHO_SERVER3_SESSION_HANDLER_FWD_H
 
+#include <boost/smart_ptr.hpp>
+
 namespace ma
 {    
   namespace echo
@@ -17,6 +19,9 @@ namespace ma
       class session_start_handler;
       class session_stop_handler;
       class session_wait_handler;      
+      typedef boost::weak_ptr<session_start_handler> session_start_handler_weak_ptr;
+      typedef boost::weak_ptr<session_stop_handler>  session_stop_handler_weak_ptr;
+      typedef boost::weak_ptr<session_wait_handler>  session_wait_handler_weak_ptr;
 
     } // namespace server3
   } // namespace echo

@@ -5,22 +5,24 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef MA_ECHO_SERVER2_SESSION_PROXY_LIST_H
-#define MA_ECHO_SERVER2_SESSION_PROXY_LIST_H
+#ifndef MA_ECHO_SERVER3_SESSION_PROXY_LIST_H
+#define MA_ECHO_SERVER3_SESSION_PROXY_LIST_H
 
-#include <ma/echo/server2/session_proxy_fwd.h>
+#include <boost/smart_ptr.hpp>
+#include <ma/echo/server3/session_proxy_fwd.h>
 
 namespace ma
 {    
   namespace echo
   {    
-    namespace server2
+    namespace server3
     {                               
       class session_proxy_list : private boost::noncopyable
       {
       public:
         explicit session_proxy_list();
         ~session_proxy_list();
+
         void push_front(const session_proxy_ptr& value);
         void erase(const session_proxy_ptr& value);
         std::size_t size() const;
@@ -32,8 +34,8 @@ namespace ma
         session_proxy_ptr front_;
       }; // session_proxy_list
 
-    } // namespace server2
+    } // namespace server3
   } // namespace echo
 } // namespace ma
 
-#endif // MA_ECHO_SERVER2_SESSION_PROXY_LIST_H
+#endif // MA_ECHO_SERVER3_SESSION_PROXY_LIST_H

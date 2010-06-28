@@ -9,7 +9,6 @@
 #define MA_ECHO_SERVER3_SIMPLE_ALLOCATOR_H
 
 #include <cstddef>
-#include <boost/utility.hpp>
 #include <ma/handler_allocation.hpp>
 #include <ma/echo/server3/allocator.h>
 
@@ -19,7 +18,8 @@ namespace ma
   {
     namespace server3
     {
-      class simple_allocator : private boost::noncopyable
+      class simple_allocator : public allocator
+        
       {
       public:
         explicit simple_allocator(std::size_t size = in_heap_handler_allocator::default_size);

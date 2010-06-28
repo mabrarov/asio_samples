@@ -382,7 +382,15 @@
 							>
 						</File>
 						<File
+							RelativePath="..\..\include\ma\echo\server3\allocator_fwd.h"
+							>
+						</File>
+						<File
 							RelativePath="..\..\include\ma\echo\server3\session.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\include\ma\echo\server3\session_fwd.h"
 							>
 						</File>
 						<File
@@ -394,7 +402,31 @@
 							>
 						</File>
 						<File
+							RelativePath="..\..\include\ma\echo\server3\session_manager.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\include\ma\echo\server3\session_manager_fwd.h"
+							>
+						</File>
+						<File
 							RelativePath="..\..\include\ma\echo\server3\session_manager_handler.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\include\ma\echo\server3\session_manager_handler_fwd.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\include\ma\echo\server3\session_proxy.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\include\ma\echo\server3\session_proxy_fwd.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\include\ma\echo\server3\session_proxy_list.h"
 							>
 						</File>
 						<File
@@ -429,6 +461,18 @@
 						>
 						<File
 							RelativePath="..\..\src\ma\echo\server3\session.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\..\src\ma\echo\server3\session_manager.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\..\src\echo_server3\session_proxy.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\..\src\echo_server3\session_proxy_list.cpp"
 							>
 						</File>
 						<File

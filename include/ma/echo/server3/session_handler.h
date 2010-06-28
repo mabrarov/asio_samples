@@ -11,7 +11,7 @@
 #include <boost/system/error_code.hpp>
 #include <boost/smart_ptr.hpp>
 #include <boost/utility.hpp>
-#include <ma/echo/server3/allocator.h>
+#include <ma/echo/server3/allocator_fwd.h>
 #include <ma/echo/server3/session_handler_fwd.h>
 
 namespace ma
@@ -26,11 +26,11 @@ namespace ma
         typedef session_start_handler this_type;
 
       public:
-        virtual void handle_start(const boost::shared_ptr<allocator>& operation_allocator,
+        virtual void handle_start(const allocator_ptr& operation_allocator,
           const boost::system::error_code& error) = 0;
 
         static void invoke(const boost::weak_ptr<this_type>& handler,
-          const boost::shared_ptr<allocator>& operation_allocator,
+          const allocator_ptr& operation_allocator,
           const boost::system::error_code& error)
         {
           if (boost::shared_ptr<this_type> this_ptr = handler.lock())
@@ -51,11 +51,11 @@ namespace ma
         typedef session_stop_handler this_type;
 
       public:
-        virtual void handle_stop(const boost::shared_ptr<allocator>& operation_allocator,
+        virtual void handle_stop(const allocator_ptr& operation_allocator,
           const boost::system::error_code& error) = 0;
 
         static void invoke(const boost::weak_ptr<this_type>& handler,
-          const boost::shared_ptr<allocator>& operation_allocator,
+          const allocator_ptr& operation_allocator,
           const boost::system::error_code& error)
         {
           if (boost::shared_ptr<this_type> this_ptr = handler.lock())
@@ -76,11 +76,11 @@ namespace ma
         typedef session_wait_handler this_type;
 
       public:
-        virtual void handle_wait(const boost::shared_ptr<allocator>& operation_allocator,
+        virtual void handle_wait(const allocator_ptr& operation_allocator,
           const boost::system::error_code& error) = 0;
 
         static void invoke(const boost::weak_ptr<this_type>& handler,
-          const boost::shared_ptr<allocator>& operation_allocator,
+          const allocator_ptr& operation_allocator,
           const boost::system::error_code& error)
         {
           if (boost::shared_ptr<this_type> this_ptr = handler.lock())

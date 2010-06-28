@@ -9,6 +9,7 @@
 #define MA_ECHO_SERVER3_ALLOCATOR_H
 
 #include <boost/utility.hpp>
+#include <ma/echo/server3/allocator_fwd.h>
 
 namespace ma
 {    
