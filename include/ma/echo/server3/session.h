@@ -75,6 +75,14 @@ namespace ma
           const boost::weak_ptr<session_wait_handler>& handler);
         void do_stop(const boost::shared_ptr<allocator>& operation_allocator,
           const boost::weak_ptr<session_stop_handler>& handler);
+        bool may_complete_stop() const;
+        void complete_stop();        
+        void read_some();
+        void write_some();
+        void handle_read_some(const boost::system::error_code& error,
+          const std::size_t bytes_transferred);
+        void handle_write_some(const boost::system::error_code& error,
+          const std::size_t bytes_transferred);
 
         boost::asio::io_service& io_service_;
         boost::asio::io_service::strand strand_;

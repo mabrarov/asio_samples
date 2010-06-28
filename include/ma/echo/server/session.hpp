@@ -321,6 +321,17 @@ namespace ma
               )
             );
           }
+          else if (wait_handler_.has_target())
+          {
+            io_service_.post
+            (
+              detail::bind_handler
+              (
+                boost::get<0>(handler), 
+                boost::asio::error::operation_not_supported
+              )
+            );
+          }
           else
           {          
             wait_handler_.store(boost::get<0>(handler));

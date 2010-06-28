@@ -217,44 +217,27 @@ namespace ma
         state_ = stopped;  
       } // session::complete_stop
 
-      void session::do_wait(const session_completion::handler& handler)
+      void session::do_wait(const boost::shared_ptr<allocator>& operation_allocator,
+        const boost::weak_ptr<session_wait_handler>& handler)
       {
         if (stopped == state_ || stop_in_progress == state_)
         {          
-          io_service_.post
-            (
-            detail::bind_handler
-            (
-            handler, 
-            boost::asio::error::operation_aborted
-            )
-            );          
+          session_wait_handler::invoke(handler, operation_allocator,
+            boost::asio::error::operation_aborted);
         } 
         else if (started != state_)
         {          
-          io_service_.post
-            (
-            detail::bind_handler
-            (
-            handler, 
-            boost::asio::error::operation_not_supported
-            )
-            );          
+          session_wait_handler::invoke(handler, operation_allocator,
+            boost::asio::error::operation_not_supported);
         }
         else if (!socket_read_in_progress_ && !socket_write_in_progress_)
         {
-          io_service_.post
-            (
-            detail::bind_handler
-            (
-            handler, 
-            error_
-            )
-            );
+          session_wait_handler::invoke(handler, operation_allocator, error_);
         }
         else
         {          
-          wait_handler_.store(handler);
+          wait_handler_.first = handler;
+          wait_handler_.second = operation_allocator;          
         } 
       } // session::do_wait
 
