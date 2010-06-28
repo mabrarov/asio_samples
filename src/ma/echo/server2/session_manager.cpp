@@ -6,6 +6,8 @@
 //
 
 #include <stdexcept>
+#include <boost/make_shared.hpp>
+#include <boost/bind.hpp>
 #include <boost/ref.hpp>
 #include <boost/throw_exception.hpp>
 #include <boost/make_shared.hpp>
@@ -402,9 +404,8 @@ namespace ma
 
       void session_manager::dispatch_session_start(const session_manager_weak_ptr& weak_session_manager,
         const session_proxy_ptr& started_session_proxy, const boost::system::error_code& error)
-      {
-        session_manager_ptr this_ptr(weak_session_manager.lock());
-        if (this_ptr)
+      {        
+        if (session_manager_ptr this_ptr = weak_session_manager.lock())
         {
           this_ptr->strand_.dispatch
           (
@@ -490,8 +491,7 @@ namespace ma
       void session_manager::dispatch_session_wait(const session_manager_weak_ptr& weak_session_manager,
         const session_proxy_ptr& waited_session_proxy, const boost::system::error_code& error)
       {
-        session_manager_ptr this_ptr(weak_session_manager.lock());
-        if (this_ptr)
+        if (session_manager_ptr this_ptr = weak_session_manager.lock())
         {
           this_ptr->strand_.dispatch
           (
@@ -537,8 +537,7 @@ namespace ma
       void session_manager::dispatch_session_stop(const session_manager_weak_ptr& weak_session_manager,
         const session_proxy_ptr& stopped_session_proxy, const boost::system::error_code& error)
       {
-        session_manager_ptr this_ptr(weak_session_manager.lock());
-        if (this_ptr)
+        if (session_manager_ptr this_ptr = weak_session_manager.lock())
         {
           this_ptr->strand_.dispatch
           (

@@ -555,8 +555,7 @@ namespace ma
         static void dispatch_session_start(const session_manager_weak_ptr& weak_session_manager,
           const session_proxy_ptr& started_session_proxy, const boost::system::error_code& error)
         {
-          session_manager_ptr this_ptr(weak_session_manager.lock());
-          if (this_ptr)
+          if (session_manager_ptr this_ptr = weak_session_manager.lock())
           {
             this_ptr->strand_.dispatch
             (
@@ -641,9 +640,8 @@ namespace ma
 
         static void dispatch_session_wait(const session_manager_weak_ptr& weak_session_manager,
           const session_proxy_ptr& waited_session_proxy, const boost::system::error_code& error)
-        {
-          session_manager_ptr this_ptr(weak_session_manager.lock());
-          if (this_ptr)
+        {          
+          if (session_manager_ptr this_ptr = weak_session_manager.lock())
           {
             this_ptr->strand_.dispatch
             (
@@ -688,9 +686,8 @@ namespace ma
 
         static void dispatch_session_stop(const session_manager_weak_ptr& weak_session_manager,
           const session_proxy_ptr& stopped_session_proxy, const boost::system::error_code& error)
-        {
-          session_manager_ptr this_ptr(weak_session_manager.lock());
-          if (this_ptr)
+        {          
+          if (session_manager_ptr this_ptr = weak_session_manager.lock())
           {
             this_ptr->strand_.dispatch
             (

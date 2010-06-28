@@ -9,7 +9,6 @@
 #define MA_ECHO_SERVER2_SESSION_H
 
 #include <boost/utility.hpp>
-#include <boost/bind.hpp>
 #include <boost/asio.hpp>
 #include <ma/handler_storage.hpp>
 #include <ma/cyclic_buffer.hpp>

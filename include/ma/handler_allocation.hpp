@@ -60,9 +60,9 @@ namespace ma
   private:
     typedef boost::uint8_t byte_type;    
 
-    static byte_type* aligned_alloc(std::size_t size, std::size_t alignment)
+    static byte_type* allocate_storage(std::size_t size)
     {      
-      std::size_t alloc_size = alignment - 1 + size;
+      std::size_t alloc_size = size;
       return new byte_type[alloc_size];      
     }
 
@@ -75,30 +75,17 @@ namespace ma
     {
       if (!storage_.get())
       {
-        storage_.reset(aligned_alloc(size_, alignment_));
-      }
-      if (!aligned_address_)
-      {
-        aligned_address_ = storage_.get();
-        std::size_t mod = reinterpret_cast<std::size_t>(aligned_address_) % alignment_;
-        if (mod)
-        {
-          aligned_address_ += (alignment_ - mod);
-        }        
-      }
-      return aligned_address_;
+        storage_.reset(allocate_storage(size_));
+      }      
+      return storage_.get();
     }
 
   public:
-    BOOST_STATIC_CONSTANT(std::size_t, default_size = sizeof(std::size_t) * 64);    
-    BOOST_STATIC_CONSTANT(std::size_t, default_alignment = sizeof(boost::detail::max_align));
+    BOOST_STATIC_CONSTANT(std::size_t, default_size = sizeof(std::size_t) * 64);        
 
-    in_heap_handler_allocator(std::size_t size = default_size, 
-      std::size_t alignment = default_alignment, bool lazy = true)
-      : storage_(lazy ? 0 : aligned_alloc(size, alignment))
-      , aligned_address_(0)
-      , size_(size)
-      , alignment_(alignment)
+    in_heap_handler_allocator(std::size_t size = default_size, bool lazy = true)
+      : storage_(lazy ? 0 : allocate_storage(size))      
+      , size_(size)      
       , in_use_(false)
     {      
     }
@@ -131,10 +118,8 @@ namespace ma
     }    
 
   private:    
-    boost::scoped_array<byte_type> storage_;
-    byte_type* aligned_address_;
-    std::size_t size_;
-    std::size_t alignment_;
+    boost::scoped_array<byte_type> storage_;    
+    std::size_t size_;    
     bool in_use_;
   }; //class in_heap_handler_allocator
 

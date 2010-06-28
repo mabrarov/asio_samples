@@ -8,11 +8,8 @@
 #ifndef MA_ECHO_SERVER2_SESSION_MANAGER_H
 #define MA_ECHO_SERVER2_SESSION_MANAGER_H
 
-#include <stdexcept>
 #include <boost/utility.hpp>
-#include <boost/make_shared.hpp>
 #include <boost/smart_ptr.hpp>
-#include <boost/bind.hpp>
 #include <boost/asio.hpp>
 #include <ma/handler_allocation.hpp>
 #include <ma/handler_storage.hpp>
