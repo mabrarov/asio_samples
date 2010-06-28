@@ -10,6 +10,7 @@
 
 #include <boost/system/error_code.hpp>
 #include <boost/smart_ptr.hpp>
+#include <boost/utility.hpp>
 #include <ma/echo/server3/allocator.h>
 
 namespace ma
@@ -18,11 +19,24 @@ namespace ma
   {
     namespace server3
     {
-      class session_manager_start_handler
+      class session_manager_start_handler : private boost::noncopyable
       {
+      private:
+        typedef session_manager_start_handler this_type;
+
       public:
         virtual void handle_start(const boost::shared_ptr<allocator>& operation_allocator,
           const boost::system::error_code& error) = 0;
+
+        static void invoke(const boost::weak_ptr<this_type>& handler,
+          const boost::shared_ptr<allocator>& operation_allocator,
+          const boost::system::error_code& error)
+        {
+          if (boost::shared_ptr<this_type> this_ptr = handler.lock())
+          {
+            this_ptr->handle_start(operation_allocator, error);
+          }
+        }
 
       protected:
         virtual ~session_manager_start_handler()
@@ -30,11 +44,24 @@ namespace ma
         }
       }; // class session_manager_start_handler
 
-      class session_manager_stop_handler
+      class session_manager_stop_handler : private boost::noncopyable
       {
+      private:
+        typedef session_manager_stop_handler this_type;
+
       public:
         virtual void handle_stop(const boost::shared_ptr<allocator>& operation_allocator,
           const boost::system::error_code& error) = 0;
+
+        static void invoke(const boost::weak_ptr<this_type>& handler,
+          const boost::shared_ptr<allocator>& operation_allocator,
+          const boost::system::error_code& error)
+        {
+          if (boost::shared_ptr<this_type> this_ptr = handler.lock())
+          {
+            this_ptr->handle_stop(operation_allocator, error);
+          }
+        }
 
       protected:
         virtual ~session_manager_stop_handler()
@@ -42,11 +69,24 @@ namespace ma
         }
       }; // class session_manager_stop_handler
 
-      class session_manager_wait_handler
+      class session_manager_wait_handler : private boost::noncopyable
       {
+      private:
+        typedef session_manager_wait_handler this_type;
+
       public:
         virtual void handle_wait(const boost::shared_ptr<allocator>& operation_allocator,
           const boost::system::error_code& error) = 0;
+
+        static void invoke(const boost::weak_ptr<this_type>& handler,
+          const boost::shared_ptr<allocator>& operation_allocator,
+          const boost::system::error_code& error)
+        {
+          if (boost::shared_ptr<this_type> this_ptr = handler.lock())
+          {
+            this_ptr->handle_wait(operation_allocator, error);
+          }
+        }
 
       protected:
         virtual ~session_wait_handler()

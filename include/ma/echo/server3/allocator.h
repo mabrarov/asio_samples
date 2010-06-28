@@ -8,13 +8,15 @@
 #ifndef MA_ECHO_SERVER3_ALLOCATOR_H
 #define MA_ECHO_SERVER3_ALLOCATOR_H
 
+#include <boost/utility.hpp>
+
 namespace ma
 {    
   namespace echo
   {
     namespace server3
     {
-      class allocator
+      class allocator : private boost::noncopyable
       {
       public:
         virtual void* allocate(std::size_t size) = 0;

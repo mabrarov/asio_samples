@@ -397,6 +397,10 @@
 							RelativePath="..\..\include\ma\echo\server3\session_manager_handler.h"
 							>
 						</File>
+						<File
+							RelativePath="..\..\include\ma\echo\server3\simple_allocator.h"
+							>
+						</File>
 					</Filter>
 				</Filter>
 			</Filter>
@@ -425,6 +429,10 @@
 						>
 						<File
 							RelativePath="..\..\src\ma\echo\server3\session.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\..\src\ma\echo\server3\simple_allocator.cpp"
 							>
 						</File>
 					</Filter>

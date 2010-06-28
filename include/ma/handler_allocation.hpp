@@ -58,7 +58,7 @@ namespace ma
   class in_heap_handler_allocator : private boost::noncopyable
   {  
   private:
-    typedef boost::uint8_t byte_type;    
+    typedef char byte_type;    
 
     static byte_type* allocate_storage(std::size_t size)
     {      
@@ -83,7 +83,7 @@ namespace ma
   public:
     BOOST_STATIC_CONSTANT(std::size_t, default_size = sizeof(std::size_t) * 64);        
 
-    in_heap_handler_allocator(std::size_t size = default_size, bool lazy = true)
+    in_heap_handler_allocator(std::size_t size = default_size, bool lazy = false)
       : storage_(lazy ? 0 : allocate_storage(size))      
       , size_(size)      
       , in_use_(false)

@@ -10,6 +10,7 @@
 
 #include <boost/system/error_code.hpp>
 #include <boost/smart_ptr.hpp>
+#include <boost/utility.hpp>
 #include <ma/echo/server3/allocator.h>
 #include <ma/echo/server3/session_handler_fwd.h>
 
@@ -19,7 +20,7 @@ namespace ma
   {
     namespace server3
     {
-      class session_start_handler
+      class session_start_handler : private boost::noncopyable
       {      
       private:
         typedef session_start_handler this_type;
@@ -44,7 +45,7 @@ namespace ma
         }
       }; // class session_start_handler
 
-      class session_stop_handler
+      class session_stop_handler : private boost::noncopyable
       {
       private:
         typedef session_stop_handler this_type;
@@ -69,7 +70,7 @@ namespace ma
         }
       }; // class session_stop_handler
 
-      class session_wait_handler
+      class session_wait_handler : private boost::noncopyable
       {
       private:
         typedef session_wait_handler this_type;
