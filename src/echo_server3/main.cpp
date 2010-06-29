@@ -17,6 +17,7 @@
 #include <boost/thread.hpp>
 #include <boost/date_time/posix_time/ptime.hpp>
 #include <boost/asio.hpp>
+#include <boost/utility.hpp>
 #include <boost/program_options.hpp>
 #include <ma/handler_allocation.hpp>
 #include <ma/echo/server3/simple_allocator.h>
@@ -43,7 +44,8 @@ typedef boost::weak_ptr<session_manager_proxy> session_manager_proxy_weak_ptr;
 typedef boost::function<void (void)> exception_handler;
 
 class session_manager_proxy 
-  : public ma::echo::server3::session_manager_start_handler
+  : private boost::noncopyable
+  , public ma::echo::server3::session_manager_start_handler
   , public ma::echo::server3::session_manager_stop_handler
   , public ma::echo::server3::session_manager_wait_handler
   , public boost::enable_shared_from_this<session_manager_proxy>

@@ -10,6 +10,7 @@
 
 #include <boost/utility.hpp>
 #include <boost/smart_ptr.hpp>
+#include <boost/utility.hpp>
 #include <boost/asio.hpp>
 #include <ma/echo/server3/allocator_fwd.h>
 #include <ma/echo/server3/session.h>
@@ -24,7 +25,8 @@ namespace ma
     namespace server3
     {    
       class session_proxy 
-        : public session_start_handler
+        : private boost::noncopyable
+        , public session_start_handler
         , public session_stop_handler
         , public session_wait_handler
         , public boost::enable_shared_from_this<session_proxy>
