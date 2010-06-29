@@ -472,11 +472,11 @@
 							>
 						</File>
 						<File
-							RelativePath="..\..\src\echo_server3\session_proxy.cpp"
+							RelativePath="..\..\src\ma\echo\server3\session_proxy.cpp"
 							>
 						</File>
 						<File
-							RelativePath="..\..\src\echo_server3\session_proxy_list.cpp"
+							RelativePath="..\..\src\ma\echo\server3\session_proxy_list.cpp"
 							>
 						</File>
 						<File

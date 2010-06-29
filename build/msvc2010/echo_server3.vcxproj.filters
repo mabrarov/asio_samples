@@ -109,13 +109,13 @@
     <ClCompile Include="..\..\src\ma\echo\server3\session_manager.cpp">
       <Filter>Source Files\ma\echo\server3</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\echo_server3\session_proxy.cpp">
-      <Filter>Source Files\ma\echo\server3</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\echo_server3\session_proxy_list.cpp">
-      <Filter>Source Files\ma\echo\server3</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\ma\echo\server3\simple_allocator.cpp">
+      <Filter>Source Files\ma\echo\server3</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ma\echo\server3\session_proxy.cpp">
+      <Filter>Source Files\ma\echo\server3</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ma\echo\server3\session_proxy_list.cpp">
       <Filter>Source Files\ma\echo\server3</Filter>
     </ClCompile>
   </ItemGroup>

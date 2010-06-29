@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -212,8 +212,8 @@
     <ClCompile Include="..\..\src\ma\console_controller.cpp" />
     <ClCompile Include="..\..\src\ma\echo\server3\session.cpp" />
     <ClCompile Include="..\..\src\ma\echo\server3\session_manager.cpp" />
-    <ClCompile Include="..\..\src\echo_server3\session_proxy.cpp" />
-    <ClCompile Include="..\..\src\echo_server3\session_proxy_list.cpp" />
+    <ClCompile Include="..\..\src\ma\echo\server3\session_proxy.cpp" />
+    <ClCompile Include="..\..\src\ma\echo\server3\session_proxy_list.cpp" />
     <ClCompile Include="..\..\src\ma\echo\server3\simple_allocator.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
