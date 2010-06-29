@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="windows-1251"?>
+<VisualStudioProject
+	ProjectType="Intel C++ Project"
+	Version="11.1"
+	Name="echo_server3"
+	ProjectGUID="{961D4D77-6A9E-4193-B74A-902750E6E42B}"
+	VCNestedProjectGUID="{32F8EC5B-2CD2-4534-AA50-97A9CDB85970}"
+	VCNestedProjectFileName="echo_server3.vcproj">
+	<Configurations>
+		<Configuration
+			Name="Debug|Win32">
+			<Tool
+				Name="CppCmplrTool"
+				Cpp0xSupport="true"/>
+		</Configuration>
+		<Configuration
+			Name="Debug|x64">
+			<Tool
+				Name="CppCmplrTool"
+				Cpp0xSupport="true"/>
+		</Configuration>
+		<Configuration
+			Name="Release|Win32">
+			<Tool
+				Name="CppCmplrTool"
+				GlobalOptimizations="true"
+				OptimizeForWindowsApplication="true"
+				UseIntelOptimizedHeaders="true"
+				Cpp0xSupport="true"/>
+		</Configuration>
+		<Configuration
+			Name="Release|x64">
+			<Tool
+				Name="CppCmplrTool"
+				GlobalOptimizations="true"
+				OptimizeForWindowsApplication="true"
+				UseIntelOptimizedHeaders="true"
+				Cpp0xSupport="true"/>
+		</Configuration>
+	</Configurations>
+	<Files/>
+</VisualStudioProject>
