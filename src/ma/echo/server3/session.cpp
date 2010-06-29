@@ -196,7 +196,7 @@ namespace ma
           {
             complete_stop();
             // Signal shutdown completion
-            session_stop_handler::invoke(stop_handler_.first, stop_handler_.second, stop_error_);
+            session_stop_handler::invoke(handler, operation_allocator, stop_error_);
           }
           else
           {

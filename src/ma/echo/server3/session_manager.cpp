@@ -234,6 +234,7 @@ namespace ma
         {          
           wait_handler_.first = handler;
           wait_handler_.second = operation_allocator;
+          has_wait_handler_ = true;
         }  
       } // session_manager::do_wait
 
