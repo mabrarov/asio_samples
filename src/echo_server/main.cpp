@@ -22,17 +22,17 @@
 #include <ma/echo/server/session_manager.hpp>
 #include <ma/console_controller.hpp>
 
-const char *help_param = "help"; 
-const char *port_param = "port";
-const char *session_threads_param   = "session_threads";
-const char *stop_timeout_param      = "stop_timeout";
-const char *max_sessions_param      = "max_sessions";
-const char *recycled_sessions_param = "recycled_sessions";
-const char *listen_backlog_param    = "listen_backlog";
-const char *buffer_size_param       = "buffer";
-const char *socket_recv_buffer_size_param = "socket_recv_buffer";
-const char *socket_send_buffer_size_param = "socket_send_buffer";
-const char *socket_no_delay_param   = "socket_no_delay";
+const char* help_param = "help"; 
+const char* port_param = "port";
+const char* session_threads_param   = "session_threads";
+const char* stop_timeout_param      = "stop_timeout";
+const char* max_sessions_param      = "max_sessions";
+const char* recycled_sessions_param = "recycled_sessions";
+const char* listen_backlog_param    = "listen_backlog";
+const char* buffer_size_param       = "buffer";
+const char* socket_recv_buffer_size_param = "socket_recv_buffer";
+const char* socket_send_buffer_size_param = "socket_send_buffer";
+const char* socket_no_delay_param   = "socket_no_delay";
 
 struct session_manager_proxy;
 typedef boost::shared_ptr<session_manager_proxy> session_manager_proxy_ptr;
@@ -350,8 +350,8 @@ void stop_session_manager(const session_manager_proxy_ptr& waited_session_manage
   waited_session_manager_proxy->state_ = session_manager_proxy::stop_in_progress;
 }
 
-void run_io_service(boost::asio::io_service& io_service, exception_handler 
-  io_service_exception_handler)
+void run_io_service(boost::asio::io_service& io_service, 
+  exception_handler io_service_exception_handler)
 {
   try 
   {

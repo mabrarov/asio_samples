@@ -18,52 +18,104 @@
 #include <boost/date_time/posix_time/ptime.hpp>
 #include <boost/asio.hpp>
 #include <boost/program_options.hpp>
-//#include <ma/handler_allocation.hpp>
-//#include <ma/echo/server2/session_manager.h>
-//#include <ma/echo/server2/session_manager_completion.h>
-//#include <ma/echo/server2/session_manager_proxy_fwd.h>
+#include <ma/handler_allocation.hpp>
+#include <ma/echo/server3/simple_allocator.h>
+#include <ma/echo/server3/session_manager.h>
+#include <ma/echo/server3/session_manager_handler.h>
 #include <ma/console_controller.hpp>
 
-const char *help_param = "help"; 
-const char *port_param = "port";
-const char *session_threads_param   = "session_threads";
-const char *stop_timeout_param      = "stop_timeout";
-const char *max_sessions_param      = "max_sessions";
-const char *recycled_sessions_param = "recycled_sessions";
-const char *listen_backlog_param    = "listen_backlog";
-const char *buffer_size_param       = "buffer";
-const char *socket_recv_buffer_size_param = "socket_recv_buffer";
-const char *socket_send_buffer_size_param = "socket_send_buffer";
-const char *socket_no_delay_param   = "socket_no_delay";
+const char* help_param = "help"; 
+const char* port_param = "port";
+const char* session_threads_param   = "session_threads";
+const char* stop_timeout_param      = "stop_timeout";
+const char* max_sessions_param      = "max_sessions";
+const char* recycled_sessions_param = "recycled_sessions";
+const char* listen_backlog_param    = "listen_backlog";
+const char* buffer_size_param       = "buffer";
+const char* socket_recv_buffer_size_param = "socket_recv_buffer";
+const char* socket_send_buffer_size_param = "socket_send_buffer";
+const char* socket_no_delay_param   = "socket_no_delay";
 
+class session_manager_proxy;
+typedef boost::shared_ptr<session_manager_proxy> session_manager_proxy_ptr;
+typedef boost::weak_ptr<session_manager_proxy> session_manager_proxy_weak_ptr;
 
 typedef boost::function<void (void)> exception_handler;
 
-//using ma::echo::server2::session_manager_proxy;
-//using ma::echo::server2::session_manager_proxy_ptr;
+class session_manager_proxy 
+  : public ma::echo::server3::session_manager_start_handler
+  , public ma::echo::server3::session_manager_stop_handler
+  , public ma::echo::server3::session_manager_wait_handler
+  , public boost::enable_shared_from_this<session_manager_proxy>
+{  
+public:
+  enum state_type
+  {
+    ready_to_start,
+    start_in_progress,
+    started,
+    stop_in_progress,
+    stopped
+  };
+
+  boost::mutex mutex_;
+  boost::asio::io_service& io_service_;
+  ma::echo::server3::session_manager_ptr session_manager_;
+  ma::echo::server3::allocator_ptr start_wait_allocator_;
+  ma::echo::server3::allocator_ptr stop_allocator_;
+  volatile state_type state_;
+  volatile bool stopped_by_program_exit_;
+  boost::condition_variable state_changed_;  
+  
+  explicit session_manager_proxy(boost::asio::io_service& io_service,
+    boost::asio::io_service& session_io_service,
+    const ma::echo::server3::session_manager::settings& settings)
+    : io_service_(io_service)
+    , session_manager_(boost::make_shared<ma::echo::server3::session_manager>(
+        boost::ref(io_service), boost::ref(session_io_service), settings))
+    , start_wait_allocator_(boost::make_shared<ma::echo::server3::simple_allocator>(256))
+    , stop_allocator_(boost::make_shared<ma::echo::server3::simple_allocator>(256))
+    , state_(ready_to_start)
+    , stopped_by_program_exit_(false)
+  {
+  }
+
+  ~session_manager_proxy()
+  {
+  }
+
+  void handle_start(const ma::echo::server3::allocator_ptr& operation_allocator,
+    const boost::system::error_code& error);
+
+  void handle_stop(const ma::echo::server3::allocator_ptr& operation_allocator,
+    const boost::system::error_code& error);
+
+  void handle_wait(const ma::echo::server3::allocator_ptr& operation_allocator,
+    const boost::system::error_code& error);
+}; // session_manager_proxy 
 
 void fill_options_description(boost::program_options::options_description&);
 
-//void start_session_manager(const session_manager_proxy_ptr&);
-//
-//void wait_session_manager(const session_manager_proxy_ptr&);
-//
-//void stop_session_manager(const session_manager_proxy_ptr&);
-//
-//void run_io_service(boost::asio::io_service&, exception_handler);
-//
-//void handle_work_exception(const session_manager_proxy_ptr&);
-//
-//void handle_program_exit(const session_manager_proxy_ptr&);
-//
-//void handle_session_manager_start(const session_manager_proxy_ptr&,
-//  const boost::system::error_code&);
-//
-//void handle_session_manager_wait(const session_manager_proxy_ptr&,
-//  const boost::system::error_code&);
-//
-//void handle_session_manager_stop(const session_manager_proxy_ptr&,
-//  const boost::system::error_code&);
+void start_session_manager(const session_manager_proxy_ptr&);
+
+void wait_session_manager(const session_manager_proxy_ptr&);
+
+void stop_session_manager(const session_manager_proxy_ptr&);
+
+void run_io_service(boost::asio::io_service&, exception_handler);
+
+void handle_work_exception(const session_manager_proxy_ptr&);
+
+void handle_program_exit(const session_manager_proxy_ptr&);
+
+void handle_session_manager_start(const session_manager_proxy_ptr&,
+  const ma::echo::server3::allocator_ptr&, const boost::system::error_code&);
+
+void handle_session_manager_wait(const session_manager_proxy_ptr&,
+  const ma::echo::server3::allocator_ptr&, const boost::system::error_code&);
+
+void handle_session_manager_stop(const session_manager_proxy_ptr&,
+  const ma::echo::server3::allocator_ptr&, const boost::system::error_code&);
 
 int _tmain(int argc, _TCHAR* argv[])
 {   
@@ -102,108 +154,108 @@ int _tmain(int argc, _TCHAR* argv[])
       boost::posix_time::time_duration stop_timeout = 
         boost::posix_time::seconds(options_values[stop_timeout_param].as<long>());
 
-      //ma::echo::server2::session::settings session_settings(
-      //  options_values[buffer_size_param].as<std::size_t>(), 
-      //  options_values[socket_recv_buffer_size_param].as<int>(), 
-      //  options_values[socket_send_buffer_size_param].as<int>(),
-      //  0 != options_values.count(socket_no_delay_param));
+      ma::echo::server3::session::settings session_settings(
+        options_values[buffer_size_param].as<std::size_t>(), 
+        options_values[socket_recv_buffer_size_param].as<int>(), 
+        options_values[socket_send_buffer_size_param].as<int>(),
+        0 != options_values.count(socket_no_delay_param));
 
-      //ma::echo::server2::session_manager::settings server_settings(
-      //  boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), listen_port),
-      //  options_values[max_sessions_param].as<std::size_t>(),
-      //  options_values[recycled_sessions_param].as<std::size_t>(),
-      //  options_values[listen_backlog_param].as<int>(),
-      //  session_settings);      
+      ma::echo::server3::session_manager::settings server_settings(
+        boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), listen_port),
+        options_values[max_sessions_param].as<std::size_t>(),
+        options_values[recycled_sessions_param].as<std::size_t>(),
+        options_values[listen_backlog_param].as<int>(),
+        session_settings);      
 
-      //std::cout << "Number of found CPU(s)             : " << cpu_count                     << std::endl
-      //          << "Number of session manager's threads: " << session_manager_thread_count  << std::endl
-      //          << "Number of sessions' threads        : " << session_thread_count          << std::endl
-      //          << "Total number of work threads       : " << session_thread_count + session_manager_thread_count << std::endl
-      //          << "Server listen port                 : " << listen_port                   << std::endl
-      //          << "Server stop timeout (seconds)      : " << stop_timeout.total_seconds()  << std::endl
-      //          << "Maximum number of active sessions  : " << server_settings.max_sessions_ << std::endl
-      //          << "Maximum number of recycled sessions: " << server_settings.recycled_sessions_ << std::endl
-      //          << "TCP listen backlog size            : " << server_settings.listen_backlog_    << std::endl
-      //          << "Size of session's buffer (bytes)   : " << session_settings.buffer_size_      << std::endl
-      //          << "Size of session's socket receive buffer (bytes): " << session_settings.socket_recv_buffer_size_ << std::endl
-      //          << "Size of session's socket send buffer (bytes)   : " << session_settings.socket_send_buffer_size_ << std::endl
-      //          << "Session's socket Nagle algorithm is: " << (session_settings.no_delay_ ? "off" : "OS default")   << std::endl;
-      //
-      //// Before session_manager_io_service
-      //boost::asio::io_service session_io_service;
-      //// ... for the right destruction order
-      //boost::asio::io_service session_manager_io_service;
+      std::cout << "Number of found CPU(s)             : " << cpu_count                     << std::endl
+                << "Number of session manager's threads: " << session_manager_thread_count  << std::endl
+                << "Number of sessions' threads        : " << session_thread_count          << std::endl
+                << "Total number of work threads       : " << session_thread_count + session_manager_thread_count << std::endl
+                << "Server listen port                 : " << listen_port                   << std::endl
+                << "Server stop timeout (seconds)      : " << stop_timeout.total_seconds()  << std::endl
+                << "Maximum number of active sessions  : " << server_settings.max_sessions_ << std::endl
+                << "Maximum number of recycled sessions: " << server_settings.recycled_sessions_ << std::endl
+                << "TCP listen backlog size            : " << server_settings.listen_backlog_    << std::endl
+                << "Size of session's buffer (bytes)   : " << session_settings.buffer_size_      << std::endl
+                << "Size of session's socket receive buffer (bytes): " << session_settings.socket_recv_buffer_size_ << std::endl
+                << "Size of session's socket send buffer (bytes)   : " << session_settings.socket_send_buffer_size_ << std::endl
+                << "Session's socket Nagle algorithm is: " << (session_settings.no_delay_ ? "off" : "OS default")   << std::endl;
+      
+      // Before session_manager_io_service
+      boost::asio::io_service session_io_service;
+      // ... for the right destruction order
+      boost::asio::io_service session_manager_io_service;
 
-      //// Create session_manager 
-      //// after session_io_service, because session_manager holds up all sessions, 
-      //// which are based on the session_io_service
-      //session_manager_proxy_ptr main_session_manager_proxy(boost::make_shared<session_manager_proxy>(
-      //  boost::ref(session_manager_io_service), boost::ref(session_io_service), server_settings));
-      //
-      //std::cout << "Server is starting...\n";
-      //
-      //// Start the server
-      //boost::unique_lock<boost::mutex> session_manager_proxy_lock(main_session_manager_proxy->mutex_);    
-      //start_session_manager(main_session_manager_proxy);
-      //session_manager_proxy_lock.unlock();
-      //
-      //// Setup console controller
-      //ma::console_controller console_controller(
-      //  boost::bind(handle_program_exit, main_session_manager_proxy));
+      // Create session_manager 
+      // after session_io_service, because session_manager holds up all sessions, 
+      // which are based on the session_io_service
+      session_manager_proxy_ptr main_session_manager_proxy(boost::make_shared<session_manager_proxy>(
+        boost::ref(session_manager_io_service), boost::ref(session_io_service), server_settings));
+      
+      std::cout << "Server is starting...\n";
+      
+      // Start the server
+      boost::unique_lock<boost::mutex> session_manager_proxy_lock(main_session_manager_proxy->mutex_);    
+      start_session_manager(main_session_manager_proxy);
+      session_manager_proxy_lock.unlock();
+      
+      // Setup console controller
+      ma::console_controller console_controller(
+        boost::bind(handle_program_exit, main_session_manager_proxy));
 
-      //std::cout << "Press Ctrl+C (Ctrl+Break) to exit.\n";
+      std::cout << "Press Ctrl+C (Ctrl+Break) to exit.\n";
 
-      //// Exception handler for automatic server aborting
-      //exception_handler work_exception_handler(
-      //  boost::bind(handle_work_exception, main_session_manager_proxy));
+      // Exception handler for automatic server aborting
+      exception_handler work_exception_handler(
+        boost::bind(handle_work_exception, main_session_manager_proxy));
 
-      //// Create work for sessions' io_service to prevent threads' stop
-      //boost::asio::io_service::work session_work(session_io_service);
-      //// Create work for session_manager's io_service to prevent threads' stop
-      //boost::asio::io_service::work session_manager_work(session_manager_io_service);    
+      // Create work for sessions' io_service to prevent threads' stop
+      boost::asio::io_service::work session_work(session_io_service);
+      // Create work for session_manager's io_service to prevent threads' stop
+      boost::asio::io_service::work session_manager_work(session_manager_io_service);    
 
-      //// Create work threads for session operations
-      //boost::thread_group server_work_threads;    
-      //for (std::size_t i = 0; i != session_thread_count; ++i)
-      //{
-      //  server_work_threads.create_thread(
-      //    boost::bind(run_io_service, boost::ref(session_io_service), work_exception_handler));
-      //}
-      //// Create work threads for session manager operations
-      //for (std::size_t i = 0; i != session_manager_thread_count; ++i)
-      //{
-      //  server_work_threads.create_thread(
-      //    boost::bind(run_io_service, boost::ref(session_manager_io_service), work_exception_handler));      
-      //}
+      // Create work threads for session operations
+      boost::thread_group server_work_threads;    
+      for (std::size_t i = 0; i != session_thread_count; ++i)
+      {
+        server_work_threads.create_thread(
+          boost::bind(run_io_service, boost::ref(session_io_service), work_exception_handler));
+      }
+      // Create work threads for session manager operations
+      for (std::size_t i = 0; i != session_manager_thread_count; ++i)
+      {
+        server_work_threads.create_thread(
+          boost::bind(run_io_service, boost::ref(session_manager_io_service), work_exception_handler));      
+      }
 
-      //// Wait until server stops
-      //session_manager_proxy_lock.lock();
-      //while (session_manager_proxy::stop_in_progress != main_session_manager_proxy->state_ 
-      //  && session_manager_proxy::stopped != main_session_manager_proxy->state_)
-      //{
-      //  main_session_manager_proxy->state_changed_.wait(session_manager_proxy_lock);
-      //}
-      //if (session_manager_proxy::stopped != main_session_manager_proxy->state_)
-      //{
-      //  if (!main_session_manager_proxy->state_changed_.timed_wait(session_manager_proxy_lock, stop_timeout))      
-      //  {
-      //    std::cout << "Server stop timeout expiration. Terminating server work...\n";
-      //    exit_code = EXIT_FAILURE;
-      //  }
-      //  main_session_manager_proxy->state_ = session_manager_proxy::stopped;
-      //}
-      //if (!main_session_manager_proxy->stopped_by_program_exit_)
-      //{
-      //  exit_code = EXIT_FAILURE;
-      //}
-      //session_manager_proxy_lock.unlock();
-      //    
-      //session_manager_io_service.stop();
-      //session_io_service.stop();
+      // Wait until server stops
+      session_manager_proxy_lock.lock();
+      while (session_manager_proxy::stop_in_progress != main_session_manager_proxy->state_ 
+        && session_manager_proxy::stopped != main_session_manager_proxy->state_)
+      {
+        main_session_manager_proxy->state_changed_.wait(session_manager_proxy_lock);
+      }
+      if (session_manager_proxy::stopped != main_session_manager_proxy->state_)
+      {
+        if (!main_session_manager_proxy->state_changed_.timed_wait(session_manager_proxy_lock, stop_timeout))      
+        {
+          std::cout << "Server stop timeout expiration. Terminating server work...\n";
+          exit_code = EXIT_FAILURE;
+        }
+        main_session_manager_proxy->state_ = session_manager_proxy::stopped;
+      }
+      if (!main_session_manager_proxy->stopped_by_program_exit_)
+      {
+        exit_code = EXIT_FAILURE;
+      }
+      session_manager_proxy_lock.unlock();
+          
+      session_manager_io_service.stop();
+      session_io_service.stop();
 
-      //std::cout << "Server work was terminated. Waiting until all of the work threads will stop...\n";
-      //server_work_threads.join_all();
-      //std::cout << "Work threads have stopped. Process will close." << std::endl;    
+      std::cout << "Server work was terminated. Waiting until all of the work threads will stop...\n";
+      server_work_threads.join_all();
+      std::cout << "Work threads have stopped. Process will close." << std::endl;    
     }
   }
   catch (const boost::program_options::error& e)
@@ -282,139 +334,184 @@ void fill_options_description(boost::program_options::options_description& optio
     );  
 }
 
-//void start_session_manager(const session_manager_proxy_ptr& ready_session_manager_proxy)
-//{
-//  ready_session_manager_proxy->session_manager_->async_start
-//  (
-//    ma::echo::server2::session_manager_completion::make_handler
-//    (
-//      ready_session_manager_proxy->start_wait_allocator_,
-//      handle_session_manager_start, 
-//      ready_session_manager_proxy
-//    )
-//  );
-//  ready_session_manager_proxy->state_ = session_manager_proxy::start_in_progress;
-//}
-//
-//void wait_session_manager(const session_manager_proxy_ptr& started_session_manager_proxy)
-//{
-//  started_session_manager_proxy->session_manager_->async_wait
-//  (
-//    ma::echo::server2::session_manager_completion::make_handler
-//    (
-//      started_session_manager_proxy->start_wait_allocator_,
-//      handle_session_manager_wait, 
-//      started_session_manager_proxy
-//    )
-//  );
-//}
-//
-//void stop_session_manager(const session_manager_proxy_ptr& waited_session_manager_proxy)
-//{
-//  waited_session_manager_proxy->session_manager_->async_stop
-//  (
-//    ma::echo::server2::session_manager_completion::make_handler
-//    (
-//      waited_session_manager_proxy->stop_allocator_,
-//      handle_session_manager_stop, 
-//      waited_session_manager_proxy
-//    )
-//  );
-//  waited_session_manager_proxy->state_ = session_manager_proxy::stop_in_progress;
-//}
-//
-//void run_io_service(boost::asio::io_service& io_service, exception_handler 
-//  io_service_exception_handler)
-//{
-//  try 
-//  {
-//    io_service.run();
-//  }
-//  catch (...)
-//  {
-//    io_service_exception_handler();
-//  }
-//}
-//
-//void handle_work_exception(const session_manager_proxy_ptr& current_session_manager_proxy)
-//{
-//  boost::unique_lock<boost::mutex> server_data_lock(current_session_manager_proxy->mutex_);  
-//  current_session_manager_proxy->state_ = session_manager_proxy::stopped;  
-//  std::cout << "Terminating server work due to unexpected exception...\n";
-//  server_data_lock.unlock();
-//  current_session_manager_proxy->state_changed_.notify_one();      
-//}
-//
-//void handle_program_exit(const session_manager_proxy_ptr& current_session_manager_proxy)
-//{
-//  boost::unique_lock<boost::mutex> server_data_lock(current_session_manager_proxy->mutex_);
-//  std::cout << "Program exit request detected.\n";
-//  if (session_manager_proxy::stopped == current_session_manager_proxy->state_)
-//  {    
-//    std::cout << "Server has already stopped.\n";
-//  }
-//  else if (session_manager_proxy::stop_in_progress == current_session_manager_proxy->state_)
-//  {    
-//    current_session_manager_proxy->state_ = session_manager_proxy::stopped;
-//    std::cout << "Server is already stopping. Terminating server work...\n";
-//    server_data_lock.unlock();
-//    current_session_manager_proxy->state_changed_.notify_one();       
-//  }
-//  else
-//  {    
-//    // Start server stop
-//    stop_session_manager(current_session_manager_proxy);
-//    current_session_manager_proxy->stopped_by_program_exit_ = true;
-//    std::cout << "Server is stopping. Press Ctrl+C (Ctrl+Break) to terminate server work...\n";
-//    server_data_lock.unlock();    
-//    current_session_manager_proxy->state_changed_.notify_one();
-//  }  
-//}
-//
-//void handle_session_manager_start(const session_manager_proxy_ptr& started_session_manager_proxy,
-//  const boost::system::error_code& error)
-//{   
-//  boost::unique_lock<boost::mutex> server_data_lock(started_session_manager_proxy->mutex_);
-//  if (session_manager_proxy::start_in_progress == started_session_manager_proxy->state_)
-//  {   
-//    if (error)
-//    {       
-//      started_session_manager_proxy->state_ = session_manager_proxy::stopped;
-//      std::cout << "Server can't start due to error.\n";
-//      server_data_lock.unlock();
-//      started_session_manager_proxy->state_changed_.notify_one();
-//    }
-//    else
-//    {
-//      started_session_manager_proxy->state_ = session_manager_proxy::started;
-//      wait_session_manager(started_session_manager_proxy);
-//      std::cout << "Server has started.\n";
-//    }
-//  }
-//}
-//
-//void handle_session_manager_wait(const session_manager_proxy_ptr& waited_session_manager_proxy,
-//  const boost::system::error_code&)
-//{
-//  boost::unique_lock<boost::mutex> server_data_lock(waited_session_manager_proxy->mutex_);
-//  if (session_manager_proxy::started == waited_session_manager_proxy->state_)
-//  {
-//    stop_session_manager(waited_session_manager_proxy);
-//    std::cout << "Server can't continue work due to error. Server is stopping...\n";
-//    server_data_lock.unlock();
-//    waited_session_manager_proxy->state_changed_.notify_one();    
-//  }
-//}
-//
-//void handle_session_manager_stop(const session_manager_proxy_ptr& stopped_session_manager_proxy,
-//  const boost::system::error_code&)
-//{
-//  boost::unique_lock<boost::mutex> server_data_lock(stopped_session_manager_proxy->mutex_);
-//  if (session_manager_proxy::stop_in_progress == stopped_session_manager_proxy->state_)
-//  {      
-//    stopped_session_manager_proxy->state_ = session_manager_proxy::stopped;
-//    std::cout << "Server has stopped.\n";    
-//    server_data_lock.unlock();
-//    stopped_session_manager_proxy->state_changed_.notify_one();
-//  }
-//}
+void start_session_manager(const session_manager_proxy_ptr& ready_session_manager_proxy)
+{
+  ready_session_manager_proxy->session_manager_->async_start
+  (
+    ready_session_manager_proxy->start_wait_allocator_,
+    session_manager_proxy_weak_ptr(ready_session_manager_proxy)
+  );
+  ready_session_manager_proxy->state_ = session_manager_proxy::start_in_progress;
+}
+
+void wait_session_manager(const session_manager_proxy_ptr& started_session_manager_proxy)
+{
+  started_session_manager_proxy->session_manager_->async_wait
+  (
+    started_session_manager_proxy->start_wait_allocator_,
+    session_manager_proxy_weak_ptr(started_session_manager_proxy)
+  );
+}
+
+void stop_session_manager(const session_manager_proxy_ptr& waited_session_manager_proxy)
+{
+  waited_session_manager_proxy->session_manager_->async_stop
+  (
+    waited_session_manager_proxy->stop_allocator_,
+    session_manager_proxy_weak_ptr(waited_session_manager_proxy)
+  );
+  waited_session_manager_proxy->state_ = session_manager_proxy::stop_in_progress;
+}
+
+void run_io_service(boost::asio::io_service& io_service, 
+  exception_handler io_service_exception_handler)
+{
+  try 
+  {
+    io_service.run();
+  }
+  catch (...)
+  {
+    io_service_exception_handler();
+  }
+}
+
+void handle_work_exception(const session_manager_proxy_ptr& current_session_manager_proxy)
+{
+  boost::unique_lock<boost::mutex> server_data_lock(current_session_manager_proxy->mutex_);  
+  current_session_manager_proxy->state_ = session_manager_proxy::stopped;  
+  std::cout << "Terminating server work due to unexpected exception...\n";
+  server_data_lock.unlock();
+  current_session_manager_proxy->state_changed_.notify_one();      
+}
+
+void handle_program_exit(const session_manager_proxy_ptr& current_session_manager_proxy)
+{
+  boost::unique_lock<boost::mutex> server_data_lock(current_session_manager_proxy->mutex_);
+  std::cout << "Program exit request detected.\n";
+  if (session_manager_proxy::stopped == current_session_manager_proxy->state_)
+  {    
+    std::cout << "Server has already stopped.\n";
+  }
+  else if (session_manager_proxy::stop_in_progress == current_session_manager_proxy->state_)
+  {    
+    current_session_manager_proxy->state_ = session_manager_proxy::stopped;
+    std::cout << "Server is already stopping. Terminating server work...\n";
+    server_data_lock.unlock();
+    current_session_manager_proxy->state_changed_.notify_one();       
+  }
+  else
+  {    
+    // Start server stop
+    stop_session_manager(current_session_manager_proxy);
+    current_session_manager_proxy->stopped_by_program_exit_ = true;
+    std::cout << "Server is stopping. Press Ctrl+C (Ctrl+Break) to terminate server work...\n";
+    server_data_lock.unlock();    
+    current_session_manager_proxy->state_changed_.notify_one();
+  }  
+}
+
+void session_manager_proxy::handle_start(const ma::echo::server3::allocator_ptr& operation_allocator,
+  const boost::system::error_code& error)
+{
+  io_service_.post
+  (
+    ma::make_custom_alloc_handler
+    (
+      *operation_allocator,
+      boost::bind
+      (
+        &handle_session_manager_start,
+        shared_from_this(),
+        operation_allocator,
+        error
+      )
+    )
+  );
+}
+
+void session_manager_proxy::handle_stop(const ma::echo::server3::allocator_ptr& operation_allocator,
+  const boost::system::error_code& error)
+{
+  io_service_.post
+  (
+    ma::make_custom_alloc_handler
+    (
+      *operation_allocator,
+      boost::bind
+      (
+        &handle_session_manager_stop,
+        shared_from_this(),
+        operation_allocator,
+        error
+      )
+    )
+  );
+}
+
+void session_manager_proxy::handle_wait(const ma::echo::server3::allocator_ptr& operation_allocator,
+  const boost::system::error_code& error)
+{
+  io_service_.post
+  (
+    ma::make_custom_alloc_handler
+    (
+      *operation_allocator,
+      boost::bind
+      (
+        &handle_session_manager_wait,
+        shared_from_this(),
+        operation_allocator,
+        error
+      )
+    )
+  );
+}
+
+void handle_session_manager_start(const session_manager_proxy_ptr& started_session_manager_proxy,
+  const ma::echo::server3::allocator_ptr& /*operation_allocator*/, const boost::system::error_code& error)
+{   
+  boost::unique_lock<boost::mutex> server_data_lock(started_session_manager_proxy->mutex_);
+  if (session_manager_proxy::start_in_progress == started_session_manager_proxy->state_)
+  {   
+    if (error)
+    {       
+      started_session_manager_proxy->state_ = session_manager_proxy::stopped;
+      std::cout << "Server can't start due to error.\n";
+      server_data_lock.unlock();
+      started_session_manager_proxy->state_changed_.notify_one();
+    }
+    else
+    {
+      started_session_manager_proxy->state_ = session_manager_proxy::started;
+      wait_session_manager(started_session_manager_proxy);
+      std::cout << "Server has started.\n";
+    }
+  }
+}
+
+void handle_session_manager_wait(const session_manager_proxy_ptr& waited_session_manager_proxy,
+  const ma::echo::server3::allocator_ptr& /*operation_allocator*/, const boost::system::error_code& /*error*/)
+{
+  boost::unique_lock<boost::mutex> server_data_lock(waited_session_manager_proxy->mutex_);
+  if (session_manager_proxy::started == waited_session_manager_proxy->state_)
+  {
+    stop_session_manager(waited_session_manager_proxy);
+    std::cout << "Server can't continue work due to error. Server is stopping...\n";
+    server_data_lock.unlock();
+    waited_session_manager_proxy->state_changed_.notify_one();    
+  }
+}
+
+void handle_session_manager_stop(const session_manager_proxy_ptr& stopped_session_manager_proxy,
+  const ma::echo::server3::allocator_ptr& /*operation_allocator*/, const boost::system::error_code& /*error*/)
+{
+  boost::unique_lock<boost::mutex> server_data_lock(stopped_session_manager_proxy->mutex_);
+  if (session_manager_proxy::stop_in_progress == stopped_session_manager_proxy->state_)
+  {      
+    stopped_session_manager_proxy->state_ = session_manager_proxy::stopped;
+    std::cout << "Server has stopped.\n";    
+    server_data_lock.unlock();
+    stopped_session_manager_proxy->state_changed_.notify_one();
+  }
+}
