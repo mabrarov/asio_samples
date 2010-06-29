@@ -97,7 +97,7 @@ namespace ma
         state_type state_;
         bool socket_write_in_progress_;
         bool socket_read_in_progress_;
-        ma::cyclic_buffer buffer_;
+        cyclic_buffer buffer_;
         in_place_handler_allocator<640> write_allocator_;
         in_place_handler_allocator<256> read_allocator_;
       }; // class session 

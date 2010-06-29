@@ -74,15 +74,15 @@ namespace ma
         boost::asio::io_service& io_service_;
         boost::asio::io_service::strand strand_;      
         boost::asio::ip::tcp::socket socket_;
-        ma::handler_storage<boost::system::error_code> wait_handler_;
-        ma::handler_storage<boost::system::error_code> stop_handler_;
+        handler_storage<boost::system::error_code> wait_handler_;
+        handler_storage<boost::system::error_code> stop_handler_;
         boost::system::error_code error_;
         boost::system::error_code stop_error_;
         settings settings_;
         state_type state_;
         bool socket_write_in_progress_;
         bool socket_read_in_progress_;
-        ma::cyclic_buffer buffer_;
+        cyclic_buffer buffer_;
         in_place_handler_allocator<640> write_allocator_;
         in_place_handler_allocator<256> read_allocator_;
       }; // class session

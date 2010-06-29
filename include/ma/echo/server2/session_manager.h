@@ -93,8 +93,8 @@ namespace ma
         boost::asio::io_service::strand strand_;      
         boost::asio::ip::tcp::acceptor acceptor_;
         boost::asio::io_service& session_io_service_;            
-        ma::handler_storage<boost::system::error_code> wait_handler_;
-        ma::handler_storage<boost::system::error_code> stop_handler_;
+        handler_storage<boost::system::error_code> wait_handler_;
+        handler_storage<boost::system::error_code> stop_handler_;
         session_proxy_list active_session_proxies_;
         session_proxy_list recycled_session_proxies_;
         boost::system::error_code last_accept_error_;
