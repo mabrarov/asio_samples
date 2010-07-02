@@ -332,7 +332,7 @@ namespace ma
         accepted_session_proxy->session_->async_start
         (
           accepted_session_proxy->start_wait_allocator_,
-          session_proxy_weak_ptr(accepted_session_proxy)
+          accepted_session_proxy
         );          
         accepted_session_proxy->state_ = session_proxy::start_in_progress;
         ++accepted_session_proxy->pending_operations_;
@@ -344,7 +344,7 @@ namespace ma
         started_session_proxy->session_->async_stop
         (
           started_session_proxy->stop_allocator_,
-          session_proxy_weak_ptr(started_session_proxy)
+          started_session_proxy
         );
         started_session_proxy->state_ = session_proxy::stop_in_progress;
         ++started_session_proxy->pending_operations_;
@@ -356,7 +356,7 @@ namespace ma
         started_session_proxy->session_->async_wait
         (
           started_session_proxy->start_wait_allocator_,
-          session_proxy_weak_ptr(started_session_proxy)
+          started_session_proxy
         );
         ++started_session_proxy->pending_operations_;
         ++pending_operations_;        

@@ -341,7 +341,7 @@ void start_session_manager(const session_manager_proxy_ptr& ready_session_manage
   ready_session_manager_proxy->session_manager_->async_start
   (
     ready_session_manager_proxy->start_wait_allocator_,
-    session_manager_proxy_weak_ptr(ready_session_manager_proxy)
+    ready_session_manager_proxy
   );
   ready_session_manager_proxy->state_ = session_manager_proxy::start_in_progress;
 }
@@ -351,7 +351,7 @@ void wait_session_manager(const session_manager_proxy_ptr& started_session_manag
   started_session_manager_proxy->session_manager_->async_wait
   (
     started_session_manager_proxy->start_wait_allocator_,
-    session_manager_proxy_weak_ptr(started_session_manager_proxy)
+    started_session_manager_proxy
   );
 }
 
@@ -360,7 +360,7 @@ void stop_session_manager(const session_manager_proxy_ptr& waited_session_manage
   waited_session_manager_proxy->session_manager_->async_stop
   (
     waited_session_manager_proxy->stop_allocator_,
-    session_manager_proxy_weak_ptr(waited_session_manager_proxy)
+    waited_session_manager_proxy
   );
   waited_session_manager_proxy->state_ = session_manager_proxy::stop_in_progress;
 }
