@@ -350,6 +350,18 @@
 					RelativePath="..\..\src\ma\console_controller.cpp"
 					>
 				</File>
+				<Filter
+					Name="echo"
+					>
+					<Filter
+						Name="client1"
+						>
+						<File
+							RelativePath="..\..\src\ma\echo\client1\session.cpp"
+							>
+						</File>
+					</Filter>
+				</Filter>
 			</Filter>
 		</Filter>
 		<Filter
@@ -360,6 +372,10 @@
 			<Filter
 				Name="ma"
 				>
+				<File
+					RelativePath="..\..\include\ma\bind_asio_handler.hpp"
+					>
+				</File>
 				<File
 					RelativePath="..\..\include\ma\console_controller.hpp"
 					>
@@ -376,14 +392,6 @@
 					RelativePath="..\..\include\ma\handler_invoke_helpers.hpp"
 					>
 				</File>
-				<File
-					RelativePath="..\..\include\ma\handler_storage.hpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\include\ma\handler_storage_service.hpp"
-					>
-				</File>
 				<Filter
 					Name="echo"
 					>
@@ -391,7 +399,27 @@
 						Name="client1"
 						>
 						<File
-							RelativePath=".\..\..\include\ma\echo\client1\session.hpp"
+							RelativePath="..\..\include\ma\echo\client1\allocator.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\include\ma\echo\client1\allocator_fwd.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\include\ma\echo\client1\session.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\include\ma\echo\client1\session_fwd.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\include\ma\echo\client1\session_handler.h"
+							>
+						</File>
+						<File
+							RelativePath="..\..\include\ma\echo\client1\session_handler_fwd.h"
 							>
 						</File>
 					</Filter>

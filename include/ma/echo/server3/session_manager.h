@@ -68,8 +68,8 @@ namespace ma
           stopped
         };
 
-        typedef std::pair<session_manager_stop_handler_weak_ptr, allocator_ptr >  stop_handler_type;
-        typedef std::pair<session_manager_wait_handler_weak_ptr, allocator_ptr >  wait_handler_type;
+        typedef std::pair<session_manager_stop_handler_weak_ptr, allocator_ptr> stop_handler_type;
+        typedef std::pair<session_manager_wait_handler_weak_ptr, allocator_ptr> wait_handler_type;
 
         friend class session_proxy;
 

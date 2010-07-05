@@ -1,12 +1,12 @@
 //
-// Copyright (c) 2010 Marat Abrarov (abrarov@mail.ru)
+// Copyright (c) 2008-2009 Marat Abrarov (abrarov@mail.ru)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef MA_ECHO_SERVER3_SESSION_H
-#define MA_ECHO_SERVER3_SESSION_H
+#ifndef MA_ECHO_CLIENT1_SESSION_HPP
+#define MA_ECHO_CLIENT1_SESSION_HPP
 
 #include <utility>
 #include <boost/utility.hpp>
@@ -15,16 +15,16 @@
 #include <boost/asio.hpp>
 #include <ma/cyclic_buffer.hpp>
 #include <ma/handler_allocation.hpp>
-#include <ma/echo/server3/allocator.h>
-#include <ma/echo/server3/session_handler_fwd.h>
-#include <ma/echo/server3/session_fwd.h>
+#include <ma/echo/client1/allocator.h>
+#include <ma/echo/client1/session_handler_fwd.h>
+#include <ma/echo/client1/session_fwd.h>
 
 namespace ma
 {    
   namespace echo
   {
-    namespace server3
-    {
+    namespace client1
+    {      
       class session 
         : private boost::noncopyable
         , public boost::enable_shared_from_this<session>
@@ -102,8 +102,8 @@ namespace ma
         in_place_handler_allocator<256> read_allocator_;
       }; // class session 
 
-    } // namespace server3
+    } // namespace client1
   } // namespace echo
 } // namespace ma
 
-#endif // MA_ECHO_SERVER3_SESSION_H
+#endif // MA_ECHO_CLIENT1_SESSION_HPP
