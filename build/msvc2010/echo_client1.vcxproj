@@ -197,16 +197,20 @@
   <ItemGroup>
     <ClCompile Include="..\..\src\echo_client1\main.cpp" />
     <ClCompile Include="..\..\src\ma\console_controller.cpp" />
+    <ClCompile Include="..\..\src\ma\echo\client1\session.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\ma\bind_asio_handler.hpp" />
     <ClInclude Include="..\..\include\ma\console_controller.hpp" />
+    <ClInclude Include="..\..\include\ma\echo\client1\allocator.h" />
+    <ClInclude Include="..\..\include\ma\echo\client1\allocator_fwd.h" />
+    <ClInclude Include="..\..\include\ma\echo\client1\session.h" />
+    <ClInclude Include="..\..\include\ma\echo\client1\session_fwd.h" />
+    <ClInclude Include="..\..\include\ma\echo\client1\session_handler.h" />
+    <ClInclude Include="..\..\include\ma\echo\client1\session_handler_fwd.h" />
     <ClInclude Include="..\..\include\ma\handler_alloc_helpers.hpp" />
     <ClInclude Include="..\..\include\ma\handler_allocation.hpp" />
     <ClInclude Include="..\..\include\ma\handler_invoke_helpers.hpp" />
-    <ClInclude Include="..\..\include\ma\handler_storage.hpp" />
-    <ClInclude Include="..\..\include\ma\handler_storage_service.hpp" />
-    <ClInclude Include="..\..\include\ma\echo\client1\session.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
