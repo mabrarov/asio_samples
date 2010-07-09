@@ -25,7 +25,7 @@ namespace ma
         typedef session_start_handler this_type;
 
       public:
-        virtual void handle_start(const allocator_ptr& operation_allocator,
+        virtual void async_handle_start(const allocator_ptr& operation_allocator,
           const boost::system::error_code& error) = 0;
 
         static void invoke(const boost::weak_ptr<this_type>& handler,
@@ -34,7 +34,7 @@ namespace ma
         {
           if (boost::shared_ptr<this_type> this_ptr = handler.lock())
           {
-            this_ptr->handle_start(operation_allocator, error);
+            this_ptr->async_handle_start(operation_allocator, error);
           }
         }
 
@@ -50,7 +50,7 @@ namespace ma
         typedef session_stop_handler this_type;
 
       public:
-        virtual void handle_stop(const allocator_ptr& operation_allocator,
+        virtual void async_handle_stop(const allocator_ptr& operation_allocator,
           const boost::system::error_code& error) = 0;
 
         static void invoke(const boost::weak_ptr<this_type>& handler,
@@ -59,7 +59,7 @@ namespace ma
         {
           if (boost::shared_ptr<this_type> this_ptr = handler.lock())
           {
-            this_ptr->handle_stop(operation_allocator, error);
+            this_ptr->async_handle_stop(operation_allocator, error);
           }
         }
 
@@ -75,7 +75,7 @@ namespace ma
         typedef session_wait_handler this_type;
 
       public:
-        virtual void handle_wait(const allocator_ptr& operation_allocator,
+        virtual void async_handle_wait(const allocator_ptr& operation_allocator,
           const boost::system::error_code& error) = 0;
 
         static void invoke(const boost::weak_ptr<this_type>& handler,
@@ -84,7 +84,7 @@ namespace ma
         {
           if (boost::shared_ptr<this_type> this_ptr = handler.lock())
           {
-            this_ptr->handle_wait(operation_allocator, error);
+            this_ptr->async_handle_wait(operation_allocator, error);
           }
         }
 

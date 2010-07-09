@@ -86,13 +86,13 @@ public:
   {
   }
 
-  void handle_start(const ma::echo::server3::allocator_ptr& operation_allocator,
+  void async_handle_start(const ma::echo::server3::allocator_ptr& operation_allocator,
     const boost::system::error_code& error);
 
-  void handle_stop(const ma::echo::server3::allocator_ptr& operation_allocator,
+  void async_handle_stop(const ma::echo::server3::allocator_ptr& operation_allocator,
     const boost::system::error_code& error);
 
-  void handle_wait(const ma::echo::server3::allocator_ptr& operation_allocator,
+  void async_handle_wait(const ma::echo::server3::allocator_ptr& operation_allocator,
     const boost::system::error_code& error);
 }; // session_manager_proxy 
 
@@ -413,7 +413,7 @@ void handle_program_exit(const session_manager_proxy_ptr& current_session_manage
   }  
 }
 
-void session_manager_proxy::handle_start(const ma::echo::server3::allocator_ptr& operation_allocator,
+void session_manager_proxy::async_handle_start(const ma::echo::server3::allocator_ptr& operation_allocator,
   const boost::system::error_code& error)
 {
   io_service_.post
@@ -432,7 +432,7 @@ void session_manager_proxy::handle_start(const ma::echo::server3::allocator_ptr&
   );
 }
 
-void session_manager_proxy::handle_stop(const ma::echo::server3::allocator_ptr& operation_allocator,
+void session_manager_proxy::async_handle_stop(const ma::echo::server3::allocator_ptr& operation_allocator,
   const boost::system::error_code& error)
 {
   io_service_.post
@@ -451,7 +451,7 @@ void session_manager_proxy::handle_stop(const ma::echo::server3::allocator_ptr& 
   );
 }
 
-void session_manager_proxy::handle_wait(const ma::echo::server3::allocator_ptr& operation_allocator,
+void session_manager_proxy::async_handle_wait(const ma::echo::server3::allocator_ptr& operation_allocator,
   const boost::system::error_code& error)
 {
   io_service_.post

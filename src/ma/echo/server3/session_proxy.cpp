@@ -34,7 +34,7 @@ namespace ma
       {
       } // session_proxy::~session_proxy      
 
-      void session_proxy::handle_start(const allocator_ptr& operation_allocator,
+      void session_proxy::async_handle_start(const allocator_ptr& operation_allocator,
         const boost::system::error_code& error)
       {
         if (boost::shared_ptr<session_manager> session_manager = session_manager_.lock())
@@ -57,7 +57,7 @@ namespace ma
         }
       } // session_proxy::handle_start
 
-      void session_proxy::handle_stop(const allocator_ptr& operation_allocator,
+      void session_proxy::async_handle_stop(const allocator_ptr& operation_allocator,
         const boost::system::error_code& error)
       {
         if (boost::shared_ptr<session_manager> session_manager = session_manager_.lock())
@@ -80,7 +80,7 @@ namespace ma
         }
       } // session_proxy::handle_stop
 
-      void session_proxy::handle_wait(const allocator_ptr& operation_allocator,
+      void session_proxy::async_handle_wait(const allocator_ptr& operation_allocator,
         const boost::system::error_code& error)
       {
         if (boost::shared_ptr<session_manager> session_manager = session_manager_.lock())

@@ -56,11 +56,11 @@ namespace ma
           const session::settings& session_settings);
         ~session_proxy();
         
-        void handle_start(const allocator_ptr& operation_allocator,
+        void async_handle_start(const allocator_ptr& operation_allocator,
           const boost::system::error_code& error);
-        void handle_stop(const allocator_ptr& operation_allocator,
+        void async_handle_stop(const allocator_ptr& operation_allocator,
           const boost::system::error_code& error);
-        void handle_wait(const allocator_ptr& operation_allocator,
+        void async_handle_wait(const allocator_ptr& operation_allocator,
           const boost::system::error_code& error);
       }; // session_proxy
 
