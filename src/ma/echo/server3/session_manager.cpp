@@ -189,8 +189,7 @@ namespace ma
           // Do shutdown - abort outer operations
           if (has_wait_handler_)
           {
-            session_manager_wait_handler::invoke(wait_handler_.first, wait_handler_.second, 
-              boost::asio::error::operation_aborted);            
+            invoke_wait_handler(boost::asio::error::operation_aborted);            
           }
 
           // Check for shutdown continuation
@@ -289,7 +288,7 @@ namespace ma
           {
             state_ = stopped;
             // Signal shutdown completion
-            session_manager_stop_handler::invoke(stop_handler_.first, stop_handler_.second, stop_error_);            
+            invoke_stop_handler(stop_error_);            
           }
         }
         else if (error)
@@ -300,7 +299,7 @@ namespace ma
             // Server can't work more time
             if (has_wait_handler_)
             {
-              session_manager_wait_handler::invoke(wait_handler_.first, stop_handler_.second, error);
+              invoke_wait_handler(error);
             }
           }
         }
@@ -380,15 +379,14 @@ namespace ma
               {
                 state_ = stopped;
                 // Signal shutdown completion
-                session_manager_stop_handler::invoke(stop_handler_.first, stop_handler_.second, stop_error_);
+                invoke_stop_handler(stop_error_);
               }
             }
             else if (last_accept_error_ && active_session_proxies_.empty()) 
             {
               if (has_wait_handler_)
               {
-                session_manager_wait_handler::invoke(wait_handler_.first, wait_handler_.second,
-                  last_accept_error_);
+                invoke_wait_handler(last_accept_error_);
               }              
             }
             else
@@ -422,7 +420,7 @@ namespace ma
           {
             state_ = stopped;
             // Signal shutdown completion
-            session_manager_stop_handler::invoke(stop_handler_.first, stop_handler_.second, stop_error_);
+            invoke_stop_handler(stop_error_);
           }
         }
         else
@@ -447,7 +445,7 @@ namespace ma
           {
             state_ = stopped;
             // Signal shutdown completion
-            session_manager_stop_handler::invoke(stop_handler_.first, stop_handler_.second, stop_error_);
+            invoke_stop_handler(stop_error_);
           }
         }
         else
@@ -472,15 +470,14 @@ namespace ma
             {
               state_ = stopped;
               // Signal shutdown completion
-              session_manager_stop_handler::invoke(stop_handler_.first, stop_handler_.second, stop_error_);
+              invoke_stop_handler(stop_error_);
             }
           }
           else if (last_accept_error_ && active_session_proxies_.empty()) 
           {
             if (has_wait_handler_)
             {
-              session_manager_wait_handler::invoke(wait_handler_.first, wait_handler_.second, 
-                last_accept_error_);              
+              invoke_wait_handler(last_accept_error_);              
             }
           }
           else
@@ -500,7 +497,7 @@ namespace ma
           {
             state_ = stopped;
             // Signal shutdown completion
-            session_manager_stop_handler::invoke(stop_handler_.first, stop_handler_.second, stop_error_);
+            invoke_stop_handler(stop_error_);
           }
         }
         else
@@ -518,7 +515,20 @@ namespace ma
           recycled_session_proxy->state_ = session_proxy::ready_to_start;
           recycled_session_proxies_.push_front(recycled_session_proxy);
         }        
-      } // recycle_session
+      } // session_manager::recycle_session
+
+      void session_manager::invoke_wait_handler(const boost::system::error_code& error)
+      {
+        session_manager_wait_handler::invoke(wait_handler_.first, wait_handler_.second, error);           
+        has_wait_handler_ = false;
+        wait_handler_ = wait_handler_type();
+      } // session_manager::invoke_wait_handler
+
+      void session_manager::invoke_stop_handler(const boost::system::error_code& error)
+      {
+        session_manager_stop_handler::invoke(stop_handler_.first, stop_handler_.second, error);                   
+        stop_handler_ = stop_handler_type();
+      } // session_manager::invoke_stop_handler
 
     } // namespace server3
   } // namespace echo

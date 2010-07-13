@@ -98,8 +98,9 @@ namespace ma
         void handle_session_stop(const session_proxy_ptr& stopped_session_proxy,
           const allocator_ptr& operation_allocator,
           const boost::system::error_code& error);
-
         void recycle_session(const session_proxy_ptr& recycled_session_proxy);
+        void invoke_wait_handler(const boost::system::error_code& error);
+        void invoke_stop_handler(const boost::system::error_code& error);
         
         boost::asio::io_service::strand strand_;      
         boost::asio::ip::tcp::acceptor acceptor_;

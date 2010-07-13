@@ -182,9 +182,7 @@ namespace ma
           // Do shutdown - abort outer operations
           if (has_wait_handler_)
           {
-            has_wait_handler_ = false;
-            session_wait_handler::invoke(wait_handler_.first, wait_handler_.second, 
-              boost::asio::error::operation_aborted);
+            invoke_wait_handler(boost::asio::error::operation_aborted);
           }          
           // Do shutdown - flush socket's write_some buffer
           if (!socket_write_in_progress_) 
@@ -320,7 +318,7 @@ namespace ma
           {
             complete_stop();       
             // Signal shutdown completion
-            session_stop_handler::invoke(stop_handler_.first, stop_handler_.second, stop_error_);            
+            invoke_stop_handler(stop_error_);            
           }
         }
         else if (error)
@@ -331,8 +329,7 @@ namespace ma
           }                    
           if (has_wait_handler_)
           {
-            has_wait_handler_ = false;
-            session_wait_handler::invoke(wait_handler_.first, wait_handler_.second, error);
+            invoke_wait_handler(error);
           }
         }
         else 
@@ -357,7 +354,7 @@ namespace ma
           {
             complete_stop();       
             // Signal shutdown completion
-            session_stop_handler::invoke(stop_handler_.first, stop_handler_.second, stop_error_);
+            invoke_stop_handler(stop_error_);
           }
         }
         else if (error)
@@ -368,8 +365,7 @@ namespace ma
           }                    
           if (has_wait_handler_)
           {
-            has_wait_handler_ = false;
-            session_wait_handler::invoke(wait_handler_.first, wait_handler_.second, error);
+            invoke_wait_handler(error);
           }
         }
         else
@@ -382,6 +378,19 @@ namespace ma
           }
         }
       } // session::handle_write_some
+
+      void session::invoke_wait_handler(const boost::system::error_code& error)
+      {
+        session_wait_handler::invoke(wait_handler_.first, wait_handler_.second, error);           
+        has_wait_handler_ = false;
+        wait_handler_ = wait_handler_type();
+      } // session::invoke_wait_handler
+
+      void session::invoke_stop_handler(const boost::system::error_code& error)
+      {
+        session_stop_handler::invoke(stop_handler_.first, stop_handler_.second, error);                   
+        stop_handler_ = stop_handler_type();
+      } // session::invoke_stop_handler
 
     } // namespace server2
   } // namespace echo
