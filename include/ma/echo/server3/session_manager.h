@@ -99,6 +99,7 @@ namespace ma
           const allocator_ptr& operation_allocator,
           const boost::system::error_code& error);
         void recycle_session(const session_proxy_ptr& recycled_session_proxy);
+        bool has_wait_handler() const;
         void invoke_wait_handler(const boost::system::error_code& error);
         void invoke_stop_handler(const boost::system::error_code& error);
         
@@ -106,8 +107,7 @@ namespace ma
         boost::asio::ip::tcp::acceptor acceptor_;
         boost::asio::io_service& session_io_service_;            
         stop_handler_type stop_handler_;
-        wait_handler_type wait_handler_;        
-        bool has_wait_handler_;
+        wait_handler_type wait_handler_;                
         session_proxy_list active_session_proxies_;
         session_proxy_list recycled_session_proxies_;
         boost::system::error_code last_accept_error_;

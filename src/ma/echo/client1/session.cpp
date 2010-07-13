@@ -45,7 +45,6 @@ namespace ma
       session::session(boost::asio::io_service& io_service, const settings& settings)        
         : strand_(io_service)
         , socket_(io_service)
-        , has_wait_handler_(false)
         , settings_(settings)
         , state_(ready_to_start)
         , socket_write_in_progress_(false)
@@ -180,7 +179,7 @@ namespace ma
           // Start shutdown
           state_ = stop_in_progress;          
           // Do shutdown - abort outer operations
-          if (has_wait_handler_)
+          if (has_wait_handler())
           {
             invoke_wait_handler(boost::asio::error::operation_aborted);
           }          
@@ -237,7 +236,7 @@ namespace ma
         {
           session_wait_handler::invoke(handler, operation_allocator, error_);
         }
-        else if (has_wait_handler_)
+        else if (has_wait_handler())
         {
           session_wait_handler::invoke(handler, operation_allocator,
             boost::asio::error::operation_not_supported);
@@ -245,8 +244,7 @@ namespace ma
         else
         {          
           wait_handler_.first = handler;
-          wait_handler_.second = operation_allocator;          
-          has_wait_handler_ = true;
+          wait_handler_.second = operation_allocator;
         } 
       } // session::do_wait
 
@@ -327,7 +325,7 @@ namespace ma
           {
             error_ = error;
           }                    
-          if (has_wait_handler_)
+          if (has_wait_handler())
           {
             invoke_wait_handler(error);
           }
@@ -363,7 +361,7 @@ namespace ma
           {
             error_ = error;
           }                    
-          if (has_wait_handler_)
+          if (has_wait_handler())
           {
             invoke_wait_handler(error);
           }
@@ -379,10 +377,14 @@ namespace ma
         }
       } // session::handle_write_some
 
+      bool session::has_wait_handler() const
+      {
+        return wait_handler_.second;
+      } // session::has_wait_handler
+
       void session::invoke_wait_handler(const boost::system::error_code& error)
       {
-        session_wait_handler::invoke(wait_handler_.first, wait_handler_.second, error);           
-        has_wait_handler_ = false;
+        session_wait_handler::invoke(wait_handler_.first, wait_handler_.second, error);
         wait_handler_ = wait_handler_type();
       } // session::invoke_wait_handler
 

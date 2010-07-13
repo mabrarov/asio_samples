@@ -43,7 +43,6 @@ namespace ma
         const settings& settings)
         : strand_(io_service)
         , acceptor_(io_service)
-        , has_wait_handler_(false)
         , session_io_service_(session_io_service)                        
         , settings_(settings)
         , pending_operations_(0)
@@ -187,7 +186,7 @@ namespace ma
           }
           
           // Do shutdown - abort outer operations
-          if (has_wait_handler_)
+          if (has_wait_handler())
           {
             invoke_wait_handler(boost::asio::error::operation_aborted);            
           }
@@ -224,7 +223,7 @@ namespace ma
         {
           session_manager_wait_handler::invoke(handler, operation_allocator, last_accept_error_);          
         }
-        else if (has_wait_handler_)
+        else if (has_wait_handler())
         {
           session_manager_wait_handler::invoke(handler, operation_allocator, 
             boost::asio::error::operation_not_supported);          
@@ -232,8 +231,7 @@ namespace ma
         else
         {          
           wait_handler_.first = handler;
-          wait_handler_.second = operation_allocator;
-          has_wait_handler_ = true;
+          wait_handler_.second = operation_allocator;          
         }  
       } // session_manager::do_wait
 
@@ -297,7 +295,7 @@ namespace ma
           if (active_session_proxies_.empty()) 
           {
             // Server can't work more time
-            if (has_wait_handler_)
+            if (has_wait_handler())
             {
               invoke_wait_handler(error);
             }
@@ -384,7 +382,7 @@ namespace ma
             }
             else if (last_accept_error_ && active_session_proxies_.empty()) 
             {
-              if (has_wait_handler_)
+              if (has_wait_handler())
               {
                 invoke_wait_handler(last_accept_error_);
               }              
@@ -475,7 +473,7 @@ namespace ma
           }
           else if (last_accept_error_ && active_session_proxies_.empty()) 
           {
-            if (has_wait_handler_)
+            if (has_wait_handler())
             {
               invoke_wait_handler(last_accept_error_);              
             }
@@ -517,10 +515,14 @@ namespace ma
         }        
       } // session_manager::recycle_session
 
+      bool session_manager::has_wait_handler() const
+      {
+        return wait_handler_.second;
+      } // session_manager::has_wait_handler
+
       void session_manager::invoke_wait_handler(const boost::system::error_code& error)
       {
-        session_manager_wait_handler::invoke(wait_handler_.first, wait_handler_.second, error);           
-        has_wait_handler_ = false;
+        session_manager_wait_handler::invoke(wait_handler_.first, wait_handler_.second, error);
         wait_handler_ = wait_handler_type();
       } // session_manager::invoke_wait_handler
 

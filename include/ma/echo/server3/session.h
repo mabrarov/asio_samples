@@ -85,14 +85,14 @@ namespace ma
           const std::size_t bytes_transferred);
         void handle_write_some(const boost::system::error_code& error,
           const std::size_t bytes_transferred);
+        bool has_wait_handler() const;
         void invoke_wait_handler(const boost::system::error_code& error);
         void invoke_stop_handler(const boost::system::error_code& error);
         
         boost::asio::io_service::strand strand_;
         boost::asio::ip::tcp::socket socket_;
         stop_handler_type stop_handler_;
-        wait_handler_type wait_handler_;        
-        bool has_wait_handler_;
+        wait_handler_type wait_handler_;                
         boost::system::error_code error_;
         boost::system::error_code stop_error_;
         settings settings_;
