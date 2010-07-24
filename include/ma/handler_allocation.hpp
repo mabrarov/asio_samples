@@ -62,7 +62,7 @@ namespace ma
 
     static byte_type* allocate_storage(std::size_t size)
     {      
-      std::size_t alloc_size = size;
+      std::size_t alloc_size = size;      
       return new byte_type[alloc_size];      
     }
 
