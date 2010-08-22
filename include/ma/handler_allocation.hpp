@@ -12,6 +12,7 @@
 #include <boost/utility.hpp>
 #include <boost/aligned_storage.hpp>
 #include <boost/cstdint.hpp>
+#include <boost/smart_ptr.hpp>
 #include <ma/handler_alloc_helpers.hpp>
 #include <ma/handler_invoke_helpers.hpp>
 
