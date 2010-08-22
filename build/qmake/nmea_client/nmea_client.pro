@@ -17,7 +17,7 @@ HEADERS  += ../../../include/ma/handler_storage_service.hpp \
             ../../../include/ma/console_controller.hpp \
             ../../../include/ma/nmea/cyclic_read_session.hpp
 
-LIBS        += -L../../../../boost_1_43_0/lib/x86
-INCLUDEPATH += ../../../../boost_1_43_0 \
+LIBS        += -L../../../../boost_1_44_0/lib/x86
+INCLUDEPATH += ../../../../boost_1_44_0 \
                ../../../include
 DEFINES     += WIN32_LEAN_AND_MEAN BOOST_HAS_THREADS _UNICODE UNICODE

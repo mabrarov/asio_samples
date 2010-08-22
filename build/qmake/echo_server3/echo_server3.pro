@@ -34,7 +34,7 @@ HEADERS  += ../../../include/ma/handler_invoke_helpers.hpp \
             ../../../include/ma/echo/server3/session_proxy_list.h \
             ../../../include/ma/echo/server3/simple_allocator.h
 
-LIBS        += -L../../../../boost_1_43_0/lib/x86
-INCLUDEPATH += ../../../../boost_1_43_0 \
+LIBS        += -L../../../../boost_1_44_0/lib/x86
+INCLUDEPATH += ../../../../boost_1_44_0 \
                ../../../include
 DEFINES     += WIN32_LEAN_AND_MEAN BOOST_HAS_THREADS _UNICODE UNICODE
