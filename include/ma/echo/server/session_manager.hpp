@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2009 Marat Abrarov (abrarov@mail.ru)
+// Copyright (c) 2010 Marat Abrarov (abrarov@mail.ru)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -8,10 +8,7 @@
 #ifndef MA_ECHO_SERVER_SESSION_MANAGER_HPP
 #define MA_ECHO_SERVER_SESSION_MANAGER_HPP
 
-#include <stdexcept>
 #include <boost/utility.hpp>
-#include <boost/ref.hpp>
-#include <boost/make_shared.hpp>
 #include <boost/smart_ptr.hpp>
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
@@ -60,82 +57,30 @@ namespace ma
             stopped
           };
 
+          state_type state_;
+          std::size_t pending_operations_;
           session_proxy_weak_ptr prev_;
           session_proxy_ptr next_;
           session_ptr session_;        
-          boost::asio::ip::tcp::endpoint endpoint_;        
-          std::size_t pending_operations_;
-          state_type state_;        
+          boost::asio::ip::tcp::endpoint endpoint_;
           in_place_handler_allocator<256> start_wait_allocator_;
           in_place_handler_allocator<256> stop_allocator_;
 
           explicit session_proxy(boost::asio::io_service& io_service,
-            const session::settings& session_settings)
-            : session_(boost::make_shared<session>(boost::ref(io_service), session_settings))
-            , pending_operations_(0)
-            , state_(ready_to_start)
-          {
-          }
-
-          ~session_proxy()
-          {
-          }
+            const session::settings& session_settings);
+          ~session_proxy();          
         }; // session_proxy
 
         class session_proxy_list : private boost::noncopyable
         {
         public:
-          explicit session_proxy_list()
-            : size_(0)
-          {
-          }
+          explicit session_proxy_list();
 
-          void push_front(const session_proxy_ptr& value)
-          {
-            value->next_ = front_;
-            value->prev_.reset();
-            if (front_)
-            {
-              front_->prev_ = value;
-            }
-            front_ = value;
-            ++size_;
-          }
-
-          void erase(const session_proxy_ptr& value)
-          {
-            if (front_ == value)
-            {
-              front_ = front_->next_;
-            }
-            session_proxy_ptr prev = value->prev_.lock();
-            if (prev)
-            {
-              prev->next_ = value->next_;
-            }
-            if (value->next_)
-            {
-              value->next_->prev_ = prev;
-            }
-            value->prev_.reset();
-            value->next_.reset();
-            --size_;
-          }
-
-          std::size_t size() const
-          {
-            return size_;
-          }
-
-          bool empty() const
-          {
-            return 0 == size_;
-          }
-
-          session_proxy_ptr front() const
-          {
-            return front_;
-          }
+          void push_front(const session_proxy_ptr& value);
+          void erase(const session_proxy_ptr& value);          
+          std::size_t size() const;
+          bool empty() const;
+          session_proxy_ptr front() const;
 
         private:
           std::size_t size_;
@@ -144,50 +89,21 @@ namespace ma
 
       public:
         struct settings
-        {      
-          boost::asio::ip::tcp::endpoint endpoint_;
+        { 
+          int listen_backlog_;
           std::size_t max_sessions_;
           std::size_t recycled_sessions_;
-          int listen_backlog_;
+          boost::asio::ip::tcp::endpoint endpoint_;                    
           session::settings session_settings_;
 
           explicit settings(const boost::asio::ip::tcp::endpoint& endpoint,
-            std::size_t max_sessions,
-            std::size_t recycled_sessions,
-            int listen_backlog,
-            const session::settings& session_settings)
-            : endpoint_(endpoint)
-            , max_sessions_(max_sessions)
-            , recycled_sessions_(recycled_sessions)
-            , listen_backlog_(listen_backlog)
-            , session_settings_(session_settings)
-          {
-            if (1 > max_sessions_)
-            {
-              boost::throw_exception(std::invalid_argument("maximum sessions number must be >= 1"));
-            }
-          }
+            std::size_t max_sessions, std::size_t recycled_sessions,
+            int listen_backlog, const session::settings& session_settings);
         }; // struct settings
 
         explicit session_manager(boost::asio::io_service& io_service,
-          boost::asio::io_service& session_io_service,
-          const settings& settings)
-          : io_service_(io_service)
-          , strand_(io_service)
-          , acceptor_(io_service)
-          , session_io_service_(session_io_service)                
-          , wait_handler_(io_service)
-          , stop_handler_(io_service)
-          , settings_(settings)
-          , pending_operations_(0)
-          , state_(ready_to_start)
-          , accept_in_progress_(false)
-        {          
-        }
-
-        ~session_manager()
-        {        
-        }
+          boost::asio::io_service& session_io_service, const settings& settings);
+        ~session_manager();        
 
         template <typename Handler>
         void async_start(Handler handler)
@@ -417,379 +333,41 @@ namespace ma
           }  
         } // do_wait
 
-        void accept_new_session()
-        {
-          // Get new ready to start session
-          session_proxy_ptr new_session_proxy;
-          if (recycled_session_proxies_.empty())
-          {
-            new_session_proxy = boost::make_shared<session_proxy>(
-              boost::ref(session_io_service_), settings_.session_settings_);
-          }
-          else
-          {
-            new_session_proxy = recycled_session_proxies_.front();
-            recycled_session_proxies_.erase(new_session_proxy);
-          }
-          // Start session acceptation
-          acceptor_.async_accept
-          (
-            new_session_proxy->session_->socket(),
-            new_session_proxy->endpoint_, 
-            strand_.wrap
-            (
-              make_custom_alloc_handler
-              (
-                accept_allocator_,
-                boost::bind
-                (
-                  &this_type::handle_accept,
-                  shared_from_this(),
-                  new_session_proxy,
-                  boost::asio::placeholders::error
-                )
-              )
-            )
-          );
-          ++pending_operations_;
-          accept_in_progress_ = true;
-        } // accept_new_session
-
+        void accept_new_session();
         void handle_accept(const session_proxy_ptr& new_session_proxy,
-          const boost::system::error_code& error)
-        {
-          --pending_operations_;
-          accept_in_progress_ = false;
-          if (stop_in_progress == state_)
-          {
-            if (may_complete_stop())  
-            {
-              state_ = stopped;
-              // Signal shutdown completion
-              stop_handler_.post(stop_error_);
-            }
-          }
-          else if (error)
-          {   
-            last_accept_error_ = error;
-            if (active_session_proxies_.empty()) 
-            {
-              // Server can't work more time
-              wait_handler_.post(error);
-            }
-          }
-          else if (active_session_proxies_.size() < settings_.max_sessions_)
-          { 
-            // Start accepted session 
-            start_session(new_session_proxy);          
-            // Save session as active
-            active_session_proxies_.push_front(new_session_proxy);
-            // Continue session acceptation if can
-            if (active_session_proxies_.size() < settings_.max_sessions_)
-            {
-              accept_new_session();
-            }          
-          }
-          else
-          {
-            recycle_session(new_session_proxy);
-          }
-        } // handle_accept        
-
-        bool may_complete_stop() const
-        {
-          return 0 == pending_operations_ && active_session_proxies_.empty();
-        }      
-
-        void start_session(const session_proxy_ptr& accepted_session_proxy)
-        {        
-          accepted_session_proxy->session_->async_start
-          (
-            make_custom_alloc_handler
-            (
-              accepted_session_proxy->start_wait_allocator_,
-              boost::bind
-              (
-                &this_type::dispatch_session_start,
-                session_manager_weak_ptr(shared_from_this()),
-                accepted_session_proxy,
-                _1
-              )
-            )           
-          );  
-          ++pending_operations_;
-          ++accepted_session_proxy->pending_operations_;
-          accepted_session_proxy->state_ = session_proxy::start_in_progress;
-        } // start_session
-
-        void stop_session(const session_proxy_ptr& started_session_proxy)
-        {
-          started_session_proxy->session_->async_stop
-          (
-            make_custom_alloc_handler
-            (
-              started_session_proxy->stop_allocator_,
-              boost::bind
-              (
-                &this_type::dispatch_session_stop,
-                session_manager_weak_ptr(shared_from_this()),
-                started_session_proxy,
-                _1
-              )
-            )
-          );
-          ++pending_operations_;
-          ++started_session_proxy->pending_operations_;
-          started_session_proxy->state_ = session_proxy::stop_in_progress;
-        } // stop_session
-
-        void wait_session(const session_proxy_ptr& started_session_proxy)
-        {
-          started_session_proxy->session_->async_wait
-          (
-            make_custom_alloc_handler
-            (
-              started_session_proxy->start_wait_allocator_,
-              boost::bind
-              (
-                &this_type::dispatch_session_wait,
-                session_manager_weak_ptr(shared_from_this()),
-                started_session_proxy,
-                _1
-              )
-            )
-          );
-          ++pending_operations_;
-          ++started_session_proxy->pending_operations_;
-        } // wait_session
-
+          const boost::system::error_code& error);
+        bool may_complete_stop() const;
+        void start_session(const session_proxy_ptr& accepted_session_proxy);
+        void stop_session(const session_proxy_ptr& started_session_proxy);
+        void wait_session(const session_proxy_ptr& started_session_proxy);
         static void dispatch_session_start(const session_manager_weak_ptr& weak_session_manager,
-          const session_proxy_ptr& started_session_proxy, const boost::system::error_code& error)
-        {
-          if (session_manager_ptr this_ptr = weak_session_manager.lock())
-          {
-            this_ptr->strand_.dispatch
-            (
-              make_custom_alloc_handler
-              (
-                started_session_proxy->start_wait_allocator_,
-                boost::bind
-                (
-                  &this_type::handle_session_start,
-                  this_ptr,
-                  started_session_proxy,
-                  error
-                )
-              )
-            );
-          }
-        } // dispatch_session_start
-
+          const session_proxy_ptr& started_session_proxy, const boost::system::error_code& error);
         void handle_session_start(const session_proxy_ptr& started_session_proxy,
-          const boost::system::error_code& error)
-        {
-          --pending_operations_;
-          --started_session_proxy->pending_operations_;
-          if (session_proxy::start_in_progress == started_session_proxy->state_)
-          {          
-            if (error)
-            {
-              started_session_proxy->state_ = session_proxy::stopped;
-              active_session_proxies_.erase(started_session_proxy);            
-              if (stop_in_progress == state_)
-              {
-                if (may_complete_stop())  
-                {
-                  state_ = stopped;
-                  // Signal shutdown completion
-                  stop_handler_.post(stop_error_);
-                }
-              }
-              else if (last_accept_error_ && active_session_proxies_.empty()) 
-              {
-                wait_handler_.post(last_accept_error_);
-              }
-              else
-              {
-                recycle_session(started_session_proxy);
-                // Continue session acceptation if can
-                if (!accept_in_progress_ && !last_accept_error_
-                  && active_session_proxies_.size() < settings_.max_sessions_)
-                {                
-                  accept_new_session();
-                }                
-              }
-            }
-            else // !error
-            {
-              started_session_proxy->state_ = session_proxy::started;
-              if (stop_in_progress == state_)  
-              {                            
-                stop_session(started_session_proxy);
-              }
-              else
-              { 
-                // Wait until session needs to stop
-                wait_session(started_session_proxy);
-              }            
-            }  
-          } 
-          else if (stop_in_progress == state_) 
-          {
-            if (may_complete_stop())  
-            {
-              state_ = stopped;
-              // Signal shutdown completion
-              stop_handler_.post(stop_error_);
-            }
-          }
-          else
-          {
-            recycle_session(started_session_proxy);
-          }        
-        } // handle_session_start
-
+          const boost::system::error_code& error);
         static void dispatch_session_wait(const session_manager_weak_ptr& weak_session_manager,
-          const session_proxy_ptr& waited_session_proxy, const boost::system::error_code& error)
-        {          
-          if (session_manager_ptr this_ptr = weak_session_manager.lock())
-          {
-            this_ptr->strand_.dispatch
-            (
-              make_custom_alloc_handler
-              (
-                waited_session_proxy->start_wait_allocator_,
-                boost::bind
-                (
-                  &this_type::handle_session_wait,
-                  this_ptr,
-                  waited_session_proxy,
-                  error
-                )
-              )
-            );
-          }
-        } // dispatch_session_wait
-
+          const session_proxy_ptr& waited_session_proxy, const boost::system::error_code& error);
         void handle_session_wait(const session_proxy_ptr& waited_session_proxy,
-          const boost::system::error_code& /*error*/)
-        {
-          --pending_operations_;
-          --waited_session_proxy->pending_operations_;
-          if (session_proxy::started == waited_session_proxy->state_)
-          {
-            stop_session(waited_session_proxy);
-          }
-          else if (stop_in_progress == state_)
-          {
-            if (may_complete_stop())  
-            {
-              state_ = stopped;
-              // Signal shutdown completion
-              stop_handler_.post(stop_error_);
-            }
-          }
-          else
-          {
-            recycle_session(waited_session_proxy);
-          }
-        } // handle_session_wait
-
+          const boost::system::error_code& error);        
         static void dispatch_session_stop(const session_manager_weak_ptr& weak_session_manager,
-          const session_proxy_ptr& stopped_session_proxy, const boost::system::error_code& error)
-        {          
-          if (session_manager_ptr this_ptr = weak_session_manager.lock())
-          {
-            this_ptr->strand_.dispatch
-            (
-              make_custom_alloc_handler
-              (
-                stopped_session_proxy->stop_allocator_,
-                boost::bind
-                (
-                  &this_type::handle_session_stop,
-                  this_ptr,
-                  stopped_session_proxy,
-                  error
-                )
-              )
-            );
-          }
-        } // dispatch_session_stop
-
+          const session_proxy_ptr& stopped_session_proxy, const boost::system::error_code& error);
         void handle_session_stop(const session_proxy_ptr& stopped_session_proxy,
-          const boost::system::error_code& /*error*/)
-        {
-          --pending_operations_;
-          --stopped_session_proxy->pending_operations_;
-          if (session_proxy::stop_in_progress == stopped_session_proxy->state_)        
-          {
-            stopped_session_proxy->state_ = session_proxy::stopped;
-            active_session_proxies_.erase(stopped_session_proxy);            
-            if (stop_in_progress == state_)
-            {
-              if (may_complete_stop())  
-              {
-                state_ = stopped;
-                // Signal shutdown completion
-                stop_handler_.post(stop_error_);
-              }
-            }
-            else if (last_accept_error_ && active_session_proxies_.empty()) 
-            {
-              wait_handler_.post(last_accept_error_);
-            }
-            else
-            {
-              recycle_session(stopped_session_proxy);
-              // Continue session acceptation if can
-              if (!accept_in_progress_ && !last_accept_error_
-                && active_session_proxies_.size() < settings_.max_sessions_)
-              {                
-                accept_new_session();
-              }              
-            }
-          }
-          else if (stop_in_progress == state_)
-          {
-            if (may_complete_stop())  
-            {
-              state_ = stopped;
-              // Signal shutdown completion
-              stop_handler_.post(stop_error_);
-            }
-          }
-          else
-          {
-            recycle_session(stopped_session_proxy);
-          }
-        } // handle_session_stop
+          const boost::system::error_code& error);        
+        void recycle_session(const session_proxy_ptr& recycled_session_proxy);
 
-        void recycle_session(const session_proxy_ptr& recycled_session_proxy)
-        {
-          if (0 == recycled_session_proxy->pending_operations_
-            && recycled_session_proxies_.size() < settings_.recycled_sessions_)
-          {
-            recycled_session_proxy->session_->reset();
-            recycled_session_proxy->state_ = session_proxy::ready_to_start;
-            recycled_session_proxies_.push_front(recycled_session_proxy);
-          }        
-        } // recycle_session
-
+        bool accept_in_progress_;
+        state_type state_;
+        std::size_t pending_operations_;
         boost::asio::io_service& io_service_;
+        boost::asio::io_service& session_io_service_;
         boost::asio::io_service::strand strand_;      
-        boost::asio::ip::tcp::acceptor acceptor_;
-        boost::asio::io_service& session_io_service_;            
+        boost::asio::ip::tcp::acceptor acceptor_;        
         handler_storage<boost::system::error_code> wait_handler_;
         handler_storage<boost::system::error_code> stop_handler_;
         session_proxy_list active_session_proxies_;
         session_proxy_list recycled_session_proxies_;
         boost::system::error_code last_accept_error_;
         boost::system::error_code stop_error_;      
-        settings settings_;
-        std::size_t pending_operations_;
-        state_type state_;
-        bool accept_in_progress_;
+        settings settings_;        
         in_place_handler_allocator<512> accept_allocator_;
       }; // class session_manager
 

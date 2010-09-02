@@ -32,11 +32,11 @@ namespace ma
 
       public:
         struct settings
-        {      
-          boost::asio::ip::tcp::endpoint endpoint_;
+        { 
+          int listen_backlog_;
           std::size_t max_sessions_;
           std::size_t recycled_sessions_;
-          int listen_backlog_;
+          boost::asio::ip::tcp::endpoint endpoint_;                    
           session::settings session_settings_;
 
           explicit settings(const boost::asio::ip::tcp::endpoint& endpoint,
@@ -103,6 +103,9 @@ namespace ma
         void invoke_wait_handler(const boost::system::error_code& error);
         void invoke_stop_handler(const boost::system::error_code& error);
         
+        bool accept_in_progress_;
+        state_type state_;
+        std::size_t pending_operations_;                
         boost::asio::io_service::strand strand_;      
         boost::asio::ip::tcp::acceptor acceptor_;
         boost::asio::io_service& session_io_service_;            
@@ -112,10 +115,7 @@ namespace ma
         session_proxy_list recycled_session_proxies_;
         boost::system::error_code last_accept_error_;
         boost::system::error_code stop_error_;      
-        settings settings_;
-        std::size_t pending_operations_;
-        state_type state_;
-        bool accept_in_progress_;
+        settings settings_;        
         in_place_handler_allocator<512> accept_allocator_;
       }; // class session_manager
 

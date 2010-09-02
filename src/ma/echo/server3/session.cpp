@@ -23,10 +23,10 @@ namespace ma
         int socket_recv_buffer_size,
         int socket_send_buffer_size,
         bool no_delay)
-        : buffer_size_(buffer_size)         
+        : no_delay_(no_delay)
         , socket_recv_buffer_size_(socket_recv_buffer_size)
         , socket_send_buffer_size_(socket_send_buffer_size)
-        , no_delay_(no_delay)
+        , buffer_size_(buffer_size)
       {
         if (1 > buffer_size)
         {
@@ -43,12 +43,12 @@ namespace ma
       } // session::settings::settings
 
       session::session(boost::asio::io_service& io_service, const settings& settings)        
-        : strand_(io_service)
-        , socket_(io_service)        
-        , settings_(settings)
-        , state_(ready_to_start)
-        , socket_write_in_progress_(false)
+        : socket_write_in_progress_(false)
         , socket_read_in_progress_(false) 
+        , state_(ready_to_start)
+        , strand_(io_service)
+        , socket_(io_service)        
+        , settings_(settings)                
         , buffer_(settings.buffer_size_)
       {          
       } // session::session

@@ -34,11 +34,11 @@ namespace ma
 
       public:
         struct settings
-        {              
-          std::size_t buffer_size_;
+        { 
+          bool no_delay_;
           int socket_recv_buffer_size_;
           int socket_send_buffer_size_;
-          bool no_delay_;
+          std::size_t buffer_size_;                   
 
           explicit settings(std::size_t buffer_size,
             int socket_recv_buffer_size,
@@ -89,16 +89,16 @@ namespace ma
         void invoke_wait_handler(const boost::system::error_code& error);
         void invoke_stop_handler(const boost::system::error_code& error);
         
+        bool socket_write_in_progress_;
+        bool socket_read_in_progress_;
+        state_type state_;
         boost::asio::io_service::strand strand_;
         boost::asio::ip::tcp::socket socket_;
         stop_handler_storage stop_handler_;
         wait_handler_storage wait_handler_;                
         boost::system::error_code error_;
         boost::system::error_code stop_error_;
-        settings settings_;
-        state_type state_;
-        bool socket_write_in_progress_;
-        bool socket_read_in_progress_;
+        settings settings_;                
         cyclic_buffer buffer_;
         in_place_handler_allocator<640> write_allocator_;
         in_place_handler_allocator<256> read_allocator_;

@@ -60,25 +60,25 @@ public:
     stopped
   };
 
+  volatile bool stopped_by_program_exit_;
+  volatile state_type state_;
   boost::mutex mutex_;
   boost::asio::io_service& io_service_;
   ma::echo::server3::session_manager_ptr session_manager_;
   ma::echo::server3::allocator_ptr start_wait_allocator_;
-  ma::echo::server3::allocator_ptr stop_allocator_;
-  volatile state_type state_;
-  volatile bool stopped_by_program_exit_;
+  ma::echo::server3::allocator_ptr stop_allocator_;   
   boost::condition_variable state_changed_;  
   
   explicit session_manager_proxy(boost::asio::io_service& io_service,
     boost::asio::io_service& session_io_service,
     const ma::echo::server3::session_manager::settings& settings)
-    : io_service_(io_service)
+    : stopped_by_program_exit_(false)
+    , state_(ready_to_start)
+    , io_service_(io_service)
     , session_manager_(boost::make_shared<ma::echo::server3::session_manager>(
         boost::ref(io_service), boost::ref(session_io_service), settings))
     , start_wait_allocator_(boost::make_shared<ma::echo::server3::simple_allocator>(256))
-    , stop_allocator_(boost::make_shared<ma::echo::server3::simple_allocator>(256))
-    , state_(ready_to_start)
-    , stopped_by_program_exit_(false)
+    , stop_allocator_(boost::make_shared<ma::echo::server3::simple_allocator>(256))        
   {
   }
 

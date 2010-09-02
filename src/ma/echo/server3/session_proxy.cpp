@@ -21,9 +21,9 @@ namespace ma
       session_proxy::session_proxy(boost::asio::io_service& io_service,
         const boost::weak_ptr<session_manager>& session_manager,
         const session::settings& session_settings)
-        : session_(boost::make_shared<session>(boost::ref(io_service), session_settings))
-        , pending_operations_(0)
-        , state_(ready_to_start)
+        : state_(ready_to_start)
+        , pending_operations_(0)                
+        , session_(boost::make_shared<session>(boost::ref(io_service), session_settings))
         , start_wait_allocator_(boost::make_shared<simple_allocator>(256))
         , stop_allocator_(boost::make_shared<simple_allocator>(256))
         , session_manager_(session_manager)

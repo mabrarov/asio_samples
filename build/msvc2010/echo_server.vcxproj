@@ -144,6 +144,7 @@
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <AdditionalOptions>%(AdditionalOptions)</AdditionalOptions>
@@ -168,6 +169,7 @@
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <AdditionalOptions>%(AdditionalOptions)</AdditionalOptions>
@@ -193,6 +195,8 @@
   <ItemGroup>
     <ClCompile Include="..\..\src\echo_server\main.cpp" />
     <ClCompile Include="..\..\src\ma\console_controller.cpp" />
+    <ClCompile Include="..\..\src\ma\echo\server\session.cpp" />
+    <ClCompile Include="..\..\src\ma\echo\server\session_manager.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

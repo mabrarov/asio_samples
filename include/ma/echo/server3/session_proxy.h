@@ -41,12 +41,12 @@ namespace ma
           stopped
         };
 
+        state_type state_;
+        std::size_t pending_operations_;
         session_proxy_weak_ptr prev_;
         session_proxy_ptr next_;        
-        boost::shared_ptr<session> session_;        
-        boost::asio::ip::tcp::endpoint endpoint_;        
-        std::size_t pending_operations_;
-        state_type state_;
+        session_ptr session_;        
+        boost::asio::ip::tcp::endpoint endpoint_;                        
         allocator_ptr start_wait_allocator_;
         allocator_ptr stop_allocator_;
         boost::weak_ptr<session_manager> session_manager_;

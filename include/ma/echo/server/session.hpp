@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2009 Marat Abrarov (abrarov@mail.ru)
+// Copyright (c) 2010 Marat Abrarov (abrarov@mail.ru)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -8,7 +8,6 @@
 #ifndef MA_ECHO_SERVER_SESSION_HPP
 #define MA_ECHO_SERVER_SESSION_HPP
 
-#include <stdexcept>
 #include <boost/utility.hpp>
 #include <boost/smart_ptr.hpp>
 #include <boost/bind.hpp>
@@ -45,68 +44,22 @@ namespace ma
         
       public:
         struct settings
-        {              
-          std::size_t buffer_size_;
+        { 
+          bool no_delay_;
           int socket_recv_buffer_size_;
           int socket_send_buffer_size_;
-          bool no_delay_;
+          std::size_t buffer_size_;                   
 
-          explicit settings(std::size_t buffer_size,
-            int socket_recv_buffer_size,
-            int socket_send_buffer_size,
-            bool no_delay)
-            : buffer_size_(buffer_size)         
-            , socket_recv_buffer_size_(socket_recv_buffer_size)
-            , socket_send_buffer_size_(socket_send_buffer_size)
-            , no_delay_(no_delay)
-          {
-            if (1 > buffer_size)
-            {
-              boost::throw_exception(std::invalid_argument("too small buffer_size"));
-            }
-            if (0 > socket_recv_buffer_size)
-            {
-              boost::throw_exception(std::invalid_argument("socket_recv_buffer_size must be non negative"));
-            }
-            if (0 > socket_send_buffer_size)
-            {
-              boost::throw_exception(std::invalid_argument("socket_send_buffer_size must be non negative"));
-            }
-          }
+          explicit settings(std::size_t buffer_size, 
+            int socket_recv_buffer_size, int socket_send_buffer_size,
+            bool no_delay);
         }; // struct settings
 
-        explicit session(boost::asio::io_service& io_service,
-          const settings& settings)
-          : io_service_(io_service)
-          , strand_(io_service)
-          , socket_(io_service)
-          , wait_handler_(io_service)
-          , stop_handler_(io_service)
-          , settings_(settings)
-          , state_(ready_to_start)
-          , socket_write_in_progress_(false)
-          , socket_read_in_progress_(false) 
-          , buffer_(settings.buffer_size_)
-        {          
-        }
+        explicit session(boost::asio::io_service& io_service, const settings& settings);
+        ~session();        
 
-        ~session()
-        {        
-        }
-
-        void reset()
-        {
-          boost::system::error_code ignored;
-          socket_.close(ignored);
-          error_ = stop_error_ = boost::system::error_code();          
-          state_ = ready_to_start;
-          buffer_.reset();          
-        }
-        
-        boost::asio::ip::tcp::socket& socket()
-        {
-          return socket_;
-        }
+        void reset();        
+        boost::asio::ip::tcp::socket& socket();
         
         template <typename Handler>
         void async_start(Handler handler)
@@ -269,22 +222,6 @@ namespace ma
           }
         } // do_stop
 
-        bool may_complete_stop() const
-        {
-          return !socket_write_in_progress_ && !socket_read_in_progress_;
-        }
-
-        void complete_stop()
-        {        
-          boost::system::error_code error;
-          socket_.close(error);
-          if (!stop_error_)
-          {
-            stop_error_ = error;
-          }
-          state_ = stopped;  
-        }      
-
         template <typename Handler>
         void do_wait(const boost::tuple<Handler>& handler)
         {
@@ -338,129 +275,16 @@ namespace ma
           } 
         } // do_wait
 
-        void read_some()
-        {
-          cyclic_buffer::mutable_buffers_type buffers(buffer_.prepared());
-          std::size_t buffers_size = boost::asio::buffers_end(buffers) - 
-            boost::asio::buffers_begin(buffers);
-          if (buffers_size)
-          {
-            socket_.async_read_some
-            (
-              buffers,
-              strand_.wrap
-              (
-                make_custom_alloc_handler
-                (
-                  read_allocator_,
-                  boost::bind
-                  (
-                    &this_type::handle_read_some,
-                    shared_from_this(),
-                    boost::asio::placeholders::error,
-                    boost::asio::placeholders::bytes_transferred
-                  )
-                )
-              )
-            );
-            socket_read_in_progress_ = true;
-          }        
-        }
-
-        void write_some()
-        {
-          cyclic_buffer::const_buffers_type buffers(buffer_.data());
-          std::size_t buffers_size = boost::asio::buffers_end(buffers) - 
-            boost::asio::buffers_begin(buffers);
-          if (buffers_size)
-          {
-            socket_.async_write_some
-            (
-              buffers,
-              strand_.wrap
-              (
-                make_custom_alloc_handler
-                (
-                  write_allocator_,
-                  boost::bind
-                  (
-                    &this_type::handle_write_some,
-                    shared_from_this(),
-                    boost::asio::placeholders::error,
-                    boost::asio::placeholders::bytes_transferred
-                  )
-                )
-              )
-            );
-            socket_write_in_progress_ = true;
-          }   
-        }
-
-        void handle_read_some(const boost::system::error_code& error,
-          const std::size_t bytes_transferred)
-        {
-          socket_read_in_progress_ = false;
-          if (stop_in_progress == state_)
-          {  
-            if (may_complete_stop())
-            {
-              complete_stop();       
-              // Signal shutdown completion
-              stop_handler_.post(stop_error_);
-            }
-          }
-          else if (error)
-          {
-            if (!error_)
-            {
-              error_ = error;
-            }                    
-            wait_handler_.post(error);
-          }
-          else 
-          {
-            buffer_.consume(bytes_transferred);
-            read_some();
-            if (!socket_write_in_progress_)
-            {
-              write_some();
-            }
-          }
-        } // handle_read_some
-
-        void handle_write_some(const boost::system::error_code& error,
-          const std::size_t bytes_transferred)
-        {
-          socket_write_in_progress_ = false;
-          if (stop_in_progress == state_)
-          {
-            socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_send, stop_error_);
-            if (may_complete_stop())
-            {
-              complete_stop();       
-              // Signal shutdown completion
-              stop_handler_.post(stop_error_);
-            }
-          }
-          else if (error)
-          {
-            if (!error_)
-            {
-              error_ = error;
-            }                    
-            wait_handler_.post(error);
-          }
-          else
-          {
-            buffer_.commit(bytes_transferred);
-            write_some();
-            if (!socket_read_in_progress_)
-            {
-              read_some();
-            }
-          }
-        } // handle_write_some
-
+        bool may_complete_stop() const;
+        void complete_stop();        
+        void read_some();        
+        void write_some();        
+        void handle_read_some(const boost::system::error_code& error, const std::size_t bytes_transferred);        
+        void handle_write_some(const boost::system::error_code& error, const std::size_t bytes_transferred);        
+        
+        bool socket_write_in_progress_;
+        bool socket_read_in_progress_;
+        state_type state_;
         boost::asio::io_service& io_service_;
         boost::asio::io_service::strand strand_;      
         boost::asio::ip::tcp::socket socket_;
@@ -468,10 +292,7 @@ namespace ma
         handler_storage<boost::system::error_code> stop_handler_;
         boost::system::error_code error_;
         boost::system::error_code stop_error_;
-        settings settings_;
-        state_type state_;
-        bool socket_write_in_progress_;
-        bool socket_read_in_progress_;
+        settings settings_;        
         cyclic_buffer buffer_;
         in_place_handler_allocator<640> write_allocator_;
         in_place_handler_allocator<256> read_allocator_;

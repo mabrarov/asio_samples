@@ -195,6 +195,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="/MP"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
@@ -273,6 +274,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				AdditionalOptions="/MP"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
@@ -402,6 +404,22 @@
 					RelativePath="..\..\src\ma\console_controller.cpp"
 					>
 				</File>
+				<Filter
+					Name="echo"
+					>
+					<Filter
+						Name="server"
+						>
+						<File
+							RelativePath="..\..\src\ma\echo\server\session.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\..\src\ma\echo\server\session_manager.cpp"
+							>
+						</File>
+					</Filter>
+				</Filter>
 			</Filter>
 		</Filter>
 	</Files>

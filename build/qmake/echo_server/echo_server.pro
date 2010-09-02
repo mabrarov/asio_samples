@@ -5,8 +5,11 @@ CONFIG   -= app_bundle
 TEMPLATE =  app
 
 SOURCES  += ../../../src/ma/console_controller.cpp \
-            ../../../src/echo_server/main.cpp
+            ../../../src/echo_server/main.cpp \
+            ../../../src/ma/echo/server/session.cpp \
+            ../../../src/ma/echo/server/session_manager.cpp
 
+		
 HEADERS  += ../../../include/ma/handler_storage_service.hpp \
             ../../../include/ma/handler_storage.hpp \
             ../../../include/ma/handler_invoke_helpers.hpp \
