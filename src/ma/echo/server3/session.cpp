@@ -385,13 +385,13 @@ namespace ma
       void session::invoke_wait_handler(const boost::system::error_code& error)
       {
         session_wait_handler::invoke(wait_handler_.first, wait_handler_.second, error);
-        wait_handler_ = wait_handler_type();
+        wait_handler_storage().swap(wait_handler_);
       } // session::invoke_wait_handler
 
       void session::invoke_stop_handler(const boost::system::error_code& error)
       {
         session_stop_handler::invoke(stop_handler_.first, stop_handler_.second, error);                   
-        stop_handler_ = stop_handler_type();
+        stop_handler_storage().swap(stop_handler_);
       } // session::invoke_stop_handler
 
     } // namespace server2

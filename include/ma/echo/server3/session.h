@@ -68,8 +68,8 @@ namespace ma
           stopped
         }; 
         
-        typedef std::pair<session_stop_handler_weak_ptr, allocator_ptr> stop_handler_type;
-        typedef std::pair<session_wait_handler_weak_ptr, allocator_ptr> wait_handler_type;
+        typedef std::pair<session_stop_handler_weak_ptr, allocator_ptr> stop_handler_storage;
+        typedef std::pair<session_wait_handler_weak_ptr, allocator_ptr> wait_handler_storage;
         
         void do_start(const allocator_ptr& operation_allocator,
           const session_start_handler_weak_ptr& handler);
@@ -91,8 +91,8 @@ namespace ma
         
         boost::asio::io_service::strand strand_;
         boost::asio::ip::tcp::socket socket_;
-        stop_handler_type stop_handler_;
-        wait_handler_type wait_handler_;                
+        stop_handler_storage stop_handler_;
+        wait_handler_storage wait_handler_;                
         boost::system::error_code error_;
         boost::system::error_code stop_error_;
         settings settings_;

@@ -67,9 +67,9 @@ namespace ma
           stop_in_progress,
           stopped
         };
-
-        typedef std::pair<session_manager_stop_handler_weak_ptr, allocator_ptr> stop_handler_type;
-        typedef std::pair<session_manager_wait_handler_weak_ptr, allocator_ptr> wait_handler_type;
+        
+        typedef std::pair<session_manager_stop_handler_weak_ptr, allocator_ptr> stop_handler_storage;
+        typedef std::pair<session_manager_wait_handler_weak_ptr, allocator_ptr> wait_handler_storage;
 
         friend class session_proxy;
 
@@ -106,8 +106,8 @@ namespace ma
         boost::asio::io_service::strand strand_;      
         boost::asio::ip::tcp::acceptor acceptor_;
         boost::asio::io_service& session_io_service_;            
-        stop_handler_type stop_handler_;
-        wait_handler_type wait_handler_;                
+        stop_handler_storage stop_handler_;
+        wait_handler_storage wait_handler_;                
         session_proxy_list active_session_proxies_;
         session_proxy_list recycled_session_proxies_;
         boost::system::error_code last_accept_error_;
