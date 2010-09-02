@@ -69,6 +69,44 @@ namespace ma
         return socket_;
       } // session::socket
 
+      void session::start_service(boost::system::error_code& error)
+      {
+        using boost::asio::ip::tcp;
+        socket_.set_option(tcp::socket::receive_buffer_size(settings_.socket_recv_buffer_size_), error);
+        if (!error)
+        {
+          socket_.set_option(tcp::socket::send_buffer_size(settings_.socket_recv_buffer_size_), error);
+          if (!error)
+          {
+            if (settings_.no_delay_)
+            {
+              socket_.set_option(tcp::no_delay(true), error);
+            }
+            if (!error) 
+            {
+              state_ = started;          
+              read_some();
+            }
+          }
+        } 
+      } // session::start_service
+
+      void session::stop_service()
+      {
+        // Start shutdown
+        state_ = stop_in_progress;
+        // Do shutdown - abort outer operations
+        if (wait_handler_.has_target())
+        {
+          wait_handler_.post(boost::asio::error::operation_aborted);
+        }
+        // Do shutdown - flush socket's write_some buffer
+        if (!socket_write_in_progress_) 
+        {
+          socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_send, stop_error_);            
+        }
+      } // session::stop_service
+
       bool session::may_complete_stop() const
       {
         return !socket_write_in_progress_ && !socket_read_in_progress_;

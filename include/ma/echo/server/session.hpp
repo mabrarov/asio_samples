@@ -143,31 +143,14 @@ namespace ma
           }
           else
           {
-            boost::system::error_code start_error;
-            using boost::asio::ip::tcp;
-            socket_.set_option(tcp::socket::receive_buffer_size(settings_.socket_recv_buffer_size_), start_error);
-            if (!start_error)
-            {
-              socket_.set_option(tcp::socket::send_buffer_size(settings_.socket_recv_buffer_size_), start_error);
-              if (!start_error)
-              {
-                if (settings_.no_delay_)
-                {
-                  socket_.set_option(tcp::no_delay(true), start_error);
-                }
-                if (!start_error) 
-                {
-                  state_ = started;          
-                  read_some();
-                }
-              }
-            }                        
+            boost::system::error_code error;
+            start_service(error);
             io_service_.post
             (
               detail::bind_handler
               (
                 boost::get<0>(handler), 
-                start_error
+                error
               )
             ); 
           }
@@ -189,18 +172,7 @@ namespace ma
           }
           else
           {
-            // Start shutdown
-            state_ = stop_in_progress;
-            // Do shutdown - abort outer operations
-            if (wait_handler_.has_target())
-            {
-              wait_handler_.post(boost::asio::error::operation_aborted);
-            }
-            // Do shutdown - flush socket's write_some buffer
-            if (!socket_write_in_progress_) 
-            {
-              socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_send, stop_error_);            
-            }
+            stop_service();
             // Check for shutdown continuation
             if (may_complete_stop())
             {
@@ -275,6 +247,8 @@ namespace ma
           } 
         } // do_wait
 
+        void start_service(boost::system::error_code& error);
+        void stop_service();
         bool may_complete_stop() const;
         void complete_stop();        
         void read_some();        

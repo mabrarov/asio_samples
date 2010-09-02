@@ -114,7 +114,58 @@ namespace ma
 
       session_manager::~session_manager()
       {        
-      } // session_manager::session_manager              
+      } // session_manager::session_manager  
+
+      void session_manager::start_service(boost::system::error_code& error)
+      {
+        state_ = start_in_progress;        
+        acceptor_.open(settings_.endpoint_.protocol(), error);
+        if (!error)
+        {
+          acceptor_.bind(settings_.endpoint_, error);
+          if (!error)
+          {
+            acceptor_.listen(settings_.listen_backlog_, error);
+          }          
+        }          
+        if (error)
+        {
+          boost::system::error_code ignored;
+          acceptor_.close(ignored);
+          state_ = stopped;
+        }
+        else
+        {            
+          accept_new_session();            
+          state_ = started;
+        }
+      } // session_manager::start_service
+
+      void session_manager::stop_service()
+      {
+        // Start shutdown
+        state_ = stop_in_progress;
+
+        // Do shutdown - abort inner operations          
+        acceptor_.close(stop_error_); 
+
+        // Start stop for all active sessions
+        session_proxy_ptr curr_session_proxy(active_session_proxies_.front());
+        while (curr_session_proxy)
+        {
+          if (stop_in_progress != curr_session_proxy->state_)
+          {
+            stop_session(curr_session_proxy);
+          }
+          curr_session_proxy = curr_session_proxy->next_;
+        }
+
+        // Do shutdown - abort outer operations
+        if (wait_handler_.has_target())
+        {
+          wait_handler_.post(boost::asio::error::operation_aborted);
+        }
+      } // session_manager::stop_service
 
       void session_manager::accept_new_session()
       {
