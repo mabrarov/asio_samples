@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2009 Marat Abrarov (abrarov@mail.ru)
+// Copyright (c) 2010 Marat Abrarov (abrarov@mail.ru)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -8,9 +8,7 @@
 #ifndef MA_NMEA_CYCLIC_READ_SESSION_HPP
 #define MA_NMEA_CYCLIC_READ_SESSION_HPP
 
-#include <stdexcept>
 #include <string>
-#include <boost/make_shared.hpp>
 #include <boost/utility.hpp>
 #include <boost/smart_ptr.hpp>
 #include <boost/bind.hpp>
@@ -51,60 +49,13 @@ namespace ma
       BOOST_STATIC_CONSTANT(std::size_t, min_read_buffer_size = max_message_size);
       BOOST_STATIC_CONSTANT(std::size_t, min_message_queue_size = 1);
 
-      explicit cyclic_read_session(
-        boost::asio::io_service& io_service,
-        const std::size_t read_buffer_size,
-        const std::size_t message_queue_size,
-        const std::string& frame_head,
-        const std::string& frame_tail)
-        : io_service_(io_service)        
-        , strand_(io_service)
-        , serial_port_(io_service)
-        , read_handler_(io_service)        
-        , stop_handler_(io_service)
-        , message_queue_(message_queue_size)
-        , state_(ready_to_start)
-        , port_write_in_progress_(false)
-        , port_read_in_progress_(false)                
-        , read_buffer_(read_buffer_size)
-        , frame_head_(frame_head)
-        , frame_tail_(frame_tail)
-      {
-        if (message_queue_size < min_message_queue_size)
-        {
-          boost::throw_exception(std::invalid_argument("too small message_queue_size"));
-        }
-        if (max_message_size > read_buffer_size)
-        {
-          boost::throw_exception(std::invalid_argument("too small read_buffer_size"));
-        }
-        if (frame_head.length() > read_buffer_size)
-        {
-          boost::throw_exception(std::invalid_argument("too large frame_head"));
-        }
-        if (frame_tail.length() > read_buffer_size)
-        {
-          boost::throw_exception(std::invalid_argument("too large frame_tail"));
-        }
-      }
+      explicit cyclic_read_session(boost::asio::io_service& io_service,
+        const std::size_t read_buffer_size, const std::size_t message_queue_size,
+        const std::string& frame_head, const std::string& frame_tail);
+      ~cyclic_read_session();      
 
-      ~cyclic_read_session()
-      {          
-      }      
-
-      boost::asio::serial_port& serial_port()
-      {
-        return serial_port_;
-      }
-      
-      void resest()
-      {
-        message_queue_.clear();        
-        read_error_ = boost::system::error_code();
-        read_buffer_.consume(
-          boost::asio::buffer_size(read_buffer_.data()));        
-        state_ = ready_to_start;
-      }
+      boost::asio::serial_port& serial_port();      
+      void resest();
 
       template <typename Handler>
       void async_start(Handler handler)
@@ -427,143 +378,12 @@ namespace ma
           // Wait for the ready message
           read_handler_.store(message, boost::get<0>(handler));          
         }        
-      } // do_read          
+      } // do_read                     
 
-      void read_until_head()
-      {                                 
-        boost::asio::async_read_until
-        (
-          serial_port_, read_buffer_, frame_head_,
-          strand_.wrap
-          (
-            make_custom_alloc_handler
-            (
-              read_allocator_, 
-              boost::bind
-              (
-                &this_type::handle_read_head, 
-                shared_from_this(), 
-                boost::asio::placeholders::error, 
-                boost::asio::placeholders::bytes_transferred
-              )
-            )
-          )
-        );                  
-        port_read_in_progress_ = true;          
-      } // read_until_head
-
-      void read_until_tail()
-      {                    
-        boost::asio::async_read_until
-        (
-          serial_port_, read_buffer_, frame_tail_,
-          strand_.wrap
-          (
-            make_custom_alloc_handler
-            (
-              read_allocator_, 
-              boost::bind
-              (
-                &this_type::handle_read_tail, 
-                shared_from_this(), 
-                boost::asio::placeholders::error, 
-                boost::asio::placeholders::bytes_transferred
-              )
-            )
-          )
-        );
-        port_read_in_progress_ = true;
-      } // read_until_tail
-
-      void handle_read_head(const boost::system::error_code& error, 
-        const std::size_t bytes_transferred)
-      {         
-        port_read_in_progress_ = false;        
-        if (stop_in_progress == state_)
-        {          
-          if (!port_write_in_progress_)
-          {
-            state_ = stopped;
-            // Signal shutdown completion
-            stop_handler_.post(stop_error_);
-          }
-        }
-        else if (!error)
-        {
-          // We do not need in-between-frame-garbage and frame's head
-          read_buffer_.consume(bytes_transferred);                    
-          read_until_tail();
-        }
-        else if (read_handler_.has_target())
-        {
-          read_handler_.data() = message_ptr();
-          read_handler_.post(error);
-        }
-        else
-        {
-          // Store error for the next outer read operation.
-          read_error_ = error;          
-        }
-      } // handle_read_head
-
-      void handle_read_tail(const boost::system::error_code& error, 
-        const std::size_t bytes_transferred)
-      {                  
-        port_read_in_progress_ = false;        
-        if (stop_in_progress == state_)
-        {
-          if (!port_write_in_progress_)
-          {
-            state_ = stopped;
-            // Signal shutdown completion
-            stop_handler_.post(stop_error_);
-          }
-        }
-        else if (!error)        
-        {                   
-          typedef boost::asio::streambuf::const_buffers_type const_buffers_type;
-          typedef boost::asio::buffers_iterator<const_buffers_type> buffers_iterator;
-          const_buffers_type committed_buffers(read_buffer_.data());
-          buffers_iterator data_begin(buffers_iterator::begin(committed_buffers));
-          buffers_iterator data_end(data_begin + bytes_transferred - frame_tail_.length());
-          bool newly_allocated = !message_queue_.full() || read_handler_.has_target();
-          message_ptr new_message;
-          if (newly_allocated)
-          {
-            new_message = boost::make_shared<message_type>(data_begin, data_end);
-          }
-          else
-          {
-            new_message = message_queue_.front();
-            new_message->assign(data_begin, data_end);
-          }          
-          // Consume processed data
-          read_buffer_.consume(bytes_transferred);
-          // Continue inner operations loop.
-          read_until_head();
-          // If there is waiting read operation - complete it            
-          if (read_handler_.has_target())
-          {   
-            read_handler_.data() = new_message;
-            read_handler_.post(error);
-          } 
-          else
-          {
-            // else push ready message into the cyclic read buffer            
-            message_queue_.push_back(new_message);              
-          }          
-        }
-        else if (read_handler_.has_target())
-        {
-          read_handler_.data() = message_ptr();
-          read_handler_.post(error);
-        }
-        else
-        {
-          // Store error for the next outer read operation.
-          read_error_ = error;          
-        }
-      } // handle_read_tail
+      void read_until_head();
+      void read_until_tail();
+      void handle_read_head(const boost::system::error_code& error, const std::size_t bytes_transferred);
+      void handle_read_tail(const boost::system::error_code& error, const std::size_t bytes_transferred);
       
       boost::asio::io_service& io_service_;
       boost::asio::io_service::strand strand_;

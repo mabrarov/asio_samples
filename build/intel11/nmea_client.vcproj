@@ -43,7 +43,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/vmg"
+				AdditionalOptions="/MP"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\include;..\..\..\boost_1_44_0"
 				PreprocessorDefinitions="WIN32;WIN32_LEAN_AND_MEAN;WINVER=0x0500;_WIN32_WINNT=0x0500;_WIN32_WINDOWS=0x0500;_WIN32_IE=0x0600;_DEBUG;_CONSOLE;BOOST_HAS_THREADS"
@@ -120,7 +120,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/vmg "
+				AdditionalOptions="/MP"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\include;..\..\..\boost_1_44_0"
 				AdditionalUsingDirectories="--port 2230"
@@ -198,7 +198,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/vmg "
+				AdditionalOptions="/MP"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
@@ -276,7 +276,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalOptions="/vmg "
+				AdditionalOptions="/MP"
 				AdditionalIncludeDirectories="..\..\include;..\..\..\boost_1_44_0"
 				PreprocessorDefinitions="NDEBUG;WIN32;WIN32_LEAN_AND_MEAN;WINVER=0x0501;_WIN32_WINNT=0x0501;_WIN32_WINDOWS=0x0501;_WIN32_IE=0x0600;_CONSOLE;BOOST_HAS_THREADS"
 				RuntimeLibrary="0"
@@ -345,6 +345,14 @@
 					RelativePath="..\..\src\ma\console_controller.cpp"
 					>
 				</File>
+				<Filter
+					Name="nmea"
+					>
+					<File
+						RelativePath="..\..\src\ma\nmea\cyclic_read_session.cpp"
+						>
+					</File>
+				</Filter>
 			</Filter>
 		</Filter>
 		<Filter

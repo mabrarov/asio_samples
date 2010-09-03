@@ -18,6 +18,9 @@
     <Filter Include="Source Files\ma">
       <UniqueIdentifier>{6e66f5b1-6ddc-4587-9c42-439cefa1b15e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\ma\nmea">
+      <UniqueIdentifier>{5c7348a7-2d29-4cc3-b1c0-c6d20420be72}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\ma\console_controller.cpp">
@@ -25,6 +28,9 @@
     </ClCompile>
     <ClCompile Include="..\..\src\nmea_client\main.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\ma\nmea\cyclic_read_session.cpp">
+      <Filter>Source Files\ma\nmea</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

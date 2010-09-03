@@ -5,7 +5,8 @@ CONFIG   -= app_bundle
 TEMPLATE =  app
 
 SOURCES  += ../../../src/ma/console_controller.cpp \
-            ../../../src/nmea_client/main.cpp
+            ../../../src/nmea_client/main.cpp \
+            ../../../src/ma/nmea/cyclic_read_session.cpp
 
 HEADERS  += ../../../include/ma/handler_storage_service.hpp \
             ../../../include/ma/handler_storage.hpp \
