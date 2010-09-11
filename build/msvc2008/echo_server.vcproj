@@ -381,7 +381,31 @@
 							>
 						</File>
 						<File
+							RelativePath="..\..\include\ma\echo\server\session_config.hpp"
+							>
+						</File>
+						<File
+							RelativePath="..\..\include\ma\echo\server\session_config_fwd.hpp"
+							>
+						</File>
+						<File
+							RelativePath="..\..\include\ma\echo\server\session_fwd.hpp"
+							>
+						</File>
+						<File
 							RelativePath=".\..\..\include\ma\echo\server\session_manager.hpp"
+							>
+						</File>
+						<File
+							RelativePath="..\..\include\ma\echo\server\session_manager_config.hpp"
+							>
+						</File>
+						<File
+							RelativePath="..\..\include\ma\echo\server\session_manager_config_fwd.hpp"
+							>
+						</File>
+						<File
+							RelativePath="..\..\include\ma\echo\server\session_manager_fwd.hpp"
 							>
 						</File>
 					</Filter>
@@ -415,7 +439,15 @@
 							>
 						</File>
 						<File
+							RelativePath="..\..\src\ma\echo\server\session_config.cpp"
+							>
+						</File>
+						<File
 							RelativePath="..\..\src\ma\echo\server\session_manager.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\..\src\ma\echo\server\session_manager_config.cpp"
 							>
 						</File>
 					</Filter>

@@ -9,7 +9,6 @@
 #define MA_ECHO_SERVER_SESSION_HPP
 
 #include <boost/utility.hpp>
-#include <boost/smart_ptr.hpp>
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
 #include <boost/tuple/tuple.hpp>
@@ -17,6 +16,8 @@
 #include <ma/handler_storage.hpp>
 #include <ma/bind_asio_handler.hpp>
 #include <ma/cyclic_buffer.hpp>
+#include <ma/echo/server/session_config.hpp>
+#include <ma/echo/server/session_fwd.hpp>
 
 namespace ma
 {    
@@ -24,9 +25,6 @@ namespace ma
   {
     namespace server
     {    
-      class session;
-      typedef boost::shared_ptr<session> session_ptr;
-
       class session 
         : private boost::noncopyable
         , public boost::enable_shared_from_this<session>
@@ -42,20 +40,8 @@ namespace ma
           stopped
         };        
         
-      public:
-        struct settings
-        { 
-          bool no_delay_;
-          int socket_recv_buffer_size_;
-          int socket_send_buffer_size_;
-          std::size_t buffer_size_;                   
-
-          explicit settings(std::size_t buffer_size, 
-            int socket_recv_buffer_size, int socket_send_buffer_size,
-            bool no_delay);
-        }; // struct settings
-
-        explicit session(boost::asio::io_service& io_service, const settings& settings);
+      public:        
+        explicit session(boost::asio::io_service& io_service, const session_config& config);
         ~session();        
 
         void reset();        
@@ -266,7 +252,7 @@ namespace ma
         handler_storage<boost::system::error_code> stop_handler_;
         boost::system::error_code error_;
         boost::system::error_code stop_error_;
-        settings settings_;        
+        session_config config_;        
         cyclic_buffer buffer_;
         in_place_handler_allocator<640> write_allocator_;
         in_place_handler_allocator<256> read_allocator_;

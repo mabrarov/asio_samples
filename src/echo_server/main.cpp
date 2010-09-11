@@ -19,6 +19,8 @@
 #include <boost/asio.hpp>
 #include <boost/program_options.hpp>
 #include <ma/handler_allocation.hpp>
+#include <ma/echo/server/session_config.hpp>
+#include <ma/echo/server/session_manager_config.hpp>
 #include <ma/echo/server/session_manager.hpp>
 #include <ma/console_controller.hpp>
 
@@ -59,11 +61,11 @@ struct session_manager_proxy : private boost::noncopyable
 
   explicit session_manager_proxy(boost::asio::io_service& io_service,
     boost::asio::io_service& session_io_service,
-    const ma::echo::server::session_manager::settings& settings)
+    const ma::echo::server::session_manager_config& config)
     : stopped_by_program_exit_(false)
     , state_(ready_to_start)
     , session_manager_(boost::make_shared<ma::echo::server::session_manager>(
-        boost::ref(io_service), boost::ref(session_io_service), settings))        
+        boost::ref(io_service), boost::ref(session_io_service), config))        
   {
   }
 
@@ -132,32 +134,32 @@ int _tmain(int argc, _TCHAR* argv[])
       boost::posix_time::time_duration stop_timeout = 
         boost::posix_time::seconds(options_values[stop_timeout_param].as<long>());
 
-      ma::echo::server::session::settings session_settings(
+      ma::echo::server::session_config session_config(
         options_values[buffer_size_param].as<std::size_t>(), 
         options_values[socket_recv_buffer_size_param].as<int>(), 
         options_values[socket_send_buffer_size_param].as<int>(),
         0 != options_values.count(socket_no_delay_param));
 
-      ma::echo::server::session_manager::settings server_settings(
+      ma::echo::server::session_manager_config manager_config(
         boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), listen_port),
         options_values[max_sessions_param].as<std::size_t>(),
         options_values[recycled_sessions_param].as<std::size_t>(),
         options_values[listen_backlog_param].as<int>(),
-        session_settings);      
+        session_config);      
 
-      std::cout << "Number of found CPU(s)             : " << cpu_count                     << std::endl
-                << "Number of session manager's threads: " << session_manager_thread_count  << std::endl
-                << "Number of sessions' threads        : " << session_thread_count          << std::endl
+      std::cout << "Number of found CPU(s)             : " << cpu_count                         << std::endl
+                << "Number of session manager's threads: " << session_manager_thread_count      << std::endl
+                << "Number of sessions' threads        : " << session_thread_count              << std::endl
                 << "Total number of work threads       : " << session_thread_count + session_manager_thread_count << std::endl
-                << "Server listen port                 : " << listen_port                   << std::endl
-                << "Server stop timeout (seconds)      : " << stop_timeout.total_seconds()  << std::endl
-                << "Maximum number of active sessions  : " << server_settings.max_sessions_ << std::endl
-                << "Maximum number of recycled sessions: " << server_settings.recycled_sessions_ << std::endl
-                << "TCP listen backlog size            : " << server_settings.listen_backlog_    << std::endl
-                << "Size of session's buffer (bytes)   : " << session_settings.buffer_size_      << std::endl
-                << "Size of session's socket receive buffer (bytes): " << session_settings.socket_recv_buffer_size_ << std::endl
-                << "Size of session's socket send buffer (bytes)   : " << session_settings.socket_send_buffer_size_ << std::endl
-                << "Session's socket Nagle algorithm is: " << (session_settings.no_delay_ ? "off" : "OS default")   << std::endl;
+                << "Server listen port                 : " << listen_port                       << std::endl
+                << "Server stop timeout (seconds)      : " << stop_timeout.total_seconds()      << std::endl
+                << "Maximum number of active sessions  : " << manager_config.max_sessions_      << std::endl
+                << "Maximum number of recycled sessions: " << manager_config.recycled_sessions_ << std::endl
+                << "TCP listen backlog size            : " << manager_config.listen_backlog_    << std::endl
+                << "Size of session's buffer (bytes)   : " << session_config.buffer_size_       << std::endl
+                << "Size of session's socket receive buffer (bytes): " << session_config.socket_recv_buffer_size_ << std::endl
+                << "Size of session's socket send buffer (bytes)   : " << session_config.socket_send_buffer_size_ << std::endl
+                << "Session's socket Nagle algorithm is: " << (session_config.no_delay_ ? "off" : "OS default")   << std::endl;
       
       // Before session_manager_io_service
       boost::asio::io_service session_io_service;
@@ -168,7 +170,7 @@ int _tmain(int argc, _TCHAR* argv[])
       // after session_io_service, because session_manager holds up all sessions, 
       // which are based on the session_io_service
       session_manager_proxy_ptr main_session_manager_proxy(boost::make_shared<session_manager_proxy>(
-        boost::ref(session_manager_io_service), boost::ref(session_io_service), server_settings));
+        boost::ref(session_manager_io_service), boost::ref(session_io_service), manager_config));
       
       std::cout << "Server is starting...\n";
       
@@ -365,11 +367,14 @@ void run_io_service(boost::asio::io_service& io_service,
 
 void handle_work_exception(const session_manager_proxy_ptr& current_session_manager_proxy)
 {
-  boost::unique_lock<boost::mutex> server_data_lock(current_session_manager_proxy->mutex_);  
-  current_session_manager_proxy->state_ = session_manager_proxy::stopped;  
-  std::cout << "Terminating server work due to unexpected exception...\n";
-  server_data_lock.unlock();
-  current_session_manager_proxy->state_changed_.notify_one();      
+  boost::unique_lock<boost::mutex> server_data_lock(current_session_manager_proxy->mutex_);
+  if (session_manager_proxy::stopped != current_session_manager_proxy->state_)
+  {
+    current_session_manager_proxy->state_ = session_manager_proxy::stopped;  
+    std::cout << "Terminating server work due to unexpected exception...\n";
+    server_data_lock.unlock();
+    current_session_manager_proxy->state_changed_.notify_one();      
+  }  
 }
 
 void handle_program_exit(const session_manager_proxy_ptr& current_session_manager_proxy)

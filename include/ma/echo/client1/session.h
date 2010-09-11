@@ -33,20 +33,20 @@ namespace ma
         typedef session this_type;
 
       public:
-        struct settings
+        struct config
         {              
           std::size_t buffer_size_;
           int socket_recv_buffer_size_;
           int socket_send_buffer_size_;
           bool no_delay_;
 
-          explicit settings(std::size_t buffer_size,
+          explicit config(std::size_t buffer_size,
             int socket_recv_buffer_size,
             int socket_send_buffer_size,
             bool no_delay);
-        }; // struct settings
+        }; // struct config
 
-        explicit session(boost::asio::io_service& io_service, const settings& settings);
+        explicit session(boost::asio::io_service& io_service, const config& config);
         ~session();
 
         void reset();
@@ -95,7 +95,7 @@ namespace ma
         wait_handler_type wait_handler_;                
         boost::system::error_code error_;
         boost::system::error_code stop_error_;
-        settings settings_;
+        config config_;
         state_type state_;
         bool socket_write_in_progress_;
         bool socket_read_in_progress_;

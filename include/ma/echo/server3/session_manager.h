@@ -31,24 +31,24 @@ namespace ma
         typedef session_manager this_type;        
 
       public:
-        struct settings
+        struct config
         { 
           int listen_backlog_;
           std::size_t max_sessions_;
           std::size_t recycled_sessions_;
           boost::asio::ip::tcp::endpoint endpoint_;                    
-          session::settings session_settings_;
+          session::config session_config_;
 
-          explicit settings(const boost::asio::ip::tcp::endpoint& endpoint,
+          explicit config(const boost::asio::ip::tcp::endpoint& endpoint,
             std::size_t max_sessions,
             std::size_t recycled_sessions,
             int listen_backlog,
-            const session::settings& session_settings);
-        }; // struct settings
+            const session::config& session_config);
+        }; // struct config
 
         explicit session_manager(boost::asio::io_service& io_service,
           boost::asio::io_service& session_io_service,
-          const settings& settings);
+          const config& config);
         ~session_manager();
 
         void async_start(const allocator_ptr& operation_allocator,
@@ -115,7 +115,7 @@ namespace ma
         session_proxy_list recycled_session_proxies_;
         boost::system::error_code last_accept_error_;
         boost::system::error_code stop_error_;      
-        settings settings_;        
+        config config_;        
         in_place_handler_allocator<512> accept_allocator_;
       }; // class session_manager
 

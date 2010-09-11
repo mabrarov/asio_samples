@@ -41,7 +41,7 @@ namespace ma
         session_completion::handler_allocator stop_allocator_;
 
         explicit session_proxy(boost::asio::io_service& io_service,
-          const session::settings& session_settings);
+          const session::config& session_config);
         ~session_proxy();
       }; // session_proxy
 

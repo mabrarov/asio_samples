@@ -16,7 +16,10 @@
 #include <ma/handler_allocation.hpp>
 #include <ma/handler_storage.hpp>
 #include <ma/bind_asio_handler.hpp>
-#include <ma/echo/server/session.hpp>
+#include <ma/echo/server/session_config_fwd.hpp>
+#include <ma/echo/server/session_fwd.hpp>
+#include <ma/echo/server/session_manager_config.hpp>
+#include <ma/echo/server/session_manager_fwd.hpp>
 
 namespace ma
 {    
@@ -24,16 +27,13 @@ namespace ma
   {    
     namespace server
     {    
-      class session_manager;
-      typedef boost::shared_ptr<session_manager> session_manager_ptr;    
-      typedef boost::weak_ptr<session_manager>   session_manager_weak_ptr;    
-
       class session_manager 
         : private boost::noncopyable
         , public boost::enable_shared_from_this<session_manager>
       {
       private:
         typedef session_manager this_type;
+
         enum state_type
         {
           ready_to_start,
@@ -42,6 +42,7 @@ namespace ma
           stop_in_progress,
           stopped
         };
+
         struct session_proxy;
         typedef boost::shared_ptr<session_proxy> session_proxy_ptr;
         typedef boost::weak_ptr<session_proxy>   session_proxy_weak_ptr;      
@@ -67,8 +68,8 @@ namespace ma
           in_place_handler_allocator<256> stop_allocator_;
 
           explicit session_proxy(boost::asio::io_service& io_service,
-            const session::settings& session_settings);
-          ~session_proxy();          
+            const session_config& holded_session_config);
+          ~session_proxy();
         }; // session_proxy
 
         class session_proxy_list : private boost::noncopyable
@@ -87,22 +88,10 @@ namespace ma
           session_proxy_ptr front_;
         }; // session_proxy_list
 
-      public:
-        struct settings
-        { 
-          int listen_backlog_;
-          std::size_t max_sessions_;
-          std::size_t recycled_sessions_;
-          boost::asio::ip::tcp::endpoint endpoint_;                    
-          session::settings session_settings_;
-
-          explicit settings(const boost::asio::ip::tcp::endpoint& endpoint,
-            std::size_t max_sessions, std::size_t recycled_sessions,
-            int listen_backlog, const session::settings& session_settings);
-        }; // struct settings
-
+      public:        
         explicit session_manager(boost::asio::io_service& io_service,
-          boost::asio::io_service& session_io_service, const settings& settings);
+          boost::asio::io_service& session_io_service, 
+          const session_manager_config& config);
         ~session_manager();        
 
         template <typename Handler>
@@ -327,7 +316,7 @@ namespace ma
         session_proxy_list recycled_session_proxies_;
         boost::system::error_code last_accept_error_;
         boost::system::error_code stop_error_;      
-        settings settings_;        
+        session_manager_config config_;        
         in_place_handler_allocator<512> accept_allocator_;
       }; // class session_manager
 

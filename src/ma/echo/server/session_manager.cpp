@@ -9,6 +9,8 @@
 #include <boost/throw_exception.hpp>
 #include <boost/ref.hpp>
 #include <boost/make_shared.hpp>
+#include <ma/echo/server/session_config.hpp>
+#include <ma/echo/server/session.hpp>
 #include <ma/echo/server/session_manager.hpp>
 
 namespace ma
@@ -18,10 +20,10 @@ namespace ma
     namespace server
     {    
       session_manager::session_proxy::session_proxy(boost::asio::io_service& io_service,
-        const session::settings& session_settings)
+        const session_config& holded_session_config)
         : state_(ready_to_start)
         , pending_operations_(0)
-        , session_(boost::make_shared<session>(boost::ref(io_service), session_settings))
+        , session_(boost::make_shared<session>(boost::ref(io_service), holded_session_config))
       {
       } // session_manager::session_proxy::session_proxy
 
@@ -79,25 +81,10 @@ namespace ma
       session_manager::session_proxy_ptr session_manager::session_proxy_list::front() const
       {
         return front_;
-      } // session_manager::session_proxy_list::front
-
-      session_manager::settings::settings(const boost::asio::ip::tcp::endpoint& endpoint,
-        std::size_t max_sessions, std::size_t recycled_sessions,
-        int listen_backlog, const session::settings& session_settings)
-        : listen_backlog_(listen_backlog)
-        , max_sessions_(max_sessions)
-        , recycled_sessions_(recycled_sessions)
-        , endpoint_(endpoint)                
-        , session_settings_(session_settings)
-      {
-        if (1 > max_sessions_)
-        {
-          boost::throw_exception(std::invalid_argument("maximum sessions number must be >= 1"));
-        }
-      } // session_manager::settings::settings
+      } // session_manager::session_proxy_list::front      
         
       session_manager::session_manager(boost::asio::io_service& io_service,
-        boost::asio::io_service& session_io_service, const settings& settings)
+        boost::asio::io_service& session_io_service, const session_manager_config& config)
         : accept_in_progress_(false)
         , state_(ready_to_start)
         , pending_operations_(0)
@@ -107,7 +94,7 @@ namespace ma
         , acceptor_(io_service)        
         , wait_handler_(io_service)
         , stop_handler_(io_service)
-        , settings_(settings)
+        , config_(config)
         
       {          
       } // session_manager::session_manager
@@ -119,13 +106,13 @@ namespace ma
       void session_manager::start_service(boost::system::error_code& error)
       {
         state_ = start_in_progress;        
-        acceptor_.open(settings_.endpoint_.protocol(), error);
+        acceptor_.open(config_.endpoint_.protocol(), error);
         if (!error)
         {
-          acceptor_.bind(settings_.endpoint_, error);
+          acceptor_.bind(config_.endpoint_, error);
           if (!error)
           {
-            acceptor_.listen(settings_.listen_backlog_, error);
+            acceptor_.listen(config_.listen_backlog_, error);
           }          
         }          
         if (error)
@@ -174,7 +161,7 @@ namespace ma
         if (recycled_session_proxies_.empty())
         {
           new_session_proxy = boost::make_shared<session_proxy>(
-            boost::ref(session_io_service_), settings_.session_settings_);
+            boost::ref(session_io_service_), config_.session_config_);
         }
         else
         {
@@ -228,14 +215,14 @@ namespace ma
             wait_handler_.post(error);
           }
         }
-        else if (active_session_proxies_.size() < settings_.max_sessions_)
+        else if (active_session_proxies_.size() < config_.max_sessions_)
         { 
           // Start accepted session 
           start_session(new_session_proxy);          
           // Save session as active
           active_session_proxies_.push_front(new_session_proxy);
           // Continue session acceptation if can
-          if (active_session_proxies_.size() < settings_.max_sessions_)
+          if (active_session_proxies_.size() < config_.max_sessions_)
           {
             accept_new_session();
           }          
@@ -364,7 +351,7 @@ namespace ma
               recycle_session(started_session_proxy);
               // Continue session acceptation if can
               if (!accept_in_progress_ && !last_accept_error_
-                && active_session_proxies_.size() < settings_.max_sessions_)
+                && active_session_proxies_.size() < config_.max_sessions_)
               {                
                 accept_new_session();
               }                
@@ -494,7 +481,7 @@ namespace ma
             recycle_session(stopped_session_proxy);
             // Continue session acceptation if can
             if (!accept_in_progress_ && !last_accept_error_
-              && active_session_proxies_.size() < settings_.max_sessions_)
+              && active_session_proxies_.size() < config_.max_sessions_)
             {                
               accept_new_session();
             }              
@@ -518,7 +505,7 @@ namespace ma
       void session_manager::recycle_session(const session_proxy_ptr& recycled_session_proxy)
       {
         if (0 == recycled_session_proxy->pending_operations_
-          && recycled_session_proxies_.size() < settings_.recycled_sessions_)
+          && recycled_session_proxies_.size() < config_.recycled_sessions_)
         {
           recycled_session_proxy->session_->reset();
           recycled_session_proxy->state_ = session_proxy::ready_to_start;

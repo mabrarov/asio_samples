@@ -19,7 +19,7 @@ namespace ma
   {
     namespace client1
     {
-      session::settings::settings(std::size_t buffer_size,
+      session::config::config(std::size_t buffer_size,
         int socket_recv_buffer_size,
         int socket_send_buffer_size,
         bool no_delay)
@@ -40,16 +40,16 @@ namespace ma
         {
           boost::throw_exception(std::invalid_argument("socket_send_buffer_size must be non negative"));
         }
-      } // session::settings::settings
+      } // session::config::config
 
-      session::session(boost::asio::io_service& io_service, const settings& settings)        
+      session::session(boost::asio::io_service& io_service, const config& config)        
         : strand_(io_service)
         , socket_(io_service)
-        , settings_(settings)
+        , config_(config)
         , state_(ready_to_start)
         , socket_write_in_progress_(false)
         , socket_read_in_progress_(false) 
-        , buffer_(settings.buffer_size_)
+        , buffer_(config.buffer_size_)
       {          
       } // session::session
 
@@ -145,13 +145,13 @@ namespace ma
         {
           boost::system::error_code start_error;
           using boost::asio::ip::tcp;
-          socket_.set_option(tcp::socket::receive_buffer_size(settings_.socket_recv_buffer_size_), start_error);
+          socket_.set_option(tcp::socket::receive_buffer_size(config_.socket_recv_buffer_size_), start_error);
           if (!start_error)
           {
-            socket_.set_option(tcp::socket::send_buffer_size(settings_.socket_recv_buffer_size_), start_error);
+            socket_.set_option(tcp::socket::send_buffer_size(config_.socket_recv_buffer_size_), start_error);
             if (!start_error)
             {
-              if (settings_.no_delay_)
+              if (config_.no_delay_)
               {
                 socket_.set_option(tcp::no_delay(true), start_error);
               }

@@ -16,8 +16,8 @@ namespace ma
     namespace server2
     {
       session_proxy::session_proxy(boost::asio::io_service& io_service,
-        const session::settings& session_settings)
-        : session_(boost::make_shared<session>(boost::ref(io_service), session_settings))
+        const session::config& session_config)
+        : session_(boost::make_shared<session>(boost::ref(io_service), session_config))
         , pending_operations_(0)
         , state_(ready_to_start)
       {

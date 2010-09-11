@@ -14,30 +14,8 @@ namespace ma
   namespace echo
   {
     namespace server
-    {          
-      session::settings::settings(std::size_t buffer_size,
-        int socket_recv_buffer_size, int socket_send_buffer_size,
-        bool no_delay)
-          : no_delay_(no_delay)          
-          , socket_recv_buffer_size_(socket_recv_buffer_size)
-          , socket_send_buffer_size_(socket_send_buffer_size)
-          , buffer_size_(buffer_size)         
-      {
-        if (1 > buffer_size)
-        {
-          boost::throw_exception(std::invalid_argument("too small buffer_size"));
-        }
-        if (0 > socket_recv_buffer_size)
-        {
-          boost::throw_exception(std::invalid_argument("socket_recv_buffer_size must be non negative"));
-        }
-        if (0 > socket_send_buffer_size)
-        {
-          boost::throw_exception(std::invalid_argument("socket_send_buffer_size must be non negative"));
-        }
-      } // session::settings::settings
-
-      session::session(boost::asio::io_service& io_service, const settings& settings)
+    {
+      session::session(boost::asio::io_service& io_service, const session_config& config)
         : socket_write_in_progress_(false)
         , socket_read_in_progress_(false) 
         , state_(ready_to_start)
@@ -46,8 +24,8 @@ namespace ma
         , socket_(io_service)
         , wait_handler_(io_service)
         , stop_handler_(io_service)
-        , settings_(settings)                
-        , buffer_(settings.buffer_size_)
+        , config_(config)                
+        , buffer_(config.buffer_size_)
       {          
       } // session::session
 
@@ -72,13 +50,13 @@ namespace ma
       void session::start_service(boost::system::error_code& error)
       {
         using boost::asio::ip::tcp;
-        socket_.set_option(tcp::socket::receive_buffer_size(settings_.socket_recv_buffer_size_), error);
+        socket_.set_option(tcp::socket::receive_buffer_size(config_.socket_recv_buffer_size_), error);
         if (!error)
         {
-          socket_.set_option(tcp::socket::send_buffer_size(settings_.socket_recv_buffer_size_), error);
+          socket_.set_option(tcp::socket::send_buffer_size(config_.socket_recv_buffer_size_), error);
           if (!error)
           {
-            if (settings_.no_delay_)
+            if (config_.no_delay_)
             {
               socket_.set_option(tcp::no_delay(true), error);
             }
@@ -182,7 +160,7 @@ namespace ma
       } // session::write_some
 
       void session::handle_read_some(const boost::system::error_code& error, const std::size_t bytes_transferred)
-      {
+      {        
         socket_read_in_progress_ = false;
         if (stop_in_progress == state_)
         {  

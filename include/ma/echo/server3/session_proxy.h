@@ -53,7 +53,7 @@ namespace ma
         
         explicit session_proxy(boost::asio::io_service& io_service,
           const boost::weak_ptr<session_manager>& session_manager,
-          const session::settings& session_settings);
+          const session::config& session_config);
         ~session_proxy();
         
         void async_handle_start(const allocator_ptr& operation_allocator,
