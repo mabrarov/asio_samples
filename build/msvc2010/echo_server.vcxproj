@@ -186,6 +186,8 @@
     <ClInclude Include="..\..\include\ma\bind_asio_handler.hpp" />
     <ClInclude Include="..\..\include\ma\console_controller.hpp" />
     <ClInclude Include="..\..\include\ma\cyclic_buffer.hpp" />
+    <ClInclude Include="..\..\include\ma\echo\server\io_service_set.hpp" />
+    <ClInclude Include="..\..\include\ma\echo\server\io_service_set_fwd.hpp" />
     <ClInclude Include="..\..\include\ma\echo\server\session_config.hpp" />
     <ClInclude Include="..\..\include\ma\echo\server\session_config_fwd.hpp" />
     <ClInclude Include="..\..\include\ma\echo\server\session_fwd.hpp" />

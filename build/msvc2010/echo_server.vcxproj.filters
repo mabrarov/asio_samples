@@ -77,6 +77,12 @@
     <ClInclude Include="..\..\include\ma\echo\server\session_manager_config_fwd.hpp">
       <Filter>Header Files\ma\echo\server</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\ma\echo\server\io_service_set_fwd.hpp">
+      <Filter>Header Files\ma\echo\server</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\ma\echo\server\io_service_set.hpp">
+      <Filter>Header Files\ma\echo\server</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\ma\console_controller.cpp">

@@ -11,6 +11,7 @@
 #include <boost/make_shared.hpp>
 #include <ma/echo/server/session_config.hpp>
 #include <ma/echo/server/session.hpp>
+#include <ma/echo/server/io_service_set.hpp>
 #include <ma/echo/server/session_manager.hpp>
 
 namespace ma
@@ -83,17 +84,17 @@ namespace ma
         return front_;
       } // session_manager::session_proxy_list::front      
         
-      session_manager::session_manager(boost::asio::io_service& io_service,
-        boost::asio::io_service& session_io_service, const session_manager_config& config)
+      session_manager::session_manager(io_service_set& io_services, 
+        const session_manager_config& config)
         : accept_in_progress_(false)
         , state_(ready_to_start)
         , pending_operations_(0)
-        , io_service_(io_service)
-        , session_io_service_(session_io_service)
-        , strand_(io_service)
-        , acceptor_(io_service)        
-        , wait_handler_(io_service)
-        , stop_handler_(io_service)
+        , io_service_(io_services.session_manager_io_service())
+        , session_io_service_(io_services.session_io_service())
+        , strand_(io_services.session_manager_io_service())
+        , acceptor_(io_services.session_manager_io_service())        
+        , wait_handler_(io_services.session_manager_io_service())
+        , stop_handler_(io_services.session_manager_io_service())
         , config_(config)
         
       {          

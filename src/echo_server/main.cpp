@@ -22,6 +22,7 @@
 #include <ma/echo/server/session_config.hpp>
 #include <ma/echo/server/session_manager_config.hpp>
 #include <ma/echo/server/session_manager.hpp>
+#include <ma/echo/server/io_service_set.hpp>
 #include <ma/console_controller.hpp>
 
 const char* help_param = "help"; 
@@ -59,13 +60,12 @@ struct session_manager_proxy : private boost::noncopyable
   ma::in_place_handler_allocator<256> start_wait_allocator_;
   ma::in_place_handler_allocator<256> stop_allocator_;
 
-  explicit session_manager_proxy(boost::asio::io_service& io_service,
-    boost::asio::io_service& session_io_service,
+  explicit session_manager_proxy(ma::echo::server::io_service_set& io_services,
     const ma::echo::server::session_manager_config& config)
     : stopped_by_program_exit_(false)
     , state_(ready_to_start)
     , session_manager_(boost::make_shared<ma::echo::server::session_manager>(
-        boost::ref(io_service), boost::ref(session_io_service), config))        
+        boost::ref(io_services), config))        
   {
   }
 
@@ -160,17 +160,15 @@ int _tmain(int argc, _TCHAR* argv[])
                 << "Size of session's socket receive buffer (bytes): " << session_config.socket_recv_buffer_size_ << std::endl
                 << "Size of session's socket send buffer (bytes)   : " << session_config.socket_send_buffer_size_ << std::endl
                 << "Session's socket Nagle algorithm is: " << (session_config.no_delay_ ? "off" : "OS default")   << std::endl;
-      
-      // Before session_manager_io_service
-      boost::asio::io_service session_io_service;
-      // ... for the right destruction order
-      boost::asio::io_service session_manager_io_service;
+            
+      boost::asio::io_service session_io_service(session_thread_count);
+      ma::echo::server::seperated_io_service_set io_services(session_io_service, session_manager_thread_count);
 
       // Create session_manager 
       // after session_io_service, because session_manager holds up all sessions, 
       // which are based on the session_io_service
       session_manager_proxy_ptr main_session_manager_proxy(boost::make_shared<session_manager_proxy>(
-        boost::ref(session_manager_io_service), boost::ref(session_io_service), manager_config));
+        boost::ref(io_services), manager_config));
       
       std::cout << "Server is starting...\n";
       
@@ -190,22 +188,22 @@ int _tmain(int argc, _TCHAR* argv[])
         boost::bind(handle_work_exception, main_session_manager_proxy));
 
       // Create work for sessions' io_service to prevent threads' stop
-      boost::asio::io_service::work session_work(session_io_service);
+      boost::asio::io_service::work session_work(io_services.session_io_service());
       // Create work for session_manager's io_service to prevent threads' stop
-      boost::asio::io_service::work session_manager_work(session_manager_io_service);    
+      boost::asio::io_service::work session_manager_work(io_services.session_manager_io_service());    
 
       // Create work threads for session operations
       boost::thread_group server_work_threads;    
       for (std::size_t i = 0; i != session_thread_count; ++i)
       {
         server_work_threads.create_thread(
-          boost::bind(run_io_service, boost::ref(session_io_service), work_exception_handler));
+          boost::bind(run_io_service, boost::ref(io_services.session_io_service()), work_exception_handler));
       }
       // Create work threads for session manager operations
       for (std::size_t i = 0; i != session_manager_thread_count; ++i)
       {
         server_work_threads.create_thread(
-          boost::bind(run_io_service, boost::ref(session_manager_io_service), work_exception_handler));      
+          boost::bind(run_io_service, boost::ref(io_services.session_manager_io_service()), work_exception_handler));      
       }
 
       // Wait until server stops
@@ -230,8 +228,8 @@ int _tmain(int argc, _TCHAR* argv[])
       }
       session_manager_proxy_lock.unlock();
           
-      session_manager_io_service.stop();
-      session_io_service.stop();
+      io_services.session_manager_io_service().stop();
+      io_services.session_io_service().stop();
 
       std::cout << "Server work was terminated. Waiting until all of the work threads will stop...\n";
       server_work_threads.join_all();

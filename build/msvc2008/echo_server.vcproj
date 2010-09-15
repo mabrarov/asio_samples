@@ -378,6 +378,14 @@
 						Name="server"
 						>
 						<File
+							RelativePath="..\..\include\ma\echo\server\io_service_set.hpp"
+							>
+						</File>
+						<File
+							RelativePath="..\..\include\ma\echo\server\io_service_set_fwd.hpp"
+							>
+						</File>
+						<File
 							RelativePath=".\..\..\include\ma\echo\server\session.hpp"
 							>
 						</File>
