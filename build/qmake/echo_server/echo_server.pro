@@ -27,7 +27,9 @@ HEADERS  += ../../../include/ma/handler_storage_service.hpp \
             ../../../include/ma/echo/server/session_fwd.hpp \
             ../../../include/ma/echo/server/session_manager_fwd.hpp \
             ../../../include/ma/echo/server/session.hpp \
-            ../../../include/ma/echo/server/session_manager.hpp
+            ../../../include/ma/echo/server/session_manager.hpp \
+            ../../../include/ma/echo/server/io_service_set.hpp \
+            ../../../include/ma/echo/server/io_service_set_fwd.hpp
 		
 
 LIBS        += -L../../../../boost_1_44_0/lib/x86
