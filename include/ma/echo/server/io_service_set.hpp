@@ -24,71 +24,61 @@ namespace ma
       public:
         boost::asio::io_service& session_io_service()
         {
-          return *session_io_service_;
+          return session_io_service_;
         }
 
         boost::asio::io_service& session_manager_io_service()
         {
-          return *session_manager_io_service_;
+          return session_manager_io_service_;
         }
 
       protected:
-        explicit io_service_set()
-          : session_io_service_(0)
-          , session_manager_io_service_(0)
+        explicit io_service_set(boost::asio::io_service& session_io_service,
+          boost::asio::io_service& session_manager_io_service)
+          : session_io_service_(session_io_service)
+          , session_manager_io_service_(session_manager_io_service)
         {
         }
 
         ~io_service_set()
         {
-        }
-
-        void set_session_io_service(boost::asio::io_service& io_service)
-        {
-          session_io_service_ = &io_service;
-        }
-
-        void set_session_manager_io_service(boost::asio::io_service& io_service)
-        {
-          session_manager_io_service_ = &io_service;
-        }
+        }        
 
       private:
-        boost::asio::io_service* session_io_service_;
-        boost::asio::io_service* session_manager_io_service_;      
+        boost::asio::io_service& session_io_service_;
+        boost::asio::io_service& session_manager_io_service_;      
       }; // class io_service_set
 
       class shared_io_service_set: public io_service_set
       {
       public:
-        explicit shared_io_service_set(boost::asio::io_service& shared_io_service)          
-        {
-          set_session_io_service(shared_io_service);
-          set_session_manager_io_service(shared_io_service);
+        explicit shared_io_service_set(boost::asio::io_service& shared_io_service)
+          : io_service_set(shared_io_service, shared_io_service)
+        {          
         }
       }; // class shared_io_service_set
       
-      class seperated_io_service_set: public io_service_set
+      class seperated_io_service_set
+        : private boost::base_from_member<boost::asio::io_service>
+        , public io_service_set
       {
+      private:
+        typedef boost::base_from_member<boost::asio::io_service> io_service_member_base;
+
       public:
         explicit seperated_io_service_set(boost::asio::io_service& session_io_service)
-          : session_manager_io_service_()
-        {
-          set_session_io_service(session_io_service);
-          set_session_manager_io_service(session_manager_io_service_);          
+          : io_service_member_base()
+          , io_service_set(session_io_service, io_service_member_base::member)
+        {          
         }
 
         explicit seperated_io_service_set(boost::asio::io_service& session_io_service, 
           std::size_t session_manager_io_service_concurrency_hint)
-          : session_manager_io_service_(session_manager_io_service_concurrency_hint)
-        {
-          set_session_io_service(session_io_service);
-          set_session_manager_io_service(session_manager_io_service_);          
-        }
-
-      private:
-        boost::asio::io_service session_manager_io_service_;
-      }; // class seperated_session_manager_service_set
+          : io_service_member_base(session_manager_io_service_concurrency_hint)
+          , io_service_set(session_io_service, io_service_member_base::member)
+        {          
+        }      
+      }; // class seperated_io_service_set
 
     } // namespace server
   } // namespace echo

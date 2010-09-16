@@ -187,10 +187,7 @@ int _tmain(int argc, _TCHAR* argv[])
       boost::asio::io_service session_io_service;
       // ... for the right destruction order
       boost::asio::io_service session_manager_io_service;
-
-      // Create session_manager 
-      // after session_io_service, because session_manager holds up all sessions, 
-      // which are based on the session_io_service
+      
       session_manager_proxy_ptr main_session_manager_proxy(boost::make_shared<session_manager_proxy>(
         boost::ref(session_manager_io_service), boost::ref(session_io_service), server_config));
       

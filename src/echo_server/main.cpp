@@ -163,10 +163,7 @@ int _tmain(int argc, _TCHAR* argv[])
             
       boost::asio::io_service session_io_service(session_thread_count);
       ma::echo::server::seperated_io_service_set io_services(session_io_service, session_manager_thread_count);
-
-      // Create session_manager 
-      // after session_io_service, because session_manager holds up all sessions, 
-      // which are based on the session_io_service
+      
       session_manager_proxy_ptr main_session_manager_proxy(boost::make_shared<session_manager_proxy>(
         boost::ref(io_services), manager_config));
       
