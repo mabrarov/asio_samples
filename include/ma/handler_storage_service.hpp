@@ -561,7 +561,7 @@ namespace ma
 
     data_ref_type data(implementation_type& impl) const
     {
-      BOOST_ASSERT(!impl.handler_ptr_)
+      BOOST_ASSERT(!impl.handler_ptr_);
       return impl.handler_ptr_->data();
     }
 
