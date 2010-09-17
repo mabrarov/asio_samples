@@ -9,7 +9,6 @@
 #define MA_HANDLER_STORAGE_SERVICE_HPP
 
 #include <cstddef>
-#include <stdexcept>
 #include <boost/thread.hpp>
 #include <boost/asio.hpp>
 #include <boost/assert.hpp>
@@ -562,14 +561,8 @@ namespace ma
 
     data_ref_type data(implementation_type& impl) const
     {
-      if (impl.handler_ptr_)
-      {
-        return impl.handler_ptr_->data();
-      }
-      else
-      {
-        boost::throw_exception(std::runtime_error("call to data() of an empty handler storage"));
-      }
+      BOOST_ASSERT(!impl.handler_ptr_)
+      return impl.handler_ptr_->data();
     }
 
     bool has_target(const implementation_type& impl) const
