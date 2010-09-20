@@ -60,78 +60,31 @@ namespace ma
 
       void session_manager::async_start(const session_manager_completion::handler& handler)
       {
-        strand_.dispatch
-        (
-          make_context_alloc_handler
-          (
-            handler, 
-            boost::bind
-            (
-              &this_type::do_start,
-              shared_from_this(),              
-              handler
-            )
-          )
-        );  
+        strand_.dispatch(make_context_alloc_handler(handler, 
+          boost::bind(&this_type::do_start, shared_from_this(), handler)));  
       } // session_manager::async_start
       
       void session_manager::async_stop(const session_manager_completion::handler& handler)
       {
-        strand_.dispatch
-        (
-          make_context_alloc_handler
-          (
-            handler, 
-            boost::bind
-            (
-              &this_type::do_stop,
-              shared_from_this(),
-              handler
-            )
-          )
-        ); 
+        strand_.dispatch(make_context_alloc_handler(handler, 
+          boost::bind(&this_type::do_stop, shared_from_this(), handler))); 
       } // session_manager::async_stop
       
       void session_manager::async_wait(const session_manager_completion::handler& handler)
       {
-        strand_.dispatch
-        (
-          make_context_alloc_handler
-          (
-            handler, 
-            boost::bind
-            (
-              &this_type::do_wait,
-              shared_from_this(),
-              handler
-            )
-          )
-        );  
+        strand_.dispatch(make_context_alloc_handler(handler, 
+          boost::bind(&this_type::do_wait, shared_from_this(), handler)));  
       } // session_manager::async_wait
 
       void session_manager::do_start(const session_manager_completion::handler& handler)
       {
         if (stopped == state_ || stop_in_progress == state_)
         {          
-          io_service_.post
-          (
-            detail::bind_handler
-            (
-              handler, 
-              boost::asio::error::operation_aborted
-            )
-          );          
+          io_service_.post(detail::bind_handler(handler, boost::asio::error::operation_aborted));          
         } 
         else if (ready_to_start != state_)
         {          
-          io_service_.post
-          (
-            detail::bind_handler
-            (
-              handler, 
-              boost::asio::error::operation_not_supported
-            )
-          );          
+          io_service_.post(detail::bind_handler(handler, boost::asio::error::operation_not_supported));          
         }
         else
         {
@@ -157,38 +110,22 @@ namespace ma
             accept_new_session();            
             state_ = started;
           }
-          io_service_.post
-          (
-            detail::bind_handler
-            (
-              handler, 
-              error
-            )
-          );                        
+          io_service_.post(detail::bind_handler(handler, error));                        
         }        
       } // session_manager::do_start
       
       void session_manager::do_stop(const session_manager_completion::handler& handler)
       {
         if (stopped == state_ || stop_in_progress == state_)
-        {          
-          io_service_.post
-          (
-            detail::bind_handler
-            (
-              handler, 
-              boost::asio::error::operation_aborted
-            )
-          );          
+        {
+          io_service_.post(detail::bind_handler(handler, boost::asio::error::operation_aborted));          
         }
         else
         {
           // Start shutdown
           state_ = stop_in_progress;
-
           // Do shutdown - abort inner operations          
           acceptor_.close(stop_error_); 
-
           // Start stop for all active sessions
           session_proxy_ptr curr_session_proxy(active_session_proxies_.front());
           while (curr_session_proxy)
@@ -198,31 +135,22 @@ namespace ma
               stop_session(curr_session_proxy);
             }
             curr_session_proxy = curr_session_proxy->next_;
-          }
-          
+          }          
           // Do shutdown - abort outer operations
           if (wait_handler_.has_target())
           {
             wait_handler_.post(boost::asio::error::operation_aborted);
           }
-
           // Check for shutdown continuation
           if (may_complete_stop())
           {
             state_ = stopped;          
             // Signal shutdown completion
-            io_service_.post
-            (
-              detail::bind_handler
-              (
-                handler, 
-                stop_error_
-              )
-            );
+            io_service_.post(detail::bind_handler(handler, stop_error_));
           }
           else
           { 
-            stop_handler_.store(handler);            
+            stop_handler_.store(handler);
           }
         }
       } // session_manager::do_stop
@@ -231,47 +159,19 @@ namespace ma
       {
         if (stopped == state_ || stop_in_progress == state_)
         {          
-          io_service_.post
-          (
-            detail::bind_handler
-            (
-              handler, 
-              boost::asio::error::operation_aborted
-            )
-          );          
+          io_service_.post(detail::bind_handler(handler, boost::asio::error::operation_aborted));          
         } 
         else if (started != state_)
         {          
-          io_service_.post
-          (
-            detail::bind_handler
-            (
-              handler, 
-              boost::asio::error::operation_not_supported
-            )
-          );          
+          io_service_.post(detail::bind_handler(handler, boost::asio::error::operation_not_supported));          
         }
         else if (last_accept_error_ && active_session_proxies_.empty())
         {
-          io_service_.post
-          (
-            detail::bind_handler
-            (
-              handler, 
-              last_accept_error_
-            )
-          );
+          io_service_.post(detail::bind_handler(handler, last_accept_error_));
         }
         else if (wait_handler_.has_target())
         {
-          io_service_.post
-          (
-            detail::bind_handler
-            (
-              handler, 
-              boost::asio::error::operation_not_supported
-            )
-          );
+          io_service_.post(detail::bind_handler(handler, boost::asio::error::operation_not_supported));
         }
         else
         {          
@@ -294,25 +194,9 @@ namespace ma
           recycled_session_proxies_.erase(new_session_proxy);
         }
         // Start session acceptation
-        acceptor_.async_accept
-        (
-          new_session_proxy->session_->socket(),
-          new_session_proxy->endpoint_, 
-          strand_.wrap
-          (
-            make_custom_alloc_handler
-            (
-              accept_allocator_,
-              boost::bind
-              (
-                &this_type::handle_accept,
-                shared_from_this(),
-                new_session_proxy,
-                boost::asio::placeholders::error
-              )
-            )
-          )
-        );
+        acceptor_.async_accept(new_session_proxy->session_->socket(), new_session_proxy->endpoint_, 
+          strand_.wrap(make_custom_alloc_handler(accept_allocator_,
+            boost::bind(&this_type::handle_accept, shared_from_this(), new_session_proxy, boost::asio::placeholders::error))));
         ++pending_operations_;
         accept_in_progress_ = true;
       } // session_manager::accept_new_session
@@ -365,16 +249,8 @@ namespace ma
 
       void session_manager::start_session(const session_proxy_ptr& accepted_session_proxy)
       {        
-        accepted_session_proxy->session_->async_start
-        (
-          session_completion::make_handler
-          (
-            accepted_session_proxy->start_wait_allocator_,
-            &this_type::dispatch_session_start,
-            session_manager_weak_ptr(shared_from_this()),
-            accepted_session_proxy
-          )          
-        );  
+        accepted_session_proxy->session_->async_start(session_completion::make_handler(accepted_session_proxy->start_wait_allocator_, 
+          &this_type::dispatch_session_start, session_manager_weak_ptr(shared_from_this()), accepted_session_proxy));
         ++pending_operations_;
         ++accepted_session_proxy->pending_operations_;
         accepted_session_proxy->state_ = session_proxy::start_in_progress;
@@ -382,16 +258,8 @@ namespace ma
 
       void session_manager::stop_session(const session_proxy_ptr& started_session_proxy)
       {
-        started_session_proxy->session_->async_stop
-        (
-          session_completion::make_handler
-          (
-            started_session_proxy->stop_allocator_,
-            &this_type::dispatch_session_stop,
-            session_manager_weak_ptr(shared_from_this()),
-            started_session_proxy            
-          )
-        );
+        started_session_proxy->session_->async_stop(session_completion::make_handler(started_session_proxy->stop_allocator_,
+          &this_type::dispatch_session_stop, session_manager_weak_ptr(shared_from_this()), started_session_proxy));
         ++pending_operations_;
         ++started_session_proxy->pending_operations_;
         started_session_proxy->state_ = session_proxy::stop_in_progress;
@@ -399,16 +267,8 @@ namespace ma
 
       void session_manager::wait_session(const session_proxy_ptr& started_session_proxy)
       {
-        started_session_proxy->session_->async_wait
-        (
-          session_completion::make_handler
-          (
-            started_session_proxy->start_wait_allocator_,
-            &this_type::dispatch_session_wait,
-            session_manager_weak_ptr(shared_from_this()),
-            started_session_proxy
-          )
-        );
+        started_session_proxy->session_->async_wait(session_completion::make_handler(started_session_proxy->start_wait_allocator_,
+          &this_type::dispatch_session_wait, session_manager_weak_ptr(shared_from_this()), started_session_proxy));
         ++pending_operations_;
         ++started_session_proxy->pending_operations_;
       } // session_manager::wait_session
@@ -418,20 +278,8 @@ namespace ma
       {        
         if (session_manager_ptr this_ptr = weak_session_manager.lock())
         {
-          this_ptr->strand_.dispatch
-          (
-            make_custom_alloc_handler
-            (
-              started_session_proxy->start_wait_allocator_,
-              boost::bind
-              (
-                &this_type::handle_session_start,
-                this_ptr,
-                started_session_proxy,
-                error
-              )
-            )
-          );
+          this_ptr->strand_.dispatch(make_custom_alloc_handler(started_session_proxy->start_wait_allocator_,
+            boost::bind(&this_type::handle_session_start, this_ptr, started_session_proxy, error)));
         }
       } // session_manager::dispatch_session_start
 
@@ -504,20 +352,8 @@ namespace ma
       {
         if (session_manager_ptr this_ptr = weak_session_manager.lock())
         {
-          this_ptr->strand_.dispatch
-          (
-            make_custom_alloc_handler
-            (
-              waited_session_proxy->start_wait_allocator_,
-              boost::bind
-              (
-                &this_type::handle_session_wait,
-                this_ptr,
-                waited_session_proxy,
-                error
-              )
-            )
-          );
+          this_ptr->strand_.dispatch(make_custom_alloc_handler(waited_session_proxy->start_wait_allocator_,
+            boost::bind(&this_type::handle_session_wait, this_ptr, waited_session_proxy, error)));
         }
       } // session_manager::dispatch_session_wait
 
@@ -550,20 +386,8 @@ namespace ma
       {
         if (session_manager_ptr this_ptr = weak_session_manager.lock())
         {
-          this_ptr->strand_.dispatch
-          (
-            make_custom_alloc_handler
-            (
-              stopped_session_proxy->stop_allocator_,
-              boost::bind
-              (
-                &this_type::handle_session_stop,
-                this_ptr,
-                stopped_session_proxy,
-                error
-              )
-            )
-          );
+          this_ptr->strand_.dispatch(make_custom_alloc_handler(stopped_session_proxy->stop_allocator_,
+            boost::bind(&this_type::handle_session_stop, this_ptr, stopped_session_proxy, error)));
         }
       } // session_manager::dispatch_session_stop
 

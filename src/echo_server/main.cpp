@@ -311,39 +311,24 @@ void fill_options_description(boost::program_options::options_description& optio
 
 void start_session_manager(const session_manager_proxy_ptr& ready_session_manager_proxy)
 {
-  ready_session_manager_proxy->session_manager_->async_start
-  (
-    ma::make_custom_alloc_handler
-    (
-      ready_session_manager_proxy->start_wait_allocator_,
-      boost::bind(handle_session_manager_start, ready_session_manager_proxy, _1)
-    )
-  );
+  ready_session_manager_proxy->session_manager_->async_start(
+    ma::make_custom_alloc_handler(ready_session_manager_proxy->start_wait_allocator_,
+      boost::bind(handle_session_manager_start, ready_session_manager_proxy, _1)));
   ready_session_manager_proxy->state_ = session_manager_proxy::start_in_progress;
 }
 
 void wait_session_manager(const session_manager_proxy_ptr& started_session_manager_proxy)
 {
-  started_session_manager_proxy->session_manager_->async_wait
-  (
-    ma::make_custom_alloc_handler
-    (
-      started_session_manager_proxy->start_wait_allocator_,
-      boost::bind(handle_session_manager_wait, started_session_manager_proxy, _1)
-    )
-  );
+  started_session_manager_proxy->session_manager_->async_wait(
+    ma::make_custom_alloc_handler(started_session_manager_proxy->start_wait_allocator_,
+      boost::bind(handle_session_manager_wait, started_session_manager_proxy, _1)));
 }
 
 void stop_session_manager(const session_manager_proxy_ptr& waited_session_manager_proxy)
 {
-  waited_session_manager_proxy->session_manager_->async_stop
-  (
-    ma::make_custom_alloc_handler
-    (
-      waited_session_manager_proxy->stop_allocator_,
-      boost::bind(handle_session_manager_stop, waited_session_manager_proxy, _1)
-    )
-  );
+  waited_session_manager_proxy->session_manager_->async_stop(
+    ma::make_custom_alloc_handler(waited_session_manager_proxy->stop_allocator_,
+      boost::bind(handle_session_manager_stop, waited_session_manager_proxy, _1)));
   waited_session_manager_proxy->state_ = session_manager_proxy::stop_in_progress;
 }
 

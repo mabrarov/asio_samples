@@ -65,6 +65,103 @@ namespace ma
         state_ = ready_to_start;
       } // cyclic_read_session::resest
 
+      void cyclic_read_session::start(boost::system::error_code& error)
+      {        
+        if (stopped == state_ || stop_in_progress == state_)
+        {          
+          error = boost::asio::error::operation_aborted;          
+        } 
+        else if (ready_to_start != state_)
+        {          
+          error = boost::asio::error::operation_not_supported;          
+        }
+        else
+        {
+          // Start handshake
+          state_ = start_in_progress;
+          // Start internal activity
+          if (!port_read_in_progress_)
+          {
+            read_until_head();
+          }
+          // Handshake completed
+          state_ = started;          
+          // Signal successful handshake completion.
+          error = boost::system::error_code();
+        }
+      } // cyclic_read_session::start
+
+      void cyclic_read_session::stop(boost::system::error_code& error, bool& completed)
+      {
+        completed = true;
+        if (stopped == state_)
+        {          
+          error = boost::asio::error::operation_aborted;
+        } 
+        else if (stop_in_progress == state_)
+        {          
+          error = boost::asio::error::operation_not_supported;
+        }
+        else 
+        {
+          // Start shutdown
+          state_ = stop_in_progress;
+          // Do shutdown - abort inner operations
+          serial_port_.close(stop_error_);         
+          // Check for shutdown continuation
+          if (read_handler_.has_target() || port_write_in_progress_  || port_read_in_progress_)
+          {
+            if (read_handler_.has_target())
+            {
+              read_handler_.post(boost::asio::error::operation_aborted);
+            }            
+            completed = false;
+          }        
+          else
+          {
+            state_ = stopped;
+            // Signal shutdown completion
+            error = stop_error_;
+          }
+        } 
+      } // cyclic_read_session::stop
+
+      void cyclic_read_session::read(message_ptr& message, boost::system::error_code& error, bool& completed)
+      {
+        completed = true;
+        if (stopped == state_ || stop_in_progress == state_)
+        {          
+          error = boost::asio::error::operation_aborted;
+        }
+        else if (started != state_ || read_handler_.has_target())
+        {          
+          error = boost::asio::error::operation_not_supported;
+        }
+        else if (!message_queue_.empty())
+        {
+          message = message_queue_.front();
+          message_queue_.pop_front();
+          error = boost::system::error_code();
+        }
+        else if (read_error_)
+        {
+          message = message_ptr();
+          error = read_error_;
+          read_error_= boost::system::error_code();          
+        }
+        else
+        {          
+          // If can't immediately complete then start waiting for completion
+          // Start message constructing
+          if (!port_read_in_progress_)
+          {
+            read_until_head();
+          }        
+          // Wait for the ready message
+          completed = false;
+        }
+      } // cyclic_read_session::read
+
       void cyclic_read_session::read_until_head()
       {                                 
         boost::asio::async_read_until

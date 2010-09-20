@@ -50,191 +50,68 @@ namespace ma
         template <typename Handler>
         void async_start(Handler handler)
         {
-          strand_.dispatch
-          (
-            make_context_alloc_handler
-            (
-              handler, 
-              boost::bind
-              (
-                &this_type::do_start<Handler>,
-                shared_from_this(),
-                boost::make_tuple(handler)
-              )
-            )
-          );  
+          strand_.dispatch(make_context_alloc_handler(handler, 
+            boost::bind(&this_type::do_start<Handler>, shared_from_this(), boost::make_tuple(handler))));  
         } // async_start
 
         template <typename Handler>
         void async_stop(Handler handler)
         {
-          strand_.dispatch
-          (
-            make_context_alloc_handler
-            (
-              handler, 
-              boost::bind
-              (
-                &this_type::do_stop<Handler>,
-                shared_from_this(),
-                boost::make_tuple(handler)
-              )
-            )
-          ); 
+          strand_.dispatch(make_context_alloc_handler(handler, 
+            boost::bind(&this_type::do_stop<Handler>, shared_from_this(), boost::make_tuple(handler)))); 
         } // async_stop
 
         template <typename Handler>
         void async_wait(Handler handler)
         {
-          strand_.dispatch
-          (
-            make_context_alloc_handler
-            (
-              handler, 
-              boost::bind
-              (
-                &this_type::do_wait<Handler>,
-                shared_from_this(),
-                boost::make_tuple(handler)
-              )
-            )
-          );  
+          strand_.dispatch(make_context_alloc_handler(handler, 
+            boost::bind(&this_type::do_wait<Handler>, shared_from_this(), boost::make_tuple(handler))));  
         } // async_wait
         
       private:
         template <typename Handler>
         void do_start(const boost::tuple<Handler>& handler)
         {
-          if (stopped == state_ || stop_in_progress == state_)
-          {          
-            io_service_.post
-            (
-              detail::bind_handler
-              (
-                boost::get<0>(handler), 
-                boost::asio::error::operation_aborted
-              )
-            );          
-          } 
-          else if (ready_to_start != state_)
-          {          
-            io_service_.post
-            (
-              detail::bind_handler
-              (
-                boost::get<0>(handler), 
-                boost::asio::error::operation_not_supported
-              )
-            );          
-          }
-          else
-          {
-            boost::system::error_code error;
-            start_service(error);
-            io_service_.post
-            (
-              detail::bind_handler
-              (
-                boost::get<0>(handler), 
-                error
-              )
-            ); 
-          }
-        } // do_start
+          boost::system::error_code error;
+          start(error);          
+          io_service_.post(detail::bind_handler(boost::get<0>(handler), error));
+        } // do_start        
 
         template <typename Handler>
         void do_stop(const boost::tuple<Handler>& handler)
         {
-          if (stopped == state_ || stop_in_progress == state_)
-          {          
-            io_service_.post
-            (
-              detail::bind_handler
-              (
-                boost::get<0>(handler), 
-                boost::asio::error::operation_aborted
-              )
-            );          
+          boost::system::error_code error;
+          bool completed;
+          stop(error, completed);
+          if (completed) 
+          {
+            io_service_.post(detail::bind_handler(boost::get<0>(handler), error));
           }
           else
           {
-            stop_service();
-            // Check for shutdown continuation
-            if (may_complete_stop())
-            {
-              complete_stop();
-              // Signal shutdown completion
-              io_service_.post
-              (
-                detail::bind_handler
-                (
-                  boost::get<0>(handler), 
-                  stop_error_
-                )
-              );
-            }
-            else
-            {
-              stop_handler_.store(boost::get<0>(handler));
-            }
+            stop_handler_.store(boost::get<0>(handler));            
           }
         } // do_stop
 
         template <typename Handler>
         void do_wait(const boost::tuple<Handler>& handler)
         {
-          if (stopped == state_ || stop_in_progress == state_)
-          {          
-            io_service_.post
-            (
-              detail::bind_handler
-              (
-                boost::get<0>(handler), 
-                boost::asio::error::operation_aborted
-              )
-            );          
+          boost::system::error_code error;
+          bool completed;
+          wait(error, completed);
+          if (completed)
+          {
+            io_service_.post(detail::bind_handler(boost::get<0>(handler), error));
           } 
-          else if (started != state_)
-          {          
-            io_service_.post
-            (
-              detail::bind_handler
-              (
-                boost::get<0>(handler), 
-                boost::asio::error::operation_not_supported
-              )
-            );          
-          }
-          else if (!socket_read_in_progress_ && !socket_write_in_progress_)
-          {
-            io_service_.post
-            (
-              detail::bind_handler
-              (
-                boost::get<0>(handler), 
-                error_
-              )
-            );
-          }
-          else if (wait_handler_.has_target())
-          {
-            io_service_.post
-            (
-              detail::bind_handler
-              (
-                boost::get<0>(handler), 
-                boost::asio::error::operation_not_supported
-              )
-            );
-          }
           else
-          {          
+          {
             wait_handler_.store(boost::get<0>(handler));
           } 
         } // do_wait
 
-        void start_service(boost::system::error_code& error);
-        void stop_service();
+        void start(boost::system::error_code& error);        
+        void stop(boost::system::error_code& error, bool& completed);
+        void wait(boost::system::error_code& error, bool& completed);
         bool may_complete_stop() const;
         void complete_stop();        
         void read_some();        

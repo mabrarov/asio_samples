@@ -47,43 +47,98 @@ namespace ma
         return socket_;
       } // session::socket
 
-      void session::start_service(boost::system::error_code& error)
-      {
-        using boost::asio::ip::tcp;
-        socket_.set_option(tcp::socket::receive_buffer_size(config_.socket_recv_buffer_size_), error);
-        if (!error)
+      void session::start(boost::system::error_code& error)
+      {        
+        if (stopped == state_ || stop_in_progress == state_)
+        {     
+          error = boost::asio::error::operation_aborted;          
+        } 
+        else if (ready_to_start != state_)
+        {          
+          error = boost::asio::error::operation_not_supported;                      
+        }
+        else
         {
-          socket_.set_option(tcp::socket::send_buffer_size(config_.socket_recv_buffer_size_), error);
+          using boost::asio::ip::tcp;
+          socket_.set_option(tcp::socket::receive_buffer_size(config_.socket_recv_buffer_size_), error);
           if (!error)
           {
-            if (config_.no_delay_)
+            socket_.set_option(tcp::socket::send_buffer_size(config_.socket_recv_buffer_size_), error);
+            if (!error)
             {
-              socket_.set_option(tcp::no_delay(true), error);
+              if (config_.no_delay_)
+              {
+                socket_.set_option(tcp::no_delay(true), error);
+              }
+              if (!error) 
+              {
+                state_ = started;          
+                read_some();
+              }
             }
-            if (!error) 
-            {
-              state_ = started;          
-              read_some();
-            }
-          }
-        } 
-      } // session::start_service
+          }           
+        }        
+      } // session::start
 
-      void session::stop_service()
+      void session::stop(boost::system::error_code& error, bool& completed)
       {
-        // Start shutdown
-        state_ = stop_in_progress;
-        // Do shutdown - abort outer operations
-        if (wait_handler_.has_target())
-        {
-          wait_handler_.post(boost::asio::error::operation_aborted);
+        completed = true;
+        if (stopped == state_ || stop_in_progress == state_)
+        {          
+          error = boost::asio::error::operation_aborted;                      
         }
-        // Do shutdown - flush socket's write_some buffer
-        if (!socket_write_in_progress_) 
+        else
+        {          
+          // Start shutdown
+          state_ = stop_in_progress;
+          // Do shutdown - abort outer operations
+          if (wait_handler_.has_target())
+          {
+            wait_handler_.post(boost::asio::error::operation_aborted);
+          }
+          // Do shutdown - flush socket's write_some buffer
+          if (!socket_write_in_progress_) 
+          {
+            socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_send, stop_error_);            
+          }          
+          // Check for shutdown continuation          
+          if (may_complete_stop())
+          {
+            complete_stop();
+            error = stop_error_;
+            completed = true;
+          }
+          else 
+          {
+            completed = false;
+          }
+        }        
+      } // session::stop
+
+      void session::wait(boost::system::error_code& error, bool& completed)
+      {
+        completed = true;
+        if (stopped == state_ || stop_in_progress == state_)
+        {          
+          error = boost::asio::error::operation_aborted;
+        } 
+        else if (started != state_)
         {
-          socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_send, stop_error_);            
+          error = boost::asio::error::operation_not_supported;
         }
-      } // session::stop_service
+        else if (!socket_read_in_progress_ && !socket_write_in_progress_)
+        {
+          error = error_;            
+        }
+        else if (wait_handler_.has_target())
+        {
+          error = boost::asio::error::operation_not_supported;
+        }
+        else
+        {
+          completed = false;
+        } 
+      } // session::wait
 
       bool session::may_complete_stop() const
       {
@@ -108,24 +163,9 @@ namespace ma
           boost::asio::buffers_begin(buffers);
         if (buffers_size)
         {
-          socket_.async_read_some
-          (
-            buffers,
-            strand_.wrap
-            (
-              make_custom_alloc_handler
-              (
-                read_allocator_,
-                boost::bind
-                (
-                  &this_type::handle_read_some,
-                  shared_from_this(),
-                  boost::asio::placeholders::error,
-                  boost::asio::placeholders::bytes_transferred
-                )
-              )
-            )
-          );
+          socket_.async_read_some(buffers, strand_.wrap(make_custom_alloc_handler(read_allocator_,
+            boost::bind(&this_type::handle_read_some, shared_from_this(), 
+              boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred))));
           socket_read_in_progress_ = true;
         }        
       } // session::read_some
@@ -137,24 +177,9 @@ namespace ma
           boost::asio::buffers_begin(buffers);
         if (buffers_size)
         {
-          socket_.async_write_some
-          (
-            buffers,
-            strand_.wrap
-            (
-              make_custom_alloc_handler
-              (
-                write_allocator_,
-                boost::bind
-                (
-                  &this_type::handle_write_some,
-                  shared_from_this(),
-                  boost::asio::placeholders::error,
-                  boost::asio::placeholders::bytes_transferred
-                )
-              )
-            )
-          );
+          socket_.async_write_some(buffers, strand_.wrap(make_custom_alloc_handler(write_allocator_,
+            boost::bind(&this_type::handle_write_some, shared_from_this(), 
+              boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred))));
           socket_write_in_progress_ = true;
         }   
       } // session::write_some
