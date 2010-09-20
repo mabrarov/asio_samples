@@ -81,24 +81,20 @@ namespace ma
         void do_wait(const allocator_ptr& operation_allocator,
           const session_manager_wait_handler_weak_ptr& handler);
         void accept_new_session();
-        void handle_accept(const session_proxy_ptr& new_session_proxy,
-          const boost::system::error_code& error);
+        void handle_accept(const session_proxy_ptr& proxy, const boost::system::error_code& error);
         bool may_complete_stop() const;               
 
-        void start_session(const session_proxy_ptr& accepted_session_proxy);
-        void stop_session(const session_proxy_ptr& started_session_proxy);        
-        void wait_session(const session_proxy_ptr& started_session_proxy);                        
+        void start_session(const session_proxy_ptr& proxy);
+        void stop_session(const session_proxy_ptr& proxy);        
+        void wait_session(const session_proxy_ptr& proxy);                        
 
-        void handle_session_start(const session_proxy_ptr& started_session_proxy,
-          const allocator_ptr& operation_allocator,
-          const boost::system::error_code& error);        
-        void handle_session_wait(const session_proxy_ptr& waited_session_proxy,
-          const allocator_ptr& operation_allocator,
-          const boost::system::error_code& error);                
-        void handle_session_stop(const session_proxy_ptr& stopped_session_proxy,
-          const allocator_ptr& operation_allocator,
-          const boost::system::error_code& error);
-        void recycle_session(const session_proxy_ptr& recycled_session_proxy);
+        void handle_session_start(const session_proxy_ptr& proxy,
+          const allocator_ptr& operation_allocator, const boost::system::error_code& error);        
+        void handle_session_wait(const session_proxy_ptr& proxy,
+          const allocator_ptr& operation_allocator, const boost::system::error_code& error);                
+        void handle_session_stop(const session_proxy_ptr& proxy,
+          const allocator_ptr& operation_allocator, const boost::system::error_code& error);
+        void recycle_session(const session_proxy_ptr& proxy);
         bool has_wait_handler() const;
         void invoke_wait_handler(const boost::system::error_code& error);
         void invoke_stop_handler(const boost::system::error_code& error);

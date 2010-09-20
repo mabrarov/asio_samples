@@ -160,26 +160,22 @@ namespace ma
         void stop(boost::system::error_code& error, bool& completed);
         void wait(boost::system::error_code& error, bool& completed);
         void accept_new_session();
-        void handle_accept(const session_proxy_ptr& new_session_proxy,
-          const boost::system::error_code& error);
+        void handle_accept(const session_proxy_ptr& proxy, const boost::system::error_code& error);
         bool may_complete_stop() const;
         void complete_stop();
-        void start_session(const session_proxy_ptr& accepted_session_proxy);
-        void stop_session(const session_proxy_ptr& started_session_proxy);
-        void wait_session(const session_proxy_ptr& started_session_proxy);
-        static void dispatch_session_start(const session_manager_weak_ptr& weak_session_manager,
-          const session_proxy_ptr& started_session_proxy, const boost::system::error_code& error);
-        void handle_session_start(const session_proxy_ptr& started_session_proxy,
-          const boost::system::error_code& error);
-        static void dispatch_session_wait(const session_manager_weak_ptr& weak_session_manager,
-          const session_proxy_ptr& waited_session_proxy, const boost::system::error_code& error);
-        void handle_session_wait(const session_proxy_ptr& waited_session_proxy,
-          const boost::system::error_code& error);        
-        static void dispatch_session_stop(const session_manager_weak_ptr& weak_session_manager,
-          const session_proxy_ptr& stopped_session_proxy, const boost::system::error_code& error);
-        void handle_session_stop(const session_proxy_ptr& stopped_session_proxy,
-          const boost::system::error_code& error);        
-        void recycle_session(const session_proxy_ptr& recycled_session_proxy);
+        void start_session(const session_proxy_ptr& proxy);
+        void stop_session(const session_proxy_ptr& proxy);
+        void wait_session(const session_proxy_ptr& proxy);
+        static void dispatch_session_start(const session_manager_weak_ptr& weak_this_ptr,
+          const session_proxy_ptr& proxy, const boost::system::error_code& error);
+        void handle_session_start(const session_proxy_ptr& proxy, const boost::system::error_code& error);
+        static void dispatch_session_wait(const session_manager_weak_ptr& weak_this_ptr,
+          const session_proxy_ptr& proxy, const boost::system::error_code& error);
+        void handle_session_wait(const session_proxy_ptr& proxy, const boost::system::error_code& error);        
+        static void dispatch_session_stop(const session_manager_weak_ptr& weak_this_ptr,
+          const session_proxy_ptr& proxy, const boost::system::error_code& error);
+        void handle_session_stop(const session_proxy_ptr& proxy, const boost::system::error_code& error);        
+        void recycle_session(const session_proxy_ptr& proxy);
 
         bool accept_in_progress_;
         state_type state_;
