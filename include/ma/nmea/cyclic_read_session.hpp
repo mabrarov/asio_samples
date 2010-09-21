@@ -34,15 +34,7 @@ namespace ma
       , public boost::enable_shared_from_this<cyclic_read_session>
     {
     private:
-      typedef cyclic_read_session this_type;
-      enum state_type
-      {
-        ready_to_start,
-        start_in_progress,
-        started,
-        stop_in_progress,
-        stopped
-      };      
+      typedef cyclic_read_session this_type;      
       BOOST_STATIC_CONSTANT(std::size_t, max_message_size = 512);           
 
     public:
@@ -86,6 +78,15 @@ namespace ma
       }        
     
     private:        
+      enum state_type
+      {
+        ready_to_start,
+        start_in_progress,
+        started,
+        stop_in_progress,
+        stopped
+      };      
+
       template <typename Handler>
       void do_start(const boost::tuple<Handler>& handler)
       {

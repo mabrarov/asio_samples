@@ -5,8 +5,6 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include <stdexcept>
-#include <boost/throw_exception.hpp>
 #include <boost/ref.hpp>
 #include <boost/make_shared.hpp>
 #include <ma/echo/server/session_config.hpp>

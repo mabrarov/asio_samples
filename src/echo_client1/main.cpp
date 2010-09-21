@@ -17,7 +17,7 @@
 #include <boost/asio.hpp>
 #include <boost/program_options.hpp>
 #include <ma/handler_allocation.hpp>
-#include <ma/echo/client1/session.h>
+#include <ma/echo/client1/session.hpp>
 #include <ma/console_controller.hpp>
 
 int _tmain(int argc, _TCHAR* argv[])

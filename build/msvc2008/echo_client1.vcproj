@@ -364,7 +364,7 @@
 							>
 						</File>
 						<File
-							RelativePath="..\..\src\ma\echo\client1\simple_allocator.cpp"
+							RelativePath="..\..\src\ma\echo\client1\session_config.cpp"
 							>
 						</File>
 					</Filter>
@@ -406,31 +406,19 @@
 						Name="client1"
 						>
 						<File
-							RelativePath="..\..\include\ma\echo\client1\allocator.h"
+							RelativePath="..\..\include\ma\echo\client1\session.hpp"
 							>
 						</File>
 						<File
-							RelativePath="..\..\include\ma\echo\client1\allocator_fwd.h"
+							RelativePath="..\..\include\ma\echo\client1\session_config.hpp"
 							>
 						</File>
 						<File
-							RelativePath="..\..\include\ma\echo\client1\session.h"
+							RelativePath="..\..\include\ma\echo\client1\session_config_fwd.hpp"
 							>
 						</File>
 						<File
-							RelativePath="..\..\include\ma\echo\client1\session_fwd.h"
-							>
-						</File>
-						<File
-							RelativePath="..\..\include\ma\echo\client1\session_handler.h"
-							>
-						</File>
-						<File
-							RelativePath="..\..\include\ma\echo\client1\session_handler_fwd.h"
-							>
-						</File>
-						<File
-							RelativePath="..\..\include\ma\echo\client1\simple_allocator.h"
+							RelativePath="..\..\include\ma\echo\client1\session_fwd.hpp"
 							>
 						</File>
 					</Filter>

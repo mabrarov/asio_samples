@@ -5,8 +5,8 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef MA_ECHO_SERVER_SESSION_HPP
-#define MA_ECHO_SERVER_SESSION_HPP
+#ifndef MA_ECHO_CLIENT1_SESSION_HPP
+#define MA_ECHO_CLIENT1_SESSION_HPP
 
 #include <boost/utility.hpp>
 #include <boost/bind.hpp>
@@ -16,29 +16,29 @@
 #include <ma/handler_storage.hpp>
 #include <ma/bind_asio_handler.hpp>
 #include <ma/cyclic_buffer.hpp>
-#include <ma/echo/server/session_config.hpp>
-#include <ma/echo/server/session_fwd.hpp>
+#include <ma/echo/client1/session_config.hpp>
+#include <ma/echo/client1/session_fwd.hpp>
 
 namespace ma
 {    
   namespace echo
   {
-    namespace server
-    {    
+    namespace client1
+    {      
       class session 
         : private boost::noncopyable
         , public boost::enable_shared_from_this<session>
       {
       private:
         typedef session this_type;        
-        
+
       public:        
         explicit session(boost::asio::io_service& io_service, const session_config& config);
-        ~session();        
+        ~session();
 
-        void reset();        
-        boost::asio::ip::tcp::socket& socket();
-        
+        void reset();
+        boost::asio::ip::tcp::socket& session::socket();
+
         template <typename Handler>
         void async_start(Handler handler)
         {
@@ -59,8 +59,8 @@ namespace ma
           strand_.dispatch(make_context_alloc_handler(handler, 
             boost::bind(&this_type::do_wait<Handler>, shared_from_this(), boost::make_tuple(handler))));  
         } // async_wait
-        
-      private:
+
+      private:        
         enum state_type
         {
           ready_to_start,
@@ -68,8 +68,8 @@ namespace ma
           started,
           stop_in_progress,
           stopped
-        };
-
+        }; 
+        
         template <typename Handler>
         void do_start(const boost::tuple<Handler>& handler)
         {
@@ -134,10 +134,10 @@ namespace ma
         cyclic_buffer buffer_;
         in_place_handler_allocator<640> write_allocator_;
         in_place_handler_allocator<256> read_allocator_;
-      }; // class session
+      }; // class session 
 
-    } // namespace server
+    } // namespace client1
   } // namespace echo
 } // namespace ma
 
-#endif // MA_ECHO_SERVER_SESSION_HPP
+#endif // MA_ECHO_CLIENT1_SESSION_HPP

@@ -30,15 +30,7 @@ namespace ma
         , public boost::enable_shared_from_this<session_manager>
       {
       private:
-        typedef session_manager this_type;
-        enum state_type
-        {
-          ready_to_start,
-          start_in_progress,
-          started,
-          stop_in_progress,
-          stopped
-        };
+        typedef session_manager this_type;        
 
       public:
         struct config
@@ -64,7 +56,16 @@ namespace ma
         void async_stop(const session_manager_completion::handler& handler);        
         void async_wait(const session_manager_completion::handler& handler);
         
-      private:        
+      private:
+        enum state_type
+        {
+          ready_to_start,
+          start_in_progress,
+          started,
+          stop_in_progress,
+          stopped
+        };
+
         void do_start(const session_manager_completion::handler& handler);        
         void do_stop(const session_manager_completion::handler& handler);        
         void do_wait(const session_manager_completion::handler& handler);

@@ -5,13 +5,7 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include <stdexcept>
-#include <boost/bind.hpp>
-#include <boost/throw_exception.hpp>
-#include <ma/handler_allocation.hpp>
-#include <ma/echo/client1/allocator.h>
-#include <ma/echo/client1/session_handler.h>
-#include <ma/echo/client1/session.h>
+#include <ma/echo/client1/session.hpp>
 
 namespace ma
 {    
@@ -19,42 +13,22 @@ namespace ma
   {
     namespace client1
     {
-      session::config::config(std::size_t buffer_size,
-        int socket_recv_buffer_size,
-        int socket_send_buffer_size,
-        bool no_delay)
-        : buffer_size_(buffer_size)         
-        , socket_recv_buffer_size_(socket_recv_buffer_size)
-        , socket_send_buffer_size_(socket_send_buffer_size)
-        , no_delay_(no_delay)
-      {
-        if (1 > buffer_size)
-        {
-          boost::throw_exception(std::invalid_argument("too small buffer_size"));
-        }
-        if (0 > socket_recv_buffer_size)
-        {
-          boost::throw_exception(std::invalid_argument("socket_recv_buffer_size must be non negative"));
-        }
-        if (0 > socket_send_buffer_size)
-        {
-          boost::throw_exception(std::invalid_argument("socket_send_buffer_size must be non negative"));
-        }
-      } // session::config::config
-
-      session::session(boost::asio::io_service& io_service, const config& config)        
-        : strand_(io_service)
-        , socket_(io_service)
-        , config_(config)
-        , state_(ready_to_start)
-        , socket_write_in_progress_(false)
+      session::session(boost::asio::io_service& io_service, const session_config& config)
+        : socket_write_in_progress_(false)
         , socket_read_in_progress_(false) 
+        , state_(ready_to_start)
+        , io_service_(io_service)
+        , strand_(io_service)
+        , socket_(io_service)
+        , wait_handler_(io_service)
+        , stop_handler_(io_service)
+        , config_(config)                
         , buffer_(config.buffer_size_)
       {          
       } // session::session
 
       session::~session()
-      {
+      {        
       } // session::~session
 
       void session::reset()
@@ -65,143 +39,104 @@ namespace ma
         state_ = ready_to_start;
         buffer_.reset();          
       } // session::reset
-
+        
       boost::asio::ip::tcp::socket& session::socket()
       {
         return socket_;
       } // session::socket
 
-      void session::async_start(const allocator_ptr& operation_allocator,
-        const session_start_handler_weak_ptr& handler)
-      {
-        strand_.dispatch
-        (
-          make_custom_alloc_handler
-          (
-            *operation_allocator, 
-            boost::bind
-            (
-              &this_type::do_start,
-              shared_from_this(),
-              operation_allocator,
-              handler
-            )
-          )
-        );  
-      } // session::async_start
-
-      void session::async_stop(const allocator_ptr& operation_allocator,
-        const session_stop_handler_weak_ptr& handler)
-      {
-        strand_.dispatch
-        (
-          make_custom_alloc_handler
-          (
-            *operation_allocator, 
-            boost::bind
-            (
-              &this_type::do_stop,
-              shared_from_this(),
-              operation_allocator,
-              handler
-            )
-          )
-        ); 
-      } // session::async_stop
-
-      void session::async_wait(const allocator_ptr& operation_allocator,
-        const session_wait_handler_weak_ptr& handler)
-      {
-        strand_.dispatch
-        (
-          make_custom_alloc_handler
-          (
-            *operation_allocator, 
-            boost::bind
-            (
-              &this_type::do_wait,
-              shared_from_this(),
-              operation_allocator,
-              handler
-            )
-          )
-        ); 
-      } // session::async_wait
-
-      void session::do_start(const allocator_ptr& operation_allocator,
-        const session_start_handler_weak_ptr& handler)
-      {
+      void session::start(boost::system::error_code& error)
+      {        
         if (stopped == state_ || stop_in_progress == state_)
-        {          
-          session_start_handler::invoke(handler, operation_allocator, 
-            boost::asio::error::operation_aborted);
+        {     
+          error = boost::asio::error::operation_aborted;          
         } 
         else if (ready_to_start != state_)
         {          
-          session_start_handler::invoke(handler, operation_allocator, 
-            boost::asio::error::operation_not_supported);
+          error = boost::asio::error::operation_not_supported;                      
         }
         else
         {
-          boost::system::error_code start_error;
           using boost::asio::ip::tcp;
-          socket_.set_option(tcp::socket::receive_buffer_size(config_.socket_recv_buffer_size_), start_error);
-          if (!start_error)
+          socket_.set_option(tcp::socket::receive_buffer_size(config_.socket_recv_buffer_size_), error);
+          if (!error)
           {
-            socket_.set_option(tcp::socket::send_buffer_size(config_.socket_recv_buffer_size_), start_error);
-            if (!start_error)
+            socket_.set_option(tcp::socket::send_buffer_size(config_.socket_recv_buffer_size_), error);
+            if (!error)
             {
               if (config_.no_delay_)
               {
-                socket_.set_option(tcp::no_delay(true), start_error);
+                socket_.set_option(tcp::no_delay(true), error);
               }
-              if (!start_error) 
+              if (!error) 
               {
                 state_ = started;          
                 read_some();
               }
             }
-          }                        
-          session_start_handler::invoke(handler, operation_allocator, start_error);          
-        }
-      } // session::do_start
+          }           
+        }        
+      } // session::start
 
-      void session::do_stop(const allocator_ptr& operation_allocator,
-        const session_stop_handler_weak_ptr& handler)
+      void session::stop(boost::system::error_code& error, bool& completed)
       {
+        completed = true;
         if (stopped == state_ || stop_in_progress == state_)
-        { 
-          session_stop_handler::invoke(handler, operation_allocator, 
-            boost::asio::error::operation_aborted);          
+        {          
+          error = boost::asio::error::operation_aborted;                      
         }
         else
-        {
+        {          
           // Start shutdown
-          state_ = stop_in_progress;          
+          state_ = stop_in_progress;
           // Do shutdown - abort outer operations
-          if (has_wait_handler())
+          if (wait_handler_.has_target())
           {
-            invoke_wait_handler(boost::asio::error::operation_aborted);
-          }          
+            wait_handler_.post(boost::asio::error::operation_aborted);
+          }
           // Do shutdown - flush socket's write_some buffer
           if (!socket_write_in_progress_) 
           {
             socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_send, stop_error_);            
-          }
-          // Check for shutdown continuation
+          }          
+          // Check for shutdown continuation          
           if (may_complete_stop())
           {
             complete_stop();
-            // Signal shutdown completion
-            session_stop_handler::invoke(handler, operation_allocator, stop_error_);
+            error = stop_error_;
+            completed = true;
           }
-          else
+          else 
           {
-            stop_handler_.first = handler;
-            stop_handler_.second = operation_allocator;
+            completed = false;
           }
+        }        
+      } // session::stop
+
+      void session::wait(boost::system::error_code& error, bool& completed)
+      {
+        completed = true;
+        if (stopped == state_ || stop_in_progress == state_)
+        {          
+          error = boost::asio::error::operation_aborted;
+        } 
+        else if (started != state_)
+        {
+          error = boost::asio::error::operation_not_supported;
         }
-      } // session::do_stop
+        else if (!socket_read_in_progress_ && !socket_write_in_progress_)
+        {
+          error = error_;            
+        }
+        else if (wait_handler_.has_target())
+        {
+          error = boost::asio::error::operation_not_supported;
+        }
+        else
+        {
+          completed = false;
+        } 
+      } // session::wait
 
       bool session::may_complete_stop() const
       {
@@ -219,35 +154,6 @@ namespace ma
         state_ = stopped;  
       } // session::complete_stop
 
-      void session::do_wait(const allocator_ptr& operation_allocator,
-        const session_wait_handler_weak_ptr& handler)
-      {
-        if (stopped == state_ || stop_in_progress == state_)
-        {          
-          session_wait_handler::invoke(handler, operation_allocator,
-            boost::asio::error::operation_aborted);
-        } 
-        else if (started != state_)
-        {          
-          session_wait_handler::invoke(handler, operation_allocator,
-            boost::asio::error::operation_not_supported);
-        }
-        else if (!socket_read_in_progress_ && !socket_write_in_progress_)
-        {
-          session_wait_handler::invoke(handler, operation_allocator, error_);
-        }
-        else if (has_wait_handler())
-        {
-          session_wait_handler::invoke(handler, operation_allocator,
-            boost::asio::error::operation_not_supported);
-        }
-        else
-        {          
-          wait_handler_.first = handler;
-          wait_handler_.second = operation_allocator;
-        } 
-      } // session::do_wait
-
       void session::read_some()
       {
         cyclic_buffer::mutable_buffers_type buffers(buffer_.prepared());
@@ -255,24 +161,9 @@ namespace ma
           boost::asio::buffers_begin(buffers);
         if (buffers_size)
         {
-          socket_.async_read_some
-          (
-            buffers,
-            strand_.wrap
-            (
-              make_custom_alloc_handler
-              (
-                read_allocator_,
-                boost::bind
-                (
-                  &this_type::handle_read_some,
-                  shared_from_this(),
-                  boost::asio::placeholders::error,
-                  boost::asio::placeholders::bytes_transferred
-                )
-              )
-            )
-          );
+          socket_.async_read_some(buffers, strand_.wrap(make_custom_alloc_handler(read_allocator_,
+            boost::bind(&this_type::handle_read_some, shared_from_this(), 
+              boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred))));
           socket_read_in_progress_ = true;
         }        
       } // session::read_some
@@ -284,31 +175,15 @@ namespace ma
           boost::asio::buffers_begin(buffers);
         if (buffers_size)
         {
-          socket_.async_write_some
-          (
-            buffers,
-            strand_.wrap
-            (
-              make_custom_alloc_handler
-              (
-                write_allocator_,
-                boost::bind
-                (
-                  &this_type::handle_write_some,
-                  shared_from_this(),
-                  boost::asio::placeholders::error,
-                  boost::asio::placeholders::bytes_transferred
-                )
-              )
-            )
-          );
+          socket_.async_write_some(buffers, strand_.wrap(make_custom_alloc_handler(write_allocator_,
+            boost::bind(&this_type::handle_write_some, shared_from_this(), 
+              boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred))));
           socket_write_in_progress_ = true;
         }   
       } // session::write_some
 
-      void session::handle_read_some(const boost::system::error_code& error,
-        const std::size_t bytes_transferred)
-      {
+      void session::handle_read_some(const boost::system::error_code& error, const std::size_t bytes_transferred)
+      {        
         socket_read_in_progress_ = false;
         if (stop_in_progress == state_)
         {  
@@ -316,7 +191,7 @@ namespace ma
           {
             complete_stop();       
             // Signal shutdown completion
-            invoke_stop_handler(stop_error_);            
+            stop_handler_.post(stop_error_);
           }
         }
         else if (error)
@@ -325,10 +200,7 @@ namespace ma
           {
             error_ = error;
           }                    
-          if (has_wait_handler())
-          {
-            invoke_wait_handler(error);
-          }
+          wait_handler_.post(error);
         }
         else 
         {
@@ -341,8 +213,7 @@ namespace ma
         }
       } // session::handle_read_some
 
-      void session::handle_write_some(const boost::system::error_code& error,
-        const std::size_t bytes_transferred)
+      void session::handle_write_some(const boost::system::error_code& error, const std::size_t bytes_transferred)
       {
         socket_write_in_progress_ = false;
         if (stop_in_progress == state_)
@@ -352,7 +223,7 @@ namespace ma
           {
             complete_stop();       
             // Signal shutdown completion
-            invoke_stop_handler(stop_error_);
+            stop_handler_.post(stop_error_);
           }
         }
         else if (error)
@@ -361,10 +232,7 @@ namespace ma
           {
             error_ = error;
           }                    
-          if (has_wait_handler())
-          {
-            invoke_wait_handler(error);
-          }
+          wait_handler_.post(error);
         }
         else
         {
@@ -376,24 +244,7 @@ namespace ma
           }
         }
       } // session::handle_write_some
-
-      bool session::has_wait_handler() const
-      {
-        return wait_handler_.second;
-      } // session::has_wait_handler
-
-      void session::invoke_wait_handler(const boost::system::error_code& error)
-      {
-        session_wait_handler::invoke(wait_handler_.first, wait_handler_.second, error);
-        wait_handler_ = wait_handler_type();
-      } // session::invoke_wait_handler
-
-      void session::invoke_stop_handler(const boost::system::error_code& error)
-      {
-        session_stop_handler::invoke(stop_handler_.first, stop_handler_.second, error);                   
-        stop_handler_ = stop_handler_type();
-      } // session::invoke_stop_handler
-
-    } // namespace server2
+        
+    } // namespace client1
   } // namespace echo
 } // namespace ma

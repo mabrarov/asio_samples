@@ -34,16 +34,6 @@ namespace ma
       {
       private:
         typedef session_manager this_type;
-
-        enum state_type
-        {
-          ready_to_start,
-          start_in_progress,
-          started,
-          stop_in_progress,
-          stopped
-        };
-
         struct session_proxy;
         typedef boost::shared_ptr<session_proxy> session_proxy_ptr;
         typedef boost::weak_ptr<session_proxy>   session_proxy_weak_ptr;      
@@ -89,7 +79,7 @@ namespace ma
           session_proxy_ptr front_;
         }; // session_proxy_list
 
-      public:        
+      public: 
         explicit session_manager(io_service_set& io_services, 
           const session_manager_config& config);
         ~session_manager();        
@@ -116,6 +106,15 @@ namespace ma
         } // async_wait
 
       private:
+        enum state_type
+        {
+          ready_to_start,
+          start_in_progress,
+          started,
+          stop_in_progress,
+          stopped
+        };
+
         template <typename Handler>
         void do_start(const boost::tuple<Handler>& handler)
         {

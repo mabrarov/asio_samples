@@ -5,10 +5,8 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef MA_ECHO_CLIENT1_ALLOCATOR_FWD_H
-#define MA_ECHO_CLIENT1_ALLOCATOR_FWD_H
-
-#include <boost/smart_ptr.hpp>
+#ifndef MA_ECHO_CLIENT1_SESSION_CONFIG_FWD_HPP
+#define MA_ECHO_CLIENT1_SESSION_CONFIG_FWD_HPP
 
 namespace ma
 {    
@@ -16,11 +14,10 @@ namespace ma
   {
     namespace client1
     {
-      class allocator;
-      typedef boost::shared_ptr<allocator> allocator_ptr;
-
+      struct session_config;
+        
     } // namespace client1
   } // namespace echo
 } // namespace ma
 
-#endif // MA_ECHO_CLIENT1_ALLOCATOR_FWD_H
+#endif // MA_ECHO_CLIENT1_SESSION_CONFIG_FWD_HPP
