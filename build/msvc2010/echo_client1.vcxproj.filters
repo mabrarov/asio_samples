@@ -38,6 +38,9 @@
     <ClCompile Include="..\..\src\ma\echo\client1\session.cpp">
       <Filter>Source Files\ma\echo\client1</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\ma\echo\client1\session_config.cpp">
+      <Filter>Source Files\ma\echo\client1</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\ma\console_controller.hpp">
@@ -55,22 +58,16 @@
     <ClInclude Include="..\..\include\ma\bind_asio_handler.hpp">
       <Filter>Header Files\ma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\ma\echo\client1\allocator.h">
+    <ClInclude Include="..\..\include\ma\echo\client1\session.hpp">
       <Filter>Header Files\ma\echo\client1</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\ma\echo\client1\allocator_fwd.h">
+    <ClInclude Include="..\..\include\ma\echo\client1\session_config.hpp">
       <Filter>Header Files\ma\echo\client1</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\ma\echo\client1\session.h">
+    <ClInclude Include="..\..\include\ma\echo\client1\session_config_fwd.hpp">
       <Filter>Header Files\ma\echo\client1</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\ma\echo\client1\session_fwd.h">
-      <Filter>Header Files\ma\echo\client1</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\ma\echo\client1\session_handler.h">
-      <Filter>Header Files\ma\echo\client1</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\include\ma\echo\client1\session_handler_fwd.h">
+    <ClInclude Include="..\..\include\ma\echo\client1\session_fwd.hpp">
       <Filter>Header Files\ma\echo\client1</Filter>
     </ClInclude>
   </ItemGroup>
