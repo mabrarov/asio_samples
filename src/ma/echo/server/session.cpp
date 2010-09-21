@@ -56,26 +56,36 @@ namespace ma
           error = boost::asio::error::operation_not_supported;                      
         }
         else
-        {
+        {          
+          error = boost::system::error_code();
           using boost::asio::ip::tcp;
-          socket_.set_option(tcp::socket::receive_buffer_size(config_.socket_recv_buffer_size_), error);
-          if (!error)
+          if (config_.socket_recv_buffer_size_)
           {
-            socket_.set_option(tcp::socket::send_buffer_size(config_.socket_recv_buffer_size_), error);
-            if (!error)
-            {
-              if (config_.no_delay_)
-              {
-                socket_.set_option(tcp::no_delay(true), error);
-              }
-              if (!error) 
-              {
-                state_ = started;          
-                read_some();
-              }
-            }
-          }           
-        }        
+            socket_.set_option(tcp::socket::receive_buffer_size(*config_.socket_recv_buffer_size_), error);
+          }
+          if (error)
+          {
+            return;
+          }
+          if (config_.socket_recv_buffer_size_)
+          {
+            socket_.set_option(tcp::socket::send_buffer_size(*config_.socket_recv_buffer_size_), error);
+          }
+          if (error)
+          {
+            return;
+          }
+          if (config_.no_delay_)
+          {
+            socket_.set_option(tcp::no_delay(*config_.no_delay_), error);
+          }
+          if (error)
+          {
+            return;
+          }              
+          state_ = started;          
+          read_some();
+        }
       } // session::start
 
       void session::stop(boost::system::error_code& error, bool& completed)

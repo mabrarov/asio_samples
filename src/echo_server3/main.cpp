@@ -144,13 +144,13 @@ int _tmain(int argc, _TCHAR* argv[])
     }
     else
     {        
-      std::size_t cpu_count = boost::thread::hardware_concurrency();
-      std::size_t session_thread_count = options_values[session_threads_param].as<std::size_t>();
-      if (!session_thread_count) 
+      std::size_t cpu_num = boost::thread::hardware_concurrency();
+      std::size_t session_thread_num = options_values[session_threads_param].as<std::size_t>();
+      if (!session_thread_num) 
       {
-        session_thread_count = cpu_count ? cpu_count : 1;
+        session_thread_num = cpu_num ? cpu_num : 1;
       }
-      std::size_t sm_thread_count = 1;
+      std::size_t sm_thread_num = 1;
 
       unsigned short listen_port = options_values[port_param].as<unsigned short>();      
       boost::posix_time::time_duration stop_timeout = 
@@ -169,10 +169,10 @@ int _tmain(int argc, _TCHAR* argv[])
         options_values[listen_backlog_param].as<int>(),
         session_config);      
 
-      std::cout << "Number of found CPU(s)             : " << cpu_count                     << std::endl
-                << "Number of session manager's threads: " << sm_thread_count               << std::endl
-                << "Number of sessions' threads        : " << session_thread_count          << std::endl
-                << "Total number of work threads       : " << session_thread_count + sm_thread_count << std::endl
+      std::cout << "Number of found CPU(s)             : " << cpu_num                     << std::endl
+                << "Number of session manager's threads: " << sm_thread_num               << std::endl
+                << "Number of sessions' threads        : " << session_thread_num          << std::endl
+                << "Total number of work threads       : " << session_thread_num + sm_thread_num << std::endl
                 << "Server listen port                 : " << listen_port                   << std::endl
                 << "Server stop timeout (seconds)      : " << stop_timeout.total_seconds()  << std::endl
                 << "Maximum number of active sessions  : " << sm_config.max_sessions_       << std::endl
@@ -212,13 +212,13 @@ int _tmain(int argc, _TCHAR* argv[])
 
       // Create work threads for session operations
       boost::thread_group server_work_threads;    
-      for (std::size_t i = 0; i != session_thread_count; ++i)
+      for (std::size_t i = 0; i != session_thread_num; ++i)
       {
         server_work_threads.create_thread(boost::bind(run_io_service, 
           boost::ref(session_io_service), work_exception_handler));
       }
       // Create work threads for session manager operations
-      for (std::size_t i = 0; i != sm_thread_count; ++i)
+      for (std::size_t i = 0; i != sm_thread_num; ++i)
       {
         server_work_threads.create_thread(boost::bind(run_io_service, 
           boost::ref(session_manager_io_service), work_exception_handler));      

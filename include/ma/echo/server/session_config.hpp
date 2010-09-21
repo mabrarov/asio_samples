@@ -9,6 +9,7 @@
 #define MA_ECHO_SERVER_SESSION_CONFIG_HPP
 
 #include <cstddef>
+#include <boost/optional.hpp>
 #include <ma/echo/server/session_config_fwd.hpp>
 
 namespace ma
@@ -19,14 +20,15 @@ namespace ma
     {
       struct session_config
       { 
-        bool no_delay_;
-        int socket_recv_buffer_size_;
-        int socket_send_buffer_size_;
+        boost::optional<bool> no_delay_;
+        boost::optional<int>  socket_recv_buffer_size_;
+        boost::optional<int>  socket_send_buffer_size_;
         std::size_t buffer_size_;                   
 
         explicit session_config(std::size_t buffer_size, 
-          int socket_recv_buffer_size, int socket_send_buffer_size,
-          bool no_delay);
+          const boost::optional<int>& socket_recv_buffer_size, 
+          const boost::optional<int>& socket_send_buffer_size,
+          const boost::optional<bool>& no_delay);
       }; // struct session_config
         
     } // namespace server

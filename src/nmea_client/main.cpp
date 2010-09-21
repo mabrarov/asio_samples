@@ -52,11 +52,11 @@ int _tmain(int argc, _TCHAR* argv[])
   }
   else
   {
-    std::size_t cpu_count = boost::thread::hardware_concurrency();
-    std::size_t concurrent_count = 2 > cpu_count ? 2 : cpu_count;
+    std::size_t cpu_num = boost::thread::hardware_concurrency();
+    std::size_t concurrent_count = 2 > cpu_num ? 2 : cpu_num;
     std::size_t thread_count = 2;
 
-    std::wcout << L"Number of found CPUs             : " << cpu_count        << std::endl
+    std::wcout << L"Number of found CPUs             : " << cpu_num        << std::endl
                << L"Number of concurrent work threads: " << concurrent_count << std::endl
                << L"Total number of work threads     : " << thread_count     << std::endl;
 

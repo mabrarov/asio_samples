@@ -44,8 +44,8 @@ int _tmain(int argc, _TCHAR* argv[])
     }
     else
     {
-      std::size_t cpu_count = boost::thread::hardware_concurrency();
-      std::size_t session_thread_count = cpu_count > 1 ? cpu_count : 2;
+      std::size_t cpu_num = boost::thread::hardware_concurrency();
+      std::size_t session_thread_num = cpu_num > 1 ? cpu_num : 2;
       //todo
     }
   }

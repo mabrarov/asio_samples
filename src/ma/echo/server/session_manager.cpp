@@ -122,12 +122,15 @@ namespace ma
             if (!error)
             {
               acceptor_.listen(config_.listen_backlog_, error);
-            }          
-          }          
+            }
+            if (error)
+            {
+              boost::system::error_code ignored;
+              acceptor_.close(ignored);          
+            }
+          }
           if (error)
-          {
-            boost::system::error_code ignored;
-            acceptor_.close(ignored);
+          {            
             state_ = stopped;
           }
           else
