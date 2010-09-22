@@ -39,21 +39,9 @@ namespace ma
       {
         if (boost::shared_ptr<session_manager> session_manager = session_manager_.lock())
         {
-          session_manager->strand().post
-          (
-            make_custom_alloc_handler
-            (
-              *operation_allocator, 
-              boost::bind
-              (
-                &session_manager::handle_session_start,
-                session_manager,
-                shared_from_this(),
-                operation_allocator,
-                error
-              )
-            )
-          );          
+          session_manager->strand().post(make_custom_alloc_handler(*operation_allocator, 
+            boost::bind(&session_manager::handle_session_start, session_manager, 
+              shared_from_this(), operation_allocator, error)));          
         }
       } // session_proxy::handle_start
 
@@ -62,21 +50,9 @@ namespace ma
       {
         if (boost::shared_ptr<session_manager> session_manager = session_manager_.lock())
         {
-          session_manager->strand().post
-          (
-            make_custom_alloc_handler
-            (
-              *operation_allocator, 
-              boost::bind
-              (
-                &session_manager::handle_session_stop,
-                session_manager,
-                shared_from_this(),
-                operation_allocator,
-                error
-              )
-            )
-          );
+          session_manager->strand().post(make_custom_alloc_handler(*operation_allocator, 
+            boost::bind(&session_manager::handle_session_stop, session_manager, 
+              shared_from_this(), operation_allocator, error)));
         }
       } // session_proxy::handle_stop
 
@@ -85,21 +61,9 @@ namespace ma
       {
         if (boost::shared_ptr<session_manager> session_manager = session_manager_.lock())
         {
-          session_manager->strand().post
-          (
-            make_custom_alloc_handler
-            (
-              *operation_allocator, 
-              boost::bind
-              (
-                &session_manager::handle_session_wait,
-                session_manager,
-                shared_from_this(),
-                operation_allocator,
-                error
-              )
-            )
-          );
+          session_manager->strand().post(make_custom_alloc_handler(*operation_allocator, 
+            boost::bind(&session_manager::handle_session_wait, session_manager, 
+              shared_from_this(), operation_allocator, error)));
         }
       } // session_proxy::handle_wait
 

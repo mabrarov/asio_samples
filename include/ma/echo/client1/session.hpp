@@ -11,7 +11,6 @@
 #include <boost/utility.hpp>
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
-#include <boost/tuple/tuple.hpp>
 #include <ma/handler_allocation.hpp>
 #include <ma/handler_storage.hpp>
 #include <ma/bind_asio_handler.hpp>
@@ -42,22 +41,22 @@ namespace ma
         template <typename Handler>
         void async_start(Handler handler)
         {
-          strand_.dispatch(make_context_alloc_handler(handler, 
-            boost::bind(&this_type::do_start<Handler>, shared_from_this(), boost::make_tuple(handler))));  
+          strand_.dispatch(make_context_alloc_handler2(handler, 
+            boost::bind(&this_type::do_start<Handler>, shared_from_this(), _1)));  
         } // async_start
 
         template <typename Handler>
         void async_stop(Handler handler)
         {
-          strand_.dispatch(make_context_alloc_handler(handler, 
-            boost::bind(&this_type::do_stop<Handler>, shared_from_this(), boost::make_tuple(handler)))); 
+          strand_.dispatch(make_context_alloc_handler2(handler, 
+            boost::bind(&this_type::do_stop<Handler>, shared_from_this(), _1))); 
         } // async_stop
 
         template <typename Handler>
         void async_wait(Handler handler)
         {
-          strand_.dispatch(make_context_alloc_handler(handler, 
-            boost::bind(&this_type::do_wait<Handler>, shared_from_this(), boost::make_tuple(handler))));  
+          strand_.dispatch(make_context_alloc_handler2(handler, 
+            boost::bind(&this_type::do_wait<Handler>, shared_from_this(), _1)));  
         } // async_wait
 
       private:        
@@ -71,42 +70,42 @@ namespace ma
         }; 
         
         template <typename Handler>
-        void do_start(const boost::tuple<Handler>& handler)
+        void do_start(const Handler& handler)
         {
           boost::system::error_code error;
           start(error);          
-          io_service_.post(detail::bind_handler(boost::get<0>(handler), error));
+          io_service_.post(detail::bind_handler(handler, error));
         } // do_start        
 
         template <typename Handler>
-        void do_stop(const boost::tuple<Handler>& handler)
+        void do_stop(const Handler& handler)
         {
           boost::system::error_code error;
           bool completed;
           stop(error, completed);
           if (completed) 
           {
-            io_service_.post(detail::bind_handler(boost::get<0>(handler), error));
+            io_service_.post(detail::bind_handler(handler, error));
           }
           else
           {
-            stop_handler_.store(boost::get<0>(handler));            
+            stop_handler_.store(handler);            
           }
         } // do_stop
 
         template <typename Handler>
-        void do_wait(const boost::tuple<Handler>& handler)
+        void do_wait(const Handler& handler)
         {
           boost::system::error_code error;
           bool completed;
           wait(error, completed);
           if (completed)
           {
-            io_service_.post(detail::bind_handler(boost::get<0>(handler), error));
+            io_service_.post(detail::bind_handler(handler, error));
           } 
           else
           {
-            wait_handler_.store(boost::get<0>(handler));
+            wait_handler_.store(handler);
           } 
         } // do_wait
 

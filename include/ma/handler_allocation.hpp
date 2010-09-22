@@ -11,7 +11,6 @@
 #include <cstddef>
 #include <boost/utility.hpp>
 #include <boost/aligned_storage.hpp>
-#include <boost/cstdint.hpp>
 #include <boost/smart_ptr.hpp>
 #include <ma/handler_alloc_helpers.hpp>
 #include <ma/handler_invoke_helpers.hpp>
@@ -262,7 +261,7 @@ namespace ma
     {
       ma_asio_handler_invoke_helpers::invoke(function, context->handler_);
     } 
-    
+
     void operator()()
     {
       handler_();
@@ -336,20 +335,134 @@ namespace ma
   private:
     Context context_;
     Handler handler_;
-  }; //class context_alloc_handler  
+  }; //class context_alloc_handler
+  
+  template <typename Context, typename Handler>
+  class context_alloc_handler2
+  {
+  private:
+    typedef context_alloc_handler2<Context, Handler> this_type;
+    this_type& operator=(const this_type&);
+
+  public:
+    typedef void result_type;
+
+    context_alloc_handler2(Context context, Handler handler)
+      : context_(context)
+      , handler_(handler)
+    {
+    }
+
+    friend void* asio_handler_allocate(std::size_t size, this_type* context)
+    {
+      return ma_asio_handler_alloc_helpers::allocate(size, context->context_);
+    }
+
+    friend void asio_handler_deallocate(void* pointer, std::size_t size, this_type* context)
+    {
+      ma_asio_handler_alloc_helpers::deallocate(pointer, size, context->context_);
+    }  
+
+    template <typename Function>
+    friend void asio_handler_invoke(Function function, this_type* context)
+    {
+      ma_asio_handler_invoke_helpers::invoke(function, context->handler_);
+    } 
+    
+    void operator()()
+    {
+      handler_(context_);
+    }
+
+    template <typename Arg1>
+    void operator()(const Arg1& arg1)
+    {
+      handler_(context_, arg1);
+    }
+
+    template <typename Arg1, typename Arg2>
+    void operator()(const Arg1& arg1, const Arg2& arg2)
+    {
+      handler_(context_, arg1, arg2);
+    }
+
+    template <typename Arg1, typename Arg2, typename Arg3>
+    void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3)
+    {
+      handler_(context_, arg1, arg2, arg3);
+    }
+
+    template <typename Arg1, typename Arg2, typename Arg3, typename Arg4>
+    void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3, const Arg4& arg4)
+    {
+      handler_(context_, arg1, arg2, arg3, arg4);
+    }
+
+    template <typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5>
+    void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3, const Arg4& arg4, const Arg5& arg5)
+    {
+      handler_(context_, arg1, arg2, arg3, arg4, arg5);
+    }
+
+    void operator()() const
+    {
+      handler_(context_);
+    }
+
+    template <typename Arg1>
+    void operator()(const Arg1& arg1) const
+    {
+      handler_(context_, arg1);
+    }
+
+    template <typename Arg1, typename Arg2>
+    void operator()(const Arg1& arg1, const Arg2& arg2) const
+    {
+      handler_(context_, arg1, arg2);
+    }
+
+    template <typename Arg1, typename Arg2, typename Arg3>
+    void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3) const
+    {
+      handler_(context_, arg1, arg2, arg3);
+    }
+
+    template <typename Arg1, typename Arg2, typename Arg3, typename Arg4>
+    void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3, const Arg4& arg4) const
+    {
+      handler_(context_, arg1, arg2, arg3, arg4);
+    }
+
+    template <typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5>
+    void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3, const Arg4& arg4, const Arg5& arg5) const
+    {
+      handler_(context_, arg1, arg2, arg3, arg4, arg5);
+    }
+
+  private:
+    Context context_;
+    Handler handler_;
+  }; //class context_alloc_handler2  
 
   template <typename Allocator, typename Handler>
   inline custom_alloc_handler<Allocator, Handler> 
   make_custom_alloc_handler(Allocator& allocator, Handler handler)
   {
     return custom_alloc_handler<Allocator, Handler>(allocator, handler);
-  }
+  }  
 
   template <typename Context, typename Handler>
   inline context_alloc_handler<Context, Handler> 
-  make_context_alloc_handler(Context context, Handler handler)
+    make_context_alloc_handler(Context context, Handler handler)
   {
     return context_alloc_handler<Context, Handler>(context, handler);
+  }  
+
+  template <typename Context, typename Handler>
+  inline context_alloc_handler2<Context, Handler> 
+  make_context_alloc_handler2(Context context, Handler handler)
+  {
+    return context_alloc_handler2<Context, Handler>(context, handler);
   }  
 
 } //namespace ma

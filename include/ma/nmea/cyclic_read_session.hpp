@@ -52,29 +52,29 @@ namespace ma
       template <typename Handler>
       void async_start(Handler handler)
       {        
-        strand_.dispatch(make_context_alloc_handler(handler,
-          boost::bind(&this_type::do_start<Handler>, shared_from_this(), boost::make_tuple(handler))));
+        strand_.dispatch(make_context_alloc_handler2(handler,
+          boost::bind(&this_type::do_start<Handler>, shared_from_this(), _1)));
       }
 
       template <typename Handler>
       void async_stop(Handler handler)
       {
-        strand_.dispatch(make_context_alloc_handler(handler,
-          boost::bind(&this_type::do_stop<Handler>, shared_from_this(), boost::make_tuple(handler))));
+        strand_.dispatch(make_context_alloc_handler2(handler,
+          boost::bind(&this_type::do_stop<Handler>, shared_from_this(), _1)));
       }
       
       template <typename ConstBufferSequence, typename Handler>
       void async_write(const ConstBufferSequence& buffer, Handler handler)
       {                
-        strand_.dispatch(make_context_alloc_handler(handler, 
-          boost::bind(&this_type::do_write<ConstBufferSequence, Handler>, shared_from_this(), buffer, boost::make_tuple(handler))));
+        strand_.dispatch(make_context_alloc_handler2(handler, 
+          boost::bind(&this_type::do_write<ConstBufferSequence, Handler>, shared_from_this(), buffer, _1)));
       }
 
       template <typename Handler>
       void async_read(message_ptr& message, Handler handler)
       {                
-        strand_.dispatch(make_context_alloc_handler(handler,
-          boost::bind(&this_type::do_read<Handler>, shared_from_this(), boost::ref(message), boost::make_tuple(handler))));
+        strand_.dispatch(make_context_alloc_handler2(handler,
+          boost::bind(&this_type::do_read<Handler>, shared_from_this(), boost::ref(message), _1)));
       }        
     
     private:        
@@ -88,60 +88,47 @@ namespace ma
       };      
 
       template <typename Handler>
-      void do_start(const boost::tuple<Handler>& handler)
+      void do_start(const Handler& handler)
       {
         boost::system::error_code error;
         start(error);
-        io_service_.post(detail::bind_handler(boost::get<0>(handler), error));
+        io_service_.post(detail::bind_handler(handler, error));
       } // do_start
 
       template <typename Handler>
-      void do_stop(const boost::tuple<Handler>& handler)
+      void do_stop(const Handler& handler)
       { 
         boost::system::error_code error;
         bool completed;
         stop(error, completed);
         if (completed)
         {          
-          io_service_.post(detail::bind_handler(boost::get<0>(handler), error));          
+          io_service_.post(detail::bind_handler(handler, error));          
         }         
         else 
         {
           // Wait for others operations' completion
-          stop_handler_.store(boost::get<0>(handler));
+          stop_handler_.store(handler);
         }        
       } // do_stop
       
       template <typename ConstBufferSequence, typename Handler>
-      void do_write(const ConstBufferSequence& buffer, const boost::tuple<Handler>& handler)
+      void do_write(const ConstBufferSequence& buffer, const Handler& handler)
       {  
         if (stopped == state_ || stop_in_progress == state_)
         {          
-          io_service_.post
-          (
-            detail::bind_handler
-            (
-              boost::get<0>(handler), 
-              boost::asio::error::operation_aborted
-            )
-          );          
+          io_service_.post(detail::bind_handler(handler, boost::asio::error::operation_aborted));          
         } 
         else if (started != state_ || port_write_in_progress_)
         {          
-          io_service_.post
-          (
-            detail::bind_handler
-            (
-              boost::get<0>(handler), 
-              boost::asio::error::operation_not_supported
-            )
-          );
+          io_service_.post(detail::bind_handler(handler, boost::asio::error::operation_not_supported));
         }
         else 
         {        
           boost::asio::async_write(serial_port_, buffer, strand_.wrap(
             make_custom_alloc_handler(write_allocator_, 
-              boost::bind(&this_type::handle_write<Handler>, shared_from_this(), boost::asio::placeholders::error, handler))));
+              boost::bind(&this_type::handle_write<Handler>, shared_from_this(), 
+                boost::asio::placeholders::error, boost::make_tuple<Handler>(handler)))));
           port_write_in_progress_ = true;
         }
       } // do_write

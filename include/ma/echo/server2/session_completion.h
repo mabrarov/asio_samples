@@ -51,7 +51,7 @@ namespace ma
           session_proxy_ptr session_proxy_;        
         }; // class raw_handler
 
-        typedef in_place_handler_allocator<256> handler_allocator;
+        typedef in_place_handler_allocator<128> handler_allocator;
         typedef custom_alloc_handler<handler_allocator, raw_handler> handler;
 
         inline handler make_handler(handler_allocator& allocator, raw_handler::func_type func, 

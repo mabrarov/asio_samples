@@ -58,8 +58,8 @@ struct session_manager_proxy : private boost::noncopyable
   boost::mutex mutex_;  
   ma::echo::server::session_manager_ptr session_manager_;    
   boost::condition_variable state_changed_;  
-  ma::in_place_handler_allocator<256> start_wait_allocator_;
-  ma::in_place_handler_allocator<256> stop_allocator_;
+  ma::in_place_handler_allocator<128> start_wait_allocator_;
+  ma::in_place_handler_allocator<128> stop_allocator_;
 
   explicit session_manager_proxy(ma::echo::server::io_service_set& io_services,
     const ma::echo::server::session_manager_config& config)

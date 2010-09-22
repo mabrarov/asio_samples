@@ -74,58 +74,22 @@ namespace ma
       void session::async_start(const allocator_ptr& operation_allocator,
         const session_start_handler_weak_ptr& handler)
       {
-        strand_.dispatch
-        (
-          make_custom_alloc_handler
-          (
-            *operation_allocator, 
-            boost::bind
-            (
-              &this_type::do_start,
-              shared_from_this(),
-              operation_allocator,
-              handler
-            )
-          )
-        );  
+        strand_.dispatch(make_custom_alloc_handler(*operation_allocator, 
+          boost::bind(&this_type::do_start, shared_from_this(), operation_allocator, handler)));  
       } // session::async_start
 
       void session::async_stop(const allocator_ptr& operation_allocator,
         const session_stop_handler_weak_ptr& handler)
       {
-        strand_.dispatch
-        (
-          make_custom_alloc_handler
-          (
-            *operation_allocator, 
-            boost::bind
-            (
-              &this_type::do_stop,
-              shared_from_this(),
-              operation_allocator,
-              handler
-            )
-          )
-        ); 
+        strand_.dispatch(make_custom_alloc_handler(*operation_allocator, 
+          boost::bind(&this_type::do_stop, shared_from_this(), operation_allocator, handler))); 
       } // session::async_stop
 
       void session::async_wait(const allocator_ptr& operation_allocator,
         const session_wait_handler_weak_ptr& handler)
       {
-        strand_.dispatch
-        (
-          make_custom_alloc_handler
-          (
-            *operation_allocator, 
-            boost::bind
-            (
-              &this_type::do_wait,
-              shared_from_this(),
-              operation_allocator,
-              handler
-            )
-          )
-        ); 
+        strand_.dispatch(make_custom_alloc_handler(*operation_allocator, 
+          boost::bind(&this_type::do_wait, shared_from_this(), operation_allocator, handler))); 
       } // session::async_wait
 
       void session::do_start(const allocator_ptr& operation_allocator,

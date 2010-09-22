@@ -60,20 +60,20 @@ namespace ma
 
       void session_manager::async_start(const session_manager_completion::handler& handler)
       {
-        strand_.dispatch(make_context_alloc_handler(handler, 
-          boost::bind(&this_type::do_start, shared_from_this(), handler)));  
+        strand_.dispatch(make_context_alloc_handler2(handler, 
+          boost::bind(&this_type::do_start, shared_from_this(), _1)));  
       } // session_manager::async_start
       
       void session_manager::async_stop(const session_manager_completion::handler& handler)
       {
-        strand_.dispatch(make_context_alloc_handler(handler, 
-          boost::bind(&this_type::do_stop, shared_from_this(), handler))); 
+        strand_.dispatch(make_context_alloc_handler2(handler, 
+          boost::bind(&this_type::do_stop, shared_from_this(), _1))); 
       } // session_manager::async_stop
       
       void session_manager::async_wait(const session_manager_completion::handler& handler)
       {
-        strand_.dispatch(make_context_alloc_handler(handler, 
-          boost::bind(&this_type::do_wait, shared_from_this(), handler)));  
+        strand_.dispatch(make_context_alloc_handler2(handler, 
+          boost::bind(&this_type::do_wait, shared_from_this(), _1)));  
       } // session_manager::async_wait
 
       void session_manager::do_start(const session_manager_completion::handler& handler)
