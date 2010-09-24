@@ -22,7 +22,6 @@
 #include <ma/echo/server/session_config.hpp>
 #include <ma/echo/server/session_manager_config.hpp>
 #include <ma/echo/server/session_manager.hpp>
-#include <ma/echo/server/io_service_set.hpp>
 #include <ma/console_controller.hpp>
 
 const char* help_param = "help"; 
@@ -36,9 +35,11 @@ const char* buffer_size_param       = "buffer";
 const char* socket_recv_buffer_size_param = "socket_recv_buffer";
 const char* socket_send_buffer_size_param = "socket_send_buffer";
 const char* socket_no_delay_param   = "socket_no_delay";
-const char* default_sys_param_value = "OS default";
+const char* os_default_text = "OS default";
 
-struct session_manager_proxy;
+namespace server = ma::echo::server;
+
+struct  session_manager_proxy;
 typedef boost::shared_ptr<session_manager_proxy> session_manager_proxy_ptr;
 typedef boost::function<void (void)> exception_handler;
 
@@ -56,17 +57,18 @@ struct session_manager_proxy : private boost::noncopyable
   volatile bool stopped_by_program_exit_;
   volatile state_type state_;
   boost::mutex mutex_;  
-  ma::echo::server::session_manager_ptr session_manager_;    
+  server::session_manager_ptr session_manager_;    
   boost::condition_variable state_changed_;  
   ma::in_place_handler_allocator<128> start_wait_allocator_;
   ma::in_place_handler_allocator<128> stop_allocator_;
 
-  explicit session_manager_proxy(ma::echo::server::io_service_set& io_services,
-    const ma::echo::server::session_manager_config& config)
+  explicit session_manager_proxy(boost::asio::io_service& io_service,
+    boost::asio::io_service& session_io_service,
+    const server::session_manager_config& config)
     : stopped_by_program_exit_(false)
     , state_(ready_to_start)
-    , session_manager_(boost::make_shared<ma::echo::server::session_manager>(
-        boost::ref(io_services), config))        
+    , session_manager_(boost::make_shared<server::session_manager>(
+        boost::ref(io_service), boost::ref(session_io_service), config))        
   {
   }
 
@@ -98,19 +100,22 @@ void handle_session_manager_wait(const session_manager_proxy_ptr&,
 void handle_session_manager_stop(const session_manager_proxy_ptr&,
   const boost::system::error_code&);
 
-ma::echo::server::session_config create_session_config(
+server::session_config create_session_config(
   const boost::program_options::variables_map& options_values);
 
-ma::echo::server::session_manager_config create_session_manager_config(
+server::session_manager_config create_session_manager_config(
   const boost::program_options::variables_map& options_values,
-  const ma::echo::server::session_config& session_config);
+  const server::session_config& session_config);
 
-void print_config(std::ostream& stream, const boost::posix_time::time_duration& stop_timeout,
+void print_config(std::ostream& stream, 
+  const boost::posix_time::time_duration& stop_timeout,
   std::size_t cpu_num, std::size_t session_thread_num, std::size_t sm_thread_num,
-  const ma::echo::server::session_manager_config& sm_config);
+  const server::session_manager_config& sm_config);
 
 template <typename Value>
-void print_param(std::ostream& stream, const boost::optional<Value>& value, const std::string& default_value)
+void print_param(std::ostream& stream, 
+  const boost::optional<Value>& value, 
+  const std::string& default_value)
 {
   if (value) 
   {
@@ -123,7 +128,9 @@ void print_param(std::ostream& stream, const boost::optional<Value>& value, cons
 }
 
 template <>
-void print_param<bool>(std::ostream& stream, const boost::optional<bool>& value, const std::string& default_value)
+void print_param<bool>(std::ostream& stream, 
+  const boost::optional<bool>& value, 
+  const std::string& default_value)
 {
   if (value) 
   {
@@ -174,14 +181,18 @@ int _tmain(int argc, _TCHAR* argv[])
       }
       std::size_t sm_thread_num = 1;      
       boost::posix_time::time_duration stop_timeout = boost::posix_time::seconds(options_values[stop_timeout_param].as<long>());
-      ma::echo::server::session_config session_config = create_session_config(options_values);
-      ma::echo::server::session_manager_config sm_config = create_session_manager_config(options_values, session_config);
+      server::session_config session_config = create_session_config(options_values);
+      server::session_manager_config sm_config = create_session_manager_config(options_values, session_config);
 
       print_config(std::cout, stop_timeout, cpu_num, session_thread_num, sm_thread_num, sm_config);
                   
-      boost::asio::io_service session_io_service(session_thread_num);
-      ma::echo::server::seperated_io_service_set io_services(session_io_service, sm_thread_num);      
-      session_manager_proxy_ptr sm_proxy(boost::make_shared<session_manager_proxy>(boost::ref(io_services), sm_config));
+      // Before sm_io_service
+      boost::asio::io_service session_io_service(session_thread_num);      
+      // ... for the right destruction order
+      boost::asio::io_service sm_io_service(sm_thread_num);
+
+      session_manager_proxy_ptr sm_proxy(boost::make_shared<session_manager_proxy>(
+        boost::ref(sm_io_service), boost::ref(session_io_service), sm_config));
       
       std::cout << "Server is starting...\n";
       
@@ -198,22 +209,22 @@ int _tmain(int argc, _TCHAR* argv[])
       exception_handler work_exception_handler(boost::bind(handle_work_exception, sm_proxy));
 
       // Create work for sessions' io_service to prevent threads' stop
-      boost::asio::io_service::work session_work(io_services.session_io_service());
+      boost::asio::io_service::work session_work(session_io_service);
       // Create work for session_manager's io_service to prevent threads' stop
-      boost::asio::io_service::work session_manager_work(io_services.session_manager_io_service());    
+      boost::asio::io_service::work session_manager_work(sm_io_service);    
 
       // Create work threads for session operations
       boost::thread_group work_threads;    
       for (std::size_t i = 0; i != session_thread_num; ++i)
       {
         work_threads.create_thread(boost::bind(run_io_service, 
-          boost::ref(io_services.session_io_service()), work_exception_handler));
+          boost::ref(session_io_service), work_exception_handler));
       }
       // Create work threads for session manager operations
       for (std::size_t i = 0; i != sm_thread_num; ++i)
       {
         work_threads.create_thread(boost::bind(run_io_service, 
-          boost::ref(io_services.session_manager_io_service()), work_exception_handler));      
+          boost::ref(sm_io_service), work_exception_handler));      
       }
 
       // Wait until server stops
@@ -238,8 +249,8 @@ int _tmain(int argc, _TCHAR* argv[])
       }
       sm_proxy_lock.unlock();
           
-      io_services.session_manager_io_service().stop();
-      io_services.session_io_service().stop();
+      sm_io_service.stop();
+      session_io_service.stop();
 
       std::cout << "Server work was terminated. Waiting until all of the work threads will stop...\n";
       work_threads.join_all();
@@ -264,7 +275,7 @@ int _tmain(int argc, _TCHAR* argv[])
   return exit_code;
 }
 
-ma::echo::server::session_config create_session_config(
+server::session_config create_session_config(
   const boost::program_options::variables_map& options_values)
 {  
   boost::optional<bool> no_delay;
@@ -272,8 +283,7 @@ ma::echo::server::session_config create_session_config(
   {
     no_delay = !options_values[socket_no_delay_param].as<bool>();
   }
-  return ma::echo::server::session_config(
-    options_values[buffer_size_param].as<std::size_t>(),
+  return server::session_config(options_values[buffer_size_param].as<std::size_t>(),
     options_values.count(socket_recv_buffer_size_param) ? 
       options_values[socket_recv_buffer_size_param].as<int>() : boost::optional<int>(),
     options_values.count(socket_send_buffer_size_param) ? 
@@ -281,24 +291,25 @@ ma::echo::server::session_config create_session_config(
     no_delay);
 }
 
-ma::echo::server::session_manager_config create_session_manager_config(
+server::session_manager_config create_session_manager_config(
   const boost::program_options::variables_map& options_values,
-  const ma::echo::server::session_config& session_config)
+  const server::session_config& session_config)
 {
   using boost::asio::ip::tcp;
-  return ma::echo::server::session_manager_config(
-    tcp::endpoint(tcp::v4(), options_values[port_param].as<unsigned short>()),
+  unsigned short port = options_values[port_param].as<unsigned short>();
+  return server::session_manager_config(tcp::endpoint(tcp::v4(), port),
     options_values[max_sessions_param].as<std::size_t>(),
     options_values[recycled_sessions_param].as<std::size_t>(),
     options_values[listen_backlog_param].as<int>(),
     session_config);
 }
 
-void print_config(std::ostream& stream, const boost::posix_time::time_duration& stop_timeout,
+void print_config(std::ostream& stream, 
+  const boost::posix_time::time_duration& stop_timeout,
   std::size_t cpu_num, std::size_t session_thread_num, std::size_t sm_thread_num,
-  const ma::echo::server::session_manager_config& sm_config)
+  const server::session_manager_config& sm_config)
 {
-  const ma::echo::server::session_config& session_config = sm_config.session_config_;
+  const server::session_config& session_config = sm_config.session_config_;
 
   stream << "Number of found CPU(s)             : " << cpu_num                      << std::endl
          << "Number of session manager's threads: " << sm_thread_num                << std::endl
@@ -312,15 +323,15 @@ void print_config(std::ostream& stream, const boost::posix_time::time_duration& 
          << "Size of session's buffer (bytes)   : " << session_config.buffer_size_  << std::endl;
 
   stream << "Size of session's socket receive buffer (bytes): ";
-  print_param(stream, session_config.socket_recv_buffer_size_, default_sys_param_value);
+  print_param(stream, session_config.socket_recv_buffer_size_, os_default_text);
   stream << std::endl;
 
   stream << "Size of session's socket send buffer (bytes)   : ";
-  print_param(stream, session_config.socket_send_buffer_size_, default_sys_param_value);
+  print_param(stream, session_config.socket_send_buffer_size_, os_default_text);
   stream << std::endl;
 
   stream << "Session's socket Nagle algorithm is: ";
-  print_param(stream, session_config.no_delay_, default_sys_param_value);
+  print_param(stream, session_config.no_delay_, os_default_text);
   stream << std::endl;      
 }
 
@@ -385,8 +396,9 @@ void fill_options_description(boost::program_options::options_description& optio
 
 void start_session_manager(const session_manager_proxy_ptr& proxy)
 {
-  proxy->session_manager_->async_start(ma::make_custom_alloc_handler(proxy->start_wait_allocator_,
-    boost::bind(handle_session_manager_start, proxy, _1)));
+  proxy->session_manager_->async_start(
+    ma::make_custom_alloc_handler(proxy->start_wait_allocator_,
+      boost::bind(handle_session_manager_start, proxy, _1)));
   proxy->state_ = session_manager_proxy::start_in_progress;
 }
 
@@ -399,8 +411,9 @@ void wait_session_manager(const session_manager_proxy_ptr& proxy)
 
 void stop_session_manager(const session_manager_proxy_ptr& proxy)
 {
-  proxy->session_manager_->async_stop(ma::make_custom_alloc_handler(proxy->stop_allocator_,
-    boost::bind(handle_session_manager_stop, proxy, _1)));
+  proxy->session_manager_->async_stop(
+    ma::make_custom_alloc_handler(proxy->stop_allocator_,
+      boost::bind(handle_session_manager_stop, proxy, _1)));
   proxy->state_ = session_manager_proxy::stop_in_progress;
 }
 
@@ -455,7 +468,8 @@ void handle_program_exit(const session_manager_proxy_ptr& proxy)
   }  
 }
 
-void handle_session_manager_start(const session_manager_proxy_ptr& proxy, const boost::system::error_code& error)
+void handle_session_manager_start(const session_manager_proxy_ptr& proxy, 
+  const boost::system::error_code& error)
 {   
   boost::unique_lock<boost::mutex> proxy_lock(proxy->mutex_);
   if (session_manager_proxy::start_in_progress == proxy->state_)
@@ -476,7 +490,8 @@ void handle_session_manager_start(const session_manager_proxy_ptr& proxy, const 
   }
 }
 
-void handle_session_manager_wait(const session_manager_proxy_ptr& proxy, const boost::system::error_code&)
+void handle_session_manager_wait(const session_manager_proxy_ptr& proxy, 
+  const boost::system::error_code&)
 {
   boost::unique_lock<boost::mutex> proxy_lock(proxy->mutex_);
   if (session_manager_proxy::started == proxy->state_)
@@ -488,7 +503,8 @@ void handle_session_manager_wait(const session_manager_proxy_ptr& proxy, const b
   }
 }
 
-void handle_session_manager_stop(const session_manager_proxy_ptr& proxy, const boost::system::error_code&)
+void handle_session_manager_stop(const session_manager_proxy_ptr& proxy, 
+  const boost::system::error_code&)
 {
   boost::unique_lock<boost::mutex> proxy_lock(proxy->mutex_);
   if (session_manager_proxy::stop_in_progress == proxy->state_)

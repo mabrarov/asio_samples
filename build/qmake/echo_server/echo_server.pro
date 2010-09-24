@@ -10,7 +10,6 @@ SOURCES  += ../../../src/ma/console_controller.cpp \
             ../../../src/ma/echo/server/session_manager_config.cpp \
             ../../../src/ma/echo/server/session.cpp \
             ../../../src/ma/echo/server/session_manager.cpp
-
 		
 HEADERS  += ../../../include/ma/handler_storage_service.hpp \
             ../../../include/ma/handler_storage.hpp \
@@ -27,10 +26,7 @@ HEADERS  += ../../../include/ma/handler_storage_service.hpp \
             ../../../include/ma/echo/server/session_fwd.hpp \
             ../../../include/ma/echo/server/session_manager_fwd.hpp \
             ../../../include/ma/echo/server/session.hpp \
-            ../../../include/ma/echo/server/session_manager.hpp \
-            ../../../include/ma/echo/server/io_service_set.hpp \
-            ../../../include/ma/echo/server/io_service_set_fwd.hpp
-		
+            ../../../include/ma/echo/server/session_manager.hpp		
 
 LIBS        += -L../../../../boost_1_44_0/lib/x86
 INCLUDEPATH += ../../../../boost_1_44_0 \

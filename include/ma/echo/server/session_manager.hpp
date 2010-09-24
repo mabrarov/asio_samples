@@ -18,7 +18,6 @@
 #include <ma/echo/server/session_config_fwd.hpp>
 #include <ma/echo/server/session_fwd.hpp>
 #include <ma/echo/server/session_manager_config.hpp>
-#include <ma/echo/server/io_service_set_fwd.hpp>
 #include <ma/echo/server/session_manager_fwd.hpp>
 
 namespace ma
@@ -79,7 +78,8 @@ namespace ma
         }; // session_proxy_list
 
       public: 
-        explicit session_manager(io_service_set& io_services, 
+        explicit session_manager(boost::asio::io_service& io_service, 
+          boost::asio::io_service& session_io_service, 
           const session_manager_config& config);
         ~session_manager();        
 
