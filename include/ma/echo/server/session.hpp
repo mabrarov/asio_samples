@@ -9,6 +9,7 @@
 #define MA_ECHO_SERVER_SESSION_HPP
 
 #include <boost/utility.hpp>
+#include <boost/optional.hpp>
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
 #include <ma/handler_allocation.hpp>
@@ -72,20 +73,16 @@ namespace ma
         template <typename Handler>
         void do_start(const Handler& handler)
         {
-          boost::system::error_code error;
-          start(error);          
-          io_service_.post(detail::bind_handler(handler, error));
+          boost::system::error_code result = start();
+          io_service_.post(detail::bind_handler(handler, result));
         } // do_start        
 
         template <typename Handler>
         void do_stop(const Handler& handler)
         {
-          boost::system::error_code error;
-          bool completed;
-          stop(error, completed);
-          if (completed) 
+          if (boost::optional<boost::system::error_code> result = stop())
           {
-            io_service_.post(detail::bind_handler(handler, error));
+            io_service_.post(detail::bind_handler(handler, *result));
           }
           else
           {
@@ -96,22 +93,19 @@ namespace ma
         template <typename Handler>
         void do_wait(const Handler& handler)
         {
-          boost::system::error_code error;
-          bool completed;
-          wait(error, completed);
-          if (completed)
+          if (boost::optional<boost::system::error_code> result = wait())
           {
-            io_service_.post(detail::bind_handler(handler, error));
+            io_service_.post(detail::bind_handler(handler, *result));
           } 
           else
           {
             wait_handler_.store(handler);
-          } 
+          }
         } // do_wait
 
-        void start(boost::system::error_code& error);        
-        void stop(boost::system::error_code& error, bool& completed);
-        void wait(boost::system::error_code& error, bool& completed);
+        boost::system::error_code start();        
+        boost::optional<boost::system::error_code> stop();
+        boost::optional<boost::system::error_code> wait();
         bool may_complete_stop() const;
         void complete_stop();        
         void read_some();        

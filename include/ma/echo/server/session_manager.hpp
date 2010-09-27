@@ -9,6 +9,7 @@
 #define MA_ECHO_SERVER_SESSION_MANAGER_HPP
 
 #include <boost/utility.hpp>
+#include <boost/optional.hpp>
 #include <boost/smart_ptr.hpp>
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
@@ -117,20 +118,16 @@ namespace ma
         template <typename Handler>
         void do_start(const Handler& handler)
         {
-          boost::system::error_code error;
-          start(error);
+          boost::system::error_code error = start();
           io_service_.post(detail::bind_handler(handler, error));          
         } // do_start
 
         template <typename Handler>
         void do_stop(const Handler& handler)
-        {
-          boost::system::error_code error;
-          bool completed;
-          stop(error, completed);
-          if (completed)
+        {          
+          if (boost::optional<boost::system::error_code> result = stop())
           {          
-            io_service_.post(detail::bind_handler(handler, error));
+            io_service_.post(detail::bind_handler(handler, *result));
           }
           else
           {
@@ -140,13 +137,10 @@ namespace ma
 
         template <typename Handler>
         void do_wait(const Handler& handler)
-        {
-          boost::system::error_code error;
-          bool completed;
-          wait(error, completed);
-          if (completed)
+        {          
+          if (boost::optional<boost::system::error_code> result = wait())
           {          
-            io_service_.post(detail::bind_handler(handler, error));
+            io_service_.post(detail::bind_handler(handler, *result));
           }
           else
           {          
@@ -154,9 +148,9 @@ namespace ma
           }  
         } // do_wait
 
-        void start(boost::system::error_code& error);
-        void stop(boost::system::error_code& error, bool& completed);
-        void wait(boost::system::error_code& error, bool& completed);
+        boost::system::error_code start();
+        boost::optional<boost::system::error_code> stop();
+        boost::optional<boost::system::error_code> wait();
         void accept_new_session();
         void handle_accept(const session_proxy_ptr& proxy, const boost::system::error_code& error);
         bool may_complete_stop() const;

@@ -102,110 +102,97 @@ namespace ma
       {        
       } // session_manager::session_manager  
 
-      void session_manager::start(boost::system::error_code& error)
+      boost::system::error_code session_manager::start()
       {
         if (stopped == state_ || stop_in_progress == state_)
         {          
-          error = boost::asio::error::operation_aborted;
+          return boost::asio::error::operation_aborted;
         } 
-        else if (ready_to_start != state_)
+        if (ready_to_start != state_)
         {          
-          error = boost::asio::error::operation_not_supported;                      
-        }
-        else
+          return boost::asio::error::operation_not_supported;                      
+        }        
+        state_ = start_in_progress;
+        boost::system::error_code error;
+        acceptor_.open(config_.endpoint_.protocol(), error);
+        if (!error)
         {
-          state_ = start_in_progress;        
-          acceptor_.open(config_.endpoint_.protocol(), error);
+          acceptor_.bind(config_.endpoint_, error);
           if (!error)
           {
-            acceptor_.bind(config_.endpoint_, error);
-            if (!error)
-            {
-              acceptor_.listen(config_.listen_backlog_, error);
-            }
-            if (error)
-            {
-              boost::system::error_code ignored;
-              acceptor_.close(ignored);          
-            }
+            acceptor_.listen(config_.listen_backlog_, error);
           }
           if (error)
-          {            
-            state_ = stopped;
+          {
+            boost::system::error_code ignored;
+            acceptor_.close(ignored);          
           }
-          else
-          {            
-            accept_new_session();            
-            state_ = started;
-          }
-        }        
+        }
+        if (error)
+        {
+          state_ = stopped;
+        }
+        else
+        {
+          accept_new_session();            
+          state_ = started;
+        }       
+        return error;
       } // session_manager::start
 
-      void session_manager::stop(boost::system::error_code& error, bool& completed)
-      {
-        completed = true;
+      boost::optional<boost::system::error_code> session_manager::stop()
+      {        
         if (stopped == state_ || stop_in_progress == state_)
         {          
-          error = boost::asio::error::operation_aborted;
-        }
-        else
+          return boost::asio::error::operation_aborted;
+        }        
+        // Start shutdown
+        state_ = stop_in_progress;
+        // Do shutdown - abort inner operations          
+        acceptor_.close(stop_error_);
+        // Stop all active sessions
+        session_proxy_ptr curr_session_proxy(active_session_proxies_.front());
+        while (curr_session_proxy)
         {
-          // Start shutdown
-          state_ = stop_in_progress;
-          // Do shutdown - abort inner operations          
-          acceptor_.close(stop_error_); 
-          // Stop all active sessions
-          session_proxy_ptr curr_session_proxy(active_session_proxies_.front());
-          while (curr_session_proxy)
+          if (stop_in_progress != curr_session_proxy->state_)
           {
-            if (stop_in_progress != curr_session_proxy->state_)
-            {
-              stop_session(curr_session_proxy);
-            }
-            curr_session_proxy = curr_session_proxy->next_;
+            stop_session(curr_session_proxy);
           }
-          // Do shutdown - abort outer operations
-          if (wait_handler_.has_target())
-          {
-            wait_handler_.post(boost::asio::error::operation_aborted);
-          }            
-          // Check for shutdown continuation
-          if (may_complete_stop())
-          {
-            complete_stop();
-            error = stop_error_;
-            completed = true;              
-          }
-          else
-          { 
-            completed = false;
-          }
+          curr_session_proxy = curr_session_proxy->next_;
         }
+        // Do shutdown - abort outer operations
+        if (wait_handler_.has_target())
+        {
+          wait_handler_.post(boost::asio::error::operation_aborted);
+        }            
+        // Check for shutdown continuation
+        if (may_complete_stop())
+        {
+          complete_stop();
+          return stop_error_;          
+        }
+        return boost::optional<boost::system::error_code>();
       } // session_manager::stop
 
-      void session_manager::wait(boost::system::error_code& error, bool& completed)
-      {
-        completed = true;
+      boost::optional<boost::system::error_code> session_manager::wait()
+      {        
         if (stopped == state_ || stop_in_progress == state_)
         {          
-          error = boost::asio::error::operation_aborted;
+          return boost::asio::error::operation_aborted;
         } 
-        else if (started != state_)
+        if (started != state_)
         {
-          error = boost::asio::error::operation_not_supported;
+          return boost::asio::error::operation_not_supported;
         }
-        else if (last_accept_error_ && active_session_proxies_.empty())
+        if (last_accept_error_ && active_session_proxies_.empty())
         {
-          error = last_accept_error_;
+          return last_accept_error_;
         }
-        else if (wait_handler_.has_target())
+        if (wait_handler_.has_target())
         {
-          error = boost::asio::error::operation_not_supported;
+          return boost::asio::error::operation_not_supported;
         }
-        else
-        {          
-          completed = false;
-        } 
+        return boost::optional<boost::system::error_code>();
       } // session_manager::wait
 
       void session_manager::accept_new_session()
