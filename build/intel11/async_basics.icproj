@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="windows-1251"?>
+<VisualStudioProject
+	ProjectType="Intel C++ Project"
+	Version="11.1"
+	Name="async_basics"
+	ProjectGUID="{5183E04F-AADC-4C0C-836A-8D16905C3509}"
+	VCNestedProjectGUID="{DB2A4264-CCB5-4687-8A25-D6400FF5F8AE}"
+	VCNestedProjectFileName="async_basics.vcproj">
+	<Configurations/>
+	<Files/>
+</VisualStudioProject>
