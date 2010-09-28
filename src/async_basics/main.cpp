@@ -12,6 +12,8 @@
 #include <boost/smart_ptr.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/ref.hpp>
+#include <boost/optional.hpp>
+#include <boost/utility/in_place_factory.hpp>
 #include <boost/bind.hpp>
 #include <boost/thread.hpp>
 #include <boost/asio.hpp>
@@ -43,7 +45,7 @@ int _tmain(int /*argc*/, _TCHAR* /*argv*/[])
   using boost::asio::io_service;
   io_service work_io_service(cpu_num);
 
-  boost::scoped_ptr<io_service::work> work_io_service_guard(new io_service::work(work_io_service));
+  boost::optional<io_service::work> work_io_service_guard(boost::in_place(boost::ref(work_io_service)));
   boost::thread_group work_threads;
   for (std::size_t i = 0; i != work_thread_count; ++i)
   {
@@ -62,7 +64,7 @@ int _tmain(int /*argc*/, _TCHAR* /*argv*/[])
     shared_ptr<Async_base> active_object = boost::make_shared<Async_derived>(boost::ref(work_io_service), *name); 
     active_object->async_do_something(ma::make_custom_alloc_handler(*allocator,
       boost::bind(&handle_do_something, _1, name, allocator)));
-  }   
+  }
   
   work_io_service_guard.reset();
   work_threads.join_all();
