@@ -25,10 +25,9 @@
 
 typedef ma::in_place_handler_allocator<128> handler_allocator_type;
 typedef std::codecvt<wchar_t, char, mbstate_t> wcodecvt_type;
-typedef ma::nmea::cyclic_read_session session;
+typedef ma::nmea::cyclic_read_session     session;
 typedef ma::nmea::cyclic_read_session_ptr session_ptr;
-typedef ma::nmea::message_ptr message_ptr;
-typedef boost::shared_ptr<message_ptr> ptr_to_message_ptr;
+typedef ma::nmea::message_ptr             message_ptr;
 
 void handle_start(std::locale&, const wcodecvt_type&, const session_ptr&, 
   handler_allocator_type&, const boost::system::error_code&);
@@ -36,9 +35,15 @@ void handle_start(std::locale&, const wcodecvt_type&, const session_ptr&,
 void handle_stop(const boost::system::error_code&);
 
 void handle_read(std::locale&, const wcodecvt_type&, const session_ptr&, 
-  handler_allocator_type&, const ptr_to_message_ptr&, const boost::system::error_code&);
+  handler_allocator_type&, const boost::system::error_code&, const message_ptr&);
 
 void handle_console_close(const session_ptr&);
+
+//typedef boost::shared_ptr<handler_allocator_type> allocator_ptr;
+//void handle_write(const allocator_ptr&, const boost::system::error_code&, const message_ptr&)
+//{
+//  //todo
+//}
 
 int _tmain(int argc, _TCHAR* argv[])
 {
@@ -81,8 +86,8 @@ int _tmain(int argc, _TCHAR* argv[])
     handler_allocator_type in_place_handler_allocator;
             
     boost::asio::io_service io_service(concurrent_count);   
-    session_ptr session(boost::make_shared<session>(
-      boost::ref(io_service), read_buffer_size, message_queue_size, "$", "\x0a"));
+    session_ptr session(boost::make_shared<session>(boost::ref(io_service), 
+      read_buffer_size, message_queue_size, "$", "\x0a"));
 
     // Prepare the lower layer - open the serial port
     session->serial_port().open(ansi_device_name);        
@@ -121,17 +126,21 @@ void handle_console_close(const session_ptr& session)
 void handle_start(std::locale& locale, const wcodecvt_type& wcodecvt, const session_ptr& session, 
   handler_allocator_type& in_place_handler_allocator, const boost::system::error_code& error)
 {  
-  if (error)  
+  if (error)
   {
     std::wcout << L"Start unsuccessful.\n";      
   }
   else
   {    
-    std::wcout << L"Session started successful. Starting read operation...\n";
-    ptr_to_message_ptr message = boost::make_shared<message_ptr>();
-    session->async_read(*message, ma::make_custom_alloc_handler(in_place_handler_allocator,
+    std::wcout << L"Session started successful. Starting read operation...\n";    
+    session->async_read(ma::make_custom_alloc_handler(in_place_handler_allocator,
       boost::bind(&handle_read, boost::ref(locale), boost::cref(wcodecvt),
-        session, boost::ref(in_place_handler_allocator), message, _1)));
+        session, boost::ref(in_place_handler_allocator), _1, _2)));
+
+    //allocator_ptr allocator = boost::make_shared<handler_allocator_type>();
+    //message_ptr message = boost::make_shared<ma::nmea::message_type>("Bla..bla..bla");
+    //session->async_write(boost::asio::buffer(*message), ma::make_custom_alloc_handler(*allocator,
+    //  boost::bind(&handle_write, allocator, _1, message)));
   }  
 }
 
@@ -148,15 +157,15 @@ void handle_stop(const boost::system::error_code& error)
 }
 
 void handle_read(std::locale& locale, const wcodecvt_type& wcodecvt, const session_ptr& session, 
-  handler_allocator_type& in_place_handler_allocator, const ptr_to_message_ptr& message, 
-  const boost::system::error_code& error)
+  handler_allocator_type& in_place_handler_allocator, const boost::system::error_code& error,
+  const message_ptr& message)
 {  
   if (boost::asio::error::eof == error)  
   {
     std::wcout << L"Input stream closed. But it\'s serial port so starting read operation again...\n";
-    session->async_read(*message, ma::make_custom_alloc_handler(in_place_handler_allocator,
+    session->async_read(ma::make_custom_alloc_handler(in_place_handler_allocator,
       boost::bind(&handle_read, boost::ref(locale), boost::cref(wcodecvt), session, 
-        boost::ref(in_place_handler_allocator), message, _1)));
+        boost::ref(in_place_handler_allocator), _1, _2)));
   }
   else if (error)  
   {      
@@ -166,10 +175,10 @@ void handle_read(std::locale& locale, const wcodecvt_type& wcodecvt, const sessi
   }
   else
   {
-    std::wstring log_message(ma::codecvt_cast::in(**message, wcodecvt));              
+    std::wstring log_message(ma::codecvt_cast::in(*message, wcodecvt));              
     std::wcout << L"Read successful.\nMessage: " + log_message + L"\nStarting read operation...\n";
-    session->async_read(*message, ma::make_custom_alloc_handler(in_place_handler_allocator,
+    session->async_read(ma::make_custom_alloc_handler(in_place_handler_allocator,
       boost::bind(&handle_read, boost::ref(locale), boost::cref(wcodecvt), session, 
-        boost::ref(in_place_handler_allocator), message, _1)));
+        boost::ref(in_place_handler_allocator), _1, _2)));
   }  
 }

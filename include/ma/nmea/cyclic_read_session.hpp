@@ -10,6 +10,7 @@
 
 #include <string>
 #include <boost/utility.hpp>
+#include <boost/optional.hpp>
 #include <boost/smart_ptr.hpp>
 #include <boost/bind.hpp>
 #include <boost/ref.hpp>
@@ -23,10 +24,11 @@
 namespace ma
 {
   namespace nmea
-  { 
-    class cyclic_read_session;
+  {     
     typedef std::string message_type;
-    typedef boost::shared_ptr<message_type> message_ptr;    
+    typedef boost::shared_ptr<message_type> message_ptr;
+
+    class cyclic_read_session;
     typedef boost::shared_ptr<cyclic_read_session> cyclic_read_session_ptr;
 
     class cyclic_read_session 
@@ -61,23 +63,24 @@ namespace ma
       {
         strand_.dispatch(make_context_alloc_handler2(handler,
           boost::bind(&this_type::do_stop<Handler>, shared_from_this(), _1)));
+      }           
+
+      // Handler::operator ()(const boost::system::error_code&, const message_ptr&)
+      template <typename Handler>
+      void async_read(Handler handler)
+      {                
+        strand_.dispatch(make_context_alloc_handler2(handler,
+          boost::bind(&this_type::do_read<Handler>, shared_from_this(), _1)));
       }
-      
+
       template <typename ConstBufferSequence, typename Handler>
       void async_write(const ConstBufferSequence& buffer, Handler handler)
       {                
         strand_.dispatch(make_context_alloc_handler2(handler, 
           boost::bind(&this_type::do_write<ConstBufferSequence, Handler>, shared_from_this(), buffer, _1)));
       }
-
-      template <typename Handler>
-      void async_read(message_ptr& message, Handler handler)
-      {                
-        strand_.dispatch(make_context_alloc_handler2(handler,
-          boost::bind(&this_type::do_read<Handler>, shared_from_this(), boost::ref(message), _1)));
-      }        
     
-    private:        
+    private:
       enum state_type
       {
         ready_to_start,
@@ -85,58 +88,80 @@ namespace ma
         started,
         stop_in_progress,
         stopped
-      };      
+      };    
+
+      typedef boost::tuple<boost::system::error_code, message_ptr> read_result_type;
 
       template <typename Handler>
       void do_start(const Handler& handler)
       {
-        boost::system::error_code error;
-        start(error);
+        boost::system::error_code error = start();
         io_service_.post(detail::bind_handler(handler, error));
       } // do_start
 
       template <typename Handler>
       void do_stop(const Handler& handler)
       { 
-        boost::system::error_code error;
-        bool completed;
-        stop(error, completed);
-        if (completed)
+        if (boost::optional<boost::system::error_code> result = stop())        
         {          
-          io_service_.post(detail::bind_handler(handler, error));          
+          io_service_.post(detail::bind_handler(handler, *result));          
         }         
         else 
-        {
-          // Wait for others operations' completion
+        {          
           stop_handler_.store(handler);
         }        
       } // do_stop
-      
+
+      template <typename Handler>
+      void do_read(const Handler& handler)
+      {
+        if (boost::optional<read_result_type> result = read())
+        {          
+          io_service_.post(detail::bind_handler(handler, boost::get<0>(*result), boost::get<1>(*result)));
+        }
+        else
+        {          
+          read_handler_.store(ma::make_context_wrapped_handler2(handler, 
+            boost::bind(&this_type::read_wrap_func<Handler>, _1, _2)));
+        }        
+      } // do_read      
+
       template <typename ConstBufferSequence, typename Handler>
       void do_write(const ConstBufferSequence& buffer, const Handler& handler)
       {  
-        if (stopped == state_ || stop_in_progress == state_)
+        if (boost::optional<boost::system::error_code> result = write(buffer, handler))        
         {          
-          io_service_.post(detail::bind_handler(handler, boost::asio::error::operation_aborted));          
-        } 
-        else if (started != state_ || port_write_in_progress_)
-        {          
-          io_service_.post(detail::bind_handler(handler, boost::asio::error::operation_not_supported));
-        }
-        else 
-        {        
-          boost::asio::async_write(serial_port_, buffer, strand_.wrap(
-            make_custom_alloc_handler(write_allocator_, 
-              boost::bind(&this_type::handle_write<Handler>, shared_from_this(), 
-                boost::asio::placeholders::error, boost::make_tuple<Handler>(handler)))));
-          port_write_in_progress_ = true;
+          io_service_.post(detail::bind_handler(handler, *result));          
         }
       } // do_write
 
+      boost::system::error_code start();
+      boost::optional<boost::system::error_code> stop();
+      boost::optional<read_result_type> read();
+
+      template <typename ConstBufferSequence, typename Handler>
+      boost::optional<boost::system::error_code> write(const ConstBufferSequence& buffer, const Handler& handler)
+      {
+        if (stopped == state_ || stop_in_progress == state_)
+        {          
+          return boost::asio::error::operation_aborted;
+        } 
+        if (started != state_ || port_write_in_progress_)
+        {          
+          return boost::asio::error::operation_not_supported;
+        }
+        boost::asio::async_write(serial_port_, buffer, strand_.wrap(
+          make_custom_alloc_handler(write_allocator_, 
+            boost::bind(&this_type::handle_write<Handler>, shared_from_this(), 
+              boost::asio::placeholders::error, boost::make_tuple<Handler>(handler)))));
+        port_write_in_progress_ = true;        
+        return boost::optional<boost::system::error_code>();
+      }
+     
       template <typename Handler>
       void handle_write(const boost::system::error_code& error, boost::tuple<Handler> handler)
       {         
-        port_write_in_progress_ = false;        
+        port_write_in_progress_ = false;
         io_service_.post(detail::bind_handler(boost::get<0>(handler), error));
         if (stop_in_progress == state_ && !port_read_in_progress_)
         {
@@ -146,34 +171,21 @@ namespace ma
         }
       } 
 
-      template <typename Handler>
-      void do_read(message_ptr& message, const boost::tuple<Handler>& handler)
-      {
-        boost::system::error_code error;
-        bool completed;
-        read(message, error, completed);
-        if (completed)
-        {          
-          io_service_.post(detail::bind_handler(boost::get<0>(handler), error));          
-        }
-        else
-        {
-          read_handler_.store(message, boost::get<0>(handler));          
-        }        
-      } // do_read
-
-      void start(boost::system::error_code& error);
-      void stop(boost::system::error_code& error, bool& completed);
-      void read(message_ptr& message, boost::system::error_code& error, bool& completed);
       void read_until_head();
       void read_until_tail();
       void handle_read_head(const boost::system::error_code& error, const std::size_t bytes_transferred);
       void handle_read_tail(const boost::system::error_code& error, const std::size_t bytes_transferred);
+
+      template <typename Handler>
+      static void read_wrap_func(Handler& handler, const read_result_type& result)
+      {
+        handler(boost::get<0>(result), boost::get<1>(result));
+      }
       
       boost::asio::io_service& io_service_;
       boost::asio::io_service::strand strand_;
       boost::asio::serial_port serial_port_;      
-      ma::handler_storage2<boost::system::error_code, message_ptr&> read_handler_;
+      ma::handler_storage<read_result_type> read_handler_;
       ma::handler_storage<boost::system::error_code> stop_handler_;      
       boost::circular_buffer<message_ptr> message_queue_;      
       boost::system::error_code read_error_;
