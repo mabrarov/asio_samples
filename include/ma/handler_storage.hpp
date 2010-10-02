@@ -51,9 +51,9 @@ namespace ma
     }
 
     template <typename Handler>
-    void store(Handler handler)
+    void put(Handler handler)
     {
-      service_.store(implementation_, handler);
+      service_.put(implementation_, handler);
     }
 
     void post(arg_param_type arg)
@@ -108,9 +108,9 @@ namespace ma
     }
 
     template <typename Handler>
-    void store(data_param_type data, Handler handler)
+    void put(data_param_type data, Handler handler)
     {
-      service_.store(implementation_, data, handler);
+      service_.put(implementation_, data, handler);
     }    
 
     void post(arg_param_type arg)

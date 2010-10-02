@@ -243,7 +243,7 @@ namespace ma
     }
 
     template <typename Handler>
-    void store(implementation_type& impl, Handler handler)
+    void put(implementation_type& impl, Handler handler)
     {
       if (!shutdown_done_)
       {      
@@ -526,7 +526,7 @@ namespace ma
     }
 
     template <typename Handler>
-    void store(implementation_type& impl, data_param_type data, Handler handler)
+    void put(implementation_type& impl, data_param_type data, Handler handler)
     {
       if (!shutdown_done_)
       {      

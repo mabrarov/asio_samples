@@ -68,7 +68,7 @@ namespace ma
         }
         else
         {
-          do_something_handler_.store(handler);
+          do_something_handler_.put(handler);
         }
       }
 

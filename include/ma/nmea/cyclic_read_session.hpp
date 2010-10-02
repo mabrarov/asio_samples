@@ -108,7 +108,7 @@ namespace ma
         }         
         else 
         {          
-          stop_handler_.store(handler);
+          stop_handler_.put(handler);
         }        
       } // do_stop
 
@@ -121,7 +121,7 @@ namespace ma
         }
         else
         {          
-          read_handler_.store(ma::make_context_wrapped_handler2(handler, 
+          read_handler_.put(ma::make_context_wrapped_handler2(handler, 
             boost::bind(&this_type::read_wrap_func<Handler>, _1, _2)));
         }        
       } // do_read      

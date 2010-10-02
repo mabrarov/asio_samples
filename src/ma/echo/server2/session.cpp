@@ -154,7 +154,7 @@ namespace ma
           }
           else
           {
-            stop_handler_.store(handler);
+            stop_handler_.put(handler);
           }
         }
       } // session::do_stop
@@ -195,7 +195,7 @@ namespace ma
         }
         else
         {          
-          wait_handler_.store(handler);
+          wait_handler_.put(handler);
         } 
       } // session::do_wait
 
