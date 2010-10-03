@@ -57,21 +57,21 @@ namespace ma
       void session_manager::async_start(const allocator_ptr& operation_allocator,
         const session_manager_start_handler_weak_ptr& handler)
       {
-        strand_.dispatch(make_custom_alloc_handler(*operation_allocator, 
+        strand_.post(make_custom_alloc_handler(*operation_allocator, 
           boost::bind(&this_type::do_start, shared_from_this(), operation_allocator, handler)));
       } // session_manager::async_start
       
       void session_manager::async_stop(const allocator_ptr& operation_allocator,
         const session_manager_stop_handler_weak_ptr& handler)
       {
-        strand_.dispatch(make_custom_alloc_handler(*operation_allocator, 
+        strand_.post(make_custom_alloc_handler(*operation_allocator, 
           boost::bind(&this_type::do_stop, shared_from_this(), operation_allocator, handler)));
       } // session_manager::async_stop
       
       void session_manager::async_wait(const allocator_ptr& operation_allocator,
         const session_manager_wait_handler_weak_ptr& handler)
       {
-        strand_.dispatch(make_custom_alloc_handler(*operation_allocator, 
+        strand_.post(make_custom_alloc_handler(*operation_allocator, 
           boost::bind(&this_type::do_wait, shared_from_this(), operation_allocator, handler)));
       } // session_manager::async_wait
 

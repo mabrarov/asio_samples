@@ -108,9 +108,9 @@ namespace ma
         read_handler_.post(read_result_type(boost::asio::error::operation_aborted, message_ptr()));
       }
       // Check for shutdown completion
-      if (!port_write_in_progress_ && !port_read_in_progress_)
+      if (may_complete_stop())
       {        
-        state_ = stopped;
+        complete_stop();
         // Signal shutdown completion
         return stop_error_;              
       }
@@ -148,6 +148,16 @@ namespace ma
       return boost::optional<read_result_type>();
     } // cyclic_read_session::read
 
+    bool cyclic_read_session::may_complete_stop() const
+    {
+      return !port_write_in_progress_ && !port_read_in_progress_;
+    } // cyclic_read_session::may_complete_stop
+
+    void cyclic_read_session::complete_stop()
+    {
+      state_ = stopped;
+    } // cyclic_read_session::complete_stop
+
     void cyclic_read_session::read_until_head()
     {                                 
       boost::asio::async_read_until(serial_port_, read_buffer_, frame_head_,
@@ -172,9 +182,9 @@ namespace ma
       port_read_in_progress_ = false;
       if (stop_in_progress == state_)
       {          
-        if (!port_write_in_progress_)
+        if (may_complete_stop())
         {
-          state_ = stopped;
+          complete_stop();
           // Signal shutdown completion
           stop_handler_.post(stop_error_);
         }
@@ -202,9 +212,9 @@ namespace ma
       port_read_in_progress_ = false;        
       if (stop_in_progress == state_)
       {
-        if (!port_write_in_progress_)
+        if (may_complete_stop())
         {
-          state_ = stopped;
+          complete_stop();
           // Signal shutdown completion
           stop_handler_.post(stop_error_);
         }

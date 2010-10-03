@@ -54,14 +54,14 @@ namespace ma
       template <typename Handler>
       void async_start(Handler handler)
       {        
-        strand_.dispatch(make_context_alloc_handler2(handler,
+        strand_.post(make_context_alloc_handler2(handler,
           boost::bind(&this_type::do_start<Handler>, shared_from_this(), _1)));
       }
 
       template <typename Handler>
       void async_stop(Handler handler)
       {
-        strand_.dispatch(make_context_alloc_handler2(handler,
+        strand_.post(make_context_alloc_handler2(handler,
           boost::bind(&this_type::do_stop<Handler>, shared_from_this(), _1)));
       }           
 
@@ -69,14 +69,14 @@ namespace ma
       template <typename Handler>
       void async_read(Handler handler)
       {                
-        strand_.dispatch(make_context_alloc_handler2(handler,
+        strand_.post(make_context_alloc_handler2(handler,
           boost::bind(&this_type::do_read<Handler>, shared_from_this(), _1)));
       }
 
       template <typename ConstBufferSequence, typename Handler>
       void async_write(const ConstBufferSequence& buffer, Handler handler)
       {                
-        strand_.dispatch(make_context_alloc_handler2(handler, 
+        strand_.post(make_context_alloc_handler2(handler, 
           boost::bind(&this_type::do_write<ConstBufferSequence, Handler>, shared_from_this(), buffer, _1)));
       }
     
@@ -138,6 +138,8 @@ namespace ma
       boost::system::error_code start();
       boost::optional<boost::system::error_code> stop();
       boost::optional<read_result_type> read();
+      bool may_complete_stop() const;
+      void complete_stop();
 
       template <typename ConstBufferSequence, typename Handler>
       boost::optional<boost::system::error_code> write(const ConstBufferSequence& buffer, const Handler& handler)
