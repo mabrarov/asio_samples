@@ -14,14 +14,14 @@ namespace ma
   namespace nmea
   { 
     cyclic_read_session::cyclic_read_session(boost::asio::io_service& io_service,
-      const std::size_t read_buffer_size, const std::size_t message_queue_size,
+      const std::size_t read_buffer_size, const std::size_t frame_buffer_size,
       const std::string& frame_head, const std::string& frame_tail)
       : io_service_(io_service)        
       , strand_(io_service)
       , serial_port_(io_service)
       , read_handler_(io_service)        
       , stop_handler_(io_service)
-      , message_queue_(message_queue_size)
+      , frame_buffer_(frame_buffer_size)
       , state_(ready_to_start)
       , port_write_in_progress_(false)
       , port_read_in_progress_(false)                
@@ -29,7 +29,7 @@ namespace ma
       , frame_head_(frame_head)
       , frame_tail_(frame_tail)
     {
-      if (message_queue_size < min_message_queue_size)
+      if (frame_buffer_size < min_message_queue_size)
       {
         boost::throw_exception(std::invalid_argument("too small message_queue_size"));
       }
@@ -58,10 +58,9 @@ namespace ma
     
     void cyclic_read_session::resest()
     {
-      message_queue_.clear();        
+      frame_buffer_.clear();        
       read_error_ = boost::system::error_code();
-      read_buffer_.consume(
-        boost::asio::buffer_size(read_buffer_.data()));        
+      read_buffer_.consume(boost::asio::buffer_size(read_buffer_.data()));        
       state_ = ready_to_start;
     } // cyclic_read_session::resest
 
@@ -105,7 +104,7 @@ namespace ma
       // Do shutdown - abort outer operations
       if (read_handler_.has_target())
       {
-        read_handler_.post(read_result_type(boost::asio::error::operation_aborted, message_ptr()));
+        read_handler_.post(read_result_type(boost::asio::error::operation_aborted, frame_ptr()));
       }
       // Check for shutdown completion
       if (may_complete_stop())
@@ -121,23 +120,23 @@ namespace ma
     {      
       if (stopped == state_ || stop_in_progress == state_)
       {
-        return read_result_type(boost::asio::error::operation_aborted, message_ptr());
+        return read_result_type(boost::asio::error::operation_aborted, frame_ptr());
       }
       if (started != state_ || read_handler_.has_target())
       {          
-        return read_result_type(boost::asio::error::operation_not_supported, message_ptr());
+        return read_result_type(boost::asio::error::operation_not_supported, frame_ptr());
       }
-      if (!message_queue_.empty())
+      if (!frame_buffer_.empty())
       {
-        message_ptr message = message_queue_.front();
-        message_queue_.pop_front();
+        frame_ptr message = frame_buffer_.front();
+        frame_buffer_.pop_front();
         return read_result_type(boost::system::error_code(), message);        
       }
       if (read_error_)
       {
         boost::system::error_code error = read_error_;
         read_error_ = boost::system::error_code();
-        return read_result_type(error, message_ptr());        
+        return read_result_type(error, frame_ptr());        
       }      
       // If can't immediately complete then start waiting for completion
       // Start message constructing
@@ -197,7 +196,7 @@ namespace ma
       }
       else if (read_handler_.has_target())
       {        
-        read_handler_.post(read_result_type(error, message_ptr()));
+        read_handler_.post(read_result_type(error, frame_ptr()));
       }
       else
       {
@@ -225,17 +224,16 @@ namespace ma
         typedef boost::asio::buffers_iterator<const_buffers_type> buffers_iterator;
         const_buffers_type committed_buffers(read_buffer_.data());
         buffers_iterator data_begin(buffers_iterator::begin(committed_buffers));
-        buffers_iterator data_end(data_begin + bytes_transferred - frame_tail_.length());
-        bool new_ptr_create = read_handler_.has_target() || !message_queue_.full();
-        message_ptr message;
-        if (new_ptr_create)
+        buffers_iterator data_end(data_begin + bytes_transferred - frame_tail_.length());        
+        frame_ptr new_frame;
+        if (read_handler_.has_target() || !frame_buffer_.full())
         {
-          message = boost::make_shared<message_type>(data_begin, data_end);
+          new_frame = boost::make_shared<frame>(data_begin, data_end);
         }
         else
         {
-          message = message_queue_.front();
-          message->assign(data_begin, data_end);
+          new_frame = frame_buffer_.front();
+          new_frame->assign(data_begin, data_end);
         }          
         // Consume processed data
         read_buffer_.consume(bytes_transferred);
@@ -244,17 +242,17 @@ namespace ma
         // If there is waiting read operation - complete it            
         if (read_handler_.has_target())
         {
-          read_handler_.post(read_result_type(error, message));
+          read_handler_.post(read_result_type(error, new_frame));
         } 
         else
         {
           // else push ready message into the cyclic read buffer            
-          message_queue_.push_back(message);              
+          frame_buffer_.push_back(new_frame);              
         }          
       }
       else if (read_handler_.has_target())
       {
-        read_handler_.post(read_result_type(error, message_ptr()));
+        read_handler_.post(read_result_type(error, frame_ptr()));
       }
       else
       {

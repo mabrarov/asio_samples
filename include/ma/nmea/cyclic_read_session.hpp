@@ -20,13 +20,15 @@
 #include <ma/handler_allocation.hpp>
 #include <ma/handler_storage.hpp>
 #include <ma/bind_asio_handler.hpp>
+#include <ma/nmea/frame.hpp>
+#include <ma/nmea/cyclic_read_session_fwd.hpp>
 
 namespace ma
 {
   namespace nmea
   {     
-    typedef std::string message_type;
-    typedef boost::shared_ptr<message_type> message_ptr;
+    typedef std::string frame;
+    typedef boost::shared_ptr<frame> frame_ptr;
 
     class cyclic_read_session;
     typedef boost::shared_ptr<cyclic_read_session> cyclic_read_session_ptr;
@@ -44,7 +46,7 @@ namespace ma
       BOOST_STATIC_CONSTANT(std::size_t, min_message_queue_size = 1);
 
       explicit cyclic_read_session(boost::asio::io_service& io_service,
-        const std::size_t read_buffer_size, const std::size_t message_queue_size,
+        const std::size_t read_buffer_size, const std::size_t frame_buffer_size,
         const std::string& frame_head, const std::string& frame_tail);
       ~cyclic_read_session();      
 
@@ -90,7 +92,7 @@ namespace ma
         stopped
       };    
 
-      typedef boost::tuple<boost::system::error_code, message_ptr> read_result_type;
+      typedef boost::tuple<boost::system::error_code, frame_ptr> read_result_type;
 
       template <typename Handler>
       void do_start(const Handler& handler)
@@ -189,7 +191,7 @@ namespace ma
       boost::asio::serial_port serial_port_;      
       ma::handler_storage<read_result_type> read_handler_;
       ma::handler_storage<boost::system::error_code> stop_handler_;      
-      boost::circular_buffer<message_ptr> message_queue_;      
+      boost::circular_buffer<frame_ptr> frame_buffer_;      
       boost::system::error_code read_error_;
       boost::system::error_code stop_error_;
       state_type state_;

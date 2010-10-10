@@ -20,6 +20,7 @@
 #include <boost/lexical_cast.hpp>
 #include <ma/codecvt_cast.hpp>
 #include <ma/handler_allocation.hpp>
+#include <ma/nmea/frame.hpp>
 #include <ma/nmea/cyclic_read_session.hpp>
 #include <ma/console_controller.hpp>
 
@@ -27,7 +28,7 @@ typedef ma::in_place_handler_allocator<128> handler_allocator_type;
 typedef std::codecvt<wchar_t, char, mbstate_t> wcodecvt_type;
 typedef ma::nmea::cyclic_read_session     session;
 typedef ma::nmea::cyclic_read_session_ptr session_ptr;
-typedef ma::nmea::message_ptr             message_ptr;
+typedef ma::nmea::frame_ptr               frame_ptr;
 
 void handle_start(std::locale&, const wcodecvt_type&, const session_ptr&, 
   handler_allocator_type&, const boost::system::error_code&);
@@ -35,12 +36,12 @@ void handle_start(std::locale&, const wcodecvt_type&, const session_ptr&,
 void handle_stop(const boost::system::error_code&);
 
 void handle_read(std::locale&, const wcodecvt_type&, const session_ptr&, 
-  handler_allocator_type&, const boost::system::error_code&, const message_ptr&);
+  handler_allocator_type&, const boost::system::error_code&, const frame_ptr&);
 
 void handle_console_close(const session_ptr&);
 
 //typedef boost::shared_ptr<handler_allocator_type> allocator_ptr;
-//void handle_write(const allocator_ptr&, const boost::system::error_code&, const message_ptr&)
+//void handle_write(const allocator_ptr&, const boost::system::error_code&, const frame_ptr&)
 //{
 //  //todo
 //}
@@ -58,12 +59,12 @@ int _tmain(int argc, _TCHAR* argv[])
   else
   {
     std::size_t cpu_num = boost::thread::hardware_concurrency();
-    std::size_t concurrent_count = 2 > cpu_num ? 2 : cpu_num;
-    std::size_t thread_count = 2;
+    std::size_t concurrent_num = 2 > cpu_num ? 2 : cpu_num;
+    std::size_t thread_num = 2;
 
     std::wcout << L"Number of found CPUs             : " << cpu_num        << std::endl
-               << L"Number of concurrent work threads: " << concurrent_count << std::endl
-               << L"Total number of work threads     : " << thread_count     << std::endl;
+               << L"Number of concurrent work threads: " << concurrent_num << std::endl
+               << L"Total number of work threads     : " << thread_num     << std::endl;
 
     std::wstring device_name(argv[1]);
     std::size_t read_buffer_size = std::max<std::size_t>(1024, session::min_read_buffer_size);
@@ -85,7 +86,7 @@ int _tmain(int argc, _TCHAR* argv[])
     std::string ansi_device_name(ma::codecvt_cast::out(device_name, wcodecvt));
     handler_allocator_type in_place_handler_allocator;
             
-    boost::asio::io_service io_service(concurrent_count);   
+    boost::asio::io_service io_service(concurrent_num);   
     session_ptr session(boost::make_shared<session>(boost::ref(io_service), 
       read_buffer_size, message_queue_size, "$", "\x0a"));
 
@@ -103,7 +104,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
     // Create work threads
     boost::thread_group thread_group;
-    for (std::size_t i = 0; i != thread_count; ++i)
+    for (std::size_t i = 0; i != thread_num; ++i)
     {
       thread_group.create_thread(
         boost::bind(&boost::asio::io_service::run, &io_service));
@@ -138,9 +139,9 @@ void handle_start(std::locale& locale, const wcodecvt_type& wcodecvt, const sess
         session, boost::ref(in_place_handler_allocator), _1, _2)));
 
     //allocator_ptr allocator = boost::make_shared<handler_allocator_type>();
-    //message_ptr message = boost::make_shared<ma::nmea::message_type>("Bla..bla..bla");
-    //session->async_write(boost::asio::buffer(*message), ma::make_custom_alloc_handler(*allocator,
-    //  boost::bind(&handle_write, allocator, _1, message)));
+    //frame_ptr nmea_frame = boost::make_shared<ma::nmea::message_type>("Bla..bla..bla");
+    //session->async_write(boost::asio::buffer(*nmea_frame), ma::make_custom_alloc_handler(*allocator,
+    //  boost::bind(&handle_write, allocator, _1, nmea_frame)));
   }  
 }
 
@@ -158,7 +159,7 @@ void handle_stop(const boost::system::error_code& error)
 
 void handle_read(std::locale& locale, const wcodecvt_type& wcodecvt, const session_ptr& session, 
   handler_allocator_type& in_place_handler_allocator, const boost::system::error_code& error,
-  const message_ptr& message)
+  const frame_ptr& nmea_frame)
 {  
   if (boost::asio::error::eof == error)  
   {
@@ -175,7 +176,7 @@ void handle_read(std::locale& locale, const wcodecvt_type& wcodecvt, const sessi
   }
   else
   {
-    std::wstring log_message(ma::codecvt_cast::in(*message, wcodecvt));              
+    std::wstring log_message(ma::codecvt_cast::in(*nmea_frame, wcodecvt));              
     std::wcout << L"Read successful.\nMessage: " + log_message + L"\nStarting read operation...\n";
     session->async_read(ma::make_custom_alloc_handler(in_place_handler_allocator,
       boost::bind(&handle_read, boost::ref(locale), boost::cref(wcodecvt), session, 

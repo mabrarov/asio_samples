@@ -17,7 +17,7 @@
 
 namespace ma
 {  
-  template <std::size_t size_, std::size_t alignment_ = std::size_t(-1)>
+  template <std::size_t alloc_size>
   class in_place_handler_allocator : private boost::noncopyable
   {  
   public:
@@ -51,14 +51,14 @@ namespace ma
     }
 
   private:    
-    boost::aligned_storage<size_, alignment_> storage_;    
+    boost::aligned_storage<alloc_size> storage_;    
     bool in_use_;
   }; //class in_place_handler_allocator
   
   class in_heap_handler_allocator : private boost::noncopyable
   {  
   private:
-    typedef char byte_type;    
+    typedef char byte_type;
 
     static byte_type* allocate_storage(std::size_t size)
     {      

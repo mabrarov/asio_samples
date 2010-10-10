@@ -398,6 +398,14 @@
 						RelativePath="..\..\include\ma\nmea\cyclic_read_session.hpp"
 						>
 					</File>
+					<File
+						RelativePath="..\..\include\ma\nmea\cyclic_read_session_fwd.hpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\include\ma\nmea\frame.hpp"
+						>
+					</File>
 				</Filter>
 			</Filter>
 		</Filter>
