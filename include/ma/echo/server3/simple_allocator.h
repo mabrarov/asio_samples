@@ -22,7 +22,10 @@ namespace ma
       {
       public:
         explicit simple_allocator(std::size_t size = in_heap_handler_allocator::default_size);
-        virtual ~simple_allocator();
+
+        virtual ~simple_allocator()
+        {
+        } // ~simple_allocator      
 
         void* allocate(std::size_t size);
         void deallocate(void* pointer);

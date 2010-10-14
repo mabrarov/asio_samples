@@ -59,7 +59,11 @@ namespace ma
 
           explicit session_proxy(boost::asio::io_service& io_service,
             const session_config& holded_session_config);
-          ~session_proxy();
+
+          ~session_proxy()
+          {
+          } // ~session_proxy
+
         }; // session_proxy
 
         class session_proxy_list : private boost::noncopyable
@@ -69,9 +73,21 @@ namespace ma
 
           void push_front(const session_proxy_ptr& value);
           void erase(const session_proxy_ptr& value);          
-          std::size_t size() const;
-          bool empty() const;
-          session_proxy_ptr front() const;
+
+          std::size_t size() const
+          {
+            return size_;
+          } // size
+
+          bool empty() const
+          {
+            return 0 == size_;
+          } // empty
+
+          session_proxy_ptr front() const
+          {
+            return front_;
+          } // front      
 
         private:
           std::size_t size_;
@@ -82,7 +98,10 @@ namespace ma
         explicit session_manager(boost::asio::io_service& io_service, 
           boost::asio::io_service& session_io_service, 
           const session_manager_config& config);
-        ~session_manager();        
+
+        ~session_manager()
+        {        
+        } // ~session_manager  
 
         template <typename Handler>
         void async_start(Handler handler)

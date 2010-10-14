@@ -51,7 +51,11 @@ namespace ma
         explicit session_manager(boost::asio::io_service& io_service,
           boost::asio::io_service& session_io_service,
           const config& config);
-        ~session_manager();        
+
+        ~session_manager()
+        {        
+        } // ~session_manager
+
         void async_start(const session_manager_completion::handler& handler);        
         void async_stop(const session_manager_completion::handler& handler);        
         void async_wait(const session_manager_completion::handler& handler);

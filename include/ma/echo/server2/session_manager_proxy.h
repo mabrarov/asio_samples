@@ -42,7 +42,11 @@ namespace ma
 
         explicit session_proxy(boost::asio::io_service& io_service,
           const session::settings& session_settings);
-        ~session_proxy();
+
+        ~session_proxy()
+        {
+        } // ~session_proxy
+
       }; // session_proxy
 
     } // namespace server2

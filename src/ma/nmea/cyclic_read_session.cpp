@@ -45,17 +45,8 @@ namespace ma
       {
         boost::throw_exception(std::invalid_argument("too large frame_tail"));
       }
-    } // cyclic_read_session::cyclic_read_session
-
-    cyclic_read_session::~cyclic_read_session()
-    {          
-    } // cyclic_read_session::~cyclic_read_session
-
-    boost::asio::serial_port& cyclic_read_session::serial_port()
-    {
-      return serial_port_;
-    } // cyclic_read_session::serial_port
-    
+    } // cyclic_read_session::cyclic_read_session    
+        
     void cyclic_read_session::resest()
     {
       frame_buffer_.clear();        

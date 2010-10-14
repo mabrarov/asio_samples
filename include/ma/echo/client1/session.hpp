@@ -33,10 +33,17 @@ namespace ma
 
       public:        
         explicit session(boost::asio::io_service& io_service, const session_config& config);
-        ~session();
+
+        ~session()
+        {        
+        } // ~session        
+
+        boost::asio::ip::tcp::socket& session::socket()
+        {
+          return socket_;
+        } // socket
 
         void reset();
-        boost::asio::ip::tcp::socket& session::socket();
 
         template <typename Handler>
         void async_start(Handler handler)

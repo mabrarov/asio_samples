@@ -28,11 +28,7 @@ namespace ma
         , stop_allocator_(boost::make_shared<simple_allocator>(256))
         , session_manager_(session_manager)
       {
-      } // session_proxy::session_proxy
-
-      session_proxy::~session_proxy()
-      {
-      } // session_proxy::~session_proxy      
+      } // session_proxy::session_proxy      
 
       void session_proxy::async_handle_start(const allocator_ptr& operation_allocator,
         const boost::system::error_code& error)

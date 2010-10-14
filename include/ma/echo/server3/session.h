@@ -47,10 +47,17 @@ namespace ma
         }; // struct config
 
         explicit session(boost::asio::io_service& io_service, const config& config);
-        ~session();
+        
+        ~session()
+        {
+        } // ~session
 
-        void reset();
-        boost::asio::ip::tcp::socket& session::socket();
+        boost::asio::ip::tcp::socket& socket()
+        {
+          return socket_;
+        } // socket
+
+        void reset();        
         void async_start(const allocator_ptr& operation_allocator,
           const session_start_handler_weak_ptr& handler);
         void async_stop(const allocator_ptr& operation_allocator,

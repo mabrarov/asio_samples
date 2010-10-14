@@ -45,15 +45,10 @@ namespace ma
         , strand_(io_service)
         , acceptor_(io_service)
         , session_io_service_(session_io_service)                        
-        , config_(config)
-        
+        , config_(config)        
       {          
       } // session_manager::session_manager
-
-      session_manager::~session_manager()
-      {        
-      } // session_manager::~session_manager
-
+      
       void session_manager::async_start(const allocator_ptr& operation_allocator,
         const session_manager_start_handler_weak_ptr& handler)
       {
@@ -73,12 +68,7 @@ namespace ma
       {
         strand_.post(make_custom_alloc_handler(*operation_allocator, 
           boost::bind(&this_type::do_wait, shared_from_this(), operation_allocator, handler)));
-      } // session_manager::async_wait
-
-      boost::asio::io_service::strand& session_manager::strand()
-      {
-        return strand_;
-      }
+      } // session_manager::async_wait      
 
       void session_manager::do_start(const allocator_ptr& operation_allocator,
         const session_manager_start_handler_weak_ptr& handler)

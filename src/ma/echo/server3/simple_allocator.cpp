@@ -26,11 +26,7 @@ namespace ma
       void simple_allocator::deallocate(void* pointer)
       {
         alloc_.deallocate(pointer);
-      } // simple_allocator::deallocate
-
-      simple_allocator::~simple_allocator()
-      {
-      } // simple_allocator::~simple_allocator      
+      } // simple_allocator::deallocate      
 
     } // namespace server2
   } // namespace echo

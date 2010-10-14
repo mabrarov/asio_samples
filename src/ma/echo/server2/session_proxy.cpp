@@ -21,11 +21,7 @@ namespace ma
         , pending_operations_(0)
         , state_(ready_to_start)
       {
-      } // session_proxy::session_proxy
-
-      session_proxy::~session_proxy()
-      {
-      } // session_proxy::~session_proxy
+      } // session_proxy::session_proxy      
 
     } // namespace server2
   } // namespace echo

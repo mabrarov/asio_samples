@@ -48,9 +48,16 @@ namespace ma
       explicit cyclic_read_session(boost::asio::io_service& io_service,
         const std::size_t read_buffer_size, const std::size_t frame_buffer_size,
         const std::string& frame_head, const std::string& frame_tail);
-      ~cyclic_read_session();      
 
-      boost::asio::serial_port& serial_port();      
+      ~cyclic_read_session()
+      {          
+      } // ~cyclic_read_session
+
+      boost::asio::serial_port& serial_port()
+      {
+        return serial_port_;
+      } // serial_port
+
       void resest();
 
       template <typename Handler>

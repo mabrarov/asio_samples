@@ -24,11 +24,7 @@ namespace ma
         , session_(boost::make_shared<session>(boost::ref(io_service), holded_session_config))
       {
       } // session_manager::session_proxy::session_proxy
-
-      session_manager::session_proxy::~session_proxy()
-      {
-      } // session_manager::session_proxy::session_proxy
-
+      
       session_manager::session_proxy_list::session_proxy_list()
         : size_(0)
       {
@@ -64,22 +60,7 @@ namespace ma
         value->prev_.reset();
         value->next_.reset();
         --size_;
-      } // session_manager::session_proxy_list::erase
-
-      std::size_t session_manager::session_proxy_list::size() const
-      {
-        return size_;
-      } // session_manager::session_proxy_list::size
-
-      bool session_manager::session_proxy_list::empty() const
-      {
-        return 0 == size_;
-      } // session_manager::session_proxy_list::empty
-
-      session_manager::session_proxy_ptr session_manager::session_proxy_list::front() const
-      {
-        return front_;
-      } // session_manager::session_proxy_list::front      
+      } // session_manager::session_proxy_list::erase                  
         
       session_manager::session_manager(boost::asio::io_service& io_service, 
         boost::asio::io_service& session_io_service, 
@@ -97,10 +78,6 @@ namespace ma
         
       {          
       } // session_manager::session_manager
-
-      session_manager::~session_manager()
-      {        
-      } // session_manager::session_manager  
 
       boost::system::error_code session_manager::start()
       {

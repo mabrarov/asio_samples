@@ -17,11 +17,7 @@ namespace ma
       session_proxy_list::session_proxy_list()
         : size_(0)
       {
-      } // session_proxy_list::session_proxy_list
-
-      session_proxy_list::~session_proxy_list()
-      {
-      } // session_proxy_list::~session_proxy_list
+      } // session_proxy_list::session_proxy_list      
 
       void session_proxy_list::push_front(const session_proxy_ptr& value)
       {
@@ -53,22 +49,7 @@ namespace ma
         value->prev_.reset();
         value->next_.reset();
         --size_;
-      } // session_proxy_list::erase
-
-      std::size_t session_proxy_list::size() const
-      {
-        return size_;
-      } // session_proxy_list::size
-
-      bool session_proxy_list::empty() const
-      {
-        return 0 == size_;
-      } // session_proxy_list::empty
-
-      session_proxy_ptr session_proxy_list::front() const
-      {
-        return front_;
-      } // session_proxy_list::front
+      } // session_proxy_list::erase      
 
     } // namespace server3
   } // namespace echo

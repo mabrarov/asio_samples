@@ -25,11 +25,7 @@ namespace ma
         , config_(config)                
         , buffer_(config.buffer_size_)
       {          
-      } // session::session
-
-      session::~session()
-      {        
-      } // session::~session
+      } // session::session      
 
       void session::reset()
       {
@@ -38,12 +34,7 @@ namespace ma
         error_ = stop_error_ = boost::system::error_code();          
         state_ = ready_to_start;
         buffer_.reset();          
-      } // session::reset
-        
-      boost::asio::ip::tcp::socket& session::socket()
-      {
-        return socket_;
-      } // session::socket
+      } // session::reset             
 
       void session::start(boost::system::error_code& error)
       {        

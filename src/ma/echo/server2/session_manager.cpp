@@ -54,10 +54,6 @@ namespace ma
       {          
       } // session_manager::session_manager
 
-      session_manager::~session_manager()
-      {        
-      } // session_manager::~session_manager
-
       void session_manager::async_start(const session_manager_completion::handler& handler)
       {
         strand_.post(make_context_alloc_handler2(handler, 

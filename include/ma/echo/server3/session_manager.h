@@ -49,7 +49,10 @@ namespace ma
         explicit session_manager(boost::asio::io_service& io_service,
           boost::asio::io_service& session_io_service,
           const config& config);
-        ~session_manager();
+
+        ~session_manager()
+        {        
+        } // ~session_manager        
 
         void async_start(const allocator_ptr& operation_allocator,
           const session_manager_start_handler_weak_ptr& handler);        
@@ -73,7 +76,11 @@ namespace ma
 
         friend class session_proxy;
 
-        boost::asio::io_service::strand& strand();
+        boost::asio::io_service::strand& strand()
+        {
+          return strand_;
+        } // strand
+
         void do_start(const allocator_ptr& operation_allocator,
           const session_manager_start_handler_weak_ptr& handler);        
         void do_stop(const allocator_ptr& operation_allocator,

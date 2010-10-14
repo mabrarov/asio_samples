@@ -53,10 +53,6 @@ namespace ma
       {          
       } // session::session
 
-      session::~session()
-      {
-      } // session::~session
-
       void session::reset()
       {
         boost::system::error_code ignored;
@@ -64,12 +60,7 @@ namespace ma
         error_ = stop_error_ = boost::system::error_code();          
         state_ = ready_to_start;
         buffer_.reset();          
-      } // session::reset
-
-      boost::asio::ip::tcp::socket& session::socket()
-      {
-        return socket_;
-      } // session::socket
+      } // session::reset      
 
       void session::async_start(const allocator_ptr& operation_allocator,
         const session_start_handler_weak_ptr& handler)
