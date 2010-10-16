@@ -33,11 +33,11 @@ namespace ma
       {
       private:
         typedef session_manager this_type;
-        struct session_proxy;
-        typedef boost::shared_ptr<session_proxy> session_proxy_ptr;
-        typedef boost::weak_ptr<session_proxy>   session_proxy_weak_ptr;      
+        struct  session_wrapper;
+        typedef boost::shared_ptr<session_wrapper> session_wrapper_ptr;
+        typedef boost::weak_ptr<session_wrapper>   session_wrapper_weak_ptr;      
         
-        struct session_proxy : private boost::noncopyable
+        struct session_wrapper : private boost::noncopyable
         {
           enum state_type
           {
@@ -48,31 +48,31 @@ namespace ma
             stopped
           };
 
-          state_type state_;
-          std::size_t pending_operations_;
-          session_proxy_weak_ptr prev_;
-          session_proxy_ptr next_;
-          session_ptr session_;        
-          boost::asio::ip::tcp::endpoint endpoint_;
-          in_place_handler_allocator<128> start_wait_allocator_;
-          in_place_handler_allocator<128> stop_allocator_;
+          state_type state;
+          std::size_t pending_operations;
+          session_wrapper_weak_ptr prev;
+          session_wrapper_ptr next;
+          session_ptr wrapped_session;        
+          boost::asio::ip::tcp::endpoint remote_endpoint;
+          in_place_handler_allocator<128> start_wait_allocator;
+          in_place_handler_allocator<128> stop_allocator;
 
-          explicit session_proxy(boost::asio::io_service& io_service,
-            const session_config& holded_session_config);
+          explicit session_wrapper(boost::asio::io_service& io_service,
+            const session_config& wrapped_session_config);
 
-          ~session_proxy()
+          ~session_wrapper()
           {
-          } // ~session_proxy
+          } // ~session_wrapper
 
-        }; // session_proxy
+        }; // session_wrapper
 
-        class session_proxy_list : private boost::noncopyable
+        class session_wrapper_list : private boost::noncopyable
         {
         public:
-          explicit session_proxy_list();
+          explicit session_wrapper_list();
 
-          void push_front(const session_proxy_ptr& value);
-          void erase(const session_proxy_ptr& value);          
+          void push_front(const session_wrapper_ptr& value);
+          void erase(const session_wrapper_ptr& value);          
 
           std::size_t size() const
           {
@@ -84,15 +84,15 @@ namespace ma
             return 0 == size_;
           } // empty
 
-          session_proxy_ptr front() const
+          session_wrapper_ptr front() const
           {
             return front_;
           } // front      
 
         private:
           std::size_t size_;
-          session_proxy_ptr front_;
-        }; // session_proxy_list
+          session_wrapper_ptr front_;
+        }; // session_wrapper_list
 
       public: 
         explicit session_manager(boost::asio::io_service& io_service, 
@@ -171,22 +171,24 @@ namespace ma
         boost::optional<boost::system::error_code> stop();
         boost::optional<boost::system::error_code> wait();
         void accept_new_session();
-        void handle_accept(const session_proxy_ptr& proxy, const boost::system::error_code& error);
+        void handle_accept(const session_wrapper_ptr& wrapper, const boost::system::error_code& error);
         bool may_complete_stop() const;
+        bool may_complete_wait() const;
+        bool may_continue_accept() const;
         void complete_stop();
-        void start_session(const session_proxy_ptr& proxy);
-        void stop_session(const session_proxy_ptr& proxy);
-        void wait_session(const session_proxy_ptr& proxy);
-        static void dispatch_session_start(const session_manager_weak_ptr& weak_this_ptr,
-          const session_proxy_ptr& proxy, const boost::system::error_code& error);
-        void handle_session_start(const session_proxy_ptr& proxy, const boost::system::error_code& error);
-        static void dispatch_session_wait(const session_manager_weak_ptr& weak_this_ptr,
-          const session_proxy_ptr& proxy, const boost::system::error_code& error);
-        void handle_session_wait(const session_proxy_ptr& proxy, const boost::system::error_code& error);        
-        static void dispatch_session_stop(const session_manager_weak_ptr& weak_this_ptr,
-          const session_proxy_ptr& proxy, const boost::system::error_code& error);
-        void handle_session_stop(const session_proxy_ptr& proxy, const boost::system::error_code& error);        
-        void recycle_session(const session_proxy_ptr& proxy);
+        void start_session(const session_wrapper_ptr& wrapper);
+        void stop_session(const session_wrapper_ptr& wrapper);
+        void wait_session(const session_wrapper_ptr& wrapper);
+        static void dispatch_session_start(const session_manager_weak_ptr& this_weak_ptr,
+          const session_wrapper_ptr& wrapper, const boost::system::error_code& error);
+        void handle_session_start(const session_wrapper_ptr& wrapper, const boost::system::error_code& error);
+        static void dispatch_session_wait(const session_manager_weak_ptr& this_weak_ptr,
+          const session_wrapper_ptr& wrapper, const boost::system::error_code& error);
+        void handle_session_wait(const session_wrapper_ptr& wrapper, const boost::system::error_code& error);        
+        static void dispatch_session_stop(const session_manager_weak_ptr& this_weak_ptr,
+          const session_wrapper_ptr& wrapper, const boost::system::error_code& error);
+        void handle_session_stop(const session_wrapper_ptr& wrapper, const boost::system::error_code& error);        
+        void recycle_session(const session_wrapper_ptr& wrapper);
 
         bool accept_in_progress_;
         state_type state_;
@@ -197,8 +199,8 @@ namespace ma
         boost::asio::ip::tcp::acceptor acceptor_;        
         handler_storage<boost::system::error_code> wait_handler_;
         handler_storage<boost::system::error_code> stop_handler_;
-        session_proxy_list active_session_proxies_;
-        session_proxy_list recycled_session_proxies_;
+        session_wrapper_list active_sessions_;
+        session_wrapper_list recycled_sessions_;
         boost::system::error_code last_accept_error_;
         boost::system::error_code stop_error_;      
         session_manager_config config_;        

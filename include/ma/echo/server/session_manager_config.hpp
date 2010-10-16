@@ -21,15 +21,15 @@ namespace ma
     {                
       struct session_manager_config
       { 
-        int listen_backlog_;
-        std::size_t max_sessions_;
-        std::size_t recycled_sessions_;
-        boost::asio::ip::tcp::endpoint endpoint_;                    
-        session_config session_config_;
+        int listen_backlog;
+        std::size_t max_session_num;
+        std::size_t recycled_session_num;
+        boost::asio::ip::tcp::endpoint accepting_endpoint;                    
+        session_config managed_session_config;
 
-        explicit session_manager_config(const boost::asio::ip::tcp::endpoint& endpoint,
-          std::size_t max_sessions, std::size_t recycled_sessions,
-          int listen_backlog, const session_config& managed_session_config);
+        explicit session_manager_config(const boost::asio::ip::tcp::endpoint& the_accepting_endpoint,
+          std::size_t the_max_session_num, std::size_t the_recycled_session_num,
+          int the_listen_backlog, const session_config& the_managed_session_config);
       }; // struct session_manager_config
         
     } // namespace server

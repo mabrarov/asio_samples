@@ -23,7 +23,7 @@ namespace ma
         , wait_handler_(io_service)
         , stop_handler_(io_service)
         , config_(config)                
-        , buffer_(config.buffer_size_)
+        , buffer_(config.buffer_size)
       {          
       } // session::session      
 
@@ -48,25 +48,25 @@ namespace ma
         }        
         boost::system::error_code error;
         using boost::asio::ip::tcp;        
-        if (config_.socket_recv_buffer_size_)
+        if (config_.socket_recv_buffer_size)
         {
-          socket_.set_option(tcp::socket::receive_buffer_size(*config_.socket_recv_buffer_size_), error);
+          socket_.set_option(tcp::socket::receive_buffer_size(*config_.socket_recv_buffer_size), error);
         }
         if (error)
         {
           return error;
         }
-        if (config_.socket_recv_buffer_size_)
+        if (config_.socket_recv_buffer_size)
         {
-          socket_.set_option(tcp::socket::send_buffer_size(*config_.socket_recv_buffer_size_), error);
+          socket_.set_option(tcp::socket::send_buffer_size(*config_.socket_recv_buffer_size), error);
         }
         if (error)
         {
           return error;
         }
-        if (config_.no_delay_)
+        if (config_.no_delay)
         {
-          socket_.set_option(tcp::no_delay(*config_.no_delay_), error);
+          socket_.set_option(tcp::no_delay(*config_.no_delay), error);
         }
         if (error)
         {
