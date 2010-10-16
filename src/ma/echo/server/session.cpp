@@ -31,7 +31,7 @@ namespace ma
       {
         boost::system::error_code ignored;
         socket_.close(ignored);
-        error_ = stop_error_ = boost::system::error_code();          
+        wait_error_ = stop_error_ = boost::system::error_code();          
         state_ = ready_to_start;
         buffer_.reset();          
       } // session::reset
@@ -116,7 +116,7 @@ namespace ma
         }
         if (!socket_read_in_progress_ && !socket_write_in_progress_)
         {
-          return error_;
+          return wait_error_;
         }
         if (wait_handler_.has_target())
         {
@@ -172,6 +172,7 @@ namespace ma
       void session::handle_read_some(const boost::system::error_code& error, const std::size_t bytes_transferred)
       {        
         socket_read_in_progress_ = false;
+        // Check for pending session stop operation 
         if (stop_in_progress == state_)
         {  
           if (may_complete_stop())
@@ -180,29 +181,32 @@ namespace ma
             // Signal shutdown completion
             stop_handler_.post(stop_error_);
           }
+          return;
         }
-        else if (error)
+        if (error)
         {
-          if (!error_)
+          if (!wait_error_)
           {
-            error_ = error;
-          }                    
-          wait_handler_.post(error);
-        }
-        else 
+            wait_error_ = error;
+          }  
+          if (wait_handler_.has_target())
+          {
+            wait_handler_.post(wait_error_);
+          }          
+          return;
+        }        
+        buffer_.consume(bytes_transferred);
+        read_some();
+        if (!socket_write_in_progress_)
         {
-          buffer_.consume(bytes_transferred);
-          read_some();
-          if (!socket_write_in_progress_)
-          {
-            write_some();
-          }
+          write_some();
         }
       } // session::handle_read_some
 
       void session::handle_write_some(const boost::system::error_code& error, const std::size_t bytes_transferred)
       {
         socket_write_in_progress_ = false;
+        // Check for pending session manager stop operation 
         if (stop_in_progress == state_)
         {
           socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_send, stop_error_);
@@ -212,24 +216,26 @@ namespace ma
             // Signal shutdown completion
             stop_handler_.post(stop_error_);
           }
+          return;
         }
-        else if (error)
+        if (error)
         {
-          if (!error_)
+          if (!wait_error_)
           {
-            error_ = error;
+            wait_error_ = error;
           }                    
-          wait_handler_.post(error);
-        }
-        else
-        {
-          buffer_.commit(bytes_transferred);
-          write_some();
-          if (!socket_read_in_progress_)
+          if (wait_handler_.has_target())
           {
-            read_some();
+            wait_handler_.post(wait_error_);
           }
-        }
+          return;
+        }        
+        buffer_.commit(bytes_transferred);
+        write_some();
+        if (!socket_read_in_progress_)
+        {
+          read_some();
+        }        
       } // session::handle_write_some
         
     } // namespace server

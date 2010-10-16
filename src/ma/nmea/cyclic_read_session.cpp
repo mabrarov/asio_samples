@@ -170,6 +170,7 @@ namespace ma
       const std::size_t bytes_transferred)
     {         
       port_read_in_progress_ = false;
+      // Check for pending session stop operation 
       if (stop_in_progress == state_)
       {          
         if (may_complete_stop())
@@ -178,28 +179,30 @@ namespace ma
           // Signal shutdown completion
           stop_handler_.post(stop_error_);
         }
+        return;
       }
-      else if (!error)
+      if (error)
       {
-        // We do not need in-between-frame-garbage and frame's head
-        read_buffer_.consume(bytes_transferred);                    
-        read_until_tail();
-      }
-      else if (read_handler_.has_target())
-      {        
-        read_handler_.post(read_result_type(error, frame_ptr()));
-      }
-      else
-      {
+        // Check for pending session read operation 
+        if (read_handler_.has_target())
+        {        
+          read_handler_.post(read_result_type(error, frame_ptr()));
+          return;
+        }
         // Store error for the next outer read operation.
-        read_error_ = error;
-      }
+        read_error_ = error;        
+        return;
+      }      
+      // We do not need in-between-frame-garbage and frame's head
+      read_buffer_.consume(bytes_transferred);                    
+      read_until_tail();
     } // cyclic_read_session::handle_read_head
 
     void cyclic_read_session::handle_read_tail(const boost::system::error_code& error, 
       const std::size_t bytes_transferred)
     {                  
       port_read_in_progress_ = false;        
+      // Check for pending session stop operation 
       if (stop_in_progress == state_)
       {
         if (may_complete_stop())
@@ -208,48 +211,49 @@ namespace ma
           // Signal shutdown completion
           stop_handler_.post(stop_error_);
         }
+        return;
       }
-      else if (!error)        
-      {                   
-        typedef boost::asio::streambuf::const_buffers_type const_buffers_type;
-        typedef boost::asio::buffers_iterator<const_buffers_type> buffers_iterator;
-        const_buffers_type committed_buffers(read_buffer_.data());
-        buffers_iterator data_begin(buffers_iterator::begin(committed_buffers));
-        buffers_iterator data_end(data_begin + bytes_transferred - frame_tail_.length());        
-        frame_ptr new_frame;
-        if (read_handler_.has_target() || !frame_buffer_.full())
-        {
-          new_frame = boost::make_shared<frame>(data_begin, data_end);
-        }
-        else
-        {
-          new_frame = frame_buffer_.front();
-          new_frame->assign(data_begin, data_end);
-        }          
-        // Consume processed data
-        read_buffer_.consume(bytes_transferred);
-        // Continue inner operations loop.
-        read_until_head();
-        // If there is waiting read operation - complete it            
+      if (error)        
+      {
+        // Check for pending session read operation 
         if (read_handler_.has_target())
         {
-          read_handler_.post(read_result_type(error, new_frame));
-        } 
-        else
-        {
-          // else push ready message into the cyclic read buffer            
-          frame_buffer_.push_back(new_frame);              
-        }          
+          read_handler_.post(read_result_type(error, frame_ptr()));
+          return;
+        }      
+        // Store error for the next outer read operation.
+        read_error_ = error;
+        return;
       }
-      else if (read_handler_.has_target())
+      typedef boost::asio::streambuf::const_buffers_type const_buffers_type;
+      typedef boost::asio::buffers_iterator<const_buffers_type> buffers_iterator;
+      const_buffers_type committed_buffers(read_buffer_.data());
+      buffers_iterator data_begin(buffers_iterator::begin(committed_buffers));
+      buffers_iterator data_end(data_begin + bytes_transferred - frame_tail_.length());        
+      frame_ptr new_frame;
+      if (read_handler_.has_target() || !frame_buffer_.full())
       {
-        read_handler_.post(read_result_type(error, frame_ptr()));
+        new_frame = boost::make_shared<frame>(data_begin, data_end);
       }
       else
       {
-        // Store error for the next outer read operation.
-        read_error_ = error;          
-      }
+        new_frame = frame_buffer_.front();
+        new_frame->assign(data_begin, data_end);
+      }          
+      // Consume processed data
+      read_buffer_.consume(bytes_transferred);
+      // Continue inner operations loop.
+      read_until_head();
+      // If there is waiting read operation - complete it            
+      if (read_handler_.has_target())
+      {
+        read_handler_.post(read_result_type(error, new_frame));        
+      } 
+      else
+      {
+        // or push ready message into the cyclic read buffer            
+        frame_buffer_.push_back(new_frame);
+      }      
     } // cyclic_read_session::handle_read_tail
             
   } // namespace nmea

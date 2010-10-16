@@ -128,7 +128,7 @@ namespace ma
         boost::asio::ip::tcp::socket socket_;
         handler_storage<boost::system::error_code> wait_handler_;
         handler_storage<boost::system::error_code> stop_handler_;
-        boost::system::error_code error_;
+        boost::system::error_code wait_error_;
         boost::system::error_code stop_error_;
         session_config config_;        
         cyclic_buffer buffer_;

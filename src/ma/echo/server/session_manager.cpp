@@ -7,6 +7,7 @@
 
 #include <boost/ref.hpp>
 #include <boost/make_shared.hpp>
+#include <boost/assert.hpp>
 #include <ma/echo/server/session_config.hpp>
 #include <ma/echo/server/session.hpp>
 #include <ma/echo/server/session_manager.hpp>
@@ -32,6 +33,7 @@ namespace ma
 
       void session_manager::session_wrapper_list::push_front(const session_wrapper_ptr& value)
       {
+        BOOST_ASSERT((!value->next && !value->prev.lock()));        
         value->next = front_;
         value->prev.reset();
         if (front_)
@@ -162,7 +164,7 @@ namespace ma
         }
         if (may_complete_wait())
         {
-          return last_accept_error_;
+          return wait_error_;
         }
         if (wait_handler_.has_target())
         {
@@ -209,15 +211,21 @@ namespace ma
             // Signal shutdown completion
             stop_handler_.post(stop_error_);
           }
+          recycle_session(the_session);
           return;
         }
         if (error)
         {   
-          last_accept_error_ = error;
-          if (active_sessions_.empty()) 
+          wait_error_ = error;
+          // Notify wait handler
+          if (wait_handler_.has_target() && may_complete_wait()) 
+          {            
+            wait_handler_.post(wait_error_);
+          }
+          recycle_session(the_session);
+          if (may_continue_accept())
           {
-            // Server can't work more time
-            wait_handler_.post(error);
+            accept_new_session();
           }
           return;
         }
@@ -228,13 +236,13 @@ namespace ma
           // Save session as active
           active_sessions_.push_front(the_session);
           // Continue session acceptation if can
-          if (active_sessions_.size() < config_.max_session_num)
+          if (may_continue_accept())
           {
             accept_new_session();
           }
           return;
         }
-        recycle_session(the_session);        
+        recycle_session(the_session);
       } // handle_accept        
 
       bool session_manager::may_complete_stop() const
@@ -244,7 +252,7 @@ namespace ma
 
       bool session_manager::may_complete_wait() const
       {
-        return last_accept_error_ && active_sessions_.empty();
+        return wait_error_ && active_sessions_.empty();
       } // session_manager::may_complete_wait
 
       void session_manager::complete_stop()
@@ -254,9 +262,9 @@ namespace ma
 
       bool session_manager::may_continue_accept() const
       {
-        return !accept_in_progress_ && !last_accept_error_
+        return !accept_in_progress_ && !wait_error_
           && active_sessions_.size() < config_.max_session_num;
-      }
+      } // may_continue_accept
 
       void session_manager::start_session(const session_wrapper_ptr& accepted_session)
       { 
@@ -293,8 +301,10 @@ namespace ma
       void session_manager::dispatch_session_start(const session_manager_weak_ptr& this_weak_ptr,
         const session_wrapper_ptr& the_session, const boost::system::error_code& error)
       {
+        // Try to lock the manager
         if (session_manager_ptr this_ptr = this_weak_ptr.lock())
         {
+          // Forward invocation
           this_ptr->strand_.dispatch(make_custom_alloc_handler(the_session->start_wait_allocator,
             boost::bind(&this_type::handle_session_start, this_ptr, the_session, error)));
         }
@@ -309,47 +319,46 @@ namespace ma
         // Check if handler is not called too late
         if (session_wrapper::start_in_progress == the_session->state)
         {
-          if (!error) 
+          if (error) 
           {
-            the_session->state = session_wrapper::started;
+            the_session->state = session_wrapper::stopped;
+            active_sessions_.erase(the_session);
+            recycle_session(the_session);
             // Check for pending session manager stop operation 
-            if (stop_in_progress == state_)  
-            {                            
-              stop_session(the_session);
-            }
-            else
-            { 
-              // Wait until session needs to stop
-              wait_session(the_session);
-            }          
-            return;
-          }          
-          the_session->state = session_wrapper::stopped;
-          active_sessions_.erase(the_session);
-          // Check for pending session manager stop operation 
-          if (stop_in_progress == state_)
-          {
-            if (may_complete_stop())  
+            if (stop_in_progress == state_)
             {
-              complete_stop();
-              // Signal shutdown completion
-              stop_handler_.post(stop_error_);
+              if (may_complete_stop())  
+              {
+                complete_stop();
+                // Signal shutdown completion
+                stop_handler_.post(stop_error_);
+              }            
+              return;
             }
+            if (wait_handler_.has_target() && may_complete_wait()) 
+            {
+              wait_handler_.post(wait_error_);            
+            }
+            // Continue session acceptation if can
+            if (may_continue_accept())
+            {                
+              accept_new_session();
+            }                            
             return;
           }
-          if (may_complete_wait()) 
-          {
-            wait_handler_.post(last_accept_error_);
+          the_session->state = session_wrapper::started;
+          // Check for pending session manager stop operation 
+          if (stop_in_progress == state_)  
+          {                            
+            stop_session(the_session);
             return;
-          }            
-          recycle_session(the_session);
-          // Continue session acceptation if can
-          if (may_continue_accept())
-          {                
-            accept_new_session();
-          }                            
+          }
+          // Wait until session needs to stop
+          wait_session(the_session);          
           return;
-        } 
+        }
+        // Handler is called too late - complete handler's waiters
+        recycle_session(the_session);
         // Check for pending session manager stop operation 
         if (stop_in_progress == state_) 
         {
@@ -359,9 +368,7 @@ namespace ma
             // Signal shutdown completion
             stop_handler_.post(stop_error_);
           }
-          return;
-        }
-        recycle_session(the_session);
+        }        
       } // session_manager::handle_session_start
 
       void session_manager::dispatch_session_wait(const session_manager_weak_ptr& this_weak_ptr,
@@ -388,6 +395,8 @@ namespace ma
           stop_session(the_session);
           return;
         }
+        // Handler is called too late - complete handler's waiters
+        recycle_session(the_session);
         // Check for pending session manager stop operation
         if (stop_in_progress == state_)
         {
@@ -396,10 +405,8 @@ namespace ma
             complete_stop();
             // Signal shutdown completion
             stop_handler_.post(stop_error_);
-          }
-          return;
-        }
-        recycle_session(the_session);        
+          }          
+        }        
       } // session_manager::handle_session_wait
 
       void session_manager::dispatch_session_stop(const session_manager_weak_ptr& this_weak_ptr,
@@ -424,7 +431,8 @@ namespace ma
         if (session_wrapper::stop_in_progress == the_session->state)        
         {
           the_session->state = session_wrapper::stopped;
-          active_sessions_.erase(the_session);            
+          active_sessions_.erase(the_session);
+          recycle_session(the_session);
           // Check for pending session manager stop operation
           if (stop_in_progress == state_)
           {
@@ -436,19 +444,19 @@ namespace ma
             }
             return;
           }
-          if (may_complete_wait()) 
+          if (wait_handler_.has_target() && may_complete_wait()) 
           {
-            wait_handler_.post(last_accept_error_);
-            return;
-          }          
-          recycle_session(the_session);
+            wait_handler_.post(wait_error_);
+          }
           // Continue session acceptation if can
           if (may_continue_accept())
           {                
             accept_new_session();
-          }              
+          }
           return;
         }
+        // Handler is called too late - complete handler's waiters
+        recycle_session(the_session);
         // Check for pending session manager stop operation
         if (stop_in_progress == state_)
         {
@@ -457,22 +465,24 @@ namespace ma
             complete_stop();
             // Signal shutdown completion
             stop_handler_.post(stop_error_);
-          }
-          return;
-        }        
-        recycle_session(the_session);
+          }          
+        }                
       } // session_manager::handle_session_stop
 
       void session_manager::recycle_session(const session_wrapper_ptr& the_session)
       {
+        // Check session's pending operation number and recycle bin size
         if (0 == the_session->pending_operations
           && recycled_sessions_.size() < config_.recycled_session_num)
         {
+          // Reset session state
           the_session->wrapped_session->reset();
+          // Reset wrapper
           the_session->state = session_wrapper::ready_to_start;
+          // Add to recycle bin
           recycled_sessions_.push_front(the_session);
-        }        
-      } // session_manager::recycle_session        
+        }
+      } // session_manager::recycle_session
 
     } // namespace server
   } // namespace echo
