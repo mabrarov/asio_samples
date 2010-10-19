@@ -73,6 +73,7 @@ namespace ma
 
           void push_front(const session_wrapper_ptr& value);
           void erase(const session_wrapper_ptr& value);          
+          void erase_all();
 
           std::size_t size() const
           {
@@ -101,7 +102,9 @@ namespace ma
 
         ~session_manager()
         {        
-        } // ~session_manager  
+        } // ~session_manager
+
+        void reset(bool free_recycled_sessions = true);
 
         template <typename Handler>
         void async_start(Handler handler)

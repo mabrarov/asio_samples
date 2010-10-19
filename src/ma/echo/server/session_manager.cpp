@@ -63,6 +63,11 @@ namespace ma
         value->next.reset();
         --size_;
       } // session_manager::session_wrapper_list::erase                  
+
+      void session_manager::session_wrapper_list::erase_all()
+      {
+        front_.reset();
+      } // session_manager::session_wrapper_list::erase_all
         
       session_manager::session_manager(boost::asio::io_service& io_service, 
         boost::asio::io_service& session_io_service, 
@@ -79,6 +84,19 @@ namespace ma
         , config_(config)        
       {          
       } // session_manager::session_manager
+
+      void session_manager::reset(bool free_recycled_sessions)
+      {
+        boost::system::error_code ignored;
+        acceptor_.close(ignored);
+        wait_error_ = stop_error_ = boost::system::error_code();          
+        state_ = ready_to_start;
+        active_sessions_.erase_all();
+        if (free_recycled_sessions)
+        {
+          recycled_sessions_.erase_all();
+        }
+      }
 
       boost::system::error_code session_manager::start()
       {
