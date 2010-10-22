@@ -26,10 +26,7 @@
 namespace ma
 {
   namespace nmea
-  {     
-    typedef std::string frame;
-    typedef boost::shared_ptr<frame> frame_ptr;
-
+  {
     class cyclic_read_session;
     typedef boost::shared_ptr<cyclic_read_session> cyclic_read_session_ptr;
 
