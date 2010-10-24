@@ -89,7 +89,8 @@ namespace ma
       {
         boost::system::error_code ignored;
         acceptor_.close(ignored);
-        wait_error_ = stop_error_ = boost::system::error_code();          
+        wait_error_.clear();
+        stop_error_.clear();
         state_ = ready_to_start;
         active_sessions_.erase_all();
         if (free_recycled_sessions)

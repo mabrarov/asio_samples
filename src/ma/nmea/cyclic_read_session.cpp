@@ -50,7 +50,7 @@ namespace ma
     void cyclic_read_session::resest()
     {
       frame_buffer_.clear();        
-      read_error_ = boost::system::error_code();
+      read_error_.clear();
       read_buffer_.consume(boost::asio::buffer_size(read_buffer_.data()));        
       state_ = ready_to_start;
     } // cyclic_read_session::resest
@@ -126,7 +126,7 @@ namespace ma
       if (read_error_)
       {
         boost::system::error_code error = read_error_;
-        read_error_ = boost::system::error_code();
+        read_error_.clear();
         return read_result_type(error, frame_ptr());        
       }      
       // If can't immediately complete then start waiting for completion

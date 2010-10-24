@@ -57,7 +57,8 @@ namespace ma
       {
         boost::system::error_code ignored;
         socket_.close(ignored);
-        error_ = stop_error_ = boost::system::error_code();          
+        error_.clear();
+        stop_error_.clear();
         state_ = ready_to_start;
         buffer_.reset();          
       } // session::reset      
