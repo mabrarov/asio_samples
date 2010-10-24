@@ -21,17 +21,16 @@
 #include <ma/console_controller.hpp>
 
 int _tmain(int argc, _TCHAR* argv[])
-{ 
-  boost::program_options::options_description options_description("Allowed options");
-  options_description.add_options()
-    (
-      "help", 
-      "produce help message"
-    );
-
-  int exit_code = EXIT_SUCCESS;
+{   
   try 
   {
+    boost::program_options::options_description options_description("Allowed options");
+    options_description.add_options()
+      (
+        "help", 
+        "produce help message"
+      );
+
     boost::program_options::variables_map options_values;  
     boost::program_options::store(
       boost::program_options::parse_command_line(argc, argv, options_description), 
@@ -41,18 +40,22 @@ int _tmain(int argc, _TCHAR* argv[])
     if (options_values.count("help"))
     {
       std::cout << options_description;
+      return EXIT_SUCCESS;
     }
-    else
-    {
-      std::size_t cpu_num = boost::thread::hardware_concurrency();
-      std::size_t session_thread_num = cpu_num > 1 ? cpu_num : 2;
-      //todo
-    }
+    
+    //std::size_t cpu_num = boost::thread::hardware_concurrency();
+    //std::size_t session_thread_num = cpu_num > 1 ? cpu_num : 2;
+    //todo
+    return EXIT_SUCCESS;
   }
-  catch (const boost::program_options::error&)
-  {
-    exit_code = EXIT_FAILURE;
-    std::cout << "Invalid options.\n" << options_description;      
-  }  
-  return exit_code;
+  catch (const boost::program_options::error& e)
+  {    
+    std::cerr << "Error reading options: " << e.what() << std::endl;      
+    return EXIT_FAILURE;
+  }
+  catch (const std::exception& e)
+  {    
+    std::cerr << "Unexpected exception: " << e.what() << std::endl;      
+    return EXIT_FAILURE;
+  }
 }

@@ -85,7 +85,8 @@ typedef boost::function<void (void)> exception_handler;
 using ma::echo::server2::session_manager_proxy;
 using ma::echo::server2::session_manager_proxy_ptr;
 
-void fill_options_description(boost::program_options::options_description&);
+void fill_options_description(boost::program_options::options_description&,
+  std::size_t cpu_num);
 
 void start_session_manager(const session_manager_proxy_ptr&);
 
