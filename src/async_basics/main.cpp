@@ -75,7 +75,7 @@ int _tmain(int /*argc*/, _TCHAR* /*argv*/[])
   }
   catch (const std::exception& e)
   {
-    std::cerr << "Unexpected error: " << e.what() << std::endl;
-    return EXIT_FAILURE;
+    std::cerr << "Unexpected error: " << e.what() << std::endl;    
   }
+  return EXIT_FAILURE;
 }

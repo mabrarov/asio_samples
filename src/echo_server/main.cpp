@@ -289,14 +289,13 @@ int _tmain(int argc, _TCHAR* argv[])
   }
   catch (const boost::program_options::error& e)
   {    
-    std::cerr << "Error reading options: " << e.what() << std::endl;      
-    return EXIT_FAILURE;
+    std::cerr << "Error reading options: " << e.what() << std::endl;
   }
   catch (const std::exception& e)
   {    
-    std::cerr << "Unexpected exception: " << e.what() << std::endl;      
-    return EXIT_FAILURE;
+    std::cerr << "Unexpected exception: " << e.what() << std::endl;
   }
+  return EXIT_FAILURE;
 }
 
 execution_config create_execution_config(std::size_t cpu_num,
