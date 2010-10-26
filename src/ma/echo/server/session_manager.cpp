@@ -64,10 +64,10 @@ namespace ma
         --size_;
       } // session_manager::session_wrapper_list::erase                  
 
-      void session_manager::session_wrapper_list::erase_all()
+      void session_manager::session_wrapper_list::clear()
       {
         front_.reset();
-      } // session_manager::session_wrapper_list::erase_all
+      } // session_manager::session_wrapper_list::clear
         
       session_manager::session_manager(boost::asio::io_service& io_service, 
         boost::asio::io_service& session_io_service, 
@@ -92,10 +92,10 @@ namespace ma
         wait_error_.clear();
         stop_error_.clear();
         state_ = ready_to_start;
-        active_sessions_.erase_all();
+        active_sessions_.clear();
         if (free_recycled_sessions)
         {
-          recycled_sessions_.erase_all();
+          recycled_sessions_.clear();
         }
       }
 

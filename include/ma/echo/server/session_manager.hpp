@@ -73,7 +73,7 @@ namespace ma
 
           void push_front(const session_wrapper_ptr& value);
           void erase(const session_wrapper_ptr& value);          
-          void erase_all();
+          void clear();
 
           std::size_t size() const
           {
