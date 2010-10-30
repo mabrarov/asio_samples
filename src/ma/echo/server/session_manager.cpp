@@ -158,7 +158,7 @@ namespace ma
           active_session = active_session->next;
         }
         // Do shutdown - abort outer operations
-        if (wait_handler_.has_target())
+        if (!wait_handler_.empty())
         {
           wait_handler_.post(boost::asio::error::operation_aborted);
         }            
@@ -185,7 +185,7 @@ namespace ma
         {
           return wait_error_;
         }
-        if (wait_handler_.has_target())
+        if (!wait_handler_.empty())
         {
           return boost::asio::error::operation_not_supported;
         }
@@ -237,7 +237,7 @@ namespace ma
         {   
           wait_error_ = error;
           // Notify wait handler
-          if (wait_handler_.has_target() && may_complete_wait()) 
+          if (!wait_handler_.empty() && may_complete_wait()) 
           {            
             wait_handler_.post(wait_error_);
           }
@@ -354,7 +354,7 @@ namespace ma
               }            
               return;
             }
-            if (wait_handler_.has_target() && may_complete_wait()) 
+            if (!wait_handler_.empty() && may_complete_wait()) 
             {
               wait_handler_.post(wait_error_);            
             }
@@ -463,7 +463,7 @@ namespace ma
             }
             return;
           }
-          if (wait_handler_.has_target() && may_complete_wait()) 
+          if (!wait_handler_.empty() && may_complete_wait()) 
           {
             wait_handler_.post(wait_error_);
           }

@@ -53,9 +53,9 @@ namespace ma
         do_something_handler_.post(error);
       }
 
-      bool has_do_something_target() const
+      bool has_do_something_handler() const
       {
-        return do_something_handler_.has_target();
+        return !do_something_handler_.empty();
       }
 
     private:

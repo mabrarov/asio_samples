@@ -128,7 +128,7 @@ namespace ma
           // Start shutdown
           state_ = stop_in_progress;
           // Do shutdown - abort outer operations
-          if (wait_handler_.has_target())
+          if (!wait_handler_.empty())
           {
             wait_handler_.post(boost::asio::error::operation_aborted);
           }
@@ -181,7 +181,7 @@ namespace ma
         {
           io_service_.post(detail::bind_handler(handler, error_));
         }
-        else if (wait_handler_.has_target())
+        else if (!wait_handler_.empty())
         {
           io_service_.post(detail::bind_handler(handler, boost::asio::error::operation_not_supported));
         }

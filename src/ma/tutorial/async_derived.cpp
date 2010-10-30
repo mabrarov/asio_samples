@@ -31,7 +31,7 @@ namespace ma
     
     boost::optional<boost::system::error_code> Async_derived::do_something()
     {
-      if (has_do_something_target())
+      if (has_do_something_handler())
       {
         return boost::asio::error::operation_not_supported;
       }      
@@ -48,7 +48,7 @@ namespace ma
 
     void Async_derived::handle_timer(const boost::system::error_code& error)
     {
-      if (!has_do_something_target())
+      if (!has_do_something_handler())
       {
         return;
       }      

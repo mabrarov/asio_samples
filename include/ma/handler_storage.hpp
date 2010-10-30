@@ -45,9 +45,9 @@ namespace ma
       return service_.get_io_service();
     }    
 
-    bool has_target() const
+    bool empty() const
     {
-      return service_.has_target(implementation_);
+      return service_.empty(implementation_);
     }
 
     template <typename Handler>
@@ -102,9 +102,9 @@ namespace ma
       return service_.get_io_service();
     }    
 
-    bool has_target() const
+    bool empty() const
     {
-      return service_.has_target(implementation_);
+      return service_.empty(implementation_);
     }
 
     template <typename Handler>

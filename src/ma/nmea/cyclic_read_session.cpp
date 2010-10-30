@@ -93,7 +93,7 @@ namespace ma
       // Do shutdown - abort inner operations
       serial_port_.close(stop_error_);         
       // Do shutdown - abort outer operations
-      if (read_handler_.has_target())
+      if (!read_handler_.empty())
       {
         read_handler_.post(read_result_type(boost::asio::error::operation_aborted, frame_ptr()));
       }
@@ -113,7 +113,7 @@ namespace ma
       {
         return read_result_type(boost::asio::error::operation_aborted, frame_ptr());
       }
-      if (started != state_ || read_handler_.has_target())
+      if (started != state_ || !read_handler_.empty())
       {          
         return read_result_type(boost::asio::error::operation_not_supported, frame_ptr());
       }
@@ -184,7 +184,7 @@ namespace ma
       if (error)
       {
         // Check for pending session read operation 
-        if (read_handler_.has_target())
+        if (!read_handler_.empty())
         {        
           read_handler_.post(read_result_type(error, frame_ptr()));
           return;
@@ -216,7 +216,7 @@ namespace ma
       if (error)        
       {
         // Check for pending session read operation 
-        if (read_handler_.has_target())
+        if (!read_handler_.empty())
         {
           read_handler_.post(read_result_type(error, frame_ptr()));
           return;
@@ -231,7 +231,7 @@ namespace ma
       buffers_iterator data_begin(buffers_iterator::begin(committed_buffers));
       buffers_iterator data_end(data_begin + bytes_transferred - frame_tail_.length());        
       frame_ptr new_frame;
-      if (read_handler_.has_target() || !frame_buffer_.full())
+      if (!read_handler_.empty() || !frame_buffer_.full())
       {
         new_frame = boost::make_shared<frame>(data_begin, data_end);
       }
@@ -245,7 +245,7 @@ namespace ma
       // Continue inner operations loop.
       read_until_head();
       // If there is waiting read operation - complete it            
-      if (read_handler_.has_target())
+      if (!read_handler_.empty())
       {
         read_handler_.post(read_result_type(error, new_frame));        
       } 

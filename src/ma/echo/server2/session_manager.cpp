@@ -133,7 +133,7 @@ namespace ma
             curr_session_proxy = curr_session_proxy->next_;
           }          
           // Do shutdown - abort outer operations
-          if (wait_handler_.has_target())
+          if (!wait_handler_.empty())
           {
             wait_handler_.post(boost::asio::error::operation_aborted);
           }
@@ -165,7 +165,7 @@ namespace ma
         {
           io_service_.post(detail::bind_handler(handler, last_accept_error_));
         }
-        else if (wait_handler_.has_target())
+        else if (!wait_handler_.empty())
         {
           io_service_.post(detail::bind_handler(handler, boost::asio::error::operation_not_supported));
         }

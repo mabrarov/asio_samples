@@ -275,9 +275,9 @@ namespace ma
       }
     }    
 
-    bool has_target(const implementation_type& impl) const
+    bool empty(const implementation_type& impl) const
     {
-      return 0 != impl.handler_ptr_;
+      return 0 == impl.handler_ptr_;
     }
 
   private:
@@ -565,9 +565,9 @@ namespace ma
       return impl.handler_ptr_->data();
     }
 
-    bool has_target(const implementation_type& impl) const
+    bool empty(const implementation_type& impl) const
     {
-      return 0 != impl.handler_ptr_;
+      return 0 == impl.handler_ptr_;
     }
 
   private:
