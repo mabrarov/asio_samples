@@ -254,25 +254,28 @@ int _tmain(int argc, _TCHAR* argv[])
 
     int exit_code = EXIT_SUCCESS;
 
-    // Wait until server stops
+    // Wait until server begins stopping or stops
     session_manager_lock.lock();
     while (session_manager_wrapper::stop_in_progress != session_manager->state 
       && session_manager_wrapper::stopped != session_manager->state)
     {
       session_manager->state_changed.wait(session_manager_lock);
-    }    
+    }        
     if (session_manager_wrapper::stopped != session_manager->state)
     {
+      // Wait until server stops with timeout
       if (!session_manager->state_changed.timed_wait(
         session_manager_lock, the_execution_config.stop_timeout))      
       {
         std::cout << "Server stop timeout expiration. Terminating server work...\n";
         exit_code = EXIT_FAILURE;
       }
+      // Mark server as stopped
       session_manager->state = session_manager_wrapper::stopped;
     }
-    if (!session_manager->stopped_by_user)
-    {
+    // Check the reason of server stop and signal it by exit code
+    if (EXIT_SUCCESS == exit_code && !session_manager->stopped_by_user)
+    {      
       exit_code = EXIT_FAILURE;
     }
     session_manager_lock.unlock();
@@ -281,7 +284,7 @@ int _tmain(int argc, _TCHAR* argv[])
     session_manager_io_service.stop();
     session_io_service.stop();
     std::cout << "Server work was terminated. Waiting until all of the work threads will stop...\n";
-    // ...and wait until all work done
+    // ...and wait until all work done.
     work_threads.join_all();
     std::cout << "Work threads have stopped. Process will close.\n";        
 
