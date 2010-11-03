@@ -12,6 +12,7 @@
 #include <boost/optional.hpp>
 #include <boost/smart_ptr.hpp>
 #include <boost/bind.hpp>
+#include <boost/tuple/tuple.hpp>
 #include <boost/asio.hpp>
 #include <ma/handler_allocation.hpp>
 #include <ma/handler_storage.hpp>
@@ -137,6 +138,8 @@ namespace ma
           stopped
         };
 
+        typedef boost::tuple<boost::system::error_code, session_wrapper_ptr> session_creation_result;
+
         template <typename Handler>
         void do_start(const Handler& handler)
         {
@@ -173,6 +176,7 @@ namespace ma
         boost::system::error_code start();
         boost::optional<boost::system::error_code> stop();
         boost::optional<boost::system::error_code> wait();
+        session_creation_result create_new_session();
         void accept_new_session();
         void handle_accept(const session_wrapper_ptr& the_session, const boost::system::error_code& error);
         bool may_complete_stop() const;

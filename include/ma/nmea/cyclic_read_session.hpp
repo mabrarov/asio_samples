@@ -123,7 +123,7 @@ namespace ma
       {
         if (boost::optional<read_result_type> result = read())
         {          
-          io_service_.post(detail::bind_handler(handler, boost::get<0>(*result), boost::get<1>(*result)));
+          io_service_.post(detail::bind_handler(handler, result->get<0>(), result->get<1>()));
         }
         else
         {          

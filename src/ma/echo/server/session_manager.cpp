@@ -5,6 +5,7 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#include <new>
 #include <boost/ref.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/assert.hpp>
@@ -192,27 +193,52 @@ namespace ma
         return boost::optional<boost::system::error_code>();
       } // session_manager::wait
 
+      session_manager::session_creation_result session_manager::create_new_session()
+      {        
+        if (!recycled_sessions_.empty())
+        {
+          session_wrapper_ptr the_session = recycled_sessions_.front();
+          recycled_sessions_.erase(the_session);
+          return session_creation_result(boost::system::error_code(), the_session);
+        }        
+        try 
+        {   
+          session_wrapper_ptr the_session = boost::make_shared<session_wrapper>(
+            boost::ref(session_io_service_), config_.managed_session_config);
+          return session_creation_result(boost::system::error_code(), the_session);
+        }
+        catch (const std::bad_alloc&) 
+        {                    
+          namespace posix_error = boost::system::posix;
+          return session_creation_result(posix_error::make_error_code(
+            posix_error::not_enough_memory), session_wrapper_ptr());          
+        }        
+      } // session_manager::create_new_session
+
       void session_manager::accept_new_session()
       {
-        // Get new, ready to start session
-        session_wrapper_ptr the_session;
-        if (recycled_sessions_.empty())
-        {
-          the_session = boost::make_shared<session_wrapper>(
-            boost::ref(session_io_service_), config_.managed_session_config);
-        }
-        else
-        {
-          the_session = recycled_sessions_.front();
-          recycled_sessions_.erase(the_session);
-        }
+        // Get new, ready to start session                
+        const session_creation_result creation_result = create_new_session();
+        if (const boost::system::error_code& error = creation_result.get<0>())
+        {   
+          // Handle new session creation error
+          wait_error_ = error;
+          // Notify wait handler
+          if (!wait_handler_.empty() && may_complete_wait()) 
+          {            
+            wait_handler_.post(wait_error_);
+          }      
+          // Can't do more
+          return;
+        }        
         // Start session acceptation
+        const session_wrapper_ptr& the_session = creation_result.get<1>();
         acceptor_.async_accept(the_session->wrapped_session->socket(), the_session->remote_endpoint, 
           strand_.wrap(make_custom_alloc_handler(accept_allocator_,
             boost::bind(&this_type::handle_accept, shared_from_this(), the_session, boost::asio::placeholders::error))));
         // Register pending operation
         ++pending_operations_;
-        accept_in_progress_ = true;
+        accept_in_progress_ = true;        
       } // session_manager::accept_new_session
 
       void session_manager::handle_accept(const session_wrapper_ptr& the_session, 
