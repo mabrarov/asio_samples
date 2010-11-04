@@ -48,6 +48,8 @@
 				AdditionalIncludeDirectories="..\..\include;..\..\..\boost_1_44_0"
 				AdditionalUsingDirectories=""
 				PreprocessorDefinitions="WIN32;WIN32_LEAN_AND_MEAN;WINVER=0x0500;_WIN32_WINNT=0x0500;_WIN32_WINDOWS=0x0500;_WIN32_IE=0x0600;_DEBUG;_CONSOLE;BOOST_HAS_THREADS;_SECURE_SCL=0"
+				BasicRuntimeChecks="3"
+				SmallerTypeCheck="true"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="0"
 				WarningLevel="4"

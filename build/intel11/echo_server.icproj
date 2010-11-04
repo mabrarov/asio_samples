@@ -26,7 +26,6 @@
 				Optimization="1000"
 				GlobalOptimizations="true"
 				OptimizeForWindowsApplication="true"
-				EnableEnhancedInstructionSet="1000"
 				UseIntelOptimizedHeaders="true"
 				Cpp0xSupport="true"/>
 		</Configuration>
