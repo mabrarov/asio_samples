@@ -136,9 +136,7 @@ namespace ma
           started,
           stop_in_progress,
           stopped
-        };
-
-        typedef boost::tuple<boost::system::error_code, session_wrapper_ptr> session_creation_result;
+        };        
 
         template <typename Handler>
         void do_start(const Handler& handler)
@@ -176,7 +174,7 @@ namespace ma
         boost::system::error_code start();
         boost::optional<boost::system::error_code> stop();
         boost::optional<boost::system::error_code> wait();
-        session_creation_result create_session();
+        session_wrapper_ptr create_session(boost::system::error_code& error);
         void accept_session(const session_wrapper_ptr& the_session);
         void accept_new_session();
         void handle_accept(const session_wrapper_ptr& the_session, const boost::system::error_code& error);

@@ -121,11 +121,10 @@ namespace ma
             acceptor_.listen(config_.listen_backlog, error);          
             if (!error)
             {
-              session_creation_result creation_result = create_session();
-              error = creation_result.get<0>();
+              session_wrapper_ptr the_session = create_session(error);              
               if (!error) 
               {
-                accept_session(creation_result.get<1>()); 
+                accept_session(the_session); 
               }            
             }
           }
@@ -201,27 +200,28 @@ namespace ma
         return boost::optional<boost::system::error_code>();
       } // session_manager::wait
 
-      session_manager::session_creation_result session_manager::create_session()
+      session_manager::session_wrapper_ptr session_manager::create_session(boost::system::error_code& error)      
       {        
          if (!recycled_sessions_.empty())
         {          
           session_wrapper_ptr the_session = recycled_sessions_.front();
           recycled_sessions_.erase(the_session);
-          return session_creation_result(boost::system::error_code(), the_session);
+          error = boost::system::error_code();
+          return the_session;
         }        
         try 
         {   
           session_wrapper_ptr the_session = boost::make_shared<session_wrapper>(
             boost::ref(session_io_service_), config_.managed_session_config);
-          return session_creation_result(boost::system::error_code(), the_session);
+          error = boost::system::error_code();
+          return the_session;
         }
         catch (const std::bad_alloc&) 
-        {                    
-          namespace errc = boost::system::errc;
-          return session_creation_result(errc::make_error_code(errc::not_enough_memory), 
-            session_wrapper_ptr());          
+        {
+          error = boost::system::errc::make_error_code(boost::system::errc::not_enough_memory);
+          return session_wrapper_ptr();
         }        
-      } // session_manager::create_new_session
+      } // session_manager::create_session
 
       void session_manager::accept_session(const session_wrapper_ptr& the_session)
       {
@@ -235,10 +235,11 @@ namespace ma
 
       void session_manager::accept_new_session()
       {
-        // Get new, ready to start session                
-        const session_creation_result creation_result = create_session();
-        if (const boost::system::error_code& error = creation_result.get<0>())
-        {   
+        // Get new, ready to start session
+        boost::system::error_code error;
+        session_wrapper_ptr the_session = create_session(error);
+        if (error)
+        {
           // Handle new session creation error
           wait_error_ = error;
           // Notify wait handler
@@ -250,7 +251,7 @@ namespace ma
           return;
         }        
         // Start session acceptation
-        accept_session(creation_result.get<1>());        
+        accept_session(the_session);
       } // session_manager::accept_new_session
 
       void session_manager::handle_accept(const session_wrapper_ptr& the_session, 
