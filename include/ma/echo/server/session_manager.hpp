@@ -176,7 +176,8 @@ namespace ma
         boost::system::error_code start();
         boost::optional<boost::system::error_code> stop();
         boost::optional<boost::system::error_code> wait();
-        session_creation_result create_new_session();
+        session_creation_result create_session();
+        void accept_session(const session_wrapper_ptr& the_session);
         void accept_new_session();
         void handle_accept(const session_wrapper_ptr& the_session, const boost::system::error_code& error);
         bool may_complete_stop() const;

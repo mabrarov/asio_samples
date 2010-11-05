@@ -514,7 +514,7 @@ void handle_session_manager_start(const session_manager_wrapper_ptr& session_man
     if (error)
     {       
       session_manager->state = session_manager_wrapper::stopped;
-      std::cout << "Server can't start due to error.\n";
+      std::cout << "Server can't start due to error: " << error.message() << '\n';
       wrapper_lock.unlock();
       session_manager->state_changed.notify_one();
       return;
@@ -526,13 +526,14 @@ void handle_session_manager_start(const session_manager_wrapper_ptr& session_man
 }
 
 void handle_session_manager_wait(const session_manager_wrapper_ptr& session_manager, 
-  const boost::system::error_code&)
+  const boost::system::error_code& error)
 {
   boost::unique_lock<boost::mutex> wrapper_lock(session_manager->access_mutex);
   if (session_manager_wrapper::started == session_manager->state)
   {
     stop_session_manager(session_manager);
-    std::cout << "Server can't continue work due to error. Server is stopping...\n";
+    std::cout << "Server can't continue work due to error: " << error.message() << '\n'
+              << "Server is stopping...\n";
     wrapper_lock.unlock();
     session_manager->state_changed.notify_one();    
   }

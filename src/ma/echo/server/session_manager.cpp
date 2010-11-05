@@ -118,7 +118,16 @@ namespace ma
           acceptor_.bind(config_.accepting_endpoint, error);
           if (!error)
           {
-            acceptor_.listen(config_.listen_backlog, error);
+            acceptor_.listen(config_.listen_backlog, error);          
+            if (!error)
+            {
+              session_creation_result creation_result = create_session();
+              error = creation_result.get<0>();
+              if (!error) 
+              {
+                accept_session(creation_result.get<1>()); 
+              }            
+            }
           }
           if (error)
           {
@@ -128,11 +137,10 @@ namespace ma
         }
         if (error)
         {
-          state_ = stopped;
+          state_ = stopped;         
         }
         else
-        {
-          accept_new_session();            
+        {          
           state_ = started;
         }       
         return error;
@@ -193,10 +201,10 @@ namespace ma
         return boost::optional<boost::system::error_code>();
       } // session_manager::wait
 
-      session_manager::session_creation_result session_manager::create_new_session()
+      session_manager::session_creation_result session_manager::create_session()
       {        
-        if (!recycled_sessions_.empty())
-        {
+         if (!recycled_sessions_.empty())
+        {          
           session_wrapper_ptr the_session = recycled_sessions_.front();
           recycled_sessions_.erase(the_session);
           return session_creation_result(boost::system::error_code(), the_session);
@@ -209,16 +217,26 @@ namespace ma
         }
         catch (const std::bad_alloc&) 
         {                    
-          namespace posix_error = boost::system::posix;
-          return session_creation_result(posix_error::make_error_code(
-            posix_error::not_enough_memory), session_wrapper_ptr());          
+          namespace errc = boost::system::errc;
+          return session_creation_result(errc::make_error_code(errc::not_enough_memory), 
+            session_wrapper_ptr());          
         }        
       } // session_manager::create_new_session
+
+      void session_manager::accept_session(const session_wrapper_ptr& the_session)
+      {
+        acceptor_.async_accept(the_session->wrapped_session->socket(), the_session->remote_endpoint, 
+          strand_.wrap(make_custom_alloc_handler(accept_allocator_,
+          boost::bind(&this_type::handle_accept, shared_from_this(), the_session, boost::asio::placeholders::error))));
+        // Register pending operation
+        ++pending_operations_;
+        accept_in_progress_ = true;
+      } // session_manager::accept_session
 
       void session_manager::accept_new_session()
       {
         // Get new, ready to start session                
-        const session_creation_result creation_result = create_new_session();
+        const session_creation_result creation_result = create_session();
         if (const boost::system::error_code& error = creation_result.get<0>())
         {   
           // Handle new session creation error
@@ -232,13 +250,7 @@ namespace ma
           return;
         }        
         // Start session acceptation
-        const session_wrapper_ptr& the_session = creation_result.get<1>();
-        acceptor_.async_accept(the_session->wrapped_session->socket(), the_session->remote_endpoint, 
-          strand_.wrap(make_custom_alloc_handler(accept_allocator_,
-            boost::bind(&this_type::handle_accept, shared_from_this(), the_session, boost::asio::placeholders::error))));
-        // Register pending operation
-        ++pending_operations_;
-        accept_in_progress_ = true;        
+        accept_session(creation_result.get<1>());        
       } // session_manager::accept_new_session
 
       void session_manager::handle_accept(const session_wrapper_ptr& the_session, 
