@@ -378,6 +378,10 @@
 						Name="server"
 						>
 						<File
+							RelativePath="..\..\include\ma\echo\server\error.hpp"
+							>
+						</File>
+						<File
 							RelativePath=".\..\..\include\ma\echo\server\session.hpp"
 							>
 						</File>
@@ -435,6 +439,10 @@
 					<Filter
 						Name="server"
 						>
+						<File
+							RelativePath="..\..\src\ma\echo\server\error.cpp"
+							>
+						</File>
 						<File
 							RelativePath="..\..\src\ma\echo\server\session.cpp"
 							>

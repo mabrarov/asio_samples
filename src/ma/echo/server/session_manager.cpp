@@ -12,6 +12,7 @@
 #include <ma/echo/server/session_config.hpp>
 #include <ma/echo/server/session.hpp>
 #include <ma/echo/server/session_manager.hpp>
+#include <ma/echo/server/error.hpp>
 
 namespace ma
 {    
@@ -101,14 +102,10 @@ namespace ma
       }
 
       boost::system::error_code session_manager::start()
-      {
-        if (stopped == state_ || stop_in_progress == state_)
-        {          
-          return boost::asio::error::operation_aborted;
-        } 
+      {         
         if (ready_to_start != state_)
         {          
-          return boost::asio::error::operation_not_supported;                      
+          return server_error::invalid_state;
         }        
         state_ = start_in_progress;
         boost::system::error_code error;
@@ -149,7 +146,7 @@ namespace ma
       {        
         if (stopped == state_ || stop_in_progress == state_)
         {          
-          return boost::asio::error::operation_aborted;
+          return server_error::invalid_state;
         }        
         // Start shutdown
         state_ = stop_in_progress;
@@ -168,7 +165,7 @@ namespace ma
         // Do shutdown - abort outer operations
         if (!wait_handler_.empty())
         {
-          wait_handler_.post(boost::asio::error::operation_aborted);
+          wait_handler_.post(server_error::operation_aborted);
         }            
         // Check for shutdown continuation
         if (may_complete_stop())
@@ -181,28 +178,20 @@ namespace ma
 
       boost::optional<boost::system::error_code> session_manager::wait()
       {        
-        if (stopped == state_ || stop_in_progress == state_)
-        {          
-          return boost::asio::error::operation_aborted;
-        } 
-        if (started != state_)
+        if (started != state_ || !wait_handler_.empty())
         {
-          return boost::asio::error::operation_not_supported;
-        }
+          return server_error::invalid_state;
+        }        
         if (may_complete_wait())
         {
           return wait_error_;
-        }
-        if (!wait_handler_.empty())
-        {
-          return boost::asio::error::operation_not_supported;
-        }
+        }        
         return boost::optional<boost::system::error_code>();
       } // session_manager::wait
 
       session_manager::session_wrapper_ptr session_manager::create_session(boost::system::error_code& error)      
       {        
-         if (!recycled_sessions_.empty())
+        if (!recycled_sessions_.empty())
         {          
           session_wrapper_ptr the_session = recycled_sessions_.front();
           recycled_sessions_.erase(the_session);

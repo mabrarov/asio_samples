@@ -6,6 +6,7 @@
 //
 
 #include <ma/echo/server/session.hpp>
+#include <ma/echo/server/error.hpp>
 
 namespace ma
 {    
@@ -38,14 +39,10 @@ namespace ma
       } // session::reset
               
       boost::system::error_code session::start()
-      {        
-        if (stopped == state_ || stop_in_progress == state_)
-        {     
-          return boost::asio::error::operation_aborted;          
-        }
+      {                
         if (ready_to_start != state_)
         {          
-          return boost::asio::error::operation_not_supported;                      
+          return server_error::invalid_state;                      
         }        
         boost::system::error_code error;
         using boost::asio::ip::tcp;        
@@ -82,14 +79,14 @@ namespace ma
       {        
         if (stopped == state_ || stop_in_progress == state_)
         {          
-          return boost::asio::error::operation_aborted;                      
+          return server_error::invalid_state;                      
         }        
         // Start shutdown
         state_ = stop_in_progress;
         // Do shutdown - abort outer operations
         if (!wait_handler_.empty())
         {
-          wait_handler_.post(boost::asio::error::operation_aborted);
+          wait_handler_.post(server_error::operation_aborted);
         }
         // Do shutdown - flush socket's write_some buffer
         if (!socket_write_in_progress_) 
@@ -106,22 +103,14 @@ namespace ma
       } // session::stop
 
       boost::optional<boost::system::error_code> session::wait()
-      {        
-        if (stopped == state_ || stop_in_progress == state_)
-        {          
-          return boost::asio::error::operation_aborted;
-        } 
-        if (started != state_)
+      {                
+        if (started != state_ || !wait_handler_.empty())
         {
-          return boost::asio::error::operation_not_supported;
+          return server_error::invalid_state;
         }
         if (!socket_read_in_progress_ && !socket_write_in_progress_)
         {
           return wait_error_;
-        }
-        if (!wait_handler_.empty())
-        {
-          return boost::asio::error::operation_not_supported;
         }
         return boost::optional<boost::system::error_code>();
       } // session::wait
