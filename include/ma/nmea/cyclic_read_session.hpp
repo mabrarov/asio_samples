@@ -24,6 +24,7 @@
 #include <ma/bind_asio_handler.hpp>
 #include <ma/nmea/frame.hpp>
 #include <ma/nmea/cyclic_read_session_fwd.hpp>
+#include <ma/nmea/error.hpp>
 
 namespace ma
 {
@@ -254,13 +255,9 @@ namespace ma
       template <typename ConstBufferSequence, typename Handler>
       boost::optional<boost::system::error_code> write(const ConstBufferSequence& buffer, const Handler& handler)
       {
-        if (stopped == state_ || stop_in_progress == state_)
-        {          
-          return boost::asio::error::operation_aborted;
-        } 
         if (started != state_ || port_write_in_progress_)
-        {          
-          return boost::asio::error::operation_not_supported;
+        {                             
+          return session_error::invalid_state;
         }
         boost::asio::async_write(serial_port_, buffer, strand_.wrap(
           make_custom_alloc_handler(write_allocator_, 
@@ -274,7 +271,7 @@ namespace ma
       void handle_write(const boost::system::error_code& error, boost::tuple<Handler> handler)
       {         
         port_write_in_progress_ = false;
-        io_service_.post(detail::bind_handler(boost::get<0>(handler), error));
+        io_service_.post(detail::bind_handler(handler.get<0>(), error));
         if (stop_in_progress == state_ && !port_read_in_progress_)
         {
           state_ = stopped;

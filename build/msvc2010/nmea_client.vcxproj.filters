@@ -32,6 +32,9 @@
     <ClCompile Include="..\..\src\ma\nmea\cyclic_read_session.cpp">
       <Filter>Source Files\ma\nmea</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\ma\nmea\error.cpp">
+      <Filter>Source Files\ma\nmea</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\ma\codecvt_cast.hpp">
@@ -65,6 +68,9 @@
       <Filter>Header Files\ma\nmea</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\ma\nmea\frame.hpp">
+      <Filter>Header Files\ma\nmea</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\ma\nmea\error.hpp">
       <Filter>Header Files\ma\nmea</Filter>
     </ClInclude>
   </ItemGroup>

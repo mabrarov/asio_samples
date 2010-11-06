@@ -183,6 +183,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\ma\nmea\cyclic_read_session.cpp" />
+    <ClCompile Include="..\..\src\ma\nmea\error.cpp" />
     <ClCompile Include="..\..\src\nmea_client\main.cpp" />
     <ClCompile Include="..\..\src\ma\console_controller.cpp" />
   </ItemGroup>
@@ -197,6 +198,7 @@
     <ClInclude Include="..\..\include\ma\handler_storage_service.hpp" />
     <ClInclude Include="..\..\include\ma\nmea\cyclic_read_session.hpp" />
     <ClInclude Include="..\..\include\ma\nmea\cyclic_read_session_fwd.hpp" />
+    <ClInclude Include="..\..\include\ma\nmea\error.hpp" />
     <ClInclude Include="..\..\include\ma\nmea\frame.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

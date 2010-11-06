@@ -56,14 +56,10 @@ namespace ma
     } // cyclic_read_session::resest
 
     boost::system::error_code cyclic_read_session::start()
-    {        
-      if (stopped == state_ || stop_in_progress == state_)
-      {          
-        return boost::asio::error::operation_aborted;          
-      } 
+    {              
       if (ready_to_start != state_)
       {          
-        return boost::asio::error::operation_not_supported;          
+        return session_error::invalid_state;          
       }      
       // Start handshake
       state_ = start_in_progress;
@@ -80,14 +76,10 @@ namespace ma
 
     boost::optional<boost::system::error_code> cyclic_read_session::stop()
     {      
-      if (stopped == state_)
+      if (stopped == state_ || stop_in_progress == state_)
       {          
-        return boost::asio::error::operation_aborted;
-      } 
-      if (stop_in_progress == state_)
-      {          
-        return boost::asio::error::operation_not_supported;
-      }      
+        return session_error::invalid_state;
+      }
       // Start shutdown
       state_ = stop_in_progress;
       // Do shutdown - abort inner operations
@@ -95,7 +87,7 @@ namespace ma
       // Do shutdown - abort outer operations
       if (!read_handler_.empty())
       {
-        read_handler_.post(read_result_type(boost::asio::error::operation_aborted, 0));
+        read_handler_.post(read_result_type(session_error::operation_aborted, 0));
       }
       // Check for shutdown completion
       if (may_complete_stop())
@@ -108,14 +100,10 @@ namespace ma
     } // cyclic_read_session::stop
 
     boost::optional<boost::system::error_code> cyclic_read_session::read_some()
-    {      
-      if (stopped == state_ || stop_in_progress == state_)
-      {
-        return boost::asio::error::operation_aborted;
-      }
+    {
       if (started != state_ || !read_handler_.empty())
       {          
-        return boost::asio::error::operation_not_supported;
+        return session_error::invalid_state;
       }
       if (!frame_buffer_.empty())
       {                

@@ -352,6 +352,10 @@
 						RelativePath="..\..\src\ma\nmea\cyclic_read_session.cpp"
 						>
 					</File>
+					<File
+						RelativePath="..\..\src\ma\nmea\error.cpp"
+						>
+					</File>
 				</Filter>
 			</Filter>
 		</Filter>
@@ -404,6 +408,10 @@
 					</File>
 					<File
 						RelativePath="..\..\include\ma\nmea\cyclic_read_session_fwd.hpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\include\ma\nmea\error.hpp"
 						>
 					</File>
 					<File
