@@ -61,7 +61,7 @@ namespace ma
         destroy_func_(this);
       }
 
-      void* data() const
+      void* data()
       {
         return data_func_(this);
       }
@@ -100,7 +100,7 @@ namespace ma
       static void do_invoke(handler_base* base, arg_param_type arg)
       {
         // Take ownership of the handler object.
-        this_type* h(static_cast<this_type*>(base));
+        this_type* h = static_cast<this_type*>(base);
         typedef detail::handler_alloc_traits<Handler, this_type> alloc_traits;
         detail::handler_ptr<alloc_traits> ptr(h->handler_, h);          
 
@@ -120,7 +120,7 @@ namespace ma
 
       static void do_destroy(handler_base* base)
       {          
-        this_type* h(static_cast<this_type*>(base));
+        this_type* h = static_cast<this_type*>(base);
         typedef detail::handler_alloc_traits<Handler, this_type> alloc_traits;
         detail::handler_ptr<alloc_traits> ptr(h->handler_, h);
 

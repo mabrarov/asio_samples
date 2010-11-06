@@ -95,7 +95,7 @@ namespace ma
       // Do shutdown - abort outer operations
       if (!read_handler_.empty())
       {
-        read_handler_.post(read_result_type(boost::asio::error::operation_aborted, frame_ptr()));
+        read_handler_.post(read_result_type(boost::asio::error::operation_aborted, 0));
       }
       // Check for shutdown completion
       if (may_complete_stop())
@@ -107,27 +107,26 @@ namespace ma
       return boost::optional<boost::system::error_code>();
     } // cyclic_read_session::stop
 
-    boost::optional<cyclic_read_session::read_result_type> cyclic_read_session::read()
+    boost::optional<boost::system::error_code> cyclic_read_session::read_some()
     {      
       if (stopped == state_ || stop_in_progress == state_)
       {
-        return read_result_type(boost::asio::error::operation_aborted, frame_ptr());
+        return boost::asio::error::operation_aborted;
       }
       if (started != state_ || !read_handler_.empty())
       {          
-        return read_result_type(boost::asio::error::operation_not_supported, frame_ptr());
+        return boost::asio::error::operation_not_supported;
       }
       if (!frame_buffer_.empty())
-      {
-        frame_ptr message = frame_buffer_.front();
-        frame_buffer_.pop_front();
-        return read_result_type(boost::system::error_code(), message);        
+      {                
+        // Signal that we can safely fill input buffer from the frame_buffer_
+        return boost::system::error_code();
       }
       if (read_error_)
       {
         boost::system::error_code error = read_error_;
         read_error_.clear();
-        return read_result_type(error, frame_ptr());        
+        return error;        
       }      
       // If can't immediately complete then start waiting for completion
       // Start message constructing
@@ -135,7 +134,7 @@ namespace ma
       {
         read_until_head();
       }        
-      return boost::optional<read_result_type>();
+      return boost::optional<boost::system::error_code>();
     } // cyclic_read_session::read
 
     bool cyclic_read_session::may_complete_stop() const
@@ -186,7 +185,7 @@ namespace ma
         // Check for pending session read operation 
         if (!read_handler_.empty())
         {        
-          read_handler_.post(read_result_type(error, frame_ptr()));
+          read_handler_.post(read_result_type(error, 0));
           return;
         }
         // Store error for the next outer read operation.
@@ -218,7 +217,7 @@ namespace ma
         // Check for pending session read operation 
         if (!read_handler_.empty())
         {
-          read_handler_.post(read_result_type(error, frame_ptr()));
+          read_handler_.post(read_result_type(error, 0));
           return;
         }      
         // Store error for the next outer read operation.
@@ -231,28 +230,29 @@ namespace ma
       buffers_iterator data_begin(buffers_iterator::begin(committed_buffers));
       buffers_iterator data_end(data_begin + bytes_transferred - frame_tail_.length());        
       frame_ptr new_frame;
-      if (!read_handler_.empty() || !frame_buffer_.full())
+      if (frame_buffer_.full())
       {
-        new_frame = boost::make_shared<frame>(data_begin, data_end);
+        new_frame = frame_buffer_.front();
+        new_frame->assign(data_begin, data_end);        
       }
       else
       {
-        new_frame = frame_buffer_.front();
-        new_frame->assign(data_begin, data_end);
+        new_frame = boost::make_shared<frame>(data_begin, data_end);
       }          
       // Consume processed data
       read_buffer_.consume(bytes_transferred);
       // Continue inner operations loop.
       read_until_head();
+      // Save read message into the cyclic read buffer            
+      frame_buffer_.push_back(new_frame);      
       // If there is waiting read operation - complete it            
       if (!read_handler_.empty())
       {
-        read_handler_.post(read_result_type(error, new_frame));        
-      } 
-      else
-      {
-        // or push ready message into the cyclic read buffer            
-        frame_buffer_.push_back(new_frame);
+        read_handler_base* the_handler = reinterpret_cast<read_handler_base*>(read_handler_.data());        
+        boost::system::error_code transfer_error;
+        std::size_t frames_trasferred = the_handler->copy(frame_buffer_, transfer_error);
+        frame_buffer_.erase_begin(frames_trasferred);
+        read_handler_.post(read_result_type(transfer_error, frames_trasferred));        
       }      
     } // cyclic_read_session::handle_read_tail
             

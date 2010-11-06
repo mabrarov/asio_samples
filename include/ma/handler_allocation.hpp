@@ -667,7 +667,7 @@ namespace ma
 
   template <typename Context, typename Handler>
   inline context_alloc_handler<Context, Handler> 
-    make_context_alloc_handler(Context context, Handler handler)
+  make_context_alloc_handler(Context context, Handler handler)
   {
     return context_alloc_handler<Context, Handler>(context, handler);
   }  
@@ -681,7 +681,7 @@ namespace ma
 
   template <typename Context, typename Handler>
   inline context_wrapped_handler<Context, Handler> 
-    make_context_wrapped_handler(Context context, Handler handler)
+  make_context_wrapped_handler(Context context, Handler handler)
   {
     return context_wrapped_handler<Context, Handler>(context, handler);
   }  
