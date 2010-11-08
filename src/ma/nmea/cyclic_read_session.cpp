@@ -234,8 +234,8 @@ namespace ma
       // If there is waiting read operation - complete it            
       if (read_handler_.has_target())
       {
-        read_handler_base* the_handler = get_read_handler();
         boost::system::error_code transfer_error;
+        read_handler_base* the_handler = get_read_handler();        
         std::size_t frames_trasferred = the_handler->copy(frame_buffer_, transfer_error);
         frame_buffer_.erase_begin(frames_trasferred);
         read_handler_.post(read_result_type(transfer_error, frames_trasferred));        
