@@ -187,14 +187,7 @@ namespace ma
         Handler handler_;
         Iterator begin_;
         Iterator end_;
-      }; // wrapped_read_handler
-
-      template <typename Handler, typename Iterator>
-      static wrapped_read_handler<Handler, Iterator> 
-      make_wrapped_read_handler(Handler handler, Iterator begin, Iterator end)
-      {
-        return wrapped_read_handler<Handler, Iterator>(handler, begin, end);
-      }        
+      }; // wrapped_read_handler             
 
       template <typename Handler>
       void do_start(const Handler& handler)
