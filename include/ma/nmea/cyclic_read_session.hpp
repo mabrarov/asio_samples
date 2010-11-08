@@ -240,10 +240,11 @@ namespace ma
       template <typename Handler, typename Iterator>
       void put_read_handler(const Iterator& begin, const Iterator& end, const Handler& handler)
       {
-        wrapped_read_handler<Handler, Iterator> wrapped_handler(handler, begin, end);
-        read_handler_base* base_handler_ptr = static_cast<read_handler_base*>(boost::addressof(wrapped_handler));
-        read_handler_base_shift_ = reinterpret_cast<char*>(base_handler_ptr) - 
-          reinterpret_cast<char*>(boost::addressof(wrapped_handler));
+        typedef wrapped_read_handler<Handler, Iterator> wrapped_handler_type;
+        wrapped_handler_type wrapped_handler(handler, begin, end);
+        wrapped_handler_type* wrapped_handler_ptr = boost::addressof(wrapped_handler);
+        read_handler_base* base_handler_ptr = static_cast<read_handler_base*>(wrapped_handler_ptr);
+        read_handler_base_shift_ = reinterpret_cast<char*>(base_handler_ptr) - reinterpret_cast<char*>(wrapped_handler_ptr);
         read_handler_.put(wrapped_handler);
       } // put_read_handler
 
