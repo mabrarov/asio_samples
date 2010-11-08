@@ -55,7 +55,7 @@ namespace ma
 
       bool has_do_something_handler() const
       {
-        return !do_something_handler_.empty();
+        return do_something_handler_.has_target();
       }
 
     private:

@@ -128,7 +128,7 @@ namespace ma
           // Start shutdown
           state_ = stop_in_progress;
           // Do shutdown - abort outer operations
-          if (!wait_handler_.empty())
+          if (wait_handler_.has_target())
           {
             wait_handler_.post(boost::asio::error::operation_aborted);
           }
@@ -181,7 +181,7 @@ namespace ma
         {
           io_service_.post(detail::bind_handler(handler, error_));
         }
-        else if (!wait_handler_.empty())
+        else if (wait_handler_.has_target())
         {
           io_service_.post(detail::bind_handler(handler, boost::asio::error::operation_not_supported));
         }
@@ -227,9 +227,12 @@ namespace ma
         {  
           if (may_complete_stop())
           {
-            complete_stop();       
-            // Signal shutdown completion
-            stop_handler_.post(stop_error_);
+            complete_stop();  
+            if (stop_handler_.has_target()) 
+            {
+              // Signal shutdown completion
+              stop_handler_.post(stop_error_);
+            }
           }
         }
         else if (error)
@@ -237,8 +240,11 @@ namespace ma
           if (!error_)
           {
             error_ = error;
-          }                    
-          wait_handler_.post(error);
+          }  
+          if (wait_handler_.has_target()) 
+          {
+            wait_handler_.post(error);
+          }
         }
         else 
         {
@@ -260,9 +266,12 @@ namespace ma
           socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_send, stop_error_);
           if (may_complete_stop())
           {
-            complete_stop();       
-            // Signal shutdown completion
-            stop_handler_.post(stop_error_);
+            complete_stop();  
+            if (stop_handler_.has_target()) 
+            {
+              // Signal shutdown completion
+              stop_handler_.post(stop_error_);
+            }
           }
         }
         else if (error)
@@ -270,8 +279,11 @@ namespace ma
           if (!error_)
           {
             error_ = error;
-          }                    
-          wait_handler_.post(error);
+          }                 
+          if (wait_handler_.has_target()) 
+          {
+            wait_handler_.post(error);
+          }
         }
         else
         {

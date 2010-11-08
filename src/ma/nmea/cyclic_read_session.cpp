@@ -85,7 +85,7 @@ namespace ma
       // Do shutdown - abort inner operations
       serial_port_.close(stop_error_);         
       // Do shutdown - abort outer operations
-      if (!read_handler_.empty())
+      if (read_handler_.has_target())
       {
         read_handler_.post(read_result_type(session_error::operation_aborted, 0));
       }
@@ -101,7 +101,7 @@ namespace ma
 
     boost::optional<boost::system::error_code> cyclic_read_session::read_some()
     {
-      if (started != state_ || !read_handler_.empty())
+      if (started != state_ || read_handler_.has_target())
       {          
         return session_error::invalid_state;
       }
@@ -163,15 +163,14 @@ namespace ma
         if (may_complete_stop())
         {
           complete_stop();
-          // Signal shutdown completion
-          stop_handler_.post(stop_error_);
+          post_stop_handler();
         }
         return;
       }
       if (error)
       {
         // Check for pending session read operation 
-        if (!read_handler_.empty())
+        if (read_handler_.has_target())
         {        
           read_handler_.post(read_result_type(error, 0));
           return;
@@ -195,15 +194,14 @@ namespace ma
         if (may_complete_stop())
         {
           complete_stop();
-          // Signal shutdown completion
-          stop_handler_.post(stop_error_);
+          post_stop_handler();
         }
         return;
       }
       if (error)        
       {
         // Check for pending session read operation 
-        if (!read_handler_.empty())
+        if (read_handler_.has_target())
         {
           read_handler_.post(read_result_type(error, 0));
           return;
@@ -234,15 +232,24 @@ namespace ma
       // Save read message into the cyclic read buffer            
       frame_buffer_.push_back(new_frame);      
       // If there is waiting read operation - complete it            
-      if (!read_handler_.empty())
+      if (read_handler_.has_target())
       {
-        read_handler_base* the_handler = reinterpret_cast<read_handler_base*>(read_handler_.data());        
+        read_handler_base* the_handler = get_read_handler();
         boost::system::error_code transfer_error;
         std::size_t frames_trasferred = the_handler->copy(frame_buffer_, transfer_error);
         frame_buffer_.erase_begin(frames_trasferred);
         read_handler_.post(read_result_type(transfer_error, frames_trasferred));        
       }      
     } // cyclic_read_session::handle_read_tail
+
+    void cyclic_read_session::post_stop_handler()
+    {
+      if (stop_handler_.has_target()) 
+      {
+        // Signal shutdown completion
+        stop_handler_.post(stop_error_);
+      }
+    } // cyclic_read_session::post_stop_handler
             
   } // namespace nmea
 } // namespace ma

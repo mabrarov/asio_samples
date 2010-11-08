@@ -119,6 +119,7 @@ namespace ma
         void write_some();        
         void handle_read_some(const boost::system::error_code& error, const std::size_t bytes_transferred);        
         void handle_write_some(const boost::system::error_code& error, const std::size_t bytes_transferred);        
+        void post_stop_handler();
         
         bool socket_write_in_progress_;
         bool socket_read_in_progress_;

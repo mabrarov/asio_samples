@@ -45,15 +45,20 @@ namespace ma
       return service_.get_io_service();
     }
 
-    void* data() const
+    void* target() const
     {
-      return service_.data(implementation_);
+      return service_.target(implementation_);
     }
 
     bool empty() const
     {
       return service_.empty(implementation_);
     }
+
+    bool has_target() const
+    {
+      return service_.has_target(implementation_);
+    }    
 
     template <typename Handler>
     void put(Handler handler)

@@ -133,7 +133,7 @@ namespace ma
             curr_session_proxy = curr_session_proxy->next_;
           }          
           // Do shutdown - abort outer operations
-          if (!wait_handler_.empty())
+          if (wait_handler_.has_target())
           {
             wait_handler_.post(boost::asio::error::operation_aborted);
           }
@@ -165,7 +165,7 @@ namespace ma
         {
           io_service_.post(detail::bind_handler(handler, last_accept_error_));
         }
-        else if (!wait_handler_.empty())
+        else if (wait_handler_.has_target())
         {
           io_service_.post(detail::bind_handler(handler, boost::asio::error::operation_not_supported));
         }
@@ -206,14 +206,17 @@ namespace ma
           if (may_complete_stop())  
           {
             state_ = stopped;
-            // Signal shutdown completion
-            stop_handler_.post(stop_error_);
+            if (stop_handler_.has_target()) 
+            {
+              // Signal shutdown completion
+              stop_handler_.post(stop_error_);
+            }
           }
         }
         else if (error)
         {   
           last_accept_error_ = error;
-          if (active_session_proxies_.empty()) 
+          if (active_session_proxies_.empty() && wait_handler_.has_target())             
           {
             // Server can't work more time
             wait_handler_.post(error);
@@ -293,13 +296,19 @@ namespace ma
               if (may_complete_stop())  
               {
                 state_ = stopped;
-                // Signal shutdown completion
-                stop_handler_.post(stop_error_);
+                if (stop_handler_.has_target()) 
+                {
+                  // Signal shutdown completion
+                  stop_handler_.post(stop_error_);
+                }
               }
             }
             else if (last_accept_error_ && active_session_proxies_.empty()) 
             {
-              wait_handler_.post(last_accept_error_);
+              if (wait_handler_.has_target()) 
+              {
+                wait_handler_.post(last_accept_error_);
+              }
             }
             else
             {
@@ -331,8 +340,11 @@ namespace ma
           if (may_complete_stop())  
           {
             state_ = stopped;
-            // Signal shutdown completion
-            stop_handler_.post(stop_error_);
+            if (stop_handler_.has_target()) 
+            {
+              // Signal shutdown completion
+              stop_handler_.post(stop_error_);
+            }
           }
         }
         else
@@ -364,8 +376,11 @@ namespace ma
           if (may_complete_stop())  
           {
             state_ = stopped;
-            // Signal shutdown completion
-            stop_handler_.post(stop_error_);
+            if (stop_handler_.has_target()) 
+            {
+              // Signal shutdown completion
+              stop_handler_.post(stop_error_);
+            }
           }
         }
         else
@@ -397,13 +412,19 @@ namespace ma
             if (may_complete_stop())  
             {
               state_ = stopped;
-              // Signal shutdown completion
-              stop_handler_.post(stop_error_);
+              if (stop_handler_.has_target()) 
+              {
+                // Signal shutdown completion
+                stop_handler_.post(stop_error_);
+              }
             }
           }
           else if (last_accept_error_ && active_session_proxies_.empty()) 
           {
-            wait_handler_.post(last_accept_error_);
+            if (wait_handler_.has_target()) 
+            {
+              wait_handler_.post(last_accept_error_);
+            }
           }
           else
           {
@@ -421,8 +442,11 @@ namespace ma
           if (may_complete_stop())  
           {
             state_ = stopped;
-            // Signal shutdown completion
-            stop_handler_.post(stop_error_);
+            if (stop_handler_.has_target()) 
+            {
+              // Signal shutdown completion
+              stop_handler_.post(stop_error_);
+            }
           }
         }
         else

@@ -282,27 +282,30 @@ namespace ma
 
     void post(implementation_type& impl, arg_param_type arg) const
     {      
+      BOOST_ASSERT(impl.handler_ptr_);
       // Take the ownership
       handler_base* handler_ptr = impl.handler_ptr_;
       impl.handler_ptr_ = 0;
-      if (handler_ptr)
-      {
-        handler_ptr->invoke(arg);
-      }
+      handler_ptr->invoke(arg);
     } 
 
-    void* data(const implementation_type& impl) const
+    void* target(const implementation_type& impl) const
     {
-      if (!impl.handler_ptr_)
+      if (impl.handler_ptr_)
       {
-        return 0;
+        return impl.handler_ptr_->data();        
       }
-      return impl.handler_ptr_->data();
+      return 0;
     }
 
     bool empty(const implementation_type& impl) const
     {
       return 0 == impl.handler_ptr_;
+    }
+
+    bool has_target(const implementation_type& impl) const
+    {
+      return 0 != impl.handler_ptr_;
     }
 
   private:

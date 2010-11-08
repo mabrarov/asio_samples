@@ -163,7 +163,7 @@ namespace ma
           active_session = active_session->next;
         }
         // Do shutdown - abort outer operations
-        if (!wait_handler_.empty())
+        if (wait_handler_.has_target())
         {
           wait_handler_.post(server_error::operation_aborted);
         }            
@@ -178,7 +178,7 @@ namespace ma
 
       boost::optional<boost::system::error_code> session_manager::wait()
       {        
-        if (started != state_ || !wait_handler_.empty())
+        if (started != state_ || wait_handler_.has_target())
         {
           return server_error::invalid_state;
         }        
@@ -232,7 +232,7 @@ namespace ma
           // Handle new session creation error
           wait_error_ = error;
           // Notify wait handler
-          if (!wait_handler_.empty() && may_complete_wait()) 
+          if (wait_handler_.has_target() && may_complete_wait()) 
           {            
             wait_handler_.post(wait_error_);
           }      
@@ -255,8 +255,7 @@ namespace ma
           if (may_complete_stop())  
           {
             complete_stop();
-            // Signal shutdown completion
-            stop_handler_.post(stop_error_);
+            post_stop_handler();
           }
           recycle_session(the_session);
           return;
@@ -265,7 +264,7 @@ namespace ma
         {   
           wait_error_ = error;
           // Notify wait handler
-          if (!wait_handler_.empty() && may_complete_wait()) 
+          if (wait_handler_.has_target() && may_complete_wait()) 
           {            
             wait_handler_.post(wait_error_);
           }
@@ -377,12 +376,11 @@ namespace ma
               if (may_complete_stop())  
               {
                 complete_stop();
-                // Signal shutdown completion
-                stop_handler_.post(stop_error_);
+                post_stop_handler();
               }            
               return;
             }
-            if (!wait_handler_.empty() && may_complete_wait()) 
+            if (wait_handler_.has_target() && may_complete_wait()) 
             {
               wait_handler_.post(wait_error_);            
             }
@@ -412,8 +410,7 @@ namespace ma
           if (may_complete_stop())  
           {
             complete_stop();
-            // Signal shutdown completion
-            stop_handler_.post(stop_error_);
+            post_stop_handler();
           }
         }        
       } // session_manager::handle_session_start
@@ -450,8 +447,7 @@ namespace ma
           if (may_complete_stop())  
           {
             complete_stop();
-            // Signal shutdown completion
-            stop_handler_.post(stop_error_);
+            post_stop_handler();
           }          
         }        
       } // session_manager::handle_session_wait
@@ -486,12 +482,11 @@ namespace ma
             if (may_complete_stop())  
             {
               complete_stop();
-              // Signal shutdown completion
-              stop_handler_.post(stop_error_);
+              post_stop_handler();
             }
             return;
           }
-          if (!wait_handler_.empty() && may_complete_wait()) 
+          if (wait_handler_.has_target() && may_complete_wait()) 
           {
             wait_handler_.post(wait_error_);
           }
@@ -510,8 +505,7 @@ namespace ma
           if (may_complete_stop())  
           {
             complete_stop();
-            // Signal shutdown completion
-            stop_handler_.post(stop_error_);
+            post_stop_handler();
           }          
         }                
       } // session_manager::handle_session_stop
@@ -530,6 +524,15 @@ namespace ma
           recycled_sessions_.push_front(the_session);
         }
       } // session_manager::recycle_session
+
+      void session_manager::post_stop_handler()
+      {
+        if (stop_handler_.has_target()) 
+        {
+          // Signal shutdown completion
+          stop_handler_.post(stop_error_);
+        }
+      } // session_manager::post_stop_handler
 
     } // namespace server
   } // namespace echo

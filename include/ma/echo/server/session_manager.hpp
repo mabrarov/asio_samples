@@ -196,6 +196,7 @@ namespace ma
           const session_wrapper_ptr& the_session, const boost::system::error_code& error);
         void handle_session_stop(const session_wrapper_ptr& the_session, const boost::system::error_code& error);        
         void recycle_session(const session_wrapper_ptr& the_session);
+        void post_stop_handler();
 
         bool accept_in_progress_;
         state_type state_;

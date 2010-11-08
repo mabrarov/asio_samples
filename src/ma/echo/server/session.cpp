@@ -84,7 +84,7 @@ namespace ma
         // Start shutdown
         state_ = stop_in_progress;
         // Do shutdown - abort outer operations
-        if (!wait_handler_.empty())
+        if (wait_handler_.has_target())
         {
           wait_handler_.post(server_error::operation_aborted);
         }
@@ -104,7 +104,7 @@ namespace ma
 
       boost::optional<boost::system::error_code> session::wait()
       {                
-        if (started != state_ || !wait_handler_.empty())
+        if (started != state_ || wait_handler_.has_target())
         {
           return server_error::invalid_state;
         }
@@ -167,9 +167,8 @@ namespace ma
         {  
           if (may_complete_stop())
           {
-            complete_stop();       
-            // Signal shutdown completion
-            stop_handler_.post(stop_error_);
+            complete_stop();                   
+            post_stop_handler();
           }
           return;
         }
@@ -179,7 +178,7 @@ namespace ma
           {
             wait_error_ = error;
           }  
-          if (!wait_handler_.empty())
+          if (wait_handler_.has_target())
           {
             wait_handler_.post(wait_error_);
           }          
@@ -202,9 +201,8 @@ namespace ma
           socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_send, stop_error_);
           if (may_complete_stop())
           {
-            complete_stop();       
-            // Signal shutdown completion
-            stop_handler_.post(stop_error_);
+            complete_stop();  
+            post_stop_handler();
           }
           return;
         }
@@ -214,7 +212,7 @@ namespace ma
           {
             wait_error_ = error;
           }                    
-          if (!wait_handler_.empty())
+          if (wait_handler_.has_target())
           {
             wait_handler_.post(wait_error_);
           }
@@ -227,6 +225,15 @@ namespace ma
           read_some();
         }        
       } // session::handle_write_some
+
+      void session::post_stop_handler()
+      {
+        if (stop_handler_.has_target()) 
+        {
+          // Signal shutdown completion
+          stop_handler_.post(stop_error_);
+        }
+      } // session::post_stop_handler
         
     } // namespace server
   } // namespace echo

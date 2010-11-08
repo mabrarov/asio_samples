@@ -234,8 +234,24 @@ namespace ma
           io_service_.post(detail::bind_handler(handler, *result, frames_transferred));
           return;
         }        
-        read_handler_.put(make_wrapped_read_handler(handler, begin ,end));        
+        put_read_handler(begin, end, handler);
       } // do_read_some
+
+      template <typename Handler, typename Iterator>
+      void put_read_handler(const Iterator& begin, const Iterator& end, const Handler& handler)
+      {
+        wrapped_read_handler<Handler, Iterator> wrapped_handler(handler, begin, end);
+        read_handler_base* base_handler_ptr = static_cast<read_handler_base*>(boost::addressof(wrapped_handler));
+        read_handler_base_shift_ = reinterpret_cast<char*>(base_handler_ptr) - 
+          reinterpret_cast<char*>(boost::addressof(wrapped_handler));
+        read_handler_.put(wrapped_handler);
+      } // put_read_handler
+
+      read_handler_base* get_read_handler() const
+      {        
+         return reinterpret_cast<read_handler_base*>(
+           reinterpret_cast<char*>(read_handler_.target()) + read_handler_base_shift_);        
+      } // get_read_handler
 
       template <typename ConstBufferSequence, typename Handler>
       void do_write(const ConstBufferSequence& buffer, const Handler& handler)
@@ -275,8 +291,7 @@ namespace ma
         if (stop_in_progress == state_ && !port_read_in_progress_)
         {
           state_ = stopped;
-          // Signal shutdown completion
-          stop_handler_.post(stop_error_);
+          post_stop_handler();
         }
       } 
 
@@ -284,6 +299,7 @@ namespace ma
       void read_until_tail();
       void handle_read_head(const boost::system::error_code& error, const std::size_t bytes_transferred);
       void handle_read_tail(const boost::system::error_code& error, const std::size_t bytes_transferred);      
+      void post_stop_handler();
       
       boost::asio::io_service& io_service_;
       boost::asio::io_service::strand strand_;
@@ -293,6 +309,7 @@ namespace ma
       frame_buffer_type frame_buffer_;      
       boost::system::error_code read_error_;
       boost::system::error_code stop_error_;
+      std::ptrdiff_t read_handler_base_shift_;
       state_type state_;
       bool port_write_in_progress_;
       bool port_read_in_progress_;
