@@ -9,6 +9,8 @@
 #define MA_HANDLER_STORAGE_SERVICE_HPP
 
 #include <cstddef>
+#include <stdexcept>
+#include <boost/throw_exception.hpp>
 #include <boost/utility.hpp>
 #include <boost/thread.hpp>
 #include <boost/asio.hpp>
@@ -19,6 +21,15 @@
 
 namespace ma
 {  
+  class bad_handler_call : public std::runtime_error
+  {
+  public:
+    explicit bad_handler_call() 
+      : std::runtime_error("call to empty ma::handler_storage") 
+    {
+    }
+  }; // class bad_handler_call
+
   template <typename Arg>
   class handler_storage_service : public boost::asio::io_service::service
   {
@@ -178,6 +189,7 @@ namespace ma
 
       void push_front(implementation_type& impl)
       {
+        BOOST_ASSERT(!impl.next_ && !impl.prev_);
         impl.next_ = front_;
         impl.prev_ = 0;
         if (front_)
@@ -282,7 +294,10 @@ namespace ma
 
     void post(implementation_type& impl, arg_param_type arg) const
     {      
-      BOOST_ASSERT(impl.handler_ptr_);
+      if (!impl.handler_ptr_)
+      {
+        boost::throw_exception(bad_handler_call());
+      }
       // Take the ownership
       handler_base* handler_ptr = impl.handler_ptr_;
       impl.handler_ptr_ = 0;

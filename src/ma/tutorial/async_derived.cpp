@@ -61,7 +61,7 @@ namespace ma
       if (counter_)
       {        
         --counter_;
-        //std::cout << cycle_message_fmt_ % name_ % counter_;
+        std::cout << cycle_message_fmt_ % name_ % counter_;
 
         timer_.expires_from_now(boost::posix_time::milliseconds(1));
         timer_.async_wait(ma::make_custom_alloc_handler(timer_allocator_,
