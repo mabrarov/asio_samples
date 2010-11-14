@@ -41,6 +41,9 @@
     <ClCompile Include="..\..\src\ma\echo\client1\session_config.cpp">
       <Filter>Source Files\ma\echo\client1</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\ma\echo\client1\error.cpp">
+      <Filter>Source Files\ma\echo\client1</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\ma\console_controller.hpp">
@@ -68,6 +71,9 @@
       <Filter>Header Files\ma\echo\client1</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\ma\echo\client1\session_fwd.hpp">
+      <Filter>Header Files\ma\echo\client1</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\ma\echo\client1\error.hpp">
       <Filter>Header Files\ma\echo\client1</Filter>
     </ClInclude>
   </ItemGroup>

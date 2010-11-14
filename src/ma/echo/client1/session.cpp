@@ -5,6 +5,7 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#include <ma/echo/client1/error.hpp>
 #include <ma/echo/client1/session.hpp>
 
 namespace ma
@@ -31,103 +32,62 @@ namespace ma
       {
         boost::system::error_code ignored;
         socket_.close(ignored);
-        error_.clear();
+        wait_error_.clear();
         stop_error_.clear();
         state_ = ready_to_start;
         buffer_.reset();          
       } // session::reset             
 
-      void session::start(boost::system::error_code& error)
+      boost::system::error_code session::start()
       {        
-        if (stopped == state_ || stop_in_progress == state_)
-        {     
-          error = boost::asio::error::operation_aborted;          
-        } 
-        else if (ready_to_start != state_)
-        {          
-          error = boost::asio::error::operation_not_supported;                      
-        }
-        else
+        if (ready_to_start != state_)
         {
-          using boost::asio::ip::tcp;
-          socket_.set_option(tcp::socket::receive_buffer_size(config_.socket_recv_buffer_size_), error);
-          if (!error)
-          {
-            socket_.set_option(tcp::socket::send_buffer_size(config_.socket_recv_buffer_size_), error);
-            if (!error)
-            {
-              if (config_.no_delay_)
-              {
-                socket_.set_option(tcp::no_delay(true), error);
-              }
-              if (!error) 
-              {
-                state_ = started;          
-                read_some();
-              }
-            }
-          }           
-        }        
+          return client1_error::invalid_state;
+        }
+        //todo
+        return client1_error::operation_not_supported;
+        //state_ = started;
+        //read_some();
       } // session::start
 
-      void session::stop(boost::system::error_code& error, bool& completed)
-      {
-        completed = true;
+      boost::optional<boost::system::error_code> session::stop()
+      {        
         if (stopped == state_ || stop_in_progress == state_)
         {          
-          error = boost::asio::error::operation_aborted;                      
-        }
-        else
-        {          
-          // Start shutdown
-          state_ = stop_in_progress;
-          // Do shutdown - abort outer operations
-          if (wait_handler_.has_target())
-          {
-            wait_handler_.post(boost::asio::error::operation_aborted);
-          }
-          // Do shutdown - flush socket's write_some buffer
-          if (!socket_write_in_progress_) 
-          {
-            socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_send, stop_error_);            
-          }          
-          // Check for shutdown continuation          
-          if (may_complete_stop())
-          {
-            complete_stop();
-            error = stop_error_;
-            completed = true;
-          }
-          else 
-          {
-            completed = false;
-          }
+          return client1_error::invalid_state;                      
         }        
+        // Start shutdown
+        state_ = stop_in_progress;
+        // Do shutdown - abort outer operations
+        if (wait_handler_.has_target())
+        {
+          wait_handler_.post(client1_error::operation_aborted);
+        }
+        // Do shutdown - flush socket's write_some buffer
+        if (!socket_write_in_progress_) 
+        {
+          socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_send, stop_error_);            
+        }          
+        // Check for shutdown continuation          
+        if (may_complete_stop())
+        {
+          complete_stop();
+          return stop_error_;          
+        }
+        return boost::optional<boost::system::error_code>();
       } // session::stop
 
-      void session::wait(boost::system::error_code& error, bool& completed)
-      {
-        completed = true;
-        if (stopped == state_ || stop_in_progress == state_)
-        {          
-          error = boost::asio::error::operation_aborted;
-        } 
-        else if (started != state_)
+      boost::optional<boost::system::error_code> session::wait()
+      {                
+        if (started != state_ || wait_handler_.has_target())
         {
-          error = boost::asio::error::operation_not_supported;
+          return client1_error::invalid_state;
         }
-        else if (!socket_read_in_progress_ && !socket_write_in_progress_)
+        if (!socket_read_in_progress_ && !socket_write_in_progress_)
         {
-          error = error_;            
+          return wait_error_;
         }
-        else if (wait_handler_.has_target())
-        {
-          error = boost::asio::error::operation_not_supported;
-        }
-        else
-        {
-          completed = false;
-        } 
+        return boost::optional<boost::system::error_code>();
       } // session::wait
 
       bool session::may_complete_stop() const
@@ -177,39 +137,40 @@ namespace ma
       void session::handle_read_some(const boost::system::error_code& error, const std::size_t bytes_transferred)
       {        
         socket_read_in_progress_ = false;
+        // Check for pending session stop operation 
         if (stop_in_progress == state_)
         {  
           if (may_complete_stop())
           {
-            complete_stop();  
+            complete_stop();                   
             post_stop_handler();
           }
+          return;
         }
-        else if (error)
+        if (error)
         {
-          if (!error_)
+          if (!wait_error_)
           {
-            error_ = error;
-          }           
-          if (wait_handler_.has_target()) 
+            wait_error_ = error;
+          }  
+          if (wait_handler_.has_target())
           {
-            wait_handler_.post(error);
+            wait_handler_.post(wait_error_);
           }          
-        }
-        else 
+          return;
+        }        
+        buffer_.consume(bytes_transferred);
+        read_some();
+        if (!socket_write_in_progress_)
         {
-          buffer_.consume(bytes_transferred);
-          read_some();
-          if (!socket_write_in_progress_)
-          {
-            write_some();
-          }
+          write_some();
         }
       } // session::handle_read_some
 
       void session::handle_write_some(const boost::system::error_code& error, const std::size_t bytes_transferred)
       {
         socket_write_in_progress_ = false;
+        // Check for pending session manager stop operation 
         if (stop_in_progress == state_)
         {
           socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_send, stop_error_);
@@ -218,27 +179,26 @@ namespace ma
             complete_stop();  
             post_stop_handler();
           }
+          return;
         }
-        else if (error)
+        if (error)
         {
-          if (!error_)
+          if (!wait_error_)
           {
-            error_ = error;
-          } 
-          if (wait_handler_.has_target()) 
+            wait_error_ = error;
+          }                    
+          if (wait_handler_.has_target())
           {
-            wait_handler_.post(error);
+            wait_handler_.post(wait_error_);
           }
-        }
-        else
+          return;
+        }        
+        buffer_.commit(bytes_transferred);
+        write_some();
+        if (!socket_read_in_progress_)
         {
-          buffer_.commit(bytes_transferred);
-          write_some();
-          if (!socket_read_in_progress_)
-          {
-            read_some();
-          }
-        }
+          read_some();
+        }        
       } // session::handle_write_some
 
       void session::post_stop_handler()
