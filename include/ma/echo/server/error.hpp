@@ -44,7 +44,7 @@ namespace ma
       public:
         virtual const char* name() const
         {
-          return "ma::echo:server";
+          return "ma::echo::server";
         } // name
 
         virtual std::string message(int ev) const

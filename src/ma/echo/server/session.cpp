@@ -5,8 +5,8 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include <ma/echo/server/session.hpp>
 #include <ma/echo/server/error.hpp>
+#include <ma/echo/server/session.hpp>
 
 namespace ma
 {    
@@ -41,9 +41,9 @@ namespace ma
       boost::system::error_code session::start()
       {                
         if (ready_to_start != state_)
-        {          
-          return server_error::invalid_state;                      
-        }        
+        {
+          return server_error::invalid_state;
+        }
         boost::system::error_code error;
         using boost::asio::ip::tcp;        
         if (config_.socket_recv_buffer_size)

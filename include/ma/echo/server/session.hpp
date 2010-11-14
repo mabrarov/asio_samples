@@ -110,7 +110,7 @@ namespace ma
           }
         } // do_wait
 
-        boost::system::error_code start();        
+        boost::system::error_code start();
         boost::optional<boost::system::error_code> stop();
         boost::optional<boost::system::error_code> wait();
         bool may_complete_stop() const;
