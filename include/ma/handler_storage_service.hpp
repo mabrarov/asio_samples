@@ -8,6 +8,10 @@
 #ifndef MA_HANDLER_STORAGE_SERVICE_HPP
 #define MA_HANDLER_STORAGE_SERVICE_HPP
 
+#if defined(_MSC_VER) && (_MSC_VER >= 1020)
+#pragma once
+#endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
+
 #include <cstddef>
 #include <stdexcept>
 #include <boost/throw_exception.hpp>

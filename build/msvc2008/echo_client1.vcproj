@@ -360,6 +360,10 @@
 						Name="client1"
 						>
 						<File
+							RelativePath="..\..\src\ma\echo\client1\error.cpp"
+							>
+						</File>
+						<File
 							RelativePath="..\..\src\ma\echo\client1\session.cpp"
 							>
 						</File>
@@ -405,6 +409,10 @@
 					<Filter
 						Name="client1"
 						>
+						<File
+							RelativePath="..\..\include\ma\echo\client1\error.hpp"
+							>
+						</File>
 						<File
 							RelativePath="..\..\include\ma\echo\client1\session.hpp"
 							>

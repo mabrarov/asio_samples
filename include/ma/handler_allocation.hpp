@@ -8,10 +8,14 @@
 #ifndef MA_HANDLER_ALLOCATION_HPP
 #define MA_HANDLER_ALLOCATION_HPP
 
+#if defined(_MSC_VER) && (_MSC_VER >= 1020)
+#pragma once
+#endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
+
 #include <cstddef>
 #include <boost/utility.hpp>
 #include <boost/aligned_storage.hpp>
-#include <boost/smart_ptr.hpp>
+#include <boost/scoped_array.hpp>
 #include <ma/handler_alloc_helpers.hpp>
 #include <ma/handler_invoke_helpers.hpp>
 

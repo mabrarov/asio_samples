@@ -8,10 +8,15 @@
 #ifndef MA_TUTORIAL_ASYNC_BASE_HPP
 #define MA_TUTORIAL_ASYNC_BASE_HPP
 
+#if defined(_MSC_VER) && (_MSC_VER >= 1020)
+#pragma once
+#endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
+
 #include <boost/utility.hpp>
 #include <boost/optional.hpp>
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
+#include <boost/enable_shared_from_this.hpp>
 #include <ma/handler_allocation.hpp>
 #include <ma/handler_storage.hpp>
 #include <ma/bind_asio_handler.hpp>

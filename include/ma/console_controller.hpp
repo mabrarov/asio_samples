@@ -8,6 +8,10 @@
 #ifndef CONSOLE_CONTROLLER_HPP
 #define CONSOLE_CONTROLLER_HPP
 
+#if defined(_MSC_VER) && (_MSC_VER >= 1020)
+#pragma once
+#endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
+
 #include <windows.h>
 
 #include <boost/utility.hpp>

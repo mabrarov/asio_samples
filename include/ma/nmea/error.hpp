@@ -8,6 +8,10 @@
 #ifndef MA_NMEA_ERROR_HPP
 #define MA_NMEA_ERROR_HPP
 
+#if defined(_MSC_VER) && (_MSC_VER >= 1020)
+#pragma once
+#endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
+
 #include <boost/system/error_code.hpp>
 #include <boost/type_traits.hpp>
 

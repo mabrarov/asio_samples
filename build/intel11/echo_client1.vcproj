@@ -357,6 +357,26 @@
 					RelativePath="..\..\src\ma\console_controller.cpp"
 					>
 				</File>
+				<Filter
+					Name="echo"
+					>
+					<Filter
+						Name="client1"
+						>
+						<File
+							RelativePath="..\..\src\ma\echo\client1\error.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\..\src\ma\echo\client1\session.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\..\src\ma\echo\client1\session_config.cpp"
+							>
+						</File>
+					</Filter>
+				</Filter>
 			</Filter>
 		</Filter>
 		<Filter
@@ -402,7 +422,23 @@
 						Name="client1"
 						>
 						<File
+							RelativePath="..\..\include\ma\echo\client1\error.hpp"
+							>
+						</File>
+						<File
 							RelativePath=".\..\..\include\ma\echo\client1\session.hpp"
+							>
+						</File>
+						<File
+							RelativePath="..\..\include\ma\echo\client1\session_config.hpp"
+							>
+						</File>
+						<File
+							RelativePath="..\..\include\ma\echo\client1\session_config_fwd.hpp"
+							>
+						</File>
+						<File
+							RelativePath="..\..\include\ma\echo\client1\session_fwd.hpp"
 							>
 						</File>
 					</Filter>

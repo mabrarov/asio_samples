@@ -8,6 +8,10 @@
 #ifndef MA_ECHO_SERVER_SESSION_MANAGER_CONFIG_HPP
 #define MA_ECHO_SERVER_SESSION_MANAGER_CONFIG_HPP
 
+#if defined(_MSC_VER) && (_MSC_VER >= 1020)
+#pragma once
+#endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
+
 #include <cstddef>
 #include <boost/asio.hpp>
 #include <ma/echo/server/session_config.hpp>

@@ -8,6 +8,10 @@
 #ifndef MA_HANDLER_INVOKE_HELPERS_HPP
 #define MA_HANDLER_INVOKE_HELPERS_HPP
 
+#if defined(_MSC_VER) && (_MSC_VER >= 1020)
+#pragma once
+#endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
+
 #include <boost/utility.hpp>
 #include <boost/asio.hpp>
 

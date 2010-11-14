@@ -8,7 +8,11 @@
 #ifndef MA_NMEA_CYCLIC_READ_SESSION_FWD_HPP
 #define MA_NMEA_CYCLIC_READ_SESSION_FWD_HPP
 
-#include <boost/smart_ptr.hpp>
+#if defined(_MSC_VER) && (_MSC_VER >= 1020)
+#pragma once
+#endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
+
+#include <boost/shared_ptr.hpp>
 
 namespace ma
 {

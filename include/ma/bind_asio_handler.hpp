@@ -8,6 +8,10 @@
 #ifndef MA_BIND_ASIO_HANDLER_HPP
 #define MA_BIND_ASIO_HANDLER_HPP
 
+#if defined(_MSC_VER) && (_MSC_VER >= 1020)
+#pragma once
+#endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
+
 #include <ma/handler_alloc_helpers.hpp>
 #include <ma/handler_invoke_helpers.hpp>
 

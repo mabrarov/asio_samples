@@ -8,6 +8,10 @@
 #ifndef MA_CYCLIC_BUFFER_HPP
 #define MA_CYCLIC_BUFFER_HPP
 
+#if defined(_MSC_VER) && (_MSC_VER >= 1020)
+#pragma once
+#endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
+
 #include <cstddef>
 #include <stdexcept>
 #include <boost/utility.hpp>

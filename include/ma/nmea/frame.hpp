@@ -8,6 +8,10 @@
 #ifndef MA_NMEA_FRAME_HPP
 #define MA_NMEA_FRAME_HPP
 
+#if defined(_MSC_VER) && (_MSC_VER >= 1020)
+#pragma once
+#endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
+
 #include <string>
 #include <boost/smart_ptr.hpp>
 

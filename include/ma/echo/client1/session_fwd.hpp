@@ -8,7 +8,11 @@
 #ifndef MA_ECHO_CLIENT1_SESSION_FWD_H
 #define MA_ECHO_CLIENT1_SESSION_FWD_H
 
-#include <boost/smart_ptr.hpp>
+#if defined(_MSC_VER) && (_MSC_VER >= 1020)
+#pragma once
+#endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
+
+#include <boost/shared_ptr.hpp>
 
 namespace ma
 {    
