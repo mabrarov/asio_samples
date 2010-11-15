@@ -55,6 +55,11 @@ namespace ma
    * @li boost::function is more flexible and general,
    * @li handler_storage supports Boost.Asio custom memory allocation,
    * @li handler_storage is automatically cleaned up during io_service destruction.
+   *
+   * @par Thread Safety
+   * @e Distinct @e objects: Safe.@n
+   * @e Shared @e objects: Unsafe.
+   *   
    */
   template <typename Arg>
   class handler_storage : private boost::noncopyable
@@ -113,10 +118,10 @@ namespace ma
     }    
     
   private:
-    // The service associated with the I/O object.
+    // The service associated with the storage.
     service_type& service_;
 
-    // The underlying implementation of the I/O object.
+    // The underlying implementation of the storage.
     implementation_type implementation_;
   }; // class handler_storage  
 
