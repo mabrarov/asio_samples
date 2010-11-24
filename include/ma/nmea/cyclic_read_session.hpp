@@ -107,7 +107,8 @@ namespace ma
       typedef boost::circular_buffer<frame_ptr> frame_buffer_type;
 
       template <typename Iterator>
-      static std::size_t copy_buffer(const frame_buffer_type& buffer, Iterator begin, Iterator end, boost::system::error_code& error)
+      static std::size_t copy_buffer(const frame_buffer_type& buffer, 
+        Iterator begin, Iterator end, boost::system::error_code& error)
       {        
         std::size_t copy_size = std::min<std::size_t>(std::distance(begin, end), buffer.size());
         typedef frame_buffer_type::const_iterator buffer_iterator;
