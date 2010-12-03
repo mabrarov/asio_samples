@@ -50,28 +50,30 @@ namespace ma
         {
           socket_.set_option(tcp::socket::receive_buffer_size(*config_.socket_recv_buffer_size), error);
         }
-        if (error)
+        if (!error)
         {
-          return error;
-        }
-        if (config_.socket_recv_buffer_size)
-        {
-          socket_.set_option(tcp::socket::send_buffer_size(*config_.socket_recv_buffer_size), error);
-        }
-        if (error)
-        {
-          return error;
-        }
-        if (config_.no_delay)
-        {
-          socket_.set_option(tcp::no_delay(*config_.no_delay), error);
+          if (config_.socket_recv_buffer_size)
+          {
+            socket_.set_option(tcp::socket::send_buffer_size(*config_.socket_recv_buffer_size), error);
+          }
+          if (!error)
+          {          
+            if (config_.no_delay)
+            {
+              socket_.set_option(tcp::no_delay(*config_.no_delay), error);
+            }
+          }
         }
         if (error)
         {
-          return error;
-        }              
-        state_ = started;          
-        read_some();   
+          boost::system::error_code ignored;
+          socket_.close(ignored);          
+        }
+        else 
+        {        
+          state_ = started;          
+          read_some();   
+        }
         return error;
       } // session::start
 
