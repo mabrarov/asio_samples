@@ -30,7 +30,7 @@ HEADERS  += ../../../include/ma/handler_storage_service.hpp \
             ../../../include/ma/echo/server/session.hpp \
             ../../../include/ma/echo/server/session_manager.hpp		
 
-LIBS        += -L../../../../boost_1_44_0/lib/x86
-INCLUDEPATH += ../../../../boost_1_44_0 \
+LIBS        += -L../../../../boost_1_45_0/lib/x86
+INCLUDEPATH += ../../../../boost_1_45_0 \
                ../../../include
 DEFINES     += WIN32_LEAN_AND_MEAN BOOST_HAS_THREADS _UNICODE UNICODE
