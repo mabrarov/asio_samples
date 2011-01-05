@@ -38,8 +38,42 @@ namespace ma
         , public boost::enable_shared_from_this<session_manager>
       {
       private:
-        typedef session_manager this_type;
-        struct  session_wrapper;
+        typedef session_manager this_type;        
+
+      public: 
+        explicit session_manager(boost::asio::io_service& io_service, 
+          boost::asio::io_service& session_io_service, 
+          const session_manager_config& config);
+
+        ~session_manager()
+        {        
+        } // ~session_manager
+
+        void reset(bool free_recycled_sessions = true);
+
+        template <typename Handler>
+        void async_start(Handler handler)
+        {
+          strand_.post(make_context_alloc_handler2(handler, 
+            boost::bind(&this_type::do_start<Handler>, shared_from_this(), _1)));  
+        } // async_start
+
+        template <typename Handler>
+        void async_stop(Handler handler)
+        {
+          strand_.post(make_context_alloc_handler2(handler, 
+            boost::bind(&this_type::do_stop<Handler>, shared_from_this(), _1))); 
+        } // async_stop
+
+        template <typename Handler>
+        void async_wait(Handler handler)
+        {
+          strand_.post(make_context_alloc_handler2(handler, 
+            boost::bind(&this_type::do_wait<Handler>, shared_from_this(), _1)));  
+        } // async_wait
+
+      private:
+		struct  session_wrapper;
         typedef boost::shared_ptr<session_wrapper> session_wrapper_ptr;
         typedef boost::weak_ptr<session_wrapper>   session_wrapper_weak_ptr;      
         
@@ -101,39 +135,6 @@ namespace ma
           session_wrapper_ptr front_;
         }; // session_wrapper_list
 
-      public: 
-        explicit session_manager(boost::asio::io_service& io_service, 
-          boost::asio::io_service& session_io_service, 
-          const session_manager_config& config);
-
-        ~session_manager()
-        {        
-        } // ~session_manager
-
-        void reset(bool free_recycled_sessions = true);
-
-        template <typename Handler>
-        void async_start(Handler handler)
-        {
-          strand_.post(make_context_alloc_handler2(handler, 
-            boost::bind(&this_type::do_start<Handler>, shared_from_this(), _1)));  
-        } // async_start
-
-        template <typename Handler>
-        void async_stop(Handler handler)
-        {
-          strand_.post(make_context_alloc_handler2(handler, 
-            boost::bind(&this_type::do_stop<Handler>, shared_from_this(), _1))); 
-        } // async_stop
-
-        template <typename Handler>
-        void async_wait(Handler handler)
-        {
-          strand_.post(make_context_alloc_handler2(handler, 
-            boost::bind(&this_type::do_wait<Handler>, shared_from_this(), _1)));  
-        } // async_wait
-
-      private:
         enum state_type
         {
           ready_to_start,
