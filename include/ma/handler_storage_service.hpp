@@ -152,7 +152,7 @@ namespace ma
 
       static void* do_data(handler_base* base)
       {          
-        this_type* h(static_cast<this_type*>(base));
+        this_type* h = static_cast<this_type*>(base);
         return boost::addressof(h->handler_);
       }
 

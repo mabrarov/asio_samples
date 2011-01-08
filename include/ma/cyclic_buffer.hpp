@@ -50,12 +50,12 @@ namespace ma
 
       const_iterator begin() const
       {
-        return &buffers_[0];
+        return boost::addressof(buffers_[0]);
       }
 
       const_iterator end() const
       {
-        return &buffers_[0] + filled_buffers_;
+        return boost::addressof(buffers_[0]) + filled_buffers_;
       }
 
     private:
