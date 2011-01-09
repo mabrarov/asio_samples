@@ -92,7 +92,7 @@ namespace ma
           std::size_t pending_operations;
           session_wrapper_weak_ptr prev;
           session_wrapper_ptr next;
-          session_ptr wrapped_session;        
+          session_ptr the_session;        
           boost::asio::ip::tcp::endpoint remote_endpoint;
           in_place_handler_allocator<128> start_wait_allocator;
           in_place_handler_allocator<128> stop_allocator;
@@ -181,27 +181,27 @@ namespace ma
         boost::optional<boost::system::error_code> stop();
         boost::optional<boost::system::error_code> wait();
         session_wrapper_ptr create_session(boost::system::error_code& error);
-        void accept_session(const session_wrapper_ptr& the_session);
+        void accept_session(const session_wrapper_ptr& wrapped_session);
         void accept_new_session();
-        void handle_accept(const session_wrapper_ptr& the_session, const boost::system::error_code& error);
+        void handle_accept(const session_wrapper_ptr& wrapped_session, const boost::system::error_code& error);
         bool may_complete_stop() const;
         bool may_complete_wait() const;
         bool may_continue_accept() const;
         void complete_stop();
         void complete_wait();
-        void start_session(const session_wrapper_ptr& the_session);
-        void stop_session(const session_wrapper_ptr& the_session);
-        void wait_session(const session_wrapper_ptr& the_session);
+        void start_session(const session_wrapper_ptr& wrapped_session);
+        void stop_session(const session_wrapper_ptr& wrapped_session);
+        void wait_session(const session_wrapper_ptr& wrapped_session);
         static void dispatch_session_start(const session_manager_weak_ptr& this_weak_ptr,
-          const session_wrapper_ptr& the_session, const boost::system::error_code& error);
-        void handle_session_start(const session_wrapper_ptr& the_session, const boost::system::error_code& error);
+          const session_wrapper_ptr& wrapped_session, const boost::system::error_code& error);
+        void handle_session_start(const session_wrapper_ptr& wrapped_session, const boost::system::error_code& error);
         static void dispatch_session_wait(const session_manager_weak_ptr& this_weak_ptr,
-          const session_wrapper_ptr& the_session, const boost::system::error_code& error);
-        void handle_session_wait(const session_wrapper_ptr& the_session, const boost::system::error_code& error);        
+          const session_wrapper_ptr& wrapped_session, const boost::system::error_code& error);
+        void handle_session_wait(const session_wrapper_ptr& wrapped_session, const boost::system::error_code& error);        
         static void dispatch_session_stop(const session_manager_weak_ptr& this_weak_ptr,
-          const session_wrapper_ptr& the_session, const boost::system::error_code& error);
-        void handle_session_stop(const session_wrapper_ptr& the_session, const boost::system::error_code& error);        
-        void recycle_session(const session_wrapper_ptr& the_session);
+          const session_wrapper_ptr& wrapped_session, const boost::system::error_code& error);
+        void handle_session_stop(const session_wrapper_ptr& wrapped_session, const boost::system::error_code& error);        
+        void recycle_session(const session_wrapper_ptr& wrapped_session);
         void post_stop_handler();
 
         bool accept_in_progress_;

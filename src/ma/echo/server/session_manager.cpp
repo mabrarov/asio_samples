@@ -24,7 +24,7 @@ namespace ma
         const session_config& holded_session_config)
         : state(ready_to_start)
         , pending_operations(0)
-        , wrapped_session(boost::make_shared<session>(boost::ref(io_service), holded_session_config))
+        , the_session(boost::make_shared<session>(boost::ref(io_service), holded_session_config))
       {
       } // session_manager::session_wrapper::session_wrapper
       
@@ -118,10 +118,10 @@ namespace ma
             acceptor_.listen(config_.listen_backlog, error);          
             if (!error)
             {
-              session_wrapper_ptr the_session = create_session(error);              
+              session_wrapper_ptr wrapped_session = create_session(error);              
               if (!error) 
               {
-                accept_session(the_session); 
+                accept_session(wrapped_session); 
               }            
             }
           }
@@ -193,17 +193,17 @@ namespace ma
       {        
         if (!recycled_sessions_.empty())
         {          
-          session_wrapper_ptr the_session = recycled_sessions_.front();
-          recycled_sessions_.erase(the_session);
+          session_wrapper_ptr wrapped_session = recycled_sessions_.front();
+          recycled_sessions_.erase(wrapped_session);
           error = boost::system::error_code();
-          return the_session;
+          return wrapped_session;
         }        
         try 
         {   
-          session_wrapper_ptr the_session = boost::make_shared<session_wrapper>(
+          session_wrapper_ptr wrapped_session = boost::make_shared<session_wrapper>(
             boost::ref(session_io_service_), config_.managed_session_config);
           error = boost::system::error_code();
-          return the_session;
+          return wrapped_session;
         }
         catch (const std::bad_alloc&) 
         {
@@ -212,11 +212,11 @@ namespace ma
         }        
       } // session_manager::create_session
 
-      void session_manager::accept_session(const session_wrapper_ptr& the_session)
+      void session_manager::accept_session(const session_wrapper_ptr& wrapped_session)
       {
-        acceptor_.async_accept(the_session->wrapped_session->socket(), the_session->remote_endpoint, 
+        acceptor_.async_accept(wrapped_session->the_session->socket(), wrapped_session->remote_endpoint, 
           strand_.wrap(make_custom_alloc_handler(accept_allocator_,
-          boost::bind(&this_type::handle_accept, shared_from_this(), the_session, boost::asio::placeholders::error))));
+			boost::bind(&this_type::handle_accept, shared_from_this(), wrapped_session, boost::asio::placeholders::error))));
         // Register pending operation
         ++pending_operations_;
         accept_in_progress_ = true;
@@ -226,7 +226,7 @@ namespace ma
       {
         // Get new, ready to start session
         boost::system::error_code error;
-        session_wrapper_ptr the_session = create_session(error);
+        session_wrapper_ptr wrapped_session = create_session(error);
         if (error)
         {
           // Handle new session creation error
@@ -240,10 +240,10 @@ namespace ma
           return;
         }        
         // Start session acceptation
-        accept_session(the_session);
+        accept_session(wrapped_session);
       } // session_manager::accept_new_session
 
-      void session_manager::handle_accept(const session_wrapper_ptr& the_session, 
+      void session_manager::handle_accept(const session_wrapper_ptr& wrapped_session, 
         const boost::system::error_code& error)
       {
         // Unregister pending operation
@@ -257,7 +257,7 @@ namespace ma
             complete_stop();
             post_stop_handler();
           }
-          recycle_session(the_session);
+          recycle_session(wrapped_session);
           return;
         }
         if (error)
@@ -268,7 +268,7 @@ namespace ma
           {            
             wait_handler_.post(wait_error_);
           }
-          recycle_session(the_session);
+          recycle_session(wrapped_session);
           if (may_continue_accept())
           {
             accept_new_session();
@@ -278,9 +278,9 @@ namespace ma
         if (active_sessions_.size() < config_.max_session_num)
         { 
           // Start accepted session 
-          start_session(the_session);          
+          start_session(wrapped_session);          
           // Save session as active
-          active_sessions_.push_front(the_session);
+          active_sessions_.push_front(wrapped_session);
           // Continue session acceptation if can
           if (may_continue_accept())
           {
@@ -288,7 +288,7 @@ namespace ma
           }
           return;
         }
-        recycle_session(the_session);
+        recycle_session(wrapped_session);
       } // handle_accept        
 
       bool session_manager::may_complete_stop() const
@@ -312,64 +312,64 @@ namespace ma
           && active_sessions_.size() < config_.max_session_num;
       } // may_continue_accept
 
-      void session_manager::start_session(const session_wrapper_ptr& accepted_session)
+      void session_manager::start_session(const session_wrapper_ptr& wrapped_session)
       { 
         // Asynchronously start wrapped session
-        accepted_session->wrapped_session->async_start(make_custom_alloc_handler(accepted_session->start_wait_allocator, 
-          boost::bind(&this_type::dispatch_session_start, session_manager_weak_ptr(shared_from_this()), accepted_session, _1)));  
-        accepted_session->state = session_wrapper::start_in_progress;
+        wrapped_session->the_session->async_start(make_custom_alloc_handler(wrapped_session->start_wait_allocator, 
+          boost::bind(&this_type::dispatch_session_start, session_manager_weak_ptr(shared_from_this()), wrapped_session, _1)));  
+        wrapped_session->state = session_wrapper::start_in_progress;
         // Register pending operation
         ++pending_operations_;
-        ++accepted_session->pending_operations;        
+        ++wrapped_session->pending_operations;        
       } // session_manager::start_session
 
-      void session_manager::stop_session(const session_wrapper_ptr& the_session)
+      void session_manager::stop_session(const session_wrapper_ptr& wrapped_session)
       {
         // Asynchronously stop wrapped session
-        the_session->wrapped_session->async_stop(make_custom_alloc_handler(the_session->stop_allocator,
-          boost::bind(&this_type::dispatch_session_stop, session_manager_weak_ptr(shared_from_this()), the_session, _1)));
-        the_session->state = session_wrapper::stop_in_progress;
+        wrapped_session->the_session->async_stop(make_custom_alloc_handler(wrapped_session->stop_allocator,
+          boost::bind(&this_type::dispatch_session_stop, session_manager_weak_ptr(shared_from_this()), wrapped_session, _1)));
+        wrapped_session->state = session_wrapper::stop_in_progress;
         // Register pending operation
         ++pending_operations_;
-        ++the_session->pending_operations;        
+        ++wrapped_session->pending_operations;        
       } // stop_session
 
-      void session_manager::wait_session(const session_wrapper_ptr& the_session)
+      void session_manager::wait_session(const session_wrapper_ptr& wrapped_session)
       {
         // Asynchronously wait on wrapped session
-        the_session->wrapped_session->async_wait(make_custom_alloc_handler(the_session->start_wait_allocator,
-          boost::bind(&this_type::dispatch_session_wait, session_manager_weak_ptr(shared_from_this()), the_session, _1)));
+        wrapped_session->the_session->async_wait(make_custom_alloc_handler(wrapped_session->start_wait_allocator,
+          boost::bind(&this_type::dispatch_session_wait, session_manager_weak_ptr(shared_from_this()), wrapped_session, _1)));
         // Register pending operation
         ++pending_operations_;
-        ++the_session->pending_operations;
+        ++wrapped_session->pending_operations;
       } // session_manager::wait_session
 
       void session_manager::dispatch_session_start(const session_manager_weak_ptr& this_weak_ptr,
-        const session_wrapper_ptr& the_session, const boost::system::error_code& error)
+        const session_wrapper_ptr& wrapped_session, const boost::system::error_code& error)
       {
         // Try to lock the manager
         if (session_manager_ptr this_ptr = this_weak_ptr.lock())
         {
           // Forward invocation
-          this_ptr->strand_.dispatch(make_custom_alloc_handler(the_session->start_wait_allocator,
-            boost::bind(&this_type::handle_session_start, this_ptr, the_session, error)));
+          this_ptr->strand_.dispatch(make_custom_alloc_handler(wrapped_session->start_wait_allocator,
+            boost::bind(&this_type::handle_session_start, this_ptr, wrapped_session, error)));
         }
       } // session_manager::dispatch_session_start
 
-      void session_manager::handle_session_start(const session_wrapper_ptr& the_session, 
+      void session_manager::handle_session_start(const session_wrapper_ptr& wrapped_session, 
         const boost::system::error_code& error)
       {
         // Unregister pending operation
         --pending_operations_;
-        --the_session->pending_operations;
+        --wrapped_session->pending_operations;
         // Check if handler is not called too late
-        if (session_wrapper::start_in_progress == the_session->state)
+        if (session_wrapper::start_in_progress == wrapped_session->state)
         {
           if (error) 
           {
-            the_session->state = session_wrapper::stopped;
-            active_sessions_.erase(the_session);
-            recycle_session(the_session);
+            wrapped_session->state = session_wrapper::stopped;
+            active_sessions_.erase(wrapped_session);
+            recycle_session(wrapped_session);
             // Check for pending session manager stop operation 
             if (stop_in_progress == state_)
             {
@@ -391,19 +391,19 @@ namespace ma
             }                            
             return;
           }
-          the_session->state = session_wrapper::started;
+          wrapped_session->state = session_wrapper::started;
           // Check for pending session manager stop operation 
           if (stop_in_progress == state_)  
           {                            
-            stop_session(the_session);
+            stop_session(wrapped_session);
             return;
           }
           // Wait until session needs to stop
-          wait_session(the_session);          
+          wait_session(wrapped_session);          
           return;
         }
         // Handler is called too late - complete handler's waiters
-        recycle_session(the_session);
+        recycle_session(wrapped_session);
         // Check for pending session manager stop operation 
         if (stop_in_progress == state_) 
         {
@@ -416,31 +416,31 @@ namespace ma
       } // session_manager::handle_session_start
 
       void session_manager::dispatch_session_wait(const session_manager_weak_ptr& this_weak_ptr,
-        const session_wrapper_ptr& the_session, const boost::system::error_code& error)
+        const session_wrapper_ptr& wrapped_session, const boost::system::error_code& error)
       {
         // Try to lock the manager
         if (session_manager_ptr this_ptr = this_weak_ptr.lock())
         {
           // Forward invocation
-          this_ptr->strand_.dispatch(make_custom_alloc_handler(the_session->start_wait_allocator,
-            boost::bind(&this_type::handle_session_wait, this_ptr, the_session, error)));
+          this_ptr->strand_.dispatch(make_custom_alloc_handler(wrapped_session->start_wait_allocator,
+            boost::bind(&this_type::handle_session_wait, this_ptr, wrapped_session, error)));
         }
       } // session_manager::dispatch_session_wait
 
-      void session_manager::handle_session_wait(const session_wrapper_ptr& the_session, 
+      void session_manager::handle_session_wait(const session_wrapper_ptr& wrapped_session, 
         const boost::system::error_code& /*error*/)
       {
         // Unregister pending operation
         --pending_operations_;
-        --the_session->pending_operations;
+        --wrapped_session->pending_operations;
         // Check if handler is not called too late
-        if (session_wrapper::started == the_session->state)
+        if (session_wrapper::started == wrapped_session->state)
         {
-          stop_session(the_session);
+          stop_session(wrapped_session);
           return;
         }
         // Handler is called too late - complete handler's waiters
-        recycle_session(the_session);
+        recycle_session(wrapped_session);
         // Check for pending session manager stop operation
         if (stop_in_progress == state_)
         {
@@ -453,29 +453,29 @@ namespace ma
       } // session_manager::handle_session_wait
 
       void session_manager::dispatch_session_stop(const session_manager_weak_ptr& this_weak_ptr,
-        const session_wrapper_ptr& the_session, const boost::system::error_code& error)
+        const session_wrapper_ptr& wrapped_session, const boost::system::error_code& error)
       {     
         // Try to lock the manager
         if (session_manager_ptr this_ptr = this_weak_ptr.lock())
         {
           // Forward invocation
-          this_ptr->strand_.dispatch(make_custom_alloc_handler(the_session->stop_allocator,
-            boost::bind(&this_type::handle_session_stop, this_ptr, the_session, error)));
+          this_ptr->strand_.dispatch(make_custom_alloc_handler(wrapped_session->stop_allocator,
+            boost::bind(&this_type::handle_session_stop, this_ptr, wrapped_session, error)));
         }
       } // session_manager::dispatch_session_stop
 
-      void session_manager::handle_session_stop(const session_wrapper_ptr& the_session,
+      void session_manager::handle_session_stop(const session_wrapper_ptr& wrapped_session,
         const boost::system::error_code& /*error*/)
       {
         // Unregister pending operation
         --pending_operations_;
-        --the_session->pending_operations;
+        --wrapped_session->pending_operations;
         // Check if handler is not called too late
-        if (session_wrapper::stop_in_progress == the_session->state)        
+        if (session_wrapper::stop_in_progress == wrapped_session->state)        
         {
-          the_session->state = session_wrapper::stopped;
-          active_sessions_.erase(the_session);
-          recycle_session(the_session);
+          wrapped_session->state = session_wrapper::stopped;
+          active_sessions_.erase(wrapped_session);
+          recycle_session(wrapped_session);
           // Check for pending session manager stop operation
           if (stop_in_progress == state_)
           {
@@ -498,7 +498,7 @@ namespace ma
           return;
         }
         // Handler is called too late - complete handler's waiters
-        recycle_session(the_session);
+        recycle_session(wrapped_session);
         // Check for pending session manager stop operation
         if (stop_in_progress == state_)
         {
@@ -510,18 +510,18 @@ namespace ma
         }                
       } // session_manager::handle_session_stop
 
-      void session_manager::recycle_session(const session_wrapper_ptr& the_session)
+      void session_manager::recycle_session(const session_wrapper_ptr& wrapped_session)
       {
         // Check session's pending operation number and recycle bin size
-        if (0 == the_session->pending_operations
+        if (0 == wrapped_session->pending_operations
           && recycled_sessions_.size() < config_.recycled_session_num)
         {
           // Reset session state
-          the_session->wrapped_session->reset();
+          wrapped_session->the_session->reset();
           // Reset wrapper
-          the_session->state = session_wrapper::ready_to_start;
+          wrapped_session->state = session_wrapper::ready_to_start;
           // Add to recycle bin
-          recycled_sessions_.push_front(the_session);
+          recycled_sessions_.push_front(wrapped_session);
         }
       } // session_manager::recycle_session
 
