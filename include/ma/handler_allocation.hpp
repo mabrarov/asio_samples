@@ -47,7 +47,7 @@ namespace ma
     void deallocate(void* pointer)
     {
       if (pointer == storage_.address())
-      {
+      {        
         in_use_ = false;
         return;
       }      
@@ -137,12 +137,41 @@ namespace ma
   public:
     typedef void result_type;
 
+#if defined(_DEBUG)
+    custom_alloc_handler(Allocator& allocator, Handler handler)
+      : allocator_(boost::addressof(allocator))
+      , handler_(handler)
+    {
+    }
+
+    ~custom_alloc_handler()
+    {
+      // For the check of usage of asio custom memory allocation.
+      allocator_ = 0;
+    }
+#else
     custom_alloc_handler(Allocator& allocator, Handler handler)
       : allocator_(allocator)
       , handler_(handler)
     {
     }
 
+    ~custom_alloc_handler()
+    {      
+    }
+#endif // defined(_DEBUG)    
+
+#if defined(_DEBUG)
+    friend void* asio_handler_allocate(std::size_t size, this_type* context)
+    {
+      return context->allocator_->allocate(size);
+    }
+
+    friend void asio_handler_deallocate(void* pointer, std::size_t /*size*/, this_type* context)
+    {
+      context->allocator_->deallocate(pointer);
+    }
+#else
     friend void* asio_handler_allocate(std::size_t size, this_type* context)
     {
       return context->allocator_.allocate(size);
@@ -152,6 +181,7 @@ namespace ma
     {
       context->allocator_.deallocate(pointer);
     }
+#endif // ifdef _DEBUG
 
     template <typename Function>
     friend void asio_handler_invoke(Function function, this_type* context)
@@ -230,7 +260,11 @@ namespace ma
     }
 
   private:
+#if defined(_DEBUG)
+    Allocator* allocator_;
+#else
     Allocator& allocator_;
+#endif // defined(_DEBUG)
     Handler handler_;
   }; //class custom_alloc_handler 
 
@@ -247,6 +281,10 @@ namespace ma
     context_alloc_handler(Context context, Handler handler)
       : context_(context)
       , handler_(handler)
+    {
+    }
+
+    ~context_alloc_handler()
     {
     }
 
@@ -357,6 +395,10 @@ namespace ma
     {
     }
 
+    ~context_alloc_handler2()
+    {
+    }
+
     friend void* asio_handler_allocate(std::size_t size, this_type* context)
     {
       return ma_asio_handler_alloc_helpers::allocate(size, context->context_);
@@ -464,6 +506,10 @@ namespace ma
     {
     }
 
+    ~context_wrapped_handler()
+    {
+    }
+
     friend void* asio_handler_allocate(std::size_t size, this_type* context)
     {
       return ma_asio_handler_alloc_helpers::allocate(size, context->context_);
@@ -568,6 +614,10 @@ namespace ma
     context_wrapped_handler2(Context context, Handler handler)
       : context_(context)
       , handler_(handler)
+    {
+    }
+
+    ~context_wrapped_handler2()
     {
     }
 

@@ -113,40 +113,41 @@ namespace ma
       }
 
       static void do_invoke(handler_base* base, arg_param_type arg)
-      {
-        // Take ownership of the handler object.
+      {        
         this_type* h = static_cast<this_type*>(base);
+        // Make a local copy of handler stored at wrapper object
+        // This local copy will be used for wrapper's memory deallocation later
+        Handler handler(h->handler_);
+        // Take ownership of the wrapper object
+        // The deallocation of wrapper object will be done throw the local copy of handler
         typedef detail::handler_alloc_traits<Handler, this_type> alloc_traits;
-        detail::handler_ptr<alloc_traits> ptr(h->handler_, h);          
-
-        // Make a copy of the handler so that the memory can be deallocated before
-        // the upcall is made.
+        detail::handler_ptr<alloc_traits> ptr(handler, h);          
+        // Make copies of other data placed at wrapper object      
+        // These copies will be used after the wrapper object destruction 
+        // and deallocation of its memory
         boost::asio::io_service& io_service(h->io_service_);
         boost::asio::io_service::work work(h->work_);
-        (void) work;
-        Handler handler(h->handler_);          
-
-        // Free the memory associated with the handler.
+        // A dummy vs optimization.
+        (void) work;        
+        // Destroy wrapper object and deallocate its memory 
+        // throw the local copy of handler
         ptr.reset();          
-
-        // Make the upcall.
+        // Post the copy of handler's local copy to io_service
         io_service.post(detail::bind_handler(handler, arg));
       }
 
       static void do_destroy(handler_base* base)
       {          
         this_type* h = static_cast<this_type*>(base);
-        typedef detail::handler_alloc_traits<Handler, this_type> alloc_traits;
-        detail::handler_ptr<alloc_traits> ptr(h->handler_, h);
-
-        // A sub-object of the handler may be the true owner of the memory
-        // associated with the handler. Consequently, a local copy of the handler
-        // is required to ensure that any owning sub-object remains valid until
-        // after we have deallocated the memory here.
+        // Make a local copy of handler stored at wrapper object
+        // This local copy will be used for wrapper's memory deallocation later
         Handler handler(h->handler_);
-        (void) handler;
-
-        // Free the memory associated with the handler.
+        // Take ownership of the wrapper object
+        // The deallocation of wrapper object will be done throw the local copy of handler
+        typedef detail::handler_alloc_traits<Handler, this_type> alloc_traits;
+        detail::handler_ptr<alloc_traits> ptr(handler, h);
+        // A dummy vs optimization because
+        // actually reset() is called by ~handler_ptr()
         ptr.reset();
       }
 

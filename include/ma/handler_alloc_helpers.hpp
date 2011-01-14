@@ -59,10 +59,17 @@ namespace ma
       typedef typename Alloc_Traits::pointer_type pointer_type;
       BOOST_STATIC_CONSTANT(std::size_t, value_size = Alloc_Traits::value_size);
 
-      // Constructor allocates the memory.
+      // Constructor allocates the memory. Can throw.
       raw_handler_ptr(handler_type& handler)
         : handler_(handler)
         , pointer_(static_cast<pointer_type>(ma_asio_handler_alloc_helpers::allocate(value_size, handler_)))
+      {
+      }
+
+      // Steal constructor. Doesn't throw.
+      raw_handler_ptr(handler_type& handler, pointer_type pointer)
+        : handler_(handler)
+        , pointer_(pointer)
       {
       }
 
@@ -206,9 +213,11 @@ namespace ma
       {
         if (pointer_)
         {
-          pointer_->value_type::~value_type();
-          ma_asio_handler_alloc_helpers::deallocate(pointer_, value_size, handler_);
+          raw_ptr_type raw_ptr(handler_, pointer_);
+          pointer_type tmp = pointer_;
           pointer_ = 0;
+          tmp->value_type::~value_type();
+          (void) raw_ptr;
         }
       }
 

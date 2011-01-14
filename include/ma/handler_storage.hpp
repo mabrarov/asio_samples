@@ -22,12 +22,15 @@ namespace ma
   /// Provides storage for handlers.
   /**
    * The handler_storage class provides the storage for handlers:
-   * http://www.boost.org/doc/libs/1_44_0/doc/html/boost_asio/reference/Handler.html   
+   * http://www.boost.org/doc/libs/1_45_0/doc/html/boost_asio/reference/Handler.html   
    * It supports Boost.Asio custom memory allocation: 
-   * http://www.boost.org/doc/libs/1_44_0/doc/html/boost_asio/overview/core/allocation.html
+   * http://www.boost.org/doc/libs/1_45_0/doc/html/boost_asio/overview/core/allocation.html
    *
    * A value h of a stored handler class should work correctly 
    * in the expression h(arg) where arg is an lvalue of type const Arg.
+   *
+   * Stored handler must have nothrow copy-constructor. 
+   * This restriction is predicted by asio custom memory allocation.
    *
    * Every instance of handler_storage class is tied to 
    * some instance of boost::asio::io_service class.
