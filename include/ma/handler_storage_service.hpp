@@ -14,6 +14,7 @@
 
 #include <cstddef>
 #include <stdexcept>
+#include <boost/config.hpp>
 #include <boost/throw_exception.hpp>
 #include <boost/utility.hpp>
 #include <boost/thread.hpp>
@@ -106,7 +107,17 @@ namespace ma
         , work_(io_service)
         , handler_(handler)
       {
+      }      
+
+#if defined(BOOST_HAS_RVALUE_REFS)
+      handler_wrapper(this_type&& other)
+        : handler_base(std::move(static_cast<handler_base>(other)))
+        , io_service_(other.io_service_)
+        , work_(std::move(other.work_))
+        , handler_(std::move(other.handler_))
+      {
       }
+#endif // defined(BOOST_HAS_RVALUE_REFS)
 
       ~handler_wrapper()
       {
@@ -114,22 +125,26 @@ namespace ma
 
       static void do_invoke(handler_base* base, arg_param_type arg)
       {        
-        this_type* h = static_cast<this_type*>(base);
+        this_type* this_ptr = static_cast<this_type*>(base);
         // Take ownership of the wrapper object
         // The deallocation of wrapper object will be done 
         // throw the handler stored in wrapper
         typedef detail::handler_alloc_traits<Handler, this_type> alloc_traits;
-        detail::handler_ptr<alloc_traits> ptr(h->handler_, h);          
+        detail::handler_ptr<alloc_traits> ptr(this_ptr->handler_, this_ptr);          
         // Make a local copy of handler stored at wrapper object
         // This local copy will be used for wrapper's memory deallocation later
-        Handler handler(h->handler_);
+#if defined(BOOST_HAS_RVALUE_REFS)
+        Handler handler(std::move(this_ptr->handler_));
+#else
+        Handler handler(this_ptr->handler_);
+#endif // defined(BOOST_HAS_RVALUE_REFS)
         // Change the handler which will be used for wrapper's memory deallocation
-        ptr.set_handler(handler);
+        ptr.set_alloc_context(handler);
         // Make copies of other data placed at wrapper object      
         // These copies will be used after the wrapper object destruction 
         // and deallocation of its memory
-        boost::asio::io_service& io_service(h->io_service_);
-        boost::asio::io_service::work work(h->work_);
+        boost::asio::io_service& io_service(this_ptr->io_service_);
+        boost::asio::io_service::work work(this_ptr->work_);
         // A dummy vs optimization.
         (void) work;        
         // Destroy wrapper object and deallocate its memory 
@@ -141,20 +156,24 @@ namespace ma
 
       static void do_destroy(handler_base* base)
       {          
-        this_type* h = static_cast<this_type*>(base);
+        this_type* this_ptr = static_cast<this_type*>(base);
         // Take ownership of the wrapper object
         // The deallocation of wrapper object will be done 
         // throw the handler stored in wrapper
         typedef detail::handler_alloc_traits<Handler, this_type> alloc_traits;
-        detail::handler_ptr<alloc_traits> ptr(h->handler_, h);          
+        detail::handler_ptr<alloc_traits> ptr(this_ptr->handler_, this_ptr);          
         // Make a local copy of handler stored at wrapper object
         // This local copy will be used for wrapper's memory deallocation later
-        Handler handler(h->handler_);
+#if defined(BOOST_HAS_RVALUE_REFS)
+        Handler handler(std::move(this_ptr->handler_));
+#else
+        Handler handler(this_ptr->handler_);
+#endif // defined(BOOST_HAS_RVALUE_REFS)
         // Change the handler which will be used for wrapper's memory deallocation
-        ptr.set_handler(handler);
-        // A dummy vs optimization because
-        // actually reset() is called by ~handler_ptr()        
-        (void) ptr; //instead ptr.reset();
+        ptr.set_alloc_context(handler);   
+        // Destroy wrapper object and deallocate its memory 
+        // throw the local copy of handler
+        ptr.reset();
       }
 
       static void* do_data(handler_base* base)

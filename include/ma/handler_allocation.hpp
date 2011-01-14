@@ -13,6 +13,7 @@
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
 #include <cstddef>
+#include <boost/config.hpp>
 #include <boost/utility.hpp>
 #include <boost/aligned_storage.hpp>
 #include <boost/scoped_array.hpp>
@@ -159,7 +160,15 @@ namespace ma
     ~custom_alloc_handler()
     {      
     }
-#endif // defined(_DEBUG)    
+#endif // defined(_DEBUG)  
+
+#if defined(BOOST_HAS_RVALUE_REFS)
+    custom_alloc_handler(this_type&& other)
+      : allocator_(other.allocator_)
+      , handler_(std::move(other.handler_))
+    {
+    }
+#endif // defined(BOOST_HAS_RVALUE_REFS)
 
 #if defined(_DEBUG)
     friend void* asio_handler_allocate(std::size_t size, this_type* context)
@@ -284,6 +293,14 @@ namespace ma
     {
     }
 
+#if defined(BOOST_HAS_RVALUE_REFS)
+    context_alloc_handler(this_type&& other)
+      : context_(std::move(other.context_))
+      , handler_(std::move(other.handler_))
+    {
+    }
+#endif // defined(BOOST_HAS_RVALUE_REFS)
+
     ~context_alloc_handler()
     {
     }
@@ -394,6 +411,14 @@ namespace ma
       , handler_(handler)
     {
     }
+
+#if defined(BOOST_HAS_RVALUE_REFS)
+    context_alloc_handler2(this_type&& other)
+      : context_(std::move(other.context_))
+      , handler_(std::move(other.handler_))
+    {
+    }
+#endif // defined(BOOST_HAS_RVALUE_REFS)
 
     ~context_alloc_handler2()
     {
@@ -506,6 +531,14 @@ namespace ma
     {
     }
 
+#if defined(BOOST_HAS_RVALUE_REFS)
+    context_wrapped_handler(this_type&& other)
+      : context_(std::move(other.context_))
+      , handler_(std::move(other.handler_))
+    {
+    }
+#endif // defined(BOOST_HAS_RVALUE_REFS)
+
     ~context_wrapped_handler()
     {
     }
@@ -616,6 +649,14 @@ namespace ma
       , handler_(handler)
     {
     }
+
+#if defined(BOOST_HAS_RVALUE_REFS)
+    context_wrapped_handler2(this_type&& other)
+      : context_(std::move(other.context_))
+      , handler_(std::move(other.handler_))
+    {
+    }
+#endif // defined(BOOST_HAS_RVALUE_REFS)
 
     ~context_wrapped_handler2()
     {

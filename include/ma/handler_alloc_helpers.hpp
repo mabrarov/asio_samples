@@ -37,38 +37,39 @@ namespace ma
   namespace detail
   {
     // Traits for handler allocation.
-    template <typename Handler, typename Object>
+    template <typename AllocContext, typename Object>
     struct handler_alloc_traits
     {
-      typedef Handler handler_type;
-      typedef Object  value_type;
-      typedef Object* pointer_type;
+      typedef AllocContext alloc_context_type;
+      typedef Object       value_type;
+      typedef Object*      pointer_type;
       BOOST_STATIC_CONSTANT(std::size_t, value_size = sizeof(Object));
     };    
 
     template <typename Alloc_Traits>
     class handler_ptr;
 
-    // Helper class to provide RAII on uninitialised handler memory.
+    // Helper class to provide RAII on uninitialized handler memory.
     template <typename Alloc_Traits>
     class raw_handler_ptr : private boost::noncopyable
     {
     public:
-      typedef typename Alloc_Traits::handler_type handler_type;
-      typedef typename Alloc_Traits::value_type   value_type;
-      typedef typename Alloc_Traits::pointer_type pointer_type;
+      typedef typename Alloc_Traits::alloc_context_type alloc_context_type;
+      typedef typename Alloc_Traits::value_type         value_type;
+      typedef typename Alloc_Traits::pointer_type       pointer_type;
       BOOST_STATIC_CONSTANT(std::size_t, value_size = Alloc_Traits::value_size);
 
-      // Constructor allocates the memory. Can throw.
-      raw_handler_ptr(handler_type& handler)
-        : handler_(handler)
-        , pointer_(static_cast<pointer_type>(ma_asio_handler_alloc_helpers::allocate(value_size, handler_)))
+      // Constructor allocates the memory
+      // Can throw
+      raw_handler_ptr(alloc_context_type& alloc_context)
+        : alloc_context_(alloc_context)
+        , pointer_(static_cast<pointer_type>(ma_asio_handler_alloc_helpers::allocate(value_size, alloc_context)))
       {
       }
 
       // Steal constructor. Doesn't throw.
-      raw_handler_ptr(handler_type& handler, pointer_type pointer)
-        : handler_(handler)
+      raw_handler_ptr(alloc_context_type& alloc_context, pointer_type pointer)
+        : alloc_context_(alloc_context)
         , pointer_(pointer)
       {
       }
@@ -79,38 +80,38 @@ namespace ma
       {
         if (pointer_)
         {
-          ma_asio_handler_alloc_helpers::deallocate(pointer_, value_size, handler_);
+          ma_asio_handler_alloc_helpers::deallocate(pointer_, value_size, alloc_context_);
         }
       }
 
     private:
       friend class handler_ptr<Alloc_Traits>;
-      handler_type& handler_;
+      alloc_context_type& alloc_context_;
       pointer_type pointer_;
     };
 
-    // Helper class to provide RAII on uninitialised handler memory.
+    // Helper class to provide RAII on uninitialized handler memory.
     template <typename Alloc_Traits>
     class handler_ptr : private boost::noncopyable
     {
     public:
-      typedef typename Alloc_Traits::handler_type handler_type;
-      typedef typename Alloc_Traits::value_type   value_type;
-      typedef typename Alloc_Traits::pointer_type pointer_type;
+      typedef typename Alloc_Traits::alloc_context_type alloc_context_type;
+      typedef typename Alloc_Traits::value_type         value_type;
+      typedef typename Alloc_Traits::pointer_type       pointer_type;
 
       BOOST_STATIC_CONSTANT(std::size_t, value_size = Alloc_Traits::value_size);
       typedef raw_handler_ptr<Alloc_Traits> raw_ptr_type;
 
       // Take ownership of existing memory.
-      handler_ptr(handler_type& handler, pointer_type pointer)
-        : handler_(boost::addressof(handler))
+      handler_ptr(alloc_context_type& alloc_context, pointer_type pointer)
+        : alloc_context_(boost::addressof(alloc_context))
         , pointer_(pointer)
       {
       }
 
       // Construct object in raw memory and take ownership if construction succeeds.
       handler_ptr(raw_ptr_type& raw_ptr)
-        : handler_(boost::addressof(raw_ptr.handler_))
+        : alloc_context_(boost::addressof(raw_ptr.alloc_context_))
         , pointer_(new (raw_ptr.pointer_) value_type)
       {
         raw_ptr.pointer_ = 0;
@@ -119,7 +120,7 @@ namespace ma
       // Construct object in raw memory and take ownership if construction succeeds.
       template <typename Arg1>
       handler_ptr(raw_ptr_type& raw_ptr, Arg1& a1)
-        : handler_(boost::addressof(raw_ptr.handler_))
+        : alloc_context_(boost::addressof(raw_ptr.alloc_context_))
         , pointer_(new (raw_ptr.pointer_) value_type(a1))
       {
         raw_ptr.pointer_ = 0;
@@ -128,7 +129,7 @@ namespace ma
       // Construct object in raw memory and take ownership if construction succeeds.
       template <typename Arg1, typename Arg2>
       handler_ptr(raw_ptr_type& raw_ptr, Arg1& a1, Arg2& a2)
-        : handler_(boost::addressof(raw_ptr.handler_))
+        : alloc_context_(boost::addressof(raw_ptr.alloc_context_))
         , pointer_(new (raw_ptr.pointer_) value_type(a1, a2))
       {
         raw_ptr.pointer_ = 0;
@@ -137,7 +138,7 @@ namespace ma
       // Construct object in raw memory and take ownership if construction succeeds.
       template <typename Arg1, typename Arg2, typename Arg3>
       handler_ptr(raw_ptr_type& raw_ptr, Arg1& a1, Arg2& a2, Arg3& a3)
-        : handler_(boost::addressof(raw_ptr.handler_))
+        : alloc_context_(boost::addressof(raw_ptr.alloc_context_))
         , pointer_(new (raw_ptr.pointer_) value_type(a1, a2, a3))
       {
         raw_ptr.pointer_ = 0;
@@ -146,7 +147,7 @@ namespace ma
       // Construct object in raw memory and take ownership if construction succeeds.
       template <typename Arg1, typename Arg2, typename Arg3, typename Arg4>
       handler_ptr(raw_ptr_type& raw_ptr, Arg1& a1, Arg2& a2, Arg3& a3, Arg4& a4)
-        : handler_(boost::addressof(raw_ptr.handler_))
+        : alloc_context_(boost::addressof(raw_ptr.alloc_context_))
         , pointer_(new (raw_ptr.pointer_) value_type(a1, a2, a3, a4))
       {
         raw_ptr.pointer_ = 0;
@@ -155,7 +156,7 @@ namespace ma
       // Construct object in raw memory and take ownership if construction succeeds.
       template <typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5>
       handler_ptr(raw_ptr_type& raw_ptr, Arg1& a1, Arg2& a2, Arg3& a3, Arg4& a4, Arg5& a5)
-        : handler_(boost::addressof(raw_ptr.handler_))
+        : alloc_context_(boost::addressof(raw_ptr.alloc_context_))
         , pointer_(new (raw_ptr.pointer_) value_type(a1, a2, a3, a4, a5))
       {
         raw_ptr.pointer_ = 0;
@@ -164,7 +165,7 @@ namespace ma
       // Construct object in raw memory and take ownership if construction succeeds.
       template <typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5, typename Arg6>
       handler_ptr(raw_ptr_type& raw_ptr, Arg1& a1, Arg2& a2, Arg3& a3, Arg4& a4, Arg5& a5, Arg6& a6)
-        : handler_(boost::addressof(raw_ptr.handler_))
+        : alloc_context_(boost::addressof(raw_ptr.alloc_context_))
         , pointer_(new (raw_ptr.pointer_) value_type(a1, a2, a3, a4, a5, a6))
       {
         raw_ptr.pointer_ = 0;
@@ -173,7 +174,7 @@ namespace ma
       // Construct object in raw memory and take ownership if construction succeeds.
       template <typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5, typename Arg6, typename Arg7>
       handler_ptr(raw_ptr_type& raw_ptr, Arg1& a1, Arg2& a2, Arg3& a3, Arg4& a4, Arg5& a5, Arg6& a6, Arg7& a7)
-        : handler_(boost::addressof(raw_ptr.handler_))
+        : alloc_context_(boost::addressof(raw_ptr.alloc_context_))
         , pointer_(new (raw_ptr.pointer_) value_type(a1, a2, a3, a4, a5, a6, a7))
       {
         raw_ptr.pointer_ = 0;
@@ -182,7 +183,7 @@ namespace ma
       // Construct object in raw memory and take ownership if construction succeeds.
       template <typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5, typename Arg6, typename Arg7, typename Arg8>
       handler_ptr(raw_ptr_type& raw_ptr, Arg1& a1, Arg2& a2, Arg3& a3, Arg4& a4, Arg5& a5, Arg6& a6, Arg7& a7, Arg8& a8)
-        : handler_(boost::addressof(raw_ptr.handler_))
+        : alloc_context_(boost::addressof(raw_ptr.alloc_context_))
         , pointer_(new (raw_ptr.pointer_) value_type(a1, a2, a3, a4, a5, a6, a7, a8))
       {
         raw_ptr.pointer_ = 0;
@@ -200,10 +201,11 @@ namespace ma
         return pointer_;
       }
 
-      // Change the handler used for memory deallocation
-      void set_handler(handler_type& handler)
+      // Change allocation context used for memory deallocation
+      // Never throws
+      void set_alloc_context(alloc_context_type& alloc_context)
       {
-        handler_ = boost::addressof(handler);
+        alloc_context_ = boost::addressof(alloc_context);
       }
 
       // Release ownership of the memory.
@@ -219,17 +221,18 @@ namespace ma
       {
         if (pointer_)
         {
-          raw_ptr_type raw_ptr(*handler_, pointer_);
+          raw_ptr_type raw_ptr(*alloc_context_, pointer_);
+          // A dummy vs optimization
+          (void) raw_ptr;
           pointer_type tmp = pointer_;
           pointer_ = 0;
-          tmp->value_type::~value_type();
-          (void) raw_ptr;
+          tmp->value_type::~value_type();          
         }
       }
 
     private:
-      handler_type* handler_;
-      pointer_type  pointer_;
+      alloc_context_type* alloc_context_;
+      pointer_type        pointer_;
     };
 
   } // namespace detail

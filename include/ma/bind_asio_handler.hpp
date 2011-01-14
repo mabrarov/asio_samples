@@ -12,6 +12,7 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
+#include <boost/config.hpp>
 #include <ma/handler_alloc_helpers.hpp>
 #include <ma/handler_invoke_helpers.hpp>
 
@@ -32,6 +33,18 @@ namespace ma
       binder1(const Handler& handler, const Arg1& arg1)
         : handler_(handler)
         , arg1_(arg1)
+      {
+      }
+
+#if defined(BOOST_HAS_RVALUE_REFS)
+      binder1(this_type&& other)
+        : handler_(std::move(other.handler_))
+        , arg1_(std::move(other.arg1_))
+      {
+      }
+#endif // defined(BOOST_HAS_RVALUE_REFS)
+
+      ~binder1()
       {
       }
 
@@ -86,6 +99,19 @@ namespace ma
         : handler_(handler)
         , arg1_(arg1)
         , arg2_(arg2)
+      {
+      }
+
+#if defined(BOOST_HAS_RVALUE_REFS)
+      binder2(this_type&& other)
+        : handler_(std::move(other.handler_))
+        , arg1_(std::move(other.arg1_))
+        , arg2_(std::move(other.arg2_))
+      {
+      }
+#endif // defined(BOOST_HAS_RVALUE_REFS)
+
+      ~binder2()
       {
       }
 
@@ -147,6 +173,20 @@ namespace ma
       {
       }
 
+#if defined(BOOST_HAS_RVALUE_REFS)
+      binder3(this_type&& other)
+        : handler_(std::move(other.handler_))
+        , arg1_(std::move(other.arg1_))
+        , arg2_(std::move(other.arg2_))
+        , arg3_(std::move(other.arg3_))
+      {
+      }
+#endif // defined(BOOST_HAS_RVALUE_REFS)
+
+      ~binder3()
+      {
+      }
+
       void operator()()
       {
         handler_(arg1_, arg2_, arg3_);
@@ -203,6 +243,21 @@ namespace ma
         , arg2_(arg2)
         , arg3_(arg3)
         , arg4_(arg4)
+      {
+      }
+
+#if defined(BOOST_HAS_RVALUE_REFS)
+      binder4(this_type&& other)
+        : handler_(std::move(other.handler_))
+        , arg1_(std::move(other.arg1_))
+        , arg2_(std::move(other.arg2_))
+        , arg3_(std::move(other.arg3_))
+        , arg4_(std::move(other.arg4_))
+      {
+      }
+#endif // defined(BOOST_HAS_RVALUE_REFS)
+
+      ~binder4()
       {
       }
 
@@ -266,6 +321,22 @@ namespace ma
         , arg3_(arg3)
         , arg4_(arg4)
         , arg5_(arg5)
+      {
+      }
+
+#if defined(BOOST_HAS_RVALUE_REFS)
+      binder5(this_type&& other)
+        : handler_(std::move(other.handler_))
+        , arg1_(std::move(other.arg1_))
+        , arg2_(std::move(other.arg2_))
+        , arg3_(std::move(other.arg3_))
+        , arg4_(std::move(other.arg4_))
+        , arg5_(std::move(other.arg5_))
+      {
+      }
+#endif // defined(BOOST_HAS_RVALUE_REFS)
+
+      ~binder5()
       {
       }
 
