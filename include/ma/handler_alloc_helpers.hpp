@@ -103,14 +103,14 @@ namespace ma
 
       // Take ownership of existing memory.
       handler_ptr(handler_type& handler, pointer_type pointer)
-        : handler_(handler)
+        : handler_(boost::addressof(handler))
         , pointer_(pointer)
       {
       }
 
       // Construct object in raw memory and take ownership if construction succeeds.
       handler_ptr(raw_ptr_type& raw_ptr)
-        : handler_(raw_ptr.handler_)
+        : handler_(boost::addressof(raw_ptr.handler_))
         , pointer_(new (raw_ptr.pointer_) value_type)
       {
         raw_ptr.pointer_ = 0;
@@ -119,7 +119,7 @@ namespace ma
       // Construct object in raw memory and take ownership if construction succeeds.
       template <typename Arg1>
       handler_ptr(raw_ptr_type& raw_ptr, Arg1& a1)
-        : handler_(raw_ptr.handler_)
+        : handler_(boost::addressof(raw_ptr.handler_))
         , pointer_(new (raw_ptr.pointer_) value_type(a1))
       {
         raw_ptr.pointer_ = 0;
@@ -128,7 +128,7 @@ namespace ma
       // Construct object in raw memory and take ownership if construction succeeds.
       template <typename Arg1, typename Arg2>
       handler_ptr(raw_ptr_type& raw_ptr, Arg1& a1, Arg2& a2)
-        : handler_(raw_ptr.handler_)
+        : handler_(boost::addressof(raw_ptr.handler_))
         , pointer_(new (raw_ptr.pointer_) value_type(a1, a2))
       {
         raw_ptr.pointer_ = 0;
@@ -137,7 +137,7 @@ namespace ma
       // Construct object in raw memory and take ownership if construction succeeds.
       template <typename Arg1, typename Arg2, typename Arg3>
       handler_ptr(raw_ptr_type& raw_ptr, Arg1& a1, Arg2& a2, Arg3& a3)
-        : handler_(raw_ptr.handler_)
+        : handler_(boost::addressof(raw_ptr.handler_))
         , pointer_(new (raw_ptr.pointer_) value_type(a1, a2, a3))
       {
         raw_ptr.pointer_ = 0;
@@ -146,7 +146,7 @@ namespace ma
       // Construct object in raw memory and take ownership if construction succeeds.
       template <typename Arg1, typename Arg2, typename Arg3, typename Arg4>
       handler_ptr(raw_ptr_type& raw_ptr, Arg1& a1, Arg2& a2, Arg3& a3, Arg4& a4)
-        : handler_(raw_ptr.handler_)
+        : handler_(boost::addressof(raw_ptr.handler_))
         , pointer_(new (raw_ptr.pointer_) value_type(a1, a2, a3, a4))
       {
         raw_ptr.pointer_ = 0;
@@ -155,7 +155,7 @@ namespace ma
       // Construct object in raw memory and take ownership if construction succeeds.
       template <typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5>
       handler_ptr(raw_ptr_type& raw_ptr, Arg1& a1, Arg2& a2, Arg3& a3, Arg4& a4, Arg5& a5)
-        : handler_(raw_ptr.handler_)
+        : handler_(boost::addressof(raw_ptr.handler_))
         , pointer_(new (raw_ptr.pointer_) value_type(a1, a2, a3, a4, a5))
       {
         raw_ptr.pointer_ = 0;
@@ -164,7 +164,7 @@ namespace ma
       // Construct object in raw memory and take ownership if construction succeeds.
       template <typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5, typename Arg6>
       handler_ptr(raw_ptr_type& raw_ptr, Arg1& a1, Arg2& a2, Arg3& a3, Arg4& a4, Arg5& a5, Arg6& a6)
-        : handler_(raw_ptr.handler_)
+        : handler_(boost::addressof(raw_ptr.handler_))
         , pointer_(new (raw_ptr.pointer_) value_type(a1, a2, a3, a4, a5, a6))
       {
         raw_ptr.pointer_ = 0;
@@ -173,7 +173,7 @@ namespace ma
       // Construct object in raw memory and take ownership if construction succeeds.
       template <typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5, typename Arg6, typename Arg7>
       handler_ptr(raw_ptr_type& raw_ptr, Arg1& a1, Arg2& a2, Arg3& a3, Arg4& a4, Arg5& a5, Arg6& a6, Arg7& a7)
-        : handler_(raw_ptr.handler_)
+        : handler_(boost::addressof(raw_ptr.handler_))
         , pointer_(new (raw_ptr.pointer_) value_type(a1, a2, a3, a4, a5, a6, a7))
       {
         raw_ptr.pointer_ = 0;
@@ -182,7 +182,7 @@ namespace ma
       // Construct object in raw memory and take ownership if construction succeeds.
       template <typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5, typename Arg6, typename Arg7, typename Arg8>
       handler_ptr(raw_ptr_type& raw_ptr, Arg1& a1, Arg2& a2, Arg3& a3, Arg4& a4, Arg5& a5, Arg6& a6, Arg7& a7, Arg8& a8)
-        : handler_(raw_ptr.handler_)
+        : handler_(boost::addressof(raw_ptr.handler_))
         , pointer_(new (raw_ptr.pointer_) value_type(a1, a2, a3, a4, a5, a6, a7, a8))
       {
         raw_ptr.pointer_ = 0;
@@ -200,6 +200,12 @@ namespace ma
         return pointer_;
       }
 
+      // Change the handler used for memory deallocation
+      void set_handler(handler_type& handler)
+      {
+        handler_ = boost::addressof(handler);
+      }
+
       // Release ownership of the memory.
       pointer_type release()
       {
@@ -213,7 +219,7 @@ namespace ma
       {
         if (pointer_)
         {
-          raw_ptr_type raw_ptr(handler_, pointer_);
+          raw_ptr_type raw_ptr(*handler_, pointer_);
           pointer_type tmp = pointer_;
           pointer_ = 0;
           tmp->value_type::~value_type();
@@ -222,7 +228,7 @@ namespace ma
       }
 
     private:
-      handler_type& handler_;
+      handler_type* handler_;
       pointer_type  pointer_;
     };
 

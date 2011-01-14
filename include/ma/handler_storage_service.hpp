@@ -115,13 +115,16 @@ namespace ma
       static void do_invoke(handler_base* base, arg_param_type arg)
       {        
         this_type* h = static_cast<this_type*>(base);
+        // Take ownership of the wrapper object
+        // The deallocation of wrapper object will be done 
+        // throw the handler stored in wrapper
+        typedef detail::handler_alloc_traits<Handler, this_type> alloc_traits;
+        detail::handler_ptr<alloc_traits> ptr(h->handler_, h);          
         // Make a local copy of handler stored at wrapper object
         // This local copy will be used for wrapper's memory deallocation later
         Handler handler(h->handler_);
-        // Take ownership of the wrapper object
-        // The deallocation of wrapper object will be done throw the local copy of handler
-        typedef detail::handler_alloc_traits<Handler, this_type> alloc_traits;
-        detail::handler_ptr<alloc_traits> ptr(handler, h);          
+        // Change the handler which will be used for wrapper's memory deallocation
+        ptr.set_handler(handler);
         // Make copies of other data placed at wrapper object      
         // These copies will be used after the wrapper object destruction 
         // and deallocation of its memory
@@ -139,16 +142,19 @@ namespace ma
       static void do_destroy(handler_base* base)
       {          
         this_type* h = static_cast<this_type*>(base);
+        // Take ownership of the wrapper object
+        // The deallocation of wrapper object will be done 
+        // throw the handler stored in wrapper
+        typedef detail::handler_alloc_traits<Handler, this_type> alloc_traits;
+        detail::handler_ptr<alloc_traits> ptr(h->handler_, h);          
         // Make a local copy of handler stored at wrapper object
         // This local copy will be used for wrapper's memory deallocation later
         Handler handler(h->handler_);
-        // Take ownership of the wrapper object
-        // The deallocation of wrapper object will be done throw the local copy of handler
-        typedef detail::handler_alloc_traits<Handler, this_type> alloc_traits;
-        detail::handler_ptr<alloc_traits> ptr(handler, h);
+        // Change the handler which will be used for wrapper's memory deallocation
+        ptr.set_handler(handler);
         // A dummy vs optimization because
-        // actually reset() is called by ~handler_ptr()
-        ptr.reset();
+        // actually reset() is called by ~handler_ptr()        
+        (void) ptr; //instead ptr.reset();
       }
 
       static void* do_data(handler_base* base)
