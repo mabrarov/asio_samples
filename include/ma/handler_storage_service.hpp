@@ -37,7 +37,7 @@ namespace ma
     explicit bad_handler_call() 
       : std::runtime_error("call to empty ma::handler_storage") 
     {
-    }
+    } 
   }; // class bad_handler_call
 
   template <typename Arg>
@@ -115,6 +115,7 @@ namespace ma
       }      
 
 #if defined(BOOST_HAS_RVALUE_REFS)
+      // Move constructor
       handler_wrapper(this_type&& other)
         : handler_base(std::move(static_cast<handler_base>(other)))
         , io_service_(other.io_service_)
@@ -161,7 +162,7 @@ namespace ma
 #else
         io_service.post(detail::bind_handler(handler, arg));
 #endif // defined(BOOST_HAS_RVALUE_REFS)        
-      }
+      }  // do_invoke
 
       static void do_destroy(handler_base* base)
       {          
@@ -183,7 +184,7 @@ namespace ma
         // Destroy wrapper object and deallocate its memory 
         // throw the local copy of handler
         ptr.reset();
-      }
+      } // do_destroy
 
       static void* do_data(handler_base* base)
       {          
@@ -215,7 +216,7 @@ namespace ma
       implementation_type* prev_;
       implementation_type* next_;      
       handler_base* handler_ptr_;
-    };
+    }; // class implementation_type
 
   private:
     class impl_list : private boost::noncopyable
@@ -236,7 +237,7 @@ namespace ma
           front_->prev_ = &impl;
         }
         front_ = &impl;
-      }
+      } // push_front
 
       void erase(implementation_type& impl)
       {
@@ -253,7 +254,7 @@ namespace ma
           impl.next_->prev_= impl.prev_;
         }
         impl.next_ = impl.prev_ = 0;
-      }
+      } // erase
 
       implementation_type* const front() const
       {
@@ -287,13 +288,13 @@ namespace ma
       {
         destroy(*impl_list_.front());
       }      
-    }    
+    } // shutdown_service
 
     void construct(implementation_type& impl)
     {      
       mutex_type::scoped_lock lock(mutex_);
       impl_list_.push_front(impl);     
-    }
+    } // construct
 
     void destroy(implementation_type& impl)
     {   
@@ -307,7 +308,7 @@ namespace ma
       {
         handler_ptr->destroy();
       }
-    }
+    } // destroy
 
     template <typename Handler>
     void put(implementation_type& impl, Handler handler)
@@ -334,8 +335,8 @@ namespace ma
         {
           handler_ptr->destroy();
         }
-      }
-    }
+      } // if (!shutdown_done_)
+    } // put
 
     void post(implementation_type& impl, arg_param_type arg) const
     {      
@@ -347,7 +348,7 @@ namespace ma
       handler_base* handler_ptr = impl.handler_ptr_;
       impl.handler_ptr_ = 0;
       handler_ptr->invoke(arg);
-    } 
+    } // post
 
     void* target(const implementation_type& impl) const
     {
@@ -356,7 +357,7 @@ namespace ma
         return impl.handler_ptr_->data();        
       }
       return 0;
-    }
+    } // target
 
     bool empty(const implementation_type& impl) const
     {
