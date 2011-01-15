@@ -12,11 +12,16 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
+#if defined(BOOST_HAS_RVALUE_REFS)
+#include <utility>
+#endif // defined(BOOST_HAS_RVALUE_REFS)
+
 #include <cstddef>
 #include <stdexcept>
 #include <boost/config.hpp>
 #include <boost/throw_exception.hpp>
 #include <boost/utility.hpp>
+#include <boost/ref.hpp>
 #include <boost/thread.hpp>
 #include <boost/asio.hpp>
 #include <boost/assert.hpp>
@@ -151,7 +156,11 @@ namespace ma
         // throw the local copy of handler
         ptr.reset();          
         // Post the copy of handler's local copy to io_service
+#if defined(BOOST_HAS_RVALUE_REFS)
+        io_service.post(detail::bind_handler(std::move(handler), arg));
+#else
         io_service.post(detail::bind_handler(handler, arg));
+#endif // defined(BOOST_HAS_RVALUE_REFS)        
       }
 
       static void do_destroy(handler_base* base)
@@ -310,7 +319,13 @@ namespace ma
         // Allocate raw memory for handler
         detail::raw_handler_ptr<alloc_traits> raw_ptr(handler);
         // Wrap local handler and copy wrapper into allocated memory
-        detail::handler_ptr<alloc_traits> ptr(raw_ptr, this->get_io_service(), handler);
+#if defined(BOOST_HAS_RVALUE_REFS)
+        detail::handler_ptr<alloc_traits> ptr(raw_ptr, 
+          boost::ref(this->get_io_service()), std::move(handler));
+#else
+        detail::handler_ptr<alloc_traits> ptr(raw_ptr, 
+          boost::ref(this->get_io_service()), handler);
+#endif // defined(BOOST_HAS_RVALUE_REFS)                
         // Copy current handler ptr
         handler_base* handler_ptr = impl.handler_ptr_;
         // Take the ownership
