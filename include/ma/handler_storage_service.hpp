@@ -189,8 +189,8 @@ namespace ma
 
       static void* do_data(handler_base* base)
       {          
-        this_type* h = static_cast<this_type*>(base);
-        return boost::addressof(h->handler_);
+        this_type* this_ptr = static_cast<this_type*>(base);
+        return boost::addressof(this_ptr->handler_);
       }
 
     private:
