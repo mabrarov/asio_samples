@@ -15,6 +15,7 @@
 #include <string>
 #include <algorithm>
 #include <utility>
+#include <boost/config.hpp>
 #include <boost/utility.hpp>
 #include <boost/optional.hpp>
 #include <boost/smart_ptr.hpp>
@@ -160,6 +161,20 @@ namespace ma
           , end_(end)
         {
         } // wrapped_read_handler
+
+        ~wrapped_read_handler()
+        {
+        }
+
+#if defined(BOOST_HAS_RVALUE_REFS)
+        wrapped_read_handler(this_type&& other)
+          : read_handler_base(std::move(other))
+          , handler_(std::move(other.handler_))
+          , begin_(std::move(other.begin_))
+          , end_(std::move(other.end_))
+        {
+        }
+#endif // defined(BOOST_HAS_RVALUE_REFS)
 
         static std::size_t do_copy(read_handler_base* base, 
           const frame_buffer_type& buffer, boost::system::error_code& error)

@@ -12,13 +12,14 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
+#include <cstddef>
+#include <stdexcept>
+#include <boost/config.hpp>
+
 #if defined(BOOST_HAS_RVALUE_REFS)
 #include <utility>
 #endif // defined(BOOST_HAS_RVALUE_REFS)
 
-#include <cstddef>
-#include <stdexcept>
-#include <boost/config.hpp>
 #include <boost/throw_exception.hpp>
 #include <boost/utility.hpp>
 #include <boost/ref.hpp>
@@ -117,7 +118,7 @@ namespace ma
 #if defined(BOOST_HAS_RVALUE_REFS)
       // Move constructor
       handler_wrapper(this_type&& other)
-        : handler_base(std::move(static_cast<handler_base>(other)))
+        : handler_base(std::move(other))
         , io_service_(other.io_service_)
         , work_(std::move(other.work_))
         , handler_(std::move(other.handler_))

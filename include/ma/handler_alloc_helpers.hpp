@@ -12,10 +12,6 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
-#if defined(BOOST_HAS_RVALUE_REFS)
-#include <utility>
-#endif // defined(BOOST_HAS_RVALUE_REFS)
-
 #include <boost/utility.hpp>
 #include <boost/asio.hpp>
 

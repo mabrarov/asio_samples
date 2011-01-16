@@ -12,12 +12,13 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
+#include <cstddef>
+#include <boost/config.hpp>
+
 #if defined(BOOST_HAS_RVALUE_REFS)
 #include <utility>
 #endif // defined(BOOST_HAS_RVALUE_REFS)
 
-#include <cstddef>
-#include <boost/config.hpp>
 #include <boost/utility.hpp>
 #include <boost/aligned_storage.hpp>
 #include <boost/scoped_array.hpp>

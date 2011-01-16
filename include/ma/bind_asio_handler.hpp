@@ -13,6 +13,11 @@
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
 #include <boost/config.hpp>
+
+#if defined(BOOST_HAS_RVALUE_REFS)
+#include <utility>
+#endif // defined(BOOST_HAS_RVALUE_REFS)
+
 #include <ma/handler_alloc_helpers.hpp>
 #include <ma/handler_invoke_helpers.hpp>
 
