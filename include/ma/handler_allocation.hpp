@@ -143,29 +143,23 @@ namespace ma
   public:
     typedef void result_type;
 
+    custom_alloc_handler(Allocator& allocator, const Handler& handler)
 #if defined(_DEBUG)
-    custom_alloc_handler(Allocator& allocator, Handler handler)
       : allocator_(boost::addressof(allocator))
+#else
+      : allocator_(allocator)
+#endif // defined(_DEBUG)  
       , handler_(handler)
     {
     }
 
     ~custom_alloc_handler()
     {
+#if defined(_DEBUG)
       // For the check of usage of asio custom memory allocation.
       allocator_ = 0;
-    }
-#else
-    custom_alloc_handler(Allocator& allocator, Handler handler)
-      : allocator_(allocator)
-      , handler_(handler)
-    {
-    }
-
-    ~custom_alloc_handler()
-    {      
-    }
-#endif // defined(_DEBUG)  
+#endif // defined(_DEBUG)              
+    }    
 
 #if defined(BOOST_HAS_RVALUE_REFS)
     custom_alloc_handler(this_type&& other)
@@ -175,27 +169,23 @@ namespace ma
     }
 #endif // defined(BOOST_HAS_RVALUE_REFS)
 
+    friend void* asio_handler_allocate(std::size_t size, this_type* context)
+    {
 #if defined(_DEBUG)
-    friend void* asio_handler_allocate(std::size_t size, this_type* context)
-    {
       return context->allocator_->allocate(size);
-    }
-
-    friend void asio_handler_deallocate(void* pointer, std::size_t /*size*/, this_type* context)
-    {
-      context->allocator_->deallocate(pointer);
-    }
 #else
-    friend void* asio_handler_allocate(std::size_t size, this_type* context)
-    {
       return context->allocator_.allocate(size);
+#endif // defined(_DEBUG)  
     }
 
     friend void asio_handler_deallocate(void* pointer, std::size_t /*size*/, this_type* context)
     {
+#if defined(_DEBUG)
+      context->allocator_->deallocate(pointer);
+#else
       context->allocator_.deallocate(pointer);
+#endif // defined(_DEBUG)  
     }
-#endif // ifdef _DEBUG
 
     template <typename Function>
     friend void asio_handler_invoke(Function function, this_type* context)
@@ -292,7 +282,7 @@ namespace ma
   public:
     typedef void result_type;
 
-    context_alloc_handler(Context context, Handler handler)
+    context_alloc_handler(const Context& context, const Handler& handler)
       : context_(context)
       , handler_(handler)
     {
@@ -411,7 +401,7 @@ namespace ma
   public:
     typedef void result_type;
 
-    context_alloc_handler2(Context context, Handler handler)
+    context_alloc_handler2(const Context& context, const Handler& handler)
       : context_(context)
       , handler_(handler)
     {
@@ -530,7 +520,7 @@ namespace ma
   public:
     typedef void result_type;
 
-    context_wrapped_handler(Context context, Handler handler)
+    context_wrapped_handler(const Context& context, const Handler& handler)
       : context_(context)
       , handler_(handler)
     {
@@ -649,7 +639,7 @@ namespace ma
   public:
     typedef void result_type;
 
-    context_wrapped_handler2(Context context, Handler handler)
+    context_wrapped_handler2(const Context& context, const Handler& handler)
       : context_(context)
       , handler_(handler)
     {
