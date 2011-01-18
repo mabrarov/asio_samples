@@ -159,7 +159,7 @@ namespace ma
         ptr.reset();          
         // Post the copy of handler's local copy to io_service
 #if defined(BOOST_HAS_RVALUE_REFS)
-        io_service.post(detail::bind_handler(std::move(handler), arg));
+        io_service.post(detail::bind_handler(std::move(handler), std::move(arg)));
 #else
         io_service.post(detail::bind_handler(handler, arg));
 #endif // defined(BOOST_HAS_RVALUE_REFS)        
