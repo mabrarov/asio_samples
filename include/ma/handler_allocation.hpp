@@ -272,6 +272,13 @@ namespace ma
     Handler handler_;
   }; //class custom_alloc_handler 
 
+  template <typename Allocator, typename Handler>
+  inline custom_alloc_handler<Allocator, Handler> 
+  make_custom_alloc_handler(Allocator& allocator, const Handler& handler)
+  {
+    return custom_alloc_handler<Allocator, Handler>(allocator, handler);
+  }    
+
   template <typename Context, typename Handler>
   class context_alloc_handler
   {
@@ -390,6 +397,13 @@ namespace ma
     Context context_;
     Handler handler_;
   }; //class context_alloc_handler
+
+  template <typename Context, typename Handler>
+  inline context_alloc_handler<Context, Handler>
+  make_context_alloc_handler(const Context& context, const Handler& handler)
+  {
+    return context_alloc_handler<Context, Handler>(context, handler);
+  }  
   
   template <typename Context, typename Handler>
   class context_alloc_handler2
@@ -511,6 +525,13 @@ namespace ma
   }; //class context_alloc_handler2  
 
   template <typename Context, typename Handler>
+  inline context_alloc_handler2<Context, Handler>
+  make_context_alloc_handler2(const Context& context, const Handler& handler)
+  {
+    return context_alloc_handler2<Context, Handler>(context, handler);
+  }  
+
+  template <typename Context, typename Handler>
   class context_wrapped_handler
   {
   private:
@@ -628,6 +649,13 @@ namespace ma
     Context context_;
     Handler handler_;
   }; //class context_wrapped_handler
+
+  template <typename Context, typename Handler>
+  inline context_wrapped_handler<Context, Handler> 
+  make_context_wrapped_handler(const Context& context, const Handler& handler)
+  {
+    return context_wrapped_handler<Context, Handler>(context, handler);
+  }  
   
   template <typename Context, typename Handler>
   class context_wrapped_handler2
@@ -747,38 +775,10 @@ namespace ma
     Context context_;
     Handler handler_;
   }; //class context_wrapped_handler2
-
-  template <typename Allocator, typename Handler>
-  inline custom_alloc_handler<Allocator, Handler> 
-  make_custom_alloc_handler(Allocator& allocator, Handler handler)
-  {
-    return custom_alloc_handler<Allocator, Handler>(allocator, handler);
-  }  
-
-  template <typename Context, typename Handler>
-  inline context_alloc_handler<Context, Handler> 
-  make_context_alloc_handler(Context context, Handler handler)
-  {
-    return context_alloc_handler<Context, Handler>(context, handler);
-  }  
-
-  template <typename Context, typename Handler>
-  inline context_alloc_handler2<Context, Handler> 
-  make_context_alloc_handler2(Context context, Handler handler)
-  {
-    return context_alloc_handler2<Context, Handler>(context, handler);
-  }  
-
-  template <typename Context, typename Handler>
-  inline context_wrapped_handler<Context, Handler> 
-  make_context_wrapped_handler(Context context, Handler handler)
-  {
-    return context_wrapped_handler<Context, Handler>(context, handler);
-  }  
-
+        
   template <typename Context, typename Handler>
   inline context_wrapped_handler2<Context, Handler> 
-  make_context_wrapped_handler2(Context context, Handler handler)
+  make_context_wrapped_handler2(const Context& context, const Handler& handler)
   {
     return context_wrapped_handler2<Context, Handler>(context, handler);
   }  

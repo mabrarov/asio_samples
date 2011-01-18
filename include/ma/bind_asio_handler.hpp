@@ -85,7 +85,8 @@ namespace ma
     }; // class binder1  
 
     template <typename Handler, typename Arg1>
-    inline binder1<Handler, Arg1> bind_handler(const Handler& handler, const Arg1& arg1)
+    inline binder1<Handler, Arg1> 
+    bind_handler(const Handler& handler, const Arg1& arg1)
     {
       return binder1<Handler, Arg1>(handler, arg1);
     } // bind_handler
@@ -153,8 +154,8 @@ namespace ma
     }; // class binder2    
 
     template <typename Handler, typename Arg1, typename Arg2>
-    inline binder2<Handler, Arg1, Arg2> bind_handler(const Handler& handler, 
-      const Arg1& arg1, const Arg2& arg2)
+    inline binder2<Handler, Arg1, Arg2>
+    bind_handler(const Handler& handler, const Arg1& arg1, const Arg2& arg2)
     {
       return binder2<Handler, Arg1, Arg2>(handler, arg1, arg2);
     } // bind_handler
@@ -226,8 +227,9 @@ namespace ma
     }; // class binder3    
 
     template <typename Handler, typename Arg1, typename Arg2, typename Arg3>
-    inline binder3<Handler, Arg1, Arg2, Arg3> bind_handler(const Handler& handler, 
-      const Arg1& arg1, const Arg2& arg2, const Arg3& arg3)
+    inline binder3<Handler, Arg1, Arg2, Arg3>
+    bind_handler(const Handler& handler, const Arg1& arg1, const Arg2& arg2, 
+      const Arg3& arg3)
     {
       return binder3<Handler, Arg1, Arg2, Arg3>(handler, arg1, arg2, arg3);
     } // bind_handler
@@ -302,11 +304,12 @@ namespace ma
 
     template <typename Handler, typename Arg1, typename Arg2, typename Arg3, 
       typename Arg4>
-    inline binder4<Handler, Arg1, Arg2, Arg3, Arg4> bind_handler(
-      const Handler& handler, const Arg1& arg1, const Arg2& arg2,
+    inline binder4<Handler, Arg1, Arg2, Arg3, Arg4>
+    bind_handler(const Handler& handler, const Arg1& arg1, const Arg2& arg2,
       const Arg3& arg3, const Arg4& arg4)
     {
-      return binder4<Handler, Arg1, Arg2, Arg3, Arg4>(handler, arg1, arg2, arg3, arg4);
+      return binder4<Handler, Arg1, Arg2, Arg3, Arg4>(handler, 
+        arg1, arg2, arg3, arg4);
     } // bind_handler
 
     template <typename Handler, typename Arg1, typename Arg2, typename Arg3,
@@ -382,11 +385,12 @@ namespace ma
 
     template <typename Handler, typename Arg1, typename Arg2, typename Arg3, 
       typename Arg4, typename Arg5>
-    inline binder5<Handler, Arg1, Arg2, Arg3, Arg4, Arg5> bind_handler(
-      const Handler& handler, const Arg1& arg1, const Arg2& arg2, 
+    inline binder5<Handler, Arg1, Arg2, Arg3, Arg4, Arg5>
+    bind_handler(const Handler& handler, const Arg1& arg1, const Arg2& arg2, 
       const Arg3& arg3, const Arg4& arg4, const Arg5& arg5)
     {
-      return binder5<Handler, Arg1, Arg2, Arg3, Arg4, Arg5>(handler, arg1, arg2, arg3, arg4, arg5);
+      return binder5<Handler, Arg1, Arg2, Arg3, Arg4, Arg5>(handler, 
+        arg1, arg2, arg3, arg4, arg5);
     } // bind_handler
 
   } // namespace detail  
