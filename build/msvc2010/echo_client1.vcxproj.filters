@@ -76,5 +76,11 @@
     <ClInclude Include="..\..\include\ma\echo\client1\error.hpp">
       <Filter>Header Files\ma\echo\client1</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\ma\handler_storage.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\ma\handler_storage_service.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

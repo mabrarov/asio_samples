@@ -222,6 +222,8 @@
     <ClInclude Include="..\..\include\ma\handler_alloc_helpers.hpp" />
     <ClInclude Include="..\..\include\ma\handler_allocation.hpp" />
     <ClInclude Include="..\..\include\ma\handler_invoke_helpers.hpp" />
+    <ClInclude Include="..\..\include\ma\handler_storage.hpp" />
+    <ClInclude Include="..\..\include\ma\handler_storage_service.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

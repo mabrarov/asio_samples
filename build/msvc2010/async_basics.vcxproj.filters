@@ -55,5 +55,11 @@
     <ClInclude Include="..\..\include\ma\tutorial\async_derived.hpp">
       <Filter>Header Files\ma\tutorial</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\ma\handler_storage.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\ma\handler_storage_service.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
