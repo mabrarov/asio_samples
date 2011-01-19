@@ -387,8 +387,16 @@
 					RelativePath="..\..\include\ma\handler_allocation.hpp"
 					>
 				</File>
+                <File
+					RelativePath="..\..\include\ma\handler_allocation.hpp"
+					>
+				</File>
 				<File
-					RelativePath="..\..\include\ma\handler_invoke_helpers.hpp"
+					RelativePath="..\..\include\ma\handler_storage.hpp"
+					>
+				</File>
+                <File
+					RelativePath="..\..\include\ma\handler_storage_service.hpp"
 					>
 				</File>
 				<Filter
