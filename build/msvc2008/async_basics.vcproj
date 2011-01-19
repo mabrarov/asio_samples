@@ -391,6 +391,14 @@
 					RelativePath="..\..\include\ma\handler_invoke_helpers.hpp"
 					>
 				</File>
+				<File
+					RelativePath="..\..\include\ma\handler_storage.hpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\include\ma\handler_storage_service.hpp"
+					>
+				</File>
 				<Filter
 					Name="tutorial"
 					>

@@ -107,7 +107,7 @@ namespace ma
       this_type& operator=(const this_type&);    
 
     public:
-      explicit handler_wrapper(boost::asio::io_service& io_service, Handler handler)
+      explicit handler_wrapper(boost::asio::io_service& io_service, const Handler& handler)
         : handler_base(&this_type::do_invoke, &this_type::do_destroy, &this_type::do_data)
         , io_service_(io_service)
         , work_(io_service)
@@ -321,13 +321,8 @@ namespace ma
         // Allocate raw memory for handler
         detail::raw_handler_ptr<alloc_traits> raw_ptr(handler);
         // Wrap local handler and copy wrapper into allocated memory
-#if defined(BOOST_HAS_RVALUE_REFS)
-        detail::handler_ptr<alloc_traits> ptr(raw_ptr, 
-          boost::ref(this->get_io_service()), std::move(handler));
-#else
         detail::handler_ptr<alloc_traits> ptr(raw_ptr, 
           boost::ref(this->get_io_service()), handler);
-#endif // defined(BOOST_HAS_RVALUE_REFS)                
         // Copy current handler ptr
         handler_base* handler_ptr = impl.handler_ptr_;
         // Take the ownership

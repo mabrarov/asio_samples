@@ -362,13 +362,13 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
-			<File
-				RelativePath="..\..\include\ma\bind_asio_handler.hpp"
-				>
-			</File>
 			<Filter
 				Name="ma"
 				>
+				<File
+					RelativePath="..\..\include\ma\bind_asio_handler.hpp"
+					>
+				</File>
 				<File
 					RelativePath="..\..\include\ma\codecvt_cast.hpp"
 					>

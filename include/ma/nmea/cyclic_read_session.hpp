@@ -67,14 +67,14 @@ namespace ma
       void resest();
 
       template <typename Handler>
-      void async_start(Handler handler)
+      void async_start(const Handler& handler)
       {        
         strand_.post(make_context_alloc_handler2(handler,
           boost::bind(&this_type::do_start<Handler>, shared_from_this(), _1)));
       }
 
       template <typename Handler>
-      void async_stop(Handler handler)
+      void async_stop(const Handler& handler)
       {
         strand_.post(make_context_alloc_handler2(handler,
           boost::bind(&this_type::do_stop<Handler>, shared_from_this(), _1)));
@@ -82,14 +82,14 @@ namespace ma
 
       // Handler::operator ()(const boost::system::error_code&, std::size_t)
       template <typename Handler, typename Iterator>
-      void async_read_some(Iterator begin, Iterator end, Handler handler)
+      void async_read_some(const Iterator& begin, const Iterator& end, const Handler& handler)
       {                
         strand_.post(make_context_alloc_handler2(handler,
           boost::bind(&this_type::do_read_some<Handler, Iterator>, shared_from_this(), begin, end, _1)));
       }
 
       template <typename ConstBufferSequence, typename Handler>
-      void async_write(const ConstBufferSequence& buffer, Handler handler)
+      void async_write(const ConstBufferSequence& buffer, const Handler& handler)
       {                
         strand_.post(make_context_alloc_handler2(handler, 
           boost::bind(&this_type::do_write<ConstBufferSequence, Handler>, shared_from_this(), buffer, _1)));
@@ -109,7 +109,7 @@ namespace ma
 
       template <typename Iterator>
       static std::size_t copy_buffer(const frame_buffer_type& buffer, 
-        Iterator begin, Iterator end, boost::system::error_code& error)
+        const Iterator& begin, const Iterator& end, boost::system::error_code& error)
       {        
         std::size_t copy_size = std::min<std::size_t>(std::distance(begin, end), buffer.size());
         typedef frame_buffer_type::const_iterator buffer_iterator;
@@ -153,8 +153,9 @@ namespace ma
         typedef wrapped_read_handler<Handler, Iterator> this_type;
         this_type& operator=(const this_type&);
 
-      public:        
-        explicit wrapped_read_handler(Handler handler, Iterator begin, Iterator end)
+      public:
+        explicit wrapped_read_handler(const Handler& handler, 
+          const Iterator& begin, const Iterator& end)
           : read_handler_base(&this_type::do_copy)
           , handler_(handler)
           , begin_(begin)
@@ -194,7 +195,7 @@ namespace ma
         }  // asio_handler_deallocate
 
         template <typename Function>
-        friend void asio_handler_invoke(Function function, this_type* context)
+        friend void asio_handler_invoke(const Function& function, this_type* context)
         {
           ma_asio_handler_invoke_helpers::invoke(function, context->handler_);
         } // asio_handler_invoke
@@ -206,8 +207,8 @@ namespace ma
 
       private:
         Handler handler_;
-        Iterator begin_;
-        Iterator end_;
+        const Iterator begin_;
+        const Iterator end_;
       }; // wrapped_read_handler             
 
       template <typename Handler>
@@ -299,7 +300,7 @@ namespace ma
       }
      
       template <typename Handler>
-      void handle_write(const boost::system::error_code& error, boost::tuple<Handler> handler)
+      void handle_write(const boost::system::error_code& error, const boost::tuple<Handler>& handler)
       {         
         port_write_in_progress_ = false;
         io_service_.post(detail::bind_handler(handler.get<0>(), error));

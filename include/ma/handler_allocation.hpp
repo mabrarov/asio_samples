@@ -188,7 +188,7 @@ namespace ma
     }
 
     template <typename Function>
-    friend void asio_handler_invoke(Function function, this_type* context)
+    friend void asio_handler_invoke(const Function& function, this_type* context)
     {
       ma_asio_handler_invoke_helpers::invoke(function, context->handler_);
     }  
@@ -318,7 +318,7 @@ namespace ma
     }  
 
     template <typename Function>
-    friend void asio_handler_invoke(Function function, this_type* context)
+    friend void asio_handler_invoke(const Function& function, this_type* context)
     {
       ma_asio_handler_invoke_helpers::invoke(function, context->handler_);
     } 
@@ -444,7 +444,7 @@ namespace ma
     }  
 
     template <typename Function>
-    friend void asio_handler_invoke(Function function, this_type* context)
+    friend void asio_handler_invoke(const Function& function, this_type* context)
     {
       ma_asio_handler_invoke_helpers::invoke(function, context->handler_);
     } 
@@ -570,7 +570,7 @@ namespace ma
     }  
 
     template <typename Function>
-    friend void asio_handler_invoke(Function function, this_type* context)
+    friend void asio_handler_invoke(const Function& function, this_type* context)
     {
       ma_asio_handler_invoke_helpers::invoke(function, context->context_);
     } 
@@ -696,7 +696,7 @@ namespace ma
     }  
 
     template <typename Function>
-    friend void asio_handler_invoke(Function function, this_type* context)
+    friend void asio_handler_invoke(const Function& function, this_type* context)
     {
       ma_asio_handler_invoke_helpers::invoke(function, context->context_);
     } 

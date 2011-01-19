@@ -110,7 +110,7 @@ namespace ma
     }    
 
     template <typename Handler>
-    void put(Handler handler)
+    void put(const Handler& handler)
     {
       service_.put(implementation_, handler);
     }
