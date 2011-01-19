@@ -34,7 +34,7 @@ namespace ma
 
     public:
       template <typename Handler>
-      void async_do_something(const Handler& handler)
+      void async_do_something(Handler handler)
       {
         strand_.post(ma::make_context_alloc_handler2(handler, 
           boost::bind(&this_type::call_do_something<Handler>, shared_from_this(), _1)));

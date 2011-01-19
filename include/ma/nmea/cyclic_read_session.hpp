@@ -67,14 +67,14 @@ namespace ma
       void resest();
 
       template <typename Handler>
-      void async_start(const Handler& handler)
+      void async_start(Handler handler)
       {        
         strand_.post(make_context_alloc_handler2(handler,
           boost::bind(&this_type::do_start<Handler>, shared_from_this(), _1)));
       }
 
       template <typename Handler>
-      void async_stop(const Handler& handler)
+      void async_stop(Handler handler)
       {
         strand_.post(make_context_alloc_handler2(handler,
           boost::bind(&this_type::do_stop<Handler>, shared_from_this(), _1)));
@@ -82,17 +82,17 @@ namespace ma
 
       // Handler::operator ()(const boost::system::error_code&, std::size_t)
       template <typename Handler, typename Iterator>
-      void async_read_some(const Iterator& begin, const Iterator& end, const Handler& handler)
+      void async_read_some(Iterator begin, Iterator end, Handler handler)
       {                
         strand_.post(make_context_alloc_handler2(handler,
           boost::bind(&this_type::do_read_some<Handler, Iterator>, shared_from_this(), begin, end, _1)));
       }
 
       template <typename ConstBufferSequence, typename Handler>
-      void async_write(const ConstBufferSequence& buffer, const Handler& handler)
+      void async_write(ConstBufferSequence buffers, Handler handler)
       {                
         strand_.post(make_context_alloc_handler2(handler, 
-          boost::bind(&this_type::do_write<ConstBufferSequence, Handler>, shared_from_this(), buffer, _1)));
+          boost::bind(&this_type::do_write<ConstBufferSequence, Handler>, shared_from_this(), buffers, _1)));
       }
     
     private:
@@ -270,9 +270,9 @@ namespace ma
       } // get_read_handler
 
       template <typename ConstBufferSequence, typename Handler>
-      void do_write(const ConstBufferSequence& buffer, const Handler& handler)
+      void do_write(const ConstBufferSequence& buffers, const Handler& handler)
       {  
-        if (boost::optional<boost::system::error_code> result = write(buffer, handler))        
+        if (boost::optional<boost::system::error_code> result = write(buffers, handler))        
         {          
           io_service_.post(detail::bind_handler(handler, *result));          
         }
@@ -285,13 +285,13 @@ namespace ma
       void complete_stop();
 
       template <typename ConstBufferSequence, typename Handler>
-      boost::optional<boost::system::error_code> write(const ConstBufferSequence& buffer, const Handler& handler)
+      boost::optional<boost::system::error_code> write(const ConstBufferSequence& buffers, const Handler& handler)
       {
         if (started != state_ || port_write_in_progress_)
         {                             
           return session_error::invalid_state;
         }
-        boost::asio::async_write(serial_port_, buffer, strand_.wrap(
+        boost::asio::async_write(serial_port_, buffers, strand_.wrap(
           make_custom_alloc_handler(write_allocator_, 
             boost::bind(&this_type::handle_write<Handler>, shared_from_this(), 
               boost::asio::placeholders::error, boost::make_tuple<Handler>(handler)))));
