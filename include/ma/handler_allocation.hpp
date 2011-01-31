@@ -13,11 +13,11 @@
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
 #include <cstddef>
-#include <boost/config.hpp>
+#include <ma/config.hpp>
 
-#if defined(BOOST_HAS_RVALUE_REFS)
+#if defined(MA_HAS_RVALUE_REFS)
 #include <utility>
-#endif // defined(BOOST_HAS_RVALUE_REFS)
+#endif // defined(MA_HAS_RVALUE_REFS)
 
 #include <boost/utility.hpp>
 #include <boost/aligned_storage.hpp>
@@ -143,13 +143,21 @@ namespace ma
   public:
     typedef void result_type;
 
+#if defined(MA_HAS_RVALUE_REFS)
+    custom_alloc_handler(Allocator& allocator, Handler&& handler)
+#else
     custom_alloc_handler(Allocator& allocator, const Handler& handler)
+#endif // defined(MA_HAS_RVALUE_REFS)
 #if defined(_DEBUG)
       : allocator_(boost::addressof(allocator))
 #else
       : allocator_(allocator)
 #endif // defined(_DEBUG)  
+#if defined(MA_HAS_RVALUE_REFS)
+      , handler_(std::forward<Handler>(handler))
+#else
       , handler_(handler)
+#endif // defined(MA_HAS_RVALUE_REFS)
     {
     }
 
@@ -161,13 +169,13 @@ namespace ma
 #endif // defined(_DEBUG)              
     }    
 
-#if defined(BOOST_HAS_RVALUE_REFS)
+#if defined(MA_HAS_RVALUE_REFS)
     custom_alloc_handler(this_type&& other)
       : allocator_(other.allocator_)
       , handler_(std::move(other.handler_))
     {
     }
-#endif // defined(BOOST_HAS_RVALUE_REFS)
+#endif // defined(MA_HAS_RVALUE_REFS)
 
     friend void* asio_handler_allocate(std::size_t size, this_type* context)
     {
@@ -273,10 +281,20 @@ namespace ma
   }; //class custom_alloc_handler 
 
   template <typename Allocator, typename Handler>
+#if defined(MA_HAS_RVALUE_REFS)
+  inline custom_alloc_handler<Allocator, typename std::identity<Handler>::type> 
+  make_custom_alloc_handler(Allocator& allocator, Handler&& handler)
+#else
   inline custom_alloc_handler<Allocator, Handler> 
   make_custom_alloc_handler(Allocator& allocator, const Handler& handler)
+#endif // defined(MA_HAS_RVALUE_REFS)  
   {
+#if defined(MA_HAS_RVALUE_REFS)
+    typedef typename std::identity<Handler>::type handler_type;
+    return custom_alloc_handler<Allocator, handler_type>(allocator, std::forward<Handler>(handler));
+#else  
     return custom_alloc_handler<Allocator, Handler>(allocator, handler);
+#endif // defined(MA_HAS_RVALUE_REFS)      
   }    
 
   template <typename Context, typename Handler>
@@ -295,13 +313,13 @@ namespace ma
     {
     }
 
-#if defined(BOOST_HAS_RVALUE_REFS)
+#if defined(MA_HAS_RVALUE_REFS)
     context_alloc_handler(this_type&& other)
       : context_(std::move(other.context_))
       , handler_(std::move(other.handler_))
     {
     }
-#endif // defined(BOOST_HAS_RVALUE_REFS)
+#endif // defined(MA_HAS_RVALUE_REFS)
 
     ~context_alloc_handler()
     {
@@ -421,13 +439,13 @@ namespace ma
     {
     }
 
-#if defined(BOOST_HAS_RVALUE_REFS)
+#if defined(MA_HAS_RVALUE_REFS)
     context_alloc_handler2(this_type&& other)
       : context_(std::move(other.context_))
       , handler_(std::move(other.handler_))
     {
     }
-#endif // defined(BOOST_HAS_RVALUE_REFS)
+#endif // defined(MA_HAS_RVALUE_REFS)
 
     ~context_alloc_handler2()
     {
@@ -547,13 +565,13 @@ namespace ma
     {
     }
 
-#if defined(BOOST_HAS_RVALUE_REFS)
+#if defined(MA_HAS_RVALUE_REFS)
     context_wrapped_handler(this_type&& other)
       : context_(std::move(other.context_))
       , handler_(std::move(other.handler_))
     {
     }
-#endif // defined(BOOST_HAS_RVALUE_REFS)
+#endif // defined(MA_HAS_RVALUE_REFS)
 
     ~context_wrapped_handler()
     {
@@ -673,13 +691,13 @@ namespace ma
     {
     }
 
-#if defined(BOOST_HAS_RVALUE_REFS)
+#if defined(MA_HAS_RVALUE_REFS)
     context_wrapped_handler2(this_type&& other)
       : context_(std::move(other.context_))
       , handler_(std::move(other.handler_))
     {
     }
-#endif // defined(BOOST_HAS_RVALUE_REFS)
+#endif // defined(MA_HAS_RVALUE_REFS)
 
     ~context_wrapped_handler2()
     {

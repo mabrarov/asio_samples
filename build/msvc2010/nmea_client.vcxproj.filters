@@ -73,5 +73,8 @@
     <ClInclude Include="..\..\include\ma\nmea\error.hpp">
       <Filter>Header Files\ma\nmea</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\ma\config.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

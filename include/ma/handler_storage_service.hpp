@@ -14,11 +14,11 @@
 
 #include <cstddef>
 #include <stdexcept>
-#include <boost/config.hpp>
+#include <ma/config.hpp>
 
-#if defined(BOOST_HAS_RVALUE_REFS)
+#if defined(MA_HAS_RVALUE_REFS)
 #include <utility>
-#endif // defined(BOOST_HAS_RVALUE_REFS)
+#endif // defined(MA_HAS_RVALUE_REFS)
 
 #include <boost/throw_exception.hpp>
 #include <boost/utility.hpp>
@@ -115,7 +115,7 @@ namespace ma
       {
       }      
 
-#if defined(BOOST_HAS_RVALUE_REFS)
+#if defined(MA_HAS_RVALUE_REFS)
       // Move constructor
       handler_wrapper(this_type&& other)
         : handler_base(std::move(other))
@@ -124,7 +124,7 @@ namespace ma
         , handler_(std::move(other.handler_))
       {
       }
-#endif // defined(BOOST_HAS_RVALUE_REFS)
+#endif // defined(MA_HAS_RVALUE_REFS)
 
       ~handler_wrapper()
       {
@@ -140,11 +140,11 @@ namespace ma
         detail::handler_ptr<alloc_traits> ptr(this_ptr->handler_, this_ptr);          
         // Make a local copy of handler stored at wrapper object
         // This local copy will be used for wrapper's memory deallocation later
-#if defined(BOOST_HAS_RVALUE_REFS)
+#if defined(MA_HAS_RVALUE_REFS)
         Handler handler(std::move(this_ptr->handler_));
 #else
         Handler handler(this_ptr->handler_);
-#endif // defined(BOOST_HAS_RVALUE_REFS)
+#endif // defined(MA_HAS_RVALUE_REFS)
         // Change the handler which will be used for wrapper's memory deallocation
         ptr.set_alloc_context(handler);
         // Make copies of other data placed at wrapper object      
@@ -158,11 +158,11 @@ namespace ma
         // throw the local copy of handler
         ptr.reset();          
         // Post the copy of handler's local copy to io_service
-#if defined(BOOST_HAS_RVALUE_REFS)
+#if defined(MA_HAS_RVALUE_REFS)
         io_service.post(detail::bind_handler(std::move(handler), std::move(arg)));
 #else
         io_service.post(detail::bind_handler(handler, arg));
-#endif // defined(BOOST_HAS_RVALUE_REFS)        
+#endif // defined(MA_HAS_RVALUE_REFS)        
       }  // do_invoke
 
       static void do_destroy(handler_base* base)
@@ -175,11 +175,11 @@ namespace ma
         detail::handler_ptr<alloc_traits> ptr(this_ptr->handler_, this_ptr);          
         // Make a local copy of handler stored at wrapper object
         // This local copy will be used for wrapper's memory deallocation later
-#if defined(BOOST_HAS_RVALUE_REFS)
+#if defined(MA_HAS_RVALUE_REFS)
         Handler handler(std::move(this_ptr->handler_));
 #else
         Handler handler(this_ptr->handler_);
-#endif // defined(BOOST_HAS_RVALUE_REFS)
+#endif // defined(MA_HAS_RVALUE_REFS)
         // Change the handler which will be used for wrapper's memory deallocation
         ptr.set_alloc_context(handler);   
         // Destroy wrapper object and deallocate its memory 

@@ -15,7 +15,6 @@
 #include <string>
 #include <algorithm>
 #include <utility>
-#include <boost/config.hpp>
 #include <boost/utility.hpp>
 #include <boost/optional.hpp>
 #include <boost/smart_ptr.hpp>
@@ -25,6 +24,7 @@
 #include <boost/tuple/tuple.hpp>
 #include <boost/circular_buffer.hpp>
 #include <boost/enable_shared_from_this.hpp>
+#include <ma/config.hpp>
 #include <ma/handler_allocation.hpp>
 #include <ma/handler_storage.hpp>
 #include <ma/bind_asio_handler.hpp>
@@ -167,7 +167,7 @@ namespace ma
         {
         }
 
-#if defined(BOOST_HAS_RVALUE_REFS)
+#if defined(MA_HAS_RVALUE_REFS)
         wrapped_read_handler(this_type&& other)
           : read_handler_base(std::move(other))
           , handler_(std::move(other.handler_))
@@ -175,7 +175,7 @@ namespace ma
           , end_(std::move(other.end_))
         {
         }
-#endif // defined(BOOST_HAS_RVALUE_REFS)
+#endif // defined(MA_HAS_RVALUE_REFS)
 
         static std::size_t do_copy(read_handler_base* base, 
           const frame_buffer_type& buffer, boost::system::error_code& error)

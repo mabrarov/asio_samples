@@ -12,11 +12,11 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
-#include <boost/config.hpp>
+#include <ma/config.hpp>
 
-#if defined(BOOST_HAS_RVALUE_REFS)
+#if defined(MA_HAS_RVALUE_REFS)
 #include <utility>
-#endif // defined(BOOST_HAS_RVALUE_REFS)
+#endif // defined(MA_HAS_RVALUE_REFS)
 
 #include <ma/handler_alloc_helpers.hpp>
 #include <ma/handler_invoke_helpers.hpp>
@@ -41,13 +41,13 @@ namespace ma
       {
       }
 
-#if defined(BOOST_HAS_RVALUE_REFS)
+#if defined(MA_HAS_RVALUE_REFS)
       binder1(this_type&& other)
         : handler_(std::move(other.handler_))
         , arg1_(std::move(other.arg1_))
       {
       }
-#endif // defined(BOOST_HAS_RVALUE_REFS)
+#endif // defined(MA_HAS_RVALUE_REFS)
 
       ~binder1()
       {
@@ -108,14 +108,14 @@ namespace ma
       {
       }
 
-#if defined(BOOST_HAS_RVALUE_REFS)
+#if defined(MA_HAS_RVALUE_REFS)
       binder2(this_type&& other)
         : handler_(std::move(other.handler_))
         , arg1_(std::move(other.arg1_))
         , arg2_(std::move(other.arg2_))
       {
       }
-#endif // defined(BOOST_HAS_RVALUE_REFS)
+#endif // defined(MA_HAS_RVALUE_REFS)
 
       ~binder2()
       {
@@ -179,7 +179,7 @@ namespace ma
       {
       }
 
-#if defined(BOOST_HAS_RVALUE_REFS)
+#if defined(MA_HAS_RVALUE_REFS)
       binder3(this_type&& other)
         : handler_(std::move(other.handler_))
         , arg1_(std::move(other.arg1_))
@@ -187,7 +187,7 @@ namespace ma
         , arg3_(std::move(other.arg3_))
       {
       }
-#endif // defined(BOOST_HAS_RVALUE_REFS)
+#endif // defined(MA_HAS_RVALUE_REFS)
 
       ~binder3()
       {
@@ -253,7 +253,7 @@ namespace ma
       {
       }
 
-#if defined(BOOST_HAS_RVALUE_REFS)
+#if defined(MA_HAS_RVALUE_REFS)
       binder4(this_type&& other)
         : handler_(std::move(other.handler_))
         , arg1_(std::move(other.arg1_))
@@ -262,7 +262,7 @@ namespace ma
         , arg4_(std::move(other.arg4_))
       {
       }
-#endif // defined(BOOST_HAS_RVALUE_REFS)
+#endif // defined(MA_HAS_RVALUE_REFS)
 
       ~binder4()
       {
@@ -332,7 +332,7 @@ namespace ma
       {
       }
 
-#if defined(BOOST_HAS_RVALUE_REFS)
+#if defined(MA_HAS_RVALUE_REFS)
       binder5(this_type&& other)
         : handler_(std::move(other.handler_))
         , arg1_(std::move(other.arg1_))
@@ -342,7 +342,7 @@ namespace ma
         , arg5_(std::move(other.arg5_))
       {
       }
-#endif // defined(BOOST_HAS_RVALUE_REFS)
+#endif // defined(MA_HAS_RVALUE_REFS)
 
       ~binder5()
       {

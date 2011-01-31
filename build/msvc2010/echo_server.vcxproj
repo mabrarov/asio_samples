@@ -190,6 +190,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\ma\bind_asio_handler.hpp" />
+    <ClInclude Include="..\..\include\ma\config.hpp" />
     <ClInclude Include="..\..\include\ma\console_controller.hpp" />
     <ClInclude Include="..\..\include\ma\cyclic_buffer.hpp" />
     <ClInclude Include="..\..\include\ma\echo\server\error.hpp" />
