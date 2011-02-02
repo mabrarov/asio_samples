@@ -143,21 +143,13 @@ namespace ma
   public:
     typedef void result_type;
 
-#if defined(MA_HAS_RVALUE_REFS)
-    custom_alloc_handler(Allocator& allocator, Handler&& handler)
-#else
     custom_alloc_handler(Allocator& allocator, const Handler& handler)
-#endif // defined(MA_HAS_RVALUE_REFS)
 #if defined(_DEBUG)
       : allocator_(boost::addressof(allocator))
 #else
       : allocator_(allocator)
 #endif // defined(_DEBUG)  
-#if defined(MA_HAS_RVALUE_REFS)
-      , handler_(std::forward<Handler>(handler))
-#else
       , handler_(handler)
-#endif // defined(MA_HAS_RVALUE_REFS)
     {
     }
 
@@ -281,21 +273,11 @@ namespace ma
   }; //class custom_alloc_handler 
 
   template <typename Allocator, typename Handler>
-#if defined(MA_HAS_RVALUE_REFS)
-  inline custom_alloc_handler<Allocator, typename std::identity<Handler>::type> 
-  make_custom_alloc_handler(Allocator& allocator, Handler&& handler)
-#else
   inline custom_alloc_handler<Allocator, Handler> 
   make_custom_alloc_handler(Allocator& allocator, const Handler& handler)
-#endif // defined(MA_HAS_RVALUE_REFS)  
   {
-#if defined(MA_HAS_RVALUE_REFS)
-    typedef typename std::identity<Handler>::type handler_type;
-    return custom_alloc_handler<Allocator, handler_type>(allocator, std::forward<Handler>(handler));
-#else  
     return custom_alloc_handler<Allocator, Handler>(allocator, handler);
-#endif // defined(MA_HAS_RVALUE_REFS)      
-  }    
+  } // make_custom_alloc_handler
 
   template <typename Context, typename Handler>
   class context_alloc_handler
@@ -421,7 +403,7 @@ namespace ma
   make_context_alloc_handler(const Context& context, const Handler& handler)
   {
     return context_alloc_handler<Context, Handler>(context, handler);
-  }  
+  } // make_context_alloc_handler
   
   template <typename Context, typename Handler>
   class context_alloc_handler2
@@ -547,7 +529,7 @@ namespace ma
   make_context_alloc_handler2(const Context& context, const Handler& handler)
   {
     return context_alloc_handler2<Context, Handler>(context, handler);
-  }  
+  } // make_context_alloc_handler2
 
   template <typename Context, typename Handler>
   class context_wrapped_handler
@@ -673,7 +655,7 @@ namespace ma
   make_context_wrapped_handler(const Context& context, const Handler& handler)
   {
     return context_wrapped_handler<Context, Handler>(context, handler);
-  }  
+  } // make_context_wrapped_handler
   
   template <typename Context, typename Handler>
   class context_wrapped_handler2
@@ -799,7 +781,7 @@ namespace ma
   make_context_wrapped_handler2(const Context& context, const Handler& handler)
   {
     return context_wrapped_handler2<Context, Handler>(context, handler);
-  }  
+  } // make_context_wrapped_handler2
 
 } //namespace ma
 
