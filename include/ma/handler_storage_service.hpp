@@ -52,7 +52,7 @@ namespace ma
     typedef Arg argument_type;    
 
   private:    
-    typedef typename boost::call_traits<argument_type>::param_type arg_param_type;    
+    typedef typename boost::call_traits<argument_type>::param_type arg_param_type;
 
     class handler_base
     {

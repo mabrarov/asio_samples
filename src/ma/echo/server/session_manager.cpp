@@ -216,7 +216,8 @@ namespace ma
       {
         acceptor_.async_accept(wrapped_session->the_session->socket(), wrapped_session->remote_endpoint, 
           strand_.wrap(make_custom_alloc_handler(accept_allocator_,
-			boost::bind(&this_type::handle_accept, shared_from_this(), wrapped_session, boost::asio::placeholders::error))));
+			  boost::bind(&this_type::handle_accept, shared_from_this(), 
+          wrapped_session, boost::asio::placeholders::error))));
         // Register pending operation
         ++pending_operations_;
         accept_in_progress_ = true;
