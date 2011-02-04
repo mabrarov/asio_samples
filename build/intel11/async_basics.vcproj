@@ -376,6 +376,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\include\ma\config.hpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\include\ma\console_controller.hpp"
 					>
 				</File>
@@ -387,7 +391,7 @@
 					RelativePath="..\..\include\ma\handler_allocation.hpp"
 					>
 				</File>
-                <File
+				<File
 					RelativePath="..\..\include\ma\handler_allocation.hpp"
 					>
 				</File>
@@ -395,7 +399,7 @@
 					RelativePath="..\..\include\ma\handler_storage.hpp"
 					>
 				</File>
-                <File
+				<File
 					RelativePath="..\..\include\ma\handler_storage_service.hpp"
 					>
 				</File>
