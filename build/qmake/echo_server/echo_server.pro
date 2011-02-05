@@ -20,6 +20,7 @@ HEADERS  += ../../../include/ma/handler_storage_service.hpp \
             ../../../include/ma/handler_alloc_helpers.hpp \
             ../../../include/ma/cyclic_buffer.hpp \
             ../../../include/ma/console_controller.hpp \
+            ../../../include/ma/config.hpp \
             ../../../include/ma/echo/server/session_config_fwd.hpp \
             ../../../include/ma/echo/server/session_manager_config_fwd.hpp \
             ../../../include/ma/echo/server/session_config.hpp \

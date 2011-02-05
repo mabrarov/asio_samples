@@ -19,6 +19,7 @@ HEADERS  += ../../../include/ma/handler_storage_service.hpp \
             ../../../include/ma/console_controller.hpp \
             ../../../include/ma/nmea/frame.hpp \
             ../../../include/ma/nmea/error.hpp \
+            ../../../include/ma/config.hpp \
             ../../../include/ma/nmea/cyclic_read_session_fwd.hpp \
             ../../../include/ma/nmea/cyclic_read_session.hpp
 
