@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010 Marat Abrarov (abrarov@mail.ru)
+// Copyright (c) 2010-2011 Marat Abrarov (abrarov@mail.ru)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -44,8 +44,8 @@ int _tmain(int argc, _TCHAR* argv[])
       return EXIT_SUCCESS;
     }
     
-    //std::size_t cpu_num = boost::thread::hardware_concurrency();
-    //std::size_t session_thread_num = cpu_num > 1 ? cpu_num : 2;
+    //std::size_t cpu_count = boost::thread::hardware_concurrency();
+    //std::size_t session_thread_count = cpu_count > 1 ? cpu_count : 2;
     //todo
     return EXIT_SUCCESS;
   }

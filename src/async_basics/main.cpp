@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010 Marat Abrarov (abrarov@mail.ru)
+// Copyright (c) 2010-2011 Marat Abrarov (abrarov@mail.ru)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -41,11 +41,11 @@ int _tmain(int /*argc*/, _TCHAR* /*argv*/[])
 {     
   try
   {  
-    std::size_t cpu_num = boost::thread::hardware_concurrency();
-    std::size_t work_thread_count = cpu_num < 2 ? 2 : cpu_num;
+    std::size_t cpu_count = boost::thread::hardware_concurrency();
+    std::size_t work_thread_count = cpu_count < 2 ? 2 : cpu_count;
 
     using boost::asio::io_service;
-    io_service work_io_service(cpu_num);
+    io_service work_io_service(cpu_count);
 
     boost::optional<io_service::work> work_io_service_guard(boost::in_place(boost::ref(work_io_service)));
     boost::thread_group work_threads;

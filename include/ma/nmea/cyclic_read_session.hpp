@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010 Marat Abrarov (abrarov@mail.ru)
+// Copyright (c) 2010-2011 Marat Abrarov (abrarov@mail.ru)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -17,7 +17,7 @@
 #include <utility>
 #include <boost/utility.hpp>
 #include <boost/optional.hpp>
-#include <boost/smart_ptr.hpp>
+#include <boost/shared_ptr.hpp>
 #include <boost/bind.hpp>
 #include <boost/ref.hpp>
 #include <boost/asio.hpp>

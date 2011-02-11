@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2009 Marat Abrarov (abrarov@mail.ru)
+// Copyright (c) 2010-2011 Marat Abrarov (abrarov@mail.ru)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -64,13 +64,13 @@ int _tmain(int argc, _TCHAR* argv[])
       return EXIT_FAILURE;
     }
 
-    std::size_t cpu_num = boost::thread::hardware_concurrency();
-    std::size_t concurrent_num = 2 > cpu_num ? 2 : cpu_num;
-    std::size_t thread_num = 2;
+    std::size_t cpu_count = boost::thread::hardware_concurrency();
+    std::size_t concurrent_count = 2 > cpu_count ? 2 : cpu_count;
+    std::size_t thread_count = 2;
 
-    std::wcout << L"Number of found CPUs             : " << cpu_num        << std::endl
-               << L"Number of concurrent work threads: " << concurrent_num << std::endl
-               << L"Total number of work threads     : " << thread_num     << std::endl;
+    std::wcout << L"Number of found CPUs             : " << cpu_count        << std::endl
+               << L"Number of concurrent work threads: " << concurrent_count << std::endl
+               << L"Total number of work threads     : " << thread_count     << std::endl;
 
     std::wstring device_name(argv[1]);
     std::size_t read_buffer_size = std::max<std::size_t>(1024, session::min_read_buffer_size);
@@ -110,7 +110,7 @@ int _tmain(int argc, _TCHAR* argv[])
     frame_buffer_ptr the_frame_buffer(boost::make_shared<frame_buffer_type>(message_queue_size));
             
     // An io_service for the thread pool (for the executors... Java Executors API? Apache MINA :)
-    boost::asio::io_service session_io_service(concurrent_num);   
+    boost::asio::io_service session_io_service(concurrent_count);   
     session_ptr the_session(boost::make_shared<session>(boost::ref(session_io_service), 
       read_buffer_size, message_queue_size, "$", "\x0a"));
 
@@ -134,7 +134,7 @@ int _tmain(int argc, _TCHAR* argv[])
 
     // Create work threads
     boost::thread_group work_threads;
-    for (std::size_t i = 0; i != thread_num; ++i)
+    for (std::size_t i = 0; i != thread_count; ++i)
     {
       work_threads.create_thread(boost::bind(&boost::asio::io_service::run, &session_io_service));
     }

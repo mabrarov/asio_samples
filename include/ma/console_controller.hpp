@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2009 Marat Abrarov (abrarov@mail.ru)
+// // Copyright (c) 2010-2011 Marat Abrarov (abrarov@mail.ru)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -18,10 +18,9 @@
 #include <boost/function.hpp>
 #include <boost/thread.hpp>
 
-namespace ma
+namespace ma 
 {
-  class console_controller
-    : private boost::noncopyable
+  class console_controller : private boost::noncopyable
   {
   public:
     typedef boost::function<void (void)> ctrl_function_type;
@@ -33,7 +32,8 @@ namespace ma
     static BOOL WINAPI console_ctrl_proc(DWORD ctrl_type);
     static boost::mutex ctrl_mutex_;
     static ctrl_function_type ctrl_function_;	
-  };
+  }; // class console_controller
+
 } // namespace ma
 
 #endif // CONSOLE_CONTROLLER_HPP

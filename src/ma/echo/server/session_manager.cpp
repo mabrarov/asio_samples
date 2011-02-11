@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010 Marat Abrarov (abrarov@mail.ru)
+// Copyright (c) 2010-2011 Marat Abrarov (abrarov@mail.ru)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -276,7 +276,7 @@ namespace ma
           }
           return;
         }
-        if (active_sessions_.size() < config_.max_session_num)
+        if (active_sessions_.size() < config_.max_session_count)
         { 
           // Start accepted session 
           start_session(wrapped_session);          
@@ -310,7 +310,7 @@ namespace ma
       bool session_manager::may_continue_accept() const
       {
         return !accept_in_progress_ && !wait_error_
-          && active_sessions_.size() < config_.max_session_num;
+          && active_sessions_.size() < config_.max_session_count;
       } // may_continue_accept
 
       void session_manager::start_session(const session_wrapper_ptr& wrapped_session)
@@ -515,7 +515,7 @@ namespace ma
       {
         // Check session's pending operation number and recycle bin size
         if (0 == wrapped_session->pending_operations
-          && recycled_sessions_.size() < config_.recycled_session_num)
+          && recycled_sessions_.size() < config_.recycled_session_count)
         {
           // Reset session state
           wrapped_session->the_session->reset();

@@ -1,0 +1,212 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;cxx;c;def</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h</Extensions>
+    </Filter>
+    <Filter Include="Form Files">
+      <UniqueIdentifier>{99349809-55BA-4b9d-BF79-8FDBB0286EB3}</UniqueIdentifier>
+      <Extensions>ui</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{D9D6E242-F8AF-46E4-B9FD-80ECBC20BA3E}</UniqueIdentifier>
+      <Extensions>qrc;*</Extensions>
+      <ParseFiles>false</ParseFiles>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{71ED8ED8-ACB9-4CE9-BBE1-E00B30144E11}</UniqueIdentifier>
+      <Extensions>moc;h;cpp</Extensions>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
+    <Filter Include="Generated Files\Debug">
+      <UniqueIdentifier>{248fc6d2-2642-43e2-a361-2e85dac0b9f7}</UniqueIdentifier>
+      <Extensions>cpp;moc</Extensions>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
+    <Filter Include="Generated Files\Release">
+      <UniqueIdentifier>{730c4a40-c1f1-4a0c-831b-8048588c18d2}</UniqueIdentifier>
+      <Extensions>cpp;moc</Extensions>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
+    <Filter Include="Form Files\ma">
+      <UniqueIdentifier>{e9ff1c3c-024c-4763-b4ae-ad8d687854dd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Form Files\ma\echo">
+      <UniqueIdentifier>{2cdeac85-7642-4ecf-8279-bc6c127dd94e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Form Files\ma\echo\server">
+      <UniqueIdentifier>{85a54b71-9e3d-4c27-9050-f38a8edba44a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Form Files\ma\echo\server\qt">
+      <UniqueIdentifier>{a360b6a7-534f-42f1-88e8-7188ffb8b617}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ma">
+      <UniqueIdentifier>{38a36d43-46a9-4c1c-8c1e-0db17a8f5ea0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ma\echo">
+      <UniqueIdentifier>{c0e78958-7842-408f-bdcd-2153a96ed51d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ma\echo\server">
+      <UniqueIdentifier>{d24749de-4951-4109-8e89-1c06335d2151}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ma\echo\server\qt">
+      <UniqueIdentifier>{2fa8b08e-6b4f-47fd-920e-ef064a8e8634}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ma">
+      <UniqueIdentifier>{6030b89b-c8eb-46d8-bff3-7f191d0434a5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ma\echo">
+      <UniqueIdentifier>{7339c23a-7475-48a3-a974-60505ea3d82c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ma\echo\server">
+      <UniqueIdentifier>{174ddde9-e25f-41af-a7a1-26a0c7db68d7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ma\echo\server\qt">
+      <UniqueIdentifier>{f4e9ac4f-1b15-46b3-8b80-c5cb0b641c2e}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="GeneratedFiles\qrc_qt_echo_server.cpp">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\ma\echo\server\qt\mainform.cpp">
+      <Filter>Source Files\ma\echo\server\qt</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\ma\echo\server\error.cpp">
+      <Filter>Source Files\ma\echo\server</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\ma\echo\server\session.cpp">
+      <Filter>Source Files\ma\echo\server</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\ma\echo\server\session_config.cpp">
+      <Filter>Source Files\ma\echo\server</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\ma\echo\server\session_manager.cpp">
+      <Filter>Source Files\ma\echo\server</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\ma\echo\server\session_manager_config.cpp">
+      <Filter>Source Files\ma\echo\server</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\qt_echo_server\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_mainform.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_mainform.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\ma\echo\server\qt\sessionmanagerwrapper.cpp">
+      <Filter>Source Files\ma\echo\server\qt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_sessionmanagerwrapper.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_sessionmanagerwrapper.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_sessionmanagersignal.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_sessionmanagersignal.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\..\..\include\ma\echo\server\qt\mainform.h">
+      <Filter>Header Files\ma\echo\server\qt</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\src\ma\echo\server\qt\mainform.ui">
+      <Filter>Form Files\ma\echo\server\qt</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\resources\qt_echo_server\qt_echo_server.qrc">
+      <Filter>Resource Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\include\ma\echo\server\qt\sessionmanagerwrapper.h">
+      <Filter>Header Files\ma\echo\server\qt</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\include\ma\echo\server\qt\sessionmanagersignal.h">
+      <Filter>Header Files\ma\echo\server\qt</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\include\ma\echo\server\error.hpp">
+      <Filter>Header Files\ma\echo\server</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\echo\server\session.hpp">
+      <Filter>Header Files\ma\echo\server</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\echo\server\session_config.hpp">
+      <Filter>Header Files\ma\echo\server</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\echo\server\session_config_fwd.hpp">
+      <Filter>Header Files\ma\echo\server</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\echo\server\session_fwd.hpp">
+      <Filter>Header Files\ma\echo\server</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\echo\server\session_manager.hpp">
+      <Filter>Header Files\ma\echo\server</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\echo\server\session_manager_config.hpp">
+      <Filter>Header Files\ma\echo\server</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\echo\server\session_manager_config_fwd.hpp">
+      <Filter>Header Files\ma\echo\server</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\echo\server\session_manager_fwd.hpp">
+      <Filter>Header Files\ma\echo\server</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\bind_asio_handler.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\config.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\cyclic_buffer.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\handler_alloc_helpers.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\handler_allocation.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\handler_invoke_helpers.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\handler_storage.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\handler_storage_service.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
+    <ClInclude Include="GeneratedFiles\ui_mainform.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\echo\server\qt\sessionmanagerwrapper_fwd.h">
+      <Filter>Header Files\ma\echo\server\qt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\echo\server\qt\meta_type_register_error.h">
+      <Filter>Header Files\ma\echo\server\qt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\echo\server\qt\sessionmanagersignal_fwd.h">
+      <Filter>Header Files\ma\echo\server\qt</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\resources\qt_echo_server\qt_echo_server.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\..\resources\qt_echo_server\qt_echo_server.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>
