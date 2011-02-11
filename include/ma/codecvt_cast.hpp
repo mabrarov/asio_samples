@@ -29,7 +29,7 @@ namespace ma
         : std::runtime_error(0)
       {
       }
-    }; //bad_conversion  
+    }; // class bad_conversion  
 
     template <typename CharType, typename Byte>
     const std::basic_string<CharType> in(
@@ -70,7 +70,7 @@ namespace ma
       }	    
 
 	    return internal_str;
-    }
+    } // in
 
     template <typename CharType, typename Byte>
     const std::basic_string<Byte> out(
@@ -117,7 +117,7 @@ namespace ma
       }
 
       return external_str;  
-    }
+    } // out
 
   } // namespace codecvt_cast
 } //namespace ma

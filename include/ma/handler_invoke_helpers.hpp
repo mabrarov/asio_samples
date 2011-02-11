@@ -22,7 +22,8 @@ namespace ma_asio_handler_invoke_helpers
   {
     using namespace boost::asio;
     asio_handler_invoke(function, context);
-  }  
-}
+  }  // invoke
+
+} // namespace ma_asio_handler_invoke_helpers
 
 #endif // MA_HANDLER_INVOKE_HELPERS_HPP

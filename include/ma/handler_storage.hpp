@@ -12,9 +12,8 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
-#include <cstddef>
+#include <boost/asio.hpp>
 #include <boost/utility.hpp>
-#include <boost/call_traits.hpp>
 #include <ma/handler_storage_service.hpp>
 
 namespace ma
@@ -68,10 +67,9 @@ namespace ma
   class handler_storage : private boost::noncopyable
   {
   public:
-    typedef Arg argument_type;    
-    typedef typename boost::call_traits<argument_type>::param_type arg_param_type;    
-    typedef handler_storage_service<argument_type>                 service_type;
-    typedef typename service_type::implementation_type             implementation_type;
+    typedef Arg arg_type;    
+    typedef handler_storage_service<arg_type>          service_type;
+    typedef typename service_type::implementation_type implementation_type;
 
     explicit handler_storage(boost::asio::io_service& io_service)
       : service_(boost::asio::use_service<service_type>(io_service))
@@ -115,7 +113,7 @@ namespace ma
       service_.put(implementation_, handler);
     }
 
-    void post(arg_param_type arg)
+    void post(const arg_type& arg)
     {      
       service_.post(implementation_, arg);
     }    

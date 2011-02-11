@@ -29,8 +29,8 @@
 #include <ma/handler_storage.hpp>
 #include <ma/bind_asio_handler.hpp>
 #include <ma/nmea/frame.hpp>
-#include <ma/nmea/cyclic_read_session_fwd.hpp>
 #include <ma/nmea/error.hpp>
+#include <ma/nmea/cyclic_read_session_fwd.hpp>
 
 namespace ma
 {
@@ -71,14 +71,14 @@ namespace ma
       {        
         strand_.post(make_context_alloc_handler2(handler,
           boost::bind(&this_type::do_start<Handler>, shared_from_this(), _1)));
-      }
+      } // async_start
 
       template <typename Handler>
       void async_stop(Handler handler)
       {
         strand_.post(make_context_alloc_handler2(handler,
           boost::bind(&this_type::do_stop<Handler>, shared_from_this(), _1)));
-      }           
+      } // async_stop
 
       // Handler::operator ()(const boost::system::error_code&, std::size_t)
       template <typename Handler, typename Iterator>
@@ -86,14 +86,14 @@ namespace ma
       {                
         strand_.post(make_context_alloc_handler2(handler,
           boost::bind(&this_type::do_read_some<Handler, Iterator>, shared_from_this(), begin, end, _1)));
-      }
+      } // async_read_some
 
       template <typename ConstBufferSequence, typename Handler>
       void async_write(ConstBufferSequence buffers, Handler handler)
       {                
         strand_.post(make_context_alloc_handler2(handler, 
           boost::bind(&this_type::do_write<ConstBufferSequence, Handler>, shared_from_this(), buffers, _1)));
-      }
+      } // async_write
     
     private:
       enum state_type
@@ -103,7 +103,7 @@ namespace ma
         started,
         stop_in_progress,
         stopped
-      };
+      }; // enum state_type
 
       typedef boost::circular_buffer<frame_ptr> frame_buffer_type;
 
@@ -118,7 +118,7 @@ namespace ma
         std::copy(src_begin, src_end, begin);
         error = boost::system::error_code();
         return copy_size;
-      }
+      } // copy_buffer
 
       class read_handler_base
       {
@@ -142,7 +142,7 @@ namespace ma
         
       private:
         copy_func_type copy_func_;        
-      }; // read_handler_base
+      }; // class read_handler_base
 
       typedef boost::tuple<boost::system::error_code, std::size_t> read_result_type;
 
@@ -209,7 +209,7 @@ namespace ma
         Handler handler_;
         const Iterator begin_;
         const Iterator end_;
-      }; // wrapped_read_handler             
+      }; // class wrapped_read_handler             
 
       template <typename Handler>
       void do_start(const Handler& handler)
@@ -285,7 +285,8 @@ namespace ma
       void complete_stop();
 
       template <typename ConstBufferSequence, typename Handler>
-      boost::optional<boost::system::error_code> write(const ConstBufferSequence& buffers, const Handler& handler)
+      boost::optional<boost::system::error_code> write(
+        const ConstBufferSequence& buffers, const Handler& handler)
       {
         if (started != state_ || port_write_in_progress_)
         {                             
@@ -297,7 +298,7 @@ namespace ma
               boost::asio::placeholders::error, boost::make_tuple<Handler>(handler)))));
         port_write_in_progress_ = true;        
         return boost::optional<boost::system::error_code>();
-      }
+      } // write
      
       template <typename Handler>
       void handle_write(const boost::system::error_code& error, const boost::tuple<Handler>& handler)
@@ -309,7 +310,7 @@ namespace ma
           state_ = stopped;
           post_stop_handler();
         }
-      } 
+      } // handle_write
 
       void read_until_head();
       void read_until_tail();

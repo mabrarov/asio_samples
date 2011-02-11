@@ -66,18 +66,18 @@ namespace ma
       friend void* asio_handler_allocate(std::size_t size, this_type* context)
       {
         return ma_asio_handler_alloc_helpers::allocate(size, context->handler_);
-      }
+      } // asio_handler_allocate
 
       friend void asio_handler_deallocate(void* pointer, std::size_t size, this_type* context)
       {
         ma_asio_handler_alloc_helpers::deallocate(pointer, size, context->handler_);
-      }
+      } // asio_handler_deallocate
 
       template <typename Function>
       friend void asio_handler_invoke(const Function& function, this_type* context)
       {
         ma_asio_handler_invoke_helpers::invoke(function, context->handler_);
-      }
+      } // asio_handler_invoke
 
     private:      
       Handler handler_;
@@ -134,18 +134,18 @@ namespace ma
       friend void* asio_handler_allocate(std::size_t size, this_type* context)
       {
         return ma_asio_handler_alloc_helpers::allocate(size, context->handler_);
-      }
+      } // asio_handler_allocate
 
       friend void asio_handler_deallocate(void* pointer, std::size_t size, this_type* context)
       {
         ma_asio_handler_alloc_helpers::deallocate(pointer, size, context->handler_);
-      }
+      } // asio_handler_deallocate
 
       template <typename Function>
       friend void asio_handler_invoke(const Function& function, this_type* context)
       {
         ma_asio_handler_invoke_helpers::invoke(function, context->handler_);
-      }
+      } // asio_handler_invoke
 
     private:      
       Handler handler_;
@@ -206,18 +206,18 @@ namespace ma
       friend void* asio_handler_allocate(std::size_t size, this_type* context)
       {
         return ma_asio_handler_alloc_helpers::allocate(size, context->handler_);
-      }
+      } // asio_handler_allocate
 
       friend void asio_handler_deallocate(void* pointer, std::size_t size, this_type* context)
       {
         ma_asio_handler_alloc_helpers::deallocate(pointer, size, context->handler_);
-      }
+      } // asio_handler_deallocate
 
       template <typename Function>
       friend void asio_handler_invoke(const Function& function, this_type* context)
       {
         ma_asio_handler_invoke_helpers::invoke(function, context->handler_);
-      }
+      } // asio_handler_invoke
 
     private:      
       Handler handler_;
@@ -281,18 +281,18 @@ namespace ma
       friend void* asio_handler_allocate(std::size_t size, this_type* context)
       {
         return ma_asio_handler_alloc_helpers::allocate(size, context->handler_);
-      }
+      } // asio_handler_allocate
 
       friend void asio_handler_deallocate(void* pointer, std::size_t size, this_type* context)
       {
         ma_asio_handler_alloc_helpers::deallocate(pointer, size, context->handler_);
-      }
+      } // asio_handler_deallocate
 
       template <typename Function>
       friend void asio_handler_invoke(const Function& function, this_type* context)
       {
         ma_asio_handler_invoke_helpers::invoke(function, context->handler_);
-      }
+      } // asio_handler_invoke
 
     private:      
       Handler handler_;
@@ -361,18 +361,18 @@ namespace ma
       friend void* asio_handler_allocate(std::size_t size, this_type* context)
       {
         return ma_asio_handler_alloc_helpers::allocate(size, context->handler_);
-      }
+      } // asio_handler_allocate
 
       friend void asio_handler_deallocate(void* pointer, std::size_t size, this_type* context)
       {
         ma_asio_handler_alloc_helpers::deallocate(pointer, size, context->handler_);
-      }
+      } // asio_handler_deallocate
 
       template <typename Function>
       friend void asio_handler_invoke(const Function& function, this_type* context)
       {
         ma_asio_handler_invoke_helpers::invoke(function, context->handler_);
-      }
+      } // asio_handler_invoke
 
     private:      
       Handler handler_;

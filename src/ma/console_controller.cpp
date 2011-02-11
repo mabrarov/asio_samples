@@ -23,14 +23,14 @@ namespace ma
     ctrl_function_ = crl_function;
     lock.unlock();
     ::SetConsoleCtrlHandler(console_ctrl_proc, TRUE);
-  }
+  } // console_controller::console_controller
 
   console_controller::~console_controller()
   {
     ::SetConsoleCtrlHandler(console_ctrl_proc, FALSE);
     boost::mutex::scoped_lock lock(ctrl_mutex_);
     ctrl_function_.clear();    
-  }
+  } // console_controller::~console_controller
 
   BOOL WINAPI console_controller::console_ctrl_proc(DWORD ctrl_type)
   {    
@@ -46,5 +46,6 @@ namespace ma
     default:
       return FALSE;
     }
-  }
+  } // console_controller::console_ctrl_proc
+
 } // namespace ma

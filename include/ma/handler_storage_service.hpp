@@ -23,10 +23,9 @@
 #include <boost/throw_exception.hpp>
 #include <boost/utility.hpp>
 #include <boost/ref.hpp>
-#include <boost/thread.hpp>
+#include <boost/thread/mutex.hpp>
 #include <boost/asio.hpp>
 #include <boost/assert.hpp>
-#include <boost/call_traits.hpp>
 #include <ma/handler_alloc_helpers.hpp>
 #include <ma/bind_asio_handler.hpp>
 
@@ -49,11 +48,9 @@ namespace ma
     typedef boost::mutex mutex_type;
 
   public:
-    typedef Arg argument_type;    
+    typedef Arg arg_type;    
 
-  private:    
-    typedef typename boost::call_traits<argument_type>::param_type arg_param_type;
-
+  private:
     class handler_base
     {
     private:
@@ -61,7 +58,7 @@ namespace ma
       this_type& operator=(const this_type&);
 
     public:
-      typedef void (*invoke_func_type)(handler_base*, arg_param_type);
+      typedef void (*invoke_func_type)(handler_base*, const arg_type&);
       typedef void (*destroy_func_type)(handler_base*);
       typedef void* (*data_func_type)(handler_base*);
 
@@ -73,7 +70,7 @@ namespace ma
       {
       }
 
-      void invoke(arg_param_type arg)
+      void invoke(const arg_type& arg)
       {
         invoke_func_(this, arg);
       }      
@@ -130,7 +127,7 @@ namespace ma
       {
       }
 
-      static void do_invoke(handler_base* base, arg_param_type arg)
+      static void do_invoke(handler_base* base, const arg_type& arg)
       {        
         this_type* this_ptr = static_cast<this_type*>(base);
         // Take ownership of the wrapper object
@@ -213,7 +210,7 @@ namespace ma
       }
 
     private:
-      friend class handler_storage_service<argument_type>;
+      friend class handler_storage_service<arg_type>;
       implementation_type* prev_;
       implementation_type* next_;      
       handler_base* handler_ptr_;
@@ -334,7 +331,7 @@ namespace ma
       } // if (!shutdown_done_)
     } // put
 
-    void post(implementation_type& impl, arg_param_type arg) const
+    void post(implementation_type& impl, const arg_type& arg) const
     {      
       if (!impl.handler_ptr_)
       {

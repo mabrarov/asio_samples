@@ -148,13 +148,13 @@ int _tmain(int argc, _TCHAR* argv[])
     std::cerr << "Unexpected error: " << e.what() << std::endl;    
   }
   return EXIT_FAILURE;
-}
+} // _tmain
 
 void handle_console_close(const session_ptr& session)
 {
   std::cout << "User console close detected. Begin stop the session...\n";
   session->async_stop(boost::bind(&handle_stop, _1));  
-}
+} // handle_console_close
 
 void handle_start(const session_ptr& the_session, handler_allocator_type& the_allocator, 
   const frame_buffer_ptr& frame_buffer, const boost::system::error_code& error)                  
@@ -167,7 +167,7 @@ void handle_start(const session_ptr& the_session, handler_allocator_type& the_al
   std::cout << "Session started successfully. Begin read...\n";      
   the_session->async_read_some(frame_buffer->begin(), frame_buffer->end(), ma::make_custom_alloc_handler(the_allocator, 
     boost::bind(&handle_read, the_session, boost::ref(the_allocator), frame_buffer, _1, _2)));
-}
+} // handle_start
 
 void handle_stop(const boost::system::error_code& error)
 {   
@@ -177,7 +177,7 @@ void handle_stop(const boost::system::error_code& error)
     return;
   }
   std::cout << "The session stop was successful.\n";  
-}
+} // handle_stop
 
 void handle_read(const session_ptr& the_session, handler_allocator_type& the_allocator, 
   const frame_buffer_ptr& frame_buffer, const boost::system::error_code& error, 
@@ -190,7 +190,7 @@ void handle_read(const session_ptr& the_session, handler_allocator_type& the_all
     the_session->async_read_some(frame_buffer->begin(), frame_buffer->end(), ma::make_custom_alloc_handler(the_allocator, 
       boost::bind(&handle_read, the_session, boost::ref(the_allocator), frame_buffer, _1, _2)));
     return;
-  }
+  } 
   if (error)  
   {      
     std::cout << "Read unsuccessful. Begin the session stop...\n";
@@ -199,7 +199,7 @@ void handle_read(const session_ptr& the_session, handler_allocator_type& the_all
   }
   the_session->async_read_some(frame_buffer->begin(), frame_buffer->end(), ma::make_custom_alloc_handler(the_allocator, 
     boost::bind(&handle_read, the_session, boost::ref(the_allocator), frame_buffer, _1, _2)));
-}
+} // handle_read
 
 void print_frames(const frame_buffer_type& frames, std::size_t size)
 {  
@@ -207,7 +207,7 @@ void print_frames(const frame_buffer_type& frames, std::size_t size)
   {
     std::cout << *(*iterator) << '\n';
   }    
-}
+} // print_frames
 
 void print_usage(int argc, _TCHAR* argv[])
 {
@@ -222,4 +222,4 @@ void print_usage(int argc, _TCHAR* argv[])
     file_name = L"nmea_client.exe";
   }
   std::wcout << L"Usage: \"" << file_name << L"\" <com_port> [<read_buffer_size> [<message_queue_size>] ]" << std::endl;  
-}
+} // print_usage

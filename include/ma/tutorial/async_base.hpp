@@ -38,7 +38,7 @@ namespace ma
       {
         strand_.post(ma::make_context_alloc_handler2(handler, 
           boost::bind(&this_type::call_do_something<Handler>, shared_from_this(), _1)));
-      }
+      } // async_do_something
 
     protected:
       Async_base(boost::asio::io_service::strand& strand)
@@ -56,12 +56,12 @@ namespace ma
       void complete_do_something(const boost::system::error_code& error)
       {
         do_something_handler_.post(error);
-      }
+      } // complete_do_something
 
       bool has_do_something_handler() const
       {
         return do_something_handler_.has_target();
-      }
+      } // has_do_something_handler
 
     private:
       template <typename Handler>
@@ -75,7 +75,7 @@ namespace ma
         {
           do_something_handler_.put(handler);
         }
-      }
+      } // call_do_something
 
       boost::asio::io_service::strand& strand_;
       ma::handler_storage<boost::system::error_code> do_something_handler_;

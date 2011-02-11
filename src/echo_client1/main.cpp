@@ -58,4 +58,4 @@ int _tmain(int argc, _TCHAR* argv[])
     std::cerr << "Unexpected exception: " << e.what() << std::endl;
   }
   return EXIT_FAILURE;
-}
+} // _tmain

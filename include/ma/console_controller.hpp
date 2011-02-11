@@ -16,7 +16,7 @@
 
 #include <boost/utility.hpp>
 #include <boost/function.hpp>
-#include <boost/thread.hpp>
+#include <boost/thread/mutex.hpp>
 
 namespace ma 
 {

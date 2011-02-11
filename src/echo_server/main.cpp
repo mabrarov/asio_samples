@@ -299,7 +299,7 @@ int _tmain(int argc, _TCHAR* argv[])
     std::cerr << "Unexpected exception: " << e.what() << std::endl;
   }
   return EXIT_FAILURE;
-} // main
+} // _tmain
 
 execution_config create_execution_config(std::size_t cpu_count,
   const boost::program_options::variables_map& options_values)

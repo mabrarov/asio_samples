@@ -52,12 +52,12 @@ namespace ma
       const_iterator begin() const
       {
         return boost::addressof(buffers_[0]);
-      }
+      } // begin
 
       const_iterator end() const
       {
         return boost::addressof(buffers_[0]) + filled_buffers_;
-      }
+      } // end
 
     private:
       boost::array<value_type, 2> buffers_;
@@ -82,7 +82,7 @@ namespace ma
     {
       input_size_  = size_;
       input_start_ = output_start_ = output_size_ = 0;
-    }
+    } // reset
 
     void commit(std::size_t size)
     {
@@ -102,7 +102,7 @@ namespace ma
       {
         output_start_ = size - d;
       }
-    }
+    } // commit
 
     void consume(std::size_t size)         
     {
@@ -122,7 +122,7 @@ namespace ma
       {
         input_start_ = size - d;
       }
-    }
+    } // consume
 
     const_buffers_type data() const
     {
@@ -142,7 +142,7 @@ namespace ma
       return const_buffers_type(
         boost::asio::const_buffer(
           data_.get() + output_start_, output_size_));
-    }
+    } // data
 
     mutable_buffers_type prepared() const
     {                    
@@ -162,7 +162,7 @@ namespace ma
       return mutable_buffers_type(
         boost::asio::mutable_buffer(
           data_.get() + input_start_, input_size_));          
-    }
+    } // prepared
 
   private:
     boost::scoped_array<char> data_;

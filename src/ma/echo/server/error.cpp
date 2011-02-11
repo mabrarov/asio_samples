@@ -18,7 +18,8 @@ namespace ma
       const boost::system::error_category& server_error_category()
       {
         return server_error_category_instance;
-      }
+      } // server_error_category
+
     } // namespace server
   } // namespace echo
 } // namespace ma

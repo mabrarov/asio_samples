@@ -16,7 +16,8 @@ namespace ma
     const boost::system::error_category& session_error_category()
     {
       return session_error_category_instance;
-    }    
+    } // session_error_category
+
   } // namespace nmea
 } // namespace ma
 

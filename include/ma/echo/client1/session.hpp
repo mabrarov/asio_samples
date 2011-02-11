@@ -80,7 +80,7 @@ namespace ma
           started,
           stop_in_progress,
           stopped
-        }; 
+        }; // enum state_type
         
         template <typename Handler>
         void do_start(const Handler& handler)

@@ -22,15 +22,16 @@ namespace ma_asio_handler_alloc_helpers
   {
     using namespace boost::asio;
     return asio_handler_allocate(size, boost::addressof(context));
-  }
+  } // allocate
 
   template <typename Context>
   inline void deallocate(void* pointer, std::size_t size, Context& context)
   {
     using namespace boost::asio;
     asio_handler_deallocate(pointer, size, boost::addressof(context));
-  }
-}
+  } // deallocate
+
+} // namespace ma_asio_handler_alloc_helpers
 
 namespace ma
 {
@@ -44,7 +45,7 @@ namespace ma
       typedef Object       value_type;
       typedef Object*      pointer_type;
       BOOST_STATIC_CONSTANT(std::size_t, value_size = sizeof(Object));
-    };    
+    }; // struct handler_alloc_traits
 
     template <typename Alloc_Traits>
     class handler_ptr;
@@ -88,7 +89,7 @@ namespace ma
       friend class handler_ptr<Alloc_Traits>;
       alloc_context_type& alloc_context_;
       pointer_type pointer_;
-    };
+    }; // raw_handler_ptr
 
     // Helper class to provide RAII on uninitialized handler memory.
     template <typename Alloc_Traits>
@@ -199,14 +200,14 @@ namespace ma
       pointer_type get() const
       {
         return pointer_;
-      }
+      } // get
 
       // Change allocation context used for memory deallocation
       // Never throws
       void set_alloc_context(alloc_context_type& alloc_context)
       {
         alloc_context_ = boost::addressof(alloc_context);
-      }
+      } // set_alloc_context
 
       // Release ownership of the memory.
       pointer_type release()
@@ -214,7 +215,7 @@ namespace ma
         pointer_type tmp = pointer_;
         pointer_ = 0;
         return tmp;
-      }
+      } // release
 
       // Explicitly destroy and deallocate the memory.
       void reset()
@@ -228,12 +229,12 @@ namespace ma
           pointer_ = 0;
           tmp->value_type::~value_type();          
         }
-      }
+      } // reset
 
     private:
       alloc_context_type* alloc_context_;
       pointer_type        pointer_;
-    };
+    }; // class handler_ptr
 
   } // namespace detail
 } // namespace ma

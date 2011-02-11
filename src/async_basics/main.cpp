@@ -35,7 +35,7 @@ void handle_do_something(const boost::system::error_code& error,
   {
     std::cout << boost::format("%s successfully complete work\n") % *name;
   }
-}
+} // handle_do_something
 
 int _tmain(int /*argc*/, _TCHAR* /*argv*/[])
 {     
@@ -78,4 +78,4 @@ int _tmain(int /*argc*/, _TCHAR* /*argv*/[])
     std::cerr << "Unexpected error: " << e.what() << std::endl;    
   }
   return EXIT_FAILURE;
-}
+} // _tmain
