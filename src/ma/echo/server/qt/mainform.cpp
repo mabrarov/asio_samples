@@ -21,7 +21,7 @@ namespace server
 namespace qt 
 {
   MainForm::MainForm(QWidget* parent, Qt::WFlags flags)
-    : QDialog(parent, flags)
+    : QDialog(parent, flags | Qt::WindowMinimizeButtonHint)
   {
     ui_.setupUi(this);    
     //todo    

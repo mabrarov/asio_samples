@@ -35,7 +35,7 @@ namespace ma
         private:
           Q_DISABLE_COPY(MainForm) 
 
-          Ui::MainFormClass ui_;          
+          Ui::mainForm ui_;          
         }; // class MainForm
 
       } // namespace qt
