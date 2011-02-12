@@ -14,7 +14,7 @@
 
 #include <cstddef>
 #include <string>
-#include <boost/utility.hpp>
+#include <boost/utility/base_from_member.hpp>
 #include <boost/asio.hpp>
 #include <boost/format.hpp>
 #include <ma/handler_allocation.hpp>

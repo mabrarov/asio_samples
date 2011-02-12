@@ -19,7 +19,7 @@
 #include <utility>
 #endif // defined(MA_HAS_RVALUE_REFS)
 
-#include <boost/utility.hpp>
+#include <boost/noncopyable.hpp>
 #include <boost/aligned_storage.hpp>
 #include <boost/scoped_array.hpp>
 #include <ma/handler_alloc_helpers.hpp>

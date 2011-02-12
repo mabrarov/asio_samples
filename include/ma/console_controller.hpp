@@ -14,7 +14,7 @@
 
 #include <windows.h>
 
-#include <boost/utility.hpp>
+#include <boost/noncopyable.hpp>
 #include <boost/function.hpp>
 #include <boost/thread/mutex.hpp>
 

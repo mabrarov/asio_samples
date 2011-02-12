@@ -12,8 +12,8 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
+#include <boost/noncopyable.hpp>
 #include <boost/asio.hpp>
-#include <boost/utility.hpp>
 #include <ma/handler_storage_service.hpp>
 
 namespace ma

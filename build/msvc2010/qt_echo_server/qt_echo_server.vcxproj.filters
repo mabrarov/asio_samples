@@ -116,6 +116,18 @@
     <ClCompile Include="GeneratedFiles\Release\moc_sessionmanagersignal.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\src\ma\echo\server\qt\custommetatypes.cpp">
+      <Filter>Source Files\ma\echo\server\qt</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\ma\echo\server\qt\echoserver.cpp">
+      <Filter>Source Files\ma\echo\server\qt</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_echoserver.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_echoserver.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\..\include\ma\echo\server\qt\mainform.h">
@@ -131,6 +143,9 @@
       <Filter>Header Files\ma\echo\server\qt</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\..\include\ma\echo\server\qt\sessionmanagersignal.h">
+      <Filter>Header Files\ma\echo\server\qt</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\include\ma\echo\server\qt\echoserver.h">
       <Filter>Header Files\ma\echo\server\qt</Filter>
     </CustomBuild>
   </ItemGroup>
@@ -196,6 +211,15 @@
       <Filter>Header Files\ma\echo\server\qt</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\ma\echo\server\qt\sessionmanagersignal_fwd.h">
+      <Filter>Header Files\ma\echo\server\qt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\echo\server\qt\signal_connect_error.h">
+      <Filter>Header Files\ma\echo\server\qt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\echo\server\qt\custommetatypes.h">
+      <Filter>Header Files\ma\echo\server\qt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\echo\server\qt\echoserver_fwd.h">
       <Filter>Header Files\ma\echo\server\qt</Filter>
     </ClInclude>
   </ItemGroup>

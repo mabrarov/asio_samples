@@ -12,7 +12,7 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
-#include <boost/utility.hpp>
+#include <boost/noncopyable.hpp>
 #include <boost/asio.hpp>
 
 namespace ma_asio_handler_alloc_helpers

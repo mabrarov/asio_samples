@@ -15,7 +15,6 @@
 #include <boost/asio.hpp>
 #include <boost/system/error_code.hpp>
 #include <QtCore/QObject>
-#include <ma/handler_allocation.hpp>
 #include <ma/echo/server/session_manager_fwd.hpp>
 #include <ma/echo/server/session_manager_config_fwd.hpp>
 #include <ma/echo/server/qt/sessionmanagersignal_fwd.h>
@@ -29,8 +28,6 @@ namespace ma
     {    
       namespace qt 
       {
-        void registerMetaTypes();
-
         class SessionManagerWrapper : public QObject
         {
           Q_OBJECT
@@ -44,28 +41,20 @@ namespace ma
 
           ~SessionManagerWrapper();
         
-          void asyncStart(boost::system::error_code& error);
-          void asyncWait(boost::system::error_code& error);
-          void asyncStop(boost::system::error_code& error);
+          void asyncStart();
+          void asyncWait();
+          void asyncStop();
 
         signals:
           void startComplete(const boost::system::error_code& error);
           void waitComplete(const boost::system::error_code& error);
-          void stopComplete(const boost::system::error_code& error);
+          void stopComplete(const boost::system::error_code& error);        
 
-        private slots:
-          void onStartComplete(const boost::system::error_code& error);
-          void onWaitComplete(const boost::system::error_code& error);
-          void onStopComplete(const boost::system::error_code& error);
-
-        private:
+        private:          
           Q_DISABLE_COPY(SessionManagerWrapper)
                     
           SessionManagerSignalPtr sessionManagerSignal_;
           ma::echo::server::session_manager_ptr sessionManager_;
-          bool startInProgress_;
-          bool waitInProgress_;
-          bool stopInProgress_;
         }; // class SessionManagerWrapper
 
       } // namespace qt

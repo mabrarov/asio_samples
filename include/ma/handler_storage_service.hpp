@@ -20,9 +20,9 @@
 #include <utility>
 #endif // defined(MA_HAS_RVALUE_REFS)
 
-#include <boost/throw_exception.hpp>
-#include <boost/utility.hpp>
+#include <boost/noncopyable.hpp>
 #include <boost/ref.hpp>
+#include <boost/throw_exception.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/asio.hpp>
 #include <boost/assert.hpp>

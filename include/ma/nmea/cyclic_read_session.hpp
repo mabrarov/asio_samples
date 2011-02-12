@@ -15,7 +15,8 @@
 #include <string>
 #include <algorithm>
 #include <utility>
-#include <boost/utility.hpp>
+#include <boost/noncopyable.hpp>
+#include <boost/next_prior.hpp>
 #include <boost/optional.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/bind.hpp>

@@ -16,6 +16,7 @@
 #include <QtGui/QApplication>
 #include <ma/echo/server/session_config.hpp>
 #include <ma/echo/server/session_manager_config.hpp>
+#include <ma/echo/server/qt/custommetatypes.h>
 #include <ma/echo/server/qt/sessionmanagerwrapper.h>
 #include <ma/echo/server/qt/mainform.h>
 
@@ -58,6 +59,8 @@ server::session_manager_config create_session_manager_config(const server::sessi
 int main(int argc, char* argv[])
 {
   QApplication app(argc, argv); 
+
+  ma::echo::server::qt::registerCustomMetaTypes();
 
   //todo: temporary
   execution_config the_execution_config = create_execution_config();

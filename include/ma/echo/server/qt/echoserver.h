@@ -1,0 +1,60 @@
+//
+// Copyright (c) 2010-2011 Marat Abrarov (abrarov@mail.ru)
+//
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+//
+
+#ifndef MA_ECHO_SERVER_QT_ECHOSERVER_H
+#define MA_ECHO_SERVER_QT_ECHOSERVER_H
+
+#if defined(_MSC_VER) && (_MSC_VER >= 1020)
+#pragma once
+#endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
+
+#include <boost/scoped_ptr.hpp>
+#include <boost/system/error_code.hpp>
+#include <QtCore/QObject>
+#include <ma/echo/server/qt/sessionmanagerwrapper_fwd.h>
+#include <ma/echo/server/qt/echoserver_fwd.h>
+
+namespace ma
+{    
+  namespace echo
+  {
+    namespace server
+    {    
+      namespace qt 
+      {
+        class EchoServer : public QObject
+        {
+          Q_OBJECT
+
+        public:
+          explicit EchoServer(QObject* parent = 0);
+
+          ~EchoServer();
+
+          void asyncStart();
+          void asyncWait();
+          void asyncStop();
+
+        signals:
+          void startComplete(const boost::system::error_code& error);
+          void waitComplete(const boost::system::error_code& error);
+          void stopComplete(const boost::system::error_code& error);
+
+        private:
+          struct Service;
+
+          Q_DISABLE_COPY(EchoServer);          
+
+          boost::scoped_ptr<Service> service_;    
+        }; // class EchoServer
+
+      } // namespace qt
+    } // namespace server
+  } // namespace echo
+} // namespace ma
+
+#endif // MA_ECHO_SERVER_QT_ECHOSERVER_H

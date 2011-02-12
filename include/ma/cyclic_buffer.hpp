@@ -14,7 +14,7 @@
 
 #include <cstddef>
 #include <stdexcept>
-#include <boost/utility.hpp>
+#include <boost/noncopyable.hpp>
 #include <boost/throw_exception.hpp>
 #include <boost/array.hpp>
 #include <boost/asio.hpp>
