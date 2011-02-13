@@ -11,6 +11,7 @@
 #include <cstdlib>
 #include <stdexcept>
 #include <boost/noncopyable.hpp>
+#include <boost/throw_exception.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/ref.hpp>
@@ -51,7 +52,8 @@ struct execution_config
   std::size_t session_thread_count;
   boost::posix_time::time_duration stop_timeout;
 
-  explicit execution_config(std::size_t the_session_manager_thread_count,
+  explicit execution_config(
+    std::size_t the_session_manager_thread_count,
     std::size_t the_session_thread_count, 
     const boost::posix_time::time_duration& the_stop_timeout)
     : session_manager_thread_count(the_session_manager_thread_count)
@@ -60,11 +62,13 @@ struct execution_config
   {
     if (the_session_manager_thread_count < 1)
     {
-      throw std::invalid_argument("session_manager_thread_count must be >= 1");
+      boost::throw_exception(std::invalid_argument(
+        "the_session_manager_thread_count must be >= 1"));
     }
     if (the_session_thread_count < 1)
     {
-      throw std::invalid_argument("session_thread_count must be >= 1");
+      boost::throw_exception(std::invalid_argument(
+        "the_session_thread_count must be >= 1"));
     }
   }
 }; // struct execution_config

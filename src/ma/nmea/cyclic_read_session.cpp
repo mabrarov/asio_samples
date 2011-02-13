@@ -31,19 +31,23 @@ namespace ma
     {
       if (frame_buffer_size < min_message_queue_size)
       {
-        boost::throw_exception(std::invalid_argument("too small message_queue_size"));
+        boost::throw_exception(
+          std::invalid_argument("too small frame_buffer_size"));
       }
-      if (max_message_size > read_buffer_size)
+      if (read_buffer_size < max_message_size)
       {
-        boost::throw_exception(std::invalid_argument("too small read_buffer_size"));
+        boost::throw_exception(
+          std::invalid_argument("too small read_buffer_size"));
       }
       if (frame_head.length() > read_buffer_size)
       {
-        boost::throw_exception(std::invalid_argument("too large frame_head"));
+        boost::throw_exception(
+          std::invalid_argument("too large frame_head"));
       }
       if (frame_tail.length() > read_buffer_size)
       {
-        boost::throw_exception(std::invalid_argument("too large frame_tail"));
+        boost::throw_exception(
+          std::invalid_argument("too large frame_tail"));
       }
     } // cyclic_read_session::cyclic_read_session    
         

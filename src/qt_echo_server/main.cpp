@@ -9,6 +9,7 @@
 #include <stdexcept>
 #include <boost/ref.hpp>
 #include <boost/bind.hpp>
+#include <boost/throw_exception.hpp>
 #include <boost/function.hpp>
 #include <boost/date_time/posix_time/ptime.hpp>
 #include <boost/thread.hpp>
@@ -39,11 +40,11 @@ struct execution_config
   {
     if (the_session_manager_thread_count < 1)
     {
-      throw std::invalid_argument("session_manager_thread_count must be >= 1");
+      boost::throw_exception(std::invalid_argument("session_manager_thread_count must be >= 1"));
     }
     if (the_session_thread_count < 1)
     {
-      throw std::invalid_argument("session_thread_count must be >= 1");
+      boost::throw_exception(std::invalid_argument("session_thread_count must be >= 1"));
     }
   }
 }; // struct execution_config

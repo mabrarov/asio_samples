@@ -25,15 +25,18 @@ namespace ma
     {                
       struct session_manager_config
       { 
-        int listen_backlog;
+        int         listen_backlog;
         std::size_t max_session_count;
         std::size_t recycled_session_count;
         boost::asio::ip::tcp::endpoint accepting_endpoint;                    
         session_config managed_session_config;
 
-        explicit session_manager_config(const boost::asio::ip::tcp::endpoint& the_accepting_endpoint,
-          std::size_t the_max_session_count, std::size_t the_recycled_session_count,
-          int the_listen_backlog, const session_config& the_managed_session_config);
+        explicit session_manager_config(
+          const boost::asio::ip::tcp::endpoint& the_accepting_endpoint,
+          std::size_t the_max_session_count, 
+          std::size_t the_recycled_session_count,
+          int the_listen_backlog, 
+          const session_config& the_managed_session_config);
       }; // struct session_manager_config
         
     } // namespace server

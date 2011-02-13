@@ -14,7 +14,8 @@ namespace ma
   {
     namespace client1
     {
-      session::session(boost::asio::io_service& io_service, const session_config& config)
+      session::session(boost::asio::io_service& io_service, 
+        const session_config& config)
         : socket_write_in_progress_(false)
         , socket_read_in_progress_(false) 
         , state_(ready_to_start)
@@ -24,7 +25,7 @@ namespace ma
         , wait_handler_(io_service)
         , stop_handler_(io_service)
         , config_(config)                
-        , buffer_(config.buffer_size_)
+        , buffer_(config.buffer_size)
       {          
       } // session::session      
 

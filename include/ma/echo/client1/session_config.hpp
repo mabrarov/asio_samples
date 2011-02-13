@@ -13,6 +13,7 @@
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
 #include <cstddef>
+#include <boost/optional.hpp>
 #include <ma/echo/client1/session_config_fwd.hpp>
 
 namespace ma
@@ -23,14 +24,15 @@ namespace ma
     {
       struct session_config
       { 
-        bool no_delay_;
-        int socket_recv_buffer_size_;
-        int socket_send_buffer_size_;
-        std::size_t buffer_size_;                   
+        boost::optional<bool> no_delay;
+        boost::optional<int>  socket_recv_buffer_size;
+        boost::optional<int>  socket_send_buffer_size;
+        std::size_t           buffer_size;
 
-        explicit session_config(std::size_t buffer_size, 
-          int socket_recv_buffer_size, int socket_send_buffer_size,
-          bool no_delay);
+        explicit session_config(std::size_t the_buffer_size, 
+          const boost::optional<int>& the_socket_recv_buffer_size, 
+          const boost::optional<int>& the_socket_send_buffer_size,
+          const boost::optional<bool>& the_no_delay);
       }; // struct session_config
         
     } // namespace client1

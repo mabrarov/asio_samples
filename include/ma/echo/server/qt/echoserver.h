@@ -12,8 +12,11 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
+#include <cstddef>
+#include <stdexcept>
 #include <boost/scoped_ptr.hpp>
 #include <boost/system/error_code.hpp>
+#include <boost/throw_exception.hpp>
 #include <QtCore/QObject>
 #include <ma/echo/server/qt/sessionmanagerwrapper_fwd.h>
 #include <ma/echo/server/qt/echoserver_fwd.h>
@@ -26,6 +29,38 @@ namespace ma
     {    
       namespace qt 
       {
+        struct ExecutionConfig
+        {
+          std::size_t sessionManagerThreadCount;
+          std::size_t sessionThreadCount;
+          long stopTimeout;
+
+          explicit ExecutionConfig(
+            std::size_t theSessionManagerThreadCount,
+            std::size_t theSessionThreadCount, 
+            long theStopTimeout)
+            : sessionManagerThreadCount(theSessionManagerThreadCount)
+            , sessionThreadCount(theSessionThreadCount)
+            , stopTimeout(theStopTimeout)
+          {
+            if (theSessionManagerThreadCount < 1)
+            {
+              boost::throw_exception(std::invalid_argument(
+                "theSessionManagerThreadCount must be >= 1"));
+            }
+            if (theSessionThreadCount < 1)
+            {
+              boost::throw_exception(std::invalid_argument(
+                "theSessionThreadCount must be >= 1"));
+            }
+            if (theStopTimeout < 0)
+            {
+              boost::throw_exception(std::invalid_argument(
+                "theStopTimeout must be >= 0"));
+            }
+          }
+        }; // struct ExecutionConfig
+
         class EchoServer : public QObject
         {
           Q_OBJECT
