@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>371</width>
+    <width>342</width>
     <height>237</height>
    </rect>
   </property>
@@ -94,7 +94,7 @@
       <attribute name="title">
        <string>Session management</string>
       </attribute>
-      <layout class="QFormLayout" name="formLayout">
+      <layout class="QFormLayout" name="sessionManagementTabLayout">
        <item row="0" column="0">
         <widget class="QLabel" name="maxSessionCountLabel">
          <property name="text">
@@ -178,7 +178,7 @@
        <item row="4" column="0">
         <widget class="QLabel" name="addressLabel">
          <property name="text">
-          <string>IP address to listen</string>
+          <string>Interface IP address to listen (IPv4 or IPv6)</string>
          </property>
         </widget>
        </item>
@@ -195,6 +195,93 @@
       <attribute name="title">
        <string>Session</string>
       </attribute>
+      <layout class="QFormLayout" name="sessionTabLayout">
+       <item row="0" column="0">
+        <widget class="QLabel" name="sessionBufferSizeLabel">
+         <property name="text">
+          <string>Session's buffer size (bytes)</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QSpinBox" name="sessionBufferSizeSpinBox">
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="maximum">
+          <number>10485760</number>
+         </property>
+         <property name="singleStep">
+          <number>256</number>
+         </property>
+         <property name="value">
+          <number>4096</number>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QCheckBox" name="sockRecvBufferSizeCheckBox">
+         <property name="text">
+          <string>Socket's recieve buffer size (bytes)</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QSpinBox" name="sockRecvBufferSizeSpinBox">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="minimum">
+          <number>0</number>
+         </property>
+         <property name="maximum">
+          <number>10485760</number>
+         </property>
+         <property name="singleStep">
+          <number>256</number>
+         </property>
+         <property name="value">
+          <number>4096</number>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QCheckBox" name="sockSendBufferSizeCheckBox">
+         <property name="text">
+          <string>Socket's send buffer size (bytes)</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QSpinBox" name="sockSendBufferSizeSpinBox">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="minimum">
+          <number>0</number>
+         </property>
+         <property name="maximum">
+          <number>10485760</number>
+         </property>
+         <property name="singleStep">
+          <number>256</number>
+         </property>
+         <property name="value">
+          <number>4096</number>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0" colspan="2">
+        <widget class="QCheckBox" name="tcpNoDelayCheckBox">
+         <property name="text">
+          <string>TCP NO_DELAY option</string>
+         </property>
+         <property name="tristate">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </widget>
     </widget>
    </item>
@@ -252,9 +339,15 @@
   <tabstop>listenBacklogSpinBox</tabstop>
   <tabstop>portNumberSpinBox</tabstop>
   <tabstop>addressEdit</tabstop>
+  <tabstop>sessionBufferSizeSpinBox</tabstop>
+  <tabstop>sockRecvBufferSizeCheckBox</tabstop>
+  <tabstop>sockRecvBufferSizeSpinBox</tabstop>
+  <tabstop>sockSendBufferSizeCheckBox</tabstop>
+  <tabstop>sockSendBufferSizeSpinBox</tabstop>
+  <tabstop>tcpNoDelayCheckBox</tabstop>
   <tabstop>startButton</tabstop>
   <tabstop>stopButton</tabstop>
-  <tabstop>exitButton</tabstop>
+  <tabstop>exitButton</tabstop>      
  </tabstops>
  <resources>
   <include location="../../../../../resources/qt_echo_server/qt_echo_server.qrc"/>
@@ -267,12 +360,44 @@
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>352</x>
-     <y>337</y>
+     <x>331</x>
+     <y>226</y>
     </hint>
     <hint type="destinationlabel">
-     <x>378</x>
-     <y>361</y>
+     <x>341</x>
+     <y>236</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>sockRecvBufferSizeCheckBox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>sockRecvBufferSizeSpinBox</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>160</x>
+     <y>94</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>226</x>
+     <y>94</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>sockSendBufferSizeCheckBox</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>sockSendBufferSizeSpinBox</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>186</x>
+     <y>121</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>233</x>
+     <y>118</y>
     </hint>
    </hints>
   </connection>
