@@ -222,9 +222,7 @@ namespace ma
       {
         if (pointer_)
         {
-          raw_ptr_type raw_ptr(*alloc_context_, pointer_);
-          // A dummy vs optimization
-          (void) raw_ptr;
+          raw_ptr_type raw_ptr(*alloc_context_, pointer_);          
           pointer_type tmp = pointer_;
           pointer_ = 0;
           tmp->value_type::~value_type();          

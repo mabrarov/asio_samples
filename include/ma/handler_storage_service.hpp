@@ -148,9 +148,7 @@ namespace ma
         // These copies will be used after the wrapper object destruction 
         // and deallocation of its memory
         boost::asio::io_service& io_service(this_ptr->io_service_);
-        boost::asio::io_service::work work(this_ptr->work_);
-        // A dummy vs optimization.
-        (void) work;        
+        boost::asio::io_service::work work(this_ptr->work_);          
         // Destroy wrapper object and deallocate its memory 
         // throw the local copy of handler
         ptr.reset();          
