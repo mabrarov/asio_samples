@@ -68,14 +68,14 @@ namespace ma
       void resest();
 
       template <typename Handler>
-      void async_start(Handler handler)
+      void async_start(const Handler& handler)
       {        
         strand_.post(make_context_alloc_handler2(handler,
           boost::bind(&this_type::do_start<Handler>, shared_from_this(), _1)));
       } // async_start
 
       template <typename Handler>
-      void async_stop(Handler handler)
+      void async_stop(const Handler& handler)
       {
         strand_.post(make_context_alloc_handler2(handler,
           boost::bind(&this_type::do_stop<Handler>, shared_from_this(), _1)));
@@ -83,14 +83,14 @@ namespace ma
 
       // Handler::operator ()(const boost::system::error_code&, std::size_t)
       template <typename Handler, typename Iterator>
-      void async_read_some(Iterator begin, Iterator end, Handler handler)
+      void async_read_some(Iterator begin, Iterator end, const Handler& handler)
       {                
         strand_.post(make_context_alloc_handler2(handler,
           boost::bind(&this_type::do_read_some<Handler, Iterator>, shared_from_this(), begin, end, _1)));
       } // async_read_some
 
       template <typename ConstBufferSequence, typename Handler>
-      void async_write(ConstBufferSequence buffers, Handler handler)
+      void async_write(ConstBufferSequence buffers, const Handler& handler)
       {                
         strand_.post(make_context_alloc_handler2(handler, 
           boost::bind(&this_type::do_write<ConstBufferSequence, Handler>, shared_from_this(), buffers, _1)));

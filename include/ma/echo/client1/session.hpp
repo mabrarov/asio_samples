@@ -53,21 +53,21 @@ namespace ma
         void reset();
 
         template <typename Handler>
-        void async_start(Handler handler)
+        void async_start(const Handler& handler)
         {
           strand_.post(make_context_alloc_handler2(handler, 
             boost::bind(&this_type::do_start<Handler>, shared_from_this(), _1)));  
         } // async_start
 
         template <typename Handler>
-        void async_stop(Handler handler)
+        void async_stop(const Handler& handler)
         {
           strand_.post(make_context_alloc_handler2(handler, 
             boost::bind(&this_type::do_stop<Handler>, shared_from_this(), _1))); 
         } // async_stop
 
         template <typename Handler>
-        void async_wait(Handler handler)
+        void async_wait(const Handler& handler)
         {
           strand_.post(make_context_alloc_handler2(handler, 
             boost::bind(&this_type::do_wait<Handler>, shared_from_this(), _1)));  

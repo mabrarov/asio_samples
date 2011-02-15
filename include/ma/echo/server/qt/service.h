@@ -5,8 +5,8 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef MA_ECHO_SERVER_QT_ECHOSERVER_H
-#define MA_ECHO_SERVER_QT_ECHOSERVER_H
+#ifndef MA_ECHO_SERVER_QT_SERVICE_H
+#define MA_ECHO_SERVER_QT_SERVICE_H
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1020)
 #pragma once
@@ -19,7 +19,7 @@
 #include <boost/throw_exception.hpp>
 #include <QtCore/QObject>
 #include <ma/echo/server/qt/sessionmanagerwrapper_fwd.h>
-#include <ma/echo/server/qt/echoserver_fwd.h>
+#include <ma/echo/server/qt/service_fwd.h>
 
 namespace ma
 {    
@@ -61,14 +61,13 @@ namespace ma
           }
         }; // struct ExecutionConfig
 
-        class EchoServer : public QObject
+        class Service : public QObject
         {
           Q_OBJECT
 
         public:
-          explicit EchoServer(QObject* parent = 0);
-
-          ~EchoServer();
+          explicit Service(QObject* parent = 0);
+          ~Service();
 
           void asyncStart();
           void asyncWait();
@@ -80,11 +79,11 @@ namespace ma
           void stopComplete(const boost::system::error_code& error);
 
         private:
-          struct Service;
+          struct Impl;
 
-          Q_DISABLE_COPY(EchoServer);          
+          Q_DISABLE_COPY(Service);          
 
-          boost::scoped_ptr<Service> service_;    
+          boost::scoped_ptr<Impl> impl_;    
         }; // class EchoServer
 
       } // namespace qt
@@ -92,4 +91,4 @@ namespace ma
   } // namespace echo
 } // namespace ma
 
-#endif // MA_ECHO_SERVER_QT_ECHOSERVER_H
+#endif // MA_ECHO_SERVER_QT_SERVICE_H

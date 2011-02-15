@@ -1,5 +1,5 @@
 /*
-TRANSLATOR ma::echo::server::qt::EchoServer
+TRANSLATOR ma::echo::server::qt::Service
 */
 
 //
@@ -12,7 +12,7 @@ TRANSLATOR ma::echo::server::qt::EchoServer
 #include <boost/noncopyable.hpp>
 #include <ma/echo/server/error.hpp>
 #include <ma/echo/server/qt/sessionmanagerwrapper.h>
-#include <ma/echo/server/qt/echoserver.h>
+#include <ma/echo/server/qt/service.h>
 
 namespace ma
 {    
@@ -22,57 +22,72 @@ namespace server
 {    
 namespace qt 
 {    
-  struct EchoServer::Service : private boost::noncopyable
+  struct Service::Impl : private boost::noncopyable
   {
  
-  }; // struct EchoServer::Service
+  }; // struct Service::Impl
 
-  EchoServer::EchoServer(QObject* parent)
+  Service::Service(QObject* parent)
     : QObject(parent)
-    , service_()
+    , impl_()
   {
-  } // EchoServer::EchoServer
+  } // Service::Service
 
-  EchoServer::~EchoServer()
+  Service::~Service()
   {
     
-  } // EchoServer::~EchoServer
+  } // Service::~Service
 
-  void EchoServer::asyncStart()
+  void Service::asyncStart()
   {
     boost::system::error_code error;
-    if (service_.get())
+    if (impl_.get())
     {
       error = ma::echo::server::server_error::invalid_state;
       emit startComplete(error);
       return;
     }
-    //todo
-  } // EchoServer::asyncStart
+    //todo: continue implementation of method
+    //temporary
+    {
+      error = ma::echo::server::server_error::invalid_state;
+      emit startComplete(error);
+    }    
+  } // Service::asyncStart
 
-  void EchoServer::asyncWait()
+  void Service::asyncWait()
   {
     boost::system::error_code error;
-    if (!service_.get())
+    if (!impl_.get())
     {
       error = ma::echo::server::server_error::invalid_state;
       emit waitComplete(error);
       return;
     }
-    //todo
-  } // EchoServer::asyncWait
+    //todo: continue implementation of method
+    //temporary
+    {
+      error = ma::echo::server::server_error::invalid_state;
+      emit waitComplete(error);
+    }    
+  } // Service::asyncWait
   
-  void EchoServer::asyncStop()
+  void Service::asyncStop()
   {
     boost::system::error_code error;
-    if (!service_.get())
+    if (!impl_.get())
     {
       error = ma::echo::server::server_error::invalid_state;
       emit stopComplete(error);
       return;
     }
-    //todo
-  } // EchoServer::asyncStop
+    //todo: continue implementation of method
+    //temporary
+    {
+      error = ma::echo::server::server_error::invalid_state;
+      emit stopComplete(error);
+    }    
+  } // Service::asyncStop
 
 } // namespace qt
 } // namespace server

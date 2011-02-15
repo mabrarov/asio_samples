@@ -119,14 +119,14 @@
     <ClCompile Include="..\..\..\src\ma\echo\server\qt\custommetatypes.cpp">
       <Filter>Source Files\ma\echo\server\qt</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\ma\echo\server\qt\echoserver.cpp">
-      <Filter>Source Files\ma\echo\server\qt</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_echoserver.cpp">
+    <ClCompile Include="GeneratedFiles\Debug\moc_service.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_echoserver.cpp">
+    <ClCompile Include="GeneratedFiles\Release\moc_service.cpp">
       <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\ma\echo\server\qt\service.cpp">
+      <Filter>Source Files\ma\echo\server\qt</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -145,7 +145,7 @@
     <CustomBuild Include="..\..\..\include\ma\echo\server\qt\sessionmanagersignal.h">
       <Filter>Header Files\ma\echo\server\qt</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\include\ma\echo\server\qt\echoserver.h">
+    <CustomBuild Include="..\..\..\include\ma\echo\server\qt\service.h">
       <Filter>Header Files\ma\echo\server\qt</Filter>
     </CustomBuild>
   </ItemGroup>
@@ -219,7 +219,7 @@
     <ClInclude Include="..\..\..\include\ma\echo\server\qt\custommetatypes.h">
       <Filter>Header Files\ma\echo\server\qt</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\ma\echo\server\qt\echoserver_fwd.h">
+    <ClInclude Include="..\..\..\include\ma\echo\server\qt\service_fwd.h">
       <Filter>Header Files\ma\echo\server\qt</Filter>
     </ClInclude>
   </ItemGroup>
