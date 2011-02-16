@@ -35,7 +35,7 @@ namespace ma
           std::size_t sessionThreadCount;
           long stopTimeout;
 
-          explicit ExecutionConfig(
+          ExecutionConfig(
             std::size_t theSessionManagerThreadCount,
             std::size_t theSessionThreadCount, 
             long theStopTimeout)

@@ -401,6 +401,10 @@
 					RelativePath="..\..\..\include\ma\handler_storage_service.hpp"
 					>
 				</File>
+				<File
+					RelativePath="..\..\..\include\ma\type_traits.hpp"
+					>
+				</File>
 				<Filter
 					Name="nmea"
 					>

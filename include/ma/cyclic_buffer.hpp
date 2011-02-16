@@ -31,7 +31,7 @@ namespace ma
       typedef Buffer value_type;
       typedef const value_type* const_iterator;
 
-      explicit buffers2()
+      buffers2()
         : filled_buffers_(0)
       {
       }
@@ -42,7 +42,7 @@ namespace ma
         buffers_[0] = buffer1;
       }
 
-      explicit buffers2(const value_type& buffer1, const value_type& buffer2)
+      buffers2(const value_type& buffer1, const value_type& buffer2)
         : filled_buffers_(2)
       {
         buffers_[0] = buffer1;

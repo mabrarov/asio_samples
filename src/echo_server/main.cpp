@@ -52,8 +52,7 @@ struct execution_config
   std::size_t session_thread_count;
   boost::posix_time::time_duration stop_timeout;
 
-  explicit execution_config(
-    std::size_t the_session_manager_thread_count,
+  execution_config(std::size_t the_session_manager_thread_count,
     std::size_t the_session_thread_count, 
     const boost::posix_time::time_duration& the_stop_timeout)
     : session_manager_thread_count(the_session_manager_thread_count)
@@ -92,7 +91,7 @@ struct session_manager_wrapper : private boost::noncopyable
   ma::in_place_handler_allocator<128> start_wait_allocator;
   ma::in_place_handler_allocator<128> stop_allocator;
 
-  explicit session_manager_wrapper(boost::asio::io_service& io_service,
+  session_manager_wrapper(boost::asio::io_service& io_service,
     boost::asio::io_service& session_io_service,
     const server::session_manager_config& config)
     : stopped_by_user(false)

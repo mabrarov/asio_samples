@@ -29,7 +29,7 @@ namespace ma
           Q_OBJECT
 
         public:
-          explicit MainForm(QWidget* parent = 0, Qt::WFlags flags = 0);
+          MainForm(QWidget* parent = 0, Qt::WFlags flags = 0);
           ~MainForm();
 
         private:

@@ -26,7 +26,7 @@ namespace ma
         class signal_connect_error : public std::runtime_error
         {
         public:
-          explicit signal_connect_error() 
+          signal_connect_error() 
             : std::runtime_error("failed to connect Qt signal")             
           {
           }          

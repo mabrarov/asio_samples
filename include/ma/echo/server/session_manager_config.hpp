@@ -31,7 +31,7 @@ namespace ma
         boost::asio::ip::tcp::endpoint accepting_endpoint;                    
         session_config managed_session_config;
 
-        explicit session_manager_config(
+        session_manager_config(
           const boost::asio::ip::tcp::endpoint& the_accepting_endpoint,
           std::size_t the_max_session_count, 
           std::size_t the_recycled_session_count,

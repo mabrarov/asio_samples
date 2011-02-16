@@ -29,7 +29,7 @@ namespace ma
         boost::optional<int>  socket_send_buffer_size;
         std::size_t           buffer_size;
 
-        explicit session_config(std::size_t the_buffer_size, 
+        session_config(std::size_t the_buffer_size, 
           const boost::optional<int>& the_socket_recv_buffer_size, 
           const boost::optional<int>& the_socket_send_buffer_size,
           const boost::optional<bool>& the_no_delay);

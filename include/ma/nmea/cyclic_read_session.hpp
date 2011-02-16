@@ -52,7 +52,7 @@ namespace ma
       BOOST_STATIC_CONSTANT(std::size_t, min_read_buffer_size = max_message_size);
       BOOST_STATIC_CONSTANT(std::size_t, min_message_queue_size = 1);
 
-      explicit cyclic_read_session(boost::asio::io_service& io_service,
+      cyclic_read_session(boost::asio::io_service& io_service,
         const std::size_t read_buffer_size, const std::size_t frame_buffer_size,
         const std::string& frame_head, const std::string& frame_tail);
 
@@ -155,7 +155,7 @@ namespace ma
         this_type& operator=(const this_type&);
 
       public:
-        explicit wrapped_read_handler(const Handler& handler, 
+        wrapped_read_handler(const Handler& handler, 
           const Iterator& begin, const Iterator& end)
           : read_handler_base(&this_type::do_copy)
           , handler_(handler)

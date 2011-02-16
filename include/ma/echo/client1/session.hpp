@@ -38,7 +38,7 @@ namespace ma
         typedef session this_type;        
 
       public:        
-        explicit session(boost::asio::io_service& io_service, 
+        session(boost::asio::io_service& io_service, 
           const session_config& config);
 
         ~session()

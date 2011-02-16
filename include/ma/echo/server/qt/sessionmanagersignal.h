@@ -30,7 +30,7 @@ namespace ma
           Q_OBJECT
 
         public:
-          explicit SessionManagerSignal()
+          SessionManagerSignal()
           {
           }
 

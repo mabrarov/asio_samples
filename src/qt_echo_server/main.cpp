@@ -31,7 +31,7 @@ struct execution_config
   std::size_t session_thread_count;
   boost::posix_time::time_duration stop_timeout;
 
-  explicit execution_config(std::size_t the_session_manager_thread_count,
+  execution_config(std::size_t the_session_manager_thread_count,
     std::size_t the_session_thread_count, 
     const boost::posix_time::time_duration& the_stop_timeout)
     : session_manager_thread_count(the_session_manager_thread_count)

@@ -34,7 +34,7 @@ namespace ma
   class bad_handler_call : public std::runtime_error
   {
   public:
-    explicit bad_handler_call() 
+    bad_handler_call() 
       : std::runtime_error("call to empty ma::handler_storage") 
     {
     } 
@@ -62,7 +62,7 @@ namespace ma
       typedef void (*destroy_func_type)(handler_base*);
       typedef void* (*data_func_type)(handler_base*);
 
-      explicit handler_base(invoke_func_type invoke_func, 
+      handler_base(invoke_func_type invoke_func, 
         destroy_func_type destroy_func, data_func_type data_func)
         : invoke_func_(invoke_func)
         , destroy_func_(destroy_func)        
@@ -104,21 +104,35 @@ namespace ma
       this_type& operator=(const this_type&);    
 
     public:
-      explicit handler_wrapper(boost::asio::io_service& io_service, const Handler& handler)
-        : handler_base(&this_type::do_invoke, &this_type::do_destroy, &this_type::do_data)
-        , io_service_(io_service)
-        , work_(io_service)
-        , handler_(handler)
-      {
-      }      
 
 #if defined(MA_HAS_RVALUE_REFS)
+      // Constructor
+      template <typename H>
+      handler_wrapper(boost::asio::io_service& io_service, H&& handler)
+        : handler_base(&this_type::do_invoke, 
+            &this_type::do_destroy, &this_type::do_data)
+        , io_service_(io_service)
+        , work_(io_service)
+        , handler_(std::forward<H>(handler))
+      {
+      }
+
       // Move constructor
       handler_wrapper(this_type&& other)
         : handler_base(std::move(other))
         , io_service_(other.io_service_)
         , work_(std::move(other.work_))
         , handler_(std::move(other.handler_))
+      {
+      }
+#else
+      handler_wrapper(boost::asio::io_service& io_service, 
+        const Handler& handler)
+        : handler_base(&this_type::do_invoke, 
+            &this_type::do_destroy, &this_type::do_data)
+        , io_service_(io_service)
+        , work_(io_service)
+        , handler_(handler)
       {
       }
 #endif // defined(MA_HAS_RVALUE_REFS)
@@ -200,7 +214,7 @@ namespace ma
     class implementation_type : private boost::noncopyable
     { 
     public:
-      explicit implementation_type()
+      implementation_type()
         : prev_(0)
         , next_(0)
         , handler_ptr_(0)
@@ -218,7 +232,7 @@ namespace ma
     class impl_list : private boost::noncopyable
     {
     public:
-      explicit impl_list()
+      impl_list()
         : front_(0)
       {
       }

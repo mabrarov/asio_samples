@@ -13,7 +13,6 @@
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
 #include <boost/config.hpp>
-#include <ma/config.hpp>
 
 #if defined(BOOST_HAS_RVALUE_REFS)
 #define MA_HAS_RVALUE_REFS

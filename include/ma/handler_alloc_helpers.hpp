@@ -14,6 +14,11 @@
 
 #include <boost/noncopyable.hpp>
 #include <boost/asio.hpp>
+#include <ma/config.hpp>
+
+#if defined(MA_HAS_RVALUE_REFS)
+#include <utility>
+#endif // defined(MA_HAS_RVALUE_REFS)
 
 namespace ma_asio_handler_alloc_helpers
 {
@@ -119,6 +124,113 @@ namespace ma
         raw_ptr.pointer_ = 0;
       }      
 
+#if defined(MA_HAS_RVALUE_REFS)
+      // Construct object in raw memory and 
+      // take ownership if construction succeeds.
+      template <typename Arg1>
+      handler_ptr(raw_ptr_type& raw_ptr, Arg1&& a1)
+        : alloc_context_(boost::addressof(raw_ptr.alloc_context_))
+        , pointer_(new (raw_ptr.pointer_) value_type(std::forward<Arg1>(a1)))
+      {
+        raw_ptr.pointer_ = 0;
+      }
+
+      // Construct object in raw memory 
+      // and take ownership if construction succeeds.
+      template <typename Arg1, typename Arg2>
+      handler_ptr(raw_ptr_type& raw_ptr, Arg1&& a1, Arg2&& a2)
+        : alloc_context_(boost::addressof(raw_ptr.alloc_context_))
+        , pointer_(new (raw_ptr.pointer_) value_type(std::forward<Arg1>(a1), 
+            std::forward<Arg2>(a2)))
+      {
+        raw_ptr.pointer_ = 0;
+      }
+
+      // Construct object in raw memory 
+      // and take ownership if construction succeeds.
+      template <typename Arg1, typename Arg2, typename Arg3>
+      handler_ptr(raw_ptr_type& raw_ptr, Arg1&& a1, Arg2&& a2, Arg3&& a3)
+        : alloc_context_(boost::addressof(raw_ptr.alloc_context_))
+        , pointer_(new (raw_ptr.pointer_) value_type(std::forward<Arg1>(a1), 
+            std::forward<Arg2>(a2), std::forward<Arg3>(a3)))
+      {
+        raw_ptr.pointer_ = 0;
+      }
+
+      // Construct object in raw memory 
+      // and take ownership if construction succeeds.
+      template <typename Arg1, typename Arg2, typename Arg3, typename Arg4>
+      handler_ptr(raw_ptr_type& raw_ptr, Arg1&& a1, Arg2&& a2, 
+        Arg3&& a3, Arg4&& a4)
+        : alloc_context_(boost::addressof(raw_ptr.alloc_context_))
+        , pointer_(new (raw_ptr.pointer_) value_type(
+            std::forward<Arg1>(a1), std::forward<Arg2>(a2), 
+            std::forward<Arg3>(a3), std::forward<Arg4>(a4)))
+      {
+        raw_ptr.pointer_ = 0;
+      }
+
+      // Construct object in raw memory 
+      // and take ownership if construction succeeds.
+      template <typename Arg1, typename Arg2, typename Arg3, 
+        typename Arg4, typename Arg5>
+      handler_ptr(raw_ptr_type& raw_ptr, Arg1&& a1, Arg2&& a2, 
+        Arg3&& a3, Arg4&& a4, Arg5&& a5)
+        : alloc_context_(boost::addressof(raw_ptr.alloc_context_))
+        , pointer_(new (raw_ptr.pointer_) value_type(std::forward<Arg1>(a1), 
+            std::forward<Arg2>(a2), std::forward<Arg3>(a3), 
+            std::forward<Arg4>(a4), std::forward<Arg5>(a5)))
+      {
+        raw_ptr.pointer_ = 0;
+      }
+
+      // Construct object in raw memory 
+      // and take ownership if construction succeeds.
+      template <typename Arg1, typename Arg2, typename Arg3, 
+        typename Arg4, typename Arg5, typename Arg6>
+      handler_ptr(raw_ptr_type& raw_ptr, Arg1&& a1, Arg2&& a2, 
+        Arg3&& a3, Arg4&& a4, Arg5&& a5, Arg6&& a6)
+        : alloc_context_(boost::addressof(raw_ptr.alloc_context_))
+        , pointer_(new (raw_ptr.pointer_) value_type(
+            std::forward<Arg1>(a1), std::forward<Arg2>(a2), 
+            std::forward<Arg3>(a3), std::forward<Arg4>(a4), 
+            std::forward<Arg5>(a5), std::forward<Arg6>(a6)))
+      {
+        raw_ptr.pointer_ = 0;
+      }
+
+      // Construct object in raw memory 
+      // and take ownership if construction succeeds.
+      template <typename Arg1, typename Arg2, typename Arg3, 
+        typename Arg4, typename Arg5, typename Arg6, typename Arg7>
+      handler_ptr(raw_ptr_type& raw_ptr, Arg1&& a1, Arg2&& a2, 
+        Arg3&& a3, Arg4&& a4, Arg5&& a5, Arg6&& a6, Arg7&& a7)
+        : alloc_context_(boost::addressof(raw_ptr.alloc_context_))
+        , pointer_(new (raw_ptr.pointer_) value_type(std::forward<Arg1>(a1),
+            std::forward<Arg2>(a2), std::forward<Arg3>(a3), 
+            std::forward<Arg4>(a4), std::forward<Arg5>(a5), 
+            std::forward<Arg6>(a6), std::forward<Arg7>(a7)))
+      {
+        raw_ptr.pointer_ = 0;
+      }
+
+      // Construct object in raw memory and 
+      // take ownership if construction succeeds.
+      template <typename Arg1, typename Arg2, 
+        typename Arg3, typename Arg4, typename Arg5, 
+        typename Arg6, typename Arg7, typename Arg8>
+      handler_ptr(raw_ptr_type& raw_ptr, Arg1&& a1, Arg2&& a2, 
+        Arg3&& a3,Arg4&& a4, Arg5&& a5, Arg6&& a6, Arg7&& a7, Arg8&& a8)
+        : alloc_context_(boost::addressof(raw_ptr.alloc_context_))
+        , pointer_(new (raw_ptr.pointer_) value_type(
+            std::forward<Arg1>(a1), std::forward<Arg2>(a2), 
+            std::forward<Arg3>(a3), std::forward<Arg4>(a4), 
+            std::forward<Arg5>(a5), std::forward<Arg6>(a6), 
+            std::forward<Arg7>(a7), std::forward<Arg8>(a8)))
+      {
+        raw_ptr.pointer_ = 0;
+      }
+#else
       // Construct object in raw memory and 
       // take ownership if construction succeeds.
       template <typename Arg1>
@@ -213,6 +325,7 @@ namespace ma
       {
         raw_ptr.pointer_ = 0;
       }
+#endif // defined(MA_HAS_RVALUE_REFS)
 
       // Destructor automatically deallocates memory, 
       // unless it has been released.

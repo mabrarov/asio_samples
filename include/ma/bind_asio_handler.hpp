@@ -16,6 +16,7 @@
 
 #if defined(MA_HAS_RVALUE_REFS)
 #include <utility>
+#include <ma/type_traits.hpp>
 #endif // defined(MA_HAS_RVALUE_REFS)
 
 #include <ma/handler_alloc_helpers.hpp>
@@ -33,21 +34,28 @@ namespace ma
       this_type& operator=(const this_type&);
 
     public:
-      typedef void result_type;
+      typedef void result_type;      
 
+#if defined(MA_HAS_RVALUE_REFS)
+      template <typename H, typename A1>
+      binder1(H&& handler, A1&& arg1)
+        : handler_(std::forward<H>(handler))
+        , arg1_(std::forward<A1>(arg1))
+      {
+      }
+
+      binder1(this_type&& other)
+        : handler_(std::move(other.handler_))
+        , arg1_(std::move(other.arg1_))
+      {
+      }      
+#else 
       binder1(const Handler& handler, const Arg1& arg1)
         : handler_(handler)
         , arg1_(arg1)
       {
       }
-
-  #if defined(MA_HAS_RVALUE_REFS)
-      binder1(this_type&& other)
-        : handler_(std::move(other.handler_))
-        , arg1_(std::move(other.arg1_))
-      {
-      }
-  #endif // defined(MA_HAS_RVALUE_REFS)
+#endif // defined(MA_HAS_RVALUE_REFS)
 
       ~binder1()
       {
@@ -68,13 +76,16 @@ namespace ma
         return ma_asio_handler_alloc_helpers::allocate(size, context->handler_);
       } // asio_handler_allocate
 
-      friend void asio_handler_deallocate(void* pointer, std::size_t size, this_type* context)
+      friend void asio_handler_deallocate(void* pointer, 
+        std::size_t size, this_type* context)
       {
-        ma_asio_handler_alloc_helpers::deallocate(pointer, size, context->handler_);
+        ma_asio_handler_alloc_helpers::deallocate(pointer, 
+          size, context->handler_);
       } // asio_handler_deallocate
 
       template <typename Function>
-      friend void asio_handler_invoke(const Function& function, this_type* context)
+      friend void asio_handler_invoke(const Function& function, 
+        this_type* context)
       {
         ma_asio_handler_invoke_helpers::invoke(function, context->handler_);
       } // asio_handler_invoke
@@ -84,12 +95,26 @@ namespace ma
       const Arg1 arg1_;
     }; // class binder1  
 
+#if defined(MA_HAS_RVALUE_REFS)
+    template <typename Handler, typename Arg1>
+    inline binder1<
+      typename ma::remove_cv_reference<Handler>::type,
+      typename ma::remove_cv_reference<Arg1>::type> 
+    bind_handler(Handler&& handler, Arg1&& arg1)
+    {
+      typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+      typedef typename ma::remove_cv_reference<Arg1>::type arg1_type;
+      return binder1<handler_type, arg1_type>(
+        std::forward<Handler>(handler), std::forward<Arg1>(arg1));
+    } // bind_handler
+#else 
     template <typename Handler, typename Arg1>
     inline binder1<Handler, Arg1> 
     bind_handler(const Handler& handler, const Arg1& arg1)
     {
       return binder1<Handler, Arg1>(handler, arg1);
     } // bind_handler
+#endif // defined(MA_HAS_RVALUE_REFS)
 
     template <typename Handler, typename Arg1, typename Arg2>
     class binder2
@@ -99,23 +124,31 @@ namespace ma
       this_type& operator=(const this_type&);
 
     public:
-      typedef void result_type;
+      typedef void result_type;      
 
-      binder2(const Handler& handler, const Arg1& arg1, const Arg2& arg2)
-        : handler_(handler)
-        , arg1_(arg1)
-        , arg2_(arg2)
+#if defined(MA_HAS_RVALUE_REFS)
+      template <typename H, typename A1, typename A2>
+      binder2(H&& handler, A1&& arg1, A2&& arg2)
+        : handler_(std::forward<H>(handler))
+        , arg1_(std::forward<A1>(arg1))
+        , arg2_(std::forward<A2>(arg2))
       {
       }
 
-  #if defined(MA_HAS_RVALUE_REFS)
       binder2(this_type&& other)
         : handler_(std::move(other.handler_))
         , arg1_(std::move(other.arg1_))
         , arg2_(std::move(other.arg2_))
       {
       }
-  #endif // defined(MA_HAS_RVALUE_REFS)
+#else
+      binder2(const Handler& handler, const Arg1& arg1, const Arg2& arg2)
+        : handler_(handler)
+        , arg1_(arg1)
+        , arg2_(arg2)
+      {
+      }
+#endif // defined(MA_HAS_RVALUE_REFS)
 
       ~binder2()
       {
@@ -133,16 +166,20 @@ namespace ma
 
       friend void* asio_handler_allocate(std::size_t size, this_type* context)
       {
-        return ma_asio_handler_alloc_helpers::allocate(size, context->handler_);
+        return ma_asio_handler_alloc_helpers::allocate(size, 
+          context->handler_);
       } // asio_handler_allocate
 
-      friend void asio_handler_deallocate(void* pointer, std::size_t size, this_type* context)
+      friend void asio_handler_deallocate(void* pointer, 
+        std::size_t size, this_type* context)
       {
-        ma_asio_handler_alloc_helpers::deallocate(pointer, size, context->handler_);
+        ma_asio_handler_alloc_helpers::deallocate(pointer, 
+          size, context->handler_);
       } // asio_handler_deallocate
 
       template <typename Function>
-      friend void asio_handler_invoke(const Function& function, this_type* context)
+      friend void asio_handler_invoke(const Function& function, 
+        this_type* context)
       {
         ma_asio_handler_invoke_helpers::invoke(function, context->handler_);
       } // asio_handler_invoke
@@ -153,12 +190,30 @@ namespace ma
       const Arg2 arg2_;      
     }; // class binder2    
 
+#if defined(MA_HAS_RVALUE_REFS)
+    template <typename Handler, typename Arg1, typename Arg2>
+    inline binder2<
+      typename ma::remove_cv_reference<Handler>::type,
+      typename ma::remove_cv_reference<Arg1>::type,
+      typename ma::remove_cv_reference<Arg2>::type> 
+    bind_handler(Handler&& handler, Arg1&& arg1, Arg2&& arg2)
+    {
+      typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+      typedef typename ma::remove_cv_reference<Arg1>::type arg1_type;
+      typedef typename ma::remove_cv_reference<Arg2>::type arg2_type;
+      return binder2<handler_type, arg1_type, arg2_type>(
+        std::forward<Handler>(handler),
+        std::forward<Arg1>(arg1), 
+        std::forward<Arg2>(arg2));
+    } // bind_handler
+#else 
     template <typename Handler, typename Arg1, typename Arg2>
     inline binder2<Handler, Arg1, Arg2>
     bind_handler(const Handler& handler, const Arg1& arg1, const Arg2& arg2)
     {
       return binder2<Handler, Arg1, Arg2>(handler, arg1, arg2);
     } // bind_handler
+#endif // defined(MA_HAS_RVALUE_REFS)
 
     template <typename Handler, typename Arg1, typename Arg2, typename Arg3>
     class binder3
@@ -170,6 +225,24 @@ namespace ma
     public:
       typedef void result_type;
 
+#if defined(MA_HAS_RVALUE_REFS)
+      template <typename H, typename A1, typename A2, typename A3> 
+      binder3(H&& handler, A1&& arg1, A2&& arg2, A3&& arg3)
+        : handler_(std::forward<H>(handler))
+        , arg1_(std::forward<A1>(arg1))
+        , arg2_(std::forward<A2>(arg2))
+        , arg3_(std::forward<A3>(arg3))
+      {
+      }
+
+      binder3(this_type&& other)
+        : handler_(std::move(other.handler_))
+        , arg1_(std::move(other.arg1_))
+        , arg2_(std::move(other.arg2_))
+        , arg3_(std::move(other.arg3_))
+      {
+      }
+#else 
       binder3(const Handler& handler, const Arg1& arg1, const Arg2& arg2, 
         const Arg3& arg3)
         : handler_(handler)
@@ -178,16 +251,7 @@ namespace ma
         , arg3_(arg3)
       {
       }
-
-  #if defined(MA_HAS_RVALUE_REFS)
-      binder3(this_type&& other)
-        : handler_(std::move(other.handler_))
-        , arg1_(std::move(other.arg1_))
-        , arg2_(std::move(other.arg2_))
-        , arg3_(std::move(other.arg3_))
-      {
-      }
-  #endif // defined(MA_HAS_RVALUE_REFS)
+#endif // defined(MA_HAS_RVALUE_REFS)
 
       ~binder3()
       {
@@ -205,16 +269,20 @@ namespace ma
 
       friend void* asio_handler_allocate(std::size_t size, this_type* context)
       {
-        return ma_asio_handler_alloc_helpers::allocate(size, context->handler_);
+        return ma_asio_handler_alloc_helpers::allocate(size, 
+          context->handler_);
       } // asio_handler_allocate
 
-      friend void asio_handler_deallocate(void* pointer, std::size_t size, this_type* context)
+      friend void asio_handler_deallocate(void* pointer, 
+        std::size_t size, this_type* context)
       {
-        ma_asio_handler_alloc_helpers::deallocate(pointer, size, context->handler_);
+        ma_asio_handler_alloc_helpers::deallocate(pointer, 
+          size, context->handler_);
       } // asio_handler_deallocate
 
       template <typename Function>
-      friend void asio_handler_invoke(const Function& function, this_type* context)
+      friend void asio_handler_invoke(const Function& function, 
+        this_type* context)
       {
         ma_asio_handler_invoke_helpers::invoke(function, context->handler_);
       } // asio_handler_invoke
@@ -226,6 +294,26 @@ namespace ma
       const Arg3 arg3_;
     }; // class binder3    
 
+#if defined(MA_HAS_RVALUE_REFS)
+    template <typename Handler, typename Arg1, typename Arg2, typename Arg3>
+    inline binder3<
+      typename ma::remove_cv_reference<Handler>::type,
+      typename ma::remove_cv_reference<Arg1>::type,
+      typename ma::remove_cv_reference<Arg2>::type,
+      typename ma::remove_cv_reference<Arg3>::type> 
+    bind_handler(Handler&& handler, Arg1&& arg1, Arg2&& arg2, Arg3&& arg3)
+    {
+      typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+      typedef typename ma::remove_cv_reference<Arg1>::type arg1_type;
+      typedef typename ma::remove_cv_reference<Arg2>::type arg2_type;
+      typedef typename ma::remove_cv_reference<Arg3>::type arg3_type;
+      return binder3<handler_type, arg1_type, arg2_type, arg3_type>(
+        std::forward<Handler>(handler),
+        std::forward<Arg1>(arg1), 
+        std::forward<Arg2>(arg2),
+        std::forward<Arg3>(arg3));
+    } // bind_handler
+#else 
     template <typename Handler, typename Arg1, typename Arg2, typename Arg3>
     inline binder3<Handler, Arg1, Arg2, Arg3>
     bind_handler(const Handler& handler, const Arg1& arg1, const Arg2& arg2, 
@@ -233,6 +321,7 @@ namespace ma
     {
       return binder3<Handler, Arg1, Arg2, Arg3>(handler, arg1, arg2, arg3);
     } // bind_handler
+#endif // defined(MA_HAS_RVALUE_REFS) 
 
     template <typename Handler, typename Arg1, typename Arg2, typename Arg3, 
       typename Arg4>
@@ -242,18 +331,19 @@ namespace ma
       typedef binder4<Handler, Arg1, Arg2, Arg3, Arg4> this_type;
       this_type& operator=(const this_type&);
 
-    public:
-      binder4(const Handler& handler, const Arg1& arg1, const Arg2& arg2,
-        const Arg3& arg3, const Arg4& arg4)
-        : handler_(handler)
-        , arg1_(arg1)
-        , arg2_(arg2)
-        , arg3_(arg3)
-        , arg4_(arg4)
+    public:      
+
+#if defined(MA_HAS_RVALUE_REFS)
+      template <typename H, typename A1, typename A2, typename A3, typename A4>
+      binder4(H&& handler, A1&& arg1, A2&& arg2, A3&& arg3, A4&& arg4)
+        : handler_(std::forward<H>(handler))
+        , arg1_(std::forward<A1>(arg1))
+        , arg2_(std::forward<A2>(arg2))
+        , arg3_(std::forward<A3>(arg3))
+        , arg4_(std::forward<A4>(arg4))
       {
       }
 
-  #if defined(MA_HAS_RVALUE_REFS)
       binder4(this_type&& other)
         : handler_(std::move(other.handler_))
         , arg1_(std::move(other.arg1_))
@@ -262,7 +352,17 @@ namespace ma
         , arg4_(std::move(other.arg4_))
       {
       }
-  #endif // defined(MA_HAS_RVALUE_REFS)
+#else
+      binder4(const Handler& handler, const Arg1& arg1, 
+        const Arg2& arg2, const Arg3& arg3, const Arg4& arg4)
+        : handler_(handler)
+        , arg1_(arg1)
+        , arg2_(arg2)
+        , arg3_(arg3)
+        , arg4_(arg4)
+      {
+      }
+#endif // defined(MA_HAS_RVALUE_REFS)
 
       ~binder4()
       {
@@ -280,16 +380,20 @@ namespace ma
 
       friend void* asio_handler_allocate(std::size_t size, this_type* context)
       {
-        return ma_asio_handler_alloc_helpers::allocate(size, context->handler_);
+        return ma_asio_handler_alloc_helpers::allocate(size, 
+          context->handler_);
       } // asio_handler_allocate
 
-      friend void asio_handler_deallocate(void* pointer, std::size_t size, this_type* context)
+      friend void asio_handler_deallocate(void* pointer, 
+        std::size_t size, this_type* context)
       {
-        ma_asio_handler_alloc_helpers::deallocate(pointer, size, context->handler_);
+        ma_asio_handler_alloc_helpers::deallocate(pointer, 
+          size, context->handler_);
       } // asio_handler_deallocate
 
       template <typename Function>
-      friend void asio_handler_invoke(const Function& function, this_type* context)
+      friend void asio_handler_invoke(const Function& function, 
+        this_type* context)
       {
         ma_asio_handler_invoke_helpers::invoke(function, context->handler_);
       } // asio_handler_invoke
@@ -302,6 +406,31 @@ namespace ma
       const Arg4 arg4_;      
     }; // class binder4    
 
+#if defined(MA_HAS_RVALUE_REFS)
+    template <typename Handler, typename Arg1, 
+      typename Arg2, typename Arg3, typename Arg4>
+    inline binder4<
+      typename ma::remove_cv_reference<Handler>::type,
+      typename ma::remove_cv_reference<Arg1>::type,
+      typename ma::remove_cv_reference<Arg2>::type,
+      typename ma::remove_cv_reference<Arg3>::type,
+      typename ma::remove_cv_reference<Arg4>::type> 
+    bind_handler(Handler&& handler, Arg1&& arg1, 
+      Arg2&& arg2, Arg3&& arg3, Arg4&& arg4)
+    {
+      typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+      typedef typename ma::remove_cv_reference<Arg1>::type arg1_type;
+      typedef typename ma::remove_cv_reference<Arg2>::type arg2_type;
+      typedef typename ma::remove_cv_reference<Arg3>::type arg3_type;
+      typedef typename ma::remove_cv_reference<Arg4>::type arg4_type;
+      return binder4<handler_type, arg1_type, arg2_type, arg3_type, arg4_type>(
+        std::forward<Handler>(handler),
+        std::forward<Arg1>(arg1), 
+        std::forward<Arg2>(arg2),
+        std::forward<Arg3>(arg3),
+        std::forward<Arg4>(arg4));
+    } // bind_handler
+#else 
     template <typename Handler, typename Arg1, typename Arg2, typename Arg3, 
       typename Arg4>
     inline binder4<Handler, Arg1, Arg2, Arg3, Arg4>
@@ -311,9 +440,10 @@ namespace ma
       return binder4<Handler, Arg1, Arg2, Arg3, Arg4>(handler, 
         arg1, arg2, arg3, arg4);
     } // bind_handler
+#endif // defined(MA_HAS_RVALUE_REFS)
 
-    template <typename Handler, typename Arg1, typename Arg2, typename Arg3,
-      typename Arg4, typename Arg5>
+    template <typename Handler, typename Arg1, 
+      typename Arg2, typename Arg3, typename Arg4, typename Arg5>
     class binder5
     {
     private:
@@ -321,6 +451,31 @@ namespace ma
       this_type& operator=(const this_type&);
 
     public:
+
+#if defined(MA_HAS_RVALUE_REFS)
+      template <typename H, typename A1, 
+        typename A2, typename A3, typename A4, typename A5> 
+      binder5(H&& handler, A1&& arg1, A2&& arg2, 
+        A3&& arg3, A4&& arg4, A5&& arg5)
+        : handler_(std::forward<H>(handler))
+        , arg1_(std::forward<A1>(arg1))
+        , arg2_(std::forward<A2>(arg2))
+        , arg3_(std::forward<A3>(arg3))
+        , arg4_(std::forward<A4>(arg4))
+        , arg5_(std::forward<A5>(arg5))
+      {
+      }
+  
+      binder5(this_type&& other)
+        : handler_(std::move(other.handler_))
+        , arg1_(std::move(other.arg1_))
+        , arg2_(std::move(other.arg2_))
+        , arg3_(std::move(other.arg3_))
+        , arg4_(std::move(other.arg4_))
+        , arg5_(std::move(other.arg5_))
+      {
+      }
+#else
       binder5(const Handler& handler, const Arg1& arg1, const Arg2& arg2, 
         const Arg3& arg3, const Arg4& arg4, const Arg5& arg5)
         : handler_(handler)
@@ -331,18 +486,7 @@ namespace ma
         , arg5_(arg5)
       {
       }
-
-  #if defined(MA_HAS_RVALUE_REFS)
-      binder5(this_type&& other)
-        : handler_(std::move(other.handler_))
-        , arg1_(std::move(other.arg1_))
-        , arg2_(std::move(other.arg2_))
-        , arg3_(std::move(other.arg3_))
-        , arg4_(std::move(other.arg4_))
-        , arg5_(std::move(other.arg5_))
-      {
-      }
-  #endif // defined(MA_HAS_RVALUE_REFS)
+#endif // defined(MA_HAS_RVALUE_REFS)
 
       ~binder5()
       {
@@ -360,16 +504,20 @@ namespace ma
 
       friend void* asio_handler_allocate(std::size_t size, this_type* context)
       {
-        return ma_asio_handler_alloc_helpers::allocate(size, context->handler_);
+        return ma_asio_handler_alloc_helpers::allocate(size, 
+          context->handler_);
       } // asio_handler_allocate
 
-      friend void asio_handler_deallocate(void* pointer, std::size_t size, this_type* context)
+      friend void asio_handler_deallocate(void* pointer, 
+        std::size_t size, this_type* context)
       {
-        ma_asio_handler_alloc_helpers::deallocate(pointer, size, context->handler_);
+        ma_asio_handler_alloc_helpers::deallocate(pointer, 
+          size, context->handler_);
       } // asio_handler_deallocate
 
       template <typename Function>
-      friend void asio_handler_invoke(const Function& function, this_type* context)
+      friend void asio_handler_invoke(const Function& function, 
+        this_type* context)
       {
         ma_asio_handler_invoke_helpers::invoke(function, context->handler_);
       } // asio_handler_invoke
@@ -383,8 +531,37 @@ namespace ma
       const Arg5 arg5_;      
     }; // class binder5 
 
-    template <typename Handler, typename Arg1, typename Arg2, typename Arg3, 
-      typename Arg4, typename Arg5>
+#if defined(MA_HAS_RVALUE_REFS)
+    template <typename Handler, typename Arg1, 
+      typename Arg2, typename Arg3, typename Arg4, typename Arg5>
+    inline binder5<
+      typename ma::remove_cv_reference<Handler>::type,
+      typename ma::remove_cv_reference<Arg1>::type,
+      typename ma::remove_cv_reference<Arg2>::type,
+      typename ma::remove_cv_reference<Arg3>::type,
+      typename ma::remove_cv_reference<Arg4>::type,
+      typename ma::remove_cv_reference<Arg5>::type> 
+    bind_handler(Handler&& handler, Arg1&& arg1, 
+      Arg2&& arg2, Arg3&& arg3, Arg4&& arg4, Arg5&& arg5)
+    {
+      typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+      typedef typename ma::remove_cv_reference<Arg1>::type arg1_type;
+      typedef typename ma::remove_cv_reference<Arg2>::type arg2_type;
+      typedef typename ma::remove_cv_reference<Arg3>::type arg3_type;
+      typedef typename ma::remove_cv_reference<Arg4>::type arg4_type;
+      typedef typename ma::remove_cv_reference<Arg5>::type arg5_type;
+      return binder5<
+        handler_type, arg1_type, arg2_type, arg3_type, arg4_type, arg5_type>(
+        std::forward<Handler>(handler),
+        std::forward<Arg1>(arg1), 
+        std::forward<Arg2>(arg2),
+        std::forward<Arg3>(arg3),
+        std::forward<Arg4>(arg4),
+        std::forward<Arg5>(arg5));
+    } // bind_handler
+#else 
+    template <typename Handler, typename Arg1, typename Arg2, 
+      typename Arg3, typename Arg4, typename Arg5>
     inline binder5<Handler, Arg1, Arg2, Arg3, Arg4, Arg5>
     bind_handler(const Handler& handler, const Arg1& arg1, const Arg2& arg2, 
       const Arg3& arg3, const Arg4& arg4, const Arg5& arg5)
@@ -392,6 +569,7 @@ namespace ma
       return binder5<Handler, Arg1, Arg2, Arg3, Arg4, Arg5>(handler, 
         arg1, arg2, arg3, arg4, arg5);
     } // bind_handler
+#endif // defined(MA_HAS_RVALUE_REFS) 
 
   } // namespace detail  
 } // namespace ma

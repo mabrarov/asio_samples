@@ -1,5 +1,5 @@
 //
-// // Copyright (c) 2010-2011 Marat Abrarov (abrarov@mail.ru)
+// Copyright (c) 2010-2011 Marat Abrarov (abrarov@mail.ru)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -14,6 +14,13 @@
 
 #include <boost/noncopyable.hpp>
 #include <boost/asio.hpp>
+#include <ma/config.hpp>
+
+#if defined(MA_HAS_RVALUE_REFS)
+#include <utility>
+#include <ma/type_traits.hpp>
+#endif // defined(MA_HAS_RVALUE_REFS)
+
 #include <ma/handler_storage_service.hpp>
 
 namespace ma
@@ -107,11 +114,21 @@ namespace ma
       return service_.has_target(implementation_);
     }    
 
+#if defined(MA_HAS_RVALUE_REFS)
+    template <typename Handler>
+    void put(Handler&& handler)
+    {      
+      typedef typename ma::remove_cv_reference<Handler>::type handler_type; 
+      service_.put<handler_type>(implementation_, 
+        std::forward<Handler>(handler));
+    }
+#else
     template <typename Handler>
     void put(const Handler& handler)
     {
       service_.put(implementation_, handler);
     }
+#endif // defined(MA_HAS_RVALUE_REFS)
 
     void post(const arg_type& arg)
     {      

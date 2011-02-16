@@ -12,6 +12,13 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
+#include <ma/config.hpp>
+
+#if defined(MA_HAS_RVALUE_REFS)
+#include <utility>
+#include <ma/type_traits.hpp>
+#endif // defined(MA_HAS_RVALUE_REFS)
+
 #include <boost/noncopyable.hpp>
 #include <boost/optional.hpp>
 #include <boost/shared_ptr.hpp>
@@ -42,7 +49,7 @@ namespace ma
         typedef session_manager this_type;        
 
       public: 
-        explicit session_manager(boost::asio::io_service& io_service, 
+        session_manager(boost::asio::io_service& io_service, 
           boost::asio::io_service& session_io_service, 
           const session_manager_config& config);
 
@@ -52,6 +59,34 @@ namespace ma
 
         void reset(bool free_recycled_sessions = true);
 
+#if defined(MA_HAS_RVALUE_REFS)
+        template <typename Handler>
+        void async_start(Handler&& handler)
+        {
+          typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+          strand_.post(make_context_alloc_handler2(
+            std::forward<Handler>(handler), 
+            boost::bind(&this_type::do_start<handler_type>, shared_from_this(), _1)));  
+        } // async_start
+
+        template <typename Handler>
+        void async_stop(Handler&& handler)
+        {
+          typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+          strand_.post(make_context_alloc_handler2(
+            std::forward<Handler>(handler), 
+            boost::bind(&this_type::do_stop<handler_type>, shared_from_this(), _1))); 
+        } // async_stop
+
+        template <typename Handler>
+        void async_wait(Handler&& handler)
+        {
+          typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+          strand_.post(make_context_alloc_handler2(
+            std::forward<Handler>(handler), 
+            boost::bind(&this_type::do_wait<handler_type>, shared_from_this(), _1)));  
+        } // async_wait
+#else // defined(MA_HAS_RVALUE_REFS)
         template <typename Handler>
         void async_start(const Handler& handler)
         {
@@ -72,9 +107,10 @@ namespace ma
           strand_.post(make_context_alloc_handler2(handler, 
             boost::bind(&this_type::do_wait<Handler>, shared_from_this(), _1)));  
         } // async_wait
+#endif // defined(MA_HAS_RVALUE_REFS)
 
       private:
-		struct  session_wrapper;
+		    struct  session_wrapper;
         typedef boost::shared_ptr<session_wrapper> session_wrapper_ptr;
         typedef boost::weak_ptr<session_wrapper>   session_wrapper_weak_ptr;      
         
@@ -98,7 +134,7 @@ namespace ma
           in_place_handler_allocator<128> start_wait_allocator;
           in_place_handler_allocator<128> stop_allocator;
 
-          explicit session_wrapper(boost::asio::io_service& io_service,
+          session_wrapper(boost::asio::io_service& io_service,
             const session_config& wrapped_session_config);
 
           ~session_wrapper()
@@ -110,7 +146,7 @@ namespace ma
         class session_wrapper_list : private boost::noncopyable
         {
         public:
-          explicit session_wrapper_list();
+          session_wrapper_list();
 
           void push_front(const session_wrapper_ptr& value);
           void erase(const session_wrapper_ptr& value);          
