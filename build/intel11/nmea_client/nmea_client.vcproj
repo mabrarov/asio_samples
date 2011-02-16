@@ -380,6 +380,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\..\include\ma\type_traits.hpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\..\include\ma\console_controller.hpp"
 					>
 				</File>
