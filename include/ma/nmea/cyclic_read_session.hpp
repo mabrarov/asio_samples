@@ -12,6 +12,13 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
+#include <ma/config.hpp>
+
+#if defined(MA_HAS_RVALUE_REFS)
+#include <utility>
+#include <ma/type_traits.hpp>
+#endif // defined(MA_HAS_RVALUE_REFS)
+
 #include <string>
 #include <algorithm>
 #include <utility>
@@ -67,6 +74,48 @@ namespace ma
 
       void resest();
 
+#if defined(MA_HAS_RVALUE_REFS)
+      template <typename Handler>
+      void async_start(Handler&& handler)
+      {
+        typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+        strand_.post(make_context_alloc_handler2(
+          std::forward<Handler>(handler),  
+          boost::bind(&this_type::do_start<handler_type>, shared_from_this(), _1)));
+      } // async_start
+
+      template <typename Handler>
+      void async_stop(Handler&& handler)
+      {
+        typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+        strand_.post(make_context_alloc_handler2(
+          std::forward<Handler>(handler),  
+          boost::bind(&this_type::do_stop<handler_type>, shared_from_this(), _1)));
+      } // async_stop
+
+      // Handler::operator ()(const boost::system::error_code&, std::size_t)
+      template <typename Handler, typename Iterator>
+      void async_read_some(Iterator&& begin, Iterator&& end, Handler&& handler)
+      {                
+        typedef typename ma::remove_cv_reference<Iterator>::type iterator_type;
+        typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+        strand_.post(make_context_alloc_handler2(
+          std::forward<Handler>(handler),  
+          boost::bind(&this_type::do_read_some<handler_type, iterator_type>, shared_from_this(), 
+            std::forward<Iterator>(begin), std::forward<Iterator>(end), _1)));
+      } // async_read_some
+
+      template <typename ConstBufferSequence, typename Handler>
+      void async_write(ConstBufferSequence&& buffers, Handler&& handler)
+      { 
+        typedef typename ma::remove_cv_reference<ConstBufferSequence>::type buffers_type;
+        typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+        strand_.post(make_context_alloc_handler2(
+          std::forward<Handler>(handler),  
+          boost::bind(&this_type::do_write<buffers_type, handler_type>, shared_from_this(), 
+            std::forward<ConstBufferSequence>(buffers), _1)));
+      } // async_write
+#else // defined(MA_HAS_RVALUE_REFS) 
       template <typename Handler>
       void async_start(const Handler& handler)
       {        
@@ -95,6 +144,7 @@ namespace ma
         strand_.post(make_context_alloc_handler2(handler, 
           boost::bind(&this_type::do_write<ConstBufferSequence, Handler>, shared_from_this(), buffers, _1)));
       } // async_write
+#endif // defined(MA_HAS_RVALUE_REFS)
     
     private:
       enum state_type
@@ -155,6 +205,24 @@ namespace ma
         this_type& operator=(const this_type&);
 
       public:
+#if defined(MA_HAS_RVALUE_REFS)
+        template <typename H, typename I>
+        wrapped_read_handler(H&& handler, I&& begin, I&& end)
+          : read_handler_base(&this_type::do_copy)
+          , handler_(std::forward<H>(handler))
+          , begin_(std::forward<I>(begin))
+          , end_(std::forward<I>(end))
+        {
+        } // wrapped_read_handler
+
+        wrapped_read_handler(this_type&& other)
+          : read_handler_base(std::move(other))
+          , handler_(std::move(other.handler_))
+          , begin_(std::move(other.begin_))
+          , end_(std::move(other.end_))
+        {
+        }
+#else
         wrapped_read_handler(const Handler& handler, 
           const Iterator& begin, const Iterator& end)
           : read_handler_base(&this_type::do_copy)
@@ -163,20 +231,11 @@ namespace ma
           , end_(end)
         {
         } // wrapped_read_handler
+#endif // defined(MA_HAS_RVALUE_REFS)
 
         ~wrapped_read_handler()
         {
         }
-
-#if defined(MA_HAS_RVALUE_REFS)
-        wrapped_read_handler(this_type&& other)
-          : read_handler_base(std::move(other))
-          , handler_(std::move(other.handler_))
-          , begin_(std::move(other.begin_))
-          , end_(std::move(other.end_))
-        {
-        }
-#endif // defined(MA_HAS_RVALUE_REFS)
 
         static std::size_t do_copy(read_handler_base* base, 
           const frame_buffer_type& buffer, boost::system::error_code& error)
@@ -185,18 +244,23 @@ namespace ma
           return copy_buffer(buffer, this_ptr->begin_, this_ptr->end_, error);         
         } // do_copy
 
-        friend void* asio_handler_allocate(std::size_t size, this_type* context)
+        friend void* asio_handler_allocate(std::size_t size, 
+          this_type* context)
         {
-          return ma_asio_handler_alloc_helpers::allocate(size, context->handler_);
+          return ma_asio_handler_alloc_helpers::allocate(size, 
+            context->handler_);
         } // asio_handler_allocate
 
-        friend void asio_handler_deallocate(void* pointer, std::size_t size, this_type* context)
+        friend void asio_handler_deallocate(void* pointer, 
+          std::size_t size, this_type* context)
         {
-          ma_asio_handler_alloc_helpers::deallocate(pointer, size, context->handler_);
+          ma_asio_handler_alloc_helpers::deallocate(pointer, 
+            size, context->handler_);
         }  // asio_handler_deallocate
 
         template <typename Function>
-        friend void asio_handler_invoke(const Function& function, this_type* context)
+        friend void asio_handler_invoke(const Function& function, 
+          this_type* context)
         {
           ma_asio_handler_invoke_helpers::invoke(function, context->handler_);
         } // asio_handler_invoke

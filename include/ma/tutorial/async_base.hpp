@@ -12,6 +12,13 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
+#include <ma/config.hpp>
+
+#if defined(MA_HAS_RVALUE_REFS)
+#include <utility>
+#include <ma/type_traits.hpp>
+#endif // defined(MA_HAS_RVALUE_REFS)
+
 #include <boost/noncopyable.hpp>
 #include <boost/optional.hpp>
 #include <boost/bind.hpp>
@@ -33,12 +40,23 @@ namespace ma
       typedef Async_base this_type;
 
     public:
+#if defined(MA_HAS_RVALUE_REFS)
+      template <typename Handler>
+      void async_do_something(Handler&& handler)
+      {
+        typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+        strand_.post(ma::make_context_alloc_handler2(
+          std::forward<Handler>(handler), 
+          boost::bind(&this_type::call_do_something<handler_type>, shared_from_this(), _1)));
+      } // async_do_something
+#else
       template <typename Handler>
       void async_do_something(const Handler& handler)
       {
         strand_.post(ma::make_context_alloc_handler2(handler, 
           boost::bind(&this_type::call_do_something<Handler>, shared_from_this(), _1)));
       } // async_do_something
+#endif // defined(MA_HAS_RVALUE_REFS)
 
     protected:
       Async_base(boost::asio::io_service::strand& strand)

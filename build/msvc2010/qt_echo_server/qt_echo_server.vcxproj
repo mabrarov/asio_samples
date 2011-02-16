@@ -165,6 +165,7 @@
     <ClInclude Include="..\..\..\include\ma\echo\server\qt\sessionmanagersignal_fwd.h" />
     <ClInclude Include="..\..\..\include\ma\echo\server\qt\sessionmanagerwrapper_fwd.h" />
     <ClInclude Include="..\..\..\include\ma\echo\server\qt\signal_connect_error.h" />
+    <ClInclude Include="..\..\..\include\ma\type_traits.hpp" />
     <ClInclude Include="GeneratedFiles\ui_mainform.h" />
     <CustomBuild Include="..\..\..\include\ma\echo\server\qt\mainform.h">
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\moc.exe;%(FullPath)</AdditionalInputs>

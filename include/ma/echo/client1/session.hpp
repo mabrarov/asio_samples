@@ -12,6 +12,13 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
+#include <ma/config.hpp>
+
+#if defined(MA_HAS_RVALUE_REFS)
+#include <utility>
+#include <ma/type_traits.hpp>
+#endif // defined(MA_HAS_RVALUE_REFS)
+
 #include <boost/noncopyable.hpp>
 #include <boost/optional.hpp>
 #include <boost/bind.hpp>
@@ -52,6 +59,34 @@ namespace ma
 
         void reset();
 
+#if defined(MA_HAS_RVALUE_REFS)
+        template <typename Handler>
+        void async_start(Handler&& handler)
+        {
+          typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+          strand_.post(make_context_alloc_handler2(
+            std::forward<Handler>(handler),  
+            boost::bind(&this_type::do_start<handler_type>, shared_from_this(), _1)));  
+        } // async_start
+
+        template <typename Handler>
+        void async_stop(Handler&& handler)
+        {
+          typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+          strand_.post(make_context_alloc_handler2(
+            std::forward<Handler>(handler), 
+            boost::bind(&this_type::do_stop<handler_type>, shared_from_this(), _1))); 
+        } // async_stop
+
+        template <typename Handler>
+        void async_wait(Handler&& handler)
+        {
+          typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+          strand_.post(make_context_alloc_handler2(
+            std::forward<Handler>(handler), 
+            boost::bind(&this_type::do_wait<handler_type>, shared_from_this(), _1)));  
+        } // async_wait
+#else // defined(MA_HAS_RVALUE_REFS)
         template <typename Handler>
         void async_start(const Handler& handler)
         {
@@ -72,6 +107,7 @@ namespace ma
           strand_.post(make_context_alloc_handler2(handler, 
             boost::bind(&this_type::do_wait<Handler>, shared_from_this(), _1)));  
         } // async_wait
+#endif // defined(MA_HAS_RVALUE_REFS)        
 
       private:        
         enum state_type

@@ -222,6 +222,9 @@
     <ClInclude Include="..\..\..\include\ma\echo\server\qt\service_fwd.h">
       <Filter>Header Files\ma\echo\server\qt</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\type_traits.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\resources\qt_echo_server\qt_echo_server.ico">
