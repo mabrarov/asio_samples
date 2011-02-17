@@ -14,7 +14,44 @@ namespace ma
   {
     namespace server
     {
-      session::session(boost::asio::io_service& io_service, const session_config& config)
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)      
+      class session::io_handler
+      {
+      private:
+        typedef io_handler this_type;
+        this_type& operator=(const this_type&);
+
+      public:
+        typedef void (session::*function_type)(
+          const boost::system::error_code&, const std::size_t);
+
+        template <typename SessionPtr>
+        io_handler(function_type function, SessionPtr&& the_session)
+          : function_(function)
+          , session_(std::forward<SessionPtr>(the_session))
+        {
+        }         
+
+        io_handler(this_type&& other)
+          : function_(other.function_)
+          , session_(std::move(other.session_))
+        {
+        }
+
+        void operator()(const boost::system::error_code& error, 
+          const std::size_t bytes_transferred)
+        {
+          ((*session_).*function_)(error, bytes_transferred);
+        }
+
+      private:
+        function_type function_;
+        session_ptr session_;
+      }; // class session::io_handler
+#endif // defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+
+      session::session(boost::asio::io_service& io_service, 
+        const session_config& config)
         : socket_write_in_progress_(false)
         , socket_read_in_progress_(false) 
         , state_(ready_to_start)
@@ -48,13 +85,17 @@ namespace ma
         using boost::asio::ip::tcp;        
         if (config_.socket_recv_buffer_size)
         {
-          socket_.set_option(tcp::socket::receive_buffer_size(*config_.socket_recv_buffer_size), error);
+          socket_.set_option(
+            tcp::socket::receive_buffer_size(*config_.socket_recv_buffer_size),
+            error);
         }
         if (!error)
         {
           if (config_.socket_recv_buffer_size)
           {
-            socket_.set_option(tcp::socket::send_buffer_size(*config_.socket_recv_buffer_size), error);
+            socket_.set_option(
+              tcp::socket::send_buffer_size(*config_.socket_recv_buffer_size),
+              error);
           }
           if (!error)
           {          
@@ -93,7 +134,8 @@ namespace ma
         // Do shutdown - flush socket's write_some buffer
         if (!socket_write_in_progress_) 
         {
-          socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_send, stop_error_);            
+          socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_send, 
+            stop_error_);
         }          
         // Check for shutdown continuation          
         if (may_complete_stop())
@@ -140,9 +182,17 @@ namespace ma
           boost::asio::buffers_begin(buffers);
         if (buffers_size)
         {
-          socket_.async_read_some(buffers, strand_.wrap(make_custom_alloc_handler(read_allocator_,
-            boost::bind(&this_type::handle_read_some, shared_from_this(), 
-              boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred))));
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+          socket_.async_read_some(buffers, strand_.wrap(
+            make_custom_alloc_handler(read_allocator_,
+              io_handler(&this_type::handle_read_some, shared_from_this()))));
+#else
+          socket_.async_read_some(buffers, strand_.wrap(
+            make_custom_alloc_handler(read_allocator_,
+              boost::bind(&this_type::handle_read_some, shared_from_this(), 
+                boost::asio::placeholders::error, 
+                boost::asio::placeholders::bytes_transferred))));
+#endif // defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
           socket_read_in_progress_ = true;
         }        
       } // session::read_some
@@ -154,14 +204,23 @@ namespace ma
           boost::asio::buffers_begin(buffers);
         if (buffers_size)
         {
-          socket_.async_write_some(buffers, strand_.wrap(make_custom_alloc_handler(write_allocator_,
-            boost::bind(&this_type::handle_write_some, shared_from_this(), 
-              boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred))));
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+          socket_.async_write_some(buffers, strand_.wrap(
+            make_custom_alloc_handler(write_allocator_,
+              io_handler(&this_type::handle_write_some, shared_from_this()))));
+#else
+          socket_.async_write_some(buffers, strand_.wrap(
+            make_custom_alloc_handler(write_allocator_,
+              boost::bind(&this_type::handle_write_some, shared_from_this(), 
+                boost::asio::placeholders::error, 
+                boost::asio::placeholders::bytes_transferred))));
+#endif // defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
           socket_write_in_progress_ = true;
         }   
       } // session::write_some
 
-      void session::handle_read_some(const boost::system::error_code& error, const std::size_t bytes_transferred)
+      void session::handle_read_some(const boost::system::error_code& error, 
+        const std::size_t bytes_transferred)
       {        
         socket_read_in_progress_ = false;
         // Check for pending session stop operation 
@@ -194,7 +253,8 @@ namespace ma
         }
       } // session::handle_read_some
 
-      void session::handle_write_some(const boost::system::error_code& error, const std::size_t bytes_transferred)
+      void session::handle_write_some(const boost::system::error_code& error, 
+        const std::size_t bytes_transferred)
       {
         socket_write_in_progress_ = false;
         // Check for pending session manager stop operation 

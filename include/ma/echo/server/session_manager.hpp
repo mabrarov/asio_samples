@@ -66,7 +66,8 @@ namespace ma
           typedef typename ma::remove_cv_reference<Handler>::type handler_type;
           strand_.post(make_context_alloc_handler2(
             std::forward<Handler>(handler), 
-            boost::bind(&this_type::do_start<handler_type>, shared_from_this(), _1)));  
+            boost::bind(&this_type::do_start<handler_type>, 
+              shared_from_this(), _1)));  
         } // async_start
 
         template <typename Handler>
@@ -75,7 +76,8 @@ namespace ma
           typedef typename ma::remove_cv_reference<Handler>::type handler_type;
           strand_.post(make_context_alloc_handler2(
             std::forward<Handler>(handler), 
-            boost::bind(&this_type::do_stop<handler_type>, shared_from_this(), _1))); 
+            boost::bind(&this_type::do_stop<handler_type>, 
+              shared_from_this(), _1))); 
         } // async_stop
 
         template <typename Handler>
@@ -84,28 +86,32 @@ namespace ma
           typedef typename ma::remove_cv_reference<Handler>::type handler_type;
           strand_.post(make_context_alloc_handler2(
             std::forward<Handler>(handler), 
-            boost::bind(&this_type::do_wait<handler_type>, shared_from_this(), _1)));  
+            boost::bind(&this_type::do_wait<handler_type>, 
+              shared_from_this(), _1)));  
         } // async_wait
 #else // defined(MA_HAS_RVALUE_REFS)
         template <typename Handler>
         void async_start(const Handler& handler)
         {
           strand_.post(make_context_alloc_handler2(handler, 
-            boost::bind(&this_type::do_start<Handler>, shared_from_this(), _1)));  
+            boost::bind(&this_type::do_start<Handler>, 
+              shared_from_this(), _1)));  
         } // async_start
 
         template <typename Handler>
         void async_stop(const Handler& handler)
         {
           strand_.post(make_context_alloc_handler2(handler, 
-            boost::bind(&this_type::do_stop<Handler>, shared_from_this(), _1))); 
+            boost::bind(&this_type::do_stop<Handler>, 
+              shared_from_this(), _1))); 
         } // async_stop
 
         template <typename Handler>
         void async_wait(const Handler& handler)
         {
           strand_.post(make_context_alloc_handler2(handler, 
-            boost::bind(&this_type::do_wait<Handler>, shared_from_this(), _1)));  
+            boost::bind(&this_type::do_wait<Handler>, 
+              shared_from_this(), _1)));  
         } // async_wait
 #endif // defined(MA_HAS_RVALUE_REFS)
 
@@ -113,6 +119,11 @@ namespace ma
 		    struct  session_wrapper;
         typedef boost::shared_ptr<session_wrapper> session_wrapper_ptr;
         typedef boost::weak_ptr<session_wrapper>   session_wrapper_weak_ptr;      
+
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+        class accept_handler;
+        class session_handler;        
+#endif
         
         struct session_wrapper : private boost::noncopyable
         {
@@ -220,7 +231,8 @@ namespace ma
         session_wrapper_ptr create_session(boost::system::error_code& error);
         void accept_session(const session_wrapper_ptr& wrapped_session);
         void accept_new_session();
-        void handle_accept(const session_wrapper_ptr& wrapped_session, const boost::system::error_code& error);
+        void handle_accept(const session_wrapper_ptr& wrapped_session, 
+          const boost::system::error_code& error);
         bool may_complete_stop() const;
         bool may_complete_wait() const;
         bool may_continue_accept() const;
@@ -229,15 +241,27 @@ namespace ma
         void start_session(const session_wrapper_ptr& wrapped_session);
         void stop_session(const session_wrapper_ptr& wrapped_session);
         void wait_session(const session_wrapper_ptr& wrapped_session);
-        static void dispatch_session_start(const session_manager_weak_ptr& this_weak_ptr,
-          const session_wrapper_ptr& wrapped_session, const boost::system::error_code& error);
-        void handle_session_start(const session_wrapper_ptr& wrapped_session, const boost::system::error_code& error);
-        static void dispatch_session_wait(const session_manager_weak_ptr& this_weak_ptr,
-          const session_wrapper_ptr& wrapped_session, const boost::system::error_code& error);
-        void handle_session_wait(const session_wrapper_ptr& wrapped_session, const boost::system::error_code& error);        
-        static void dispatch_session_stop(const session_manager_weak_ptr& this_weak_ptr,
-          const session_wrapper_ptr& wrapped_session, const boost::system::error_code& error);
-        void handle_session_stop(const session_wrapper_ptr& wrapped_session, const boost::system::error_code& error);        
+        static void dispatch_session_start(
+          const session_manager_weak_ptr& this_weak_ptr,
+          const session_wrapper_ptr& wrapped_session, 
+          const boost::system::error_code& error);
+        void handle_session_start(
+          const session_wrapper_ptr& wrapped_session, 
+          const boost::system::error_code& error);
+        static void dispatch_session_wait(
+          const session_manager_weak_ptr& this_weak_ptr,
+          const session_wrapper_ptr& wrapped_session, 
+          const boost::system::error_code& error);
+        void handle_session_wait(
+          const session_wrapper_ptr& wrapped_session, 
+          const boost::system::error_code& error);        
+        static void dispatch_session_stop(
+          const session_manager_weak_ptr& this_weak_ptr,
+          const session_wrapper_ptr& wrapped_session, 
+          const boost::system::error_code& error);
+        void handle_session_stop(
+          const session_wrapper_ptr& wrapped_session, 
+          const boost::system::error_code& error);        
         void recycle_session(const session_wrapper_ptr& wrapped_session);
         void post_stop_handler();
 

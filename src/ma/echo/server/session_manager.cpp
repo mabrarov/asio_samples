@@ -19,12 +19,95 @@ namespace ma
   namespace echo
   {    
     namespace server
-    {    
-      session_manager::session_wrapper::session_wrapper(boost::asio::io_service& io_service,
+    {  
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+      class session_manager::accept_handler
+      {
+      private:
+        typedef accept_handler this_type;
+        this_type& operator=(const this_type&);
+
+      public:
+        typedef void (session_manager::*function_type)(
+          const session_manager::session_wrapper_ptr&,
+          const boost::system::error_code&);
+
+        template <typename SessionManagerPtr, typename SessionWrapperPtr>
+        accept_handler(function_type function, 
+          SessionManagerPtr&& the_session_manager,
+          SessionWrapperPtr&& the_wrapped_session)
+          : function_(function)
+          , session_manager_(std::forward<SessionManagerPtr>(the_session_manager))
+          , wrapped_session_(std::forward<SessionWrapperPtr>(the_wrapped_session))
+        {
+        }                  
+
+        accept_handler(this_type&& other)
+          : function_(other.function_)
+          , session_manager_(std::move(other.session_manager_))
+          , wrapped_session_(std::move(other.wrapped_session_))
+        {
+        }
+
+        void operator()(const boost::system::error_code& error)
+        {
+          ((*session_manager_).*function_)(wrapped_session_, error);
+        }
+
+      private:
+        function_type function_;
+        session_manager_ptr session_manager_;
+        session_manager::session_wrapper_ptr wrapped_session_;
+      }; // class session_manager::accept_handler
+
+      class session_manager::session_handler
+      {
+      private:
+        typedef session_handler this_type;
+        this_type& operator=(const this_type&);
+
+      public:
+        typedef void (*function_type)(
+          const session_manager_weak_ptr&,
+          const session_manager::session_wrapper_ptr&, 
+          const boost::system::error_code&);
+
+        template <typename SessionManagerPtr, typename SessionWrapperPtr>
+        session_handler(function_type function, 
+          SessionManagerPtr&& the_session_manager,
+          SessionWrapperPtr&& the_wrapped_session)
+          : function_(function)
+          , session_manager_(std::forward<SessionManagerPtr>(the_session_manager))
+          , wrapped_session_(std::forward<SessionWrapperPtr>(the_wrapped_session))
+        {
+        }                  
+
+        session_handler(this_type&& other)
+          : function_(other.function_)
+          , session_manager_(std::move(other.session_manager_))
+          , wrapped_session_(std::move(other.wrapped_session_))
+        {
+        }
+
+        void operator()(const boost::system::error_code& error)
+        {
+          function_(session_manager_, wrapped_session_, error);
+        }
+
+      private:
+        function_type function_;
+        session_manager_weak_ptr session_manager_;
+        session_manager::session_wrapper_ptr wrapped_session_;
+      }; // class session_manager::session_handler      
+#endif // defined(MA_HAS_RVALUE_REFS)
+
+      session_manager::session_wrapper::session_wrapper(
+        boost::asio::io_service& io_service,
         const session_config& holded_session_config)
         : state(ready_to_start)
         , pending_operations(0)
-        , the_session(boost::make_shared<session>(boost::ref(io_service), holded_session_config))
+        , the_session(boost::make_shared<session>(
+            boost::ref(io_service), holded_session_config))
       {
       } // session_manager::session_wrapper::session_wrapper
       
@@ -33,7 +116,8 @@ namespace ma
       {
       } // session_manager::session_wrapper_list::session_wrapper_list
 
-      void session_manager::session_wrapper_list::push_front(const session_wrapper_ptr& value)
+      void session_manager::session_wrapper_list::push_front(
+        const session_wrapper_ptr& value)
       {
         BOOST_ASSERT((!value->next && !value->prev.lock()));        
         value->next = front_;
@@ -46,7 +130,8 @@ namespace ma
         ++size_;
       } // session_manager::session_wrapper_list::push_front
 
-      void session_manager::session_wrapper_list::erase(const session_wrapper_ptr& value)
+      void session_manager::session_wrapper_list::erase(
+        const session_wrapper_ptr& value)
       {
         if (front_ == value)
         {
@@ -118,7 +203,7 @@ namespace ma
             acceptor_.listen(config_.listen_backlog, error);          
             if (!error)
             {
-              session_wrapper_ptr wrapped_session = create_session(error);              
+              session_wrapper_ptr wrapped_session = create_session(error);
               if (!error) 
               {
                 accept_session(wrapped_session); 
@@ -189,7 +274,8 @@ namespace ma
         return boost::optional<boost::system::error_code>();
       } // session_manager::wait
 
-      session_manager::session_wrapper_ptr session_manager::create_session(boost::system::error_code& error)      
+      session_manager::session_wrapper_ptr session_manager::create_session(
+        boost::system::error_code& error)      
       {        
         if (!recycled_sessions_.empty())
         {          
@@ -200,24 +286,36 @@ namespace ma
         }        
         try 
         {   
-          session_wrapper_ptr wrapped_session = boost::make_shared<session_wrapper>(
-            boost::ref(session_io_service_), config_.managed_session_config);
+          session_wrapper_ptr wrapped_session = 
+            boost::make_shared<session_wrapper>(
+              boost::ref(session_io_service_), config_.managed_session_config);
           error = boost::system::error_code();
           return wrapped_session;
         }
         catch (const std::bad_alloc&) 
         {
-          error = boost::system::errc::make_error_code(boost::system::errc::not_enough_memory);
+          error = boost::system::errc::make_error_code(
+            boost::system::errc::not_enough_memory);
           return session_wrapper_ptr();
         }        
       } // session_manager::create_session
 
-      void session_manager::accept_session(const session_wrapper_ptr& wrapped_session)
+      void session_manager::accept_session(
+        const session_wrapper_ptr& wrapped_session)
       {
-        acceptor_.async_accept(wrapped_session->the_session->socket(), wrapped_session->remote_endpoint, 
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+        acceptor_.async_accept(wrapped_session->the_session->socket(), 
+          wrapped_session->remote_endpoint, 
           strand_.wrap(make_custom_alloc_handler(accept_allocator_,
-			  boost::bind(&this_type::handle_accept, shared_from_this(), 
-          wrapped_session, boost::asio::placeholders::error))));
+			      accept_handler(&this_type::handle_accept, 
+              shared_from_this(), wrapped_session))));
+#else
+        acceptor_.async_accept(wrapped_session->the_session->socket(), 
+          wrapped_session->remote_endpoint, 
+          strand_.wrap(make_custom_alloc_handler(accept_allocator_,
+			      boost::bind(&this_type::handle_accept, shared_from_this(), 
+              wrapped_session, boost::asio::placeholders::error))));
+#endif // defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
         // Register pending operation
         ++pending_operations_;
         accept_in_progress_ = true;
@@ -244,7 +342,8 @@ namespace ma
         accept_session(wrapped_session);
       } // session_manager::accept_new_session
 
-      void session_manager::handle_accept(const session_wrapper_ptr& wrapped_session, 
+      void session_manager::handle_accept(
+        const session_wrapper_ptr& wrapped_session, 
         const boost::system::error_code& error)
       {
         // Unregister pending operation
@@ -313,11 +412,21 @@ namespace ma
           && active_sessions_.size() < config_.max_session_count;
       } // may_continue_accept
 
-      void session_manager::start_session(const session_wrapper_ptr& wrapped_session)
+      void session_manager::start_session(
+        const session_wrapper_ptr& wrapped_session)
       { 
         // Asynchronously start wrapped session
-        wrapped_session->the_session->async_start(make_custom_alloc_handler(wrapped_session->start_wait_allocator, 
-          boost::bind(&this_type::dispatch_session_start, session_manager_weak_ptr(shared_from_this()), wrapped_session, _1)));  
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+        wrapped_session->the_session->async_start(make_custom_alloc_handler(
+          wrapped_session->start_wait_allocator, 
+          session_handler(&this_type::dispatch_session_start, 
+            shared_from_this(), wrapped_session)));  
+#else
+        wrapped_session->the_session->async_start(make_custom_alloc_handler(
+          wrapped_session->start_wait_allocator, 
+          boost::bind(&this_type::dispatch_session_start, 
+            session_manager_weak_ptr(shared_from_this()), wrapped_session, _1)));  
+#endif // defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
         wrapped_session->state = session_wrapper::start_in_progress;
         // Register pending operation
         ++pending_operations_;
@@ -327,37 +436,61 @@ namespace ma
       void session_manager::stop_session(const session_wrapper_ptr& wrapped_session)
       {
         // Asynchronously stop wrapped session
-        wrapped_session->the_session->async_stop(make_custom_alloc_handler(wrapped_session->stop_allocator,
-          boost::bind(&this_type::dispatch_session_stop, session_manager_weak_ptr(shared_from_this()), wrapped_session, _1)));
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+        wrapped_session->the_session->async_stop(make_custom_alloc_handler(
+          wrapped_session->stop_allocator,
+          session_handler(&this_type::dispatch_session_stop, 
+            shared_from_this(), wrapped_session)));
+#else
+        wrapped_session->the_session->async_stop(make_custom_alloc_handler(
+          wrapped_session->stop_allocator,
+          boost::bind(&this_type::dispatch_session_stop, 
+            session_manager_weak_ptr(shared_from_this()), wrapped_session, _1)));
+#endif // defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
         wrapped_session->state = session_wrapper::stop_in_progress;
         // Register pending operation
         ++pending_operations_;
         ++wrapped_session->pending_operations;        
       } // stop_session
 
-      void session_manager::wait_session(const session_wrapper_ptr& wrapped_session)
+      void session_manager::wait_session(
+        const session_wrapper_ptr& wrapped_session)
       {
         // Asynchronously wait on wrapped session
-        wrapped_session->the_session->async_wait(make_custom_alloc_handler(wrapped_session->start_wait_allocator,
-          boost::bind(&this_type::dispatch_session_wait, session_manager_weak_ptr(shared_from_this()), wrapped_session, _1)));
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+        wrapped_session->the_session->async_wait(make_custom_alloc_handler(
+          wrapped_session->start_wait_allocator,
+          session_handler(&this_type::dispatch_session_wait, 
+            shared_from_this(), wrapped_session)));
+#else
+        wrapped_session->the_session->async_wait(make_custom_alloc_handler(
+          wrapped_session->start_wait_allocator,
+          boost::bind(&this_type::dispatch_session_wait, 
+            session_manager_weak_ptr(shared_from_this()), wrapped_session, _1)));
+#endif // defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
         // Register pending operation
         ++pending_operations_;
         ++wrapped_session->pending_operations;
       } // session_manager::wait_session
 
-      void session_manager::dispatch_session_start(const session_manager_weak_ptr& this_weak_ptr,
-        const session_wrapper_ptr& wrapped_session, const boost::system::error_code& error)
+      void session_manager::dispatch_session_start(
+        const session_manager_weak_ptr& this_weak_ptr,
+        const session_wrapper_ptr& wrapped_session, 
+        const boost::system::error_code& error)
       {
         // Try to lock the manager
         if (session_manager_ptr this_ptr = this_weak_ptr.lock())
         {
           // Forward invocation
-          this_ptr->strand_.dispatch(make_custom_alloc_handler(wrapped_session->start_wait_allocator,
-            boost::bind(&this_type::handle_session_start, this_ptr, wrapped_session, error)));
+          this_ptr->strand_.dispatch(make_custom_alloc_handler(
+            wrapped_session->start_wait_allocator,
+            boost::bind(&this_type::handle_session_start, 
+              this_ptr, wrapped_session, error)));
         }
       } // session_manager::dispatch_session_start
 
-      void session_manager::handle_session_start(const session_wrapper_ptr& wrapped_session, 
+      void session_manager::handle_session_start(
+        const session_wrapper_ptr& wrapped_session, 
         const boost::system::error_code& error)
       {
         // Unregister pending operation
@@ -416,19 +549,24 @@ namespace ma
         }        
       } // session_manager::handle_session_start
 
-      void session_manager::dispatch_session_wait(const session_manager_weak_ptr& this_weak_ptr,
-        const session_wrapper_ptr& wrapped_session, const boost::system::error_code& error)
+      void session_manager::dispatch_session_wait(
+        const session_manager_weak_ptr& this_weak_ptr,
+        const session_wrapper_ptr& wrapped_session, 
+        const boost::system::error_code& error)
       {
         // Try to lock the manager
         if (session_manager_ptr this_ptr = this_weak_ptr.lock())
         {
           // Forward invocation
-          this_ptr->strand_.dispatch(make_custom_alloc_handler(wrapped_session->start_wait_allocator,
-            boost::bind(&this_type::handle_session_wait, this_ptr, wrapped_session, error)));
+          this_ptr->strand_.dispatch(make_custom_alloc_handler(
+            wrapped_session->start_wait_allocator,
+            boost::bind(&this_type::handle_session_wait, 
+              this_ptr, wrapped_session, error)));
         }
       } // session_manager::dispatch_session_wait
 
-      void session_manager::handle_session_wait(const session_wrapper_ptr& wrapped_session, 
+      void session_manager::handle_session_wait(
+        const session_wrapper_ptr& wrapped_session, 
         const boost::system::error_code& /*error*/)
       {
         // Unregister pending operation
@@ -453,19 +591,24 @@ namespace ma
         }        
       } // session_manager::handle_session_wait
 
-      void session_manager::dispatch_session_stop(const session_manager_weak_ptr& this_weak_ptr,
-        const session_wrapper_ptr& wrapped_session, const boost::system::error_code& error)
+      void session_manager::dispatch_session_stop(
+        const session_manager_weak_ptr& this_weak_ptr,
+        const session_wrapper_ptr& wrapped_session, 
+        const boost::system::error_code& error)
       {     
         // Try to lock the manager
         if (session_manager_ptr this_ptr = this_weak_ptr.lock())
         {
           // Forward invocation
-          this_ptr->strand_.dispatch(make_custom_alloc_handler(wrapped_session->stop_allocator,
-            boost::bind(&this_type::handle_session_stop, this_ptr, wrapped_session, error)));
+          this_ptr->strand_.dispatch(make_custom_alloc_handler(
+            wrapped_session->stop_allocator,
+            boost::bind(&this_type::handle_session_stop, 
+              this_ptr, wrapped_session, error)));
         }
       } // session_manager::dispatch_session_stop
 
-      void session_manager::handle_session_stop(const session_wrapper_ptr& wrapped_session,
+      void session_manager::handle_session_stop(
+        const session_wrapper_ptr& wrapped_session,
         const boost::system::error_code& /*error*/)
       {
         // Unregister pending operation
@@ -511,7 +654,8 @@ namespace ma
         }                
       } // session_manager::handle_session_stop
 
-      void session_manager::recycle_session(const session_wrapper_ptr& wrapped_session)
+      void session_manager::recycle_session(
+        const session_wrapper_ptr& wrapped_session)
       {
         // Check session's pending operation number and recycle bin size
         if (0 == wrapped_session->pending_operations
