@@ -48,29 +48,29 @@ namespace qt
       SIGNAL(stopComplete(const boost::system::error_code&)), 
       SIGNAL(stopComplete(const boost::system::error_code&)),
       Qt::QueuedConnection));
-  } // SessionManagerWrapper::SessionManagerWrapper 
+  }
 
   SessionManagerWrapper::~SessionManagerWrapper()
   {
-  } // SessionManagerWrapper::~SessionManagerWrapper
+  }
 
   void SessionManagerWrapper::asyncStart()
   {        
     sessionManager_->async_start(boost::bind(
       &SessionManagerSignal::emitStartComplete, sessionManagerSignal_, _1));    
-  } // SessionManagerWrapper::asyncStart
+  }
 
   void SessionManagerWrapper::asyncWait()
   {    
     sessionManager_->async_wait(boost::bind(
       &SessionManagerSignal::emitWaitComplete, sessionManagerSignal_, _1));    
-  } // SessionManagerWrapper::asyncWait
+  }
 
   void SessionManagerWrapper::asyncStop()
   {    
     sessionManager_->async_stop(boost::bind(
       &SessionManagerSignal::emitStopComplete, sessionManagerSignal_,_1));    
-  } // SessionManagerWrapper::asyncStop  
+  }
 
 } // namespace qt
 } // namespace server

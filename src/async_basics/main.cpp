@@ -9,16 +9,17 @@
 #include <cstdlib>
 #include <cstddef>
 #include <iostream>
-#include <boost/shared_ptr.hpp>
-#include <boost/make_shared.hpp>
 #include <boost/ref.hpp>
-#include <boost/optional.hpp>
-#include <boost/utility/in_place_factory.hpp>
+#include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/thread.hpp>
-#include <boost/asio.hpp>
 #include <boost/format.hpp>
-#include <ma/handler_allocation.hpp>
+#include <boost/optional.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
+#include <boost/utility/in_place_factory.hpp>
+#include <ma/handler_allocator.hpp>
+#include <ma/custom_alloc_handler.hpp>
 #include <ma/tutorial/async_derived.hpp>
 
 typedef ma::in_place_handler_allocator<128> allocator_type;
@@ -35,7 +36,7 @@ void handle_do_something(const boost::system::error_code& error,
   {
     std::cout << boost::format("%s successfully complete work\n") % *name;
   }
-} // handle_do_something
+}
 
 int _tmain(int /*argc*/, _TCHAR* /*argv*/[])
 {     
@@ -61,9 +62,9 @@ int _tmain(int /*argc*/, _TCHAR* /*argv*/[])
       shared_ptr<std::string> name = boost::make_shared<std::string>((name_format % i).str());
       shared_ptr<allocator_type> allocator = boost::make_shared<allocator_type>();
 
-      using ma::tutorial::Async_base;
-      using ma::tutorial::Async_derived;
-      shared_ptr<Async_base> active_object = boost::make_shared<Async_derived>(boost::ref(work_io_service), *name); 
+      using ma::tutorial::async_base;
+      using ma::tutorial::async_derived;
+      shared_ptr<async_base> active_object = boost::make_shared<async_derived>(boost::ref(work_io_service), *name); 
       active_object->async_do_something(ma::make_custom_alloc_handler(*allocator,
         boost::bind(&handle_do_something, _1, name, allocator)));
     }
@@ -78,4 +79,4 @@ int _tmain(int /*argc*/, _TCHAR* /*argv*/[])
     std::cerr << "Unexpected error: " << e.what() << std::endl;    
   }
   return EXIT_FAILURE;
-} // _tmain
+}

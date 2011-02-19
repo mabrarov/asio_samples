@@ -1,7 +1,3 @@
-/*
-TRANSLATOR ma::echo::server::qt::SessionManagerWrapper
-*/
-
 //
 // Copyright (c) 2010-2011 Marat Abrarov (abrarov@mail.ru)
 //
@@ -9,8 +5,8 @@ TRANSLATOR ma::echo::server::qt::SessionManagerWrapper
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include <boost/system/error_code.hpp>
 #include <boost/throw_exception.hpp>
+#include <boost/system/error_code.hpp>
 #include <QtCore/QMetaType>
 #include <ma/echo/server/qt/meta_type_register_error.h>
 #include <ma/echo/server/qt/custommetatypes.h>
@@ -33,19 +29,19 @@ namespace qt
       {
         boost::throw_exception(meta_type_register_error(typeName));
       }      
-    } // registerMetaType
+    }
 
     void registerBoostSystemErrorCodeMetaType()
     {      
       registerMetaType<boost::system::error_code>("boost::system::error_code");
-    } // registerBoostSystemErrorCodeMetaType
+    }
 
   } // namespace
 
   void registerCustomMetaTypes()
   {
     registerBoostSystemErrorCodeMetaType();
-  } // registerCustomMetaTypes
+  }
   
 } // namespace qt
 } // namespace server

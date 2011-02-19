@@ -15,8 +15,8 @@
 #include <ma/config.hpp>
 #if defined(BOOST_HAS_RVALUE_REFS)
 
-#include <boost/type_traits/remove_reference.hpp>
 #include <boost/type_traits/remove_cv.hpp>
+#include <boost/type_traits/remove_reference.hpp>
 
 namespace ma
 {  
@@ -24,9 +24,9 @@ namespace ma
   struct remove_cv_reference
   {
     typedef typename boost::remove_cv<
-      typename boost::remove_reference<T>::type
-      >::type type;
-  }; // struct identity
+      typename boost::remove_reference<T>::type>::type type;
+  }; // struct remove_cv_reference
+
 } // namespace ma
 #endif // defined(BOOST_HAS_RVALUE_REFS)
 

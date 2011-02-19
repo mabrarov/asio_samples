@@ -12,16 +12,17 @@
 #include <iostream>
 #include <utility>
 #include <vector>
-#include <boost/make_shared.hpp>
 #include <boost/ref.hpp>
-#include <boost/bind.hpp>
-#include <boost/filesystem.hpp>
-#include <boost/thread.hpp>
 #include <boost/asio.hpp>
-#include <boost/system/error_code.hpp>
+#include <boost/bind.hpp>
+#include <boost/thread.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/make_shared.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/system/error_code.hpp>
 #include <ma/codecvt_cast.hpp>
-#include <ma/handler_allocation.hpp>
+#include <ma/handler_allocator.hpp>
+#include <ma/custom_alloc_handler.hpp>
 #include <ma/nmea/frame.hpp>
 #include <ma/nmea/cyclic_read_session.hpp>
 #include <ma/console_controller.hpp>
@@ -34,13 +35,17 @@ typedef ma::in_place_handler_allocator<128>  handler_allocator_type;
 typedef std::vector<frame_ptr>               frame_buffer_type;
 typedef boost::shared_ptr<frame_buffer_type> frame_buffer_ptr;
 
-void handle_start(const session_ptr& the_session, handler_allocator_type& the_allocator, 
-  const frame_buffer_ptr& frame_buffer, const boost::system::error_code& error);
+void handle_start(const session_ptr& the_session, 
+  handler_allocator_type& the_allocator, 
+  const frame_buffer_ptr& frame_buffer, 
+  const boost::system::error_code& error);
 
 void handle_stop(const boost::system::error_code& error);
 
-void handle_read(const session_ptr& the_session, handler_allocator_type& the_allocator, 
-  const frame_buffer_ptr& frame_buffer, const boost::system::error_code& error, 
+void handle_read(const session_ptr& the_session, 
+  handler_allocator_type& the_allocator, 
+  const frame_buffer_ptr& frame_buffer, 
+  const boost::system::error_code& error, 
   std::size_t frames_transferred);
 
 void handle_console_close(const session_ptr&);
@@ -148,16 +153,18 @@ int _tmain(int argc, _TCHAR* argv[])
     std::cerr << "Unexpected error: " << e.what() << std::endl;    
   }
   return EXIT_FAILURE;
-} // _tmain
+}
 
 void handle_console_close(const session_ptr& session)
 {
   std::cout << "User console close detected. Begin stop the session...\n";
   session->async_stop(boost::bind(&handle_stop, _1));  
-} // handle_console_close
+}
 
-void handle_start(const session_ptr& the_session, handler_allocator_type& the_allocator, 
-  const frame_buffer_ptr& frame_buffer, const boost::system::error_code& error)                  
+void handle_start(const session_ptr& the_session, 
+  handler_allocator_type& the_allocator, 
+  const frame_buffer_ptr& frame_buffer, 
+  const boost::system::error_code& error)                  
 {  
   if (error)
   {
@@ -165,9 +172,11 @@ void handle_start(const session_ptr& the_session, handler_allocator_type& the_al
     return;
   }  
   std::cout << "Session started successfully. Begin read...\n";      
-  the_session->async_read_some(frame_buffer->begin(), frame_buffer->end(), ma::make_custom_alloc_handler(the_allocator, 
-    boost::bind(&handle_read, the_session, boost::ref(the_allocator), frame_buffer, _1, _2)));
-} // handle_start
+  the_session->async_read_some(
+    frame_buffer->begin(), frame_buffer->end(), 
+    ma::make_custom_alloc_handler(the_allocator, 
+      boost::bind(&handle_read, the_session, boost::ref(the_allocator), frame_buffer, _1, _2)));
+}
 
 void handle_stop(const boost::system::error_code& error)
 {   
@@ -177,18 +186,21 @@ void handle_stop(const boost::system::error_code& error)
     return;
   }
   std::cout << "The session stop was successful.\n";  
-} // handle_stop
+}
 
-void handle_read(const session_ptr& the_session, handler_allocator_type& the_allocator, 
-  const frame_buffer_ptr& frame_buffer, const boost::system::error_code& error, 
+void handle_read(const session_ptr& the_session, 
+  handler_allocator_type& the_allocator, 
+  const frame_buffer_ptr& frame_buffer, 
+  const boost::system::error_code& error, 
   std::size_t frames_transferred)
 {  
   print_frames(*frame_buffer, frames_transferred);
   if (boost::asio::error::eof == error)
   {
     std::cout << "Input stream was closed. But it\'s a serial port so begin read operation again...\n";
-    the_session->async_read_some(frame_buffer->begin(), frame_buffer->end(), ma::make_custom_alloc_handler(the_allocator, 
-      boost::bind(&handle_read, the_session, boost::ref(the_allocator), frame_buffer, _1, _2)));
+    the_session->async_read_some(frame_buffer->begin(), frame_buffer->end(), 
+      ma::make_custom_alloc_handler(the_allocator, 
+        boost::bind(&handle_read, the_session, boost::ref(the_allocator), frame_buffer, _1, _2)));
     return;
   } 
   if (error)  
@@ -197,9 +209,10 @@ void handle_read(const session_ptr& the_session, handler_allocator_type& the_all
     the_session->async_stop(ma::make_custom_alloc_handler(the_allocator, boost::bind(&handle_stop, _1)));
     return;
   }
-  the_session->async_read_some(frame_buffer->begin(), frame_buffer->end(), ma::make_custom_alloc_handler(the_allocator, 
-    boost::bind(&handle_read, the_session, boost::ref(the_allocator), frame_buffer, _1, _2)));
-} // handle_read
+  the_session->async_read_some(frame_buffer->begin(), frame_buffer->end(), 
+    ma::make_custom_alloc_handler(the_allocator, 
+      boost::bind(&handle_read, the_session, boost::ref(the_allocator), frame_buffer, _1, _2)));
+}
 
 void print_frames(const frame_buffer_type& frames, std::size_t size)
 {  
@@ -207,7 +220,7 @@ void print_frames(const frame_buffer_type& frames, std::size_t size)
   {
     std::cout << *(*iterator) << '\n';
   }    
-} // print_frames
+}
 
 void print_usage(int argc, _TCHAR* argv[])
 {
@@ -222,4 +235,4 @@ void print_usage(int argc, _TCHAR* argv[])
     file_name = L"nmea_client.exe";
   }
   std::wcout << L"Usage: \"" << file_name << L"\" <com_port> [<read_buffer_size> [<message_queue_size>] ]" << std::endl;  
-} // print_usage
+}

@@ -5,6 +5,7 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#include <ma/custom_alloc_handler.hpp>
 #include <ma/echo/client1/error.hpp>
 #include <ma/echo/client1/session.hpp>
 
@@ -27,7 +28,7 @@ namespace ma
         , config_(config)                
         , buffer_(config.buffer_size)
       {          
-      } // session::session      
+      }
 
       void session::reset()
       {
@@ -37,7 +38,7 @@ namespace ma
         stop_error_.clear();
         state_ = ready_to_start;
         buffer_.reset();          
-      } // session::reset             
+      }
 
       boost::system::error_code session::start()
       {        
@@ -49,7 +50,7 @@ namespace ma
         return client1_error::operation_not_supported;
         //state_ = started;
         //read_some();
-      } // session::start
+      }
 
       boost::optional<boost::system::error_code> session::stop()
       {        
@@ -76,7 +77,7 @@ namespace ma
           return stop_error_;          
         }
         return boost::optional<boost::system::error_code>();
-      } // session::stop
+      }
 
       boost::optional<boost::system::error_code> session::wait()
       {                
@@ -89,12 +90,12 @@ namespace ma
           return wait_error_;
         }
         return boost::optional<boost::system::error_code>();
-      } // session::wait
+      }
 
       bool session::may_complete_stop() const
       {
         return !socket_write_in_progress_ && !socket_read_in_progress_;
-      } // session::may_complete_stop
+      }
 
       void session::complete_stop()
       {        
@@ -105,7 +106,7 @@ namespace ma
           stop_error_ = error;
         }
         state_ = stopped;  
-      } // session::complete_stop
+      }
 
       void session::read_some()
       {
@@ -119,7 +120,7 @@ namespace ma
               boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred))));
           socket_read_in_progress_ = true;
         }        
-      } // session::read_some
+      }
 
       void session::write_some()
       {
@@ -133,7 +134,7 @@ namespace ma
               boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred))));
           socket_write_in_progress_ = true;
         }   
-      } // session::write_some
+      }
 
       void session::handle_read_some(const boost::system::error_code& error, const std::size_t bytes_transferred)
       {        
@@ -166,7 +167,7 @@ namespace ma
         {
           write_some();
         }
-      } // session::handle_read_some
+      }
 
       void session::handle_write_some(const boost::system::error_code& error, const std::size_t bytes_transferred)
       {
@@ -200,7 +201,7 @@ namespace ma
         {
           read_some();
         }        
-      } // session::handle_write_some
+      }
 
       void session::post_stop_handler()
       {
@@ -209,7 +210,7 @@ namespace ma
           // Signal shutdown completion
           stop_handler_.post(stop_error_);
         }
-      } // session::post_stop_handler
+      }
         
     } // namespace client1
   } // namespace echo

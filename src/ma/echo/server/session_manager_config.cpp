@@ -32,7 +32,7 @@ namespace ma
           boost::throw_exception(
             std::invalid_argument("the_max_session_count must be >= 1"));
         }
-      } // session_manager_config::session_manager_config
+      }
               
     } // namespace server
   } // namespace echo

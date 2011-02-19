@@ -15,8 +15,8 @@
 #include <cstddef>
 #include <stdexcept>
 #include <boost/scoped_ptr.hpp>
-#include <boost/system/error_code.hpp>
 #include <boost/throw_exception.hpp>
+#include <boost/system/error_code.hpp>
 #include <QtCore/QObject>
 #include <ma/echo/server/qt/sessionmanagerwrapper_fwd.h>
 #include <ma/echo/server/qt/service_fwd.h>

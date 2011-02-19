@@ -12,24 +12,24 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
+#include <boost/asio.hpp>
+#include <boost/bind.hpp>
+#include <boost/optional.hpp>
+#include <boost/noncopyable.hpp>
+#include <boost/enable_shared_from_this.hpp>
 #include <ma/config.hpp>
+#include <ma/handler_storage.hpp>
+#include <ma/bind_asio_handler.hpp>
+#include <ma/handler_allocator.hpp>
+#include <ma/context_alloc_handler.hpp>
+#include <ma/cyclic_buffer.hpp>
+#include <ma/echo/client1/session_config.hpp>
+#include <ma/echo/client1/session_fwd.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)
 #include <utility>
 #include <ma/type_traits.hpp>
 #endif // defined(MA_HAS_RVALUE_REFS)
-
-#include <boost/noncopyable.hpp>
-#include <boost/optional.hpp>
-#include <boost/bind.hpp>
-#include <boost/asio.hpp>
-#include <boost/enable_shared_from_this.hpp>
-#include <ma/handler_allocation.hpp>
-#include <ma/handler_storage.hpp>
-#include <ma/bind_asio_handler.hpp>
-#include <ma/cyclic_buffer.hpp>
-#include <ma/echo/client1/session_config.hpp>
-#include <ma/echo/client1/session_fwd.hpp>
 
 namespace ma
 {    
@@ -64,49 +64,46 @@ namespace ma
         void async_start(Handler&& handler)
         {
           typedef typename ma::remove_cv_reference<Handler>::type handler_type;
-          strand_.post(make_context_alloc_handler2(
-            std::forward<Handler>(handler),  
+          strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler),  
             boost::bind(&this_type::do_start<handler_type>, shared_from_this(), _1)));  
-        } // async_start
+        }
 
         template <typename Handler>
         void async_stop(Handler&& handler)
         {
           typedef typename ma::remove_cv_reference<Handler>::type handler_type;
-          strand_.post(make_context_alloc_handler2(
-            std::forward<Handler>(handler), 
+          strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler), 
             boost::bind(&this_type::do_stop<handler_type>, shared_from_this(), _1))); 
-        } // async_stop
+        }
 
         template <typename Handler>
         void async_wait(Handler&& handler)
         {
           typedef typename ma::remove_cv_reference<Handler>::type handler_type;
-          strand_.post(make_context_alloc_handler2(
-            std::forward<Handler>(handler), 
+          strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler), 
             boost::bind(&this_type::do_wait<handler_type>, shared_from_this(), _1)));  
-        } // async_wait
+        }
 #else // defined(MA_HAS_RVALUE_REFS)
         template <typename Handler>
         void async_start(const Handler& handler)
         {
           strand_.post(make_context_alloc_handler2(handler, 
             boost::bind(&this_type::do_start<Handler>, shared_from_this(), _1)));  
-        } // async_start
+        }
 
         template <typename Handler>
         void async_stop(const Handler& handler)
         {
           strand_.post(make_context_alloc_handler2(handler, 
             boost::bind(&this_type::do_stop<Handler>, shared_from_this(), _1))); 
-        } // async_stop
+        }
 
         template <typename Handler>
         void async_wait(const Handler& handler)
         {
           strand_.post(make_context_alloc_handler2(handler, 
             boost::bind(&this_type::do_wait<Handler>, shared_from_this(), _1)));  
-        } // async_wait
+        }
 #endif // defined(MA_HAS_RVALUE_REFS)        
 
       private:        
@@ -124,7 +121,7 @@ namespace ma
         {
           boost::system::error_code error = start();          
           io_service_.post(detail::bind_handler(handler, error));
-        } // do_start        
+        }
 
         template <typename Handler>
         void do_stop(const Handler& handler)
@@ -137,7 +134,7 @@ namespace ma
           {
             stop_handler_.put(handler);            
           }
-        } // do_stop
+        }
 
         template <typename Handler>
         void do_wait(const Handler& handler)
@@ -150,13 +147,14 @@ namespace ma
           {
             wait_handler_.put(handler);
           }
-        } // do_wait
+        }
 
         boost::system::error_code start();
         boost::optional<boost::system::error_code> stop();
         boost::optional<boost::system::error_code> wait();
+
         bool may_complete_stop() const;
-        void complete_stop();        
+        void complete_stop();
         void read_some();        
         void write_some();        
         void handle_read_some(const boost::system::error_code& error, const std::size_t bytes_transferred);        
@@ -166,15 +164,19 @@ namespace ma
         bool socket_write_in_progress_;
         bool socket_read_in_progress_;
         state_type state_;
+
         boost::asio::io_service& io_service_;
         boost::asio::io_service::strand strand_;      
         boost::asio::ip::tcp::socket socket_;
+
         handler_storage<boost::system::error_code> wait_handler_;
         handler_storage<boost::system::error_code> stop_handler_;
+
         boost::system::error_code wait_error_;
         boost::system::error_code stop_error_;
         session_config config_;        
         cyclic_buffer buffer_;
+
         in_place_handler_allocator<640> write_allocator_;
         in_place_handler_allocator<256> read_allocator_;
       }; // class session 

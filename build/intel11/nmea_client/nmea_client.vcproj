@@ -392,7 +392,23 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\include\ma\handler_allocation.hpp"
+					RelativePath="..\..\..\include\ma\handler_allocator.hpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\include\ma\context_alloc_handler.hpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\include\ma\context_wrapped_handler.hpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\include\ma\custom_alloc_handler.hpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\include\ma\strand_wrapped_handler.hpp"
 					>
 				</File>
 				<File

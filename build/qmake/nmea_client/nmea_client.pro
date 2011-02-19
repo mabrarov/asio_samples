@@ -13,7 +13,11 @@ HEADERS  += ../../../include/ma/handler_storage_service.hpp \
             ../../../include/ma/handler_storage.hpp \
             ../../../include/ma/handler_invoke_helpers.hpp \
             ../../../include/ma/bind_asio_handler.hpp \
-            ../../../include/ma/handler_allocation.hpp \
+            ../../../include/ma/context_alloc_handler.hpp \
+			../../../include/ma/context_wrapped_handler.hpp \
+			../../../include/ma/custom_alloc_handler.hpp \
+			../../../include/ma/strand_wrapped_handler.hpp \
+            ../../../include/ma/handler_allocator.hpp \
             ../../../include/ma/handler_alloc_helpers.hpp \
             ../../../include/ma/codecvt_cast.hpp \
             ../../../include/ma/console_controller.hpp \

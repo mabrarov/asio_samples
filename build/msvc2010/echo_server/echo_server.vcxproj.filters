@@ -41,9 +41,6 @@
     <ClInclude Include="..\..\..\include\ma\echo\server\session_manager.hpp">
       <Filter>Header Files\ma\echo\server</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\ma\handler_allocation.hpp">
-      <Filter>Header Files\ma</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\include\ma\handler_alloc_helpers.hpp">
       <Filter>Header Files\ma</Filter>
     </ClInclude>
@@ -84,6 +81,21 @@
       <Filter>Header Files\ma</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\ma\type_traits.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\strand_wrapped_handler.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\context_wrapped_handler.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\custom_alloc_handler.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\context_alloc_handler.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\handler_allocator.hpp">
       <Filter>Header Files\ma</Filter>
     </ClInclude>
   </ItemGroup>

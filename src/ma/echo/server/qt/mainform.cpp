@@ -25,11 +25,11 @@ namespace qt
   {
     ui_.setupUi(this);    
     //todo    
-  } // MainForm::MainForm
+  }
 
   MainForm::~MainForm()
   {
-  } // MainForm::~MainForm
+  }
 
 } // namespace qt
 } // namespace server

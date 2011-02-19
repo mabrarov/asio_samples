@@ -10,22 +10,23 @@
 #include <iostream>
 #include <cstdlib>
 #include <stdexcept>
-#include <boost/noncopyable.hpp>
-#include <boost/throw_exception.hpp>
+#include <boost/ref.hpp>
+#include <boost/asio.hpp>
+#include <boost/bind.hpp>
+#include <boost/thread.hpp>
+#include <boost/function.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
-#include <boost/ref.hpp>
-#include <boost/bind.hpp>
-#include <boost/function.hpp>
-#include <boost/thread.hpp>
-#include <boost/date_time/posix_time/ptime.hpp>
-#include <boost/asio.hpp>
+#include <boost/noncopyable.hpp>
 #include <boost/program_options.hpp>
-#include <ma/handler_allocation.hpp>
+#include <boost/throw_exception.hpp>
+#include <boost/date_time/posix_time/ptime.hpp>
+#include <ma/handler_allocator.hpp>
+#include <ma/custom_alloc_handler.hpp>
+#include <ma/console_controller.hpp>
 #include <ma/echo/server/session_config.hpp>
 #include <ma/echo/server/session_manager_config.hpp>
 #include <ma/echo/server/session_manager.hpp>
-#include <ma/console_controller.hpp>
 
 const char* help_param = "help"; 
 const char* port_param = "port";
@@ -52,7 +53,8 @@ struct execution_config
   std::size_t session_thread_count;
   boost::posix_time::time_duration stop_timeout;
 
-  execution_config(std::size_t the_session_manager_thread_count,
+  execution_config(
+    std::size_t the_session_manager_thread_count,
     std::size_t the_session_thread_count, 
     const boost::posix_time::time_duration& the_stop_timeout)
     : session_manager_thread_count(the_session_manager_thread_count)
@@ -106,8 +108,7 @@ struct session_manager_wrapper : private boost::noncopyable
   }
 }; // session_manager_wrapper
 
-void fill_options_description(boost::program_options::options_description&,
-  std::size_t cpu_count);
+void fill_options_description(boost::program_options::options_description&, std::size_t cpu_count);
 
 void start_session_manager(const session_manager_wrapper_ptr&);
 
@@ -121,13 +122,16 @@ void handle_work_exception(const session_manager_wrapper_ptr&);
 
 void handle_program_exit(const session_manager_wrapper_ptr&);
 
-void handle_session_manager_start(const session_manager_wrapper_ptr&,
+void handle_session_manager_start(
+  const session_manager_wrapper_ptr&,
   const boost::system::error_code&);
 
-void handle_session_manager_wait(const session_manager_wrapper_ptr&,
+void handle_session_manager_wait(
+  const session_manager_wrapper_ptr&,
   const boost::system::error_code&);
 
-void handle_session_manager_stop(const session_manager_wrapper_ptr&,
+void handle_session_manager_stop(
+  const session_manager_wrapper_ptr&,
   const boost::system::error_code&);
 
 execution_config create_execution_config(std::size_t cpu_count,
@@ -146,8 +150,7 @@ void print_config(std::ostream& stream, std::size_t cpu_count,
 
 template <typename Value>
 void print_param(std::ostream& stream, 
-  const boost::optional<Value>& value, 
-  const std::string& default_text)
+  const boost::optional<Value>& value, const std::string& default_text)
 {
   if (value) 
   {
@@ -157,12 +160,11 @@ void print_param(std::ostream& stream,
   {
     stream << default_text;
   }
-} // print_param
+}
 
 template <>
 void print_param<bool>(std::ostream& stream, 
-  const boost::optional<bool>& value, 
-  const std::string& default_text)
+  const boost::optional<bool>& value, const std::string& default_text)
 {
   if (value) 
   {
@@ -179,7 +181,7 @@ void print_param<bool>(std::ostream& stream,
   {
     stream << default_text;
   }
-} // print_param
+}
 
 int _tmain(int argc, _TCHAR* argv[])
 {
@@ -314,7 +316,7 @@ execution_config create_execution_config(std::size_t cpu_count,
   }
   return execution_config(1, options_values[session_threads_param].as<std::size_t>(),
     boost::posix_time::seconds(options_values[stop_timeout_param].as<long>()));
-} // create_execution_config
+}
 
 server::session_config create_session_config(
   const boost::program_options::variables_map& options_values)
@@ -330,7 +332,7 @@ server::session_config create_session_config(
     options_values.count(socket_send_buffer_size_param) ? 
     options_values[socket_send_buffer_size_param].as<int>() : boost::optional<int>(),
     no_delay);
-} // create_session_config
+}
 
 server::session_manager_config create_session_manager_config(
   const boost::program_options::variables_map& options_values,
@@ -343,7 +345,7 @@ server::session_manager_config create_session_manager_config(
     options_values[recycled_sessions_param].as<std::size_t>(),
     options_values[listen_backlog_param].as<int>(),
     session_config);
-} // create_session_manager_config
+}
 
 void print_config(std::ostream& stream, std::size_t cpu_count,
   const execution_config& the_execution_config,
@@ -374,9 +376,10 @@ void print_config(std::ostream& stream, std::size_t cpu_count,
   stream << "Session's socket Nagle algorithm is: ";
   print_param(stream, session_config.no_delay, os_default_text);
   stream << std::endl;      
-} // print_config
+}
 
-void fill_options_description(boost::program_options::options_description& options_description,
+void fill_options_description(
+  boost::program_options::options_description& options_description, 
   std::size_t cpu_count)
 {
   options_description.add_options()
@@ -434,7 +437,7 @@ void fill_options_description(boost::program_options::options_description& optio
       boost::program_options::value<bool>(),
       "set TCP_NODELAY option of session's socket"
     );  
-} // fill_options_description
+}
 
 void start_session_manager(const session_manager_wrapper_ptr& wrapped_session_manager)
 {
@@ -442,14 +445,14 @@ void start_session_manager(const session_manager_wrapper_ptr& wrapped_session_ma
     ma::make_custom_alloc_handler(wrapped_session_manager->start_wait_allocator,
       boost::bind(handle_session_manager_start, wrapped_session_manager, _1)));
   wrapped_session_manager->state = session_manager_wrapper::start_in_progress;
-} // start_session_manager
+}
 
 void wait_session_manager(const session_manager_wrapper_ptr& wrapped_session_manager)
 {
   wrapped_session_manager->the_session_manager->async_wait(
     ma::make_custom_alloc_handler(wrapped_session_manager->start_wait_allocator,
       boost::bind(handle_session_manager_wait, wrapped_session_manager, _1)));
-} // wait_session_manager
+}
 
 void stop_session_manager(const session_manager_wrapper_ptr& wrapped_session_manager)
 {
@@ -457,7 +460,7 @@ void stop_session_manager(const session_manager_wrapper_ptr& wrapped_session_man
     ma::make_custom_alloc_handler(wrapped_session_manager->stop_allocator,
       boost::bind(handle_session_manager_stop, wrapped_session_manager, _1)));
   wrapped_session_manager->state = session_manager_wrapper::stop_in_progress;
-} // stop_session_manager
+}
 
 void run_io_service(boost::asio::io_service& io_service, 
   exception_handler the_exception_handler)
@@ -470,7 +473,7 @@ void run_io_service(boost::asio::io_service& io_service,
   {
     the_exception_handler();
   }
-} // run_io_service
+}
 
 void handle_work_exception(const session_manager_wrapper_ptr& wrapped_session_manager)
 {
@@ -482,7 +485,7 @@ void handle_work_exception(const session_manager_wrapper_ptr& wrapped_session_ma
     wrapper_lock.unlock();
     wrapped_session_manager->state_changed.notify_one();      
   }  
-} // handle_work_exception
+}
 
 void handle_program_exit(const session_manager_wrapper_ptr& wrapped_session_manager)
 {
@@ -507,9 +510,10 @@ void handle_program_exit(const session_manager_wrapper_ptr& wrapped_session_mana
   std::cout << "Server is stopping. Press Ctrl+C (Ctrl+Break) to terminate server work...\n";
   wrapper_lock.unlock();    
   wrapped_session_manager->state_changed.notify_one();  
-} // handle_program_exit
+}
 
-void handle_session_manager_start(const session_manager_wrapper_ptr& wrapped_session_manager, 
+void handle_session_manager_start(
+  const session_manager_wrapper_ptr& wrapped_session_manager, 
   const boost::system::error_code& error)
 {   
   boost::unique_lock<boost::mutex> wrapper_lock(wrapped_session_manager->access_mutex);
@@ -527,9 +531,10 @@ void handle_session_manager_start(const session_manager_wrapper_ptr& wrapped_ses
     wait_session_manager(wrapped_session_manager);
     std::cout << "Server has started.\n";
   }
-} // handle_session_manager_start
+}
 
-void handle_session_manager_wait(const session_manager_wrapper_ptr& wrapped_session_manager, 
+void handle_session_manager_wait(
+  const session_manager_wrapper_ptr& wrapped_session_manager, 
   const boost::system::error_code& error)
 {
   boost::unique_lock<boost::mutex> wrapper_lock(wrapped_session_manager->access_mutex);
@@ -541,9 +546,10 @@ void handle_session_manager_wait(const session_manager_wrapper_ptr& wrapped_sess
     wrapper_lock.unlock();
     wrapped_session_manager->state_changed.notify_one();    
   }
-} // handle_session_manager_wait
+}
 
-void handle_session_manager_stop(const session_manager_wrapper_ptr& wrapped_session_manager, 
+void handle_session_manager_stop(
+  const session_manager_wrapper_ptr& wrapped_session_manager, 
   const boost::system::error_code&)
 {
   boost::unique_lock<boost::mutex> wrapper_lock(wrapped_session_manager->access_mutex);
@@ -554,4 +560,4 @@ void handle_session_manager_stop(const session_manager_wrapper_ptr& wrapped_sess
     wrapper_lock.unlock();
     wrapped_session_manager->state_changed.notify_one();
   }
-} // handle_session_manager_stop
+}

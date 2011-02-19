@@ -8,16 +8,17 @@
 #include <tchar.h>
 #include <windows.h>
 #include <iostream>
+#include <boost/ref.hpp>
+#include <boost/asio.hpp>
+#include <boost/bind.hpp>
+#include <boost/thread.hpp>
+#include <boost/function.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
-#include <boost/ref.hpp>
-#include <boost/bind.hpp>
-#include <boost/function.hpp>
-#include <boost/thread.hpp>
-#include <boost/date_time/posix_time/ptime.hpp>
-#include <boost/asio.hpp>
 #include <boost/program_options.hpp>
-#include <ma/handler_allocation.hpp>
+#include <boost/date_time/posix_time/ptime.hpp>
+#include <ma/handler_allocator.hpp>
+#include <ma/custom_alloc_handler.hpp>
 #include <ma/echo/client1/session.hpp>
 #include <ma/console_controller.hpp>
 

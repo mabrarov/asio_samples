@@ -12,8 +12,8 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
-#include <boost/system/error_code.hpp>
 #include <boost/thread/mutex.hpp>
+#include <boost/system/error_code.hpp>
 #include <QtCore/QObject>
 #include <ma/echo/server/qt/sessionmanagersignal_fwd.h>
 

@@ -14,20 +14,19 @@
 
 #include <cstddef>
 #include <stdexcept>
+#include <boost/ref.hpp>
+#include <boost/asio.hpp>
+#include <boost/assert.hpp>
+#include <boost/noncopyable.hpp>
+#include <boost/thread/mutex.hpp>
+#include <boost/throw_exception.hpp>
 #include <ma/config.hpp>
+#include <ma/bind_asio_handler.hpp>
+#include <ma/handler_alloc_helpers.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)
 #include <utility>
 #endif // defined(MA_HAS_RVALUE_REFS)
-
-#include <boost/noncopyable.hpp>
-#include <boost/ref.hpp>
-#include <boost/throw_exception.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/asio.hpp>
-#include <boost/assert.hpp>
-#include <ma/handler_alloc_helpers.hpp>
-#include <ma/bind_asio_handler.hpp>
 
 namespace ma
 {  
@@ -62,8 +61,7 @@ namespace ma
       typedef void (*destroy_func_type)(handler_base*);
       typedef void* (*data_func_type)(handler_base*);
 
-      handler_base(invoke_func_type invoke_func, 
-        destroy_func_type destroy_func, data_func_type data_func)
+      handler_base(invoke_func_type invoke_func, destroy_func_type destroy_func, data_func_type data_func)
         : invoke_func_(invoke_func)
         , destroy_func_(destroy_func)        
         , data_func_(data_func)
@@ -105,19 +103,16 @@ namespace ma
 
     public:
 
-#if defined(MA_HAS_RVALUE_REFS)
-      // Constructor
+#if defined(MA_HAS_RVALUE_REFS)      
       template <typename H>
       handler_wrapper(boost::asio::io_service& io_service, H&& handler)
-        : handler_base(&this_type::do_invoke, 
-            &this_type::do_destroy, &this_type::do_data)
+        : handler_base(&this_type::do_invoke, &this_type::do_destroy, &this_type::do_data)
         , io_service_(io_service)
         , work_(io_service)
         , handler_(std::forward<H>(handler))
       {
       }
-
-      // Move constructor
+      
       handler_wrapper(this_type&& other)
         : handler_base(std::move(other))
         , io_service_(other.io_service_)
@@ -126,10 +121,8 @@ namespace ma
       {
       }
 #else
-      handler_wrapper(boost::asio::io_service& io_service, 
-        const Handler& handler)
-        : handler_base(&this_type::do_invoke, 
-            &this_type::do_destroy, &this_type::do_data)
+      handler_wrapper(boost::asio::io_service& io_service, const Handler& handler)
+        : handler_base(&this_type::do_invoke, &this_type::do_destroy, &this_type::do_data)
         , io_service_(io_service)
         , work_(io_service)
         , handler_(handler)
@@ -155,7 +148,7 @@ namespace ma
         Handler handler(std::move(this_ptr->handler_));
 #else
         Handler handler(this_ptr->handler_);
-#endif // defined(MA_HAS_RVALUE_REFS)
+#endif
         // Change the handler which will be used for wrapper's memory deallocation
         ptr.set_alloc_context(handler);
         // Make copies of other data placed at wrapper object      
@@ -165,14 +158,14 @@ namespace ma
         boost::asio::io_service::work work(this_ptr->work_);          
         // Destroy wrapper object and deallocate its memory 
         // throw the local copy of handler
-        ptr.reset();          
+        ptr.reset();
         // Post the copy of handler's local copy to io_service
 #if defined(MA_HAS_RVALUE_REFS)
         io_service.post(detail::bind_handler(std::move(handler), arg));
 #else
         io_service.post(detail::bind_handler(handler, arg));
-#endif // defined(MA_HAS_RVALUE_REFS)        
-      }  // do_invoke
+#endif
+      }
 
       static void do_destroy(handler_base* base)
       {          
@@ -188,13 +181,13 @@ namespace ma
         Handler handler(std::move(this_ptr->handler_));
 #else
         Handler handler(this_ptr->handler_);
-#endif // defined(MA_HAS_RVALUE_REFS)
+#endif
         // Change the handler which will be used for wrapper's memory deallocation
         ptr.set_alloc_context(handler);   
         // Destroy wrapper object and deallocate its memory 
         // throw the local copy of handler
         ptr.reset();
-      } // do_destroy
+      }
 
       static void* do_data(handler_base* base)
       {          
@@ -247,7 +240,7 @@ namespace ma
           front_->prev_ = &impl;
         }
         front_ = &impl;
-      } // push_front
+      }
 
       void erase(implementation_type& impl)
       {
@@ -264,7 +257,7 @@ namespace ma
           impl.next_->prev_= impl.prev_;
         }
         impl.next_ = impl.prev_ = 0;
-      } // erase
+      }
 
       implementation_type* const front() const
       {
@@ -298,13 +291,13 @@ namespace ma
       {
         destroy(*impl_list_.front());
       }      
-    } // shutdown_service
+    }
 
     void construct(implementation_type& impl)
     {      
       mutex_type::scoped_lock lock(mutex_);
       impl_list_.push_front(impl);     
-    } // construct
+    }
 
     void destroy(implementation_type& impl)
     {   
@@ -318,7 +311,7 @@ namespace ma
       {
         handler_ptr->destroy();
       }
-    } // destroy
+    }
 
     template <typename Handler>
     void put(implementation_type& impl, Handler handler)
@@ -330,8 +323,7 @@ namespace ma
         // Allocate raw memory for handler
         detail::raw_handler_ptr<alloc_traits> raw_ptr(handler);
         // Wrap local handler and copy wrapper into allocated memory
-        detail::handler_ptr<alloc_traits> ptr(raw_ptr, 
-          boost::ref(this->get_io_service()), handler);
+        detail::handler_ptr<alloc_traits> ptr(raw_ptr, boost::ref(this->get_io_service()), handler);
         // Copy current handler ptr
         handler_base* handler_ptr = impl.handler_ptr_;
         // Take the ownership
@@ -341,7 +333,7 @@ namespace ma
           handler_ptr->destroy();
         }
       } // if (!shutdown_done_)
-    } // put
+    }
 
     void post(implementation_type& impl, const arg_type& arg) const
     {      
@@ -353,7 +345,7 @@ namespace ma
       handler_base* handler_ptr = impl.handler_ptr_;
       impl.handler_ptr_ = 0;
       handler_ptr->invoke(arg);
-    } // post
+    }
 
     void* target(const implementation_type& impl) const
     {
@@ -362,7 +354,7 @@ namespace ma
         return impl.handler_ptr_->data();        
       }
       return 0;
-    } // target
+    }
 
     bool empty(const implementation_type& impl) const
     {

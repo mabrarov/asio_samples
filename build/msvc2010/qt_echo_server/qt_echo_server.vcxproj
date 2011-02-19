@@ -127,6 +127,9 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\include\ma\bind_asio_handler.hpp" />
     <ClInclude Include="..\..\..\include\ma\config.hpp" />
+    <ClInclude Include="..\..\..\include\ma\context_alloc_handler.hpp" />
+    <ClInclude Include="..\..\..\include\ma\context_wrapped_handler.hpp" />
+    <ClInclude Include="..\..\..\include\ma\custom_alloc_handler.hpp" />
     <ClInclude Include="..\..\..\include\ma\cyclic_buffer.hpp" />
     <ClInclude Include="..\..\..\include\ma\echo\server\error.hpp" />
     <CustomBuild Include="..\..\..\include\ma\echo\server\qt\sessionmanagerwrapper.h">
@@ -165,6 +168,8 @@
     <ClInclude Include="..\..\..\include\ma\echo\server\qt\sessionmanagersignal_fwd.h" />
     <ClInclude Include="..\..\..\include\ma\echo\server\qt\sessionmanagerwrapper_fwd.h" />
     <ClInclude Include="..\..\..\include\ma\echo\server\qt\signal_connect_error.h" />
+    <ClInclude Include="..\..\..\include\ma\handler_allocator.hpp" />
+    <ClInclude Include="..\..\..\include\ma\strand_wrapped_handler.hpp" />
     <ClInclude Include="..\..\..\include\ma\type_traits.hpp" />
     <ClInclude Include="GeneratedFiles\ui_mainform.h" />
     <CustomBuild Include="..\..\..\include\ma\echo\server\qt\mainform.h">
@@ -185,7 +190,6 @@
     <ClInclude Include="..\..\..\include\ma\echo\server\session_manager_config.hpp" />
     <ClInclude Include="..\..\..\include\ma\echo\server\session_manager_config_fwd.hpp" />
     <ClInclude Include="..\..\..\include\ma\echo\server\session_manager_fwd.hpp" />
-    <ClInclude Include="..\..\..\include\ma\handler_allocation.hpp" />
     <ClInclude Include="..\..\..\include\ma\handler_alloc_helpers.hpp" />
     <ClInclude Include="..\..\..\include\ma\handler_invoke_helpers.hpp" />
     <ClInclude Include="..\..\..\include\ma\handler_storage.hpp" />

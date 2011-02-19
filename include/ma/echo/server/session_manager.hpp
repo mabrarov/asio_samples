@@ -12,28 +12,28 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
+#include <boost/asio.hpp>
+#include <boost/bind.hpp>
+#include <boost/optional.hpp>
+#include <boost/weak_ptr.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/noncopyable.hpp>
+#include <boost/tuple/tuple.hpp>
+#include <boost/enable_shared_from_this.hpp>
 #include <ma/config.hpp>
+#include <ma/handler_storage.hpp>
+#include <ma/handler_allocator.hpp>
+#include <ma/bind_asio_handler.hpp>
+#include <ma/context_alloc_handler.hpp>
+#include <ma/echo/server/session_config_fwd.hpp>
+#include <ma/echo/server/session_fwd.hpp>
+#include <ma/echo/server/session_manager_config.hpp>
+#include <ma/echo/server/session_manager_fwd.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)
 #include <utility>
 #include <ma/type_traits.hpp>
 #endif // defined(MA_HAS_RVALUE_REFS)
-
-#include <boost/noncopyable.hpp>
-#include <boost/optional.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/weak_ptr.hpp>
-#include <boost/bind.hpp>
-#include <boost/tuple/tuple.hpp>
-#include <boost/asio.hpp>
-#include <boost/enable_shared_from_this.hpp>
-#include <ma/handler_allocation.hpp>
-#include <ma/handler_storage.hpp>
-#include <ma/bind_asio_handler.hpp>
-#include <ma/echo/server/session_config_fwd.hpp>
-#include <ma/echo/server/session_fwd.hpp>
-#include <ma/echo/server/session_manager_config.hpp>
-#include <ma/echo/server/session_manager_fwd.hpp>
 
 namespace ma
 {    
@@ -55,64 +55,83 @@ namespace ma
 
         ~session_manager()
         {        
-        } // ~session_manager
+        }
 
         void reset(bool free_recycled_sessions = true);
 
 #if defined(MA_HAS_RVALUE_REFS)
+
+#if defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
         template <typename Handler>
         void async_start(Handler&& handler)
         {
           typedef typename ma::remove_cv_reference<Handler>::type handler_type;
-          strand_.post(make_context_alloc_handler2(
-            std::forward<Handler>(handler), 
-            boost::bind(&this_type::do_start<handler_type>, 
-              shared_from_this(), _1)));  
-        } // async_start
+          strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler), 
+            forward_handler_binder<handler_type>(&this_type::do_start<handler_type>, shared_from_this())));
+        }
 
         template <typename Handler>
         void async_stop(Handler&& handler)
         {
           typedef typename ma::remove_cv_reference<Handler>::type handler_type;
-          strand_.post(make_context_alloc_handler2(
-            std::forward<Handler>(handler), 
-            boost::bind(&this_type::do_stop<handler_type>, 
-              shared_from_this(), _1))); 
-        } // async_stop
+          strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler), 
+            forward_handler_binder<handler_type>(&this_type::do_stop<handler_type>, shared_from_this()))); 
+        }
 
         template <typename Handler>
         void async_wait(Handler&& handler)
         {
           typedef typename ma::remove_cv_reference<Handler>::type handler_type;
-          strand_.post(make_context_alloc_handler2(
-            std::forward<Handler>(handler), 
-            boost::bind(&this_type::do_wait<handler_type>, 
-              shared_from_this(), _1)));  
-        } // async_wait
+          strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler), 
+            forward_handler_binder<handler_type>(&this_type::do_wait<handler_type>, shared_from_this())));  
+        }
+#else // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+        template <typename Handler>
+        void async_start(Handler&& handler)
+        {
+          typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+          strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler), 
+            boost::bind(&this_type::do_start<handler_type>, shared_from_this(), _1)));
+        }
+
+        template <typename Handler>
+        void async_stop(Handler&& handler)
+        {
+          typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+          strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler), 
+            boost::bind(&this_type::do_stop<handler_type>, shared_from_this(), _1))); 
+        }
+
+        template <typename Handler>
+        void async_wait(Handler&& handler)
+        {
+          typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+          strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler), 
+            boost::bind(&this_type::do_wait<handler_type>, shared_from_this(), _1)));  
+        }
+#endif // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+
 #else // defined(MA_HAS_RVALUE_REFS)
         template <typename Handler>
         void async_start(const Handler& handler)
         {
           strand_.post(make_context_alloc_handler2(handler, 
-            boost::bind(&this_type::do_start<Handler>, 
-              shared_from_this(), _1)));  
-        } // async_start
+            boost::bind(&this_type::do_start<Handler>, shared_from_this(), _1)));  
+        }
 
         template <typename Handler>
         void async_stop(const Handler& handler)
         {
           strand_.post(make_context_alloc_handler2(handler, 
-            boost::bind(&this_type::do_stop<Handler>, 
-              shared_from_this(), _1))); 
-        } // async_stop
+            boost::bind(&this_type::do_stop<Handler>, shared_from_this(), _1))); 
+        }
 
         template <typename Handler>
         void async_wait(const Handler& handler)
         {
           strand_.post(make_context_alloc_handler2(handler, 
-            boost::bind(&this_type::do_wait<Handler>, 
-              shared_from_this(), _1)));  
-        } // async_wait
+            boost::bind(&this_type::do_wait<Handler>, shared_from_this(), _1)));  
+        }
 #endif // defined(MA_HAS_RVALUE_REFS)
 
       private:
@@ -121,9 +140,44 @@ namespace ma
         typedef boost::weak_ptr<session_wrapper>   session_wrapper_weak_ptr;      
 
 #if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
-        class accept_handler;
-        class session_handler;        
-#endif
+        class accept_handler_binder;
+        class session_dispatch_binder;
+        class session_handler_binder;
+
+        template <typename Arg>
+        class forward_handler_binder
+        {
+        private:
+          typedef forward_handler_binder this_type;
+          this_type& operator=(const this_type&);
+
+        public:
+          typedef void result_type;
+          typedef void (session_manager::*function_type)(const Arg&);
+
+          template <typename SessionManagerPtr>
+          forward_handler_binder(function_type function, SessionManagerPtr&& the_session_manager)
+            : function_(function)
+            , session_manager_(std::forward<SessionManagerPtr>(the_session_manager))
+          {
+          }         
+
+          forward_handler_binder(this_type&& other)
+            : function_(other.function_)
+            , session_manager_(std::move(other.session_manager_))
+          {
+          }
+
+          void operator()(const Arg& arg)
+          {
+            ((*session_manager_).*function_)(arg);
+          }
+
+        private:
+          function_type function_;
+          session_manager_ptr session_manager_;          
+        }; // class forward_handler_binder
+#endif // defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
         
         struct session_wrapper : private boost::noncopyable
         {
@@ -150,9 +204,9 @@ namespace ma
 
           ~session_wrapper()
           {
-          } // ~session_wrapper
+          }
 
-        }; // session_wrapper
+        }; // struct session_wrapper
 
         class session_wrapper_list : private boost::noncopyable
         {
@@ -166,22 +220,22 @@ namespace ma
           std::size_t size() const
           {
             return size_;
-          } // size
+          }
 
           bool empty() const
           {
             return 0 == size_;
-          } // empty
+          }
 
           session_wrapper_ptr front() const
           {
             return front_;
-          } // front      
+          }
 
         private:
           std::size_t size_;
           session_wrapper_ptr front_;
-        }; // session_wrapper_list
+        }; // class session_wrapper_list
 
         enum state_type
         {
@@ -190,14 +244,14 @@ namespace ma
           started,
           stop_in_progress,
           stopped
-        };        
+        }; // enum state_type
 
         template <typename Handler>
         void do_start(const Handler& handler)
         {
           boost::system::error_code error = start();
           io_service_.post(detail::bind_handler(handler, error));          
-        } // do_start
+        }
 
         template <typename Handler>
         void do_stop(const Handler& handler)
@@ -210,7 +264,7 @@ namespace ma
           {
             stop_handler_.put(handler);
           }
-        } // do_stop
+        }
 
         template <typename Handler>
         void do_wait(const Handler& handler)
@@ -223,24 +277,27 @@ namespace ma
           {          
             wait_handler_.put(handler);
           }  
-        } // do_wait
+        }
 
         boost::system::error_code start();
         boost::optional<boost::system::error_code> stop();
         boost::optional<boost::system::error_code> wait();
+
         session_wrapper_ptr create_session(boost::system::error_code& error);
         void accept_session(const session_wrapper_ptr& wrapped_session);
         void accept_new_session();
-        void handle_accept(const session_wrapper_ptr& wrapped_session, 
-          const boost::system::error_code& error);
+        void handle_accept(const session_wrapper_ptr& wrapped_session, const boost::system::error_code& error);
+
         bool may_complete_stop() const;
         bool may_complete_wait() const;
         bool may_continue_accept() const;
         void complete_stop();
         void complete_wait();
+
         void start_session(const session_wrapper_ptr& wrapped_session);
         void stop_session(const session_wrapper_ptr& wrapped_session);
         void wait_session(const session_wrapper_ptr& wrapped_session);
+
         static void dispatch_session_start(
           const session_manager_weak_ptr& this_weak_ptr,
           const session_wrapper_ptr& wrapped_session, 
@@ -248,37 +305,46 @@ namespace ma
         void handle_session_start(
           const session_wrapper_ptr& wrapped_session, 
           const boost::system::error_code& error);
+
         static void dispatch_session_wait(
           const session_manager_weak_ptr& this_weak_ptr,
           const session_wrapper_ptr& wrapped_session, 
           const boost::system::error_code& error);
         void handle_session_wait(
           const session_wrapper_ptr& wrapped_session, 
-          const boost::system::error_code& error);        
+          const boost::system::error_code& error);
+
         static void dispatch_session_stop(
           const session_manager_weak_ptr& this_weak_ptr,
           const session_wrapper_ptr& wrapped_session, 
           const boost::system::error_code& error);
         void handle_session_stop(
           const session_wrapper_ptr& wrapped_session, 
-          const boost::system::error_code& error);        
+          const boost::system::error_code& error);
+
         void recycle_session(const session_wrapper_ptr& wrapped_session);
         void post_stop_handler();
 
         bool accept_in_progress_;
         state_type state_;
         std::size_t pending_operations_;
+
         boost::asio::io_service& io_service_;
         boost::asio::io_service& session_io_service_;
         boost::asio::io_service::strand strand_;      
-        boost::asio::ip::tcp::acceptor acceptor_;        
+        boost::asio::ip::tcp::acceptor acceptor_;
+
         handler_storage<boost::system::error_code> wait_handler_;
         handler_storage<boost::system::error_code> stop_handler_;
+
         session_wrapper_list active_sessions_;
         session_wrapper_list recycled_sessions_;
+
         boost::system::error_code wait_error_;
-        boost::system::error_code stop_error_;      
-        session_manager_config config_;        
+        boost::system::error_code stop_error_;
+
+        session_manager_config config_;
+
         in_place_handler_allocator<512> accept_allocator_;
       }; // class session_manager
 

@@ -25,7 +25,7 @@ namespace ma
     {                
       struct session_manager_config
       { 
-        int         listen_backlog;
+        int listen_backlog;
         std::size_t max_session_count;
         std::size_t recycled_session_count;
         boost::asio::ip::tcp::endpoint accepting_endpoint;                    

@@ -16,7 +16,7 @@
 #include <stdexcept>
 #include <boost/noncopyable.hpp>
 #include <boost/throw_exception.hpp>
-#include <boost/array.hpp>
+#include <boost/scoped_array.hpp>
 #include <boost/asio.hpp>
 
 namespace ma
@@ -52,12 +52,12 @@ namespace ma
       const_iterator begin() const
       {
         return boost::addressof(buffers_[0]);
-      } // begin
+      }
 
       const_iterator end() const
       {
         return boost::addressof(buffers_[0]) + filled_buffers_;
-      } // end
+      }
 
     private:
       boost::array<value_type, 2> buffers_;
@@ -82,7 +82,7 @@ namespace ma
     {
       input_size_  = size_;
       input_start_ = output_start_ = output_size_ = 0;
-    } // reset
+    }
 
     void commit(std::size_t size)
     {
@@ -102,7 +102,7 @@ namespace ma
       {
         output_start_ = size - d;
       }
-    } // commit
+    }
 
     void consume(std::size_t size)         
     {
@@ -122,7 +122,7 @@ namespace ma
       {
         input_start_ = size - d;
       }
-    } // consume
+    }
 
     const_buffers_type data() const
     {
@@ -134,15 +134,12 @@ namespace ma
       if (output_size_ > d)
       {
         return const_buffers_type(
-          boost::asio::const_buffer(
-            data_.get() + output_start_, d),
-          boost::asio::const_buffer(
-            data_.get(), output_size_ - d));
+          boost::asio::const_buffer(data_.get() + output_start_, d),
+          boost::asio::const_buffer(data_.get(), output_size_ - d));
       }          
       return const_buffers_type(
-        boost::asio::const_buffer(
-          data_.get() + output_start_, output_size_));
-    } // data
+        boost::asio::const_buffer(data_.get() + output_start_, output_size_));
+    }
 
     mutable_buffers_type prepared() const
     {                    
@@ -154,15 +151,12 @@ namespace ma
       if (input_size_ > d)
       {
         return mutable_buffers_type(
-          boost::asio::mutable_buffer(
-            data_.get() + input_start_, d),
-          boost::asio::mutable_buffer(
-            data_.get(), input_size_ - d));
+          boost::asio::mutable_buffer(data_.get() + input_start_, d),
+          boost::asio::mutable_buffer(data_.get(), input_size_ - d));
       }
       return mutable_buffers_type(
-        boost::asio::mutable_buffer(
-          data_.get() + input_start_, input_size_));          
-    } // prepared
+        boost::asio::mutable_buffer(data_.get() + input_start_, input_size_));          
+    }
 
   private:
     boost::scoped_array<char> data_;

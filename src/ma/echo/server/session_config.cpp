@@ -39,7 +39,7 @@ namespace ma
           boost::throw_exception(std::invalid_argument(
             "the_socket_send_buffer_size must be non negative"));
         }
-      } // session_config::session_config
+      }
         
     } // namespace server
   } // namespace echo

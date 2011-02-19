@@ -12,16 +12,15 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
-#include <boost/noncopyable.hpp>
 #include <boost/asio.hpp>
+#include <boost/noncopyable.hpp>
 #include <ma/config.hpp>
+#include <ma/handler_storage_service.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)
 #include <utility>
 #include <ma/type_traits.hpp>
 #endif // defined(MA_HAS_RVALUE_REFS)
-
-#include <ma/handler_storage_service.hpp>
 
 namespace ma
 {  
@@ -119,8 +118,7 @@ namespace ma
     void put(Handler&& handler)
     {      
       typedef typename ma::remove_cv_reference<Handler>::type handler_type; 
-      service_.put<handler_type>(implementation_, 
-        std::forward<Handler>(handler));
+      service_.put<handler_type>(implementation_, std::forward<Handler>(handler));
     }
 #else
     template <typename Handler>

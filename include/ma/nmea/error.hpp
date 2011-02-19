@@ -32,12 +32,12 @@ namespace ma
       inline boost::system::error_code make_error_code(error_t e)
       {  
         return boost::system::error_code(static_cast<int>(e), session_error_category());
-      } // make_error_code
+      }
 
       inline boost::system::error_condition make_error_condition(error_t e)
       {  
         return boost::system::error_condition(static_cast<int>(e), session_error_category());
-      } // make_error_condition
+      }
 
     } // namespace session_error
     
@@ -47,7 +47,7 @@ namespace ma
       virtual const char* name() const
       {
         return "ma::nmea::session";
-      } // name
+      }
 
       virtual std::string message(int ev) const
       {
@@ -60,7 +60,7 @@ namespace ma
         default:
           return "Unknown ma::echo::server error.";
         }
-      } // message
+      }
 
     }; // class session_error_category_impl
             
