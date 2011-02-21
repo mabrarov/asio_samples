@@ -5,8 +5,11 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#if defined(WIN32)
 #include <tchar.h>
 #include <windows.h>
+#endif
+
 #include <iostream>
 #include <cstdlib>
 #include <stdexcept>
@@ -183,7 +186,11 @@ void print_param<bool>(std::ostream& stream,
   }
 }
 
+#if defined(WIN32)
 int _tmain(int argc, _TCHAR* argv[])
+#else
+int main(int argc, char* argv[])
+#endif
 {
   try 
   {    
@@ -305,7 +312,7 @@ int _tmain(int argc, _TCHAR* argv[])
     std::cerr << "Unexpected exception: " << e.what() << std::endl;
   }
   return EXIT_FAILURE;
-} // _tmain
+}
 
 execution_config create_execution_config(std::size_t cpu_count,
   const boost::program_options::variables_map& options_values)

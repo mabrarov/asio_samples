@@ -18,6 +18,7 @@
 #include <boost/throw_exception.hpp>
 #include <boost/system/error_code.hpp>
 #include <QtCore/QObject>
+#include <QtCore/QString>
 #include <ma/echo/server/qt/sessionmanagerwrapper_fwd.h>
 #include <ma/echo/server/qt/service_fwd.h>
 
@@ -59,7 +60,7 @@ namespace ma
                 "theStopTimeout must be >= 0"));
             }
           }
-        }; // struct ExecutionConfig
+        }; // struct ExecutionConfig        
 
         class Service : public QObject
         {

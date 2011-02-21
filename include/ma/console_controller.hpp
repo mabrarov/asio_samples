@@ -12,11 +12,13 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
+#if defined(WIN32)
 #include <windows.h>
+#endif
 
 #include <boost/noncopyable.hpp>
 #include <boost/function.hpp>
-#include <boost/thread/mutex.hpp>
+#include <boost/thread/recursive_mutex.hpp>
 
 namespace ma 
 {
@@ -29,8 +31,15 @@ namespace ma
     ~console_controller();    
 
   private:    
+    typedef boost::recursive_mutex mutex_type;
+
+#if defined(WIN32)
     static BOOL WINAPI console_ctrl_proc(DWORD ctrl_type);
-    static boost::mutex ctrl_mutex_;
+#else
+    static void console_ctrl_proc(int signal); 
+#endif
+
+    static mutex_type ctrl_mutex_;
     static ctrl_function_type ctrl_function_;	
   }; // class console_controller
 

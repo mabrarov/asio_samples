@@ -277,7 +277,7 @@ namespace ma
       {        
         if (stopped == state_ || stop_in_progress == state_)
         {          
-          return server_error::invalid_state;
+          return boost::system::error_code(server_error::invalid_state);
         }        
         // Start shutdown
         state_ = stop_in_progress;
@@ -287,7 +287,7 @@ namespace ma
         session_wrapper_ptr active_session = active_sessions_.front();
         while (active_session)
         {
-          if (stop_in_progress != active_session->state)
+          if (session_wrapper::stop_in_progress != active_session->state)
           {
             stop_session(active_session);
           }
@@ -311,7 +311,7 @@ namespace ma
       {        
         if (started != state_ || wait_handler_.has_target())
         {
-          return server_error::invalid_state;
+          return boost::system::error_code(server_error::invalid_state);
         }        
         if (may_complete_wait())
         {

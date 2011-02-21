@@ -126,7 +126,7 @@ namespace ma
       {        
         if (stopped == state_ || stop_in_progress == state_)
         {          
-          return server_error::invalid_state;                      
+          return boost::system::error_code(server_error::invalid_state);
         }        
         // Start shutdown
         state_ = stop_in_progress;
@@ -154,7 +154,7 @@ namespace ma
       {                
         if (started != state_ || wait_handler_.has_target())
         {
-          return server_error::invalid_state;
+          return boost::system::error_code(server_error::invalid_state);
         }
         if (!socket_read_in_progress_ && !socket_write_in_progress_)
         {
