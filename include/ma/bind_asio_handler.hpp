@@ -62,7 +62,7 @@ namespace ma
 
       void operator()()
       {
-        handler_(arg1_);
+        handler_(static_cast<const Arg1&>(arg1_));
       }
 
       void operator()() const
@@ -88,7 +88,7 @@ namespace ma
 
     private:      
       Handler handler_;
-      const Arg1 arg1_;
+      Arg1 arg1_;
     }; // class binder1  
 
 #if defined(MA_HAS_RVALUE_REFS)
@@ -152,7 +152,7 @@ namespace ma
 
       void operator()()
       {
-        handler_(arg1_, arg2_);
+        handler_(static_cast<const Arg1&>(arg1_), static_cast<const Arg2&>(arg2_));
       }
 
       void operator()() const
@@ -178,8 +178,8 @@ namespace ma
 
     private:      
       Handler handler_;
-      const Arg1 arg1_;
-      const Arg2 arg2_;      
+      Arg1 arg1_;
+      Arg2 arg2_;      
     }; // class binder2    
 
 #if defined(MA_HAS_RVALUE_REFS)
@@ -250,7 +250,7 @@ namespace ma
 
       void operator()()
       {
-        handler_(arg1_, arg2_, arg3_);
+        handler_(static_cast<const Arg1&>(arg1_), static_cast<const Arg2&>(arg2_), static_cast<const Arg3&>(arg3_));
       }
 
       void operator()() const
@@ -276,9 +276,9 @@ namespace ma
 
     private:      
       Handler handler_;
-      const Arg1 arg1_;
-      const Arg2 arg2_;
-      const Arg3 arg3_;
+      Arg1 arg1_;
+      Arg2 arg2_;
+      Arg3 arg3_;
     }; // class binder3    
 
 #if defined(MA_HAS_RVALUE_REFS)
@@ -358,7 +358,10 @@ namespace ma
 
       void operator()()
       {
-        handler_(arg1_, arg2_, arg3_, arg4_);
+        handler_(static_cast<const Arg1&>(arg1_), 
+          static_cast<const Arg2&>(arg2_),
+          static_cast<const Arg3&>(arg3_),
+          static_cast<const Arg4&>(arg4_));
       }
 
       void operator()() const
@@ -384,10 +387,10 @@ namespace ma
 
     private:      
       Handler handler_;
-      const Arg1 arg1_;
-      const Arg2 arg2_;
-      const Arg3 arg3_;
-      const Arg4 arg4_;      
+      Arg1 arg1_;
+      Arg2 arg2_;
+      Arg3 arg3_;
+      Arg4 arg4_;      
     }; // class binder4    
 
 #if defined(MA_HAS_RVALUE_REFS)
@@ -479,7 +482,11 @@ namespace ma
 
       void operator()()
       {
-        handler_(arg1_, arg2_, arg3_, arg4_, arg5_);
+        handler_(static_cast<const Arg1&>(arg1_),
+          static_cast<const Arg2&>(arg2_),
+          static_cast<const Arg3&>(arg3_),
+          static_cast<const Arg4&>(arg4_),
+          static_cast<const Arg5&>(arg5_));
       }
 
       void operator()() const
@@ -505,11 +512,11 @@ namespace ma
 
     private:      
       Handler handler_;
-      const Arg1 arg1_;
-      const Arg2 arg2_;
-      const Arg3 arg3_;
-      const Arg4 arg4_;
-      const Arg5 arg5_;      
+      Arg1 arg1_;
+      Arg2 arg2_;
+      Arg3 arg3_;
+      Arg4 arg4_;
+      Arg5 arg5_;      
     }; // class binder5 
 
 #if defined(MA_HAS_RVALUE_REFS)
