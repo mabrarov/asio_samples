@@ -155,7 +155,15 @@ namespace ma
             : function_(function)
             , session_(std::forward<SessionPtr>(the_session))
           {
-          }         
+          }
+
+#if defined(_DEBUG)
+          forward_handler_binder(const this_type& other)
+            : function_(other.function_)
+            , session_(other.session_)
+          {
+          }
+#endif // defined(_DEBUG)
 
           forward_handler_binder(this_type&& other)
             : function_(other.function_)
