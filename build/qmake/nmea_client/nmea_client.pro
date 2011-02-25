@@ -14,9 +14,9 @@ HEADERS  += ../../../include/ma/handler_storage_service.hpp \
             ../../../include/ma/handler_invoke_helpers.hpp \
             ../../../include/ma/bind_asio_handler.hpp \
             ../../../include/ma/context_alloc_handler.hpp \
-			../../../include/ma/context_wrapped_handler.hpp \
-			../../../include/ma/custom_alloc_handler.hpp \
-			../../../include/ma/strand_wrapped_handler.hpp \
+            ../../../include/ma/context_wrapped_handler.hpp \
+            ../../../include/ma/custom_alloc_handler.hpp \
+            ../../../include/ma/strand_wrapped_handler.hpp \
             ../../../include/ma/handler_allocator.hpp \
             ../../../include/ma/handler_alloc_helpers.hpp \
             ../../../include/ma/codecvt_cast.hpp \
@@ -24,11 +24,17 @@ HEADERS  += ../../../include/ma/handler_storage_service.hpp \
             ../../../include/ma/nmea/frame.hpp \
             ../../../include/ma/nmea/error.hpp \
             ../../../include/ma/config.hpp \
-			../../../include/ma/type_traits.hpp \
+            ../../../include/ma/type_traits.hpp \
             ../../../include/ma/nmea/cyclic_read_session_fwd.hpp \
             ../../../include/ma/nmea/cyclic_read_session.hpp
 
-LIBS        += -L../../../../boost_1_45_0/lib/x86
-INCLUDEPATH += ../../../../boost_1_45_0 \
+win32 {
+  LIBS      += -L../../../../boost_1_46_0/lib/x86
+}
+
+INCLUDEPATH += ../../../../boost_1_46_0 \
                ../../../include
-DEFINES     += WIN32_LEAN_AND_MEAN BOOST_HAS_THREADS _UNICODE UNICODE
+
+win32 {
+  DEFINES   += WIN32_LEAN_AND_MEAN _UNICODE UNICODE
+}

@@ -1,0 +1,10 @@
+--- boost/config/compiler/intel.hpp	Ñð èþí  2 18:30:04 2010
++++ boost/config/compiler/intel.hpp	Ïò ôåâ 25 01:52:29 2011
+@@ -183,6 +183,7 @@
+ //
+ // last known and checked version:
+ #if (BOOST_INTEL_CXX_VERSION > 1110)
++#  undef BOOST_NO_RVALUE_REFERENCES
+ #  if defined(BOOST_ASSERT_CONFIG)
+ #     error "Unknown compiler version - please run the configure tests and report the results"
+ #  elif defined(_MSC_VER)

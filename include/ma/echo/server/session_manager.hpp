@@ -196,8 +196,8 @@ namespace ma
           session_wrapper_ptr next;
           session_ptr the_session;        
           boost::asio::ip::tcp::endpoint remote_endpoint;
-          in_place_handler_allocator<128> start_wait_allocator;
-          in_place_handler_allocator<128> stop_allocator;
+          in_place_handler_allocator<144> start_wait_allocator;
+          in_place_handler_allocator<144> stop_allocator;
 
           session_wrapper(boost::asio::io_service& io_service,
             const session_config& wrapped_session_config);

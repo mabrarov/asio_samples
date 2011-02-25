@@ -16,7 +16,6 @@
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/thread.hpp>
-#include <boost/filesystem.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/system/error_code.hpp>
@@ -222,17 +221,7 @@ void print_frames(const frame_buffer_type& frames, std::size_t size)
   }    
 }
 
-void print_usage(int argc, _TCHAR* argv[])
-{
-  std::wstring file_name;
-  if (argc > 0)
-  {
-    boost::filesystem::wpath app_path(argv[0]);
-    file_name = app_path.leaf();
-  }
-  else
-  {
-    file_name = L"nmea_client.exe";
-  }
-  std::wcout << L"Usage: \"" << file_name << L"\" <com_port> [<read_buffer_size> [<message_queue_size>] ]" << std::endl;  
+void print_usage(int /*argc*/, _TCHAR* /*argv*/[])
+{  
+  std::wcout << L"Usage: nmea_client <com_port> [<read_buffer_size> [<message_queue_size>] ]" << std::endl;  
 }

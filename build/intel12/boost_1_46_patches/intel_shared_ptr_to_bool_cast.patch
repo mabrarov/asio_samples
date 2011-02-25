@@ -1,0 +1,11 @@
+--- boost/smart_ptr/detail/operator_bool.hpp	ѕн мар  2 19:45:22 2009
++++ boost/smart_ptr/detail/operator_bool.hpp	ѕт фев 25 02:15:34 2011
+@@ -6,7 +6,7 @@
+ //  See accompanying file LICENSE_1_0.txt or copy at
+ //  http://www.boost.org/LICENSE_1_0.txt
+ 
+-#if ( defined(__SUNPRO_CC) && BOOST_WORKAROUND(__SUNPRO_CC, < 0x570) ) || defined(__CINT__)
++#if ( defined(__SUNPRO_CC) && BOOST_WORKAROUND(__SUNPRO_CC, < 0x570) ) || defined(__CINT__) || defined (BOOST_INTEL)
+ 
+     operator bool () const
+     {

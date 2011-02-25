@@ -37,16 +37,10 @@ HEADERS  += ../../../include/ma/handler_storage_service.hpp \
             ../../../include/ma/echo/server/session_manager.hpp		
 
 win32 {
-  LIBS      += -L../../../../boost_1_45_0/lib/x86
-}
-unix {
-  LIBS      += -L../../../../boost_1_45_0/lib -lboost_thread \
-               -lboost_program_options \
-               -lboost_system \
-               -lboost_date_time
+  LIBS      += -L../../../../boost_1_46_0/lib/x86
 }
 
-INCLUDEPATH += ../../../../boost_1_45_0 \
+INCLUDEPATH += ../../../../boost_1_46_0 \
                ../../../include
 
 win32 {
