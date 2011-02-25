@@ -90,16 +90,14 @@ namespace ma
         if (config_.socket_recv_buffer_size)
         {
           socket_.set_option(
-            tcp::socket::receive_buffer_size(*config_.socket_recv_buffer_size),
-            error);
+            tcp::socket::receive_buffer_size(*config_.socket_recv_buffer_size), error);
         }
         if (!error)
         {
           if (config_.socket_recv_buffer_size)
           {
             socket_.set_option(
-              tcp::socket::send_buffer_size(*config_.socket_recv_buffer_size), 
-              error);
+              tcp::socket::send_buffer_size(*config_.socket_recv_buffer_size), error);
           }
           if (!error)
           {          
@@ -138,8 +136,7 @@ namespace ma
         // Do shutdown - flush socket's write_some buffer
         if (!socket_write_in_progress_) 
         {
-          socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_send, 
-            stop_error_);
+          socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_send, stop_error_);
         }          
         // Check for shutdown continuation          
         if (may_complete_stop())
