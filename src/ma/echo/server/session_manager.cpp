@@ -44,7 +44,16 @@ namespace ma
           , session_manager_(std::forward<SessionManagerPtr>(the_session_manager))
           , wrapped_session_(std::forward<SessionWrapperPtr>(the_wrapped_session))
         {
-        }                  
+        }
+
+#if defined(_DEBUG)
+        accept_handler_binder(const this_type& other)
+          : function_(other.function_)
+          , session_manager_(other.session_manager_)
+          , wrapped_session_(other.wrapped_session_)
+        {
+        }
+#endif // defined(_DEBUG)
 
         accept_handler_binder(this_type&& other)
           : function_(other.function_)
@@ -84,7 +93,16 @@ namespace ma
           , session_manager_(std::forward<SessionManagerPtr>(the_session_manager))
           , wrapped_session_(std::forward<SessionWrapperPtr>(the_wrapped_session))
         {
-        }                  
+        }
+
+#if defined(_DEBUG)
+        session_dispatch_binder(const this_type& other)
+          : function_(other.function_)
+          , session_manager_(other.session_manager_)
+          , wrapped_session_(other.wrapped_session_)
+        {
+        }
+#endif // defined(_DEBUG)
 
         session_dispatch_binder(this_type&& other)
           : function_(other.function_)
@@ -127,6 +145,16 @@ namespace ma
           , error_(error)
         {
         }                  
+
+#if defined(_DEBUG)
+        session_handler_binder(const this_type& other)
+          : function_(other.function_)
+          , session_manager_(other.session_manager_)
+          , wrapped_session_(other.wrapped_session_)
+          , error_(other.error_)
+        {
+        }
+#endif // defined(_DEBUG)
 
         session_handler_binder(this_type&& other)
           : function_(other.function_)
