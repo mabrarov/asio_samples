@@ -63,14 +63,14 @@ namespace ma
     }
   }
 #else
-  void console_controller::console_ctrl_proc(int /*signal*/)
+  void console_controller::console_ctrl_proc(int signal_num)
   {
     mutex_type::scoped_lock lock(ctrl_mutex_);
     if (!ctrl_function_.empty())
     {
       ctrl_function_();
     }
-    (void) ::signal(SIGINT, SIG_DFL);
+    (void) ::signal(signal_num, SIG_DFL);
   }
 #endif // defined(WIN32)
 
