@@ -259,7 +259,7 @@ namespace ma
         impl.next_ = impl.prev_ = 0;
       }
 
-      implementation_type* const front() const
+      implementation_type* front() const
       {
         return front_;
       }
