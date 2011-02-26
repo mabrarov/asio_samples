@@ -4,6 +4,10 @@ CONFIG   += console
 CONFIG   -= app_bundle
 TEMPLATE =  app
 
+linux-g++ {
+  QMAKE_CXXFLAGS += -std=c++0x
+}
+
 SOURCES  += ../../../src/ma/console_controller.cpp \
             ../../../src/echo_server/main.cpp \
             ../../../src/ma/echo/server/session_config.cpp \
