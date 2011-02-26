@@ -30,7 +30,7 @@ namespace ma
 #if defined(WIN32)
     ::SetConsoleCtrlHandler(console_ctrl_proc, TRUE);
 #else
-    if (SIG_ERR == ::signal(SIGQUIT, &console_controller::console_ctrl_proc))
+    if (SIG_ERR == ::signal(SIGINT, &console_controller::console_ctrl_proc))
     {
       boost::throw_exception(std::runtime_error("failed to set signal handler for SIGQUIT"));
     }
@@ -69,7 +69,8 @@ namespace ma
     if (!ctrl_function_.empty())
     {
       ctrl_function_();
-    }    
+    }
+    (void) ::signal(SIGINT, SIG_DFL);
   }
 #endif // defined(WIN32)
 
