@@ -15,6 +15,7 @@
 #include <locale>
 #include <string>
 #include <stdexcept>
+#include <boost/scoped_array.hpp>
 #include <boost/throw_exception.hpp>
 
 namespace ma
@@ -41,20 +42,21 @@ namespace ma
 
       wstring internal_str;
 
-      string::size_type external_str_size = external_str.length();
+      typename string::size_type external_str_size = external_str.length();
       const Byte* first_external = external_str.data();
       const Byte* last_external  = first_external + external_str_size;
       const Byte* next_external  = last_external;
 
-      codecvt_type::state_type state(0);
-      wstring::size_type out_buf_size = codecvt.length(state, first_external, last_external, internal_str.max_size());
+      typename codecvt_type::state_type state(0);
+      typename wstring::size_type out_buf_size = codecvt.length(state,
+        first_external, last_external, internal_str.max_size());
       internal_str.resize(out_buf_size);
 
       CharType* first_internal = const_cast<CharType*>(internal_str.data());
       CharType* last_internal  = first_internal + out_buf_size;
       CharType* next_internal  = first_internal;
 
-      codecvt_type::result r = codecvt.in(state, 
+      typename codecvt_type::result r = codecvt.in(state,
         first_external, last_external, next_external,
         first_internal, last_internal, next_internal);
       
@@ -82,8 +84,8 @@ namespace ma
 
       string external_str;
 
-      wstring::size_type internal_str_size = internal_str.length();
-      wstring::size_type out_buf_size = codecvt.max_length() * internal_str_size;
+      typename wstring::size_type internal_str_size = internal_str.length();
+      typename wstring::size_type out_buf_size = codecvt.max_length() * internal_str_size;
       boost::scoped_array<Byte> out_buf(new Byte[out_buf_size]);
 
       const CharType* first_internal = internal_str.data();
@@ -94,9 +96,9 @@ namespace ma
       Byte* last_external  = first_external + out_buf_size;
       Byte* next_external  = first_external;
 
-      codecvt_type::state_type state(0);
+      typename codecvt_type::state_type state(0);
 
-      codecvt_type::result r = codecvt.out(state, 
+      typename codecvt_type::result r = codecvt.out(state,
         first_internal, last_internal, next_internal,
         first_external, last_external, next_external);
 

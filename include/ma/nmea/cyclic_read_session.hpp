@@ -358,7 +358,7 @@ namespace ma
       void handle_write(const boost::system::error_code& error, const boost::tuple<Handler>& handler)
       {         
         port_write_in_progress_ = false;
-        io_service_.post(detail::bind_handler(handler.get<0>(), error));
+        io_service_.post(detail::bind_handler(boost::get<0>(handler), error));
         if (stop_in_progress == state_ && !port_read_in_progress_)
         {
           state_ = stopped;

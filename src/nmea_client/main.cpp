@@ -5,8 +5,11 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#if defined(WIN32)
 #include <tchar.h>
 #include <windows.h>
+#endif
+
 #include <cstdlib>
 #include <locale>
 #include <iostream>
@@ -51,20 +54,26 @@ void handle_console_close(const session_ptr&);
 
 void print_frames(const frame_buffer_type& frames, std::size_t size);
 
-void print_usage(int argc, _TCHAR* argv[]);
+void print_usage();
 
+#if defined(WIN32)
 int _tmain(int argc, _TCHAR* argv[])
+#else
+int main(int argc, char* argv[])
+#endif
 {
   try
   {  
+#if defined(WIN32)
     std::locale console_locale("Russian_Russia.866");
-    std::locale sys_locale("");
     std::wcout.imbue(console_locale);
     std::wcerr.imbue(console_locale);
-
+    std::locale sys_locale("");
+#endif    
+    
     if (2 > argc || 4 < argc)
     {
-      print_usage(argc, argv);
+      print_usage();
       return EXIT_FAILURE;
     }
 
@@ -72,11 +81,18 @@ int _tmain(int argc, _TCHAR* argv[])
     std::size_t concurrent_count = 2 > cpu_count ? 2 : cpu_count;
     std::size_t thread_count = 2;
 
-    std::wcout << L"Number of found CPUs             : " << cpu_count        << std::endl
-               << L"Number of concurrent work threads: " << concurrent_count << std::endl
-               << L"Total number of work threads     : " << thread_count     << std::endl;
+    std::cout << "Number of found CPUs             : " << cpu_count        << std::endl
+              << "Number of concurrent work threads: " << concurrent_count << std::endl
+              << "Total number of work threads     : " << thread_count     << std::endl;
 
-    std::wstring device_name(argv[1]);
+#if defined(WIN32)
+    std::wstring wide_device_name(argv[1]);
+    const wcodecvt_type& wcodecvt(std::use_facet<wcodecvt_type>(sys_locale));
+    std::string device_name(ma::codecvt_cast::out(wide_device_name, wcodecvt));
+#else
+    std::string device_name(argv[1]);
+#endif
+
     std::size_t read_buffer_size = std::max<std::size_t>(1024, session::min_read_buffer_size);
     std::size_t message_queue_size = std::max<std::size_t>(64, session::min_message_queue_size);
 
@@ -93,23 +109,28 @@ int _tmain(int argc, _TCHAR* argv[])
       catch (const boost::bad_lexical_cast& e)
       {
         std::cerr << L"Invalid parameter value/format: " << e.what() << std::endl;
-        print_usage(argc, argv);
+        print_usage();
         return EXIT_FAILURE;
       }
       catch (const std::exception& e)
       {    
         std::cerr << "Unexpected error during parameters parsing: " << e.what() << std::endl;
-        print_usage(argc, argv);
+        print_usage();
         return EXIT_FAILURE;
       } 
     } // if (argc > 2)
 
-    std::wcout << L"NMEA 0183 device serial port: " << device_name        << std::endl
+#if defined(WIN32)
+    std::wcout << L"NMEA 0183 device serial port: " << wide_device_name        << std::endl
                << L"Read buffer size (bytes)    : " << read_buffer_size   << std::endl
                << L"Read buffer size (messages) : " << message_queue_size << std::endl;  
+#else
+    std::cout << "NMEA 0183 device serial port: " << device_name        << std::endl
+              << "Read buffer size (bytes)    : " << read_buffer_size   << std::endl
+              << "Read buffer size (messages) : " << message_queue_size << std::endl;
+#endif // defined(WIN32)
 
-    const wcodecvt_type& wcodecvt(std::use_facet<wcodecvt_type>(sys_locale));
-    std::string ansi_device_name(ma::codecvt_cast::out(device_name, wcodecvt));
+    
     handler_allocator_type the_allocator;
     frame_buffer_ptr the_frame_buffer(boost::make_shared<frame_buffer_type>(message_queue_size));
             
@@ -120,11 +141,15 @@ int _tmain(int argc, _TCHAR* argv[])
 
     // Prepare the lower layer - open the serial port  
     boost::system::error_code error;
-    the_session->serial_port().open(ansi_device_name, error);
+    the_session->serial_port().open(device_name, error);
     if (error)
     {
+#if defined(WIN32)
       std::wstring error_message = ma::codecvt_cast::in(error.message(), wcodecvt);
       std::wcerr << L"Failed to open serial port: " << error_message << std::endl;
+#else      
+      std::cerr << "Failed to open serial port: " << error.message() << std::endl;
+#endif // defined(WIN32)      
       return EXIT_FAILURE;
     }
 
@@ -221,7 +246,7 @@ void print_frames(const frame_buffer_type& frames, std::size_t size)
   }    
 }
 
-void print_usage(int /*argc*/, _TCHAR* /*argv*/[])
+void print_usage()
 {  
-  std::wcout << L"Usage: nmea_client <com_port> [<read_buffer_size> [<message_queue_size>] ]" << std::endl;  
+  std::cout << "Usage: nmea_client <com_port> [<read_buffer_size> [<message_queue_size>] ]" << std::endl;  
 }

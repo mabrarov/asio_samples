@@ -52,14 +52,14 @@ unix {
 }
 
 win32 {
-  INCLUDEPATH += ../../../../boost_1_46_0 \
-                 ../../../include
+  INCLUDEPATH += ../../../../boost_1_46_0
 }
 
 unix {
-  INCLUDEPATH += /usr/local/include \
-                 ../../../include
+  INCLUDEPATH += /usr/local/include
 }
+
+INCLUDEPATH += ../../../include
 
 win32 {
   DEFINES   += WIN32_LEAN_AND_MEAN _UNICODE UNICODE

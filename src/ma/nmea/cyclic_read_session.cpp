@@ -86,7 +86,8 @@ namespace ma
     {      
       if (stopped == state_ || stop_in_progress == state_)
       {          
-        return session_error::invalid_state;
+        return boost::optional<boost::system::error_code>(
+            session_error::invalid_state);
       }
       // Start shutdown
       state_ = stop_in_progress;
@@ -111,7 +112,8 @@ namespace ma
     {
       if (started != state_ || read_handler_.has_target())
       {          
-        return session_error::invalid_state;
+        return boost::optional<boost::system::error_code>(
+            session_error::invalid_state);
       }
       if (!frame_buffer_.empty())
       {                
