@@ -13,6 +13,7 @@
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
 #include <boost/asio.hpp>
+#include <boost/utility/addressof.hpp>
 
 namespace ma_asio_handler_invoke_helpers
 {
@@ -20,7 +21,7 @@ namespace ma_asio_handler_invoke_helpers
   inline void invoke(const Function& function, Context& context)
   {
     using namespace boost::asio;
-    asio_handler_invoke(function, context);
+    asio_handler_invoke(function, boost::addressof(context));
   }  // invoke
 
 } // namespace ma_asio_handler_invoke_helpers
