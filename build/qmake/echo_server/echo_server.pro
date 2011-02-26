@@ -40,8 +40,22 @@ win32 {
   LIBS      += -L../../../../boost_1_46_0/lib/x86
 }
 
-INCLUDEPATH += ../../../../boost_1_46_0 \
-               ../../../include
+unix {
+  LIBS      += /usr/local/lib/libboost_thread.a \
+               /usr/local/lib/libboost_system.a \
+               /usr/local/lib/libboost_date_time.a \
+               /usr/local/lib/libboost_program_options.a
+}
+
+win32 {
+  INCLUDEPATH += ../../../../boost_1_46_0 \
+                 ../../../include
+}
+
+unix {
+  INCLUDEPATH += /usr/local/include \
+                 ../../../include
+}
 
 win32 {
   DEFINES   += WIN32_LEAN_AND_MEAN _UNICODE UNICODE
