@@ -52,11 +52,11 @@ namespace ma
     {
     private:
       typedef cyclic_read_session this_type;      
-      BOOST_STATIC_CONSTANT(std::size_t, max_message_size = 512);           
+      enum { max_message_size = 512 };
 
     public:
-      BOOST_STATIC_CONSTANT(std::size_t, min_read_buffer_size = max_message_size);
-      BOOST_STATIC_CONSTANT(std::size_t, min_message_queue_size = 1);
+      enum { min_read_buffer_size = max_message_size };
+      enum { min_message_queue_size = 1 };
 
       cyclic_read_session(boost::asio::io_service& io_service,
         const std::size_t read_buffer_size, const std::size_t frame_buffer_size,

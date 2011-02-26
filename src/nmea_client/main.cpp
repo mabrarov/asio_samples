@@ -121,7 +121,7 @@ int main(int argc, char* argv[])
     } // if (argc > 2)
 
 #if defined(WIN32)
-    std::wcout << L"NMEA 0183 device serial port: " << wide_device_name        << std::endl
+    std::wcout << L"NMEA 0183 device serial port: " << wide_device_name   << std::endl
                << L"Read buffer size (bytes)    : " << read_buffer_size   << std::endl
                << L"Read buffer size (messages) : " << message_queue_size << std::endl;  
 #else
