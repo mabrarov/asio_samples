@@ -196,7 +196,7 @@
     <ClInclude Include="..\..\..\include\ma\handler_storage_service.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="..\..\..\translation\qt_echo_server\qt_echo_server_ru.ts">
+    <CustomBuild Include="..\..\..\src\qt_echo_server\qt_echo_server_ru.ts">
       <FileType>Document</FileType>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\lrelease.exe" -nounfinished %(FullPath) -qm .\..\..\..\resources\qt_echo_server\translation\%(Filename).qm</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\lrelease.exe" -nounfinished %(FullPath) -qm .\..\..\..\resources\qt_echo_server\translation\%(Filename).qm</Command>
@@ -207,7 +207,7 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\..\..\..\resources\qt_echo_server\translation\%(Filename).qm</Outputs>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(FullPath)</AdditionalInputs>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\translation\qt_echo_server\qt_ru.ts">
+    <CustomBuild Include="..\..\..\src\qt_echo_server\qt_ru.ts">
       <FileType>Document</FileType>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\lrelease.exe" %(FullPath) -qm .\..\..\..\resources\qt_echo_server\translation\%(Filename).qm</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\lrelease.exe" %(FullPath) -qm .\..\..\..\resources\qt_echo_server\translation\%(Filename).qm</Command>
@@ -236,7 +236,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\resources\qt_echo_server\qt_echo_server.ico" />
-    <CustomBuild Include="..\..\..\ui\ma\echo\server\qt\mainform.ui">
+    <CustomBuild Include="..\..\..\src\ma\echo\server\qt\mainform.ui">
       <FileType>Document</FileType>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\uic.exe;%(AdditionalInputs)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Uic%27ing %(Identity)...</Message>

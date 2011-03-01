@@ -138,7 +138,7 @@
     <CustomBuild Include="..\..\..\include\ma\echo\server\qt\mainform.h">
       <Filter>Header Files\ma\echo\server\qt</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\ui\ma\echo\server\qt\mainform.ui">
+    <CustomBuild Include="..\..\..\src\ma\echo\server\qt\mainform.ui">
       <Filter>Form Files\ma\echo\server\qt</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\..\resources\qt_echo_server\qt_echo_server.qrc">
@@ -153,10 +153,10 @@
     <CustomBuild Include="..\..\..\include\ma\echo\server\qt\service.h">
       <Filter>Header Files\ma\echo\server\qt</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\translation\qt_echo_server\qt_echo_server_ru.ts">
+    <CustomBuild Include="..\..\..\src\qt_echo_server\qt_echo_server_ru.ts">
       <Filter>Translation Files</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\translation\qt_echo_server\qt_ru.ts">
+    <CustomBuild Include="..\..\..\src\qt_echo_server\qt_ru.ts">
       <Filter>Translation Files</Filter>
     </CustomBuild>
   </ItemGroup>
