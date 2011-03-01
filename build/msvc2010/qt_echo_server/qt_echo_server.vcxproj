@@ -196,16 +196,39 @@
     <ClInclude Include="..\..\..\include\ma\handler_storage_service.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <CustomBuild Include="..\..\..\translation\qt_echo_server\qt_echo_server_ru.ts">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\lrelease.exe" -nounfinished %(FullPath) -qm .\..\..\..\resources\qt_echo_server\translation\%(Filename).qm</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\lrelease.exe" -nounfinished %(FullPath) -qm .\..\..\..\resources\qt_echo_server\translation\%(Filename).qm</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Lrelease%27ing %(Identity)...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Lrelease%27ing %(Identity)...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\..\..\..\resources\qt_echo_server\translation\%(Filename).qm</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(FullPath)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\..\..\..\resources\qt_echo_server\translation\%(Filename).qm</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(FullPath)</AdditionalInputs>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\translation\qt_echo_server\qt_ru.ts">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\lrelease.exe" %(FullPath) -qm .\..\..\..\resources\qt_echo_server\translation\%(Filename).qm</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\lrelease.exe" %(FullPath) -qm .\..\..\..\resources\qt_echo_server\translation\%(Filename).qm</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Lrelease%27ing %(Identity)...</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Lrelease%27ing %(Identity)...</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\..\..\..\resources\qt_echo_server\translation\%(Filename).qm</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\..\..\..\resources\qt_echo_server\translation\%(Filename).qm</Outputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(FullPath)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(FullPath)</AdditionalInputs>
+    </CustomBuild>
     <CustomBuild Include="..\..\..\resources\qt_echo_server\qt_echo_server.qrc">
       <FileType>Document</FileType>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(FullPath);%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(FullPath);..\..\..\resources\qt_echo_server\translation\qt_echo_server_ru.qm;..\..\..\resources\qt_echo_server\translation\qt_ru.qm;%(AdditionalInputs)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Rcc%27ing %(Identity)...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\GeneratedFiles\qrc_%(Filename).cpp;%(Outputs)</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(QTDIR)\bin\rcc.exe" -name "%(Filename)" -no-compress "%(FullPath)" -o .\GeneratedFiles\qrc_%(Filename).cpp</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(FullPath);%(AdditionalInputs)</AdditionalInputs>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(FullPath);..\..\..\resources\qt_echo_server\translation\qt_echo_server_ru.qm;..\..\..\resources\qt_echo_server\translation\qt_ru.qm;%(AdditionalInputs)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Rcc%27ing %(Identity)...</Message>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\GeneratedFiles\qrc_%(Filename).cpp;%(Outputs)</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\rcc.exe" -name "%(Filename)" -no-compress "%(FullPath)" -o .\GeneratedFiles\qrc_%(Filename).cpp</Command>
+      <SubType>Designer</SubType>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
@@ -213,7 +236,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\resources\qt_echo_server\qt_echo_server.ico" />
-    <CustomBuild Include="..\..\..\src\ma\echo\server\qt\mainform.ui">
+    <CustomBuild Include="..\..\..\ui\ma\echo\server\qt\mainform.ui">
       <FileType>Document</FileType>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\uic.exe;%(AdditionalInputs)</AdditionalInputs>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Uic%27ing %(Identity)...</Message>

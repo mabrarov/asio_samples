@@ -13,13 +13,10 @@
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
 #include <cstddef>
-#include <stdexcept>
 #include <boost/scoped_ptr.hpp>
-#include <boost/throw_exception.hpp>
 #include <boost/system/error_code.hpp>
 #include <QtCore/QObject>
-#include <QtCore/QString>
-#include <ma/echo/server/qt/sessionmanagerwrapper_fwd.h>
+#include <ma/echo/server/session_manager_config_fwd.hpp>
 #include <ma/echo/server/qt/service_fwd.h>
 
 namespace ma
@@ -30,37 +27,15 @@ namespace ma
     {    
       namespace qt 
       {
-        struct ExecutionConfig
+        struct execution_config
         {
-          std::size_t sessionManagerThreadCount;
-          std::size_t sessionThreadCount;
-          long stopTimeout;
+          std::size_t session_manager_thread_count;
+          std::size_t session_thread_count;
+          long stop_sec_timeout;
 
-          ExecutionConfig(
-            std::size_t theSessionManagerThreadCount,
-            std::size_t theSessionThreadCount, 
-            long theStopTimeout)
-            : sessionManagerThreadCount(theSessionManagerThreadCount)
-            , sessionThreadCount(theSessionThreadCount)
-            , stopTimeout(theStopTimeout)
-          {
-            if (theSessionManagerThreadCount < 1)
-            {
-              boost::throw_exception(std::invalid_argument(
-                "theSessionManagerThreadCount must be >= 1"));
-            }
-            if (theSessionThreadCount < 1)
-            {
-              boost::throw_exception(std::invalid_argument(
-                "theSessionThreadCount must be >= 1"));
-            }
-            if (theStopTimeout < 0)
-            {
-              boost::throw_exception(std::invalid_argument(
-                "theStopTimeout must be >= 0"));
-            }
-          }
-        }; // struct ExecutionConfig        
+          execution_config(std::size_t the_session_manager_thread_count, 
+            std::size_t the_session_thread_count, long the_stop_sec_timeout);
+        }; // struct execution_config
 
         class Service : public QObject
         {
@@ -70,7 +45,7 @@ namespace ma
           explicit Service(QObject* parent = 0);
           ~Service();
 
-          void asyncStart();
+          void asyncStart(const execution_config&, const session_manager_config&);
           void asyncWait();
           void asyncStop();
 
@@ -80,12 +55,12 @@ namespace ma
           void stopComplete(const boost::system::error_code& error);
 
         private:
-          struct Impl;
+          class implementation;
 
           Q_DISABLE_COPY(Service);          
 
-          boost::scoped_ptr<Impl> impl_;    
-        }; // class EchoServer
+          boost::scoped_ptr<implementation> impl_;    
+        }; // class Service
 
       } // namespace qt
     } // namespace server

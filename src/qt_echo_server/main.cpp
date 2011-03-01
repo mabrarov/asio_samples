@@ -5,6 +5,7 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#include <memory>
 #include <cstddef>
 #include <stdexcept>
 #include <boost/ref.hpp>
@@ -14,6 +15,8 @@
 #include <boost/date_time/posix_time/ptime.hpp>
 #include <boost/thread.hpp>
 #include <boost/asio.hpp>
+#include <QtCore/QLocale>
+#include <QtCore/QTranslator>
 #include <QtGui/QApplication>
 #include <ma/echo/server/session_config.hpp>
 #include <ma/echo/server/session_manager_config.hpp>
@@ -57,9 +60,39 @@ server::session_config create_session_config();
 
 server::session_manager_config create_session_manager_config(const server::session_config&);
 
+namespace
+{
+  void installTranslation(QCoreApplication& application, const QString& path,
+    const QString& localeName, const QString& baseFilename)
+  {
+    std::auto_ptr<QTranslator> translator(new QTranslator(&application));
+    if (translator->load(baseFilename + localeName, path))
+    {
+      application.installTranslator(translator.get());
+      translator.release();
+    }
+  }
+
+  void setUpTranslation(QApplication& application)
+  {
+    QString translationPath(QString::fromUtf8(":/ma/echo/server/qt/translation/"));
+    QString sysLocaleName(QLocale::system().name());    
+    installTranslation(application, translationPath, sysLocaleName, QString::fromUtf8("qt_"));
+    installTranslation(application, translationPath, sysLocaleName, QString::fromUtf8("qt_echo_server_"));
+  }
+
+} // namespace
+
 int main(int argc, char* argv[])
 {
-  QApplication app(argc, argv); 
+  QApplication application(argc, argv);
+
+#pragma warning(push)
+#pragma warning(disable: 4127)
+  Q_INIT_RESOURCE(qt_echo_server);
+#pragma warning(pop)
+  
+  setUpTranslation(application);
 
   ma::echo::server::qt::registerCustomMetaTypes();
 
@@ -67,20 +100,18 @@ int main(int argc, char* argv[])
   execution_config the_execution_config = create_execution_config();
   server::session_config the_session_config = create_session_config();
   server::session_manager_config the_session_manager_config = 
-    create_session_manager_config(the_session_config);
-
-  // Before session_manager_io_service
-  boost::asio::io_service session_io_service(the_execution_config.session_thread_count);      
-  // ... for the right destruction order
-  boost::asio::io_service session_manager_io_service(the_execution_config.session_manager_thread_count);
-  
+    create_session_manager_config(the_session_config);  
+  boost::asio::io_service session_io_service(the_execution_config.session_thread_count);        
+  boost::asio::io_service session_manager_io_service(the_execution_config.session_manager_thread_count);  
   server::qt::SessionManagerWrapper sessionManager(
-    session_manager_io_service, session_io_service, 
-    the_session_manager_config);
+    session_manager_io_service, session_io_service, the_session_manager_config);
 
+  // Create and explicitly show main window
   server::qt::MainForm mainForm;
   mainForm.show();
-  return app.exec();
+
+  // Run application event loop
+  return application.exec();
 }
 
 void run_io_service(boost::asio::io_service& io_service, 

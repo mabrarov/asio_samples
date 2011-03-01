@@ -1,4 +1,6 @@
 <RCC>
-    <qresource prefix="MainForm">
-    </qresource>
+  <qresource prefix="ma/echo/server/qt">
+    <file>translation/qt_ru.qm</file>
+    <file>translation/qt_echo_server_ru.qm</file>
+  </qresource>
 </RCC>
