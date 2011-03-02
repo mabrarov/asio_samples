@@ -30,11 +30,10 @@ namespace ma
         struct execution_config
         {
           std::size_t session_manager_thread_count;
-          std::size_t session_thread_count;
-          long stop_sec_timeout;
+          std::size_t session_thread_count;          
 
           execution_config(std::size_t the_session_manager_thread_count, 
-            std::size_t the_session_thread_count, long the_stop_sec_timeout);
+            std::size_t the_session_thread_count);
         }; // struct execution_config
 
         class Service : public QObject
@@ -46,13 +45,22 @@ namespace ma
           ~Service();
 
           void asyncStart(const execution_config&, const session_manager_config&);
+
+        public slots:
           void asyncWait();
           void asyncStop();
+          void terminate();
 
         signals:
           void startComplete(const boost::system::error_code& error);
           void waitComplete(const boost::system::error_code& error);
           void stopComplete(const boost::system::error_code& error);
+          void workThreadException();        
+
+        private slots:
+          void sessionManagerStartComplete(const boost::system::error_code& error);
+          void sessionManagerWaitComplete(const boost::system::error_code& error);
+          void sessionManagerStopComplete(const boost::system::error_code& error);
 
         private:
           class implementation;

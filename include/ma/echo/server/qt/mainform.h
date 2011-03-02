@@ -13,7 +13,7 @@
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
 #include <QtGui/QDialog>
-#include <ma/echo/server/qt/sessionmanagerwrapper_fwd.h>
+#include <ma/echo/server/qt/service_fwd.h>
 #include <ui_mainform.h>
 
 namespace ma
@@ -29,13 +29,14 @@ namespace ma
           Q_OBJECT
 
         public:
-          MainForm(QWidget* parent = 0, Qt::WFlags flags = 0);
+          MainForm(Service& echoService, QWidget* parent = 0, Qt::WFlags flags = 0);
           ~MainForm();
 
         private:
           Q_DISABLE_COPY(MainForm) 
 
-          Ui::mainForm ui_;          
+          Ui::mainForm ui_;
+          Service& echoService_;
         }; // class MainForm
 
       } // namespace qt

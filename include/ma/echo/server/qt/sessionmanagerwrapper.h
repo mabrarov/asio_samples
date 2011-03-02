@@ -53,7 +53,9 @@ namespace ma
         private:          
           Q_DISABLE_COPY(SessionManagerWrapper)
                     
-          SessionManagerSignalPtr sessionManagerSignal_;
+          SessionManagerSignalPtr startSessionManagerSignal_;
+          SessionManagerSignalPtr waitSessionManagerSignal_;
+          SessionManagerSignalPtr stopSessionManagerSignal_;
           ma::echo::server::session_manager_ptr sessionManager_;
         }; // class SessionManagerWrapper
 

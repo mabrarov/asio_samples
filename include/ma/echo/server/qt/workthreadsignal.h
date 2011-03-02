@@ -5,17 +5,15 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef MA_ECHO_SERVER_QT_SESSIONMANAGERSIGNAL_H
-#define MA_ECHO_SERVER_QT_SESSIONMANAGERSIGNAL_H
+#ifndef MA_ECHO_SERVER_QT_WORKTHREADSIGNAL_H
+#define MA_ECHO_SERVER_QT_WORKTHREADSIGNAL_H
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1020)
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
-#include <boost/system/error_code.hpp>
 #include <boost/thread/recursive_mutex.hpp>
 #include <QtCore/QObject>
-#include <ma/echo/server/qt/sessionmanagersignal_fwd.h>
 
 namespace ma
 {    
@@ -25,7 +23,7 @@ namespace ma
     {    
       namespace qt 
       {        
-        class SessionManagerSignal : public QObject
+        class WorkThreadSignal : public QObject
         {
           Q_OBJECT
 
@@ -33,33 +31,34 @@ namespace ma
           typedef boost::recursive_mutex mutex_type;
 
         public:
-          SessionManagerSignal()
+          WorkThreadSignal()
+            : mutex_()
           {
           }
 
-          ~SessionManagerSignal()
+          ~WorkThreadSignal()
           {
           }
 
         signals:
-          void operationComplete(const boost::system::error_code& error);          
+          void workException();          
 
         public:
-          void emitOperationComplete(const boost::system::error_code& error)
-          {       
+          void emitWorkException()
+          {           
             mutex_type::scoped_lock lock(mutex_);
-            emit operationComplete(error);
+            emit workException();
           }          
 
         private:          
-          Q_DISABLE_COPY(SessionManagerSignal)
+          Q_DISABLE_COPY(WorkThreadSignal)
 
           mutex_type mutex_;
-        }; // class SessionManagerSignal
+        }; // class WorkThreadSignal
 
       } // namespace qt
     } // namespace server
   } // namespace echo
 } // namespace ma
 
-#endif // MA_ECHO_SERVER_QT_SESSIONMANAGERSIGNAL_H
+#endif // MA_ECHO_SERVER_QT_WORKTHREADSIGNAL_H

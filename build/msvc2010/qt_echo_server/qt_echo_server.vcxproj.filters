@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
@@ -133,6 +133,12 @@
     <ClCompile Include="..\..\..\src\ma\echo\server\qt\service.cpp">
       <Filter>Source Files\ma\echo\server\qt</Filter>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_workthreadsignal.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_workthreadsignal.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\..\include\ma\echo\server\qt\mainform.h">
@@ -158,6 +164,9 @@
     </CustomBuild>
     <CustomBuild Include="..\..\..\src\qt_echo_server\qt_ru.ts">
       <Filter>Translation Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\include\ma\echo\server\qt\workthreadsignal.h">
+      <Filter>Header Files\ma\echo\server\qt</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>

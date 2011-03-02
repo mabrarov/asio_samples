@@ -9,7 +9,7 @@ TRANSLATOR ma::echo::server::qt::MainForm
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include <ma/echo/server/qt/sessionmanagerwrapper.h>
+#include <ma/echo/server/qt/service.h>
 #include <ma/echo/server/qt/mainform.h>
 
 namespace ma
@@ -20,8 +20,9 @@ namespace server
 {    
 namespace qt 
 {
-  MainForm::MainForm(QWidget* parent, Qt::WFlags flags)
+  MainForm::MainForm(Service& echoService, QWidget* parent, Qt::WFlags flags)
     : QDialog(parent, flags | Qt::WindowMinimizeButtonHint)
+    , echoService_(echoService)
   {
     ui_.setupUi(this);    
     //todo    
