@@ -12,10 +12,10 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
+#include <boost/shared_ptr.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/thread/recursive_mutex.hpp>
 #include <QtCore/QObject>
-#include <ma/echo/server/qt/sessionmanagersignal_fwd.h>
 
 namespace ma
 {    
@@ -24,7 +24,10 @@ namespace ma
     namespace server
     {    
       namespace qt 
-      {        
+      {
+        class SessionManagerSignal;
+        typedef boost::shared_ptr<SessionManagerSignal> SessionManagerSignalPtr;
+
         class SessionManagerSignal : public QObject
         {
           Q_OBJECT

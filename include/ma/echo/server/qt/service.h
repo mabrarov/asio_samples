@@ -47,29 +47,30 @@ namespace ma
 
           void asyncStart(const execution_config&, const session_manager_config&);
           void asyncStop();
-          void terminate();
+          void terminateWork();
 
         signals:
-          void startComplete(const boost::system::error_code& error);
-          void workComplete(const boost::system::error_code& error);
+          void startComplete(const boost::system::error_code& error);          
           void stopComplete(const boost::system::error_code& error);
-          void workThreadException();
+          void workComplete(const boost::system::error_code& error);
+          void workException();
 
         private slots:
           void sessionManagerStartComplete(const boost::system::error_code& error);
           void sessionManagerWaitComplete(const boost::system::error_code& error);
           void sessionManagerStopComplete(const boost::system::error_code& error);
-          void workThreadExceptionHappen();
+          void workThreadException();
 
         private:
-          class Worker;          
-
           Q_DISABLE_COPY(Service);          
 
-          bool isSessionManagerSignalActual(QObject* sender);
-          bool isWorkThreadSignalActual(QObject* sender);
+          class Work;          
+          bool sessionManagerStartSignalActual(QObject* sender) const;
+          bool sessionManagerWaitSignalActual(QObject* sender) const;
+          bool sessionManagerStopSignalActual(QObject* sender) const;
+          bool workThreadSignalActual(QObject* sender) const;
 
-          boost::scoped_ptr<Worker> worker_;
+          boost::scoped_ptr<Work> work_;
         }; // class Service
 
       } // namespace qt
