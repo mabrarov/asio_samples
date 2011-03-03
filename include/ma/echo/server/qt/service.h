@@ -50,10 +50,10 @@ namespace ma
           void terminateWork();
 
         signals:
-          void startComplete(const boost::system::error_code& error);          
-          void stopComplete(const boost::system::error_code& error);
-          void workComplete(const boost::system::error_code& error);
           void workException();
+          void startComplete(const boost::system::error_code& error);
+          void stopComplete(const boost::system::error_code& error);
+          void workComplete(const boost::system::error_code& error);          
 
         private slots:
           void sessionManagerStartComplete(const boost::system::error_code& error);
@@ -62,7 +62,7 @@ namespace ma
           void workThreadException();
 
         private:
-          Q_DISABLE_COPY(Service);          
+          Q_DISABLE_COPY(Service)          
 
           class Work;          
           bool sessionManagerStartSignalActual(QObject* sender) const;

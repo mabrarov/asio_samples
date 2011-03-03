@@ -12,6 +12,7 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
+#include <boost/system/error_code.hpp>
 #include <QtGui/QDialog>
 #include <ma/echo/server/qt/service_fwd.h>
 #include <ui_mainform.h>
@@ -32,8 +33,20 @@ namespace ma
           MainForm(Service& echoService, QWidget* parent = 0, Qt::WFlags flags = 0);
           ~MainForm();
 
+        private slots:      
+           void on_startButton_clicked();
+           void on_stopButton_clicked();
+           void on_terminateButton_clicked();
+
+           void on_echoService_workException();
+           void on_echoService_startComplete(const boost::system::error_code&);
+           void on_echoService_stopComplete(const boost::system::error_code&);
+           void on_echoService_workComplete(const boost::system::error_code&);           
+
         private:
           Q_DISABLE_COPY(MainForm) 
+
+          void writeLog(const QString&);
 
           Ui::mainForm ui_;
           Service& echoService_;

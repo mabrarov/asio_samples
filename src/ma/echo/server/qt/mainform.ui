@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>237</height>
+    <height>400</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,7 +16,7 @@
   <property name="sizeGripEnabled">
    <bool>true</bool>
   </property>
-  <layout class="QVBoxLayout" name="mainLayout">
+  <layout class="QVBoxLayout" name="mainLayout" stretch="0,0,0,1,0">
    <item>
     <widget class="QLabel" name="configurationLabel">
      <property name="text">
@@ -289,7 +289,27 @@
     </widget>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="controlButtonLayout" stretch="0,0,0,0">
+    <widget class="QLabel" name="logLabel">
+     <property name="text">
+      <string>Log</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPlainTextEdit" name="logTextEdit">
+     <property name="tabChangesFocus">
+      <bool>true</bool>
+     </property>
+     <property name="lineWrapMode">
+      <enum>QPlainTextEdit::NoWrap</enum>
+     </property>
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="controlButtonLayout" stretch="0,0,0,0,0">
      <item>
       <spacer name="controlButtonSpacer">
        <property name="orientation">
@@ -321,6 +341,13 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="terminateButton">
+       <property name="text">
+        <string>&amp;Terminate</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="exitButton">
        <property name="text">
         <string>E&amp;xit</string>
@@ -348,8 +375,10 @@
   <tabstop>sockSendBufferSizeCheckBox</tabstop>
   <tabstop>sockSendBufferSizeSpinBox</tabstop>
   <tabstop>tcpNoDelayCheckBox</tabstop>
+  <tabstop>logTextEdit</tabstop>
   <tabstop>startButton</tabstop>
   <tabstop>stopButton</tabstop>
+  <tabstop>terminateButton</tabstop>
   <tabstop>exitButton</tabstop>
  </tabstops>
  <resources>

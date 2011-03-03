@@ -287,7 +287,7 @@ namespace
       emit stopComplete(boost::system::error_code(server_error::invalid_state));
       return;
     }    
-    work_->sessionManager()->async_wait(boost::bind(
+    work_->sessionManager()->async_stop(boost::bind(
       &SessionManagerSignal::emitOperationComplete, work_->stopSessionManagerSignal(), _1));
   }
 
