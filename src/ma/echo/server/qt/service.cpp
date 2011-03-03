@@ -34,7 +34,8 @@ namespace server
 {    
 namespace qt 
 {    
-  execution_config::execution_config(std::size_t the_session_manager_thread_count, 
+  execution_config::execution_config(
+    std::size_t the_session_manager_thread_count, 
     std::size_t the_session_thread_count)
     : session_manager_thread_count(the_session_manager_thread_count)
     , session_thread_count(the_session_thread_count)    
@@ -79,8 +80,7 @@ namespace
     boost::asio::io_service session_manager_io_service_;    
   }; // class io_service_chain
 
-  class execution_system
-    : public boost::base_from_member<io_service_chain>
+  class execution_system : public boost::base_from_member<io_service_chain>
   {   
   private:
     typedef boost::base_from_member<io_service_chain> io_service_chain_base;    
@@ -133,16 +133,10 @@ namespace
     {
       return io_service_chain_base::member.session_io_service();
     }
-
-    boost::thread_group& threads()
-    {
-      return threads_;
-    }
-
+    
   private:
     template <typename Handler> 
-    static void work_thread_func(boost::asio::io_service& io_service, 
-      boost::tuple<Handler> handler)
+    static void work_thread_func(boost::asio::io_service& io_service, boost::tuple<Handler> handler)
     {
       try
       {
@@ -162,48 +156,50 @@ namespace
 
 } // anonymous namespace
 
-  class Service::implementation 
-    : public boost::base_from_member<execution_system>
+  class Service::Worker : public boost::base_from_member<execution_system>
   {   
   private:
     typedef boost::base_from_member<execution_system> execution_system_base;
-    typedef implementation this_type;
+    typedef Worker this_type;
 
   public:
-    implementation(QObject& service,
-      const execution_config& the_execution_config, 
+    Worker(const execution_config& the_execution_config, 
       const session_manager_config& the_session_manager_config)
       : execution_system_base(the_execution_config)
-      , session_manager_(execution_system_base::member.session_manager_io_service(),
+      , sessionManager_(execution_system_base::member.session_manager_io_service(),
           execution_system_base::member.session_io_service(), the_session_manager_config)
-      , work_thread_signal_(boost::make_shared<WorkThreadSignal>())
+      , workThreadSignal_(boost::make_shared<WorkThreadSignal>())
     {
-      checkConnect(connect(
-        &session_manager_, SIGNAL(startComplete(const boost::system::error_code&)), 
-        &service, SLOT(sessionManagerStartComplete(const boost::system::error_code&))));
-      checkConnect(connect(
-        &session_manager_, SIGNAL(waitComplete(const boost::system::error_code&)), 
-        &service, SLOT(sessionManagerWaitComplete(const boost::system::error_code&))));
-      checkConnect(connect(
-        &session_manager_, SIGNAL(stopComplete(const boost::system::error_code&)), 
-        &service, SLOT(sessionManagerStopComplete(const boost::system::error_code&))));
-
-      execution_system_base::member.create_work_threads(
-        boost::bind(&WorkThreadSignal::emitWorkException, work_thread_signal_));
     }
 
-    ~implementation()
+    void createWorkThreads()
+    {
+      execution_system_base::member.create_work_threads(
+        boost::bind(&WorkThreadSignal::emitWorkException, workThreadSignal_));
+    }
+
+    SessionManagerWrapper& sessionManager()
+    {
+      return sessionManager_;
+    }
+
+    WorkThreadSignalPtr workThreadSignal() const
+    {
+      return workThreadSignal_;
+    }
+
+    ~Worker()
     {      
     }
 
   private: 
-    SessionManagerWrapper session_manager_;
-    boost::shared_ptr<WorkThreadSignal> work_thread_signal_;
-  }; // class Service::implementation
+    SessionManagerWrapper sessionManager_;
+    WorkThreadSignalPtr workThreadSignal_;
+  }; // class Service::Worker
 
   Service::Service(QObject* parent)
     : QObject(parent)
-    , impl_()
+    , worker_()
   {
   }
 
@@ -214,75 +210,116 @@ namespace
   void Service::asyncStart(const execution_config& the_execution_config, 
     const session_manager_config& the_session_manager_config)
   {
-    boost::system::error_code error;
-    if (impl_.get())
-    {
-      error = ma::echo::server::server_error::invalid_state;
-      emit startComplete(error);
-      return;
-    }
-    impl_.reset(new implementation(*this, the_execution_config, the_session_manager_config));
-    //todo: continue implementation of method
-    //temporary
-    {
-      error = ma::echo::server::server_error::invalid_state;
-      emit startComplete(error);
-    }    
+    worker_.reset(new Worker(the_execution_config, the_session_manager_config));
+
+    SessionManagerWrapper& sessionManager = worker_->sessionManager();
+    checkConnect(QObject::connect(&sessionManager, 
+      SIGNAL(startComplete(const boost::system::error_code&)), 
+      SLOT(sessionManagerStartComplete(const boost::system::error_code&))));
+    checkConnect(QObject::connect(&sessionManager, 
+      SIGNAL(waitComplete(const boost::system::error_code&)), 
+      SLOT(sessionManagerWaitComplete(const boost::system::error_code&))));
+    checkConnect(QObject::connect(&sessionManager, 
+      SIGNAL(stopComplete(const boost::system::error_code&)), 
+      SLOT(sessionManagerStopComplete(const boost::system::error_code&))));
+
+    checkConnect(QObject::connect(worker_->workThreadSignal().get(), 
+      SIGNAL(workException()), SLOT(workThreadExceptionHappen()), 
+      Qt::QueuedConnection));
+
+    worker_->createWorkThreads();
+    sessionManager.asyncStart();
+
+    //todo: update state
   }
 
-  void Service::asyncWait()
+  void Service::sessionManagerStartComplete(const boost::system::error_code& error)
   {
-    boost::system::error_code error;
-    if (!impl_.get())
+    if (!isSessionManagerSignalActual(QObject::sender()))
     {
-      error = ma::echo::server::server_error::invalid_state;
-      emit waitComplete(error);
       return;
     }
-    //todo: continue implementation of method
-    //temporary
+    //todo: check the state
+    if (error)
     {
-      error = ma::echo::server::server_error::invalid_state;
-      emit waitComplete(error);
+      worker_.reset();
+      //todo: update state
+    }
+    else
+    {
+      worker_->sessionManager().asyncWait();
+      //todo: update state      
     }    
+    emit startComplete(error);
   }
   
   void Service::asyncStop()
   {
     boost::system::error_code error;
-    if (!impl_.get())
+    if (!worker_.get())
     {
       error = ma::echo::server::server_error::invalid_state;
       emit stopComplete(error);
       return;
     }
-    //todo: continue implementation of method
-    //temporary
+    //todo: check the state
+    worker_->sessionManager().asyncStop();
+    //todo: update state
+  }
+
+  void Service::sessionManagerStopComplete(const boost::system::error_code& error)
+  {
+    if (!isSessionManagerSignalActual(QObject::sender()))
     {
-      error = ma::echo::server::server_error::invalid_state;
-      emit stopComplete(error);
-    }    
+      return;
+    }
+    //todo: update state
+    emit stopComplete(error);
   }
 
   void Service::terminate()
   {
-    impl_.reset();
+    worker_.reset();
+    //todo: update the state
+  }  
+
+  void Service::sessionManagerWaitComplete(const boost::system::error_code& error)
+  {
+    if (!isSessionManagerSignalActual(QObject::sender()))
+    {
+      return;
+    }    
+    emit workComplete(error);
   }
 
-  void Service::sessionManagerStartComplete(const boost::system::error_code& /*error*/)
+  
+
+  void Service::workThreadExceptionHappen()
   {
-    //todo
+    if (!isWorkThreadSignalActual(QObject::sender()))
+    {
+      return;
+    }
+    emit workThreadException();
   }
 
-
-  void Service::sessionManagerWaitComplete(const boost::system::error_code& /*error*/)
+  bool Service::isSessionManagerSignalActual(QObject* sender)
   {
-    //todo
+    if (!worker_.get())
+    {
+      return false;
+    }
+    SessionManagerWrapper& sessionManager = worker_->sessionManager();
+    return static_cast<QObject*>(&sessionManager) == sender;
   }
 
-  void Service::sessionManagerStopComplete(const boost::system::error_code& /*error*/)
+  bool Service::isWorkThreadSignalActual(QObject* sender)
   {
-    //todo
+    if (!worker_.get())
+    {
+      return false;
+    }
+    return static_cast<QObject*>(worker_->workThreadSignal().get()) == sender;
   }
 
 } // namespace qt

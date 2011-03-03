@@ -12,6 +12,7 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
+#include <boost/shared_ptr.hpp>
 #include <boost/thread/recursive_mutex.hpp>
 #include <QtCore/QObject>
 
@@ -23,6 +24,9 @@ namespace ma
     {    
       namespace qt 
       {        
+        class WorkThreadSignal;
+        typedef boost::shared_ptr<WorkThreadSignal> WorkThreadSignalPtr;
+
         class WorkThreadSignal : public QObject
         {
           Q_OBJECT

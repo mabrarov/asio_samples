@@ -38,15 +38,15 @@ namespace qt
     , sessionManager_(boost::make_shared<ma::echo::server::session_manager>(
         boost::ref(io_service), boost::ref(session_io_service), config))
   {
-    checkConnect(connect(startSessionManagerSignal_.get(), 
+    checkConnect(QObject::connect(startSessionManagerSignal_.get(), 
       SIGNAL(operationComplete(const boost::system::error_code&)), 
       SIGNAL(startComplete(const boost::system::error_code&)),
       Qt::QueuedConnection));
-    checkConnect(connect(waitSessionManagerSignal_.get(), 
+    checkConnect(QObject::connect(waitSessionManagerSignal_.get(), 
       SIGNAL(operationComplete(const boost::system::error_code&)), 
       SIGNAL(waitComplete(const boost::system::error_code&)),
       Qt::QueuedConnection));
-    checkConnect(connect(stopSessionManagerSignal_.get(), 
+    checkConnect(QObject::connect(stopSessionManagerSignal_.get(), 
       SIGNAL(operationComplete(const boost::system::error_code&)), 
       SIGNAL(stopComplete(const boost::system::error_code&)),
       Qt::QueuedConnection));
