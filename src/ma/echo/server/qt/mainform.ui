@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
+    <width>425</width>
     <height>400</height>
    </rect>
   </property>
@@ -309,7 +309,14 @@
     </widget>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="controlButtonLayout" stretch="0,0,0,0,0">
+    <layout class="QHBoxLayout" name="controlButtonLayout" stretch="0,0,0,0,0,0">
+     <item>
+      <widget class="QPushButton" name="pushButton">
+       <property name="text">
+        <string>&amp;Clear log</string>
+       </property>
+      </widget>
+     </item>
      <item>
       <spacer name="controlButtonSpacer">
        <property name="orientation">
@@ -376,6 +383,7 @@
   <tabstop>sockSendBufferSizeSpinBox</tabstop>
   <tabstop>tcpNoDelayCheckBox</tabstop>
   <tabstop>logTextEdit</tabstop>
+  <tabstop>pushButton</tabstop>
   <tabstop>startButton</tabstop>
   <tabstop>stopButton</tabstop>
   <tabstop>terminateButton</tabstop>
@@ -392,8 +400,8 @@
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>331</x>
-     <y>226</y>
+     <x>414</x>
+     <y>389</y>
     </hint>
     <hint type="destinationlabel">
      <x>341</x>
@@ -408,12 +416,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>160</x>
-     <y>94</y>
+     <x>19</x>
+     <y>63</y>
     </hint>
     <hint type="destinationlabel">
-     <x>226</x>
-     <y>94</y>
+     <x>101</x>
+     <y>63</y>
     </hint>
    </hints>
   </connection>
@@ -424,12 +432,28 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>186</x>
-     <y>121</y>
+     <x>19</x>
+     <y>68</y>
     </hint>
     <hint type="destinationlabel">
-     <x>233</x>
-     <y>118</y>
+     <x>101</x>
+     <y>68</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton</sender>
+   <signal>clicked()</signal>
+   <receiver>logTextEdit</receiver>
+   <slot>clear()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>50</x>
+     <y>385</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>57</x>
+     <y>321</y>
     </hint>
    </hints>
   </connection>

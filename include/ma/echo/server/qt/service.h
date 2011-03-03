@@ -43,9 +43,11 @@ namespace ma
 
         public:
           explicit Service(QObject* parent = 0);
-          ~Service();
+          ~Service();          
 
           void asyncStart(const execution_config&, const session_manager_config&);
+
+        public slots:
           void asyncStop();
           void terminateWork();
 
@@ -56,20 +58,16 @@ namespace ma
           void workComplete(const boost::system::error_code& error);          
 
         private slots:
-          void sessionManagerStartComplete(const boost::system::error_code& error);
-          void sessionManagerWaitComplete(const boost::system::error_code& error);
-          void sessionManagerStopComplete(const boost::system::error_code& error);
-          void workThreadException();
+          void onWorkException();
+          void onStartComplete(const boost::system::error_code& error);
+          void onWaitComplete(const boost::system::error_code& error);
+          void onStopComplete(const boost::system::error_code& error);          
 
         private:
-          Q_DISABLE_COPY(Service)          
+          Q_DISABLE_COPY(Service)
 
-          class Work;          
-          bool sessionManagerStartSignalActual(QObject* sender) const;
-          bool sessionManagerWaitSignalActual(QObject* sender) const;
-          bool sessionManagerStopSignalActual(QObject* sender) const;
-          bool workThreadSignalActual(QObject* sender) const;
-
+          class Work;
+          bool isActualSignalSender(QObject* sender) const;
           boost::scoped_ptr<Work> work_;
         }; // class Service
 
