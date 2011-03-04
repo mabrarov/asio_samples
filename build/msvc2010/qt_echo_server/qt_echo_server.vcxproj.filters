@@ -124,6 +124,12 @@
     <ClCompile Include="GeneratedFiles\Release\moc_servicesignal.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_forwardservicesignal.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_forwardservicesignal.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\..\include\ma\echo\server\qt\mainform.h">
@@ -145,6 +151,9 @@
       <Filter>Translation Files</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\..\include\ma\echo\server\qt\servicesignal.h">
+      <Filter>Header Files\ma\echo\server\qt</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\..\include\ma\echo\server\qt\forwardservicesignal.h">
       <Filter>Header Files\ma\echo\server\qt</Filter>
     </CustomBuild>
   </ItemGroup>

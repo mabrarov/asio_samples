@@ -17,6 +17,7 @@
 #include <boost/system/error_code.hpp>
 #include <QtCore/QObject>
 #include <ma/echo/server/session_manager_config_fwd.hpp>
+#include <ma/echo/server/qt/forwardservicesignal.h>
 #include <ma/echo/server/qt/service_fwd.h>
 
 namespace ma
@@ -55,7 +56,7 @@ namespace ma
           void workException();
           void startComplete(const boost::system::error_code& error);
           void stopComplete(const boost::system::error_code& error);
-          void workComplete(const boost::system::error_code& error);          
+          void workComplete(const boost::system::error_code& error);
 
         private slots:
           void onWorkException();
@@ -69,6 +70,7 @@ namespace ma
           class Work;
           bool isActualSignalSender(QObject* sender) const;
           boost::scoped_ptr<Work> work_;       
+          ForwardServiceSignal forwardSignal_;
         }; // class Service
 
       } // namespace qt

@@ -202,7 +202,16 @@ namespace
   Service::Service(QObject* parent)
     : QObject(parent)
     , work_()
+    , forwardSignal_()
   {
+    checkConnect(QObject::connect(&forwardSignal_, 
+      SIGNAL(startComplete(const boost::system::error_code&)), 
+      SIGNAL(startComplete(const boost::system::error_code&)), 
+      Qt::QueuedConnection));
+    checkConnect(QObject::connect(&forwardSignal_, 
+      SIGNAL(stopComplete(const boost::system::error_code&)), 
+      SIGNAL(stopComplete(const boost::system::error_code&)), 
+      Qt::QueuedConnection));
   }
 
   Service::~Service()
@@ -214,7 +223,7 @@ namespace
   {
     if (work_.get())
     {      
-      emit startComplete(boost::system::error_code(server_error::invalid_state));
+      forwardSignal_.emitStartComplete(server_error::invalid_state);
       return;
     }
     work_.reset(new Work(the_execution_config, the_session_manager_config));
@@ -263,7 +272,7 @@ namespace
   {    
     if (!work_.get())
     {
-      emit stopComplete(boost::system::error_code(server_error::invalid_state));
+      forwardSignal_.emitStopComplete(server_error::invalid_state);
       return;
     }
     work_->sessionManager()->async_stop(

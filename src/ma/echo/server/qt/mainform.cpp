@@ -80,15 +80,15 @@ namespace
     //todo: read and validate configuration
     execution_config executionConfig = createExecutionConfig();    
     session_manager_config sessionManagerConfig = createSessionManagerConfig(createSessionConfig());
-
-    writeLog(QString::fromUtf8("Starting echo service..."));
+    
     echoService_.asyncStart(executionConfig, sessionManagerConfig);
+    writeLog(QString::fromUtf8("Starting echo service..."));
   }
 
   void MainForm::on_stopButton_clicked()
-  {    
-    writeLog(QString::fromUtf8("Stopping echo service..."));
+  {        
     echoService_.asyncStop();
+    writeLog(QString::fromUtf8("Stopping echo service..."));
   }
 
   void MainForm::on_terminateButton_clicked()
@@ -127,22 +127,24 @@ namespace
     bool stopCause = server_error::operation_aborted == error;    
     if (!stopCause && error)
     {
-      writeLog(QString::fromUtf8("Echo service work completed with error. Stopping echo service"));
+      writeLog(QString::fromUtf8("Echo service work completed with error"));
     }
     else 
     {
-      writeLog(QString::fromUtf8("Echo service work completed successfully. Stopping echo service"));
+      writeLog(QString::fromUtf8("Echo service work completed successfully"));
     }    
     if (!stopCause)
     {
-      echoService_.asyncStop();    
+      echoService_.asyncStop(); 
+      writeLog(QString::fromUtf8("Stopping echo service..."));
     }
   }
 
   void MainForm::on_echoService_workException()
   {
     writeLog(QString::fromUtf8("Unexpected error during echo service work. Terminating echo service..."));
-    echoService_.terminateWork();    
+    echoService_.terminateWork(); 
+    writeLog(QString::fromUtf8("Echo service terminated"));
   }
 
   void MainForm::writeLog(const QString& message)
