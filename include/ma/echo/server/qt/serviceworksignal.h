@@ -5,8 +5,8 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef MA_ECHO_SERVER_QT_SERVICESIGNAL_H
-#define MA_ECHO_SERVER_QT_SERVICESIGNAL_H
+#ifndef MA_ECHO_SERVER_QT_SERVICEWORKSIGNAL_H
+#define MA_ECHO_SERVER_QT_SERVICEWORKSIGNAL_H
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1020)
 #pragma once
@@ -25,10 +25,10 @@ namespace ma
     {    
       namespace qt 
       {
-        class ServiceSignal;
-        typedef boost::shared_ptr<ServiceSignal> ServiceSignalPtr;
+        class ServiceWorkSignal;
+        typedef boost::shared_ptr<ServiceWorkSignal> ServiceWorkSignalPtr;
 
-        class ServiceSignal : public QObject
+        class ServiceWorkSignal : public QObject
         {
           Q_OBJECT
 
@@ -36,54 +36,54 @@ namespace ma
           typedef boost::recursive_mutex mutex_type;
 
         public:
-          ServiceSignal()
+          ServiceWorkSignal()
           {
           }
 
-          ~ServiceSignal()
+          ~ServiceWorkSignal()
           {
           }
 
         signals:
-          void workException();
-          void startComplete(const boost::system::error_code& error);
-          void waitComplete(const boost::system::error_code& error);
-          void stopComplete(const boost::system::error_code& error);
+          void workThreadExceptionHappened();
+          void sessionManagerStartCompleted(const boost::system::error_code&);
+          void sessionManagerWaitCompleted(const boost::system::error_code&);
+          void sessionManagerStopCompleted(const boost::system::error_code&);
 
         public:
-          void emitWorkException()
+          void emitWorkThreadExceptionHappened()
           {           
             mutex_type::scoped_lock lock(mutex_);
-            emit workException();
+            emit workThreadExceptionHappened();
           }
 
-          void emitStartComplete(const boost::system::error_code& error)
+          void emitSessionManagerStartCompleted(const boost::system::error_code& error)
           {       
             mutex_type::scoped_lock lock(mutex_);
-            emit startComplete(error);
+            emit sessionManagerStartCompleted(error);
           }
 
-          void emitWaitComplete(const boost::system::error_code& error)
+          void emitSessionManagerWaitCompleted(const boost::system::error_code& error)
           {       
             mutex_type::scoped_lock lock(mutex_);
-            emit waitComplete(error);
+            emit sessionManagerWaitCompleted(error);
           }
 
-          void emitStopComplete(const boost::system::error_code& error)
+          void emitSessionManagerStopCompleted(const boost::system::error_code& error)
           {       
             mutex_type::scoped_lock lock(mutex_);
-            emit stopComplete(error);
+            emit sessionManagerStopCompleted(error);
           }
 
         private:          
-          Q_DISABLE_COPY(ServiceSignal)
+          Q_DISABLE_COPY(ServiceWorkSignal)
 
           mutex_type mutex_;
-        }; // class ServiceSignal
+        }; // class ServiceWorkSignal
 
       } // namespace qt
     } // namespace server
   } // namespace echo
 } // namespace ma
 
-#endif // MA_ECHO_SERVER_QT_SERVICESIGNAL_H
+#endif // MA_ECHO_SERVER_QT_SERVICEWORKSIGNAL_H

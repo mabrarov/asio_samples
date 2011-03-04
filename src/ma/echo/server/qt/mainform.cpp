@@ -57,16 +57,17 @@ namespace
     ui_.setupUi(this);
 
     checkConnect(QObject::connect(&echoService, 
-      SIGNAL(workException()), SLOT(on_echoService_workException())));
+      SIGNAL(exceptionHappened()), 
+      SLOT(on_echoService_exceptionHappened())));
     checkConnect(QObject::connect(&echoService, 
-      SIGNAL(startComplete(const boost::system::error_code&)), 
-      SLOT(on_echoService_startComplete(const boost::system::error_code&))));
+      SIGNAL(startCompleted(const boost::system::error_code&)), 
+      SLOT(on_echoService_startCompleted(const boost::system::error_code&))));
     checkConnect(QObject::connect(&echoService, 
-      SIGNAL(stopComplete(const boost::system::error_code&)), 
-      SLOT(on_echoService_stopComplete(const boost::system::error_code&))));
+      SIGNAL(stopCompleted(const boost::system::error_code&)), 
+      SLOT(on_echoService_stopCompleted(const boost::system::error_code&))));
     checkConnect(QObject::connect(&echoService, 
-      SIGNAL(workComplete(const boost::system::error_code&)), 
-      SLOT(on_echoService_workComplete(const boost::system::error_code&))));
+      SIGNAL(workCompleted(const boost::system::error_code&)), 
+      SLOT(on_echoService_workCompleted(const boost::system::error_code&))));
     //todo: setup initial internal states    
     //todo: setup initial widgets' states
   }
@@ -94,11 +95,11 @@ namespace
   void MainForm::on_terminateButton_clicked()
   {
     writeLog(QString::fromUtf8("Terminating echo service..."));    
-    echoService_.terminateWork();
+    echoService_.terminate();
     writeLog(QString::fromUtf8("Echo service terminated"));
   }
 
-  void MainForm::on_echoService_startComplete(const boost::system::error_code& error)
+  void MainForm::on_echoService_startCompleted(const boost::system::error_code& error)
   {    
     if (error)
     {
@@ -110,7 +111,7 @@ namespace
     }        
   }
           
-  void MainForm::on_echoService_stopComplete(const boost::system::error_code& error)
+  void MainForm::on_echoService_stopCompleted(const boost::system::error_code& error)
   {    
     if (error)
     {
@@ -122,7 +123,7 @@ namespace
     }    
   }
 
-  void MainForm::on_echoService_workComplete(const boost::system::error_code& error)
+  void MainForm::on_echoService_workCompleted(const boost::system::error_code& error)
   {
     bool stopCause = server_error::operation_aborted == error;    
     if (!stopCause && error)
@@ -140,10 +141,10 @@ namespace
     }
   }
 
-  void MainForm::on_echoService_workException()
+  void MainForm::on_echoService_exceptionHappened()
   {
     writeLog(QString::fromUtf8("Unexpected error during echo service work. Terminating echo service..."));
-    echoService_.terminateWork(); 
+    echoService_.terminate(); 
     writeLog(QString::fromUtf8("Echo service terminated"));
   }
 

@@ -12,10 +12,10 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
-#include <boost/shared_ptr.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/thread/recursive_mutex.hpp>
 #include <QtCore/QObject>
+#include <ma/echo/server/qt/forwardservicesignal_fwd.h>
 
 namespace ma
 {    
@@ -33,11 +33,12 @@ namespace ma
           typedef boost::recursive_mutex mutex_type;
 
         signals:          
-          void startComplete(const boost::system::error_code&);
-          void stopComplete(const boost::system::error_code&);
+          void startCompleted(const boost::system::error_code&);
+          void stopCompleted(const boost::system::error_code&);
 
         public:
-          ForwardServiceSignal()
+          ForwardServiceSignal(QObject* parent = 0)
+            : QObject(parent)
           {
           }
 
@@ -45,14 +46,14 @@ namespace ma
           {
           }
 
-          void emitStartComplete(const boost::system::error_code& error)
+          void emitStartCompleted(const boost::system::error_code& error)
           {
-            emit startComplete(error);
+            emit startCompleted(error);
           }
 
-          void emitStopComplete(const boost::system::error_code& error)
+          void emitStopCompleted(const boost::system::error_code& error)
           {
-            emit stopComplete(error);
+            emit stopCompleted(error);
           }
                
         private:          

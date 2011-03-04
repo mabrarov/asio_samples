@@ -17,7 +17,7 @@
 #include <boost/system/error_code.hpp>
 #include <QtCore/QObject>
 #include <ma/echo/server/session_manager_config_fwd.hpp>
-#include <ma/echo/server/qt/forwardservicesignal.h>
+#include <ma/echo/server/qt/forwardservicesignal_fwd.h>
 #include <ma/echo/server/qt/service_fwd.h>
 
 namespace ma
@@ -44,25 +44,24 @@ namespace ma
 
         public:
           explicit Service(QObject* parent = 0);
-          ~Service();          
-
+          ~Service();
           void asyncStart(const execution_config&, const session_manager_config&);
 
         public slots:
           void asyncStop();
-          void terminateWork();
+          void terminate();
 
         signals:
-          void workException();
-          void startComplete(const boost::system::error_code& error);
-          void stopComplete(const boost::system::error_code& error);
-          void workComplete(const boost::system::error_code& error);
+          void exceptionHappened();
+          void startCompleted(const boost::system::error_code&);
+          void stopCompleted(const boost::system::error_code&);
+          void workCompleted(const boost::system::error_code&);
 
         private slots:
-          void onWorkException();
-          void onStartComplete(const boost::system::error_code& error);
-          void onWaitComplete(const boost::system::error_code& error);
-          void onStopComplete(const boost::system::error_code& error);          
+          void onWorkThreadExceptionHappened();
+          void onSessionManagerStartCompleted(const boost::system::error_code&);
+          void onSessionManagerWaitCompleted(const boost::system::error_code&);
+          void onSessionManagerStopCompleted(const boost::system::error_code&);
 
         private:
           Q_DISABLE_COPY(Service)
@@ -70,7 +69,7 @@ namespace ma
           class Work;
           bool isActualSignalSender(QObject* sender) const;
           boost::scoped_ptr<Work> work_;       
-          ForwardServiceSignal forwardSignal_;
+          ForwardServiceSignal* forwardSignal_;
         }; // class Service
 
       } // namespace qt

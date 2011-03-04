@@ -13,7 +13,6 @@ TRANSLATOR ma::echo::server::qt::Service
 #include <boost/ref.hpp>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
-#include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/tuple/tuple.hpp>
@@ -22,7 +21,8 @@ TRANSLATOR ma::echo::server::qt::Service
 #include <boost/utility/base_from_member.hpp>
 #include <ma/echo/server/error.hpp>
 #include <ma/echo/server/session_manager.hpp>
-#include <ma/echo/server/qt/servicesignal.h>
+#include <ma/echo/server/qt/serviceworksignal.h>
+#include <ma/echo/server/qt/forwardservicesignal.h>
 #include <ma/echo/server/qt/signal_connect_error.h>
 #include <ma/echo/server/qt/service.h>
 
@@ -166,7 +166,7 @@ namespace
     Work(const execution_config& the_execution_config, 
       const session_manager_config& the_session_manager_config)
       : execution_system_base(the_execution_config)      
-      , serviceSignal_(boost::make_shared<ServiceSignal>())      
+      , workSignal_(boost::make_shared<ServiceWorkSignal>())      
       , sessionManager_(boost::make_shared<session_manager>(
           boost::ref(execution_system_base::member.session_manager_io_service()),
           boost::ref(execution_system_base::member.session_io_service()), 
@@ -181,12 +181,12 @@ namespace
     void createThreads()
     {
       execution_system_base::member.create_threads(
-        boost::bind(&ServiceSignal::emitWorkException, serviceSignal_));
+        boost::bind(&ServiceWorkSignal::emitWorkThreadExceptionHappened, workSignal_));
     }
     
-    ServiceSignalPtr serviceSignal() const
+    ServiceWorkSignalPtr workSignal() const
     {
-      return serviceSignal_;
+      return workSignal_;
     }
 
     session_manager_ptr sessionManager() const
@@ -195,22 +195,22 @@ namespace
     }
 
   private: 
-    ServiceSignalPtr serviceSignal_;
+    ServiceWorkSignalPtr workSignal_;
     session_manager_ptr sessionManager_;
   }; // class Service::Work
 
   Service::Service(QObject* parent)
     : QObject(parent)
-    , work_()
-    , forwardSignal_()
+    , work_()    
   {
-    checkConnect(QObject::connect(&forwardSignal_, 
-      SIGNAL(startComplete(const boost::system::error_code&)), 
-      SIGNAL(startComplete(const boost::system::error_code&)), 
+    forwardSignal_ = new ForwardServiceSignal(this);
+    checkConnect(QObject::connect(forwardSignal_, 
+      SIGNAL(startCompleted(const boost::system::error_code&)), 
+      SIGNAL(startCompleted(const boost::system::error_code&)), 
       Qt::QueuedConnection));
-    checkConnect(QObject::connect(&forwardSignal_, 
-      SIGNAL(stopComplete(const boost::system::error_code&)), 
-      SIGNAL(stopComplete(const boost::system::error_code&)), 
+    checkConnect(QObject::connect(forwardSignal_, 
+      SIGNAL(stopCompleted(const boost::system::error_code&)), 
+      SIGNAL(stopCompleted(const boost::system::error_code&)), 
       Qt::QueuedConnection));
   }
 
@@ -223,34 +223,35 @@ namespace
   {
     if (work_.get())
     {      
-      forwardSignal_.emitStartComplete(server_error::invalid_state);
+      forwardSignal_->emitStartCompleted(server_error::invalid_state);
       return;
     }
     work_.reset(new Work(the_execution_config, the_session_manager_config));
     
-    ServiceSignalPtr serviceSignal = work_->serviceSignal();
-    checkConnect(QObject::connect(serviceSignal.get(), 
-      SIGNAL(workException()), SLOT(onWorkException()), 
+    ServiceWorkSignalPtr workSignal = work_->workSignal();
+    checkConnect(QObject::connect(workSignal.get(), 
+      SIGNAL(workThreadExceptionHappened()), 
+      SLOT(onWorkThreadExceptionHappened()), 
       Qt::QueuedConnection));
-    checkConnect(QObject::connect(serviceSignal.get(), 
-      SIGNAL(startComplete(const boost::system::error_code&)), 
-      SLOT(onStartComplete(const boost::system::error_code&)),
+    checkConnect(QObject::connect(workSignal.get(), 
+      SIGNAL(sessionManagerStartCompleted(const boost::system::error_code&)), 
+      SLOT(onSessionManagerStartCompleted(const boost::system::error_code&)),
       Qt::QueuedConnection));
-    checkConnect(QObject::connect(serviceSignal.get(), 
-      SIGNAL(waitComplete(const boost::system::error_code&)), 
-      SLOT(onWaitComplete(const boost::system::error_code&)),
+    checkConnect(QObject::connect(workSignal.get(), 
+      SIGNAL(sessionManagerWaitCompleted(const boost::system::error_code&)), 
+      SLOT(onSessionManagerWaitCompleted(const boost::system::error_code&)),
       Qt::QueuedConnection));
-    checkConnect(QObject::connect(serviceSignal.get(), 
-      SIGNAL(stopComplete(const boost::system::error_code&)), 
-      SLOT(onStopComplete(const boost::system::error_code&)),
+    checkConnect(QObject::connect(workSignal.get(), 
+      SIGNAL(sessionManagerStopCompleted(const boost::system::error_code&)), 
+      SLOT(onSessionManagerStopCompleted(const boost::system::error_code&)),
       Qt::QueuedConnection));    
 
     work_->createThreads();
     work_->sessionManager()->async_start(
-      boost::bind(&ServiceSignal::emitStartComplete, serviceSignal, _1));
+      boost::bind(&ServiceWorkSignal::emitSessionManagerStartCompleted, workSignal, _1));
   }
 
-  void Service::onStartComplete(const boost::system::error_code& error)
+  void Service::onSessionManagerStartCompleted(const boost::system::error_code& error)
   {
     if (!isActualSignalSender(QObject::sender()))
     {
@@ -263,23 +264,23 @@ namespace
     else
     {
       work_->sessionManager()->async_wait(
-        boost::bind(&ServiceSignal::emitWaitComplete, work_->serviceSignal(), _1));
+        boost::bind(&ServiceWorkSignal::emitSessionManagerWaitCompleted, work_->workSignal(), _1));
     }
-    emit startComplete(error);
+    emit startCompleted(error);
   }
   
   void Service::asyncStop()
   {    
     if (!work_.get())
     {
-      forwardSignal_.emitStopComplete(server_error::invalid_state);
+      forwardSignal_->emitStopCompleted(server_error::invalid_state);
       return;
     }
     work_->sessionManager()->async_stop(
-      boost::bind(&ServiceSignal::emitStopComplete, work_->serviceSignal(), _1));
+      boost::bind(&ServiceWorkSignal::emitSessionManagerStopCompleted, work_->workSignal(), _1));
   }
 
-  void Service::onStopComplete(const boost::system::error_code& error)
+  void Service::onSessionManagerStopCompleted(const boost::system::error_code& error)
   {
     if (!isActualSignalSender(QObject::sender()))
     {
@@ -289,30 +290,30 @@ namespace
     {      
       work_.reset();
     }
-    emit stopComplete(error);
+    emit stopCompleted(error);
   }
 
-  void Service::terminateWork()
+  void Service::terminate()
   {
     work_.reset();
   }  
 
-  void Service::onWaitComplete(const boost::system::error_code& error)
+  void Service::onSessionManagerWaitCompleted(const boost::system::error_code& error)
   {
     if (!isActualSignalSender(QObject::sender()))
     {
       return;
     }    
-    emit workComplete(error);
+    emit workCompleted(error);
   }  
 
-  void Service::onWorkException()
+  void Service::onWorkThreadExceptionHappened()
   {
     if (!isActualSignalSender(QObject::sender()))
     {
       return;
     }
-    emit workException();
+    emit exceptionHappened();
   }
 
   bool Service::isActualSignalSender(QObject* sender) const
@@ -321,7 +322,7 @@ namespace
     {
       return false;
     }
-    return work_->serviceSignal().get() == sender;
+    return work_->workSignal().get() == sender;
   }  
 
 } // namespace qt

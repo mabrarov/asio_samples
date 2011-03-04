@@ -38,10 +38,10 @@ namespace ma
            void on_stopButton_clicked();
            void on_terminateButton_clicked();
 
-           void on_echoService_workException();
-           void on_echoService_startComplete(const boost::system::error_code&);
-           void on_echoService_stopComplete(const boost::system::error_code&);
-           void on_echoService_workComplete(const boost::system::error_code&);           
+           void on_echoService_exceptionHappened();
+           void on_echoService_startCompleted(const boost::system::error_code&);
+           void on_echoService_stopCompleted(const boost::system::error_code&);
+           void on_echoService_workCompleted(const boost::system::error_code&);           
 
         private:
           Q_DISABLE_COPY(MainForm) 
