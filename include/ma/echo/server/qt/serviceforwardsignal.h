@@ -5,8 +5,8 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef MA_ECHO_SERVER_QT_FORWARDSERVICESIGNAL_H
-#define MA_ECHO_SERVER_QT_FORWARDSERVICESIGNAL_H
+#ifndef MA_ECHO_SERVER_QT_SERVICEFORWARDSIGNAL_H
+#define MA_ECHO_SERVER_QT_SERVICEFORWARDSIGNAL_H
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1020)
 #pragma once
@@ -15,7 +15,7 @@
 #include <boost/system/error_code.hpp>
 #include <boost/thread/recursive_mutex.hpp>
 #include <QtCore/QObject>
-#include <ma/echo/server/qt/forwardservicesignal_fwd.h>
+#include <ma/echo/server/qt/serviceforwardsignal_fwd.h>
 
 namespace ma
 {    
@@ -25,7 +25,7 @@ namespace ma
     {    
       namespace qt 
       {        
-        class ForwardServiceSignal : public QObject
+        class ServiceForwardSignal : public QObject
         {
           Q_OBJECT
 
@@ -37,12 +37,12 @@ namespace ma
           void stopCompleted(const boost::system::error_code&);
 
         public:
-          ForwardServiceSignal(QObject* parent = 0)
+          ServiceForwardSignal(QObject* parent = 0)
             : QObject(parent)
           {
           }
 
-          ~ForwardServiceSignal()
+          ~ServiceForwardSignal()
           {
           }
 
@@ -57,12 +57,12 @@ namespace ma
           }
                
         private:          
-          Q_DISABLE_COPY(ForwardServiceSignal)
-        }; // class ForwardServiceSignal
+          Q_DISABLE_COPY(ServiceForwardSignal)
+        }; // class ServiceForwardSignal
 
       } // namespace qt
     } // namespace server
   } // namespace echo
 } // namespace ma
 
-#endif // MA_ECHO_SERVER_QT_FORWARDSERVICESIGNAL_H
+#endif // MA_ECHO_SERVER_QT_SERVICEFORWARDSIGNAL_H

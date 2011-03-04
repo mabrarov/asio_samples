@@ -5,17 +5,17 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef MA_ECHO_SERVER_QT_SERVICEWORKSIGNAL_H
-#define MA_ECHO_SERVER_QT_SERVICEWORKSIGNAL_H
+#ifndef MA_ECHO_SERVER_QT_SERVICESERVANTSIGNAL_H
+#define MA_ECHO_SERVER_QT_SERVICESERVANTSIGNAL_H
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1020)
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
-#include <boost/shared_ptr.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/thread/recursive_mutex.hpp>
 #include <QtCore/QObject>
+#include <ma/echo/server/qt/serviceservantsignal_fwd.h>
 
 namespace ma
 {    
@@ -25,10 +25,7 @@ namespace ma
     {    
       namespace qt 
       {
-        class ServiceWorkSignal;
-        typedef boost::shared_ptr<ServiceWorkSignal> ServiceWorkSignalPtr;
-
-        class ServiceWorkSignal : public QObject
+        class ServiceServantSignal : public QObject
         {
           Q_OBJECT
 
@@ -36,11 +33,11 @@ namespace ma
           typedef boost::recursive_mutex mutex_type;
 
         public:
-          ServiceWorkSignal()
+          ServiceServantSignal()
           {
           }
 
-          ~ServiceWorkSignal()
+          ~ServiceServantSignal()
           {
           }
 
@@ -75,15 +72,21 @@ namespace ma
             emit sessionManagerStopCompleted(error);
           }
 
+          void disconnect()
+          {
+            mutex_type::scoped_lock lock(mutex_);
+            QObject::disconnect();
+          }
+
         private:          
-          Q_DISABLE_COPY(ServiceWorkSignal)
+          Q_DISABLE_COPY(ServiceServantSignal)
 
           mutex_type mutex_;
-        }; // class ServiceWorkSignal
+        }; // class ServiceServantSignal
 
       } // namespace qt
     } // namespace server
   } // namespace echo
 } // namespace ma
 
-#endif // MA_ECHO_SERVER_QT_SERVICEWORKSIGNAL_H
+#endif // MA_ECHO_SERVER_QT_SERVICESERVANTSIGNAL_H

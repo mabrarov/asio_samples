@@ -5,8 +5,8 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef MA_ECHO_SERVER_QT_FORWARDSERVICESIGNAL_FWD_H
-#define MA_ECHO_SERVER_QT_FORWARDSERVICESIGNAL_FWD_H
+#ifndef MA_ECHO_SERVER_QT_SERVICEFORWARDSIGNAL_FWD_H
+#define MA_ECHO_SERVER_QT_SERVICEFORWARDSIGNAL_FWD_H
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1020)
 #pragma once
@@ -20,11 +20,11 @@ namespace ma
     {    
       namespace qt 
       {
-        class ForwardServiceSignal;
+        class ServiceForwardSignal;
 
       } // namespace qt
     } // namespace server
   } // namespace echo
 } // namespace ma
 
-#endif // MA_ECHO_SERVER_QT_FORWARDSERVICESIGNAL_FWD_H
+#endif // MA_ECHO_SERVER_QT_SERVICEFORWARDSIGNAL_FWD_H
