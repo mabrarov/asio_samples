@@ -68,7 +68,7 @@ namespace ma
 
           class Work;
           bool isActualSignalSender(QObject* sender) const;
-          boost::scoped_ptr<Work> work_;
+          boost::scoped_ptr<Work> work_;       
         }; // class Service
 
       } // namespace qt
