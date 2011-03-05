@@ -35,6 +35,7 @@ namespace ma
         signals:          
           void startCompleted(const boost::system::error_code&);
           void stopCompleted(const boost::system::error_code&);
+          void workCompleted(const boost::system::error_code&);
 
         public:
           ServiceForwardSignal(QObject* parent = 0)
@@ -54,6 +55,11 @@ namespace ma
           void emitStopCompleted(const boost::system::error_code& error)
           {
             emit stopCompleted(error);
+          }
+
+          void emitWorkCompleted(const boost::system::error_code& error)
+          {
+            emit workCompleted(error);
           }
                
         private:          

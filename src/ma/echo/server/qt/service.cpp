@@ -207,6 +207,10 @@ namespace
       SIGNAL(stopCompleted(const boost::system::error_code&)), 
       SIGNAL(stopCompleted(const boost::system::error_code&)), 
       Qt::QueuedConnection));
+    checkConnect(QObject::connect(forwardSignal_, 
+      SIGNAL(workCompleted(const boost::system::error_code&)), 
+      SIGNAL(workCompleted(const boost::system::error_code&)), 
+      Qt::QueuedConnection));
   }
 
   Service::~Service()
@@ -243,9 +247,9 @@ namespace
         servant_->get_session_manager()->async_wait(
           boost::bind(&ServiceServantSignal::emitSessionManagerWaitCompleted, servantSignal_, _1));
         currentState_ = started;
-      }      
-    }
-    emit startCompleted(error);
+      }
+      emit startCompleted(error);
+    }    
   }
   
   void Service::asyncStop()
@@ -254,6 +258,14 @@ namespace
     {
       forwardSignal_->emitStopCompleted(server_error::invalid_state);
       return;
+    }
+    if (startInProgress == currentState_)
+    {
+      forwardSignal_->emitStartCompleted(server_error::operation_aborted);
+    }
+    else if (started == currentState_)
+    {
+      forwardSignal_->emitWorkCompleted(server_error::operation_aborted);
     }
     servant_->get_session_manager()->async_stop(
       boost::bind(&ServiceServantSignal::emitSessionManagerStopCompleted, servantSignal_, _1));
@@ -266,8 +278,8 @@ namespace
     {
       destroyServant();
       currentState_ = stopped;
-    }    
-    emit stopCompleted(error);
+      emit stopCompleted(error);
+    }        
   }
 
   void Service::terminate()
@@ -278,12 +290,18 @@ namespace
 
   void Service::onSessionManagerWaitCompleted(const boost::system::error_code& error)
   {
-    emit workCompleted(error);
+    if (started == currentState_)
+    {
+      emit workCompleted(error);
+    }
   }  
 
   void Service::onWorkThreadExceptionHappened()
   {
-    emit exceptionHappened();
+    if (stopped != currentState_)
+    {
+      emit exceptionHappened();
+    }
   }
 
   void Service::createServant(const execution_config& the_execution_config, 
