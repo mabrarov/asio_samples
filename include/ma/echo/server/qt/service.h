@@ -12,12 +12,13 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
-#include <cstddef>
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/system/error_code.hpp>
 #include <QtCore/QObject>
 #include <ma/echo/server/session_manager_config_fwd.hpp>
+#include <ma/echo/server/qt/servicestate.h>
+#include <ma/echo/server/qt/execution_config_fwd.h>
 #include <ma/echo/server/qt/serviceforwardsignal_fwd.h>
 #include <ma/echo/server/qt/serviceservantsignal_fwd.h>
 #include <ma/echo/server/qt/service_fwd.h>
@@ -29,35 +30,17 @@ namespace ma
     namespace server
     {    
       namespace qt 
-      {
-        struct execution_config
-        {
-          std::size_t session_manager_thread_count;
-          std::size_t session_thread_count;          
-
-          execution_config(
-            std::size_t the_session_manager_thread_count, 
-            std::size_t the_session_thread_count);
-        }; // struct execution_config
-
+      {        
         class Service : public QObject
         {
           Q_OBJECT
 
-        public:
-          enum State 
-          {
-            stopped,
-            startInProgress,
-            started,
-            stopInProgress
-          }; // enum State 
-
+        public:          
           explicit Service(QObject* parent = 0);
           ~Service();
           void asyncStart(const execution_config&, const session_manager_config&);
 
-          State currentState()
+          ServiceState::State currentState()
           {
             return currentState_;
           }
@@ -86,7 +69,7 @@ namespace ma
           void createServant(const execution_config&, const session_manager_config&);
           void destroyServant();
 
-          State currentState_;
+          ServiceState::State currentState_;
           ServiceForwardSignal* forwardSignal_;          
           boost::scoped_ptr<servant> servant_;
           boost::shared_ptr<ServiceServantSignal> servantSignal_;

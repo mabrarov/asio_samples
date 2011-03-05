@@ -9,6 +9,10 @@ TRANSLATOR ma::echo::server::qt::MainForm
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#include <boost/optional.hpp>
+#include <boost/thread/thread.hpp>
+#include <boost/numeric/conversion/cast.hpp>
+#include <QtGlobal>
 #include <QtCore/QTime>
 #include <QtGui/QTextCursor>
 #include <ma/echo/server/error.hpp>
@@ -49,10 +53,12 @@ namespace
     return session_manager_config(tcp::endpoint(tcp::v4(), port),
       maxSessions, recycledSessions, listenBacklog, sessionConfig);
   }
+  
 } // anonymous namespace
 
   MainForm::MainForm(Service& echoService, QWidget* parent, Qt::WFlags flags)
     : QDialog(parent, flags | Qt::WindowMinMaxButtonsHint)
+    , prevEchoServiceState_(echoService.currentState())
     , echoService_(echoService)
   {
     ui_.setupUi(this);
@@ -69,8 +75,17 @@ namespace
     checkConnect(QObject::connect(&echoService, 
       SIGNAL(workCompleted(const boost::system::error_code&)), 
       SLOT(on_echoService_workCompleted(const boost::system::error_code&))));
+
+    unsigned hardwareConcurrency = boost::thread::hardware_concurrency();
+    unsigned defaultSessionManagerThreadCount = hardwareConcurrency < 2U ? 1U : 2U;
+    unsigned defaultSessionThreadCount = hardwareConcurrency ? hardwareConcurrency + 1U : 2U;
+
+    ui_.sessionManagementThreadsSpinBox->setValue(boost::numeric_cast<int>(defaultSessionManagerThreadCount));
+    ui_.sessionThreadsSpinBox->setValue(boost::numeric_cast<int>(defaultSessionThreadCount));
+
     //todo: setup initial internal states    
     //todo: setup initial widgets' states
+    updateWidgetsStates(true);
   }
 
   MainForm::~MainForm()
@@ -80,17 +95,28 @@ namespace
   void MainForm::on_startButton_clicked()
   {    
     //todo: read and validate configuration
-    execution_config executionConfig = createExecutionConfig();    
-    session_manager_config sessionManagerConfig = createSessionManagerConfig(createSessionConfig());
-    
-    echoService_.asyncStart(executionConfig, sessionManagerConfig);
-    writeLog(QString::fromUtf8("Starting echo service..."));
+    boost::optional<ServiceConfiguration> serviceConfiguration;
+    try 
+    {
+       serviceConfiguration = readServiceConfiguration();
+    }
+    catch (...)
+    {
+      //todo
+    }
+    if (serviceConfiguration)
+    {
+      echoService_.asyncStart(serviceConfiguration->get<0>(), serviceConfiguration->get<1>());
+      writeLog(QString::fromUtf8("Starting echo service..."));
+    }
+    updateWidgetsStates();
   }
 
   void MainForm::on_stopButton_clicked()
   {        
     echoService_.asyncStop();
     writeLog(QString::fromUtf8("Stopping echo service..."));
+    updateWidgetsStates();
   }
 
   void MainForm::on_terminateButton_clicked()
@@ -98,6 +124,7 @@ namespace
     writeLog(QString::fromUtf8("Terminating echo service..."));    
     echoService_.terminate();
     writeLog(QString::fromUtf8("Echo service terminated."));
+    updateWidgetsStates();
   }
 
   void MainForm::on_echoService_startCompleted(const boost::system::error_code& error)
@@ -117,7 +144,8 @@ namespace
     else 
     {
       writeLog(QString::fromUtf8("Echo service start completed successfully."));
-    }        
+    } 
+    updateWidgetsStates();
   }
           
   void MainForm::on_echoService_stopCompleted(const boost::system::error_code& error)
@@ -138,6 +166,7 @@ namespace
     {
       writeLog(QString::fromUtf8("Echo service stop completed successfully."));
     }
+    updateWidgetsStates();
   }
 
   void MainForm::on_echoService_workCompleted(const boost::system::error_code& error)
@@ -158,11 +187,12 @@ namespace
     {
       writeLog(QString::fromUtf8("Echo service work completed successfully."));
     }
-    if (Service::started == echoService_.currentState())
+    if (ServiceState::started == echoService_.currentState())
     {
       echoService_.asyncStop(); 
       writeLog(QString::fromUtf8("Stopping echo service (because of its work was completed)..."));
-    }    
+    }
+    updateWidgetsStates();
   }
 
   void MainForm::on_echoService_exceptionHappened()
@@ -170,11 +200,52 @@ namespace
     writeLog(QString::fromUtf8("Unexpected error during echo service work. Terminating echo service..."));
     echoService_.terminate(); 
     writeLog(QString::fromUtf8("Echo service terminated."));
+    updateWidgetsStates();
+  }
+
+  MainForm::ServiceConfiguration MainForm::readServiceConfiguration()
+  {
+    //todo: read and validate configuration
+    execution_config executionConfig = createExecutionConfig();    
+    session_manager_config sessionManagerConfig = createSessionManagerConfig(createSessionConfig());
+    return boost::make_tuple(executionConfig, sessionManagerConfig);
+  }
+
+  void MainForm::updateWidgetsStates(bool ignorePrevEchoServiceState)
+  {   
+    static const char* windowTitleTr = QT_TR_NOOP("Hello");
+    static const char* stoppedTitleTr = QT_TR_NOOP("stopped");
+    static const char* startingTitleTr = QT_TR_NOOP("starting");
+    static const char* startedTitleTr = QT_TR_NOOP("started");
+    static const char* stoppingTitleTr = QT_TR_NOOP("stopping");    
+     
+    ServiceState::State serviceState = echoService_.currentState();
+    if (serviceState != prevEchoServiceState_ || ignorePrevEchoServiceState)
+    {
+      ui_.startButton->setEnabled(ServiceState::stopped == serviceState);
+      ui_.stopButton->setEnabled(ServiceState::startInProgress == serviceState || ServiceState::started == serviceState);
+      ui_.terminateButton->setEnabled(ServiceState::stopped != serviceState);      
+
+      QString defWindowTitle = tr(windowTitleTr);
+      QString statedWindowTitle = QString::fromUtf8("%1 - [%2]");
+      switch (serviceState)
+      {
+      case ServiceState::stopped:
+        statedWindowTitle = statedWindowTitle.arg(defWindowTitle).arg(tr(stoppedTitleTr));
+        break;
+      case ServiceState::startInProgress:
+        statedWindowTitle = statedWindowTitle.arg(defWindowTitle).arg(tr(startingTitleTr));
+        break;
+      default:
+        statedWindowTitle = defWindowTitle;
+      }
+    }
+    prevEchoServiceState_ = serviceState;
   }
 
   void MainForm::writeLog(const QString& message)
   {    
-    QString logMessage = QString::fromUtf8("[%1]: %2")
+    QString logMessage = QString::fromUtf8("[%1] %2")
       .arg(QTime::currentTime().toString(Qt::SystemLocaleLongDate))
       .arg(message);
     ui_.logTextEdit->appendPlainText(logMessage);

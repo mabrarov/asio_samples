@@ -85,6 +85,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\src\ma\echo\server\error.cpp" />
     <ClCompile Include="..\..\..\src\ma\echo\server\qt\custommetatypes.cpp" />
+    <ClCompile Include="..\..\..\src\ma\echo\server\qt\execution_config.cpp" />
     <ClCompile Include="..\..\..\src\ma\echo\server\qt\service.cpp" />
     <ClCompile Include="..\..\..\src\ma\echo\server\qt\mainform.cpp" />
     <ClCompile Include="..\..\..\src\ma\echo\server\session.cpp" />
@@ -152,8 +153,11 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DWIN32 -DWIN32_LEAN_AND_MEAN -DWINVER=0x0500 -D_WIN32_WINNT=0x0500 -D_WIN32_WINDOWS=0x0410 -D_WIN32_IE=0x0600 -DUNICODE -DNDEBUG -DQT_LARGEFILE_SUPPORT -DQT_NO_DEBUG -DQT_CORE_LIB -DQT_GUI_LIB "-I." "-I.\..\..\..\..\boost_1_46_0" "-I$(QTDIR)\include" "-I$(QTDIR)\include\qtmain" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I.\GeneratedFiles" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I.\..\..\..\include" "-I." "-I.\..\..\..\include\ma\echo\server\qt" "-I.\..\..\..\src\ma\echo\server\qt" "-I." "-I." "-I." "-I."</Command>
     </CustomBuild>
+    <ClInclude Include="..\..\..\include\ma\echo\server\qt\execution_config.h" />
+    <ClInclude Include="..\..\..\include\ma\echo\server\qt\execution_config_fwd.h" />
     <ClInclude Include="..\..\..\include\ma\echo\server\qt\serviceforwardsignal_fwd.h" />
     <ClInclude Include="..\..\..\include\ma\echo\server\qt\serviceservantsignal_fwd.h" />
+    <ClInclude Include="..\..\..\include\ma\echo\server\qt\servicestate.h" />
     <ClInclude Include="..\..\..\include\ma\echo\server\qt\service_fwd.h" />
     <ClInclude Include="..\..\..\include\ma\echo\server\qt\meta_type_register_error.h" />
     <CustomBuild Include="..\..\..\include\ma\echo\server\qt\serviceservantsignal.h">

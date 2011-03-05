@@ -34,6 +34,9 @@
        <string>Execution</string>
       </attribute>
       <layout class="QFormLayout" name="executionTabLayout">
+       <property name="fieldGrowthPolicy">
+        <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+       </property>
        <item row="0" column="0">
         <widget class="QLabel" name="sessionManagementThreadsLabel">
          <property name="text">
@@ -71,23 +74,6 @@
          </property>
          <property name="value">
           <number>2</number>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="stopTimeoutLabel">
-         <property name="text">
-          <string>Stop timeout (sec)</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <widget class="QSpinBox" name="stopTimeoutSpinBox">
-         <property name="maximum">
-          <number>100000</number>
-         </property>
-         <property name="value">
-          <number>30</number>
          </property>
         </widget>
        </item>
@@ -199,6 +185,9 @@
        <string>Session</string>
       </attribute>
       <layout class="QFormLayout" name="sessionTabLayout">
+       <property name="fieldGrowthPolicy">
+        <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+       </property>
        <item row="0" column="0">
         <widget class="QLabel" name="sessionBufferSizeLabel">
          <property name="text">
@@ -274,14 +263,33 @@
          </property>
         </widget>
        </item>
-       <item row="3" column="0" colspan="2">
-        <widget class="QCheckBox" name="tcpNoDelayCheckBox">
+       <item row="3" column="0">
+        <widget class="QLabel" name="tcpNoDelayLabel">
          <property name="text">
           <string>TCP NO_DELAY option</string>
          </property>
-         <property name="tristate">
-          <bool>true</bool>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QComboBox" name="tcpNoDelayComboBox">
+         <property name="currentIndex">
+          <number>0</number>
          </property>
+         <item>
+          <property name="text">
+           <string>default (operating system)</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>on</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>off</string>
+          </property>
+         </item>
         </widget>
        </item>
       </layout>
@@ -370,7 +378,6 @@
   <tabstop>tabWidget</tabstop>
   <tabstop>sessionManagementThreadsSpinBox</tabstop>
   <tabstop>sessionThreadsSpinBox</tabstop>
-  <tabstop>stopTimeoutSpinBox</tabstop>
   <tabstop>maxSessionCountSpinBox</tabstop>
   <tabstop>recycledSessionCountSpinBox</tabstop>
   <tabstop>listenBacklogSpinBox</tabstop>
@@ -381,7 +388,7 @@
   <tabstop>sockRecvBufferSizeSpinBox</tabstop>
   <tabstop>sockSendBufferSizeCheckBox</tabstop>
   <tabstop>sockSendBufferSizeSpinBox</tabstop>
-  <tabstop>tcpNoDelayCheckBox</tabstop>
+  <tabstop>tcpNoDelayComboBox</tabstop>
   <tabstop>logTextEdit</tabstop>
   <tabstop>pushButton</tabstop>
   <tabstop>startButton</tabstop>

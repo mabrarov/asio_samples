@@ -6,17 +6,17 @@
     <message>
         <location filename="../ma/echo/server/qt/mainform.ui" line="14"/>
         <source>Qt Echo Server</source>
-        <translation>Qt Echo Server</translation>
+        <translation type="unfinished">Qt Echo Server</translation>
     </message>
     <message>
         <location filename="../ma/echo/server/qt/mainform.ui" line="20"/>
         <source>Configuration</source>
-        <translation>Конфигурация</translation>
+        <translation type="unfinished">Конфигурация</translation>
     </message>
     <message>
         <location filename="../ma/echo/server/qt/mainform.ui" line="31"/>
         <source>Execution</source>
-        <translation>Выполнение</translation>
+        <translation type="unfinished">Выполнение</translation>
     </message>
     <message>
         <location filename="../ma/echo/server/qt/mainform.ui" line="37"/>

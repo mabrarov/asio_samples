@@ -130,6 +130,9 @@
     <ClCompile Include="GeneratedFiles\Release\moc_serviceforwardsignal.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\src\ma\echo\server\qt\execution_config.cpp">
+      <Filter>Source Files\ma\echo\server\qt</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\..\include\ma\echo\server\qt\mainform.h">
@@ -243,6 +246,15 @@
       <Filter>Header Files\ma\echo\server\qt</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\ma\echo\server\qt\serviceforwardsignal_fwd.h">
+      <Filter>Header Files\ma\echo\server\qt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\echo\server\qt\execution_config_fwd.h">
+      <Filter>Header Files\ma\echo\server\qt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\echo\server\qt\execution_config.h">
+      <Filter>Header Files\ma\echo\server\qt</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\echo\server\qt\servicestate.h">
       <Filter>Header Files\ma\echo\server\qt</Filter>
     </ClInclude>
   </ItemGroup>
