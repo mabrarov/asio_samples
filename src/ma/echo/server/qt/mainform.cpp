@@ -132,7 +132,7 @@ namespace
     }
     else 
     {
-      writeLog(QString::fromUtf8("Echo service work completed successfully"));
+      writeLog(QString::fromUtf8("Echo service work completed due to stop/terminate operation"));
     }    
     if (!stopCause)
     {

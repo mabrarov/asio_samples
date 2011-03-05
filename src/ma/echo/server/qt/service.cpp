@@ -285,6 +285,18 @@ namespace
   void Service::terminate()
   {    
     destroyServant();
+    if (startInProgress == currentState_)
+    {
+      forwardSignal_->emitStartCompleted(server_error::operation_aborted);
+    }
+    else if (started == currentState_)
+    {
+      forwardSignal_->emitWorkCompleted(server_error::operation_aborted);
+    }
+    else if (stopInProgress == currentState_)
+    {
+      forwardSignal_->emitStopCompleted(server_error::operation_aborted);
+    }
     currentState_ = stopped;
   }
 
