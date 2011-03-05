@@ -194,6 +194,7 @@ namespace
 
   Service::Service(QObject* parent)
     : QObject(parent)
+    , currentState_(stopped)
     , servant_() 
     , servantSignal_()
   {
@@ -215,7 +216,7 @@ namespace
   void Service::asyncStart(const execution_config& the_execution_config, 
     const session_manager_config& the_session_manager_config)
   {
-    if (servant_.get())
+    if (stopped != currentState_)
     {      
       forwardSignal_->emitStartCompleted(server_error::invalid_state);
       return;
@@ -225,73 +226,63 @@ namespace
       boost::bind(&ServiceServantSignal::emitWorkThreadExceptionHappened, servantSignal_));
     servant_->get_session_manager()->async_start(
       boost::bind(&ServiceServantSignal::emitSessionManagerStartCompleted, servantSignal_, _1));
+    currentState_ = startInProgress;
   }
 
   void Service::onSessionManagerStartCompleted(const boost::system::error_code& error)
-  {
-    if (!servant_.get())
+  {    
+    if (startInProgress == currentState_)
     {
-      return;
-    }    
-    if (error && error != server_error::invalid_state)
-    {
-      destroyServant();
-    }
-    else if (!error)
-    {
-      servant_->get_session_manager()->async_wait(
-        boost::bind(&ServiceServantSignal::emitSessionManagerWaitCompleted, servantSignal_, _1));
+      if (error)
+      {
+        destroyServant();
+        currentState_ = stopped;
+      }
+      else
+      {
+        servant_->get_session_manager()->async_wait(
+          boost::bind(&ServiceServantSignal::emitSessionManagerWaitCompleted, servantSignal_, _1));
+        currentState_ = started;
+      }      
     }
     emit startCompleted(error);
   }
   
   void Service::asyncStop()
   {    
-    if (!servant_.get())
+    if (stopped == currentState_ || stopInProgress == currentState_)
     {
       forwardSignal_->emitStopCompleted(server_error::invalid_state);
       return;
     }
     servant_->get_session_manager()->async_stop(
       boost::bind(&ServiceServantSignal::emitSessionManagerStopCompleted, servantSignal_, _1));
+    currentState_ = stopInProgress;
   }
 
   void Service::onSessionManagerStopCompleted(const boost::system::error_code& error)
   {
-    if (!servant_.get())
-    {
-      return;
-    }
-    if (error != server_error::invalid_state)
+    if (stopInProgress == currentState_)
     {
       destroyServant();
-    }
+      currentState_ = stopped;
+    }    
     emit stopCompleted(error);
   }
 
   void Service::terminate()
-  {
-    if (servant_.get())
-    {
-      destroyServant();
-    }    
+  {    
+    destroyServant();
+    currentState_ = stopped;
   }
 
   void Service::onSessionManagerWaitCompleted(const boost::system::error_code& error)
   {
-    if (!servant_.get())
-    {
-      return;
-    }    
     emit workCompleted(error);
   }  
 
   void Service::onWorkThreadExceptionHappened()
   {
-    if (!servant_.get())
-    {
-      return;
-    }
     emit exceptionHappened();
   }
 
@@ -321,8 +312,11 @@ namespace
 
   void Service::destroyServant()
   {
-    servantSignal_->disconnect();
-    servantSignal_.reset();
+    if (servantSignal_)
+    {
+      servantSignal_->disconnect();
+      servantSignal_.reset();
+    }    
     servant_.reset();    
   }
 

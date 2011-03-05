@@ -45,9 +45,22 @@ namespace ma
           Q_OBJECT
 
         public:
+          enum State 
+          {
+            stopped,
+            startInProgress,
+            started,
+            stopInProgress
+          }; // enum State 
+
           explicit Service(QObject* parent = 0);
           ~Service();
           void asyncStart(const execution_config&, const session_manager_config&);
+
+          State currentState()
+          {
+            return currentState_;
+          }
 
         public slots:
           void asyncStop();
@@ -73,6 +86,7 @@ namespace ma
           void createServant(const execution_config&, const session_manager_config&);
           void destroyServant();
 
+          State currentState_;
           ServiceForwardSignal* forwardSignal_;          
           boost::scoped_ptr<servant> servant_;
           boost::shared_ptr<ServiceServantSignal> servantSignal_;
