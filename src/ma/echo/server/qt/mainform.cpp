@@ -213,7 +213,7 @@ namespace
 
   void MainForm::updateWidgetsStates(bool ignorePrevEchoServiceState)
   {   
-    static const char* windowTitleTr = QT_TR_NOOP("Hello");
+    static const char* windowTitleTr = QT_TR_NOOP("Qt Echo Server");
     static const char* stoppedTitleTr = QT_TR_NOOP("stopped");
     static const char* startingTitleTr = QT_TR_NOOP("starting");
     static const char* startedTitleTr = QT_TR_NOOP("started");
@@ -236,9 +236,16 @@ namespace
       case ServiceState::startInProgress:
         statedWindowTitle = statedWindowTitle.arg(defWindowTitle).arg(tr(startingTitleTr));
         break;
+      case ServiceState::started:
+        statedWindowTitle = statedWindowTitle.arg(defWindowTitle).arg(tr(startedTitleTr));
+        break;
+      case ServiceState::stopInProgress:
+        statedWindowTitle = statedWindowTitle.arg(defWindowTitle).arg(tr(stoppingTitleTr));
+        break;
       default:
         statedWindowTitle = defWindowTitle;
       }
+      setWindowTitle(statedWindowTitle);
     }
     prevEchoServiceState_ = serviceState;
   }
