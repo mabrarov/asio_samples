@@ -211,41 +211,35 @@ namespace
     return boost::make_tuple(executionConfig, sessionManagerConfig);
   }
 
+  QString MainForm::getStateDescription(QObject& translateContext, ServiceState::State echoServiceState)
+  {
+    switch (echoServiceState)
+    {
+    case ServiceState::stopped:
+      return translateContext.tr("stopped");
+    case ServiceState::startInProgress:
+      return translateContext.tr("starting");
+    case ServiceState::started:
+      return translateContext.tr("started");
+    case ServiceState::stopInProgress:
+      return translateContext.tr("stopping");    
+    }
+    return translateContext.tr("unknown state");
+  }
+
   void MainForm::updateWidgetsStates(bool ignorePrevEchoServiceState)
-  {   
-    static const char* windowTitleTr = QT_TR_NOOP("Qt Echo Server");
-    static const char* stoppedTitleTr = QT_TR_NOOP("stopped");
-    static const char* startingTitleTr = QT_TR_NOOP("starting");
-    static const char* startedTitleTr = QT_TR_NOOP("started");
-    static const char* stoppingTitleTr = QT_TR_NOOP("stopping");    
-     
+  {
     ServiceState::State serviceState = echoService_.currentState();
     if (serviceState != prevEchoServiceState_ || ignorePrevEchoServiceState)
     {
       ui_.startButton->setEnabled(ServiceState::stopped == serviceState);
-      ui_.stopButton->setEnabled(ServiceState::startInProgress == serviceState || ServiceState::started == serviceState);
-      ui_.terminateButton->setEnabled(ServiceState::stopped != serviceState);      
-
-      QString defWindowTitle = tr(windowTitleTr);
-      QString statedWindowTitle = QString::fromUtf8("%1 - [%2]");
-      switch (serviceState)
-      {
-      case ServiceState::stopped:
-        statedWindowTitle = statedWindowTitle.arg(defWindowTitle).arg(tr(stoppedTitleTr));
-        break;
-      case ServiceState::startInProgress:
-        statedWindowTitle = statedWindowTitle.arg(defWindowTitle).arg(tr(startingTitleTr));
-        break;
-      case ServiceState::started:
-        statedWindowTitle = statedWindowTitle.arg(defWindowTitle).arg(tr(startedTitleTr));
-        break;
-      case ServiceState::stopInProgress:
-        statedWindowTitle = statedWindowTitle.arg(defWindowTitle).arg(tr(stoppingTitleTr));
-        break;
-      default:
-        statedWindowTitle = defWindowTitle;
-      }
-      setWindowTitle(statedWindowTitle);
+      ui_.stopButton->setEnabled(ServiceState::startInProgress == serviceState 
+        || ServiceState::started == serviceState);
+      ui_.terminateButton->setEnabled(ServiceState::stopped != serviceState);
+      
+      QString windowTitle = QString::fromUtf8("%1 (%2)")
+        .arg(tr("Qt Echo Server")).arg(getStateDescription(*this, serviceState));
+      setWindowTitle(windowTitle);
     }
     prevEchoServiceState_ = serviceState;
   }
@@ -253,8 +247,7 @@ namespace
   void MainForm::writeLog(const QString& message)
   {    
     QString logMessage = QString::fromUtf8("[%1] %2")
-      .arg(QTime::currentTime().toString(Qt::SystemLocaleLongDate))
-      .arg(message);
+      .arg(QTime::currentTime().toString(Qt::SystemLocaleLongDate)).arg(message);
     ui_.logTextEdit->appendPlainText(logMessage);
     ui_.logTextEdit->moveCursor(QTextCursor::End);
   }

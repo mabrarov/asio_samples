@@ -47,12 +47,13 @@ namespace ma
            void on_echoService_stopCompleted(const boost::system::error_code&);
            void on_echoService_workCompleted(const boost::system::error_code&);           
 
-        private:
+        private:          
           typedef boost::tuple<execution_config, session_manager_config> ServiceConfiguration;
           Q_DISABLE_COPY(MainForm) 
 
           ServiceConfiguration readServiceConfiguration();
-          void updateWidgetsStates(bool ignorePrevEchoServiceState = false);
+          static QString getStateDescription(QObject& translateContext, ServiceState::State echoServiceState);
+          void updateWidgetsStates(bool ignorePrevEchoServiceState = false);          
           void writeLog(const QString&);
 
           Ui::mainForm ui_;
