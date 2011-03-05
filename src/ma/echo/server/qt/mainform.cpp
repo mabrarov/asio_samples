@@ -9,7 +9,8 @@ TRANSLATOR ma::echo::server::qt::MainForm
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include <QTextCursor>
+#include <QtCore/QTime>
+#include <QtGui/QTextCursor>
 #include <ma/echo/server/error.hpp>
 #include <ma/echo/server/session_config.hpp>
 #include <ma/echo/server/session_manager_config.hpp>
@@ -96,61 +97,87 @@ namespace
   {
     writeLog(QString::fromUtf8("Terminating echo service..."));    
     echoService_.terminate();
-    writeLog(QString::fromUtf8("Echo service terminated"));
+    writeLog(QString::fromUtf8("Echo service terminated."));
   }
 
   void MainForm::on_echoService_startCompleted(const boost::system::error_code& error)
-  {    
-    if (error)
+  {   
+    if (server_error::invalid_state == error) 
     {
-      writeLog(QString::fromUtf8("Echo service start completed with error"));
+      writeLog(QString::fromUtf8("Echo service start completed with error due to invalid state for start operation."));
+    }
+    else if (server_error::operation_aborted == error) 
+    {
+      writeLog(QString::fromUtf8("Echo service start was cancelled."));
+    }
+    else if (error)
+    {      
+      writeLog(QString::fromUtf8("Echo service start completed with error."));
     }
     else 
     {
-      writeLog(QString::fromUtf8("Echo service start completed successfully"));
+      writeLog(QString::fromUtf8("Echo service start completed successfully."));
     }        
   }
           
   void MainForm::on_echoService_stopCompleted(const boost::system::error_code& error)
   {    
-    if (error)
+    if (server_error::invalid_state == error) 
     {
-      writeLog(QString::fromUtf8("Echo service stop completed with error"));
+      writeLog(QString::fromUtf8("Echo service stop completed with error due to invalid state for stop operation."));
     }
+    else if (server_error::operation_aborted == error) 
+    {
+      writeLog(QString::fromUtf8("Echo service stop was cancelled."));
+    }
+    else if (error)
+    {      
+      writeLog(QString::fromUtf8("Echo service stop completed with error."));
+    }    
     else 
     {
-      writeLog(QString::fromUtf8("Echo service stop completed successfully"));
-    }    
+      writeLog(QString::fromUtf8("Echo service stop completed successfully."));
+    }
   }
 
   void MainForm::on_echoService_workCompleted(const boost::system::error_code& error)
   {
-    bool stopCause = server_error::operation_aborted == error;    
-    if (!stopCause && error)
+    if (server_error::invalid_state == error) 
     {
-      writeLog(QString::fromUtf8("Echo service work completed with error"));
+      writeLog(QString::fromUtf8("Echo service work completed with error due to invalid state."));
     }
+    else if (server_error::operation_aborted == error) 
+    {
+      writeLog(QString::fromUtf8("Echo service work was cancelled."));
+    }
+    else if (error)
+    {      
+      writeLog(QString::fromUtf8("Echo service work completed with error."));
+    }    
     else 
     {
-      writeLog(QString::fromUtf8("Echo service work completed due to stop/terminate operation"));
-    }    
-    if (!stopCause)
+      writeLog(QString::fromUtf8("Echo service work completed successfully."));
+    }
+    if (Service::started == echoService_.currentState())
     {
       echoService_.asyncStop(); 
-      writeLog(QString::fromUtf8("Stopping echo service..."));
-    }
+      writeLog(QString::fromUtf8("Stopping echo service (because of its work was completed)..."));
+    }    
   }
 
   void MainForm::on_echoService_exceptionHappened()
   {
     writeLog(QString::fromUtf8("Unexpected error during echo service work. Terminating echo service..."));
     echoService_.terminate(); 
-    writeLog(QString::fromUtf8("Echo service terminated"));
+    writeLog(QString::fromUtf8("Echo service terminated."));
   }
 
   void MainForm::writeLog(const QString& message)
-  {
-    ui_.logTextEdit->appendPlainText(message);
+  {    
+    QString logMessage = QString::fromUtf8("[%1]: %2")
+      .arg(QTime::currentTime().toString(Qt::SystemLocaleLongDate))
+      .arg(message);
+    ui_.logTextEdit->appendPlainText(logMessage);
     ui_.logTextEdit->moveCursor(QTextCursor::End);
   }
 
