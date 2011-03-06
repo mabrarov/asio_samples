@@ -1,21 +1,16 @@
+# 
+# Copyright (c) 2010-2011 Marat Abrarov (abrarov@mail.ru)
+#
+# Distributed under the Boost Software License, Version 1.0. (See accompanying
+# file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+#
+
+TEMPLATE =  app
 QT       -= core gui
 TARGET   =  echo_server
-CONFIG   += console
+CONFIG   += console thread
 CONFIG   -= app_bundle
-TEMPLATE =  app
 
-linux-g++ {
-  QMAKE_CXXFLAGS += -std=c++0x
-}
-
-SOURCES  += ../../../src/ma/console_controller.cpp \
-            ../../../src/echo_server/main.cpp \
-            ../../../src/ma/echo/server/session_config.cpp \
-            ../../../src/ma/echo/server/session_manager_config.cpp \
-            ../../../src/ma/echo/server/error.cpp \
-            ../../../src/ma/echo/server/session.cpp \
-            ../../../src/ma/echo/server/session_manager.cpp
-		
 HEADERS  += ../../../include/ma/handler_storage_service.hpp \
             ../../../include/ma/handler_storage.hpp \
             ../../../include/ma/handler_invoke_helpers.hpp \
@@ -40,28 +35,26 @@ HEADERS  += ../../../include/ma/handler_storage_service.hpp \
             ../../../include/ma/echo/server/session.hpp \
             ../../../include/ma/echo/server/session_manager.hpp		
 
-win32 {
-  LIBS      += -L../../../../boost_1_46_0/lib/x86
+SOURCES  += ../../../src/ma/console_controller.cpp \
+            ../../../src/echo_server/main.cpp \
+            ../../../src/ma/echo/server/session_config.cpp \
+            ../../../src/ma/echo/server/session_manager_config.cpp \
+            ../../../src/ma/echo/server/error.cpp \
+            ../../../src/ma/echo/server/session.cpp \
+            ../../../src/ma/echo/server/session_manager.cpp
+
+win32:INCLUDEPATH += ../../../../boost_1_46_0
+unix:INCLUDEPATH  += /usr/local/include
+INCLUDEPATH       += ../../../include
+		
+win32:LIBS += -L../../../../boost_1_46_0/lib/x86
+unix:LIBS  += /usr/local/lib/libboost_thread.a \
+              /usr/local/lib/libboost_system.a \
+              /usr/local/lib/libboost_date_time.a \
+              /usr/local/lib/libboost_program_options.a
+
+win32:DEFINES += WIN32_LEAN_AND_MEAN _UNICODE UNICODE
+
+linux-g++ {
+  QMAKE_CXXFLAGS += -std=c++0x
 }
-
-unix {
-  LIBS      += /usr/local/lib/libboost_thread.a \
-               /usr/local/lib/libboost_system.a \
-               /usr/local/lib/libboost_date_time.a \
-               /usr/local/lib/libboost_program_options.a
-}
-
-win32 {
-  INCLUDEPATH += ../../../../boost_1_46_0
-}
-
-unix {
-  INCLUDEPATH += /usr/local/include
-}
-
-INCLUDEPATH += ../../../include
-
-win32 {
-  DEFINES   += WIN32_LEAN_AND_MEAN _UNICODE UNICODE
-}
-
