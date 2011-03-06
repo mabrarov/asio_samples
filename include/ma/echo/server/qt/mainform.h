@@ -51,6 +51,8 @@ namespace ma
 
         private:          
           typedef boost::tuple<execution_config, session_manager_config> ServiceConfiguration;
+          typedef boost::tuple<int, QWidget*> ConfigWidget;
+
           Q_DISABLE_COPY(MainForm) 
 
           execution_config readExecutionConfig();
@@ -64,7 +66,7 @@ namespace ma
           void writeLog(const QString&);
 
           Ui::mainForm ui_;
-          std::vector<QWidget*> configInputs_;
+          std::vector<ConfigWidget> configWidgets_;
           ServiceState::State prevServiceState_;
           Service& service_;          
         }; // class MainForm

@@ -69,16 +69,8 @@
     <Filter Include="Source Files\ma\echo\server\qt">
       <UniqueIdentifier>{f4e9ac4f-1b15-46b3-8b80-c5cb0b641c2e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Translation Files">
-      <UniqueIdentifier>{639EADAA-A684-42e4-A9AD-28FC9BCB8F7C}</UniqueIdentifier>
-      <Extensions>ts</Extensions>
-      <ParseFiles>false</ParseFiles>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="GeneratedFiles\qrc_qt_echo_server.cpp">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\src\ma\echo\server\qt\mainform.cpp">
       <Filter>Source Files\ma\echo\server\qt</Filter>
     </ClCompile>
@@ -141,17 +133,8 @@
     <CustomBuild Include="..\..\..\src\ma\echo\server\qt\mainform.ui">
       <Filter>Form Files\ma\echo\server\qt</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\..\resources\qt_echo_server\qt_echo_server.qrc">
-      <Filter>Resource Files</Filter>
-    </CustomBuild>
     <CustomBuild Include="..\..\..\include\ma\echo\server\qt\service.h">
       <Filter>Header Files\ma\echo\server\qt</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\..\src\qt_echo_server\qt_echo_server_ru.ts">
-      <Filter>Translation Files</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\..\src\qt_echo_server\qt_ru.ts">
-      <Filter>Translation Files</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\..\include\ma\echo\server\qt\serviceservantsignal.h">
       <Filter>Header Files\ma\echo\server\qt</Filter>

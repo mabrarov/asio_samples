@@ -53,9 +53,13 @@ namespace
     return 2;
   }
 
-  execution_config createTestExecutionConfig()
+  boost::optional<int> readOptionalValue(QCheckBox& checkBox, QSpinBox& spinBox)
   {
-    return execution_config(2, 2);
+    if (Qt::Checked == checkBox.checkState())
+    {
+      return spinBox.value();
+    }
+    return boost::optional<int>();
   }
 
   session_config createTestSessionConfig()
@@ -79,25 +83,25 @@ namespace
 
   MainForm::MainForm(Service& service, QWidget* parent, Qt::WFlags flags)
     : QDialog(parent, flags | Qt::WindowMinMaxButtonsHint)
-    , configInputs_()
+    , configWidgets_()
     , prevServiceState_(service.currentState())
     , service_(service)
   {
     ui_.setupUi(this);
 
-    configInputs_.push_back(ui_.sessionManagerThreadsSpinBox);
-    configInputs_.push_back(ui_.sessionThreadsSpinBox);
-    configInputs_.push_back(ui_.maxSessionCountSpinBox);
-    configInputs_.push_back(ui_.recycledSessionCountSpinBox);
-    configInputs_.push_back(ui_.listenBacklogSpinBox);
-    configInputs_.push_back(ui_.portNumberSpinBox);
-    configInputs_.push_back(ui_.addressEdit);
-    configInputs_.push_back(ui_.sessionBufferSizeSpinBox);
-    configInputs_.push_back(ui_.sockRecvBufferSizeCheckBox);
-    configInputs_.push_back(ui_.sockRecvBufferSizeSpinBox);
-    configInputs_.push_back(ui_.sockSendBufferSizeCheckBox);
-    configInputs_.push_back(ui_.sockSendBufferSizeSpinBox);
-    configInputs_.push_back(ui_.tcpNoDelayComboBox);
+    configWidgets_.push_back(boost::make_tuple(0, ui_.sessionManagerThreadsSpinBox));
+    configWidgets_.push_back(boost::make_tuple(0, ui_.sessionThreadsSpinBox));
+    configWidgets_.push_back(boost::make_tuple(1, ui_.maxSessionCountSpinBox));
+    configWidgets_.push_back(boost::make_tuple(1, ui_.recycledSessionCountSpinBox));
+    configWidgets_.push_back(boost::make_tuple(1, ui_.listenBacklogSpinBox));
+    configWidgets_.push_back(boost::make_tuple(1, ui_.portNumberSpinBox));
+    configWidgets_.push_back(boost::make_tuple(1, ui_.addressEdit));
+    configWidgets_.push_back(boost::make_tuple(2, ui_.sessionBufferSizeSpinBox));
+    configWidgets_.push_back(boost::make_tuple(2, ui_.sockRecvBufferSizeCheckBox));
+    configWidgets_.push_back(boost::make_tuple(2, ui_.sockRecvBufferSizeSpinBox));
+    configWidgets_.push_back(boost::make_tuple(2, ui_.sockSendBufferSizeCheckBox));
+    configWidgets_.push_back(boost::make_tuple(2, ui_.sockSendBufferSizeSpinBox));
+    configWidgets_.push_back(boost::make_tuple(2, ui_.tcpNoDelayComboBox));
 
     checkConnect(QObject::connect(&service, 
       SIGNAL(exceptionHappened()), 
@@ -237,19 +241,38 @@ namespace
   } 
 
   execution_config MainForm::readExecutionConfig()
-  {
-    //todo
-    return createTestExecutionConfig();
+  {    
+    return execution_config(
+      boost::numeric_cast<std::size_t>(ui_.sessionManagerThreadsSpinBox->value()),
+      boost::numeric_cast<std::size_t>(ui_.sessionThreadsSpinBox->value()));
   }
 
   session_config MainForm::readSessionConfig()
   {
-    //todo
-    return createTestSessionConfig();
+    boost::optional<int> socketRecvBufferSize = 
+      readOptionalValue(*ui_.sockRecvBufferSizeCheckBox, *ui_.sockRecvBufferSizeSpinBox);
+
+    boost::optional<int> socketSendBufferSize = 
+      readOptionalValue(*ui_.sockSendBufferSizeCheckBox, *ui_.sockSendBufferSizeSpinBox);
+
+    boost::optional<bool> tcpNoDelay;
+    switch (ui_.tcpNoDelayComboBox->currentIndex())
+    {
+    case 1:
+      tcpNoDelay = true;
+      break;
+    case 2:
+      tcpNoDelay = false;
+      break;
+    }
+
+    return session_config(
+      boost::numeric_cast<std::size_t>(ui_.sessionBufferSizeSpinBox->value()),
+      socketRecvBufferSize, socketSendBufferSize, tcpNoDelay);
   }
 
   session_manager_config MainForm::readSessionManagerConfig()
-  {
+  {    
     //todo
     return createTestSessionManagerConfig(readSessionConfig());
   }  
@@ -289,10 +312,10 @@ namespace
       ui_.stopButton->setEnabled(ServiceState::Starting == serviceState || ServiceState::Started == serviceState);
       ui_.terminateButton->setEnabled(!serviceStopped);
 
-      typedef std::vector<QWidget*>::iterator iterator_type;
-      for (iterator_type i = configInputs_.begin(), end = configInputs_.end(); i != end; ++i)
+      typedef std::vector<ConfigWidget>::iterator iterator_type;
+      for (iterator_type i = configWidgets_.begin(), end = configWidgets_.end(); i != end; ++i)
       {
-        (*i)->setEnabled(serviceStopped);
+        i->get<1>()->setEnabled(serviceStopped);
       }
       ui_.sockRecvBufferSizeSpinBox->setEnabled(serviceStopped && 
         Qt::Checked == ui_.sockRecvBufferSizeCheckBox->checkState());
