@@ -396,9 +396,7 @@
   <tabstop>terminateButton</tabstop>
   <tabstop>exitButton</tabstop>
  </tabstops>
- <resources>
-  <include location="../../../../../resources/qt_echo_server/qt_echo_server.qrc"/>
- </resources>
+ <resources/>
  <connections>
   <connection>
    <sender>exitButton</sender>

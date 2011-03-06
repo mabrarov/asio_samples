@@ -55,10 +55,10 @@ namespace ma
 
           Q_DISABLE_COPY(MainForm) 
 
-          execution_config readExecutionConfig();
-          session_config readSessionConfig(); 
-          session_manager_config readSessionManagerConfig();          
-          ServiceConfiguration readServiceConfig();          
+          execution_config readExecutionConfig() const;
+          session_config readSessionConfig() const;
+          session_manager_config readSessionManagerConfig() const;
+          ServiceConfiguration readServiceConfig() const;
 
           static QString getStateDescription(ServiceState::State serviceState);
           void updateWidgetsStates(bool ignorePrevServiceState = false);          

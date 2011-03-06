@@ -53,7 +53,7 @@ namespace
     return 2;
   }
 
-  boost::optional<int> readOptionalValue(QCheckBox& checkBox, QSpinBox& spinBox)
+  boost::optional<int> readOptionalValue(const QCheckBox& checkBox, const QSpinBox& spinBox)
   {
     if (Qt::Checked == checkBox.checkState())
     {
@@ -62,23 +62,6 @@ namespace
     return boost::optional<int>();
   }
 
-  session_config createTestSessionConfig()
-  {
-    return session_config(4096);
-  }
-
-  session_manager_config createTestSessionManagerConfig(const session_config& sessionConfig)
-  {
-    using boost::asio::ip::tcp;
-
-    unsigned short port = 7;
-    std::size_t maxSessions = 1000;
-    std::size_t recycledSessions = 100;
-    int listenBacklog = 6;
-    return session_manager_config(tcp::endpoint(tcp::v4(), port),
-      maxSessions, recycledSessions, listenBacklog, sessionConfig);
-  }
-  
 } // anonymous namespace
 
   MainForm::MainForm(Service& service, QWidget* parent, Qt::WFlags flags)
@@ -240,14 +223,14 @@ namespace
     updateWidgetsStates();
   } 
 
-  execution_config MainForm::readExecutionConfig()
+  execution_config MainForm::readExecutionConfig() const
   {    
     return execution_config(
       boost::numeric_cast<std::size_t>(ui_.sessionManagerThreadsSpinBox->value()),
       boost::numeric_cast<std::size_t>(ui_.sessionThreadsSpinBox->value()));
   }
 
-  session_config MainForm::readSessionConfig()
+  session_config MainForm::readSessionConfig() const
   {
     boost::optional<int> socketRecvBufferSize = 
       readOptionalValue(*ui_.sockRecvBufferSizeCheckBox, *ui_.sockRecvBufferSizeSpinBox);
@@ -271,13 +254,23 @@ namespace
       socketRecvBufferSize, socketSendBufferSize, tcpNoDelay);
   }
 
-  session_manager_config MainForm::readSessionManagerConfig()
-  {    
-    //todo
-    return createTestSessionManagerConfig(readSessionConfig());
+  session_manager_config MainForm::readSessionManagerConfig() const
+  {        
+    unsigned short port = boost::numeric_cast<unsigned short>(ui_.portNumberSpinBox->value());
+    std::size_t maxSessions = boost::numeric_cast<std::size_t>(ui_.maxSessionCountSpinBox->value());
+    std::size_t recycledSessions = boost::numeric_cast<std::size_t>(ui_.recycledSessionCountSpinBox->value());
+    int listenBacklog = ui_.listenBacklogSpinBox->value();
+
+    //todo: add listen address parsing
+    boost::asio::ip::tcp::endpoint listenEndpoint = 
+      boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port);
+
+    return session_manager_config(listenEndpoint, 
+      maxSessions, recycledSessions, listenBacklog,
+      readSessionConfig());
   }  
 
-  MainForm::ServiceConfiguration MainForm::readServiceConfig()
+  MainForm::ServiceConfiguration MainForm::readServiceConfig() const
   {
     //todo: read and validate configuration
     execution_config executionConfig = readExecutionConfig();
