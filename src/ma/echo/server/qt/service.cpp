@@ -177,7 +177,7 @@ namespace
 
   Service::Service(QObject* parent)
     : QObject(parent)
-    , currentState_(ServiceState::stopped)
+    , currentState_(ServiceState::Stopped)
     , servant_() 
     , servantSignal_()
   {
@@ -203,7 +203,7 @@ namespace
   void Service::asyncStart(const execution_config& the_execution_config, 
     const session_manager_config& the_session_manager_config)
   {
-    if (ServiceState::stopped != currentState_)
+    if (ServiceState::Stopped != currentState_)
     {      
       forwardSignal_->emitStartCompleted(server_error::invalid_state);
       return;
@@ -213,23 +213,23 @@ namespace
       boost::bind(&ServiceServantSignal::emitWorkThreadExceptionHappened, servantSignal_));
     servant_->get_session_manager()->async_start(
       boost::bind(&ServiceServantSignal::emitSessionManagerStartCompleted, servantSignal_, _1));
-    currentState_ = ServiceState::startInProgress;
+    currentState_ = ServiceState::Starting;
   }
 
   void Service::onSessionManagerStartCompleted(const boost::system::error_code& error)
   {    
-    if (ServiceState::startInProgress == currentState_)
+    if (ServiceState::Starting == currentState_)
     {
       if (error)
       {
         destroyServant();
-        currentState_ = ServiceState::stopped;
+        currentState_ = ServiceState::Stopped;
       }
       else
       {
         servant_->get_session_manager()->async_wait(
           boost::bind(&ServiceServantSignal::emitSessionManagerWaitCompleted, servantSignal_, _1));
-        currentState_ = ServiceState::started;
+        currentState_ = ServiceState::Started;
       }
       emit startCompleted(error);
     }    
@@ -237,30 +237,30 @@ namespace
   
   void Service::asyncStop()
   {    
-    if (ServiceState::stopped == currentState_ || ServiceState::stopInProgress == currentState_)
+    if (ServiceState::Stopped == currentState_ || ServiceState::Stopping == currentState_)
     {
       forwardSignal_->emitStopCompleted(server_error::invalid_state);
       return;
     }
-    if (ServiceState::startInProgress == currentState_)
+    if (ServiceState::Starting == currentState_)
     {
       forwardSignal_->emitStartCompleted(server_error::operation_aborted);
     }
-    else if (ServiceState::started == currentState_)
+    else if (ServiceState::Started == currentState_)
     {
       forwardSignal_->emitWorkCompleted(server_error::operation_aborted);
     }
     servant_->get_session_manager()->async_stop(
       boost::bind(&ServiceServantSignal::emitSessionManagerStopCompleted, servantSignal_, _1));
-    currentState_ = ServiceState::stopInProgress;
+    currentState_ = ServiceState::Stopping;
   }
 
   void Service::onSessionManagerStopCompleted(const boost::system::error_code& error)
   {
-    if (ServiceState::stopInProgress == currentState_)
+    if (ServiceState::Stopping == currentState_)
     {
       destroyServant();
-      currentState_ = ServiceState::stopped;
+      currentState_ = ServiceState::Stopped;
       emit stopCompleted(error);
     }        
   }
@@ -268,24 +268,24 @@ namespace
   void Service::terminate()
   {    
     destroyServant();
-    if (ServiceState::startInProgress == currentState_)
+    if (ServiceState::Starting == currentState_)
     {
       forwardSignal_->emitStartCompleted(server_error::operation_aborted);
     }
-    else if (ServiceState::started == currentState_)
+    else if (ServiceState::Started == currentState_)
     {
       forwardSignal_->emitWorkCompleted(server_error::operation_aborted);
     }
-    else if (ServiceState::stopInProgress == currentState_)
+    else if (ServiceState::Stopping == currentState_)
     {
       forwardSignal_->emitStopCompleted(server_error::operation_aborted);
     }
-    currentState_ = ServiceState::stopped;
+    currentState_ = ServiceState::Stopped;
   }
 
   void Service::onSessionManagerWaitCompleted(const boost::system::error_code& error)
   {
-    if (ServiceState::started == currentState_)
+    if (ServiceState::Started == currentState_)
     {
       emit workCompleted(error);
     }
@@ -293,7 +293,7 @@ namespace
 
   void Service::onWorkThreadExceptionHappened()
   {
-    if (ServiceState::stopped != currentState_)
+    if (ServiceState::Stopped != currentState_)
     {
       emit exceptionHappened();
     }

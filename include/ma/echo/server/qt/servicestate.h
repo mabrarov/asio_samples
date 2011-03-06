@@ -24,10 +24,10 @@ namespace ma
         {
           enum State
           {
-            stopped,
-            startInProgress,
-            started,
-            stopInProgress
+            Stopped,
+            Starting,
+            Started,
+            Stopping
           }; // enum State
         }
 

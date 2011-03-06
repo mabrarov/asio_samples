@@ -38,14 +38,14 @@
         <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
        </property>
        <item row="0" column="0">
-        <widget class="QLabel" name="sessionManagementThreadsLabel">
+        <widget class="QLabel" name="sessionManagerThreadsLabel">
          <property name="text">
           <string>Session management threads</string>
          </property>
         </widget>
        </item>
        <item row="0" column="1">
-        <widget class="QSpinBox" name="sessionManagementThreadsSpinBox">
+        <widget class="QSpinBox" name="sessionManagerThreadsSpinBox">
          <property name="minimum">
           <number>1</number>
          </property>
@@ -376,7 +376,7 @@
  <layoutdefault spacing="6" margin="11"/>
  <tabstops>
   <tabstop>tabWidget</tabstop>
-  <tabstop>sessionManagementThreadsSpinBox</tabstop>
+  <tabstop>sessionManagerThreadsSpinBox</tabstop>
   <tabstop>sessionThreadsSpinBox</tabstop>
   <tabstop>maxSessionCountSpinBox</tabstop>
   <tabstop>recycledSessionCountSpinBox</tabstop>
@@ -417,38 +417,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>sockRecvBufferSizeCheckBox</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>sockRecvBufferSizeSpinBox</receiver>
-   <slot>setEnabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>19</x>
-     <y>63</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>101</x>
-     <y>63</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>sockSendBufferSizeCheckBox</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>sockSendBufferSizeSpinBox</receiver>
-   <slot>setEnabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>19</x>
-     <y>68</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>101</x>
-     <y>68</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>pushButton</sender>
    <signal>clicked()</signal>
    <receiver>logTextEdit</receiver>
@@ -461,6 +429,38 @@
     <hint type="destinationlabel">
      <x>57</x>
      <y>321</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>sockRecvBufferSizeCheckBox</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>sockRecvBufferSizeSpinBox</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>159</x>
+     <y>91</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>249</x>
+     <y>97</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>sockSendBufferSizeCheckBox</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>sockSendBufferSizeSpinBox</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>190</x>
+     <y>120</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>241</x>
+     <y>123</y>
     </hint>
    </hints>
   </connection>

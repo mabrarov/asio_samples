@@ -12,9 +12,11 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
+#include <vector>
 #include <boost/tuple/tuple.hpp>
 #include <boost/system/error_code.hpp>
 #include <QtGui/QDialog>
+#include <ma/echo/server/session_config.hpp>
 #include <ma/echo/server/session_manager_config.hpp>
 #include <ma/echo/server/qt/service_fwd.h>
 #include <ma/echo/server/qt/servicestate.h>
@@ -34,7 +36,7 @@ namespace ma
           Q_OBJECT
 
         public:
-          MainForm(Service& echoService, QWidget* parent = 0, Qt::WFlags flags = 0);
+          MainForm(Service& service, QWidget* parent = 0, Qt::WFlags flags = 0);
           ~MainForm();
 
         private slots:      
@@ -42,23 +44,29 @@ namespace ma
            void on_stopButton_clicked();
            void on_terminateButton_clicked();
 
-           void on_echoService_exceptionHappened();
-           void on_echoService_startCompleted(const boost::system::error_code&);
-           void on_echoService_stopCompleted(const boost::system::error_code&);
-           void on_echoService_workCompleted(const boost::system::error_code&);           
+           void on_service_exceptionHappened();
+           void on_service_startCompleted(const boost::system::error_code&);
+           void on_service_stopCompleted(const boost::system::error_code&);
+           void on_service_workCompleted(const boost::system::error_code&);
 
         private:          
           typedef boost::tuple<execution_config, session_manager_config> ServiceConfiguration;
           Q_DISABLE_COPY(MainForm) 
 
-          ServiceConfiguration readServiceConfiguration();
-          static QString getStateDescription(QObject& translateContext, ServiceState::State echoServiceState);
-          void updateWidgetsStates(bool ignorePrevEchoServiceState = false);          
+          execution_config readExecutionConfig();
+          session_config readSessionConfig(); 
+          session_manager_config readSessionManagerConfig();          
+          ServiceConfiguration readServiceConfig();          
+
+          static QString getStateDescription(ServiceState::State serviceState);
+          void updateWidgetsStates(bool ignorePrevServiceState = false);          
+
           void writeLog(const QString&);
 
           Ui::mainForm ui_;
-          ServiceState::State prevEchoServiceState_;
-          Service& echoService_;         
+          std::vector<QWidget*> configInputs_;
+          ServiceState::State prevServiceState_;
+          Service& service_;          
         }; // class MainForm
 
       } // namespace qt
