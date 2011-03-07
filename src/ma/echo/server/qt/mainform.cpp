@@ -18,6 +18,7 @@ TRANSLATOR ma::echo::server::qt::MainForm
 #include <QtGlobal>
 #include <QtCore/QTime>
 #include <QtGui/QTextCursor>
+#include <QtGui/QMessageBox>
 #include <ma/echo/server/error.hpp>
 #include <ma/echo/server/qt/service.h>
 #include <ma/echo/server/qt/signal_connect_error.h>
@@ -295,7 +296,8 @@ namespace
     }
     catch (const boost::numeric::bad_numeric_cast&)
     {
-      boost::throw_exception(widget_based_config_read_error(currentWidget));
+      boost::throw_exception(widget_based_config_read_error(
+        currentWidget, tr("Invalid value.")));
     }
 
     return execution_config(sessionManagerThreadCount, sessionThreadCount);
@@ -348,7 +350,8 @@ namespace
     }
     catch (const boost::numeric::bad_numeric_cast&)
     {
-      boost::throw_exception(widget_based_config_read_error(currentWidget));
+      boost::throw_exception(widget_based_config_read_error(
+        currentWidget, tr("Invalid value.")));
     }
     
     boost::asio::ip::address listenAddress;
@@ -359,7 +362,8 @@ namespace
     } 
     catch (const std::exception&)
     {
-      boost::throw_exception(widget_based_config_read_error(ui_.addressEdit));
+      boost::throw_exception(widget_based_config_read_error(
+        ui_.addressEdit, tr("Failed to parse numeric IP address.")));
     }
 
     return session_manager_config(
@@ -376,7 +380,7 @@ namespace
     return boost::make_tuple(executionConfig, sessionManagerConfig);
   }
 
-  void MainForm::showError(const QString& /*message*/, QWidget* widget)
+  void MainForm::showError(const QString& message, QWidget* widget)
   {
     if (widget)
     {
@@ -391,7 +395,7 @@ namespace
       }
       widget->setFocus(Qt::TabFocusReason);
     }
-    //todo: show error message
+    QMessageBox::critical(this, tr("Invalid configuration"), message);
   }
 
   QString MainForm::getServiceStateWindowTitle(ServiceState::State serviceState)
