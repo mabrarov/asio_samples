@@ -49,7 +49,7 @@ namespace ma
            void on_service_stopCompleted(const boost::system::error_code&);
            void on_service_workCompleted(const boost::system::error_code&);
 
-        private:          
+        private:
           typedef boost::tuple<execution_config, session_manager_config> ServiceConfiguration;
           typedef boost::tuple<int, QWidget*> ConfigWidget;
 
@@ -59,6 +59,7 @@ namespace ma
           session_config readSessionConfig() const;
           session_manager_config readSessionManagerConfig() const;
           ServiceConfiguration readServiceConfig() const;
+          void showError(const QString& message, QWidget* widget = 0);
 
           static QString getServiceStateWindowTitle(ServiceState::State serviceState);
           void updateWidgetsStates(bool ignorePrevServiceState = false);          

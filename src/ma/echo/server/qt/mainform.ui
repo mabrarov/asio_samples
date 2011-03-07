@@ -380,6 +380,9 @@
        <property name="text">
         <string>&amp;Clear log</string>
        </property>
+       <property name="shortcut">
+        <string>Ctrl+L</string>
+       </property>
       </widget>
      </item>
      <item>
@@ -410,6 +413,9 @@
        <property name="text">
         <string>Sto&amp;p</string>
        </property>
+       <property name="shortcut">
+        <string>Ctrl+S</string>
+       </property>
       </widget>
      </item>
      <item>
@@ -417,12 +423,18 @@
        <property name="text">
         <string>&amp;Terminate</string>
        </property>
+       <property name="shortcut">
+        <string>Ctrl+T</string>
+       </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="exitButton">
        <property name="text">
         <string>E&amp;xit</string>
+       </property>
+       <property name="shortcut">
+        <string>Ctrl+Q</string>
        </property>
       </widget>
      </item>

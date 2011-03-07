@@ -10,8 +10,10 @@ TRANSLATOR ma::echo::server::qt::MainForm
 //
 
 #include <limits>
+#include <stdexcept>
 #include <boost/optional.hpp>
 #include <boost/thread/thread.hpp>
+#include <boost/throw_exception.hpp>
 #include <boost/numeric/conversion/cast.hpp>
 #include <QtGlobal>
 #include <QtCore/QTime>
@@ -61,6 +63,41 @@ namespace
     }
     return boost::optional<int>();
   }
+
+  class config_read_error : public std::runtime_error
+  {
+  public:
+    explicit config_read_error(const QString& message = QString())
+      : std::runtime_error("config_read_error")
+      , message_(message)
+    {
+    }
+
+    const QString& message() const
+    {
+      return message_;
+    }
+  private:
+    QString message_;
+  }; // class config_read_error
+
+  class widget_based_config_read_error : public config_read_error
+  {
+  public:
+    explicit widget_based_config_read_error(QWidget* widget, const QString& message = QString())
+      : config_read_error(message)
+      , widget_(widget)
+    {
+    }
+
+    QWidget* widget() const
+    {
+      return widget_;
+    }
+    
+  private:    
+    QWidget* widget_;
+  }; //class widget_based_config_read_error
 
 } // anonymous namespace
 
@@ -120,9 +157,17 @@ namespace
     {
        serviceConfiguration = readServiceConfig();
     }
-    catch (...)
+    catch (const widget_based_config_read_error& e)
     {
-      //todo
+      showError(e.message(), e.widget());
+    }
+    catch (const config_read_error& e)
+    {
+      showError(e.message());
+    }
+    catch (const std::exception&)
+    {
+      showError(tr("Unexpected error reading configuration."));
     }
     if (serviceConfiguration)
     {
@@ -224,10 +269,24 @@ namespace
   } 
 
   execution_config MainForm::readExecutionConfig() const
-  {    
-    return execution_config(
-      boost::numeric_cast<std::size_t>(ui_.sessionManagerThreadsSpinBox->value()),
-      boost::numeric_cast<std::size_t>(ui_.sessionThreadsSpinBox->value()));
+  {   
+    std::size_t sessionManagerThreadCount;
+    std::size_t sessionThreadCount;
+    QWidget*    currentWidget = 0;
+    try
+    {
+      currentWidget = ui_.sessionManagerThreadsSpinBox;
+      sessionManagerThreadCount = boost::numeric_cast<std::size_t>(ui_.sessionManagerThreadsSpinBox->value());
+
+      currentWidget = ui_.sessionThreadsSpinBox;
+      sessionThreadCount = boost::numeric_cast<std::size_t>(ui_.sessionThreadsSpinBox->value());
+    }
+    catch (const boost::numeric::bad_numeric_cast&)
+    {
+      boost::throw_exception(widget_based_config_read_error(currentWidget));
+    }
+
+    return execution_config(sessionManagerThreadCount, sessionThreadCount);
   }
 
   session_config MainForm::readSessionConfig() const
@@ -255,15 +314,41 @@ namespace
   }
 
   session_manager_config MainForm::readSessionManagerConfig() const
-  {        
-    unsigned short port = boost::numeric_cast<unsigned short>(ui_.portNumberSpinBox->value());
-    std::size_t maxSessions = boost::numeric_cast<std::size_t>(ui_.maxSessionCountSpinBox->value());
-    std::size_t recycledSessions = boost::numeric_cast<std::size_t>(ui_.recycledSessionCountSpinBox->value());
-    int listenBacklog = ui_.listenBacklogSpinBox->value();
+  {
+    unsigned short port;
+    std::size_t    maxSessions;
+    std::size_t    recycledSessions;
+    int            listenBacklog;
+    QWidget*       currentWidget = 0;
+    try 
+    {
+      currentWidget = ui_.portNumberSpinBox;
+      port = boost::numeric_cast<unsigned short>(ui_.portNumberSpinBox->value());
 
-    //todo: add listen address parsing
-    boost::asio::ip::address listenAddress = boost::asio::ip::address::from_string(
-      ui_.addressEdit->text().toStdString());    
+      currentWidget = ui_.maxSessionCountSpinBox;
+      maxSessions = boost::numeric_cast<std::size_t>(ui_.maxSessionCountSpinBox->value());
+
+      currentWidget = ui_.recycledSessionCountSpinBox;
+      recycledSessions = boost::numeric_cast<std::size_t>(ui_.recycledSessionCountSpinBox->value());
+
+      currentWidget = ui_.listenBacklogSpinBox;
+      listenBacklog = ui_.listenBacklogSpinBox->value();
+    }
+    catch (const boost::numeric::bad_numeric_cast&)
+    {
+      boost::throw_exception(widget_based_config_read_error(currentWidget));
+    }
+    
+    boost::asio::ip::address listenAddress;
+    try 
+    {
+      listenAddress = boost::asio::ip::address::from_string(
+        ui_.addressEdit->text().toStdString());
+    } 
+    catch (const std::exception&)
+    {
+      boost::throw_exception(widget_based_config_read_error(ui_.addressEdit));
+    }
 
     return session_manager_config(
       boost::asio::ip::tcp::endpoint(listenAddress, port), 
@@ -277,6 +362,24 @@ namespace
     execution_config executionConfig = readExecutionConfig();
     session_manager_config sessionManagerConfig = readSessionManagerConfig();
     return boost::make_tuple(executionConfig, sessionManagerConfig);
+  }
+
+  void MainForm::showError(const QString& message, QWidget* widget)
+  {
+    if (widget)
+    {
+      typedef std::vector<ConfigWidget>::iterator iterator_type;
+      for (iterator_type i = configWidgets_.begin(), end = configWidgets_.end(); i != end; ++i)
+      {
+        if (widget == i->get<1>())
+        {
+          ui_.tabWidget->setCurrentIndex(i->get<0>());
+          break;
+        }
+      }
+      widget->setFocus(Qt::TabFocusReason);
+    }
+    //todo: show error message
   }
 
   QString MainForm::getServiceStateWindowTitle(ServiceState::State serviceState)
