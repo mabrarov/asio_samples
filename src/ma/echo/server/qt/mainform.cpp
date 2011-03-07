@@ -262,10 +262,11 @@ namespace
     int listenBacklog = ui_.listenBacklogSpinBox->value();
 
     //todo: add listen address parsing
-    boost::asio::ip::tcp::endpoint listenEndpoint = 
-      boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port);
+    boost::asio::ip::address listenAddress = boost::asio::ip::address::from_string(
+      ui_.addressEdit->text().toStdString());    
 
-    return session_manager_config(listenEndpoint, 
+    return session_manager_config(
+      boost::asio::ip::tcp::endpoint(listenAddress, port), 
       maxSessions, recycledSessions, listenBacklog,
       readSessionConfig());
   }  

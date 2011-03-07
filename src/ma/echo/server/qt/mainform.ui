@@ -30,7 +30,7 @@
       <attribute name="title">
        <string>Execution</string>
       </attribute>
-      <layout class="QFormLayout" name="formLayout_3">
+      <layout class="QFormLayout" name="executionTabLayout">
        <item row="0" column="0">
         <widget class="QLabel" name="sessionManagerThreadsLabel">
          <property name="text">
@@ -89,7 +89,7 @@
       <attribute name="title">
        <string>Session management</string>
       </attribute>
-      <layout class="QFormLayout" name="formLayout">
+      <layout class="QFormLayout" name="sessionManagementTabLayout">
        <item row="0" column="0">
         <widget class="QLabel" name="maxSessionCountLabel">
          <property name="text">
@@ -220,7 +220,7 @@
       <attribute name="title">
        <string>Session</string>
       </attribute>
-      <layout class="QFormLayout" name="formLayout_2">
+      <layout class="QFormLayout" name="sessionTabLayout">
        <item row="0" column="0">
         <widget class="QLabel" name="sessionBufferSizeLabel">
          <property name="text">
