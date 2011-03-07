@@ -35,7 +35,7 @@ namespace ma
     {
       if (has_do_something_handler())
       {
-        return boost::asio::error::operation_not_supported;
+        return boost::system::error_code(boost::asio::error::operation_not_supported);
       }      
       counter_ = 10000;
       std::cout << start_message_fmt_ % name_ % counter_;

@@ -5,7 +5,10 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#if defined(WIN32)
 #include <tchar.h>
+#endif
+
 #include <cstdlib>
 #include <cstddef>
 #include <iostream>
@@ -19,26 +22,42 @@
 #include <boost/make_shared.hpp>
 #include <boost/utility/in_place_factory.hpp>
 #include <ma/handler_allocator.hpp>
+#include <ma/console_controller.hpp>
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/tutorial/async_derived.hpp>
 
-typedef ma::in_place_handler_allocator<128> allocator_type;
+namespace
+{
+  typedef ma::in_place_handler_allocator<128> allocator_type;
 
-void handle_do_something(const boost::system::error_code& error,
-  const boost::shared_ptr<std::string>& name, 
-  const boost::shared_ptr<allocator_type>& /*allocator*/)
-{  
-  if (error)
-  {
-    std::cout << boost::format("%s complete work with error\n") % *name;
+  void handle_do_something(const boost::system::error_code& error,
+    const boost::shared_ptr<std::string>& name, 
+    const boost::shared_ptr<allocator_type>& /*allocator*/)
+  {  
+    if (error)
+    {
+      std::cout << boost::format("%s complete work with error\n") % *name;
+    }
+    else
+    {
+      std::cout << boost::format("%s successfully complete work\n") % *name;
+    }
   }
-  else
-  {
-    std::cout << boost::format("%s successfully complete work\n") % *name;
-  }
-}
 
+  void handle_program_exit(boost::asio::io_service& io_service)
+  {
+    std::cout << "User exit request detected. Stopping work io_service...\n";
+    io_service.stop();
+    std::cout << "Work io_service stopped.\n";
+  }
+
+} // anonymous namespace
+
+#if defined(WIN32)
 int _tmain(int /*argc*/, _TCHAR* /*argv*/[])
+#else
+int main(int /*argc*/, char* /*argv*/[])
+#endif
 {     
   try
   {  
@@ -47,6 +66,10 @@ int _tmain(int /*argc*/, _TCHAR* /*argv*/[])
 
     using boost::asio::io_service;
     io_service work_io_service(cpu_count);
+
+    // Setup console controller
+    ma::console_controller console_controller(boost::bind(handle_program_exit, boost::ref(work_io_service)));
+    std::cout << "Press Ctrl+C (Ctrl+Break) to exit.\n";
 
     boost::optional<io_service::work> work_io_service_guard(boost::in_place(boost::ref(work_io_service)));
     boost::thread_group work_threads;
