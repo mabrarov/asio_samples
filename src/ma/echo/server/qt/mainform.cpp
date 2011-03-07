@@ -73,6 +73,12 @@ namespace
     {
     }
 
+#if defined(__GNUC__)
+    ~config_read_error() throw ()
+    {
+    }
+#endif
+
     const QString& message() const
     {
       return message_;
@@ -89,6 +95,12 @@ namespace
       , widget_(widget)
     {
     }
+
+#if defined(__GNUC__)
+    ~widget_based_config_read_error() throw ()
+    {
+    }
+#endif
 
     QWidget* widget() const
     {
@@ -364,7 +376,7 @@ namespace
     return boost::make_tuple(executionConfig, sessionManagerConfig);
   }
 
-  void MainForm::showError(const QString& message, QWidget* widget)
+  void MainForm::showError(const QString& /*message*/, QWidget* widget)
   {
     if (widget)
     {
