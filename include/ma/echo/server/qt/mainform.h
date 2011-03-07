@@ -15,7 +15,7 @@
 #include <vector>
 #include <boost/tuple/tuple.hpp>
 #include <boost/system/error_code.hpp>
-#include <QtGui/QDialog>
+#include <QtGui/QWidget>
 #include <ma/echo/server/session_config.hpp>
 #include <ma/echo/server/session_manager_config.hpp>
 #include <ma/echo/server/qt/service_fwd.h>
@@ -31,7 +31,7 @@ namespace ma
     {    
       namespace qt 
       {
-        class MainForm : public QDialog
+        class MainForm : public QWidget
         {
           Q_OBJECT
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>mainForm</class>
- <widget class="QDialog" name="mainForm">
+ <widget class="QWidget" name="mainForm">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -12,9 +12,6 @@
   </property>
   <property name="windowTitle">
    <string>Qt Echo Server</string>
-  </property>
-  <property name="sizeGripEnabled">
-   <bool>true</bool>
   </property>
   <layout class="QVBoxLayout" name="mainLayout" stretch="0,0,0,1,0">
    <item>
@@ -459,22 +456,6 @@
  <resources/>
  <connections>
   <connection>
-   <sender>exitButton</sender>
-   <signal>clicked()</signal>
-   <receiver>mainForm</receiver>
-   <slot>reject()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>414</x>
-     <y>389</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>341</x>
-     <y>236</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>pushButton</sender>
    <signal>clicked()</signal>
    <receiver>logTextEdit</receiver>
@@ -519,6 +500,22 @@
     <hint type="destinationlabel">
      <x>241</x>
      <y>123</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>exitButton</sender>
+   <signal>clicked()</signal>
+   <receiver>mainForm</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>362</x>
+     <y>376</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>368</x>
+     <y>400</y>
     </hint>
    </hints>
   </connection>

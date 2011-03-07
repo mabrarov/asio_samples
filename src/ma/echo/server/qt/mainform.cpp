@@ -65,7 +65,7 @@ namespace
 } // anonymous namespace
 
   MainForm::MainForm(Service& service, QWidget* parent, Qt::WFlags flags)
-    : QDialog(parent, flags | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint)
+    : QWidget(parent, flags)
     , configWidgets_()
     , prevServiceState_(service.currentState())
     , service_(service)
