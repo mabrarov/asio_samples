@@ -33,10 +33,7 @@
       <attribute name="title">
        <string>Execution</string>
       </attribute>
-      <layout class="QFormLayout" name="executionTabLayout">
-       <property name="fieldGrowthPolicy">
-        <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
-       </property>
+      <layout class="QFormLayout" name="formLayout_3">
        <item row="0" column="0">
         <widget class="QLabel" name="sessionManagerThreadsLabel">
          <property name="text">
@@ -46,6 +43,12 @@
        </item>
        <item row="0" column="1">
         <widget class="QSpinBox" name="sessionManagerThreadsSpinBox">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="minimum">
           <number>1</number>
          </property>
@@ -66,6 +69,12 @@
        </item>
        <item row="1" column="1">
         <widget class="QSpinBox" name="sessionThreadsSpinBox">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="minimum">
           <number>1</number>
          </property>
@@ -83,7 +92,7 @@
       <attribute name="title">
        <string>Session management</string>
       </attribute>
-      <layout class="QFormLayout" name="sessionManagementTabLayout">
+      <layout class="QFormLayout" name="formLayout">
        <item row="0" column="0">
         <widget class="QLabel" name="maxSessionCountLabel">
          <property name="text">
@@ -93,6 +102,12 @@
        </item>
        <item row="0" column="1">
         <widget class="QSpinBox" name="maxSessionCountSpinBox">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="minimum">
           <number>1</number>
          </property>
@@ -113,6 +128,12 @@
        </item>
        <item row="1" column="1">
         <widget class="QSpinBox" name="recycledSessionCountSpinBox">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="minimum">
           <number>0</number>
          </property>
@@ -133,6 +154,12 @@
        </item>
        <item row="2" column="1">
         <widget class="QSpinBox" name="listenBacklogSpinBox">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="minimum">
           <number>1</number>
          </property>
@@ -153,6 +180,12 @@
        </item>
        <item row="3" column="1">
         <widget class="QSpinBox" name="portNumberSpinBox">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="minimum">
           <number>1</number>
          </property>
@@ -173,6 +206,12 @@
        </item>
        <item row="4" column="1">
         <widget class="QLineEdit" name="addressEdit">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="text">
           <string>0.0.0.0</string>
          </property>
@@ -184,10 +223,7 @@
       <attribute name="title">
        <string>Session</string>
       </attribute>
-      <layout class="QFormLayout" name="sessionTabLayout">
-       <property name="fieldGrowthPolicy">
-        <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
-       </property>
+      <layout class="QFormLayout" name="formLayout_2">
        <item row="0" column="0">
         <widget class="QLabel" name="sessionBufferSizeLabel">
          <property name="text">
@@ -197,6 +233,12 @@
        </item>
        <item row="0" column="1">
         <widget class="QSpinBox" name="sessionBufferSizeSpinBox">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="minimum">
           <number>1</number>
          </property>
@@ -222,6 +264,12 @@
         <widget class="QSpinBox" name="sockRecvBufferSizeSpinBox">
          <property name="enabled">
           <bool>false</bool>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
          </property>
          <property name="minimum">
           <number>0</number>
@@ -249,6 +297,12 @@
          <property name="enabled">
           <bool>false</bool>
          </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="minimum">
           <number>0</number>
          </property>
@@ -272,6 +326,12 @@
        </item>
        <item row="3" column="1">
         <widget class="QComboBox" name="tcpNoDelayComboBox">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="currentIndex">
           <number>0</number>
          </property>

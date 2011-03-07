@@ -60,7 +60,7 @@ namespace ma
           session_manager_config readSessionManagerConfig() const;
           ServiceConfiguration readServiceConfig() const;
 
-          static QString getStateDescription(ServiceState::State serviceState);
+          static QString getServiceStateWindowTitle(ServiceState::State serviceState);
           void updateWidgetsStates(bool ignorePrevServiceState = false);          
 
           void writeLog(const QString&);

@@ -65,7 +65,7 @@ namespace
 } // anonymous namespace
 
   MainForm::MainForm(Service& service, QWidget* parent, Qt::WFlags flags)
-    : QDialog(parent, flags | Qt::WindowMinMaxButtonsHint)
+    : QDialog(parent, flags | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint)
     , configWidgets_()
     , prevServiceState_(service.currentState())
     , service_(service)
@@ -278,12 +278,12 @@ namespace
     return boost::make_tuple(executionConfig, sessionManagerConfig);
   }
 
-  QString MainForm::getStateDescription(ServiceState::State serviceState)
+  QString MainForm::getServiceStateWindowTitle(ServiceState::State serviceState)
   {
     switch (serviceState)
     {
     case ServiceState::Stopped:
-      return tr("stopped");
+      return QString();
     case ServiceState::Starting:
       return tr("starting");
     case ServiceState::Started:
@@ -314,8 +314,13 @@ namespace
         Qt::Checked == ui_.sockRecvBufferSizeCheckBox->checkState());
       ui_.sockSendBufferSizeSpinBox->setEnabled(serviceStopped && 
         Qt::Checked == ui_.sockSendBufferSizeCheckBox->checkState());
-      
-      QString windowTitle = tr("%1 (%2)").arg(tr("Qt Echo Server")).arg(getStateDescription(serviceState));
+
+      QString windowTitle = tr("Qt Echo Server");
+      QString statedWindowTitlePart = getServiceStateWindowTitle(serviceState);
+      if (!statedWindowTitlePart.isNull())
+      {
+        windowTitle = tr("%1 (%2)").arg(windowTitle).arg(statedWindowTitlePart);
+      }      
       setWindowTitle(windowTitle);
     }
     prevServiceState_ = serviceState;
