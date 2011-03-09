@@ -15,8 +15,8 @@
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/optional.hpp>
+#include <boost/shared_ptr.hpp>
 #include <boost/noncopyable.hpp>
-#include <boost/enable_shared_from_this.hpp>
 #include <ma/config.hpp>
 #include <ma/handler_storage.hpp>
 #include <ma/handler_allocator.hpp>
@@ -32,9 +32,7 @@ namespace ma
 {
   namespace tutorial
   {    
-    class async_base 
-      : public boost::enable_shared_from_this<async_base>
-      , private boost::noncopyable
+    class async_base : private boost::noncopyable
     {
     private:
       typedef async_base this_type;
@@ -46,7 +44,7 @@ namespace ma
       {
         typedef typename ma::remove_cv_reference<Handler>::type handler_type;
         strand_.post(ma::make_context_alloc_handler2(std::forward<Handler>(handler), 
-          boost::bind(&this_type::call_do_something<handler_type>, shared_from_this(), _1)));
+          boost::bind(&this_type::call_do_something<handler_type>, get_shared_base(), _1)));
       }
 #else
       template <typename Handler>
@@ -67,6 +65,8 @@ namespace ma
       ~async_base() 
       {
       }
+
+      virtual boost::shared_ptr<this_type> get_shared_base() = 0;
 
       virtual boost::optional<boost::system::error_code> do_something() = 0;
 

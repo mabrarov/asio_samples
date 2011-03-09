@@ -16,6 +16,7 @@
 #include <string>
 #include <boost/asio.hpp>
 #include <boost/format.hpp>
+#include <boost/enable_shared_from_this.hpp>
 #include <boost/utility/base_from_member.hpp>
 #include <ma/handler_allocator.hpp>
 #include <ma/tutorial/async_base.hpp>
@@ -27,6 +28,7 @@ namespace ma
     class async_derived 
       : private boost::base_from_member<boost::asio::io_service::strand>
       , public async_base
+      , public boost::enable_shared_from_this<async_derived>
     {
     private:      
       typedef boost::base_from_member<boost::asio::io_service::strand> strand_base;
@@ -37,6 +39,7 @@ namespace ma
       ~async_derived();      
 
     protected:
+      boost::shared_ptr<async_base> get_shared_base();
       boost::optional<boost::system::error_code> do_something();
 
     private:     

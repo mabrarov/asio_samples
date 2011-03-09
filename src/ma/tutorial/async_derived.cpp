@@ -30,6 +30,11 @@ namespace ma
     async_derived::~async_derived()
     {
     }
+
+    boost::shared_ptr<async_base> async_derived::get_shared_base()
+    {
+      return shared_from_this();
+    }
     
     boost::optional<boost::system::error_code> async_derived::do_something()
     {
@@ -43,9 +48,7 @@ namespace ma
       timer_.expires_from_now(boost::posix_time::seconds(3));
       timer_.async_wait(MA_STRAND_WRAP(strand_base::member, 
         ma::make_custom_alloc_handler(timer_allocator_,
-          boost::bind(&this_type::handle_timer, 
-            boost::static_pointer_cast<async_derived>(shared_from_this()),
-            boost::asio::placeholders::error))));
+          boost::bind(&this_type::handle_timer, shared_from_this(), boost::asio::placeholders::error))));
 
       return boost::optional<boost::system::error_code>();    
     }
@@ -70,9 +73,7 @@ namespace ma
         timer_.expires_from_now(boost::posix_time::milliseconds(1));
         timer_.async_wait(MA_STRAND_WRAP(strand_base::member, 
           ma::make_custom_alloc_handler(timer_allocator_,
-            boost::bind(&this_type::handle_timer, 
-              boost::static_pointer_cast<async_derived>(shared_from_this()),
-              boost::asio::placeholders::error))));
+            boost::bind(&this_type::handle_timer, shared_from_this(), boost::asio::placeholders::error))));
         return;
       }
       std::cout << success_end_message_fmt_ % name_ % counter_;
