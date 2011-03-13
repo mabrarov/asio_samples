@@ -112,12 +112,6 @@
     <ClCompile Include="..\..\..\src\ma\echo\server\session.cpp">
       <Filter>Source Files\ma\echo\server</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\ma\echo\server\session_manager_config.cpp">
-      <Filter>Source Files\ma\echo\server</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\ma\echo\server\session_config.cpp">
-      <Filter>Source Files\ma\echo\server</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\src\ma\echo\server\error.cpp">
       <Filter>Source Files\ma\echo\server</Filter>
     </ClCompile>

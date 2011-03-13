@@ -18,7 +18,7 @@ namespace ma
   {    
     namespace server
     {                
-      struct session_manager_config;
+      class session_manager_config;
       
     } // namespace server
   } // namespace echo

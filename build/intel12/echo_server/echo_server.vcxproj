@@ -231,9 +231,7 @@
     <ClCompile Include="..\..\..\src\ma\console_controller.cpp" />
     <ClCompile Include="..\..\..\src\ma\echo\server\error.cpp" />
     <ClCompile Include="..\..\..\src\ma\echo\server\session.cpp" />
-    <ClCompile Include="..\..\..\src\ma\echo\server\session_config.cpp" />
     <ClCompile Include="..\..\..\src\ma\echo\server\session_manager.cpp" />
-    <ClCompile Include="..\..\..\src\ma\echo\server\session_manager_config.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

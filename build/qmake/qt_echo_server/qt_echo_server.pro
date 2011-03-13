@@ -49,9 +49,7 @@ HEADERS  += ../../../include/ma/bind_asio_handler.hpp \
 SOURCES  += ../../../src/qt_echo_server/main.cpp \
             ../../../src/ma/echo/server/error.cpp \
             ../../../src/ma/echo/server/session.cpp \
-            ../../../src/ma/echo/server/session_config.cpp \
             ../../../src/ma/echo/server/session_manager.cpp \
-            ../../../src/ma/echo/server/session_manager_config.cpp \
             ../../../src/ma/echo/server/qt/custommetatypes.cpp \
             ../../../src/ma/echo/server/qt/execution_config.cpp \
             ../../../src/ma/echo/server/qt/service.cpp \

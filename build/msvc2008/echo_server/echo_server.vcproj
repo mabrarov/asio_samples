@@ -476,15 +476,7 @@
 							>
 						</File>
 						<File
-							RelativePath="..\..\..\src\ma\echo\server\session_config.cpp"
-							>
-						</File>
-						<File
 							RelativePath="..\..\..\src\ma\echo\server\session_manager.cpp"
-							>
-						</File>
-						<File
-							RelativePath="..\..\..\src\ma\echo\server\session_manager_config.cpp"
 							>
 						</File>
 					</Filter>

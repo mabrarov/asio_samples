@@ -42,7 +42,7 @@ namespace ma
           , session_(other.session_)
         {
         }
-#endif // defined(_DEBUG)
+#endif
 
         io_handler_binder(this_type&& other)
           : function_(other.function_)
@@ -62,18 +62,19 @@ namespace ma
       }; // class session::io_handler_binder
 #endif // defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
-      session::session(boost::asio::io_service& io_service, 
-        const session_config& config)
-        : socket_write_in_progress_(false)
+      session::session(boost::asio::io_service& io_service, const session_config& config)
+        : socket_recv_buffer_size_(config.socket_recv_buffer_size())
+        , socket_send_buffer_size_(config.socket_send_buffer_size())
+        , no_delay_(config.no_delay())
+        , socket_write_in_progress_(false)
         , socket_read_in_progress_(false) 
         , state_(ready_to_start)
         , io_service_(io_service)
         , strand_(io_service)
         , socket_(io_service)
+        , buffer_(config.buffer_size())
         , wait_handler_(io_service)
-        , stop_handler_(io_service)
-        , config_(config)                
-        , buffer_(config.buffer_size)
+        , stop_handler_(io_service)                
       {          
       }      
 
@@ -94,24 +95,21 @@ namespace ma
           return server_error::invalid_state;
         }
         boost::system::error_code error;
-        using boost::asio::ip::tcp;        
-        if (config_.socket_recv_buffer_size)
+        if (socket_recv_buffer_size_)
         {
-          socket_.set_option(
-            tcp::socket::receive_buffer_size(*config_.socket_recv_buffer_size), error);
+          socket_.set_option(protocol_type::socket::receive_buffer_size(*socket_recv_buffer_size_), error);
         }
         if (!error)
         {
-          if (config_.socket_recv_buffer_size)
+          if (socket_recv_buffer_size_)
           {
-            socket_.set_option(
-              tcp::socket::send_buffer_size(*config_.socket_recv_buffer_size), error);
+            socket_.set_option(protocol_type::socket::send_buffer_size(*socket_recv_buffer_size_), error);
           }
           if (!error)
           {          
-            if (config_.no_delay)
+            if (no_delay_)
             {
-              socket_.set_option(tcp::no_delay(*config_.no_delay), error);
+              socket_.set_option(protocol_type::no_delay(*no_delay_), error);
             }
           }
         }
@@ -144,7 +142,7 @@ namespace ma
         // Do shutdown - flush socket's write_some buffer
         if (!socket_write_in_progress_) 
         {
-          socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_send, stop_error_);
+          socket_.shutdown(protocol_type::socket::shutdown_send, stop_error_);
         }          
         // Check for shutdown continuation          
         if (may_complete_stop())
@@ -271,7 +269,7 @@ namespace ma
         // Check for pending session manager stop operation 
         if (stop_in_progress == state_)
         {
-          socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_send, stop_error_);
+          socket_.shutdown(protocol_type::socket::shutdown_send, stop_error_);
           if (may_complete_stop())
           {
             complete_stop();  

@@ -37,8 +37,6 @@ HEADERS  += ../../../include/ma/handler_storage_service.hpp \
 
 SOURCES  += ../../../src/ma/console_controller.cpp \
             ../../../src/echo_server/main.cpp \
-            ../../../src/ma/echo/server/session_config.cpp \
-            ../../../src/ma/echo/server/session_manager_config.cpp \
             ../../../src/ma/echo/server/error.cpp \
             ../../../src/ma/echo/server/session.cpp \
             ../../../src/ma/echo/server/session_manager.cpp

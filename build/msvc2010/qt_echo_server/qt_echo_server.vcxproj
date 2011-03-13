@@ -89,9 +89,7 @@
     <ClCompile Include="..\..\..\src\ma\echo\server\qt\service.cpp" />
     <ClCompile Include="..\..\..\src\ma\echo\server\qt\mainform.cpp" />
     <ClCompile Include="..\..\..\src\ma\echo\server\session.cpp" />
-    <ClCompile Include="..\..\..\src\ma\echo\server\session_config.cpp" />
     <ClCompile Include="..\..\..\src\ma\echo\server\session_manager.cpp" />
-    <ClCompile Include="..\..\..\src\ma\echo\server\session_manager_config.cpp" />
     <ClCompile Include="..\..\..\src\qt_echo_server\main.cpp" />
     <ClCompile Include="GeneratedFiles\Debug\moc_mainform.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>

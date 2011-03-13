@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -218,9 +218,7 @@
     <ClCompile Include="..\..\..\src\ma\console_controller.cpp" />
     <ClCompile Include="..\..\..\src\ma\echo\server\error.cpp" />
     <ClCompile Include="..\..\..\src\ma\echo\server\session.cpp" />
-    <ClCompile Include="..\..\..\src\ma\echo\server\session_config.cpp" />
     <ClCompile Include="..\..\..\src\ma\echo\server\session_manager.cpp" />
-    <ClCompile Include="..\..\..\src\ma\echo\server\session_manager_config.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

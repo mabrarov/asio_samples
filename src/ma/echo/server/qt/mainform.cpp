@@ -65,11 +65,11 @@ namespace
     return boost::optional<int>();
   }
 
-  class config_read_error : public std::runtime_error
+  class config_read_error : public std::exception
   {
   public:
     explicit config_read_error(const QString& message = QString())
-      : std::runtime_error("config_read_error")
+      : std::exception()
       , message_(message)
     {
     }

@@ -44,15 +44,16 @@ namespace ma
       private:
         typedef session this_type;        
         
-      public:        
-        session(boost::asio::io_service& io_service, 
-          const session_config& config);
+      public:
+        typedef boost::asio::ip::tcp protocol_type;
+
+        session(boost::asio::io_service& io_service, const session_config& config);
 
         ~session()
-        {        
+        {
         }
 
-        boost::asio::ip::tcp::socket& socket()
+        protocol_type::socket& socket()
         {
           return socket_;
         }
@@ -163,7 +164,7 @@ namespace ma
             , session_(other.session_)
           {
           }
-#endif // defined(_DEBUG)
+#endif
 
           forward_handler_binder(this_type&& other)
             : function_(other.function_)
@@ -234,26 +235,26 @@ namespace ma
         void read_some();
         void write_some();
         void handle_read_some(const boost::system::error_code& error, const std::size_t bytes_transferred);
-        void handle_write_some(const boost::system::error_code& error, const std::size_t bytes_transferred);        
-
+        void handle_write_some(const boost::system::error_code& error, const std::size_t bytes_transferred);
         void post_stop_handler();
         
+        session_config::optional_int  socket_recv_buffer_size_;
+        session_config::optional_int  socket_send_buffer_size_;
+        session_config::optional_bool no_delay_;
+
         bool socket_write_in_progress_;
         bool socket_read_in_progress_;
         state_type state_;
 
         boost::asio::io_service& io_service_;
-        boost::asio::io_service::strand strand_;      
-        boost::asio::ip::tcp::socket socket_;
+        boost::asio::io_service::strand strand_;
+        protocol_type::socket socket_;
+        cyclic_buffer buffer_;
 
         handler_storage<boost::system::error_code> wait_handler_;
         handler_storage<boost::system::error_code> stop_handler_;
-
         boost::system::error_code wait_error_;
         boost::system::error_code stop_error_;
-
-        session_config config_;        
-        cyclic_buffer buffer_;
 
         in_place_handler_allocator<640> write_allocator_;
         in_place_handler_allocator<256> read_allocator_;
