@@ -95,15 +95,16 @@ namespace ma
           return server_error::invalid_state;
         }
         boost::system::error_code error;
+        typedef protocol_type::socket socket_type;
         if (socket_recv_buffer_size_)
         {
-          socket_.set_option(protocol_type::socket::receive_buffer_size(*socket_recv_buffer_size_), error);
+          socket_.set_option(socket_type::receive_buffer_size(*socket_recv_buffer_size_), error);
         }
         if (!error)
         {
           if (socket_recv_buffer_size_)
           {
-            socket_.set_option(protocol_type::socket::send_buffer_size(*socket_recv_buffer_size_), error);
+            socket_.set_option(socket_type::send_buffer_size(*socket_recv_buffer_size_), error);
           }
           if (!error)
           {          
@@ -226,9 +227,7 @@ namespace ma
         }   
       }
 
-      void session::handle_read_some(
-        const boost::system::error_code& error, 
-        const std::size_t bytes_transferred)
+      void session::handle_read_some(const boost::system::error_code& error, std::size_t bytes_transferred)
       {        
         socket_read_in_progress_ = false;
         // Check for pending session stop operation 
@@ -261,9 +260,7 @@ namespace ma
         }
       }
 
-      void session::handle_write_some(
-        const boost::system::error_code& error, 
-        const std::size_t bytes_transferred)
+      void session::handle_write_some(const boost::system::error_code& error, std::size_t bytes_transferred)
       {
         socket_write_in_progress_ = false;
         // Check for pending session manager stop operation 

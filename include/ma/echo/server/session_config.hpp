@@ -28,8 +28,7 @@ namespace ma
         typedef boost::optional<int>  optional_int;
         typedef boost::optional<bool> optional_bool;
 
-        explicit session_config(
-          std::size_t buffer_size, 
+        explicit session_config(std::size_t buffer_size, 
           const optional_int& socket_recv_buffer_size = optional_int(), 
           const optional_int& socket_send_buffer_size = optional_int(),
           const optional_bool& no_delay = optional_bool())

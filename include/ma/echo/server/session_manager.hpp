@@ -206,24 +206,24 @@ namespace ma
           session_data_weak_ptr prev;
           session_data_ptr      next;
 
-          session_ptr             the_session;        
+          session_ptr             managed_session;        
           protocol_type::endpoint remote_endpoint;
 
           in_place_handler_allocator<144> start_wait_allocator;
           in_place_handler_allocator<144> stop_allocator;
 
           session_data(boost::asio::io_service& io_service,
-            const session_config& wrapped_session_config);
+            const session_config& config);
 
           ~session_data()
           {
           }
         }; // struct session_data
 
-        class session_wrapper_list : private boost::noncopyable
+        class session_data_list : private boost::noncopyable
         {
         public:
-          session_wrapper_list();
+          session_data_list();
 
           void push_front(const session_data_ptr& value);
           void erase(const session_data_ptr& value);          
@@ -247,7 +247,7 @@ namespace ma
         private:
           std::size_t size_;
           session_data_ptr front_;
-        }; // class session_wrapper_list
+        }; // class session_data_list
 
         enum state_type
         {
@@ -295,10 +295,10 @@ namespace ma
         boost::optional<boost::system::error_code> stop();
         boost::optional<boost::system::error_code> wait();
 
-        session_data_ptr create_session(boost::system::error_code& error);
-        void accept_session(const session_data_ptr& the_session_data);
+        session_data_ptr create_session(boost::system::error_code&);
+        void accept_session(const session_data_ptr&);
         void accept_new_session();
-        void handle_accept(const session_data_ptr& the_session_data, const boost::system::error_code& error);
+        void handle_accept(const session_data_ptr&, const boost::system::error_code&);
 
         bool may_complete_stop() const;
         bool may_complete_wait() const;
@@ -306,35 +306,23 @@ namespace ma
         void complete_stop();
         void complete_wait();
 
-        void start_session(const session_data_ptr& the_session_data);
-        void stop_session(const session_data_ptr& the_session_data);
-        void wait_session(const session_data_ptr& the_session_data);
+        void start_session(const session_data_ptr&);
+        void stop_session(const session_data_ptr&);
+        void wait_session(const session_data_ptr&);
 
-        static void dispatch_session_start(
-          const session_manager_weak_ptr& this_weak_ptr,
-          const session_data_ptr& the_session_data, 
-          const boost::system::error_code& error);
-        void handle_session_start(
-          const session_data_ptr& the_session_data, 
-          const boost::system::error_code& error);
+        static void dispatch_session_start(const session_manager_weak_ptr&,
+          const session_data_ptr&, const boost::system::error_code&);
+        void handle_session_start(const session_data_ptr&, const boost::system::error_code&);
 
-        static void dispatch_session_wait(
-          const session_manager_weak_ptr& this_weak_ptr,
-          const session_data_ptr& the_session_data, 
-          const boost::system::error_code& error);
-        void handle_session_wait(
-          const session_data_ptr& the_session_data, 
-          const boost::system::error_code& error);
+        static void dispatch_session_wait(const session_manager_weak_ptr&,
+          const session_data_ptr&, const boost::system::error_code&);
+        void handle_session_wait(const session_data_ptr&, const boost::system::error_code&);
 
-        static void dispatch_session_stop(
-          const session_manager_weak_ptr& this_weak_ptr,
-          const session_data_ptr& the_session_data, 
-          const boost::system::error_code& error);
-        void handle_session_stop(
-          const session_data_ptr& the_session_data, 
-          const boost::system::error_code& error);
+        static void dispatch_session_stop(const session_manager_weak_ptr&,
+          const session_data_ptr&, const boost::system::error_code&);
+        void handle_session_stop(const session_data_ptr&, const boost::system::error_code&);
 
-        void recycle_session(const session_data_ptr& the_session_data);
+        void recycle_session(const session_data_ptr&);
         void post_stop_handler();
 
         protocol_type::endpoint accepting_endpoint_;
@@ -355,8 +343,8 @@ namespace ma
         handler_storage<boost::system::error_code> wait_handler_;
         handler_storage<boost::system::error_code> stop_handler_;
 
-        session_wrapper_list active_sessions_;
-        session_wrapper_list recycled_sessions_;
+        session_data_list active_sessions_;
+        session_data_list recycled_sessions_;
 
         boost::system::error_code wait_error_;
         boost::system::error_code stop_error_;

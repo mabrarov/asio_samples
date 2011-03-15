@@ -29,8 +29,7 @@ namespace ma
       public:
         typedef boost::asio::ip::tcp::endpoint endpoint_type;
 
-        session_manager_config(
-          const endpoint_type& accepting_endpoint,
+        session_manager_config(const endpoint_type& accepting_endpoint,
           std::size_t max_session_count, 
           std::size_t recycled_session_count,
           int listen_backlog, 

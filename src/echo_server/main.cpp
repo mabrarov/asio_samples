@@ -124,15 +124,13 @@ void verify_param(const std::string& name, IntegralType value,
 {
   if (value < min || value > max)
   {
-    //todo: format message to incude max and min values
+    //todo: format message to include max and min values
     std::string message = "out of range";
     boost::throw_exception(invalid_config_param(
       boost::make_shared<std::string>(name), 
       boost::make_shared<std::string>(message)));
   }  
 }
-
-namespace server = ma::echo::server;
 
 namespace
 {
@@ -159,8 +157,7 @@ namespace
   public:    
     typedef boost::posix_time::time_duration time_duration_type;
     
-    execution_config(
-      std::size_t session_manager_thread_count,
+    execution_config(std::size_t session_manager_thread_count,
       std::size_t session_thread_count, 
       const time_duration_type& stop_timeout)
       : session_manager_thread_count_(session_manager_thread_count)
@@ -208,17 +205,17 @@ namespace
     volatile bool stopped_by_user;
     volatile state_type state;
     mutex_type access_mutex;  
-    server::session_manager_ptr the_session_manager;    
+    ma::echo::server::session_manager_ptr session_manager;    
     boost::condition_variable state_changed;  
     ma::in_place_handler_allocator<128> start_wait_allocator;
     ma::in_place_handler_allocator<128> stop_allocator;
 
     session_manager_data(boost::asio::io_service& io_service,
       boost::asio::io_service& session_io_service,
-      const server::session_manager_config& config)
+      const ma::echo::server::session_manager_config& config)
       : stopped_by_user(false)
       , state(ready_to_start)
-      , the_session_manager(boost::make_shared<server::session_manager>(
+      , session_manager(boost::make_shared<ma::echo::server::session_manager>(
           boost::ref(io_service), boost::ref(session_io_service), config))        
     {
     }
@@ -228,37 +225,32 @@ namespace
     }
   }; // session_manager_data
 
-  void fill_options_description(boost::program_options::options_description&, std::size_t cpu_count);
+  std::size_t calc_session_manager_thread_count(std::size_t hardware_concurrency);
+  std::size_t calc_session_thread_count(std::size_t hardware_concurrency);
+
+  void fill_options_description(boost::program_options::options_description&, std::size_t hardware_concurrency);
 
   void start_session_manager(const session_manager_data_ptr&);
-
   void wait_session_manager(const session_manager_data_ptr&);
-
   void stop_session_manager(const session_manager_data_ptr&);
 
   void run_io_service(boost::asio::io_service&, exception_handler);
 
   void handle_work_exception(const session_manager_data_ptr&);
-
   void handle_program_exit(const session_manager_data_ptr&);
-
   void handle_session_manager_start(const session_manager_data_ptr&, const boost::system::error_code&);
-
   void handle_session_manager_wait(const session_manager_data_ptr&, const boost::system::error_code&);
-
   void handle_session_manager_stop(const session_manager_data_ptr&, const boost::system::error_code&);
 
   execution_config read_execution_config(const boost::program_options::variables_map& options_values);
-
-  server::session_config read_session_config(const boost::program_options::variables_map& options_values);
-
-  server::session_manager_config read_session_manager_config(
+  ma::echo::server::session_config read_session_config(const boost::program_options::variables_map& options_values);
+  ma::echo::server::session_manager_config read_session_manager_config(
     const boost::program_options::variables_map& options_values,
-    const server::session_config& session_config);
+    const ma::echo::server::session_config& session_config);
 
   void print_config(std::ostream& stream, std::size_t cpu_count,
     const execution_config& the_execution_config,
-    const server::session_manager_config& session_manager_config);
+    const ma::echo::server::session_manager_config& session_manager_config);
 
   void handle_session_manager_start(const session_manager_data_ptr& the_session_manager_data, 
     const boost::system::error_code& error)
@@ -322,7 +314,7 @@ namespace
       boost::posix_time::seconds(stop_timeout_sec));
   }  
 
-  server::session_config read_session_config(const boost::program_options::variables_map& options_values)
+  ma::echo::server::session_config read_session_config(const boost::program_options::variables_map& options_values)
   {  
     boost::optional<bool> no_delay;
     if (options_values.count(socket_no_delay_param))
@@ -349,12 +341,12 @@ namespace
       socket_send_buffer_size = value;
     }
     
-    return server::session_config(buffer_size, socket_recv_buffer_size, socket_send_buffer_size, no_delay);
+    return ma::echo::server::session_config(buffer_size, socket_recv_buffer_size, socket_send_buffer_size, no_delay);
   }
 
-  server::session_manager_config read_session_manager_config(
+  ma::echo::server::session_manager_config read_session_manager_config(
     const boost::program_options::variables_map& options_values,
-    const server::session_config& session_config)
+    const ma::echo::server::session_config& session_config)
   {    
     unsigned short port = options_values[port_param].as<unsigned short>();
 
@@ -367,15 +359,15 @@ namespace
     verify_param<int>(listen_backlog_param, listen_backlog, 0);
 
     using boost::asio::ip::tcp;
-    return server::session_manager_config(tcp::endpoint(tcp::v4(), port),
+    return ma::echo::server::session_manager_config(tcp::endpoint(tcp::v4(), port),
       max_sessions, recycled_sessions, listen_backlog, session_config);
   }
 
   void print_config(std::ostream& stream, std::size_t cpu_count,
     const execution_config& the_execution_config,
-    const server::session_manager_config& session_manager_config)
+    const ma::echo::server::session_manager_config& session_manager_config)
   {
-    const server::session_config session_config = session_manager_config.managed_session_config();
+    const ma::echo::server::session_config session_config = session_manager_config.managed_session_config();
 
     stream << "Number of found CPU(s)             : " << cpu_count                                           << std::endl
            << "Number of session manager's threads: " << the_execution_config.session_manager_thread_count() << std::endl
@@ -402,13 +394,33 @@ namespace
     stream << std::endl;      
   }
 
-  void fill_options_description(
-    boost::program_options::options_description& options_description, 
-    std::size_t cpu_count)
+  std::size_t calc_session_manager_thread_count(std::size_t hardware_concurrency)
   {
-    std::size_t session_manager_thread_count = cpu_count > 1 ? 2 : 1;
-    std::size_t session_thread_count = cpu_count ? cpu_count + 1 : 2;
+    if (hardware_concurrency < 2)
+    {
+      return 1;
+    }
+    return 2;
+  }
 
+  std::size_t calc_session_thread_count(std::size_t hardware_concurrency)
+  {
+    if (hardware_concurrency)
+    {
+      if ((std::numeric_limits<std::size_t>::max)() == hardware_concurrency)
+      {
+        return hardware_concurrency;
+      }
+      return hardware_concurrency + 1;
+    }
+    return 2;
+  }
+
+  void fill_options_description(boost::program_options::options_description& options_description, 
+    std::size_t hardware_concurrency)
+  {
+    std::size_t session_manager_thread_count = calc_session_manager_thread_count(hardware_concurrency);
+    std::size_t session_thread_count = calc_session_thread_count(hardware_concurrency);    
     options_description.add_options()
       (
         help_param, 
@@ -473,7 +485,7 @@ namespace
 
   void start_session_manager(const session_manager_data_ptr& the_session_manager_data)
   {
-    the_session_manager_data->the_session_manager->async_start(
+    the_session_manager_data->session_manager->async_start(
       ma::make_custom_alloc_handler(the_session_manager_data->start_wait_allocator,
         boost::bind(handle_session_manager_start, the_session_manager_data, _1)));
     the_session_manager_data->state = session_manager_data::start_in_progress;
@@ -481,14 +493,14 @@ namespace
 
   void wait_session_manager(const session_manager_data_ptr& the_session_manager_data)
   {
-    the_session_manager_data->the_session_manager->async_wait(
+    the_session_manager_data->session_manager->async_wait(
       ma::make_custom_alloc_handler(the_session_manager_data->start_wait_allocator,
         boost::bind(handle_session_manager_wait, the_session_manager_data, _1)));
   }
-
+  
   void stop_session_manager(const session_manager_data_ptr& the_session_manager_data)
   {
-    the_session_manager_data->the_session_manager->async_stop(
+    the_session_manager_data->session_manager->async_stop(
       ma::make_custom_alloc_handler(the_session_manager_data->stop_allocator,
         boost::bind(handle_session_manager_stop, the_session_manager_data, _1)));
     the_session_manager_data->state = session_manager_data::stop_in_progress;
@@ -579,8 +591,8 @@ int main(int argc, char* argv[])
 
     // Read configuration
     execution_config the_execution_config = read_execution_config(options_values);    
-    server::session_config session_config = read_session_config(options_values);
-    server::session_manager_config session_manager_config = 
+    ma::echo::server::session_config session_config = read_session_config(options_values);
+    ma::echo::server::session_manager_config session_manager_config = 
       read_session_manager_config(options_values, session_config);
 
     print_config(std::cout, cpu_count, the_execution_config, session_manager_config);

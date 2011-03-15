@@ -234,8 +234,8 @@ namespace ma
 
         void read_some();
         void write_some();
-        void handle_read_some(const boost::system::error_code& error, const std::size_t bytes_transferred);
-        void handle_write_some(const boost::system::error_code& error, const std::size_t bytes_transferred);
+        void handle_read_some(const boost::system::error_code&, std::size_t);
+        void handle_write_some(const boost::system::error_code&, std::size_t);
         void post_stop_handler();
         
         session_config::optional_int  socket_recv_buffer_size_;
