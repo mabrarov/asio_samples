@@ -25,10 +25,10 @@ HEADERS  += ../../../include/ma/handler_storage_service.hpp \
             ../../../include/ma/console_controller.hpp \
             ../../../include/ma/config.hpp \
             ../../../include/ma/type_traits.hpp \
-            ../../../include/ma/echo/server/session_config_fwd.hpp \
-            ../../../include/ma/echo/server/session_manager_config_fwd.hpp \
-            ../../../include/ma/echo/server/session_config.hpp \
-            ../../../include/ma/echo/server/session_manager_config.hpp \
+            ../../../include/ma/echo/server/session_options_fwd.hpp \
+            ../../../include/ma/echo/server/session_manager_options_fwd.hpp \
+            ../../../include/ma/echo/server/session_options.hpp \
+            ../../../include/ma/echo/server/session_manager_options.hpp \
             ../../../include/ma/echo/server/session_fwd.hpp \
             ../../../include/ma/echo/server/session_manager_fwd.hpp \
             ../../../include/ma/echo/server/error.hpp \

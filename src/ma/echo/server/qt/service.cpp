@@ -19,7 +19,7 @@ TRANSLATOR ma::echo::server::qt::Service
 #include <boost/utility/base_from_member.hpp>
 #include <ma/echo/server/error.hpp>
 #include <ma/echo/server/session_manager.hpp>
-#include <ma/echo/server/qt/execution_config.h>
+#include <ma/echo/server/qt/execution_options.h>
 #include <ma/echo/server/qt/signal_connect_error.h>
 #include <ma/echo/server/qt/serviceforwardsignal.h>
 #include <ma/echo/server/qt/serviceservantsignal.h>
@@ -43,9 +43,9 @@ namespace
     typedef boost::base_from_member<boost::asio::io_service> session_io_service_base;
 
   public:
-    explicit io_service_chain(const execution_config& the_execution_config)
-      : session_io_service_base(the_execution_config.session_thread_count)
-      , session_manager_io_service_(the_execution_config.session_manager_thread_count)
+    explicit io_service_chain(const execution_options& exec_options)
+      : session_io_service_base(exec_options.session_thread_count())
+      , session_manager_io_service_(exec_options.session_manager_thread_count())
     {        
     }
 
@@ -70,12 +70,12 @@ namespace
     typedef execution_system this_type;
 
   public:
-    execution_system(const execution_config& the_execution_config)
-      : io_service_chain_base(the_execution_config)
+    execution_system(const execution_options& the_execution_options)
+      : io_service_chain_base(the_execution_options)
       , session_work_(io_service_chain_base::member.session_io_service())
       , session_manager_work_(io_service_chain_base::member.session_manager_io_service())
       , threads_()
-      , execution_config_(the_execution_config)
+      , execution_options_(the_execution_options)
     {
     }
 
@@ -95,12 +95,12 @@ namespace
       boost::tuple<Handler> wrapped_handler = boost::make_tuple(handler);
       thread_func_type func = &this_type::thread_func<Handler>;
 
-      for (std::size_t i = 0; i != execution_config_.session_thread_count; ++i)
+      for (std::size_t i = 0; i != execution_options_.session_thread_count(); ++i)
       {        
         threads_.create_thread(
           boost::bind(func, boost::ref(this->session_io_service()), wrapped_handler));
       }
-      for (std::size_t i = 0; i != execution_config_.session_manager_thread_count; ++i)
+      for (std::size_t i = 0; i != execution_options_.session_manager_thread_count(); ++i)
       {
         threads_.create_thread(
           boost::bind(func, boost::ref(this->session_manager_io_service()), wrapped_handler));
@@ -134,7 +134,7 @@ namespace
     boost::asio::io_service::work session_work_;
     boost::asio::io_service::work session_manager_work_;
     boost::thread_group threads_;
-    execution_config execution_config_;
+    execution_options execution_options_;
   }; // class execution_system
 
 } // anonymous namespace
@@ -146,13 +146,13 @@ namespace
     typedef servant this_type;
 
   public:
-    servant(const execution_config& the_execution_config, 
-      const session_manager_config& the_session_manager_config)
-      : execution_system_base(the_execution_config)      
+    servant(const execution_options& the_execution_options, 
+      const session_manager_options& the_session_manager_options)
+      : execution_system_base(the_execution_options)      
       , session_manager_(boost::make_shared<session_manager>(
           boost::ref(execution_system_base::member.session_manager_io_service()),
           boost::ref(execution_system_base::member.session_io_service()), 
-          the_session_manager_config))
+          the_session_manager_options))
     {
     }
 
@@ -200,15 +200,15 @@ namespace
   {    
   }
 
-  void Service::asyncStart(const execution_config& the_execution_config, 
-    const session_manager_config& the_session_manager_config)
+  void Service::asyncStart(const execution_options& the_execution_options, 
+    const session_manager_options& the_session_manager_options)
   {
     if (ServiceState::Stopped != currentState_)
     {      
       forwardSignal_->emitStartCompleted(server_error::invalid_state);
       return;
     }
-    createServant(the_execution_config, the_session_manager_config);
+    createServant(the_execution_options, the_session_manager_options);
     servant_->create_threads(
       boost::bind(&ServiceServantSignal::emitWorkThreadExceptionHappened, servantSignal_));
     servant_->get_session_manager()->async_start(
@@ -299,10 +299,10 @@ namespace
     }
   }
 
-  void Service::createServant(const execution_config& the_execution_config, 
-    const session_manager_config& the_session_manager_config)
+  void Service::createServant(const execution_options& the_execution_options, 
+    const session_manager_options& the_session_manager_options)
   {
-    servant_.reset(new servant(the_execution_config, the_session_manager_config));
+    servant_.reset(new servant(the_execution_options, the_session_manager_options));
     servantSignal_ = boost::make_shared<ServiceServantSignal>();
         
     checkConnect(QObject::connect(servantSignal_.get(), 

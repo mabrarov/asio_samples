@@ -16,11 +16,11 @@
 #include <boost/tuple/tuple.hpp>
 #include <boost/system/error_code.hpp>
 #include <QtGui/QWidget>
-#include <ma/echo/server/session_config.hpp>
-#include <ma/echo/server/session_manager_config.hpp>
+#include <ma/echo/server/session_options.hpp>
+#include <ma/echo/server/session_manager_options.hpp>
 #include <ma/echo/server/qt/service_fwd.h>
 #include <ma/echo/server/qt/servicestate.h>
-#include <ma/echo/server/qt/execution_config.h>
+#include <ma/echo/server/qt/execution_options.h>
 #include <ui_mainform.h>
 
 namespace ma
@@ -50,15 +50,15 @@ namespace ma
            void on_service_workCompleted(const boost::system::error_code&);
 
         private:
-          typedef boost::tuple<execution_config, session_manager_config> ServiceConfiguration;
-          typedef boost::tuple<int, QWidget*> ConfigWidget;
+          typedef boost::tuple<execution_options, session_manager_options> ServiceConfig;
+          typedef boost::tuple<int, QWidget*> OptionWidget;
 
           Q_DISABLE_COPY(MainForm) 
 
-          execution_config readExecutionConfig() const;
-          session_config readSessionConfig() const;
-          session_manager_config readSessionManagerConfig() const;
-          ServiceConfiguration readServiceConfig() const;
+          execution_options readExecutionOptions() const;
+          session_options readSessionOptions() const;
+          session_manager_options readSessionManagerOptions() const;
+          ServiceConfig readServiceConfig() const;
           void showError(const QString& message, QWidget* widget = 0);
 
           static QString getServiceStateWindowTitle(ServiceState::State serviceState);
@@ -67,7 +67,7 @@ namespace ma
           void writeLog(const QString&);
 
           Ui::mainForm ui_;
-          std::vector<ConfigWidget> configWidgets_;
+          std::vector<OptionWidget> optionsWidgets_;
           ServiceState::State prevServiceState_;
           Service& service_;          
         }; // class MainForm

@@ -65,17 +65,17 @@ namespace
     return boost::optional<int>();
   }
 
-  class config_read_error : public std::exception
+  class option_read_error : public std::exception
   {
   public:
-    explicit config_read_error(const QString& message = QString())
+    explicit option_read_error(const QString& message = QString())
       : std::exception()
       , message_(message)
     {
     }
 
 #if defined(__GNUC__)
-    ~config_read_error() throw ()
+    ~option_read_error() throw ()
     {
     }
 #endif
@@ -86,19 +86,19 @@ namespace
     }
   private:
     QString message_;
-  }; // class config_read_error
+  }; // class option_read_error
 
-  class widget_based_config_read_error : public config_read_error
+  class widget_option_read_error : public option_read_error
   {
   public:
-    explicit widget_based_config_read_error(QWidget* widget, const QString& message = QString())
-      : config_read_error(message)
+    explicit widget_option_read_error(QWidget* widget, const QString& message = QString())
+      : option_read_error(message)
       , widget_(widget)
     {
     }
 
 #if defined(__GNUC__)
-    ~widget_based_config_read_error() throw ()
+    ~widget_option_read_error() throw ()
     {
     }
 #endif
@@ -110,31 +110,31 @@ namespace
     
   private:    
     QWidget* widget_;
-  }; //class widget_based_config_read_error
+  }; //class widget_option_read_error
 
 } // anonymous namespace
 
   MainForm::MainForm(Service& service, QWidget* parent, Qt::WFlags flags)
     : QWidget(parent, flags)
-    , configWidgets_()
+    , optionsWidgets_()
     , prevServiceState_(service.currentState())
     , service_(service)
   {
     ui_.setupUi(this);
 
-    configWidgets_.push_back(boost::make_tuple(0, ui_.sessionManagerThreadsSpinBox));
-    configWidgets_.push_back(boost::make_tuple(0, ui_.sessionThreadsSpinBox));
-    configWidgets_.push_back(boost::make_tuple(1, ui_.maxSessionCountSpinBox));
-    configWidgets_.push_back(boost::make_tuple(1, ui_.recycledSessionCountSpinBox));
-    configWidgets_.push_back(boost::make_tuple(1, ui_.listenBacklogSpinBox));
-    configWidgets_.push_back(boost::make_tuple(1, ui_.portNumberSpinBox));
-    configWidgets_.push_back(boost::make_tuple(1, ui_.addressEdit));
-    configWidgets_.push_back(boost::make_tuple(2, ui_.sessionBufferSizeSpinBox));
-    configWidgets_.push_back(boost::make_tuple(2, ui_.sockRecvBufferSizeCheckBox));
-    configWidgets_.push_back(boost::make_tuple(2, ui_.sockRecvBufferSizeSpinBox));
-    configWidgets_.push_back(boost::make_tuple(2, ui_.sockSendBufferSizeCheckBox));
-    configWidgets_.push_back(boost::make_tuple(2, ui_.sockSendBufferSizeSpinBox));
-    configWidgets_.push_back(boost::make_tuple(2, ui_.tcpNoDelayComboBox));
+    optionsWidgets_.push_back(boost::make_tuple(0, ui_.sessionManagerThreadsSpinBox));
+    optionsWidgets_.push_back(boost::make_tuple(0, ui_.sessionThreadsSpinBox));
+    optionsWidgets_.push_back(boost::make_tuple(1, ui_.maxSessionCountSpinBox));
+    optionsWidgets_.push_back(boost::make_tuple(1, ui_.recycledSessionCountSpinBox));
+    optionsWidgets_.push_back(boost::make_tuple(1, ui_.listenBacklogSpinBox));
+    optionsWidgets_.push_back(boost::make_tuple(1, ui_.portNumberSpinBox));
+    optionsWidgets_.push_back(boost::make_tuple(1, ui_.addressEdit));
+    optionsWidgets_.push_back(boost::make_tuple(2, ui_.sessionBufferSizeSpinBox));
+    optionsWidgets_.push_back(boost::make_tuple(2, ui_.sockRecvBufferSizeCheckBox));
+    optionsWidgets_.push_back(boost::make_tuple(2, ui_.sockRecvBufferSizeSpinBox));
+    optionsWidgets_.push_back(boost::make_tuple(2, ui_.sockSendBufferSizeCheckBox));
+    optionsWidgets_.push_back(boost::make_tuple(2, ui_.sockSendBufferSizeSpinBox));
+    optionsWidgets_.push_back(boost::make_tuple(2, ui_.tcpNoDelayComboBox));
 
     checkConnect(QObject::connect(&service, 
       SIGNAL(exceptionHappened()), 
@@ -165,16 +165,16 @@ namespace
   void MainForm::on_startButton_clicked()
   {    
     //todo: read and validate configuration
-    boost::optional<ServiceConfiguration> serviceConfiguration;
+    boost::optional<ServiceConfig> serviceConfig;
     try 
     {
-       serviceConfiguration = readServiceConfig();
+       serviceConfig = readServiceConfig();
     }
-    catch (const widget_based_config_read_error& e)
+    catch (const widget_option_read_error& e)
     {
       showError(e.message(), e.widget());
     }
-    catch (const config_read_error& e)
+    catch (const option_read_error& e)
     {
       showError(e.message());
     }
@@ -182,9 +182,9 @@ namespace
     {
       showError(tr("Unexpected error reading configuration."));
     }
-    if (serviceConfiguration)
+    if (serviceConfig)
     {
-      service_.asyncStart(serviceConfiguration->get<0>(), serviceConfiguration->get<1>());
+      service_.asyncStart(serviceConfig->get<0>(), serviceConfig->get<1>());
       writeLog(tr("Starting echo service..."));
     }
     updateWidgetsStates();
@@ -281,7 +281,7 @@ namespace
     updateWidgetsStates();
   } 
 
-  execution_config MainForm::readExecutionConfig() const
+  execution_options MainForm::readExecutionOptions() const
   {   
     std::size_t sessionManagerThreadCount;
     std::size_t sessionThreadCount;
@@ -296,14 +296,14 @@ namespace
     }
     catch (const boost::numeric::bad_numeric_cast&)
     {
-      boost::throw_exception(widget_based_config_read_error(
+      boost::throw_exception(widget_option_read_error(
         currentWidget, tr("Invalid value.")));
     }
 
-    return execution_config(sessionManagerThreadCount, sessionThreadCount);
+    return execution_options(sessionManagerThreadCount, sessionThreadCount);
   }
 
-  session_config MainForm::readSessionConfig() const
+  session_options MainForm::readSessionOptions() const
   {
     boost::optional<int> socketRecvBufferSize = 
       readOptionalValue(*ui_.sockRecvBufferSizeCheckBox, *ui_.sockRecvBufferSizeSpinBox);
@@ -322,12 +322,11 @@ namespace
       break;
     }
 
-    return session_config(
-      boost::numeric_cast<std::size_t>(ui_.sessionBufferSizeSpinBox->value()),
+    return session_options(boost::numeric_cast<std::size_t>(ui_.sessionBufferSizeSpinBox->value()),
       socketRecvBufferSize, socketSendBufferSize, tcpNoDelay);
   }
 
-  session_manager_config MainForm::readSessionManagerConfig() const
+  session_manager_options MainForm::readSessionManagerOptions() const
   {
     unsigned short port;
     std::size_t    maxSessions;
@@ -350,7 +349,7 @@ namespace
     }
     catch (const boost::numeric::bad_numeric_cast&)
     {
-      boost::throw_exception(widget_based_config_read_error(
+      boost::throw_exception(widget_option_read_error(
         currentWidget, tr("Invalid value.")));
     }
     
@@ -362,30 +361,27 @@ namespace
     } 
     catch (const std::exception&)
     {
-      boost::throw_exception(widget_based_config_read_error(
+      boost::throw_exception(widget_option_read_error(
         ui_.addressEdit, tr("Failed to parse numeric IP address.")));
     }
 
-    return session_manager_config(
-      boost::asio::ip::tcp::endpoint(listenAddress, port), 
-      maxSessions, recycledSessions, listenBacklog,
-      readSessionConfig());
+    return session_manager_options(boost::asio::ip::tcp::endpoint(listenAddress, port), 
+      maxSessions, recycledSessions, listenBacklog, readSessionOptions());
   }  
 
-  MainForm::ServiceConfiguration MainForm::readServiceConfig() const
+  MainForm::ServiceConfig MainForm::readServiceConfig() const
   {
-    //todo: read and validate configuration
-    execution_config executionConfig = readExecutionConfig();
-    session_manager_config sessionManagerConfig = readSessionManagerConfig();
-    return boost::make_tuple(executionConfig, sessionManagerConfig);
+    execution_options executionOptions = readExecutionOptions();
+    session_manager_options sessionManagerOptions = readSessionManagerOptions();
+    return boost::make_tuple(executionOptions, sessionManagerOptions);
   }
 
   void MainForm::showError(const QString& message, QWidget* widget)
   {
     if (widget)
     {
-      typedef std::vector<ConfigWidget>::iterator iterator_type;
-      for (iterator_type i = configWidgets_.begin(), end = configWidgets_.end(); i != end; ++i)
+      typedef std::vector<OptionWidget>::iterator iterator_type;
+      for (iterator_type i = optionsWidgets_.begin(), end = optionsWidgets_.end(); i != end; ++i)
       {
         if (widget == i->get<1>())
         {
@@ -425,8 +421,8 @@ namespace
       ui_.stopButton->setEnabled(ServiceState::Starting == serviceState || ServiceState::Started == serviceState);
       ui_.terminateButton->setEnabled(!serviceStopped);
 
-      typedef std::vector<ConfigWidget>::iterator iterator_type;
-      for (iterator_type i = configWidgets_.begin(), end = configWidgets_.end(); i != end; ++i)
+      typedef std::vector<OptionWidget>::iterator iterator_type;
+      for (iterator_type i = optionsWidgets_.begin(), end = optionsWidgets_.end(); i != end; ++i)
       {
         i->get<1>()->setEnabled(serviceStopped);
       }

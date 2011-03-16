@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Header Files">
@@ -59,19 +59,19 @@
     <ClInclude Include="..\..\..\include\ma\echo\server\session_manager_fwd.hpp">
       <Filter>Header Files\ma\echo\server</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\ma\echo\server\session_config.hpp">
+    <ClInclude Include="..\..\..\include\ma\echo\server\session_options.hpp">
       <Filter>Header Files\ma\echo\server</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\ma\echo\server\session_config_fwd.hpp">
+    <ClInclude Include="..\..\..\include\ma\echo\server\session_options_fwd.hpp">
       <Filter>Header Files\ma\echo\server</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\ma\echo\server\session_fwd.hpp">
       <Filter>Header Files\ma\echo\server</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\ma\echo\server\session_manager_config.hpp">
+    <ClInclude Include="..\..\..\include\ma\echo\server\session_manager_options.hpp">
       <Filter>Header Files\ma\echo\server</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\ma\echo\server\session_manager_config_fwd.hpp">
+    <ClInclude Include="..\..\..\include\ma\echo\server\session_manager_options_fwd.hpp">
       <Filter>Header Files\ma\echo\server</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\ma\echo\server\error.hpp">

@@ -366,11 +366,7 @@
 						<File
 							RelativePath="..\..\..\src\ma\echo\client1\session.cpp"
 							>
-						</File>
-						<File
-							RelativePath="..\..\..\src\ma\echo\client1\session_config.cpp"
-							>
-						</File>
+						</File>						
 					</Filter>
 				</Filter>
 			</Filter>
@@ -454,11 +450,11 @@
 							>
 						</File>
 						<File
-							RelativePath="..\..\..\include\ma\echo\client1\session_config.hpp"
+							RelativePath="..\..\..\include\ma\echo\client1\session_options.hpp"
 							>
 						</File>
 						<File
-							RelativePath="..\..\..\include\ma\echo\client1\session_config_fwd.hpp"
+							RelativePath="..\..\..\include\ma\echo\client1\session_options_fwd.hpp"
 							>
 						</File>
 						<File

@@ -414,11 +414,11 @@
 							>
 						</File>
 						<File
-							RelativePath="..\..\..\include\ma\echo\server\session_config.hpp"
+							RelativePath="..\..\..\include\ma\echo\server\session_options.hpp"
 							>
 						</File>
 						<File
-							RelativePath="..\..\..\include\ma\echo\server\session_config_fwd.hpp"
+							RelativePath="..\..\..\include\ma\echo\server\session_options_fwd.hpp"
 							>
 						</File>
 						<File
@@ -430,11 +430,11 @@
 							>
 						</File>
 						<File
-							RelativePath="..\..\..\include\ma\echo\server\session_manager_config.hpp"
+							RelativePath="..\..\..\include\ma\echo\server\session_manager_options.hpp"
 							>
 						</File>
 						<File
-							RelativePath="..\..\..\include\ma\echo\server\session_manager_config_fwd.hpp"
+							RelativePath="..\..\..\include\ma\echo\server\session_manager_options_fwd.hpp"
 							>
 						</File>
 						<File

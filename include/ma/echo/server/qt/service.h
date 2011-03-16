@@ -16,9 +16,9 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/system/error_code.hpp>
 #include <QtCore/QObject>
-#include <ma/echo/server/session_manager_config_fwd.hpp>
+#include <ma/echo/server/session_manager_options_fwd.hpp>
 #include <ma/echo/server/qt/servicestate.h>
-#include <ma/echo/server/qt/execution_config_fwd.h>
+#include <ma/echo/server/qt/execution_options_fwd.h>
 #include <ma/echo/server/qt/serviceforwardsignal_fwd.h>
 #include <ma/echo/server/qt/serviceservantsignal_fwd.h>
 #include <ma/echo/server/qt/service_fwd.h>
@@ -38,7 +38,7 @@ namespace ma
         public:          
           explicit Service(QObject* parent = 0);
           ~Service();
-          void asyncStart(const execution_config&, const session_manager_config&);
+          void asyncStart(const execution_options&, const session_manager_options&);
 
           ServiceState::State currentState()
           {
@@ -66,7 +66,7 @@ namespace ma
 
           Q_DISABLE_COPY(Service) 
 
-          void createServant(const execution_config&, const session_manager_config&);
+          void createServant(const execution_options&, const session_manager_options&);
           void destroyServant();
 
           ServiceState::State currentState_;

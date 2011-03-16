@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -217,7 +217,6 @@
     <ClCompile Include="..\..\..\src\ma\console_controller.cpp" />
     <ClCompile Include="..\..\..\src\ma\echo\client1\error.cpp" />
     <ClCompile Include="..\..\..\src\ma\echo\client1\session.cpp" />
-    <ClCompile Include="..\..\..\src\ma\echo\client1\session_config.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\include\ma\bind_asio_handler.hpp" />
@@ -228,8 +227,8 @@
     <ClInclude Include="..\..\..\include\ma\custom_alloc_handler.hpp" />
     <ClInclude Include="..\..\..\include\ma\echo\client1\error.hpp" />
     <ClInclude Include="..\..\..\include\ma\echo\client1\session.hpp" />
-    <ClInclude Include="..\..\..\include\ma\echo\client1\session_config.hpp" />
-    <ClInclude Include="..\..\..\include\ma\echo\client1\session_config_fwd.hpp" />
+    <ClInclude Include="..\..\..\include\ma\echo\client1\session_options.hpp" />
+    <ClInclude Include="..\..\..\include\ma\echo\client1\session_options_fwd.hpp" />
     <ClInclude Include="..\..\..\include\ma\echo\client1\session_fwd.hpp" />
     <ClInclude Include="..\..\..\include\ma\handler_allocator.hpp" />
     <ClInclude Include="..\..\..\include\ma\handler_alloc_helpers.hpp" />

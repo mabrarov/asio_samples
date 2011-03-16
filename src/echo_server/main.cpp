@@ -32,105 +32,9 @@
 #include <ma/handler_allocator.hpp>
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/console_controller.hpp>
-#include <ma/echo/server/session_config.hpp>
-#include <ma/echo/server/session_manager_config.hpp>
+#include <ma/echo/server/session_options.hpp>
+#include <ma/echo/server/session_manager_options.hpp>
 #include <ma/echo/server/session_manager.hpp>
-
-namespace
-{
-  class config_read_error : public std::exception
-  {
-  public:
-    explicit config_read_error()
-      : std::exception()
-    {
-    }
-
-#if defined(__GNUC__)
-    ~config_read_error() throw ()
-    {
-    }
-#endif
-  }; // class config_read_error
-
-  class invalid_config_param : public config_read_error
-  {
-  public:
-    typedef boost::shared_ptr<std::string> string_ptr;
-
-    explicit invalid_config_param(const string_ptr& param_name, const string_ptr& message)
-      : config_read_error()
-      , param_name_(param_name)
-      , message_(message)
-    {
-    }
-
-    string_ptr param_name() const
-    {
-      return param_name_;
-    }
-
-    string_ptr message() const
-    {
-      return message_;
-    }
-
-  private:
-    string_ptr param_name_;
-    string_ptr message_;
-  }; // class invalid_config_param
-}
-
-template <typename Value>
-void print_param(std::ostream& stream, 
-  const boost::optional<Value>& value, 
-  const std::string& default_text)
-{
-  if (value) 
-  {
-    stream << *value;
-  }
-  else 
-  {
-    stream << default_text;
-  }
-}
-
-template <>
-void print_param<bool>(std::ostream& stream, 
-  const boost::optional<bool>& value, 
-  const std::string& default_text)
-{
-  if (value) 
-  {
-    if (*value)
-    {
-      stream << "on";
-    }
-    else 
-    {
-      stream << "off";
-    }    
-  }
-  else 
-  {
-    stream << default_text;
-  }
-}
-
-template <typename IntegralType>
-void verify_param(const std::string& name, IntegralType value,
-  IntegralType min, IntegralType max = (std::numeric_limits<IntegralType>::max)())
-{
-  if (value < min || value > max)
-  {
-    //todo: format message to include max and min values
-    std::string message = "out of range";
-    boost::throw_exception(invalid_config_param(
-      boost::make_shared<std::string>(name), 
-      boost::make_shared<std::string>(message)));
-  }  
-}
 
 namespace
 {
@@ -143,21 +47,54 @@ namespace
   const char* recycled_sessions_param = "recycled_sessions";
   const char* listen_backlog_param    = "listen_backlog";
   const char* buffer_size_param       = "buffer";
-  const char* socket_recv_buffer_size_param = "socket_recv_buffer";
-  const char* socket_send_buffer_size_param = "socket_send_buffer";
-  const char* socket_no_delay_param   = "socket_no_delay";
+  const char* socket_recv_buffer_size_param = "sock_recv_buffer";
+  const char* socket_send_buffer_size_param = "sock_send_buffer";
+  const char* socket_no_delay_param         = "sock_no_delay";
   const char* os_default_text = "OS default";
+
+  template <typename Value>
+  void print(std::ostream& stream, const boost::optional<Value>& value, const std::string& default_text)
+  {
+    if (value) 
+    {
+      stream << *value;
+    }
+    else 
+    {
+      stream << default_text;
+    }
+  }
+
+  template <>
+  void print<bool>(std::ostream& stream, const boost::optional<bool>& value, const std::string& default_text)
+  {
+    if (value) 
+    {
+      if (*value)
+      {
+        stream << "on";
+      }
+      else 
+      {
+        stream << "off";
+      }    
+    }
+    else 
+    {
+      stream << default_text;
+    }
+  }
 
   struct  session_manager_data;
   typedef boost::shared_ptr<session_manager_data> session_manager_data_ptr;
   typedef boost::function<void (void)> exception_handler;  
 
-  class execution_config
+  class execution_options
   {
   public:    
     typedef boost::posix_time::time_duration time_duration_type;
     
-    execution_config(std::size_t session_manager_thread_count,
+    execution_options(std::size_t session_manager_thread_count,
       std::size_t session_thread_count, 
       const time_duration_type& stop_timeout)
       : session_manager_thread_count_(session_manager_thread_count)
@@ -165,7 +102,7 @@ namespace
       , stop_timeout_(stop_timeout)
     {
       BOOST_ASSERT_MSG(session_manager_thread_count > 0, "session_manager_thread_count must be > 0");
-      BOOST_ASSERT_MSG(session_thread_count > 1, "session_thread_count must be > 0");
+      BOOST_ASSERT_MSG(session_thread_count > 0, "session_thread_count must be > 0");
     }
     
     std::size_t session_manager_thread_count() const
@@ -187,7 +124,7 @@ namespace
     std::size_t session_manager_thread_count_;
     std::size_t session_thread_count_;
     time_duration_type stop_timeout_;
-  }; // class execution_config
+  }; // class execution_options
 
   struct session_manager_data : private boost::noncopyable
   {
@@ -212,11 +149,11 @@ namespace
 
     session_manager_data(boost::asio::io_service& io_service,
       boost::asio::io_service& session_io_service,
-      const ma::echo::server::session_manager_config& config)
+      const ma::echo::server::session_manager_options& options)
       : stopped_by_user(false)
       , state(ready_to_start)
       , session_manager(boost::make_shared<ma::echo::server::session_manager>(
-          boost::ref(io_service), boost::ref(session_io_service), config))        
+          boost::ref(io_service), boost::ref(session_io_service), options))        
     {
     }
 
@@ -242,15 +179,15 @@ namespace
   void handle_session_manager_wait(const session_manager_data_ptr&, const boost::system::error_code&);
   void handle_session_manager_stop(const session_manager_data_ptr&, const boost::system::error_code&);
 
-  execution_config read_execution_config(const boost::program_options::variables_map& options_values);
-  ma::echo::server::session_config read_session_config(const boost::program_options::variables_map& options_values);
-  ma::echo::server::session_manager_config read_session_manager_config(
+  execution_options read_execution_options(const boost::program_options::variables_map& options_values);
+  ma::echo::server::session_options read_session_options(const boost::program_options::variables_map& options_values);
+  ma::echo::server::session_manager_options read_session_manager_options(
     const boost::program_options::variables_map& options_values,
-    const ma::echo::server::session_config& session_config);
+    const ma::echo::server::session_options& session_options);
 
-  void print_config(std::ostream& stream, std::size_t cpu_count,
-    const execution_config& the_execution_config,
-    const ma::echo::server::session_manager_config& session_manager_config);
+  void print_options(std::ostream& stream, std::size_t cpu_count,
+    const execution_options& the_execution_options,
+    const ma::echo::server::session_manager_options& session_manager_options);
 
   void handle_session_manager_start(const session_manager_data_ptr& the_session_manager_data, 
     const boost::system::error_code& error)
@@ -299,22 +236,17 @@ namespace
     }
   }  
   
-  execution_config read_execution_config(const boost::program_options::variables_map& options_values)
+  execution_options read_execution_options(const boost::program_options::variables_map& options_values)
   {
     std::size_t session_manager_thread_count = options_values[session_manager_threads_param].as<std::size_t>();
-    verify_param<std::size_t>(session_manager_threads_param, session_manager_thread_count, 1);
-
-    std::size_t session_thread_count = options_values[session_threads_param].as<std::size_t>();
-    verify_param<std::size_t>(session_threads_param, session_thread_count, 1);
-
+    std::size_t session_thread_count = options_values[session_threads_param].as<std::size_t>();    
     long stop_timeout_sec = options_values[stop_timeout_param].as<long>();
-    verify_param<long>(stop_timeout_param, stop_timeout_sec, 0);
-
-    return execution_config(session_manager_thread_count, session_thread_count, 
+    
+    return execution_options(session_manager_thread_count, session_thread_count, 
       boost::posix_time::seconds(stop_timeout_sec));
   }  
 
-  ma::echo::server::session_config read_session_config(const boost::program_options::variables_map& options_values)
+  ma::echo::server::session_options read_session_options(const boost::program_options::variables_map& options_values)
   {  
     boost::optional<bool> no_delay;
     if (options_values.count(socket_no_delay_param))
@@ -323,13 +255,10 @@ namespace
     }
 
     std::size_t buffer_size = options_values[buffer_size_param].as<std::size_t>();
-    verify_param<std::size_t>(buffer_size_param, buffer_size, 1);
-
     boost::optional<int> socket_recv_buffer_size;
     if (options_values.count(socket_recv_buffer_size_param))
     {
       int value = options_values[socket_recv_buffer_size_param].as<int>();
-      verify_param<int>(socket_recv_buffer_size_param, value, 0);
       socket_recv_buffer_size = value;
     }
 
@@ -337,60 +266,54 @@ namespace
     if (options_values.count(socket_send_buffer_size_param))
     {
       int value = options_values[socket_send_buffer_size_param].as<int>();
-      verify_param<int>(socket_send_buffer_size_param, value, 0);
       socket_send_buffer_size = value;
     }
     
-    return ma::echo::server::session_config(buffer_size, socket_recv_buffer_size, socket_send_buffer_size, no_delay);
+    return ma::echo::server::session_options(buffer_size, socket_recv_buffer_size, socket_send_buffer_size, no_delay);
   }
 
-  ma::echo::server::session_manager_config read_session_manager_config(
+  ma::echo::server::session_manager_options read_session_manager_options(
     const boost::program_options::variables_map& options_values,
-    const ma::echo::server::session_config& session_config)
+    const ma::echo::server::session_options& session_options)
   {    
     unsigned short port = options_values[port_param].as<unsigned short>();
-
-    std::size_t max_sessions = options_values[max_sessions_param].as<std::size_t>();
-    verify_param<std::size_t>(max_sessions_param, max_sessions, 1);
-
+    std::size_t max_sessions = options_values[max_sessions_param].as<std::size_t>();    
     std::size_t recycled_sessions = options_values[recycled_sessions_param].as<std::size_t>();    
-
     int listen_backlog = options_values[listen_backlog_param].as<int>();
-    verify_param<int>(listen_backlog_param, listen_backlog, 0);
-
+    
     using boost::asio::ip::tcp;
-    return ma::echo::server::session_manager_config(tcp::endpoint(tcp::v4(), port),
-      max_sessions, recycled_sessions, listen_backlog, session_config);
+    return ma::echo::server::session_manager_options(tcp::endpoint(tcp::v4(), port),
+      max_sessions, recycled_sessions, listen_backlog, session_options);
   }
 
-  void print_config(std::ostream& stream, std::size_t cpu_count,
-    const execution_config& the_execution_config,
-    const ma::echo::server::session_manager_config& session_manager_config)
+  void print_options(std::ostream& stream, std::size_t cpu_count,
+    const execution_options& the_execution_options,
+    const ma::echo::server::session_manager_options& session_manager_options)
   {
-    const ma::echo::server::session_config session_config = session_manager_config.managed_session_config();
+    const ma::echo::server::session_options session_options = session_manager_options.managed_session_options();
 
-    stream << "Number of found CPU(s)             : " << cpu_count                                           << std::endl
-           << "Number of session manager's threads: " << the_execution_config.session_manager_thread_count() << std::endl
-           << "Number of sessions' threads        : " << the_execution_config.session_thread_count()         << std::endl
+    stream << "Number of found CPU(s)             : " << cpu_count                                            << std::endl
+           << "Number of session manager's threads: " << the_execution_options.session_manager_thread_count() << std::endl
+           << "Number of sessions' threads        : " << the_execution_options.session_thread_count()         << std::endl
            << "Total number of work threads       : " 
-           << the_execution_config.session_thread_count() + the_execution_config.session_manager_thread_count() << std::endl
-           << "Server listen port                 : " << session_manager_config.accepting_endpoint().port()  << std::endl
-           << "Server stop timeout (seconds)      : " << the_execution_config.stop_timeout().total_seconds() << std::endl
-           << "Maximum number of active sessions  : " << session_manager_config.max_session_count()          << std::endl
-           << "Maximum number of recycled sessions: " << session_manager_config.recycled_session_count()     << std::endl
-           << "TCP listen backlog size            : " << session_manager_config.listen_backlog()             << std::endl
-           << "Size of session's buffer (bytes)   : " << session_config.buffer_size()                        << std::endl;
+           << the_execution_options.session_thread_count() + the_execution_options.session_manager_thread_count() << std::endl
+           << "Server listen port                 : " << session_manager_options.accepting_endpoint().port()  << std::endl
+           << "Server stop timeout (seconds)      : " << the_execution_options.stop_timeout().total_seconds() << std::endl
+           << "Maximum number of active sessions  : " << session_manager_options.max_session_count()          << std::endl
+           << "Maximum number of recycled sessions: " << session_manager_options.recycled_session_count()     << std::endl
+           << "TCP listen backlog size            : " << session_manager_options.listen_backlog()             << std::endl
+           << "Size of session's buffer (bytes)   : " << session_options.buffer_size()                        << std::endl;
 
     stream << "Size of session's socket receive buffer (bytes): ";
-    print_param(stream, session_config.socket_recv_buffer_size(), os_default_text);
+    print(stream, session_options.socket_recv_buffer_size(), os_default_text);
     stream << std::endl;
 
     stream << "Size of session's socket send buffer (bytes)   : ";
-    print_param(stream, session_config.socket_send_buffer_size(), os_default_text);
+    print(stream, session_options.socket_send_buffer_size(), os_default_text);
     stream << std::endl;
 
     stream << "Session's socket Nagle algorithm is: ";
-    print_param(stream, session_config.no_delay(), os_default_text);
+    print(stream, session_options.no_delay(), os_default_text);
     stream << std::endl;      
   }
 
@@ -590,20 +513,20 @@ int main(int argc, char* argv[])
     }        
 
     // Read configuration
-    execution_config the_execution_config = read_execution_config(options_values);    
-    ma::echo::server::session_config session_config = read_session_config(options_values);
-    ma::echo::server::session_manager_config session_manager_config = 
-      read_session_manager_config(options_values, session_config);
+    execution_options the_execution_options = read_execution_options(options_values);    
+    ma::echo::server::session_options session_options = read_session_options(options_values);
+    ma::echo::server::session_manager_options session_manager_options = 
+      read_session_manager_options(options_values, session_options);
 
-    print_config(std::cout, cpu_count, the_execution_config, session_manager_config);
+    print_options(std::cout, cpu_count, the_execution_options, session_manager_options);
                   
     // Before session_manager_io_service
-    boost::asio::io_service session_io_service(the_execution_config.session_thread_count());      
+    boost::asio::io_service session_io_service(the_execution_options.session_thread_count());      
     // ... for the right destruction order
-    boost::asio::io_service session_manager_io_service(the_execution_config.session_manager_thread_count());
+    boost::asio::io_service session_manager_io_service(the_execution_options.session_manager_thread_count());
 
     session_manager_data_ptr the_session_manager_data(boost::make_shared<session_manager_data>(
-      boost::ref(session_manager_io_service), boost::ref(session_io_service), session_manager_config));
+      boost::ref(session_manager_io_service), boost::ref(session_io_service), session_manager_options));
       
     std::cout << "Server is starting...\n";
       
@@ -626,13 +549,13 @@ int main(int argc, char* argv[])
 
     // Create work threads for session operations
     boost::thread_group work_threads;    
-    for (std::size_t i = 0; i != the_execution_config.session_thread_count(); ++i)
+    for (std::size_t i = 0; i != the_execution_options.session_thread_count(); ++i)
     {
       work_threads.create_thread(boost::bind(run_io_service, 
         boost::ref(session_io_service), work_exception_handler));
     }
     // Create work threads for session manager operations
-    for (std::size_t i = 0; i != the_execution_config.session_manager_thread_count(); ++i)
+    for (std::size_t i = 0; i != the_execution_options.session_manager_thread_count(); ++i)
     {
       work_threads.create_thread(boost::bind(run_io_service, 
         boost::ref(session_manager_io_service), work_exception_handler));      
@@ -651,7 +574,7 @@ int main(int argc, char* argv[])
     {
       // Wait until server stops with timeout
       if (!the_session_manager_data->state_changed.timed_wait(
-        session_manager_lock, the_execution_config.stop_timeout()))
+        session_manager_lock, the_execution_options.stop_timeout()))
       {
         std::cout << "Server stop timeout expiration. Terminating server work...\n";
         exit_code = EXIT_FAILURE;
@@ -675,12 +598,7 @@ int main(int argc, char* argv[])
     std::cout << "Work threads have stopped. Process will close.\n";        
 
     return exit_code;
-  }
-  catch (const invalid_config_param& e)
-  {    
-    std::cerr << "Error reading options. Invalid argument value. " 
-      << *e.param_name() << ": " << *e.message() << std::endl;
-  }
+  }  
   catch (const boost::program_options::error& e)
   {    
     std::cerr << "Error reading options: " << e.what() << std::endl;

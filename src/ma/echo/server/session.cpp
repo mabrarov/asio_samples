@@ -62,17 +62,17 @@ namespace ma
       }; // class session::io_handler_binder
 #endif // defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
-      session::session(boost::asio::io_service& io_service, const session_config& config)
-        : socket_recv_buffer_size_(config.socket_recv_buffer_size())
-        , socket_send_buffer_size_(config.socket_send_buffer_size())
-        , no_delay_(config.no_delay())
+      session::session(boost::asio::io_service& io_service, const session_options& options)
+        : socket_recv_buffer_size_(options.socket_recv_buffer_size())
+        , socket_send_buffer_size_(options.socket_send_buffer_size())
+        , no_delay_(options.no_delay())
         , socket_write_in_progress_(false)
         , socket_read_in_progress_(false) 
         , state_(ready_to_start)
         , io_service_(io_service)
         , strand_(io_service)
         , socket_(io_service)
-        , buffer_(config.buffer_size())
+        , buffer_(options.buffer_size())
         , wait_handler_(io_service)
         , stop_handler_(io_service)                
       {          
@@ -94,35 +94,16 @@ namespace ma
         {
           return server_error::invalid_state;
         }
-        boost::system::error_code error;
-        typedef protocol_type::socket socket_type;
-        if (socket_recv_buffer_size_)
-        {
-          socket_.set_option(socket_type::receive_buffer_size(*socket_recv_buffer_size_), error);
-        }
-        if (!error)
-        {
-          if (socket_recv_buffer_size_)
-          {
-            socket_.set_option(socket_type::send_buffer_size(*socket_recv_buffer_size_), error);
-          }
-          if (!error)
-          {          
-            if (no_delay_)
-            {
-              socket_.set_option(protocol_type::no_delay(*no_delay_), error);
-            }
-          }
-        }
+        boost::system::error_code error = apply_socket_options();        
         if (error)
         {
           boost::system::error_code ignored;
-          socket_.close(ignored);          
+          socket_.close(ignored);
         }
         else 
-        {        
-          state_ = started;          
-          read_some();   
+        {
+          state_ = started;
+          read_some();
         }
         return error;
       }
@@ -165,6 +146,33 @@ namespace ma
           return wait_error_;
         }
         return boost::optional<boost::system::error_code>();
+      }
+
+      boost::system::error_code session::apply_socket_options()
+      {
+        typedef protocol_type::socket socket_type;
+        boost::system::error_code error;
+        if (socket_recv_buffer_size_)
+        {
+          socket_.set_option(socket_type::receive_buffer_size(*socket_recv_buffer_size_), error);
+          if (error)
+          {
+            return error;
+          }
+        }        
+        if (socket_recv_buffer_size_)
+        {
+          socket_.set_option(socket_type::send_buffer_size(*socket_recv_buffer_size_), error);
+          if (error)
+          {
+            return error;
+          }
+        }
+        if (no_delay_)
+        {
+          socket_.set_option(protocol_type::no_delay(*no_delay_), error);
+        }
+        return error;
       }
 
       bool session::may_complete_stop() const

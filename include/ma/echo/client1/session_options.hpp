@@ -5,8 +5,8 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef MA_ECHO_SERVER_SESSION_CONFIG_HPP
-#define MA_ECHO_SERVER_SESSION_CONFIG_HPP
+#ifndef MA_ECHO_CLIENT1_SESSION_OPTIONS_HPP
+#define MA_ECHO_CLIENT1_SESSION_OPTIONS_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1020)
 #pragma once
@@ -14,21 +14,25 @@
 
 #include <cstddef>
 #include <boost/optional.hpp>
-#include <ma/echo/server/session_config_fwd.hpp>
+#include <ma/echo/client1/session_options_fwd.hpp>
+
+#if defined(_MSC_VER) && (_MSC_VER >= 1020)
+#pragma once
+#endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
 namespace ma
 {    
   namespace echo
   {
-    namespace server
+    namespace client1
     {
-      class session_config
+      class session_options
       { 
       public:        
         typedef boost::optional<int>  optional_int;
         typedef boost::optional<bool> optional_bool;
 
-        explicit session_config(std::size_t buffer_size, 
+        explicit session_options(std::size_t buffer_size, 
           const optional_int& socket_recv_buffer_size = optional_int(), 
           const optional_int& socket_send_buffer_size = optional_int(),
           const optional_bool& no_delay = optional_bool())
@@ -71,10 +75,10 @@ namespace ma
         optional_int  socket_recv_buffer_size_;
         optional_int  socket_send_buffer_size_;
         std::size_t   buffer_size_;
-      }; // struct session_config
+      }; // struct session_options
         
-    } // namespace server
+    } // namespace client1
   } // namespace echo
 } // namespace ma
 
-#endif // MA_ECHO_SERVER_SESSION_CONFIG_HPP
+#endif // MA_ECHO_CLIENT1_SESSION_OPTIONS_HPP

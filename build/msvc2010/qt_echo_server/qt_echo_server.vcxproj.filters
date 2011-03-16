@@ -116,9 +116,6 @@
     <ClCompile Include="GeneratedFiles\Release\moc_serviceforwardsignal.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\ma\echo\server\qt\execution_config.cpp">
-      <Filter>Source Files\ma\echo\server\qt</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\..\include\ma\echo\server\qt\mainform.h">
@@ -144,10 +141,10 @@
     <ClInclude Include="..\..\..\include\ma\echo\server\session.hpp">
       <Filter>Header Files\ma\echo\server</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\ma\echo\server\session_config.hpp">
+    <ClInclude Include="..\..\..\include\ma\echo\server\session_options.hpp">
       <Filter>Header Files\ma\echo\server</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\ma\echo\server\session_config_fwd.hpp">
+    <ClInclude Include="..\..\..\include\ma\echo\server\session_options_fwd.hpp">
       <Filter>Header Files\ma\echo\server</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\ma\echo\server\session_fwd.hpp">
@@ -156,10 +153,10 @@
     <ClInclude Include="..\..\..\include\ma\echo\server\session_manager.hpp">
       <Filter>Header Files\ma\echo\server</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\ma\echo\server\session_manager_config.hpp">
+    <ClInclude Include="..\..\..\include\ma\echo\server\session_manager_options.hpp">
       <Filter>Header Files\ma\echo\server</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\ma\echo\server\session_manager_config_fwd.hpp">
+    <ClInclude Include="..\..\..\include\ma\echo\server\session_manager_options_fwd.hpp">
       <Filter>Header Files\ma\echo\server</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\ma\echo\server\session_manager_fwd.hpp">
@@ -225,10 +222,10 @@
     <ClInclude Include="..\..\..\include\ma\echo\server\qt\serviceforwardsignal_fwd.h">
       <Filter>Header Files\ma\echo\server\qt</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\ma\echo\server\qt\execution_config_fwd.h">
+    <ClInclude Include="..\..\..\include\ma\echo\server\qt\execution_options_fwd.h">
       <Filter>Header Files\ma\echo\server\qt</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\ma\echo\server\qt\execution_config.h">
+    <ClInclude Include="..\..\..\include\ma\echo\server\qt\execution_options.h">
       <Filter>Header Files\ma\echo\server\qt</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\ma\echo\server\qt\servicestate.h">

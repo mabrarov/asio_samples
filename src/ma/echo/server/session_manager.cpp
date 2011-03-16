@@ -177,10 +177,10 @@ namespace ma
 #endif // defined(MA_HAS_RVALUE_REFS)
 
       session_manager::session_data::session_data(boost::asio::io_service& io_service,
-        const session_config& config)
+        const session_options& options)
         : state(ready_to_start)
         , pending_operations(0)
-        , managed_session(boost::make_shared<session>(boost::ref(io_service), config))
+        , managed_session(boost::make_shared<session>(boost::ref(io_service), options))
       {
       }
       
@@ -228,12 +228,12 @@ namespace ma
       }
         
       session_manager::session_manager(boost::asio::io_service& io_service, 
-        boost::asio::io_service& session_io_service, const session_manager_config& config)
-        : accepting_endpoint_(config.accepting_endpoint())
-        , listen_backlog_(config.listen_backlog())
-        , max_session_count_(config.max_session_count())
-        , recycled_session_count_(config.recycled_session_count())
-        , managed_session_config_(config.managed_session_config())
+        boost::asio::io_service& session_io_service, const session_manager_options& options)
+        : accepting_endpoint_(options.accepting_endpoint())
+        , listen_backlog_(options.listen_backlog())
+        , max_session_count_(options.max_session_count())
+        , recycled_session_count_(options.recycled_session_count())
+        , managed_session_options_(options.managed_session_options())
         , accept_in_progress_(false)
         , state_(ready_to_start)
         , pending_operations_(0)
@@ -261,33 +261,26 @@ namespace ma
       }
 
       boost::system::error_code session_manager::start()
-      {         
+      {
         if (ready_to_start != state_)
-        {          
+        {
           return server_error::invalid_state;
-        }        
+        }
         state_ = start_in_progress;
         boost::system::error_code error;
-        acceptor_.open(accepting_endpoint_.protocol(), error);
+
+        open(acceptor_, accepting_endpoint_, listen_backlog_, error);
         if (!error)
         {
-          acceptor_.bind(accepting_endpoint_, error);
-          if (!error)
-          {
-            acceptor_.listen(listen_backlog_, error);          
-            if (!error)
-            {
-              session_data_ptr new_session_data = create_session(error);
-              if (!error) 
-              {
-                accept_session(new_session_data); 
-              }            
-            }
-          }
+          session_data_ptr new_session_data = create_session(error);
           if (error)
           {
             boost::system::error_code ignored;
             acceptor_.close(ignored);          
+          }
+          else
+          {
+            accept_session(new_session_data);
           }
         }
         if (error)
@@ -360,8 +353,7 @@ namespace ma
         try 
         {   
           session_data_ptr new_session_data = boost::make_shared<session_data>(
-              boost::ref(session_io_service_), managed_session_config_);
-          error = boost::system::error_code();
+              boost::ref(session_io_service_), managed_session_options_);
           return new_session_data;
         }
         catch (const std::bad_alloc&) 
@@ -455,6 +447,36 @@ namespace ma
           return;
         }
         recycle_session(accepted_session_data);
+      }
+
+      void session_manager::open(protocol_type::acceptor& acceptor, 
+        const protocol_type::endpoint& endpoint, int backlog, 
+        boost::system::error_code& error)
+      {
+        boost::system::error_code local_error;
+        acceptor.open(endpoint.protocol(), local_error);
+        if (local_error)
+        {
+          error = local_error;
+          return;
+        }
+        
+        acceptor.bind(endpoint, local_error);
+        if (local_error)
+        {
+          boost::system::error_code ignored;
+          acceptor.close(ignored);          
+
+          error = local_error;
+          return;
+        }
+
+        acceptor.listen(backlog, error);
+        if (error)
+        {
+          boost::system::error_code ignored;
+          acceptor.close(ignored);
+        }
       }
 
       bool session_manager::may_complete_stop() const

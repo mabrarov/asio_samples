@@ -26,8 +26,8 @@
 #include <ma/bind_asio_handler.hpp>
 #include <ma/context_alloc_handler.hpp>
 #include <ma/echo/server/session_fwd.hpp>
-#include <ma/echo/server/session_config.hpp>
-#include <ma/echo/server/session_manager_config.hpp>
+#include <ma/echo/server/session_options.hpp>
+#include <ma/echo/server/session_manager_options.hpp>
 #include <ma/echo/server/session_manager_fwd.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)
@@ -53,7 +53,7 @@ namespace ma
 
         session_manager(boost::asio::io_service& io_service, 
           boost::asio::io_service& session_io_service, 
-          const session_manager_config& config);
+          const session_manager_options& options);
 
         ~session_manager()
         {        
@@ -146,6 +146,10 @@ namespace ma
         class session_dispatch_binder;
         class session_handler_binder;
 
+        friend class accept_handler_binder;
+        friend class session_dispatch_binder;
+        friend class session_handler_binder;
+
         template <typename Arg>
         class forward_handler_binder
         {
@@ -212,8 +216,7 @@ namespace ma
           in_place_handler_allocator<144> start_wait_allocator;
           in_place_handler_allocator<144> stop_allocator;
 
-          session_data(boost::asio::io_service& io_service,
-            const session_config& config);
+          session_data(boost::asio::io_service&, const session_options&);
 
           ~session_data()
           {
@@ -300,12 +303,15 @@ namespace ma
         void accept_new_session();
         void handle_accept(const session_data_ptr&, const boost::system::error_code&);
 
+        static void open(protocol_type::acceptor& acceptor, 
+          const protocol_type::endpoint& endpoint, int backlog, 
+          boost::system::error_code& error);
         bool may_complete_stop() const;
         bool may_complete_wait() const;
         bool may_continue_accept() const;
         void complete_stop();
         void complete_wait();
-
+        
         void start_session(const session_data_ptr&);
         void stop_session(const session_data_ptr&);
         void wait_session(const session_data_ptr&);
@@ -326,29 +332,27 @@ namespace ma
         void post_stop_handler();
 
         protocol_type::endpoint accepting_endpoint_;
-        int            listen_backlog_;
-        std::size_t    max_session_count_;
-        std::size_t    recycled_session_count_;
-        session_config managed_session_config_;
+        int                     listen_backlog_;
+        std::size_t             max_session_count_;
+        std::size_t             recycled_session_count_;
+        session_options         managed_session_options_;
 
-        bool accept_in_progress_;
+        bool        accept_in_progress_;
         state_type  state_;
         std::size_t pending_operations_;
 
-        boost::asio::io_service& io_service_;
-        boost::asio::io_service& session_io_service_;
+        boost::asio::io_service&        io_service_;
+        boost::asio::io_service&        session_io_service_;
         boost::asio::io_service::strand strand_;      
-        protocol_type::acceptor  acceptor_;
+        protocol_type::acceptor         acceptor_;
+        session_data_list               active_sessions_;
+        session_data_list               recycled_sessions_;
+        boost::system::error_code       wait_error_;
+        boost::system::error_code       stop_error_;
 
         handler_storage<boost::system::error_code> wait_handler_;
         handler_storage<boost::system::error_code> stop_handler_;
-
-        session_data_list active_sessions_;
-        session_data_list recycled_sessions_;
-
-        boost::system::error_code wait_error_;
-        boost::system::error_code stop_error_;
-        
+                
         in_place_handler_allocator<512> accept_allocator_;
       }; // class session_manager
 

@@ -23,7 +23,7 @@
 #include <ma/handler_allocator.hpp>
 #include <ma/bind_asio_handler.hpp>
 #include <ma/context_alloc_handler.hpp>
-#include <ma/echo/server/session_config.hpp>
+#include <ma/echo/server/session_options.hpp>
 #include <ma/echo/server/session_fwd.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)
@@ -47,7 +47,7 @@ namespace ma
       public:
         typedef boost::asio::ip::tcp protocol_type;
 
-        session(boost::asio::io_service& io_service, const session_config& config);
+        session(boost::asio::io_service& io_service, const session_options& options);
 
         ~session()
         {
@@ -229,6 +229,7 @@ namespace ma
         boost::optional<boost::system::error_code> stop();
         boost::optional<boost::system::error_code> wait();
 
+        boost::system::error_code apply_socket_options();
         bool may_complete_stop() const;
         void complete_stop();
 
@@ -238,23 +239,23 @@ namespace ma
         void handle_write_some(const boost::system::error_code&, std::size_t);
         void post_stop_handler();
         
-        session_config::optional_int  socket_recv_buffer_size_;
-        session_config::optional_int  socket_send_buffer_size_;
-        session_config::optional_bool no_delay_;
+        session_options::optional_int  socket_recv_buffer_size_;
+        session_options::optional_int  socket_send_buffer_size_;
+        session_options::optional_bool no_delay_;
 
-        bool socket_write_in_progress_;
-        bool socket_read_in_progress_;
+        bool       socket_write_in_progress_;
+        bool       socket_read_in_progress_;
         state_type state_;
 
-        boost::asio::io_service& io_service_;
+        boost::asio::io_service&        io_service_;
         boost::asio::io_service::strand strand_;
-        protocol_type::socket socket_;
-        cyclic_buffer buffer_;
+        protocol_type::socket           socket_;
+        cyclic_buffer                   buffer_;
+        boost::system::error_code       wait_error_;
+        boost::system::error_code       stop_error_;
 
         handler_storage<boost::system::error_code> wait_handler_;
-        handler_storage<boost::system::error_code> stop_handler_;
-        boost::system::error_code wait_error_;
-        boost::system::error_code stop_error_;
+        handler_storage<boost::system::error_code> stop_handler_;        
 
         in_place_handler_allocator<640> write_allocator_;
         in_place_handler_allocator<256> read_allocator_;

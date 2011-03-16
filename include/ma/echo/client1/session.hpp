@@ -23,7 +23,7 @@
 #include <ma/handler_allocator.hpp>
 #include <ma/context_alloc_handler.hpp>
 #include <ma/cyclic_buffer.hpp>
-#include <ma/echo/client1/session_config.hpp>
+#include <ma/echo/client1/session_options.hpp>
 #include <ma/echo/client1/session_fwd.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)
@@ -46,7 +46,7 @@ namespace ma
 
       public:        
         session(boost::asio::io_service& io_service, 
-          const session_config& config);
+          const session_options& options);
 
         ~session()
         {        
@@ -160,6 +160,10 @@ namespace ma
         void handle_read_some(const boost::system::error_code& error, const std::size_t bytes_transferred);        
         void handle_write_some(const boost::system::error_code& error, const std::size_t bytes_transferred);
         void post_stop_handler();
+
+        session_options::optional_int  socket_recv_buffer_size_;
+        session_options::optional_int  socket_send_buffer_size_;
+        session_options::optional_bool no_delay_;
         
         bool socket_write_in_progress_;
         bool socket_read_in_progress_;
@@ -173,8 +177,7 @@ namespace ma
         handler_storage<boost::system::error_code> stop_handler_;
 
         boost::system::error_code wait_error_;
-        boost::system::error_code stop_error_;
-        session_config config_;        
+        boost::system::error_code stop_error_;        
         cyclic_buffer buffer_;
 
         in_place_handler_allocator<640> write_allocator_;

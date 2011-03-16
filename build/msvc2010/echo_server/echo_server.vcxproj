@@ -196,11 +196,11 @@
     <ClInclude Include="..\..\..\include\ma\custom_alloc_handler.hpp" />
     <ClInclude Include="..\..\..\include\ma\cyclic_buffer.hpp" />
     <ClInclude Include="..\..\..\include\ma\echo\server\error.hpp" />
-    <ClInclude Include="..\..\..\include\ma\echo\server\session_config.hpp" />
-    <ClInclude Include="..\..\..\include\ma\echo\server\session_config_fwd.hpp" />
+    <ClInclude Include="..\..\..\include\ma\echo\server\session_options.hpp" />
+    <ClInclude Include="..\..\..\include\ma\echo\server\session_options_fwd.hpp" />
     <ClInclude Include="..\..\..\include\ma\echo\server\session_fwd.hpp" />
-    <ClInclude Include="..\..\..\include\ma\echo\server\session_manager_config.hpp" />
-    <ClInclude Include="..\..\..\include\ma\echo\server\session_manager_config_fwd.hpp" />
+    <ClInclude Include="..\..\..\include\ma\echo\server\session_manager_options.hpp" />
+    <ClInclude Include="..\..\..\include\ma\echo\server\session_manager_options_fwd.hpp" />
     <ClInclude Include="..\..\..\include\ma\echo\server\session_manager_fwd.hpp" />
     <ClInclude Include="..\..\..\include\ma\handler_alloc_helpers.hpp" />
     <ClInclude Include="..\..\..\include\ma\handler_allocator.hpp" />

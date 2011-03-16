@@ -51,7 +51,7 @@ namespace ma
       void async_do_something(const Handler& handler)
       {
         strand_.post(ma::make_context_alloc_handler2(handler, 
-          boost::bind(&this_type::call_do_something<Handler>, shared_from_this(), _1)));
+          boost::bind(&this_type::call_do_something<Handler>, get_shared_base(), _1)));
       }
 #endif // defined(MA_HAS_RVALUE_REFS)
 
