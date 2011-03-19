@@ -19,14 +19,17 @@
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/assert.hpp>
+#include <boost/cstdint.hpp>
 #include <boost/function.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/noncopyable.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/program_options.hpp>
 #include <boost/throw_exception.hpp>
+#include <boost/numeric/conversion/cast.hpp>
 #include <boost/thread/condition_variable.hpp>
 #include <boost/date_time/posix_time/ptime.hpp>
 #include <ma/handler_allocator.hpp>
@@ -51,6 +54,84 @@ namespace
   const char* socket_send_buffer_size_param = "sock_send_buffer";
   const char* socket_no_delay_param         = "sock_no_delay";
   const char* os_default_text = "OS default";
+
+  template <typename IntegerType, IntegerType min, IntegerType max>
+  class constrained_integer
+  {
+  private:
+    typedef constrained_integer<IntegerType, min, max> this_type;
+
+  public:
+    typedef IntegerType value_type;
+
+    explicit constrained_integer(value_type value)
+      : value_(value)
+    {
+    }
+
+    value_type value() const
+    {
+      return value_;
+    }
+
+    friend std::ostream& operator<<(std::ostream& stream, const this_type& obj)
+    {
+      stream << obj.value();
+      return stream;
+    }
+
+    friend void validate(boost::any& option_value, 
+      const std::vector<std::string>& text_values,
+      this_type*, int)
+    {              
+      // Make sure no previous assignment to 'a' was made.
+      boost::program_options::validators::check_first_occurrence(option_value);
+      // Extract the first string from 'values'. If there is more than
+      // one string, it's an error, and exception will be thrown.
+      const std::string& s = boost::program_options::validators::get_single_string(text_values);
+      // Read raw (unchecked, maximal width integer) value
+      typedef boost::intmax_t raw_value_type;
+      raw_value_type raw_value;
+      try 
+      {
+        raw_value = boost::lexical_cast<raw_value_type>(s);
+      }
+      catch (const boost::bad_lexical_cast&)
+      {
+        boost::throw_exception(boost::program_options::validation_error(
+          boost::program_options::validation_error::invalid_option_value));
+      }
+      // Check raw value
+      value_type checked_value;
+      try 
+      {     
+        checked_value = boost::numeric_cast<value_type>(raw_value);        
+      }
+      catch (const boost::bad_numeric_cast&)
+      {
+        boost::throw_exception(boost::program_options::validation_error(
+            boost::program_options::validation_error::invalid_option_value));
+      }
+      if (checked_value < min || checked_value > max)
+      {
+        boost::throw_exception(boost::program_options::validation_error(
+          boost::program_options::validation_error::invalid_option_value));
+      }
+      option_value = boost::any(this_type(checked_value));
+    }
+
+  private:
+    value_type value_;
+  }; //class constrained_integer
+
+  typedef constrained_integer<unsigned short, 0, 65535> port_num_type;
+  typedef constrained_integer<int, 0, 1024>             listen_backlog_size_type;
+  typedef constrained_integer<std::size_t, 1, 1024>     thread_count_type;
+  typedef constrained_integer<int, 0, 3600>             timeout_sec_type;
+  typedef constrained_integer<std::size_t, 1, 100000>   max_session_count_type;
+  typedef constrained_integer<std::size_t, 0, 10000>    recycled_session_count_type;
+  typedef constrained_integer<std::size_t, 1, 1048576>  buffer_size_type;
+  typedef constrained_integer<int, 0, 1048576>          socket_buffer_size_type;
 
   template <typename Value>
   void print(std::ostream& stream, const boost::optional<Value>& value, const std::string& default_text)
@@ -238,13 +319,28 @@ namespace
   
   execution_options read_execution_options(const boost::program_options::variables_map& options_values)
   {
-    std::size_t session_manager_thread_count = options_values[session_manager_threads_param].as<std::size_t>();
-    std::size_t session_thread_count = options_values[session_threads_param].as<std::size_t>();    
-    long stop_timeout_sec = options_values[stop_timeout_param].as<long>();
+    std::size_t session_manager_thread_count = 
+      options_values[session_manager_threads_param].as<thread_count_type>().value();
+
+    std::size_t session_thread_count = 
+      options_values[session_threads_param].as<thread_count_type>().value();    
+
+    int stop_timeout_sec = 
+      options_values[stop_timeout_param].as<timeout_sec_type>().value();
     
     return execution_options(session_manager_thread_count, session_thread_count, 
       boost::posix_time::seconds(stop_timeout_sec));
-  }  
+  } 
+
+  boost::optional<int> read_socket_buffer_size(const boost::program_options::variables_map& options_values,
+    const char* option_name)
+  {     
+    if (!options_values.count(option_name))
+    {
+      return boost::optional<int>();
+    }
+    return options_values[option_name].as<socket_buffer_size_type>().value();
+  }
 
   ma::echo::server::session_options read_session_options(const boost::program_options::variables_map& options_values)
   {  
@@ -254,32 +350,33 @@ namespace
       no_delay = !options_values[socket_no_delay_param].as<bool>();
     }
 
-    std::size_t buffer_size = options_values[buffer_size_param].as<std::size_t>();
-    boost::optional<int> socket_recv_buffer_size;
-    if (options_values.count(socket_recv_buffer_size_param))
-    {
-      int value = options_values[socket_recv_buffer_size_param].as<int>();
-      socket_recv_buffer_size = value;
-    }
+    std::size_t buffer_size = 
+      options_values[buffer_size_param].as<buffer_size_type>().value();
 
-    boost::optional<int> socket_send_buffer_size;
-    if (options_values.count(socket_send_buffer_size_param))
-    {
-      int value = options_values[socket_send_buffer_size_param].as<int>();
-      socket_send_buffer_size = value;
-    }
+    boost::optional<int> socket_recv_buffer_size = 
+      read_socket_buffer_size(options_values, socket_recv_buffer_size_param);
+
+    boost::optional<int> socket_send_buffer_size =
+      read_socket_buffer_size(options_values, socket_send_buffer_size_param);
     
-    return ma::echo::server::session_options(buffer_size, socket_recv_buffer_size, socket_send_buffer_size, no_delay);
+    return ma::echo::server::session_options(buffer_size, 
+      socket_recv_buffer_size, socket_send_buffer_size, no_delay);
   }
 
   ma::echo::server::session_manager_options read_session_manager_options(
     const boost::program_options::variables_map& options_values,
     const ma::echo::server::session_options& session_options)
   {    
-    unsigned short port = options_values[port_param].as<unsigned short>();
-    std::size_t max_sessions = options_values[max_sessions_param].as<std::size_t>();    
-    std::size_t recycled_sessions = options_values[recycled_sessions_param].as<std::size_t>();    
-    int listen_backlog = options_values[listen_backlog_param].as<int>();
+    unsigned short port = options_values[port_param].as<port_num_type>().value();
+
+    std::size_t max_sessions = 
+      options_values[max_sessions_param].as<max_session_count_type>().value();    
+
+    std::size_t recycled_sessions = 
+      options_values[recycled_sessions_param].as<recycled_session_count_type>().value();    
+
+    int listen_backlog = 
+      options_values[listen_backlog_param].as<listen_backlog_size_type>().value();
     
     using boost::asio::ip::tcp;
     return ma::echo::server::session_manager_options(tcp::endpoint(tcp::v4(), port),
@@ -351,52 +448,59 @@ namespace
       )
       (
         port_param, 
-        boost::program_options::value<unsigned short>(), 
+        boost::program_options::value<port_num_type>(), 
         "set the TCP port number for incoming connections' listening"
       )
       (
         session_manager_threads_param, 
-        boost::program_options::value<std::size_t>()->default_value(session_manager_thread_count), 
+        boost::program_options::value<thread_count_type>()->default_value(
+          thread_count_type(session_manager_thread_count)), 
         "set the number of session manager's threads"
       )    
       (
         session_threads_param, 
-        boost::program_options::value<std::size_t>()->default_value(session_thread_count), 
+        boost::program_options::value<thread_count_type>()->default_value(
+        thread_count_type(session_thread_count)), 
         "set the number of sessions' threads"
       )    
       (
         stop_timeout_param, 
-        boost::program_options::value<long>()->default_value(60), 
+        boost::program_options::value<timeout_sec_type>()->default_value(
+          timeout_sec_type(60)), 
         "set the server stop timeout, at one's expiration server work will be terminated (seconds)"
       )
       (
         max_sessions_param, 
-        boost::program_options::value<std::size_t>()->default_value(10000), 
+        boost::program_options::value<max_session_count_type>()->default_value(
+          max_session_count_type(10000)), 
         "set the maximum number of simultaneously active sessions"
       )
       (
         recycled_sessions_param, 
-        boost::program_options::value<std::size_t>()->default_value(100), 
+        boost::program_options::value<recycled_session_count_type>()->default_value(
+          recycled_session_count_type(100)), 
         "set the maximum number of pooled inactive sessions"
       )
       (
         listen_backlog_param, 
-        boost::program_options::value<int>()->default_value(6), 
+        boost::program_options::value<listen_backlog_size_type>()->default_value(
+          listen_backlog_size_type(6)), 
         "set the size of TCP listen backlog"
       )
       (
         buffer_size_param, 
-        boost::program_options::value<std::size_t>()->default_value(1024),
+        boost::program_options::value<buffer_size_type>()->default_value(
+          buffer_size_type(1024)),
         "set the session's buffer size (bytes)"
       )
       (
         socket_recv_buffer_size_param, 
-        boost::program_options::value<int>(),
+        boost::program_options::value<socket_buffer_size_type>(),
         "set the size of session's socket receive buffer (bytes)"
       )  
       (
         socket_send_buffer_size_param, 
-        boost::program_options::value<int>(),
+        boost::program_options::value<socket_buffer_size_type>(),
         "set the size of session's socket send buffer (bytes)"
       )
       (

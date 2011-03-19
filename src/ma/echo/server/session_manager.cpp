@@ -458,6 +458,10 @@ namespace ma
         }
 
         bool failed = true;
+#if defined(BOOST_MSVC)
+#pragma warning(push)
+#pragma warning(disable : 4512)
+#endif
         BOOST_SCOPE_EXIT( (&failed) (&acceptor) )
         {
           if (failed)
@@ -467,6 +471,9 @@ namespace ma
           }          
         } 
         BOOST_SCOPE_EXIT_END
+#if defined(BOOST_MSVC)
+#pragma warning(pop)
+#endif
                 
         acceptor.bind(endpoint, local_error);
         if (local_error)
@@ -475,7 +482,10 @@ namespace ma
           return;
         }
         acceptor.listen(backlog, local_error);
-        failed = static_cast<bool>(error);
+        if (!error)
+        {
+          failed = false;
+        }        
       }
 
       bool session_manager::may_complete_stop() const
