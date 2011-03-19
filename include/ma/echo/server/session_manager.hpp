@@ -226,7 +226,14 @@ namespace ma
         class session_data_list : private boost::noncopyable
         {
         public:
-          session_data_list();
+          session_data_list()
+            : size_(0)
+          {
+          }
+
+          ~session_data_list()
+          {
+          }
 
           void push_front(const session_data_ptr& value);
           void erase(const session_data_ptr& value);          
@@ -306,6 +313,7 @@ namespace ma
         static void open(protocol_type::acceptor& acceptor, 
           const protocol_type::endpoint& endpoint, int backlog, 
           boost::system::error_code& error);
+
         bool may_complete_stop() const;
         bool may_complete_wait() const;
         bool may_continue_accept() const;

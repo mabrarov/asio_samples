@@ -94,7 +94,7 @@ namespace ma
         {
           return server_error::invalid_state;
         }
-        boost::system::error_code error = apply_socket_options();        
+        boost::system::error_code error = apply_socket_options();
         if (error)
         {
           boost::system::error_code ignored;
@@ -122,15 +122,15 @@ namespace ma
           wait_handler_.post(server_error::operation_aborted);
         }
         // Do shutdown - flush socket's write_some buffer
-        if (!socket_write_in_progress_) 
+        if (!socket_write_in_progress_)
         {
           socket_.shutdown(protocol_type::socket::shutdown_send, stop_error_);
-        }          
+        }
         // Check for shutdown continuation          
         if (may_complete_stop())
         {
           complete_stop();
-          return stop_error_;          
+          return stop_error_;
         }
         return boost::optional<boost::system::error_code>();
       }

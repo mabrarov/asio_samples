@@ -69,10 +69,10 @@ namespace ma
         }
         
       private:
-        int            listen_backlog_;
-        std::size_t    max_session_count_;
-        std::size_t    recycled_session_count_;
-        endpoint_type  accepting_endpoint_;
+        int             listen_backlog_;
+        std::size_t     max_session_count_;
+        std::size_t     recycled_session_count_;
+        endpoint_type   accepting_endpoint_;
         session_options managed_session_options_;
       }; // class session_manager_options
         
