@@ -9,10 +9,15 @@
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <ma/config.hpp>
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/strand_wrapped_handler.hpp>
 #include <ma/tutorial2/do_something_handler.hpp>
 #include <ma/tutorial2/async_implementation.hpp>
+
+#if defined(MA_HAS_RVALUE_REFS)
+#include <utility>
+#endif // defined(MA_HAS_RVALUE_REFS)
 
 namespace ma
 {
@@ -38,6 +43,15 @@ namespace ma
           , function_(function)
         {
         }
+
+#if defined(MA_HAS_RVALUE_REFS)
+        forward_binder(this_type&& other)
+          : async_implementation_(std::move(other.async_implementation_))
+          , do_something_handler_(std::move(other.do_something_handler_))
+          , function_(other.function_)          
+        {
+        }
+#endif
 
         ~forward_binder()
         {
@@ -76,6 +90,13 @@ namespace ma
         {
         }
 
+#if defined(MA_HAS_RVALUE_REFS)
+        do_something_handler_adapter(this_type&& other)
+          : do_something_handler_(std::move(other.do_something_handler_))
+        {
+        }
+#endif
+
         ~do_something_handler_adapter()
         {
         }
@@ -112,6 +133,14 @@ namespace ma
           , error_(error)
         {
         }
+
+#if defined(MA_HAS_RVALUE_REFS)
+        do_something_handler_binder(this_type&& other)
+          : do_something_handler_(std::move(other.do_something_handler_))
+          , error_(std::move(other.error_))
+        {
+        }
+#endif
 
         ~do_something_handler_binder()
         {

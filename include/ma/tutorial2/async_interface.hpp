@@ -18,10 +18,31 @@ namespace ma
 {
   namespace tutorial2
   {    
-    class async_interface : private boost::noncopyable
+    class async_interface
     {
+    private:
+      typedef async_interface this_type;
+
     public:
       virtual void async_do_something(const do_something_handler_ptr&) = 0;
+
+    protected:
+      async_interface()
+      {
+      }
+
+      async_interface(const do_something_handler&)
+      {
+      }
+
+      this_type& operator=(const do_something_handler&)
+      {
+        return *this;
+      }
+
+      ~async_interface()
+      {
+      }
     }; // class async_interface 
 
   } // namespace tutorial

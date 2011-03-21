@@ -15,6 +15,7 @@
 #include <boost/asio.hpp>
 #include <boost/format.hpp>
 #include <boost/optional.hpp>
+#include <boost/noncopyable.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <ma/handler_storage.hpp>
@@ -26,7 +27,8 @@ namespace ma
   namespace tutorial2
   {    
     class async_implementation 
-      : public async_interface
+      : private boost::noncopyable
+      , public async_interface
       , public boost::enable_shared_from_this<async_implementation>
     {
     private:

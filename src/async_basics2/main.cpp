@@ -31,12 +31,14 @@ namespace
 {
   typedef ma::in_place_handler_allocator<128> allocator_type;
   typedef boost::shared_ptr<allocator_type> allocator_ptr;
+  typedef boost::shared_ptr<ma::tutorial2::async_interface> async_interface_ptr;
 
   class do_something_handler_implementation : public ma::tutorial2::do_something_handler
   {
   public:
-    explicit do_something_handler_implementation(const std::string& name)
-      : name_(name)
+    do_something_handler_implementation(const async_interface_ptr& async_interface, const std::string& name)
+      : async_interface_(async_interface)
+      , name_(name)
       , allocator_(boost::make_shared<allocator_type>())
     {
     }
@@ -68,8 +70,9 @@ namespace
     }
 
   private:
+    async_interface_ptr async_interface_;
     std::string name_;
-    allocator_ptr allocator_;
+    allocator_ptr allocator_;    
   }; // class do_something_handler_implementation  
 
   void handle_program_exit(boost::asio::io_service& io_service)
@@ -108,17 +111,14 @@ int main(int /*argc*/, char* /*argv*/[])
 
     boost::format name_format("active_object%03d");
     for (std::size_t i = 0; i != 20; ++i)
-    { 
-      using boost::shared_ptr;
+    {
       std::string name = (name_format % i).str();
-            
-      using ma::tutorial2::async_interface;
-      using ma::tutorial2::async_implementation;
+                  
+      async_interface_ptr active_object = 
+        boost::make_shared<ma::tutorial2::async_implementation>(boost::ref(work_io_service), name);
 
-      shared_ptr<async_interface> active_object = 
-        boost::make_shared<async_implementation>(boost::ref(work_io_service), name); 
-
-      active_object->async_do_something(boost::make_shared<do_something_handler_implementation>(name));
+      active_object->async_do_something(
+        boost::make_shared<do_something_handler_implementation>(active_object, name));
     }
 
     work_io_service_guard.reset();

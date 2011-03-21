@@ -49,7 +49,7 @@ namespace ma
       std::size_t counter_;
       boost::asio::deadline_timer timer_;
 
-      std::string name_;
+      const std::string name_;
       boost::format start_message_fmt_;
       boost::format cycle_message_fmt_;
       boost::format error_end_message_fmt_;

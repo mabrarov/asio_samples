@@ -174,7 +174,7 @@ namespace ma
         session_manager::session_data_ptr session_data_;
         boost::system::error_code error_;
       }; // class session_manager::session_handler_binder
-#endif // defined(MA_HAS_RVALUE_REFS)
+#endif // defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
       session_manager::session_data::session_data(boost::asio::io_service& io_service,
         const session_options& options)

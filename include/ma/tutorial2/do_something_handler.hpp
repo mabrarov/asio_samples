@@ -22,6 +22,9 @@ namespace ma
   {    
     class do_something_handler
     {
+    private:
+      typedef do_something_handler this_type;
+
     public:
       virtual void handle_do_something_completion(const boost::system::error_code&) = 0;
 
@@ -40,9 +43,18 @@ namespace ma
       {
       }
 
-      ~do_something_handler()
+      do_something_handler(const do_something_handler&)
       {
       }
+
+      this_type& operator=(const do_something_handler&)
+      {
+        return *this;
+      }
+
+      ~do_something_handler()
+      {
+      }      
     }; // class do_something_handler
 
   } // namespace tutorial2

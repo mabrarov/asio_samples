@@ -29,9 +29,11 @@
 namespace
 {
   typedef ma::in_place_handler_allocator<128> allocator_type;
+  typedef boost::shared_ptr<ma::tutorial::async_base> async_base_ptr;
 
-  void handle_do_something(const boost::system::error_code& error,
-    const boost::shared_ptr<std::string>& name, 
+  void handle_do_something(const async_base_ptr& /*async_base*/,
+    const boost::system::error_code& error,
+    const boost::shared_ptr<const std::string>& name, 
     const boost::shared_ptr<allocator_type>& /*allocator*/)
   {  
     if (error)
@@ -80,16 +82,15 @@ int main(int /*argc*/, char* /*argv*/[])
 
     boost::format name_format("active_object%03d");
     for (std::size_t i = 0; i != 20; ++i)
-    { 
-      using boost::shared_ptr;
-      shared_ptr<std::string> name = boost::make_shared<std::string>((name_format % i).str());
-      shared_ptr<allocator_type> allocator = boost::make_shared<allocator_type>();
+    {
+      boost::shared_ptr<const std::string> name = boost::make_shared<std::string>((name_format % i).str());
+      boost::shared_ptr<allocator_type> allocator = boost::make_shared<allocator_type>();
+      
+      async_base_ptr active_object = 
+        boost::make_shared<ma::tutorial::async_derived>(boost::ref(work_io_service), *name); 
 
-      using ma::tutorial::async_base;
-      using ma::tutorial::async_derived;
-      shared_ptr<async_base> active_object = boost::make_shared<async_derived>(boost::ref(work_io_service), *name); 
       active_object->async_do_something(ma::make_custom_alloc_handler(*allocator,
-        boost::bind(&handle_do_something, _1, name, allocator)));
+        boost::bind(&handle_do_something, active_object, _1, name, allocator)));
     }
 
     work_io_service_guard.reset();
