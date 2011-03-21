@@ -17,6 +17,7 @@
 #include <boost/optional.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/noncopyable.hpp>
+#include <boost/system/error_code.hpp>
 #include <ma/config.hpp>
 #include <ma/handler_storage.hpp>
 #include <ma/handler_allocator.hpp>
@@ -96,7 +97,7 @@ namespace ma
 
       boost::asio::io_service::strand& strand_;
       ma::handler_storage<boost::system::error_code> do_something_handler_;
-    }; //class async_base
+    }; // class async_base
 
   } // namespace tutorial
 } // namespace ma

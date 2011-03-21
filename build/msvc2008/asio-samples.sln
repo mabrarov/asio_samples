@@ -8,6 +8,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "echo_server", "echo_server\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "nmea_client", "nmea_client\nmea_client.vcproj", "{0293302C-9C34-42AD-8EAA-61B7DFCBCFAD}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "async_basics2", "async_basics2\async_basics2.vcproj", "{78584AC5-EA5D-4FDE-A613-5A4C7E39682A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -48,6 +50,14 @@ Global
 		{0293302C-9C34-42AD-8EAA-61B7DFCBCFAD}.Release|Win32.Build.0 = Release|Win32
 		{0293302C-9C34-42AD-8EAA-61B7DFCBCFAD}.Release|x64.ActiveCfg = Release|x64
 		{0293302C-9C34-42AD-8EAA-61B7DFCBCFAD}.Release|x64.Build.0 = Release|x64
+		{78584AC5-EA5D-4FDE-A613-5A4C7E39682A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{78584AC5-EA5D-4FDE-A613-5A4C7E39682A}.Debug|Win32.Build.0 = Debug|Win32
+		{78584AC5-EA5D-4FDE-A613-5A4C7E39682A}.Debug|x64.ActiveCfg = Debug|x64
+		{78584AC5-EA5D-4FDE-A613-5A4C7E39682A}.Debug|x64.Build.0 = Debug|x64
+		{78584AC5-EA5D-4FDE-A613-5A4C7E39682A}.Release|Win32.ActiveCfg = Release|Win32
+		{78584AC5-EA5D-4FDE-A613-5A4C7E39682A}.Release|Win32.Build.0 = Release|Win32
+		{78584AC5-EA5D-4FDE-A613-5A4C7E39682A}.Release|x64.ActiveCfg = Release|x64
+		{78584AC5-EA5D-4FDE-A613-5A4C7E39682A}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

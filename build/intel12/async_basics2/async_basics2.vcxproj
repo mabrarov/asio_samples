@@ -19,8 +19,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{DB2A4264-CCB5-4687-8A25-D6400FF5F8AE}</ProjectGuid>
-    <RootNamespace>async_basics</RootNamespace>
+    <ProjectGuid>{5F1CDA55-FD59-4D9E-A23D-0FC893C29D88}</ProjectGuid>
+    <RootNamespace>async_basics2</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -28,19 +28,23 @@
     <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>Intel C++ Compiler XE 12.0</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>Intel C++ Compiler XE 12.0</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
     <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>Intel C++ Compiler XE 12.0</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>Intel C++ Compiler XE 12.0</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -204,9 +208,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\src\async_basics\main.cpp" />
+    <ClCompile Include="..\..\..\src\async_basics2\main.cpp" />
     <ClCompile Include="..\..\..\src\ma\console_controller.cpp" />
-    <ClCompile Include="..\..\..\src\ma\tutorial\async_derived.cpp" />
+    <ClCompile Include="..\..\..\src\ma\tutorial2\async_implementation.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\include\ma\bind_asio_handler.hpp" />
@@ -221,8 +225,10 @@
     <ClInclude Include="..\..\..\include\ma\handler_storage.hpp" />
     <ClInclude Include="..\..\..\include\ma\handler_storage_service.hpp" />
     <ClInclude Include="..\..\..\include\ma\strand_wrapped_handler.hpp" />
-    <ClInclude Include="..\..\..\include\ma\tutorial\async_base.hpp" />
-    <ClInclude Include="..\..\..\include\ma\tutorial\async_derived.hpp" />
+    <ClInclude Include="..\..\..\include\ma\tutorial2\async_implementation.hpp" />
+    <ClInclude Include="..\..\..\include\ma\tutorial2\async_interface.hpp" />
+    <ClInclude Include="..\..\..\include\ma\tutorial2\do_something_handler.hpp" />
+    <ClInclude Include="..\..\..\include\ma\tutorial2\do_something_handler_fwd.hpp" />
     <ClInclude Include="..\..\..\include\ma\type_traits.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
