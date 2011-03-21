@@ -8,7 +8,6 @@
 #include <new>
 #include <boost/ref.hpp>
 #include <boost/assert.hpp>
-#include <boost/scope_exit.hpp>
 #include <boost/make_shared.hpp>
 #include <ma/config.hpp>
 #include <ma/custom_alloc_handler.hpp>
@@ -448,8 +447,9 @@ namespace ma
       void session_manager::open(protocol_type::acceptor& acceptor, 
         const protocol_type::endpoint& endpoint, int backlog, 
         boost::system::error_code& error)
-      {                
+      {
         boost::system::error_code local_error;
+
         acceptor.open(endpoint.protocol(), local_error);
         if (local_error)
         {
@@ -457,34 +457,49 @@ namespace ma
           return;
         }
 
-        bool failed = true;
-#if defined(BOOST_MSVC)
-#pragma warning(push)
-#pragma warning(disable : 4512)
-#endif
-        BOOST_SCOPE_EXIT( (&failed) (&acceptor) )
+        class acceptor_guard : private boost::noncopyable
         {
-          if (failed)
+        public:
+          typedef protocol_type::acceptor guarded_type;
+
+          acceptor_guard(guarded_type& guarded)
+            : active_(true)
+            , guarded_(guarded)
           {
-            boost::system::error_code ignored;
-            acceptor.close(ignored);
-          }          
-        } 
-        BOOST_SCOPE_EXIT_END
-#if defined(BOOST_MSVC)
-#pragma warning(pop)
-#endif
-                
+          }
+
+          ~acceptor_guard()
+          {
+            if (active_)
+            {
+              boost::system::error_code ignored;
+              guarded_.close(ignored);
+            }            
+          }
+
+          void release()
+          {
+            active_ = false;
+          }
+
+        private:
+          bool active_;
+          guarded_type& guarded_;
+        }; // class acceptor_guard
+        acceptor_guard closing_guard(acceptor);                
+
         acceptor.bind(endpoint, local_error);
         if (local_error)
-        {          
+        {
           error = local_error;
           return;
         }
-        acceptor.listen(backlog, local_error);
+
+        acceptor.listen(backlog, error);
+
         if (!error)
         {
-          failed = false;
+          closing_guard.release();
         }        
       }
 
