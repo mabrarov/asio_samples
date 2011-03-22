@@ -14,10 +14,11 @@
 
 #include <cstddef>
 #include <stdexcept>
+#include <boost/asio.hpp>
+#include <boost/array.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/throw_exception.hpp>
 #include <boost/scoped_array.hpp>
-#include <boost/asio.hpp>
 
 namespace ma
 {      
