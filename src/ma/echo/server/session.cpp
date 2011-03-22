@@ -18,49 +18,53 @@ namespace ma
   {
     namespace server
     {
-#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)      
-      class session::io_handler_binder
+      namespace 
       {
-      private:
-        typedef io_handler_binder this_type;
-        this_type& operator=(const this_type&);
-
-      public:
-        typedef void result_type;
-        typedef void (session::*function_type)(const boost::system::error_code&, const std::size_t);
-
-        template <typename SessionPtr>
-        io_handler_binder(function_type function, SessionPtr&& the_session)
-          : function_(function)
-          , session_(std::forward<SessionPtr>(the_session))
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)      
+        class io_handler_binder
         {
-        } 
+        private:
+          typedef io_handler_binder this_type;
+          this_type& operator=(const this_type&);
 
-#if defined(_DEBUG)
-        io_handler_binder(const this_type& other)
-          : function_(other.function_)
-          , session_(other.session_)
-        {
-        }
-#endif
+        public:
+          typedef void result_type;
+          typedef void (session::*function_type)(const boost::system::error_code&, const std::size_t);
 
-        io_handler_binder(this_type&& other)
-          : function_(other.function_)
-          , session_(std::move(other.session_))
-        {
-        }
+          template <typename SessionPtr>
+          io_handler_binder(function_type function, SessionPtr&& the_session)
+            : function_(function)
+            , session_(std::forward<SessionPtr>(the_session))
+          {
+          } 
 
-        void operator()(const boost::system::error_code& error, 
-          const std::size_t bytes_transferred)
-        {
-          ((*session_).*function_)(error, bytes_transferred);
-        }
+  #if defined(_DEBUG)
+          io_handler_binder(const this_type& other)
+            : function_(other.function_)
+            , session_(other.session_)
+          {
+          }
+  #endif
 
-      private:
-        function_type function_;
-        session_ptr session_;
-      }; // class session::io_handler_binder
+          io_handler_binder(this_type&& other)
+            : function_(other.function_)
+            , session_(std::move(other.session_))
+          {
+          }
+
+          void operator()(const boost::system::error_code& error, 
+            const std::size_t bytes_transferred)
+          {
+            ((*session_).*function_)(error, bytes_transferred);
+          }
+
+        private:
+          function_type function_;
+          session_ptr session_;
+        }; // class session::io_handler_binder
 #endif // defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+
+      } // anonymous namespace
 
       session::session(boost::asio::io_service& io_service, const session_options& options)
         : socket_recv_buffer_size_(options.socket_recv_buffer_size())

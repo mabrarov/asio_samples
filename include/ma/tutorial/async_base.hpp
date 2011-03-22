@@ -40,6 +40,16 @@ namespace ma
 
     public:
 #if defined(MA_HAS_RVALUE_REFS)
+
+#if defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+      template <typename Handler>
+      void async_do_something(Handler&& handler)
+      {
+        typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+        strand_.post(ma::make_context_alloc_handler2(std::forward<Handler>(handler), 
+          forward_handler_binder<handler_type>(&this_type::call_do_something<handler_type>, get_shared_base())));
+      }
+#else
       template <typename Handler>
       void async_do_something(Handler&& handler)
       {
@@ -47,7 +57,9 @@ namespace ma
         strand_.post(ma::make_context_alloc_handler2(std::forward<Handler>(handler), 
           boost::bind(&this_type::call_do_something<handler_type>, get_shared_base(), _1)));
       }
-#else
+#endif // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+
+#else  // defined(MA_HAS_RVALUE_REFS)
       template <typename Handler>
       void async_do_something(const Handler& handler)
       {
@@ -57,6 +69,8 @@ namespace ma
 #endif // defined(MA_HAS_RVALUE_REFS)
 
     protected:
+      typedef boost::shared_ptr<this_type> async_base_ptr;
+
       async_base(boost::asio::io_service::strand& strand)
         : strand_(strand)
         , do_something_handler_(strand.get_io_service())
@@ -67,7 +81,7 @@ namespace ma
       {
       }
 
-      virtual boost::shared_ptr<this_type> get_shared_base() = 0;
+      virtual async_base_ptr get_shared_base() = 0;
 
       virtual boost::optional<boost::system::error_code> do_something() = 0;
 
@@ -82,6 +96,43 @@ namespace ma
       }
 
     private:
+
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+      template <typename Arg>
+      class forward_handler_binder
+      {
+      private:
+        typedef forward_handler_binder this_type;
+        this_type& operator=(const this_type&);
+
+      public:
+        typedef void result_type;
+        typedef void (async_base::*function_type)(const Arg&);
+
+        template <typename AsyncBasePtr>
+        forward_handler_binder(function_type function, AsyncBasePtr&& async_base)
+          : function_(function)
+          , async_base_(std::forward<AsyncBasePtr>(async_base))
+        {
+        }
+
+        forward_handler_binder(this_type&& other)
+          : function_(other.function_)
+          , async_base_(std::move(other.async_base_))
+        {
+        }
+
+        void operator()(const Arg& arg)
+        {
+          ((*async_base_).*function_)(arg);
+        }
+
+      private:
+        function_type function_;
+        async_base_ptr async_base_;          
+      }; // class forward_handler_binder
+#endif // defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+
       template <typename Handler>
       void call_do_something(const Handler& handler)
       {    

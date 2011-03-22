@@ -34,8 +34,26 @@ namespace ma
         this_type& operator=(const this_type&);
 
       public:
-        typedef void (async_implementation::*function_type)(const do_something_handler_ptr&);
+        typedef void result_type;
+        typedef void (async_implementation::*function_type)(const do_something_handler_ptr&);        
 
+#if defined(MA_HAS_RVALUE_REFS)
+        template <typename AsyncImplementationPtr, typename DoSomethingHandlerPtr>
+        forward_binder(AsyncImplementationPtr&& async_implementation,
+          DoSomethingHandlerPtr&& do_something_handler, function_type function)
+          : async_implementation_(std::forward<AsyncImplementationPtr>(async_implementation))
+          , do_something_handler_(std::forward<DoSomethingHandlerPtr>(do_something_handler))
+          , function_(function)
+        {
+        }
+
+        forward_binder(this_type&& other)
+          : async_implementation_(std::move(other.async_implementation_))
+          , do_something_handler_(std::move(other.do_something_handler_))
+          , function_(other.function_)          
+        {
+        }
+#else       
         forward_binder(const async_implementation_ptr& async_implementation,
           const do_something_handler_ptr& do_something_handler, function_type function)
           : async_implementation_(async_implementation)
@@ -43,15 +61,7 @@ namespace ma
           , function_(function)
         {
         }
-
-#if defined(MA_HAS_RVALUE_REFS)
-        forward_binder(this_type&& other)
-          : async_implementation_(std::move(other.async_implementation_))
-          , do_something_handler_(std::move(other.do_something_handler_))
-          , function_(other.function_)          
-        {
-        }
-#endif
+#endif // defined(MA_HAS_RVALUE_REFS)
 
         ~forward_binder()
         {
@@ -85,6 +95,8 @@ namespace ma
         this_type& operator=(const this_type&);
 
       public:
+        typedef void result_type;
+
         explicit do_something_handler_adapter(const do_something_handler_ptr& do_something_handler)
           : do_something_handler_(do_something_handler)
         {
@@ -127,6 +139,8 @@ namespace ma
         this_type& operator=(const this_type&);
 
       public:
+        typedef void result_type;
+
         do_something_handler_binder(const do_something_handler_ptr& do_something_handler,
           const boost::system::error_code& error)
           : do_something_handler_(do_something_handler)
@@ -165,6 +179,41 @@ namespace ma
         do_something_handler_ptr do_something_handler_;
         boost::system::error_code error_;
       }; // class do_something_handler_binder
+
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)      
+      class timer_handler_binder
+      {
+      private:
+        typedef timer_handler_binder this_type;
+        this_type& operator=(const this_type&);
+
+      public:
+        typedef void result_type;
+        typedef void (async_implementation::*function_type)(const boost::system::error_code&);
+
+        template <typename AsyncImplementationPtr>
+        timer_handler_binder(function_type function, AsyncImplementationPtr&& async_implementation)
+          : function_(function)
+          , async_implementation_(std::forward<AsyncImplementationPtr>(async_implementation))
+        {
+        } 
+
+        timer_handler_binder(this_type&& other)
+          : function_(other.function_)
+          , async_implementation_(std::move(other.async_implementation_))
+        {
+        }
+
+        void operator()(const boost::system::error_code& error)
+        {
+          ((*async_implementation_).*function_)(error);
+        }
+
+      private:
+        function_type function_;
+        async_implementation_ptr async_implementation_;
+      }; // class timer_handler_binder
+#endif // defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
     } // anonymous namespace
 
@@ -221,8 +270,13 @@ namespace ma
       std::cout << start_message_fmt_ % name_ % counter_;
 
       timer_.expires_from_now(boost::posix_time::seconds(3));
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+      timer_.async_wait(MA_STRAND_WRAP(strand_, ma::make_custom_alloc_handler(timer_allocator_,
+        timer_handler_binder(&this_type::handle_timer, shared_from_this()))));
+#else
       timer_.async_wait(MA_STRAND_WRAP(strand_, ma::make_custom_alloc_handler(timer_allocator_,
         boost::bind(&this_type::handle_timer, shared_from_this(), boost::asio::placeholders::error))));
+#endif
 
       return boost::optional<boost::system::error_code>();    
     }
@@ -245,8 +299,13 @@ namespace ma
         std::cout << cycle_message_fmt_ % name_ % counter_;
 
         timer_.expires_from_now(boost::posix_time::milliseconds(1));
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+        timer_.async_wait(MA_STRAND_WRAP(strand_, ma::make_custom_alloc_handler(timer_allocator_,
+          timer_handler_binder(&this_type::handle_timer, shared_from_this()))));
+#else
         timer_.async_wait(MA_STRAND_WRAP(strand_, ma::make_custom_alloc_handler(timer_allocator_,
           boost::bind(&this_type::handle_timer, shared_from_this(), boost::asio::placeholders::error))));
+#endif
         return;
       }
       std::cout << success_end_message_fmt_ % name_ % counter_;

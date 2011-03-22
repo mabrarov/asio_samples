@@ -40,7 +40,7 @@ namespace ma
       ~async_derived();      
 
     protected:
-      boost::shared_ptr<async_base> get_shared_base();
+      async_base_ptr get_shared_base();
       boost::optional<boost::system::error_code> do_something();
 
     private:     

@@ -138,8 +138,6 @@ namespace ma
       private:
 
 #if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
-        class io_handler_binder; 
-
         template <typename Arg>
         class forward_handler_binder
         {
