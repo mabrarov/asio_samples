@@ -91,13 +91,13 @@ namespace ma
       }
       // Start shutdown
       state_ = stop_in_progress;
-      // Do shutdown - abort inner operations
-      serial_port_.close(stop_error_);         
       // Do shutdown - abort outer operations
       if (read_handler_.has_target())
       {
         read_handler_.post(read_result_type(session_error::operation_aborted, 0));
       }
+      // Do shutdown - abort inner operations
+      serial_port_.close(stop_error_);
       // Check for shutdown completion
       if (may_complete_stop())
       {        

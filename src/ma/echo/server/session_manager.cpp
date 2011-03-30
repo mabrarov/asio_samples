@@ -297,7 +297,12 @@ namespace ma
         }        
         // Start shutdown
         state_ = stop_in_progress;
-        // Do shutdown - abort inner operations          
+        // Do shutdown - abort outer operations
+        if (wait_handler_.has_target())
+        {
+          wait_handler_.post(server_error::operation_aborted);
+        }
+        // Do shutdown - abort inner operations
         acceptor_.close(stop_error_);
         // Stop all active sessions
         session_data_ptr active_session = active_sessions_.front();
@@ -309,11 +314,6 @@ namespace ma
           }
           active_session = active_session->next;
         }
-        // Do shutdown - abort outer operations
-        if (wait_handler_.has_target())
-        {
-          wait_handler_.post(server_error::operation_aborted);
-        }            
         // Check for shutdown continuation
         if (may_complete_stop())
         {
