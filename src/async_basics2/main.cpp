@@ -19,6 +19,7 @@
 #include <boost/format.hpp>
 #include <boost/optional.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/noncopyable.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/utility/in_place_factory.hpp>
 #include <ma/handler_allocator.hpp>
@@ -29,17 +30,17 @@
 
 namespace
 {
-  typedef ma::in_place_handler_allocator<128> allocator_type;
-  typedef boost::shared_ptr<allocator_type> allocator_ptr;
   typedef boost::shared_ptr<ma::tutorial2::async_interface> async_interface_ptr;
 
-  class do_something_handler_implementation : public ma::tutorial2::do_something_handler
+  class do_something_handler_implementation 
+    : public ma::tutorial2::do_something_handler
+    , private boost::noncopyable
   {
   public:
     do_something_handler_implementation(const async_interface_ptr& async_interface, const std::string& name)
       : async_interface_(async_interface)
       , name_(name)
-      , allocator_(boost::make_shared<allocator_type>())
+      , allocator_()
     {
     }
 
@@ -61,18 +62,19 @@ namespace
 
     void* allocate(std::size_t size)
     {
-      return allocator_->allocate(size);
+      return allocator_.allocate(size);
     }
 
     void deallocate(void* pointer)
     {
-      allocator_->deallocate(pointer);
+      allocator_.deallocate(pointer);
     }
 
   private:
+    // For example only: handler "holds up" active object itself
     async_interface_ptr async_interface_;
     std::string name_;
-    allocator_ptr allocator_;    
+    ma::in_place_handler_allocator<128> allocator_;    
   }; // class do_something_handler_implementation  
 
   void handle_program_exit(boost::asio::io_service& io_service)
