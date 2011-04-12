@@ -250,14 +250,14 @@
          </property>
         </widget>
        </item>
-       <item row="1" column="0">
+       <item row="2" column="0">
         <widget class="QCheckBox" name="sockRecvBufferSizeCheckBox">
          <property name="text">
           <string>Socket's recieve buffer size (bytes)</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="1">
+       <item row="2" column="1">
         <widget class="QSpinBox" name="sockRecvBufferSizeSpinBox">
          <property name="enabled">
           <bool>false</bool>
@@ -282,14 +282,14 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="0">
+       <item row="3" column="0">
         <widget class="QCheckBox" name="sockSendBufferSizeCheckBox">
          <property name="text">
           <string>Socket's send buffer size (bytes)</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="1">
+       <item row="3" column="1">
         <widget class="QSpinBox" name="sockSendBufferSizeSpinBox">
          <property name="enabled">
           <bool>false</bool>
@@ -314,14 +314,14 @@
          </property>
         </widget>
        </item>
-       <item row="3" column="0">
+       <item row="4" column="0">
         <widget class="QLabel" name="tcpNoDelayLabel">
          <property name="text">
           <string>TCP NO_DELAY option</string>
          </property>
         </widget>
        </item>
-       <item row="3" column="1">
+       <item row="4" column="1">
         <widget class="QComboBox" name="tcpNoDelayComboBox">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -347,6 +347,38 @@
            <string>off</string>
           </property>
          </item>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QCheckBox" name="readTimeoutCheckBox">
+         <property name="text">
+          <string>Read timeout (seconds)</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QSpinBox" name="readTimeoutSpinBox">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimum">
+          <number>0</number>
+         </property>
+         <property name="maximum">
+          <number>10485760</number>
+         </property>
+         <property name="singleStep">
+          <number>10</number>
+         </property>
+         <property name="value">
+          <number>300</number>
+         </property>
         </widget>
        </item>
       </layout>
@@ -453,6 +485,8 @@
   <tabstop>portNumberSpinBox</tabstop>
   <tabstop>addressEdit</tabstop>
   <tabstop>sessionBufferSizeSpinBox</tabstop>
+  <tabstop>readTimeoutCheckBox</tabstop>
+  <tabstop>readTimeoutSpinBox</tabstop>
   <tabstop>sockRecvBufferSizeCheckBox</tabstop>
   <tabstop>sockRecvBufferSizeSpinBox</tabstop>
   <tabstop>sockSendBufferSizeCheckBox</tabstop>
@@ -490,12 +524,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>159</x>
-     <y>91</y>
+     <x>170</x>
+     <y>127</y>
     </hint>
     <hint type="destinationlabel">
-     <x>249</x>
-     <y>97</y>
+     <x>402</x>
+     <y>130</y>
     </hint>
    </hints>
   </connection>
@@ -506,12 +540,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>190</x>
-     <y>120</y>
+     <x>199</x>
+     <y>153</y>
     </hint>
     <hint type="destinationlabel">
-     <x>241</x>
-     <y>123</y>
+     <x>402</x>
+     <y>156</y>
     </hint>
    </hints>
   </connection>
@@ -528,6 +562,22 @@
     <hint type="destinationlabel">
      <x>368</x>
      <y>400</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>readTimeoutCheckBox</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>readTimeoutSpinBox</receiver>
+   <slot>setEnabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>98</x>
+     <y>93</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>237</x>
+     <y>98</y>
     </hint>
    </hints>
   </connection>

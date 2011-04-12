@@ -130,6 +130,8 @@ namespace
     optionsWidgets_.push_back(boost::make_tuple(1, ui_.portNumberSpinBox));
     optionsWidgets_.push_back(boost::make_tuple(1, ui_.addressEdit));
     optionsWidgets_.push_back(boost::make_tuple(2, ui_.sessionBufferSizeSpinBox));
+    optionsWidgets_.push_back(boost::make_tuple(2, ui_.readTimeoutCheckBox));
+    optionsWidgets_.push_back(boost::make_tuple(2, ui_.readTimeoutSpinBox));
     optionsWidgets_.push_back(boost::make_tuple(2, ui_.sockRecvBufferSizeCheckBox));
     optionsWidgets_.push_back(boost::make_tuple(2, ui_.sockRecvBufferSizeSpinBox));
     optionsWidgets_.push_back(boost::make_tuple(2, ui_.sockSendBufferSizeCheckBox));
@@ -305,6 +307,13 @@ namespace
 
   session_options MainForm::readSessionOptions() const
   {
+    session_options::optional_time_duration readTimeout;
+    if (boost::optional<int> readTimeoutSeconds = 
+      readOptionalValue(*ui_.readTimeoutCheckBox, *ui_.readTimeoutSpinBox))
+    {
+      readTimeout = boost::posix_time::seconds(boost::numeric_cast<long>(*readTimeoutSeconds));
+    }    
+
     boost::optional<int> socketRecvBufferSize = 
       readOptionalValue(*ui_.sockRecvBufferSizeCheckBox, *ui_.sockRecvBufferSizeSpinBox);
 
@@ -323,7 +332,7 @@ namespace
     }
 
     return session_options(boost::numeric_cast<std::size_t>(ui_.sessionBufferSizeSpinBox->value()),
-      socketRecvBufferSize, socketSendBufferSize, tcpNoDelay);
+      socketRecvBufferSize, socketSendBufferSize, tcpNoDelay, readTimeout);
   }
 
   session_manager_options MainForm::readSessionManagerOptions() const
@@ -426,6 +435,9 @@ namespace
       {
         i->get<1>()->setEnabled(serviceStopped);
       }
+
+      ui_.readTimeoutSpinBox->setEnabled(serviceStopped && 
+        Qt::Checked == ui_.readTimeoutCheckBox->checkState());
       ui_.sockRecvBufferSizeSpinBox->setEnabled(serviceStopped && 
         Qt::Checked == ui_.sockRecvBufferSizeCheckBox->checkState());
       ui_.sockSendBufferSizeSpinBox->setEnabled(serviceStopped && 

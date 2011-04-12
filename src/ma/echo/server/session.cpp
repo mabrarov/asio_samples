@@ -61,7 +61,48 @@ namespace ma
         private:
           function_type function_;
           session_ptr session_;
-        }; // class session::io_handler_binder
+        }; // class io_handler_binder
+
+        class timer_handler_binder
+        {
+        private:
+          typedef timer_handler_binder this_type;
+          this_type& operator=(const this_type&);
+
+        public:
+          typedef void result_type;
+          typedef void (session::*function_type)(const boost::system::error_code&);
+
+          template <typename SessionPtr>
+          timer_handler_binder(function_type function, SessionPtr&& the_session)
+            : function_(function)
+            , session_(std::forward<SessionPtr>(the_session))
+          {
+          } 
+
+  #if defined(_DEBUG)
+          timer_handler_binder(const this_type& other)
+            : function_(other.function_)
+            , session_(other.session_)
+          {
+          }
+  #endif
+
+          timer_handler_binder(this_type&& other)
+            : function_(other.function_)
+            , session_(std::move(other.session_))
+          {
+          }
+
+          void operator()(const boost::system::error_code& error)
+          {
+            ((*session_).*function_)(error);
+          }
+
+        private:
+          function_type function_;
+          session_ptr session_;
+        }; // class timer_handler_binder
 #endif // defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
       } // anonymous namespace
@@ -70,12 +111,16 @@ namespace ma
         : socket_recv_buffer_size_(options.socket_recv_buffer_size())
         , socket_send_buffer_size_(options.socket_send_buffer_size())
         , no_delay_(options.no_delay())
+        , read_timeout_(options.read_timeout())
         , socket_write_in_progress_(false)
-        , socket_read_in_progress_(false) 
+        , socket_read_in_progress_(false)
+        , read_timer_in_progress_(false)
+        , socket_closed_for_stop_(false)
         , state_(ready_to_start)
         , io_service_(io_service)
         , strand_(io_service)
         , socket_(io_service)
+        , read_timer_(io_service)
         , buffer_(options.buffer_size())
         , wait_handler_(io_service)
         , stop_handler_(io_service)                
@@ -86,10 +131,17 @@ namespace ma
       {
         boost::system::error_code ignored;
         socket_.close(ignored);
+
+        socket_write_in_progress_ = false;
+        socket_read_in_progress_  = false;
+        read_timer_in_progress_   = false;
+        socket_closed_for_stop_   = false;
+
         wait_error_.clear();
-        stop_error_.clear();          
-        state_ = ready_to_start;
-        buffer_.reset();          
+        stop_error_.clear();
+        buffer_.reset();
+
+        state_ = ready_to_start;        
       }
               
       boost::system::error_code session::start()
@@ -120,7 +172,7 @@ namespace ma
         }        
         // Start shutdown
         state_ = stop_in_progress;
-        // Do shutdown - abort outer operations
+        // Do shutdown - abort outer operations        
         if (wait_handler_.has_target())
         {
           wait_handler_.post(server_error::operation_aborted);
@@ -145,7 +197,7 @@ namespace ma
         {
           return boost::system::error_code(server_error::invalid_state);
         }
-        if (!socket_read_in_progress_ && !socket_write_in_progress_)
+        if (wait_error_)
         {
           return wait_error_;
         }
@@ -179,19 +231,29 @@ namespace ma
         return error;
       }
 
+      bool session::may_continue_read() const
+      {
+        return !wait_error_ && !socket_read_in_progress_ && !read_timer_in_progress_;
+      }
+      
+      bool session::may_continue_write() const
+      {
+        return !wait_error_ && !socket_write_in_progress_;
+      }
+
       bool session::may_complete_stop() const
       {
-        return !socket_write_in_progress_ && !socket_read_in_progress_;
+        return !socket_write_in_progress_ && !socket_read_in_progress_ && !read_timer_in_progress_;
       }
 
       void session::complete_stop()
-      {        
+      {
         boost::system::error_code error;
-        socket_.close(error);
+        close_socket_for_stop(error);
         if (!stop_error_)
         {
           stop_error_ = error;
-        }
+        }        
         state_ = stopped;  
       }
 
@@ -214,6 +276,21 @@ namespace ma
                 boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred))));
 #endif
           socket_read_in_progress_ = true;
+
+          if (read_timeout_)
+          {
+            read_timer_.expires_from_now(*read_timeout_);
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+            read_timer_.async_wait(MA_STRAND_WRAP(strand_, 
+              make_custom_alloc_handler(read_timeout_allocator_,
+                timer_handler_binder(&this_type::handle_read_timeout, shared_from_this()))));
+#else
+            read_timer_.async_wait(MA_STRAND_WRAP(strand_, 
+              make_custom_alloc_handler(read_timeout_allocator_,
+                boost::bind(&this_type::handle_read_timeout, shared_from_this(), boost::asio::placeholders::error))));
+#endif
+            read_timer_in_progress_ = true;
+          }
         }        
       }
 
@@ -244,29 +321,34 @@ namespace ma
         socket_read_in_progress_ = false;
         // Check for pending session stop operation 
         if (stop_in_progress == state_)
-        {  
-          if (may_complete_stop())
+        {          
+          if (read_timer_in_progress_)
           {
-            complete_stop();                   
-            post_stop_handler();
+            read_timer_.cancel();
           }
+          complete_deferred_stop();          
           return;
+        }
+        // Normal control flow
+        if (read_timer_in_progress_)
+        {
+          if (!read_timer_.cancel())
+          {
+            // We are late
+            return;
+          }
         }
         if (error)
         {
-          if (!wait_error_)
-          {
-            wait_error_ = error;
-          }  
-          if (wait_handler_.has_target())
-          {
-            wait_handler_.post(wait_error_);
-          }          
+          add_run_error(error);
           return;
         }        
         buffer_.consume(bytes_transferred);
-        read_some();
-        if (!socket_write_in_progress_)
+        if (may_continue_read())
+        {
+          read_some();
+        }
+        if (may_continue_write())
         {
           write_some();
         }
@@ -279,41 +361,96 @@ namespace ma
         if (stop_in_progress == state_)
         {
           socket_.shutdown(protocol_type::socket::shutdown_send, stop_error_);
-          if (may_complete_stop())
-          {
-            complete_stop();  
-            post_stop_handler();
-          }
+          complete_deferred_stop();
           return;
         }
         if (error)
         {
-          if (!wait_error_)
-          {
-            wait_error_ = error;
-          }                    
-          if (wait_handler_.has_target())
-          {
-            wait_handler_.post(wait_error_);
-          }
+          add_run_error(error);
           return;
         }        
         buffer_.commit(bytes_transferred);
-        write_some();
-        if (!socket_read_in_progress_)
+        if (may_continue_write())
+        {
+          write_some();
+        }
+        if (may_continue_read())
         {
           read_some();
         }        
       }
 
-      void session::post_stop_handler()
+      void session::handle_read_timeout(const boost::system::error_code& error)
       {
-        if (stop_handler_.has_target()) 
+        read_timer_in_progress_ = false;
+        // Check for pending session stop operation 
+        if (stop_in_progress == state_)
         {
-          // Signal shutdown completion
-          stop_handler_.post(stop_error_);
+          if (!error && socket_read_in_progress_)
+          {
+            // Timer was normally fired during stop
+            boost::system::error_code ignored;
+            close_socket_for_stop(ignored);            
+          }
+          complete_deferred_stop();
+          return;
+        }        
+        if (boost::asio::error::operation_aborted == error)
+        {
+          // Normal timer cancellation
+          if (may_continue_read())
+          {
+            read_some();
+          }
+          return;
+        }
+        if (error)
+        {
+          // Abnormal timer behaivour
+          add_run_error(error);
+          return;
+        }
+        // Timer was normally fired 
+        boost::system::error_code ignored;
+        close_socket_for_stop(ignored);
+        add_run_error(server_error::read_timeout);
+      }
+
+      void session::close_socket_for_stop(boost::system::error_code& error)
+      {
+        boost::system::error_code local_error;
+        if (!socket_closed_for_stop_)
+        {
+          socket_.close(local_error);
+          socket_closed_for_stop_ = true;
+        }
+        error = local_error;
+      }
+
+      void session::add_run_error(const boost::system::error_code& error)
+      {
+        if (!wait_error_)
+        {
+          wait_error_ = error;
+          if (wait_handler_.has_target())
+          {
+            wait_handler_.post(wait_error_);
+          }
         }
       }
+
+      void session::complete_deferred_stop()
+      {
+        if (may_complete_stop())
+        {
+          complete_stop();
+          if (stop_handler_.has_target()) 
+          {
+            // Signal shutdown completion
+            stop_handler_.post(stop_error_);
+          }
+        }
+      }      
         
     } // namespace server
   } // namespace echo

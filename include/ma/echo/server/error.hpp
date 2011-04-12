@@ -28,7 +28,8 @@ namespace ma
         enum error_t 
         {
           invalid_state = 100,
-          operation_aborted = 200
+          operation_aborted = 200,
+          read_timeout = 300
         }; // enum error_t 
 
         inline boost::system::error_code make_error_code(error_t e)

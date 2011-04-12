@@ -47,6 +47,7 @@ namespace
   const char* recycled_sessions_option_name       = "recycled_sessions";
   const char* listen_backlog_option_name          = "listen_backlog";
   const char* buffer_size_option_name             = "buffer";
+  const char* read_timeout_option_name            = "read_timeout";
   const char* socket_recv_buffer_size_option_name = "sock_recv_buffer";
   const char* socket_send_buffer_size_option_name = "sock_send_buffer";
   const char* socket_no_delay_option_name         = "sock_no_delay";
@@ -277,7 +278,9 @@ namespace
   }
 
   ma::echo::server::session_options read_session_options(const boost::program_options::variables_map& options_values)
-  {  
+  { 
+    using ma::echo::server::session_options;
+
     boost::optional<bool> no_delay;
     if (options_values.count(socket_no_delay_option_name))
     {
@@ -286,6 +289,14 @@ namespace
 
     std::size_t buffer_size = options_values[buffer_size_option_name].as<std::size_t>();
     validate_option<std::size_t>(buffer_size_option_name, buffer_size, 1);
+    
+    session_options::optional_time_duration read_timeout;
+    if (options_values.count(read_timeout_option_name))
+    {
+      long read_timeout_sec = options_values[read_timeout_option_name].as<long>();
+      validate_option<long>(stop_timeout_option_name, read_timeout_sec, 0);
+      read_timeout = boost::posix_time::seconds(read_timeout_sec);
+    }
 
     boost::optional<int> socket_recv_buffer_size = 
       read_socket_buffer_size(options_values, socket_recv_buffer_size_option_name);
@@ -293,8 +304,8 @@ namespace
     boost::optional<int> socket_send_buffer_size =
       read_socket_buffer_size(options_values, socket_send_buffer_size_option_name);
     
-    return ma::echo::server::session_options(buffer_size, 
-      socket_recv_buffer_size, socket_send_buffer_size, no_delay);
+    return session_options(buffer_size, socket_recv_buffer_size, socket_send_buffer_size, 
+      no_delay, read_timeout);
   }
 
   ma::echo::server::session_manager_options read_session_manager_options(
@@ -319,7 +330,8 @@ namespace
     const execution_options& the_execution_options,
     const ma::echo::server::session_manager_options& session_manager_options)
   {
-    const ma::echo::server::session_options session_options = session_manager_options.managed_session_options();
+    using ma::echo::server::session_options;
+    const session_options the_session_options = session_manager_options.managed_session_options();
 
     stream << "Number of found CPU(s)             : " << cpu_count                                            << std::endl
            << "Number of session manager's threads: " << the_execution_options.session_manager_thread_count() << std::endl
@@ -331,18 +343,28 @@ namespace
            << "Maximum number of active sessions  : " << session_manager_options.max_session_count()          << std::endl
            << "Maximum number of recycled sessions: " << session_manager_options.recycled_session_count()     << std::endl
            << "TCP listen backlog size            : " << session_manager_options.listen_backlog()             << std::endl
-           << "Size of session's buffer (bytes)   : " << session_options.buffer_size()                        << std::endl;
+           << "Size of session's buffer (bytes)   : " << the_session_options.buffer_size()                    << std::endl;
+
+    
+    boost::optional<long> session_read_timeout_sec;
+    if (session_options::optional_time_duration timeout = the_session_options.read_timeout())
+    {
+      session_read_timeout_sec = timeout->total_seconds();
+    }    
+    stream << "Session's read timeout (seconds)   : ";
+    print_optional(stream, session_read_timeout_sec, "none");
+    stream << std::endl;
 
     stream << "Size of session's socket receive buffer (bytes): ";
-    print_optional(stream, session_options.socket_recv_buffer_size(), default_system_value);
+    print_optional(stream, the_session_options.socket_recv_buffer_size(), default_system_value);
     stream << std::endl;
 
     stream << "Size of session's socket send buffer (bytes)   : ";
-    print_optional(stream, session_options.socket_send_buffer_size(), default_system_value);
+    print_optional(stream, the_session_options.socket_send_buffer_size(), default_system_value);
     stream << std::endl;
 
     stream << "Session's socket Nagle algorithm is: ";
-    print_optional(stream, session_options.no_delay(), default_system_value);
+    print_optional(stream, the_session_options.no_delay(), default_system_value);
     stream << std::endl;      
   }
 
@@ -417,6 +439,11 @@ namespace
         buffer_size_option_name, 
         boost::program_options::value<std::size_t>()->default_value(1024),
         "set the session's buffer size (bytes)"
+      )
+      (
+        read_timeout_option_name, 
+        boost::program_options::value<long>(), 
+        "set the session's read timeout, at one's expiration session will be considered as inactive (seconds)"
       )
       (
         socket_recv_buffer_size_option_name, 
