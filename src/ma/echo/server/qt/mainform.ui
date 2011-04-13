@@ -197,7 +197,7 @@
        <item row="4" column="0">
         <widget class="QLabel" name="addressLabel">
          <property name="text">
-          <string>Interface IP address to listen (IPv4 or IPv6)</string>
+          <string>IP address of interface to listen (IPv4 or IPv6)</string>
          </property>
         </widget>
        </item>
