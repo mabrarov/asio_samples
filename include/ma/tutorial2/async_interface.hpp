@@ -31,11 +31,11 @@ namespace ma
       {
       }
 
-      async_interface(const do_something_handler&)
+      async_interface(const this_type&)
       {
       }
 
-      this_type& operator=(const do_something_handler&)
+      this_type& operator=(const this_type&)
       {
         return *this;
       }

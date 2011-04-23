@@ -43,11 +43,11 @@ namespace ma
       {
       }
 
-      do_something_handler(const do_something_handler&)
+      do_something_handler(const this_type&)
       {
       }
 
-      this_type& operator=(const do_something_handler&)
+      this_type& operator=(const this_type&)
       {
         return *this;
       }
