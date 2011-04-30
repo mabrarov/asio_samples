@@ -350,14 +350,14 @@
         </widget>
        </item>
        <item row="1" column="0">
-        <widget class="QCheckBox" name="readTimeoutCheckBox">
+        <widget class="QCheckBox" name="inactivityTimeoutCheckBox">
          <property name="text">
-          <string>Read timeout (seconds)</string>
+          <string>Inactivity timeout (seconds)</string>
          </property>
         </widget>
        </item>
        <item row="1" column="1">
-        <widget class="QSpinBox" name="readTimeoutSpinBox">
+        <widget class="QSpinBox" name="inactivityTimeoutSpinBox">
          <property name="enabled">
           <bool>false</bool>
          </property>
@@ -485,8 +485,8 @@
   <tabstop>portNumberSpinBox</tabstop>
   <tabstop>addressEdit</tabstop>
   <tabstop>sessionBufferSizeSpinBox</tabstop>
-  <tabstop>readTimeoutCheckBox</tabstop>
-  <tabstop>readTimeoutSpinBox</tabstop>
+  <tabstop>inactivityTimeoutCheckBox</tabstop>
+  <tabstop>inactivityTimeoutSpinBox</tabstop>
   <tabstop>sockRecvBufferSizeCheckBox</tabstop>
   <tabstop>sockRecvBufferSizeSpinBox</tabstop>
   <tabstop>sockSendBufferSizeCheckBox</tabstop>
@@ -566,9 +566,9 @@
    </hints>
   </connection>
   <connection>
-   <sender>readTimeoutCheckBox</sender>
+   <sender>inactivityTimeoutCheckBox</sender>
    <signal>clicked(bool)</signal>
-   <receiver>readTimeoutSpinBox</receiver>
+   <receiver>inactivityTimeoutSpinBox</receiver>
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">

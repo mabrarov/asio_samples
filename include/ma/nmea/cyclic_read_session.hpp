@@ -142,14 +142,14 @@ namespace ma
 #endif // defined(MA_HAS_RVALUE_REFS)
     
     private:
-      enum state_type
+      enum external_state_type
       {
         ready_to_start,
         start_in_progress,
         started,
         stop_in_progress,
         stopped
-      }; // enum state_type
+      }; // enum external_state_type
 
       typedef boost::circular_buffer<frame_ptr> frame_buffer_type;
 
@@ -342,7 +342,7 @@ namespace ma
       boost::optional<boost::system::error_code> write(
         const ConstBufferSequence& buffers, const Handler& handler)
       {
-        if (started != state_ || port_write_in_progress_)
+        if (started != external_state_ || port_write_in_progress_)
         {                             
           return session_error::invalid_state;
         }
@@ -359,9 +359,9 @@ namespace ma
       {         
         port_write_in_progress_ = false;
         io_service_.post(detail::bind_handler(boost::get<0>(handler), error));
-        if (stop_in_progress == state_ && !port_read_in_progress_)
+        if (stop_in_progress == external_state_ && !port_read_in_progress_)
         {
-          state_ = stopped;
+          external_state_ = stopped;
           post_stop_handler();
         }
       }
@@ -372,21 +372,21 @@ namespace ma
       void handle_read_tail(const boost::system::error_code& error, const std::size_t bytes_transferred);      
       void post_stop_handler();
       
-      boost::asio::io_service& io_service_;
+      boost::asio::io_service&        io_service_;
       boost::asio::io_service::strand strand_;
-      boost::asio::serial_port serial_port_;      
+      boost::asio::serial_port        serial_port_;      
 
-      ma::handler_storage<read_result_type> read_handler_;
+      ma::handler_storage<read_result_type>          read_handler_;
       ma::handler_storage<boost::system::error_code> stop_handler_;      
 
-      frame_buffer_type frame_buffer_;      
+      frame_buffer_type         frame_buffer_;      
       boost::system::error_code read_error_;
       boost::system::error_code stop_error_;
-      std::ptrdiff_t read_handler_base_shift_;
-
-      state_type state_;
+      std::ptrdiff_t            read_handler_base_shift_;
+      
       bool port_write_in_progress_;
       bool port_read_in_progress_;
+      external_state_type external_state_;
 
       boost::asio::streambuf read_buffer_;
       std::string frame_head_;

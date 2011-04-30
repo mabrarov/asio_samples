@@ -130,8 +130,8 @@ namespace
     optionsWidgets_.push_back(boost::make_tuple(1, ui_.portNumberSpinBox));
     optionsWidgets_.push_back(boost::make_tuple(1, ui_.addressEdit));
     optionsWidgets_.push_back(boost::make_tuple(2, ui_.sessionBufferSizeSpinBox));
-    optionsWidgets_.push_back(boost::make_tuple(2, ui_.readTimeoutCheckBox));
-    optionsWidgets_.push_back(boost::make_tuple(2, ui_.readTimeoutSpinBox));
+    optionsWidgets_.push_back(boost::make_tuple(2, ui_.inactivityTimeoutCheckBox));
+    optionsWidgets_.push_back(boost::make_tuple(2, ui_.inactivityTimeoutSpinBox));
     optionsWidgets_.push_back(boost::make_tuple(2, ui_.sockRecvBufferSizeCheckBox));
     optionsWidgets_.push_back(boost::make_tuple(2, ui_.sockRecvBufferSizeSpinBox));
     optionsWidgets_.push_back(boost::make_tuple(2, ui_.sockSendBufferSizeCheckBox));
@@ -307,11 +307,11 @@ namespace
 
   session_options MainForm::readSessionOptions() const
   {
-    session_options::optional_time_duration readTimeout;
-    if (boost::optional<int> readTimeoutSeconds = 
-      readOptionalValue(*ui_.readTimeoutCheckBox, *ui_.readTimeoutSpinBox))
+    session_options::optional_time_duration inactivityTimeout;
+    if (boost::optional<int> timeoutSeconds = 
+      readOptionalValue(*ui_.inactivityTimeoutCheckBox, *ui_.inactivityTimeoutSpinBox))
     {
-      readTimeout = boost::posix_time::seconds(boost::numeric_cast<long>(*readTimeoutSeconds));
+      inactivityTimeout = boost::posix_time::seconds(boost::numeric_cast<long>(*timeoutSeconds));
     }    
 
     boost::optional<int> socketRecvBufferSize = 
@@ -332,7 +332,7 @@ namespace
     }
 
     return session_options(boost::numeric_cast<std::size_t>(ui_.sessionBufferSizeSpinBox->value()),
-      socketRecvBufferSize, socketSendBufferSize, tcpNoDelay, readTimeout);
+      socketRecvBufferSize, socketSendBufferSize, tcpNoDelay, inactivityTimeout);
   }
 
   session_manager_options MainForm::readSessionManagerOptions() const
@@ -436,8 +436,8 @@ namespace
         i->get<1>()->setEnabled(serviceStopped);
       }
 
-      ui_.readTimeoutSpinBox->setEnabled(serviceStopped && 
-        Qt::Checked == ui_.readTimeoutCheckBox->checkState());
+      ui_.inactivityTimeoutSpinBox->setEnabled(serviceStopped && 
+        Qt::Checked == ui_.inactivityTimeoutCheckBox->checkState());
       ui_.sockRecvBufferSizeSpinBox->setEnabled(serviceStopped && 
         Qt::Checked == ui_.sockRecvBufferSizeCheckBox->checkState());
       ui_.sockSendBufferSizeSpinBox->setEnabled(serviceStopped && 

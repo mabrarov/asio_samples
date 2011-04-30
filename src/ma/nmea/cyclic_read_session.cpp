@@ -26,7 +26,7 @@ namespace ma
       , read_handler_(io_service)        
       , stop_handler_(io_service)
       , frame_buffer_(frame_buffer_size)
-      , state_(ready_to_start)
+      , external_state_(ready_to_start)
       , port_write_in_progress_(false)
       , port_read_in_progress_(false)                
       , read_buffer_(read_buffer_size)
@@ -60,37 +60,37 @@ namespace ma
       frame_buffer_.clear();        
       read_error_.clear();
       read_buffer_.consume(boost::asio::buffer_size(read_buffer_.data()));        
-      state_ = ready_to_start;
+      external_state_ = ready_to_start;
     }
 
     boost::system::error_code cyclic_read_session::start()
     {              
-      if (ready_to_start != state_)
+      if (ready_to_start != external_state_)
       {          
         return session_error::invalid_state;          
       }      
       // Start handshake
-      state_ = start_in_progress;
+      external_state_ = start_in_progress;
       // Start internal activity
       if (!port_read_in_progress_)
       {
         read_until_head();
       }
       // Handshake completed
-      state_ = started;          
+      external_state_ = started;          
       // Signal successful handshake completion.
       return boost::system::error_code();      
     }
 
     boost::optional<boost::system::error_code> cyclic_read_session::stop()
     {      
-      if (stopped == state_ || stop_in_progress == state_)
+      if (stopped == external_state_ || stop_in_progress == external_state_)
       {          
         return boost::optional<boost::system::error_code>(
             session_error::invalid_state);
       }
       // Start shutdown
-      state_ = stop_in_progress;
+      external_state_ = stop_in_progress;
       // Do shutdown - abort outer operations
       if (read_handler_.has_target())
       {
@@ -110,7 +110,7 @@ namespace ma
 
     boost::optional<boost::system::error_code> cyclic_read_session::read_some()
     {
-      if (started != state_ || read_handler_.has_target())
+      if (started != external_state_ || read_handler_.has_target())
       {          
         return boost::optional<boost::system::error_code>(
             session_error::invalid_state);
@@ -142,7 +142,7 @@ namespace ma
 
     void cyclic_read_session::complete_stop()
     {
-      state_ = stopped;
+      external_state_ = stopped;
     }
 
     void cyclic_read_session::read_until_head()
@@ -169,7 +169,7 @@ namespace ma
     {         
       port_read_in_progress_ = false;
       // Check for pending session stop operation 
-      if (stop_in_progress == state_)
+      if (stop_in_progress == external_state_)
       {          
         if (may_complete_stop())
         {
@@ -201,7 +201,7 @@ namespace ma
     {                  
       port_read_in_progress_ = false;        
       // Check for pending session stop operation 
-      if (stop_in_progress == state_)
+      if (stop_in_progress == external_state_)
       {
         if (may_complete_stop())
         {

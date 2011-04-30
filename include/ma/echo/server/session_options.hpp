@@ -29,18 +29,18 @@ namespace ma
         typedef boost::optional<int>  optional_int;
         typedef boost::optional<bool> optional_bool;
         typedef boost::posix_time::time_duration time_duration;
-        typedef boost::optional<time_duration> optional_time_duration;
+        typedef boost::optional<time_duration>   optional_time_duration;
 
         explicit session_options(std::size_t buffer_size, 
           const optional_int& socket_recv_buffer_size = optional_int(), 
           const optional_int& socket_send_buffer_size = optional_int(),
           const optional_bool& no_delay = optional_bool(),
-          const optional_time_duration& read_timeout = optional_time_duration())
+          const optional_time_duration& inactivity_timeout = optional_time_duration())
           : no_delay_(no_delay)
           , socket_recv_buffer_size_(socket_recv_buffer_size)
           , socket_send_buffer_size_(socket_send_buffer_size)
           , buffer_size_(buffer_size) 
-          , read_timeout_(read_timeout)
+          , inactivity_timeout_(inactivity_timeout)
         {
           BOOST_ASSERT_MSG(buffer_size > 0, "buffer_size must be > 0");
 
@@ -71,9 +71,9 @@ namespace ma
           return buffer_size_;
         }
 
-        optional_time_duration read_timeout() const
+        optional_time_duration inactivity_timeout() const
         {
-          return read_timeout_;
+          return inactivity_timeout_;
         }
 
       private:
@@ -81,7 +81,7 @@ namespace ma
         optional_int  socket_recv_buffer_size_;
         optional_int  socket_send_buffer_size_;
         std::size_t   buffer_size_;
-        optional_time_duration read_timeout_;
+        optional_time_duration inactivity_timeout_;
       }; // struct session_options
         
     } // namespace server

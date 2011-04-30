@@ -259,14 +259,14 @@ namespace ma
           session_data_ptr front_;
         }; // class session_data_list
 
-        enum state_type
+        enum external_state_type
         {
           ready_to_start,
           start_in_progress,
           started,
           stop_in_progress,
           stopped
-        }; // enum state_type
+        }; // enum external_state_type
 
         template <typename Handler>
         void do_start(const Handler& handler)
@@ -345,9 +345,9 @@ namespace ma
         std::size_t             recycled_session_count_;
         session_options         managed_session_options_;
 
-        bool        accept_in_progress_;
-        state_type  state_;
-        std::size_t pending_operations_;
+        bool                accept_in_progress_;
+        std::size_t         pending_operations_;
+        external_state_type external_state_;        
 
         boost::asio::io_service&        io_service_;
         boost::asio::io_service&        session_io_service_;

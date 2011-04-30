@@ -181,14 +181,14 @@ namespace ma
         }; // class forward_handler_binder
 #endif // defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
-        enum state_type
+        enum external_state_type
         {
           ready_to_start,
           start_in_progress,
           started,
           stop_in_progress,
           stopped
-        }; // enum state_type
+        }; // enum external_state_type
 
         template <typename Handler>
         void do_start(const Handler& handler)
@@ -228,35 +228,37 @@ namespace ma
         boost::optional<boost::system::error_code> wait();
 
         boost::system::error_code apply_socket_options();
-        bool may_continue_read() const;
-        bool may_continue_write() const;
         bool may_complete_stop() const;        
         void complete_stop();
 
         void read_some();
         void write_some();
+        void start_inactivity_timer();
+        void cancel_inactivity_timer();
         void handle_read_some(const boost::system::error_code&, std::size_t);
         void handle_write_some(const boost::system::error_code&, std::size_t);
         void handle_read_timeout(const boost::system::error_code&);
         void close_socket_for_stop(boost::system::error_code&);
-        void add_run_error(const boost::system::error_code&);
-        void complete_deferred_stop();        
+        void set_wait_error(const boost::system::error_code&);
+        void continue_work();
+        void complete_deferred_stop();
         
         session_options::optional_int  socket_recv_buffer_size_;
         session_options::optional_int  socket_send_buffer_size_;
         session_options::optional_bool no_delay_;
-        session_options::optional_time_duration read_timeout_;
+        session_options::optional_time_duration inactivity_timeout_;
 
         bool socket_write_in_progress_;
         bool socket_read_in_progress_;
-        bool read_timer_in_progress_;
+        bool inactivity_timer_in_progress_;
+        bool inactivity_timer_cancelled_;
         bool socket_closed_for_stop_;        
-        state_type state_;
+        external_state_type external_state_;
 
         boost::asio::io_service&        io_service_;
         boost::asio::io_service::strand strand_;
         protocol_type::socket           socket_;
-        boost::asio::deadline_timer     read_timer_;
+        boost::asio::deadline_timer     inactivity_timer_;
         cyclic_buffer                   buffer_;
         boost::system::error_code       wait_error_;
         boost::system::error_code       stop_error_;
@@ -266,7 +268,7 @@ namespace ma
 
         in_place_handler_allocator<640> write_allocator_;
         in_place_handler_allocator<256> read_allocator_;
-        in_place_handler_allocator<256> read_timeout_allocator_;
+        in_place_handler_allocator<256> inactivity_allocator_;
       }; // class session
 
     } // namespace server
