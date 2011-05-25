@@ -233,15 +233,18 @@ namespace ma
 
         void read_some();
         void write_some();
-        void start_inactivity_timer();
-        void cancel_inactivity_timer();
+        void shutdown_socket_send(boost::system::error_code&);
+        void close_socket_for_stop(boost::system::error_code&);
+        void start_timer(boost::system::error_code& error);
+        void cancel_timer(boost::system::error_code& error);   
+
         void handle_read_some(const boost::system::error_code&, std::size_t);
         void handle_write_some(const boost::system::error_code&, std::size_t);
-        void handle_read_timeout(const boost::system::error_code&);
-        void close_socket_for_stop(boost::system::error_code&);
-        void set_wait_error(const boost::system::error_code&);
+        void handle_timeout(const boost::system::error_code&);                
         void continue_work();
-        void complete_deferred_stop();
+        void continue_stop();
+        void set_wait_error(const boost::system::error_code&);
+        void set_stop_error(const boost::system::error_code&);
         
         session_options::optional_int  socket_recv_buffer_size_;
         session_options::optional_int  socket_send_buffer_size_;
@@ -250,15 +253,15 @@ namespace ma
 
         bool socket_write_in_progress_;
         bool socket_read_in_progress_;
-        bool inactivity_timer_in_progress_;
-        bool inactivity_timer_cancelled_;
+        bool timer_wait_in_progress_;
+        bool timer_cancelled_;
         bool socket_closed_for_stop_;        
         external_state_type external_state_;
 
         boost::asio::io_service&        io_service_;
         boost::asio::io_service::strand strand_;
         protocol_type::socket           socket_;
-        boost::asio::deadline_timer     inactivity_timer_;
+        boost::asio::deadline_timer     timer_;
         cyclic_buffer                   buffer_;
         boost::system::error_code       wait_error_;
         boost::system::error_code       stop_error_;

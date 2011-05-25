@@ -114,14 +114,14 @@ namespace ma
         , inactivity_timeout_(options.inactivity_timeout())
         , socket_write_in_progress_(false)
         , socket_read_in_progress_(false)
-        , inactivity_timer_in_progress_(false)
-        , inactivity_timer_cancelled_(false)
+        , timer_wait_in_progress_(false)
+        , timer_cancelled_(false)
         , socket_closed_for_stop_(false)
         , external_state_(ready_to_start)
         , io_service_(io_service)
         , strand_(io_service)
         , socket_(io_service)
-        , inactivity_timer_(io_service)
+        , timer_(io_service)
         , buffer_(options.buffer_size())
         , wait_handler_(io_service)
         , stop_handler_(io_service)                
@@ -135,9 +135,9 @@ namespace ma
 
         socket_write_in_progress_ = false;
         socket_read_in_progress_  = false;
-        inactivity_timer_in_progress_ = false;
-        inactivity_timer_cancelled_   = false;
-        socket_closed_for_stop_       = false;
+        timer_wait_in_progress_   = false;
+        timer_cancelled_          = false;
+        socket_closed_for_stop_   = false;
 
         wait_error_.clear();
         stop_error_.clear();
@@ -171,7 +171,7 @@ namespace ma
         if (stopped == external_state_ || stop_in_progress == external_state_)
         {          
           return boost::system::error_code(server_error::invalid_state);
-        }        
+        }
         // Start shutdown
         external_state_ = stop_in_progress;
         // Do shutdown - abort outer operations        
@@ -179,11 +179,10 @@ namespace ma
         {
           wait_handler_.post(server_error::operation_aborted);
         }
-        // Do shutdown - flush socket's write buffer
-        if (!socket_write_in_progress_ && !socket_closed_for_stop_)
-        {
-          socket_.shutdown(protocol_type::socket::shutdown_send, stop_error_);
-        }
+        // Do shutdown - flush socket's write buffer        
+        boost::system::error_code shutdown_error;
+        shutdown_socket_send(shutdown_error);
+        set_stop_error(shutdown_error);
         // Check for shutdown continuation          
         if (may_complete_stop())
         {
@@ -235,7 +234,7 @@ namespace ma
 
       bool session::may_complete_stop() const
       {
-        return !socket_write_in_progress_ && !socket_read_in_progress_ && !inactivity_timer_in_progress_;
+        return !socket_write_in_progress_ && !socket_read_in_progress_ && !timer_wait_in_progress_;
       }
 
       void session::complete_stop()
@@ -293,42 +292,79 @@ namespace ma
         }   
       }
 
-      void session::start_inactivity_timer()
+      void session::shutdown_socket_send(boost::system::error_code& error)
       {
-        if (inactivity_timeout_)
+        boost::system::error_code local_error;
+        if (!socket_closed_for_stop_)
         {
-          inactivity_timer_.expires_from_now(*inactivity_timeout_);
-#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
-          inactivity_timer_.async_wait(MA_STRAND_WRAP(strand_, 
-            make_custom_alloc_handler(inactivity_allocator_,
-              timer_handler_binder(&this_type::handle_read_timeout, shared_from_this()))));
-#else
-          inactivity_timer_.async_wait(MA_STRAND_WRAP(strand_, 
-            make_custom_alloc_handler(inactivity_allocator_,
-              boost::bind(&this_type::handle_read_timeout, shared_from_this(), boost::asio::placeholders::error))));
-#endif
-          inactivity_timer_in_progress_ = true;
-          inactivity_timer_cancelled_   = false;
+          socket_.shutdown(protocol_type::socket::shutdown_send, local_error);
         }
+        error = local_error;
       }
 
-      void session::cancel_inactivity_timer()
+      void session::close_socket_for_stop(boost::system::error_code& error)
       {
-        if (inactivity_timer_in_progress_ && !inactivity_timer_cancelled_)
-        {            
-          inactivity_timer_.cancel();
-          inactivity_timer_cancelled_ = true;
+        boost::system::error_code local_error;
+        if (!socket_closed_for_stop_)
+        {
+          socket_.close(local_error);
+          socket_closed_for_stop_ = true;
         }
+        error = local_error;
+      }
+
+      void session::start_timer(boost::system::error_code& error)
+      {
+        boost::system::error_code local_error;
+        if (inactivity_timeout_)
+        {
+          timer_.expires_from_now(*inactivity_timeout_, local_error);
+          if (!local_error)
+          {
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+            timer_.async_wait(MA_STRAND_WRAP(strand_, 
+              make_custom_alloc_handler(inactivity_allocator_,
+                timer_handler_binder(&this_type::handle_timeout, shared_from_this()))));
+#else
+            timer_.async_wait(MA_STRAND_WRAP(strand_, 
+              make_custom_alloc_handler(inactivity_allocator_,
+                boost::bind(&this_type::handle_timeout, shared_from_this(), boost::asio::placeholders::error))));
+#endif
+            timer_wait_in_progress_ = true;
+            timer_cancelled_        = false;
+          }
+        }
+        error = local_error;
+      }
+
+      void session::cancel_timer(boost::system::error_code& error)
+      {
+        boost::system::error_code local_error;
+        if (timer_wait_in_progress_ && !timer_cancelled_)
+        {          
+          timer_.cancel(local_error);
+          timer_cancelled_ = true;
+        }
+        error = local_error;
       }
 
       void session::handle_read_some(const boost::system::error_code& error, std::size_t bytes_transferred)
       {        
         socket_read_in_progress_ = false;
-        cancel_inactivity_timer();
+
+        // Cancel inactivity timer
+        boost::system::error_code local_error;
+        cancel_timer(local_error);
+        if (local_error)
+        {
+          set_wait_error(local_error);          
+          close_socket_for_stop(local_error);
+        }
+
         // Check for pending session stop operation 
         if (stop_in_progress == external_state_)
         {
-          complete_deferred_stop();
+          continue_stop();
           return;
         }
         // Normal control flow        
@@ -344,12 +380,26 @@ namespace ma
       void session::handle_write_some(const boost::system::error_code& error, std::size_t bytes_transferred)
       {
         socket_write_in_progress_ = false;
-        cancel_inactivity_timer();
+        
+        // Cancel inactivity timer
+        boost::system::error_code local_error;
+        cancel_timer(local_error);
+        if (local_error)
+        {
+          set_wait_error(local_error);          
+          close_socket_for_stop(local_error);
+        }
+
         // Check for pending session manager stop operation 
         if (stop_in_progress == external_state_)
-        {          
-          socket_.shutdown(protocol_type::socket::shutdown_send, stop_error_);
-          complete_deferred_stop();
+        {
+          boost::system::error_code shutdown_error;
+          shutdown_socket_send(shutdown_error);
+          if (shutdown_error && !stop_error_)
+          {
+            stop_error_ = shutdown_error;
+          }
+          continue_stop();
           return;
         }
         // Normal control flow
@@ -362,22 +412,22 @@ namespace ma
         continue_work();
       }
 
-      void session::handle_read_timeout(const boost::system::error_code& error)
+      void session::handle_timeout(const boost::system::error_code& error)
       {
-        inactivity_timer_in_progress_ = false;
+        timer_wait_in_progress_ = false;
         // Check for pending session stop operation 
         if (stop_in_progress == external_state_)
         {
-          if (!inactivity_timer_cancelled_)
+          if (!timer_cancelled_)
           {
             // Timer was normally fired during stop
             boost::system::error_code ignored;
             close_socket_for_stop(ignored);            
           }
-          complete_deferred_stop();
+          continue_stop();
           return;
         }        
-        if (inactivity_timer_cancelled_)
+        if (timer_cancelled_)
         {
           // Normal timer cancellation
           continue_work();
@@ -387,23 +437,52 @@ namespace ma
         {
           // Abnormal timer behaivour
           set_wait_error(error);
-          return;
         }
-        // Timer was normally fired 
+        else 
+        {
+          // Timer was normally fired 
+          set_wait_error(server_error::inactivity_timeout);
+        }
         boost::system::error_code ignored;
         close_socket_for_stop(ignored);
-        set_wait_error(server_error::inactivity_timeout);
       }
 
-      void session::close_socket_for_stop(boost::system::error_code& error)
+      void session::continue_work()
       {
-        boost::system::error_code local_error;
-        if (!socket_closed_for_stop_)
-        {
-          socket_.close(local_error);
-          socket_closed_for_stop_ = true;
+        if (!timer_wait_in_progress_ && !wait_error_)
+        {                  
+          if (!socket_read_in_progress_)
+          {
+            read_some();
+          }
+          if (!socket_write_in_progress_)
+          {
+            write_some();
+          }
+          if (socket_read_in_progress_ || socket_write_in_progress_)
+          {
+            boost::system::error_code local_error;
+            start_timer(local_error);
+            if (local_error)
+            {
+              set_wait_error(local_error);              
+              close_socket_for_stop(local_error);
+            }
+          }
         }
-        error = local_error;
+      }
+
+      void session::continue_stop()
+      {
+        if (may_complete_stop())
+        {
+          complete_stop();
+          if (stop_handler_.has_target()) 
+          {
+            // Signal shutdown completion
+            stop_handler_.post(stop_error_);
+          }
+        }
       }
 
       void session::set_wait_error(const boost::system::error_code& error)
@@ -418,37 +497,13 @@ namespace ma
         }
       }
 
-      void session::continue_work()
+      void session::set_stop_error(const boost::system::error_code& error)
       {
-        if (!inactivity_timer_in_progress_ && !wait_error_)
-        {                  
-          if (!socket_read_in_progress_)
-          {
-            read_some();
-          }
-          if (!socket_write_in_progress_)
-          {
-            write_some();
-          }
-          if (socket_read_in_progress_ || socket_write_in_progress_)
-          {
-            start_inactivity_timer();
-          }
-        }
-      }
-
-      void session::complete_deferred_stop()
-      {
-        if (may_complete_stop())
+        if (!stop_error_)
         {
-          complete_stop();
-          if (stop_handler_.has_target()) 
-          {
-            // Signal shutdown completion
-            stop_handler_.post(stop_error_);
-          }
+          stop_error_ = error;
         }
-      }      
+      }            
         
     } // namespace server
   } // namespace echo
