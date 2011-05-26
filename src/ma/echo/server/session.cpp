@@ -152,6 +152,7 @@ namespace ma
         {
           return server_error::invalid_state;
         }
+
         boost::system::error_code error = apply_socket_options();
         if (error)
         {
@@ -172,23 +173,28 @@ namespace ma
         {          
           return boost::system::error_code(server_error::invalid_state);
         }
+
         // Start shutdown
         external_state_ = stop_in_progress;
+
         // Do shutdown - abort outer operations        
         if (wait_handler_.has_target())
         {
           wait_handler_.post(server_error::operation_aborted);
         }
+
         // Do shutdown - flush socket's write buffer        
         boost::system::error_code shutdown_error;
         shutdown_socket_send(shutdown_error);
         set_stop_error(shutdown_error);
+
         // Check for shutdown continuation          
         if (may_complete_stop())
         {
           complete_stop();
           return stop_error_;
         }
+
         return boost::optional<boost::system::error_code>();
       }
 
@@ -198,10 +204,12 @@ namespace ma
         {
           return boost::system::error_code(server_error::invalid_state);
         }
+
         if (wait_error_)
         {
           return wait_error_;
         }
+
         return boost::optional<boost::system::error_code>();
       }
 
@@ -367,6 +375,7 @@ namespace ma
           continue_stop();
           return;
         }
+
         // Normal control flow        
         if (error)
         {
@@ -402,6 +411,7 @@ namespace ma
           continue_stop();
           return;
         }
+
         // Normal control flow
         if (error)
         {
@@ -415,6 +425,7 @@ namespace ma
       void session::handle_timeout(const boost::system::error_code& error)
       {
         timer_wait_in_progress_ = false;
+
         // Check for pending session stop operation 
         if (stop_in_progress == external_state_)
         {
@@ -427,24 +438,27 @@ namespace ma
           continue_stop();
           return;
         }        
+        
+        if (error && error != boost::asio::error::operation_aborted)
+        {
+          // Abnormal timer behaivour
+          set_wait_error(error);
+          boost::system::error_code ignored;
+          close_socket_for_stop(ignored);
+          return;
+        }
+
         if (timer_cancelled_)
         {
           // Normal timer cancellation
           continue_work();
           return;
         }
-        if (error)
-        {
-          // Abnormal timer behaivour
-          set_wait_error(error);
-        }
-        else 
-        {
-          // Timer was normally fired 
-          set_wait_error(server_error::inactivity_timeout);
-        }
+        
+        // Timer was normally fired 
+        set_wait_error(server_error::inactivity_timeout);
         boost::system::error_code ignored;
-        close_socket_for_stop(ignored);
+        close_socket_for_stop(ignored);        
       }
 
       void session::continue_work()
@@ -455,10 +469,12 @@ namespace ma
           {
             read_some();
           }
+
           if (!socket_write_in_progress_)
           {
             write_some();
           }
+
           if (socket_read_in_progress_ || socket_write_in_progress_)
           {
             boost::system::error_code local_error;
