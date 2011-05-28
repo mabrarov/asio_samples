@@ -29,7 +29,7 @@ namespace ma
     class buffers2
     {
     public:
-      typedef Buffer value_type;
+      typedef Buffer            value_type;
       typedef const value_type* const_iterator;
 
       buffers2()
@@ -66,7 +66,7 @@ namespace ma
     }; // class buffers2
 
   public:        
-    typedef buffers2<boost::asio::const_buffer> const_buffers_type;
+    typedef buffers2<boost::asio::const_buffer>   const_buffers_type;
     typedef buffers2<boost::asio::mutable_buffer> mutable_buffers_type;        
 
     explicit cyclic_buffer(std::size_t size)

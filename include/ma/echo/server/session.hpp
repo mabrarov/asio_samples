@@ -225,26 +225,27 @@ namespace ma
 
         boost::system::error_code start();
         boost::optional<boost::system::error_code> stop();
-        boost::optional<boost::system::error_code> wait();
-
-        boost::system::error_code apply_socket_options();
-        bool may_complete_stop() const;        
-        void complete_stop();
-
-        void read_some();
-        void write_some();
-        void shutdown_socket_send(boost::system::error_code&);
-        void close_socket_for_stop(boost::system::error_code&);
-        void start_timer(boost::system::error_code& error);
-        void cancel_timer(boost::system::error_code& error);   
-
+        boost::optional<boost::system::error_code> wait();                       
+                
         void handle_read_some(const boost::system::error_code&, std::size_t);
         void handle_write_some(const boost::system::error_code&, std::size_t);
         void handle_timeout(const boost::system::error_code&);                
         void continue_work();
         void continue_stop();
+
+        void start_read(const cyclic_buffer::mutable_buffers_type&);
+        void start_write(const cyclic_buffer::const_buffers_type&);
+        boost::system::error_code start_timer();
+        boost::system::error_code cancel_timer();
+        boost::system::error_code shutdown_socket_send();
+        boost::system::error_code close_socket_for_stop();        
+
+        bool may_complete_stop() const;        
+        void complete_stop();
         void set_wait_error(const boost::system::error_code&);
         void set_stop_error(const boost::system::error_code&);
+
+        boost::system::error_code apply_socket_options();
         
         session_options::optional_int  socket_recv_buffer_size_;
         session_options::optional_int  socket_send_buffer_size_;
