@@ -311,7 +311,7 @@ namespace ma
         }
 
         // Normal control flow (running)
-        if (timer_cancelled_)
+        if (timer_cancelled_ || error)
         {
           // Timer was cancelled
           continue_work();
