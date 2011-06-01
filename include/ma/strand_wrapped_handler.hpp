@@ -71,11 +71,19 @@ namespace ma
       ma_asio_handler_alloc_helpers::deallocate(pointer, size, context->handler_);
     }
 
+#if defined(MA_HAS_RVALUE_REFS)
+    template <typename Function>
+    friend void asio_handler_invoke(Function&& function, this_type* context)
+    {
+      context->strand_.dispatch(make_context_wrapped_handler(context->handler_, std::forward<Function>(function)));
+    }
+#else
     template <typename Function>
     friend void asio_handler_invoke(const Function& function, this_type* context)
     {
       context->strand_.dispatch(make_context_wrapped_handler(context->handler_, function));
     }
+#endif // defined(MA_HAS_RVALUE_REFS)
 
     void operator()()
     {

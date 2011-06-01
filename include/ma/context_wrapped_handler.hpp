@@ -69,11 +69,19 @@ namespace ma
       ma_asio_handler_alloc_helpers::deallocate(pointer, size, context->context_);
     }
 
+#if defined(MA_HAS_RVALUE_REFS)
+    template <typename Function>
+    friend void asio_handler_invoke(Function&& function, this_type* context)
+    {
+      ma_asio_handler_invoke_helpers::invoke(std::forward<Function>(function), context->context_);
+    }
+#else
     template <typename Function>
     friend void asio_handler_invoke(const Function& function, this_type* context)
     {
       ma_asio_handler_invoke_helpers::invoke(function, context->context_);
     }
+#endif // defined(MA_HAS_RVALUE_REFS)    
 
     void operator()()
     {
@@ -216,11 +224,19 @@ namespace ma
       ma_asio_handler_alloc_helpers::deallocate(pointer, size, context->context_);
     }
 
+#if defined(MA_HAS_RVALUE_REFS)
+    template <typename Function>
+    friend void asio_handler_invoke(Function&& function, this_type* context)
+    {
+      ma_asio_handler_invoke_helpers::invoke(std::forward<Function>(function), context->context_);
+    }
+#else
     template <typename Function>
     friend void asio_handler_invoke(const Function& function, this_type* context)
     {
       ma_asio_handler_invoke_helpers::invoke(function, context->context_);
     }
+#endif // defined(MA_HAS_RVALUE_REFS)
     
     void operator()()
     {
