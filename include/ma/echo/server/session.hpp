@@ -181,14 +181,17 @@ namespace ma
         }; // class forward_handler_binder
 #endif // defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
-        enum external_state_type
+        struct external_state
         {
-          ready_to_start,
-          start_in_progress,
-          started,
-          stop_in_progress,
-          stopped
-        }; // enum external_state_type
+          enum value_t
+          {
+            ready_to_start,
+            start_in_progress,
+            started,
+            stop_in_progress,
+            stopped
+          }; // enum value_t
+        }; // struct external_state        
 
         template <typename Handler>
         void do_start(const Handler& handler)
@@ -257,7 +260,7 @@ namespace ma
         bool timer_wait_in_progress_;
         bool timer_cancelled_;
         bool socket_closed_for_stop_;        
-        external_state_type external_state_;
+        external_state::value_t external_state_;
 
         boost::asio::io_service&        io_service_;
         boost::asio::io_service::strand strand_;

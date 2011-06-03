@@ -231,7 +231,7 @@ namespace ma
         , managed_session_options_(options.managed_session_options())
         , accept_in_progress_(false)        
         , pending_operations_(0)
-        , external_state_(ready_to_start)
+        , external_state_(external_state::ready_to_start)
         , io_service_(io_service)
         , session_io_service_(session_io_service)
         , strand_(io_service)
@@ -255,16 +255,16 @@ namespace ma
           recycled_sessions_.clear();
         }
 
-        external_state_ = ready_to_start;
+        external_state_ = external_state::ready_to_start;
       }
 
       boost::system::error_code session_manager::start()
       {
-        if (ready_to_start != external_state_)
+        if (external_state::ready_to_start != external_state_)
         {
           return server_error::invalid_state;
         }
-        external_state_ = start_in_progress;
+        external_state_ = external_state::start_in_progress;
         boost::system::error_code error;
 
         open(acceptor_, accepting_endpoint_, listen_backlog_, error);
@@ -283,23 +283,24 @@ namespace ma
         }
         if (error)
         {
-          external_state_ = stopped;         
+          external_state_ = external_state::stopped;         
         }
         else
         {          
-          external_state_ = started;
+          external_state_ = external_state::started;
         }       
         return error;
       }
 
       boost::optional<boost::system::error_code> session_manager::stop()
       {        
-        if (stopped == external_state_ || stop_in_progress == external_state_)
+        if (external_state::stopped == external_state_ 
+          || external_state::stop_in_progress == external_state_)
         {          
           return boost::system::error_code(server_error::invalid_state);
         }        
         // Start shutdown
-        external_state_ = stop_in_progress;
+        external_state_ = external_state::stop_in_progress;
         // Do shutdown - abort outer operations
         if (wait_handler_.has_target())
         {
@@ -328,7 +329,8 @@ namespace ma
 
       boost::optional<boost::system::error_code> session_manager::wait()
       {        
-        if (started != external_state_ || wait_handler_.has_target())
+        if (external_state::started != external_state_ 
+          || wait_handler_.has_target())
         {
           return boost::system::error_code(server_error::invalid_state);
         }        
@@ -406,7 +408,7 @@ namespace ma
         --pending_operations_;
         accept_in_progress_ = false;
         // Check for pending session manager stop operation 
-        if (stop_in_progress == external_state_)
+        if (external_state::stop_in_progress == external_state_)
         {
           if (may_complete_stop())  
           {
@@ -518,7 +520,7 @@ namespace ma
 
       void session_manager::complete_stop()
       {
-        external_state_ = stopped;  
+        external_state_ = external_state::stopped;  
       }
 
       bool session_manager::may_continue_accept() const
@@ -606,7 +608,7 @@ namespace ma
             active_sessions_.erase(data);
             recycle_session(data);
             // Check for pending session manager stop operation 
-            if (stop_in_progress == external_state_)
+            if (external_state::stop_in_progress == external_state_)
             {
               if (may_complete_stop())  
               {
@@ -628,7 +630,7 @@ namespace ma
           }
           data->state = session_data::started;
           // Check for pending session manager stop operation 
-          if (stop_in_progress == external_state_)  
+          if (external_state::stop_in_progress == external_state_)  
           {                            
             stop_session(data);
             return;
@@ -640,7 +642,7 @@ namespace ma
         // Handler is called too late - complete handler's waiters
         recycle_session(data);
         // Check for pending session manager stop operation 
-        if (stop_in_progress == external_state_) 
+        if (external_state::stop_in_progress == external_state_) 
         {
           if (may_complete_stop())  
           {
@@ -682,7 +684,7 @@ namespace ma
         // Handler is called too late - complete handler's waiters
         recycle_session(data);
         // Check for pending session manager stop operation
-        if (stop_in_progress == external_state_)
+        if (external_state::stop_in_progress == external_state_)
         {
           if (may_complete_stop())  
           {
@@ -722,7 +724,7 @@ namespace ma
           active_sessions_.erase(data);
           recycle_session(data);
           // Check for pending session manager stop operation
-          if (stop_in_progress == external_state_)
+          if (external_state::stop_in_progress == external_state_)
           {
             if (may_complete_stop())  
             {
@@ -745,7 +747,7 @@ namespace ma
         // Handler is called too late - complete handler's waiters
         recycle_session(data);
         // Check for pending session manager stop operation
-        if (stop_in_progress == external_state_)
+        if (external_state::stop_in_progress == external_state_)
         {
           if (may_complete_stop())  
           {

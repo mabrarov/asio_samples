@@ -117,7 +117,7 @@ namespace ma
         , timer_wait_in_progress_(false)
         , timer_cancelled_(false)
         , socket_closed_for_stop_(false)
-        , external_state_(ready_to_start)
+        , external_state_(external_state::ready_to_start)
         , io_service_(io_service)
         , strand_(io_service)
         , socket_(io_service)
@@ -143,12 +143,12 @@ namespace ma
         stop_error_.clear();
         buffer_.reset();
 
-        external_state_ = ready_to_start;        
+        external_state_ = external_state::ready_to_start;        
       }
               
       boost::system::error_code session::start()
       {                
-        if (ready_to_start != external_state_)
+        if (external_state::ready_to_start != external_state_)
         {
           return server_error::invalid_state;
         }
@@ -161,7 +161,7 @@ namespace ma
         }
         else 
         {
-          external_state_ = started;
+          external_state_ = external_state::started;
           continue_work();
         }
         return error;
@@ -169,13 +169,14 @@ namespace ma
 
       boost::optional<boost::system::error_code> session::stop()
       {        
-        if (stopped == external_state_ || stop_in_progress == external_state_)
+        if (external_state::stopped == external_state_ 
+          || external_state::stop_in_progress == external_state_)
         {          
           return boost::system::error_code(server_error::invalid_state);
         }
 
         // Start shutdown
-        external_state_ = stop_in_progress;
+        external_state_ = external_state::stop_in_progress;
 
         // Do shutdown - abort outer operations        
         if (wait_handler_.has_target())
@@ -199,7 +200,8 @@ namespace ma
 
       boost::optional<boost::system::error_code> session::wait()
       {                
-        if (started != external_state_ || wait_handler_.has_target())
+        if (external_state::started != external_state_ 
+          || wait_handler_.has_target())
         {
           return boost::system::error_code(server_error::invalid_state);
         }
@@ -228,7 +230,7 @@ namespace ma
         }
 
         // Check for pending session stop operation 
-        if (stop_in_progress == external_state_)
+        if (external_state::stop_in_progress == external_state_)
         {
           // Normal control flow (stopping)
           continue_stop();
@@ -263,7 +265,7 @@ namespace ma
         }
 
         // Check for pending session manager stop operation 
-        if (stop_in_progress == external_state_)
+        if (external_state::stop_in_progress == external_state_)
         {
           // Normal control flow (stopping)
           boost::system::error_code shutdown_error = shutdown_socket_send();
@@ -289,7 +291,7 @@ namespace ma
         timer_wait_in_progress_ = false;
 
         // Check for pending session stop operation 
-        if (stop_in_progress == external_state_)
+        if (external_state::stop_in_progress == external_state_)
         {
           // Normal control flow (stopping)
           if (!timer_cancelled_)
@@ -474,7 +476,7 @@ namespace ma
       {
         boost::system::error_code error = close_socket_for_stop();
         set_stop_error(error);
-        external_state_ = stopped;  
+        external_state_ = external_state::stopped;  
       }
 
       void session::set_wait_error(const boost::system::error_code& error)
