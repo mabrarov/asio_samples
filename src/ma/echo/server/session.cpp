@@ -156,8 +156,8 @@ namespace ma
         boost::system::error_code error = apply_socket_options();
         if (error)
         {
-          boost::system::error_code ignored;
-          socket_.close(ignored);
+          close_socket_for_stop();
+          external_state_ = external_state::stopped;
         }
         else 
         {

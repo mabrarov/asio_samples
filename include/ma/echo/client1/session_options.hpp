@@ -13,6 +13,7 @@
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
 #include <cstddef>
+#include <boost/assert.hpp>
 #include <boost/optional.hpp>
 #include <ma/echo/client1/session_options_fwd.hpp>
 
