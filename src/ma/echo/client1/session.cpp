@@ -51,7 +51,7 @@ namespace ma
         //todo
         return client1_error::operation_not_supported;
         //state_ = started;
-        //read_some();
+        //begin_read();
       }
 
       boost::optional<boost::system::error_code> session::stop()
@@ -67,7 +67,7 @@ namespace ma
         {
           wait_handler_.post(client1_error::operation_aborted);
         }
-        // Do shutdown - flush socket's write_some buffer
+        // Do shutdown - flush socket's begin_write buffer
         if (!socket_write_in_progress_) 
         {
           socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_send, stop_error_);            
@@ -110,7 +110,7 @@ namespace ma
         state_ = stopped;  
       }
 
-      void session::read_some()
+      void session::begin_read()
       {
         cyclic_buffer::mutable_buffers_type buffers(buffer_.prepared());
         std::size_t buffers_size = boost::asio::buffers_end(buffers) - 
@@ -118,13 +118,13 @@ namespace ma
         if (buffers_size)
         {
           socket_.async_read_some(buffers, strand_.wrap(make_custom_alloc_handler(read_allocator_,
-            boost::bind(&this_type::handle_read_some, shared_from_this(), 
+            boost::bind(&this_type::handle_read, shared_from_this(), 
               boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred))));
           socket_read_in_progress_ = true;
         }        
       }
 
-      void session::write_some()
+      void session::begin_write()
       {
         cyclic_buffer::const_buffers_type buffers(buffer_.data());
         std::size_t buffers_size = boost::asio::buffers_end(buffers) - 
@@ -132,13 +132,13 @@ namespace ma
         if (buffers_size)
         {
           socket_.async_write_some(buffers, strand_.wrap(make_custom_alloc_handler(write_allocator_,
-            boost::bind(&this_type::handle_write_some, shared_from_this(), 
+            boost::bind(&this_type::handle_write, shared_from_this(), 
               boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred))));
           socket_write_in_progress_ = true;
         }   
       }
 
-      void session::handle_read_some(const boost::system::error_code& error, const std::size_t bytes_transferred)
+      void session::handle_read(const boost::system::error_code& error, const std::size_t bytes_transferred)
       {        
         socket_read_in_progress_ = false;
         // Check for pending session stop operation 
@@ -164,14 +164,14 @@ namespace ma
           return;
         }        
         buffer_.consume(bytes_transferred);
-        read_some();
+        begin_read();
         if (!socket_write_in_progress_)
         {
-          write_some();
+          begin_write();
         }
       }
 
-      void session::handle_write_some(const boost::system::error_code& error, const std::size_t bytes_transferred)
+      void session::handle_write(const boost::system::error_code& error, const std::size_t bytes_transferred)
       {
         socket_write_in_progress_ = false;
         // Check for pending session manager stop operation 
@@ -198,10 +198,10 @@ namespace ma
           return;
         }        
         buffer_.commit(bytes_transferred);
-        write_some();
+        begin_write();
         if (!socket_read_in_progress_)
         {
-          read_some();
+          begin_read();
         }        
       }
 

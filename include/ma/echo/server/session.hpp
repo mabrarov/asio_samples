@@ -68,7 +68,7 @@ namespace ma
         {
           typedef typename ma::remove_cv_reference<Handler>::type handler_type;
           strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler),  
-            forward_handler_binder<handler_type>(&this_type::do_start<handler_type>, shared_from_this())));  
+            forward_handler_binder<handler_type>(&this_type::begin_start<handler_type>, shared_from_this())));  
         }
 
         template <typename Handler>
@@ -76,7 +76,7 @@ namespace ma
         {
           typedef typename ma::remove_cv_reference<Handler>::type handler_type;
           strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler), 
-            forward_handler_binder<handler_type>(&this_type::do_stop<handler_type>, shared_from_this()))); 
+            forward_handler_binder<handler_type>(&this_type::begin_stop<handler_type>, shared_from_this()))); 
         }
 
         template <typename Handler>
@@ -84,7 +84,7 @@ namespace ma
         {
           typedef typename ma::remove_cv_reference<Handler>::type handler_type;
           strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler), 
-            forward_handler_binder<handler_type>(&this_type::do_wait<handler_type>, shared_from_this())));  
+            forward_handler_binder<handler_type>(&this_type::begin_wait<handler_type>, shared_from_this())));  
         }
 #else
         template <typename Handler>
@@ -92,7 +92,7 @@ namespace ma
         {
           typedef typename ma::remove_cv_reference<Handler>::type handler_type;
           strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler),  
-            boost::bind(&this_type::do_start<handler_type>, shared_from_this(), _1)));  
+            boost::bind(&this_type::begin_start<handler_type>, shared_from_this(), _1)));  
         }
 
         template <typename Handler>
@@ -100,7 +100,7 @@ namespace ma
         {
           typedef typename ma::remove_cv_reference<Handler>::type handler_type;
           strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler), 
-            boost::bind(&this_type::do_stop<handler_type>, shared_from_this(), _1))); 
+            boost::bind(&this_type::begin_stop<handler_type>, shared_from_this(), _1))); 
         }
 
         template <typename Handler>
@@ -108,7 +108,7 @@ namespace ma
         {
           typedef typename ma::remove_cv_reference<Handler>::type handler_type;
           strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler), 
-            boost::bind(&this_type::do_wait<handler_type>, shared_from_this(), _1)));  
+            boost::bind(&this_type::begin_wait<handler_type>, shared_from_this(), _1)));  
         }
 #endif // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
@@ -117,21 +117,21 @@ namespace ma
         void async_start(const Handler& handler)
         {
           strand_.post(make_context_alloc_handler2(handler, 
-            boost::bind(&this_type::do_start<Handler>, shared_from_this(), _1)));
+            boost::bind(&this_type::begin_start<Handler>, shared_from_this(), _1)));
         }
 
         template <typename Handler>
         void async_stop(const Handler& handler)
         {
           strand_.post(make_context_alloc_handler2(handler, 
-            boost::bind(&this_type::do_stop<Handler>, shared_from_this(), _1)));
+            boost::bind(&this_type::begin_stop<Handler>, shared_from_this(), _1)));
         }
 
         template <typename Handler>
         void async_wait(const Handler& handler)
         {
           strand_.post(make_context_alloc_handler2(handler, 
-            boost::bind(&this_type::do_wait<Handler>, shared_from_this(), _1)));
+            boost::bind(&this_type::begin_wait<Handler>, shared_from_this(), _1)));
         }
 #endif // defined(MA_HAS_RVALUE_REFS)
         
@@ -194,14 +194,14 @@ namespace ma
         }; // struct external_state        
 
         template <typename Handler>
-        void do_start(const Handler& handler)
+        void begin_start(const Handler& handler)
         {
           boost::system::error_code result = start();
           io_service_.post(detail::bind_handler(handler, result));
         }
 
         template <typename Handler>
-        void do_stop(const Handler& handler)
+        void begin_stop(const Handler& handler)
         {
           if (boost::optional<boost::system::error_code> result = stop())
           {
@@ -214,7 +214,7 @@ namespace ma
         }
 
         template <typename Handler>
-        void do_wait(const Handler& handler)
+        void begin_wait(const Handler& handler)
         {
           if (boost::optional<boost::system::error_code> result = wait())
           {
@@ -230,15 +230,15 @@ namespace ma
         boost::optional<boost::system::error_code> stop();
         boost::optional<boost::system::error_code> wait();                       
                 
-        void handle_read_some(const boost::system::error_code&, std::size_t);
-        void handle_write_some(const boost::system::error_code&, std::size_t);
-        void handle_timeout(const boost::system::error_code&);                
+        void handle_read(const boost::system::error_code&, std::size_t);
+        void handle_write(const boost::system::error_code&, std::size_t);
+        void handle_timer(const boost::system::error_code&);                
         void continue_work();
         void continue_stop();
 
-        void start_read(const cyclic_buffer::mutable_buffers_type&);
-        void start_write(const cyclic_buffer::const_buffers_type&);
-        boost::system::error_code start_timer();
+        void begin_read(const cyclic_buffer::mutable_buffers_type&);
+        void begin_write(const cyclic_buffer::const_buffers_type&);
+        boost::system::error_code begin_timer();
         boost::system::error_code cancel_timer();
         boost::system::error_code shutdown_socket_send();
         boost::system::error_code close_socket_for_stop();        

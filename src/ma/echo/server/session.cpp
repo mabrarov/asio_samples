@@ -214,7 +214,7 @@ namespace ma
         return boost::optional<boost::system::error_code>();
       }      
 
-      void session::handle_read_some(const boost::system::error_code& error, std::size_t bytes_transferred)
+      void session::handle_read(const boost::system::error_code& error, std::size_t bytes_transferred)
       {        
         socket_read_in_progress_ = false;
 
@@ -249,7 +249,7 @@ namespace ma
         continue_work();
       }
 
-      void session::handle_write_some(const boost::system::error_code& error, std::size_t bytes_transferred)
+      void session::handle_write(const boost::system::error_code& error, std::size_t bytes_transferred)
       {
         socket_write_in_progress_ = false;
         
@@ -286,7 +286,7 @@ namespace ma
         continue_work();
       }
 
-      void session::handle_timeout(const boost::system::error_code& error)
+      void session::handle_timer(const boost::system::error_code& error)
       {
         timer_wait_in_progress_ = false;
 
@@ -341,7 +341,7 @@ namespace ma
           if (buffers_size)
           {
             // We have enough resources to start read
-            start_read(buffers);
+            begin_read(buffers);
             socket_read_in_progress_ = true;
           }  
         }
@@ -355,7 +355,7 @@ namespace ma
           if (buffers_size)
           {
             // We have enough resources to start write
-            start_write(buffers);
+            begin_write(buffers);
             socket_write_in_progress_ = true;
           }   
         }
@@ -363,7 +363,7 @@ namespace ma
         // Start timer if must
         if (inactivity_timeout_ && (socket_read_in_progress_ || socket_write_in_progress_))
         {
-          boost::system::error_code error = start_timer();
+          boost::system::error_code error = begin_timer();
           if (error)
           {
             set_wait_error(error);
@@ -388,35 +388,35 @@ namespace ma
         }
       }
 
-      void session::start_read(const cyclic_buffer::mutable_buffers_type& buffers)
+      void session::begin_read(const cyclic_buffer::mutable_buffers_type& buffers)
       {
 #if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
         socket_.async_read_some(buffers, MA_STRAND_WRAP(strand_, 
           make_custom_alloc_handler(read_allocator_,
-            io_handler_binder(&this_type::handle_read_some, shared_from_this()))));
+            io_handler_binder(&this_type::handle_read, shared_from_this()))));
 #else
         socket_.async_read_some(buffers, MA_STRAND_WRAP(strand_, 
           make_custom_alloc_handler(read_allocator_,
-            boost::bind(&this_type::handle_read_some, shared_from_this(), 
+            boost::bind(&this_type::handle_read, shared_from_this(), 
               boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred))));
 #endif
       }
 
-      void session::start_write(const cyclic_buffer::const_buffers_type& buffers)
+      void session::begin_write(const cyclic_buffer::const_buffers_type& buffers)
       {
 #if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
         socket_.async_write_some(buffers, MA_STRAND_WRAP(strand_, 
           make_custom_alloc_handler(write_allocator_,
-            io_handler_binder(&this_type::handle_write_some, shared_from_this()))));
+            io_handler_binder(&this_type::handle_write, shared_from_this()))));
 #else
         socket_.async_write_some(buffers, MA_STRAND_WRAP(strand_,
           make_custom_alloc_handler(write_allocator_,
-            boost::bind(&this_type::handle_write_some, shared_from_this(), 
+            boost::bind(&this_type::handle_write, shared_from_this(), 
               boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred))));
 #endif
       }
 
-      boost::system::error_code session::start_timer()
+      boost::system::error_code session::begin_timer()
       {
         boost::system::error_code error;        
         timer_.expires_from_now(*inactivity_timeout_, error);
@@ -425,11 +425,11 @@ namespace ma
 #if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
           timer_.async_wait(MA_STRAND_WRAP(strand_, 
             make_custom_alloc_handler(inactivity_allocator_,
-              timer_handler_binder(&this_type::handle_timeout, shared_from_this()))));
+              timer_handler_binder(&this_type::handle_timer, shared_from_this()))));
 #else
           timer_.async_wait(MA_STRAND_WRAP(strand_, 
             make_custom_alloc_handler(inactivity_allocator_,
-              boost::bind(&this_type::handle_timeout, shared_from_this(), boost::asio::placeholders::error))));
+              boost::bind(&this_type::handle_timer, shared_from_this(), boost::asio::placeholders::error))));
 #endif
         }
         return error;

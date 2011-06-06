@@ -235,7 +235,7 @@ namespace ma
 
     void async_implementation::async_do_something(const do_something_handler_ptr& handler)
     {
-      strand_.post(forward_binder(shared_from_this(), handler, &this_type::call_do_something));      
+      strand_.post(forward_binder(shared_from_this(), handler, &this_type::begin_do_something));      
     }
 
     void async_implementation::complete_do_something(const boost::system::error_code& error)
@@ -248,7 +248,7 @@ namespace ma
       return do_something_handler_.has_target();
     }
 
-    void async_implementation::call_do_something(const do_something_handler_ptr& handler)
+    void async_implementation::begin_do_something(const do_something_handler_ptr& handler)
     {
       if (boost::optional<boost::system::error_code> result = do_something())
       {

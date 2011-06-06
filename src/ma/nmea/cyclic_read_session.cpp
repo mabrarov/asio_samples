@@ -57,6 +57,9 @@ namespace ma
         
     void cyclic_read_session::resest()
     {
+      boost::system::error_code ignored;
+      serial_port_.close(ignored);
+
       frame_buffer_.clear();        
       read_error_.clear();
       read_buffer_.consume(boost::asio::buffer_size(read_buffer_.data()));        

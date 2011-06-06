@@ -43,7 +43,7 @@ namespace ma
     private:
       void complete_do_something(const boost::system::error_code&);      
       bool has_do_something_handler() const;
-      void call_do_something(const do_something_handler_ptr&);
+      void begin_do_something(const do_something_handler_ptr&);
       boost::optional<boost::system::error_code> do_something();      
       void handle_timer(const boost::system::error_code&);
 

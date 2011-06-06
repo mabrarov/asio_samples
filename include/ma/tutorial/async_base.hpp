@@ -47,7 +47,7 @@ namespace ma
       {
         typedef typename ma::remove_cv_reference<Handler>::type handler_type;
         strand_.post(ma::make_context_alloc_handler2(std::forward<Handler>(handler), 
-          forward_handler_binder<handler_type>(&this_type::call_do_something<handler_type>, get_shared_base())));
+          forward_handler_binder<handler_type>(&this_type::begin_do_something<handler_type>, get_shared_base())));
       }
 #else
       template <typename Handler>
@@ -55,7 +55,7 @@ namespace ma
       {
         typedef typename ma::remove_cv_reference<Handler>::type handler_type;
         strand_.post(ma::make_context_alloc_handler2(std::forward<Handler>(handler), 
-          boost::bind(&this_type::call_do_something<handler_type>, get_shared_base(), _1)));
+          boost::bind(&this_type::begin_do_something<handler_type>, get_shared_base(), _1)));
       }
 #endif // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
@@ -64,7 +64,7 @@ namespace ma
       void async_do_something(const Handler& handler)
       {
         strand_.post(ma::make_context_alloc_handler2(handler, 
-          boost::bind(&this_type::call_do_something<Handler>, get_shared_base(), _1)));
+          boost::bind(&this_type::begin_do_something<Handler>, get_shared_base(), _1)));
       }
 #endif // defined(MA_HAS_RVALUE_REFS)
 
@@ -134,7 +134,7 @@ namespace ma
 #endif // defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
       template <typename Handler>
-      void call_do_something(const Handler& handler)
+      void begin_do_something(const Handler& handler)
       {    
         if (boost::optional<boost::system::error_code> result = do_something())
         {

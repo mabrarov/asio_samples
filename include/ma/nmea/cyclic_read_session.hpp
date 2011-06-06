@@ -79,7 +79,7 @@ namespace ma
       {
         typedef typename ma::remove_cv_reference<Handler>::type handler_type;
         strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler),  
-          boost::bind(&this_type::do_start<handler_type>, shared_from_this(), _1)));
+          boost::bind(&this_type::begin_start<handler_type>, shared_from_this(), _1)));
       }
 
       template <typename Handler>
@@ -87,7 +87,7 @@ namespace ma
       {
         typedef typename ma::remove_cv_reference<Handler>::type handler_type;
         strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler),  
-          boost::bind(&this_type::do_stop<handler_type>, shared_from_this(), _1)));
+          boost::bind(&this_type::begin_stop<handler_type>, shared_from_this(), _1)));
       }
 
       // Handler()(const boost::system::error_code&, std::size_t)
@@ -97,7 +97,7 @@ namespace ma
         typedef typename ma::remove_cv_reference<Iterator>::type iterator_type;
         typedef typename ma::remove_cv_reference<Handler>::type handler_type;
         strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler),  
-          boost::bind(&this_type::do_read_some<handler_type, iterator_type>, shared_from_this(), 
+          boost::bind(&this_type::begin_read_some<handler_type, iterator_type>, shared_from_this(), 
             std::forward<Iterator>(begin), std::forward<Iterator>(end), _1)));
       }
 
@@ -107,7 +107,7 @@ namespace ma
         typedef typename ma::remove_cv_reference<ConstBufferSequence>::type buffers_type;
         typedef typename ma::remove_cv_reference<Handler>::type handler_type;
         strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler),  
-          boost::bind(&this_type::do_write<buffers_type, handler_type>, shared_from_this(), 
+          boost::bind(&this_type::begin_write<buffers_type, handler_type>, shared_from_this(), 
             std::forward<ConstBufferSequence>(buffers), _1)));
       }
 #else // defined(MA_HAS_RVALUE_REFS) 
@@ -115,14 +115,14 @@ namespace ma
       void async_start(const Handler& handler)
       {        
         strand_.post(make_context_alloc_handler2(handler,
-          boost::bind(&this_type::do_start<Handler>, shared_from_this(), _1)));
+          boost::bind(&this_type::begin_start<Handler>, shared_from_this(), _1)));
       }
 
       template <typename Handler>
       void async_stop(const Handler& handler)
       {
         strand_.post(make_context_alloc_handler2(handler,
-          boost::bind(&this_type::do_stop<Handler>, shared_from_this(), _1)));
+          boost::bind(&this_type::begin_stop<Handler>, shared_from_this(), _1)));
       }
 
       // Handler()(const boost::system::error_code&, std::size_t)
@@ -130,14 +130,14 @@ namespace ma
       void async_read_some(Iterator begin, Iterator end, const Handler& handler)
       {                
         strand_.post(make_context_alloc_handler2(handler,
-          boost::bind(&this_type::do_read_some<Handler, Iterator>, shared_from_this(), begin, end, _1)));
+          boost::bind(&this_type::begin_read_some<Handler, Iterator>, shared_from_this(), begin, end, _1)));
       }
 
       template <typename ConstBufferSequence, typename Handler>
       void async_write(ConstBufferSequence buffers, const Handler& handler)
       {                
         strand_.post(make_context_alloc_handler2(handler, 
-          boost::bind(&this_type::do_write<ConstBufferSequence, Handler>, shared_from_this(), buffers, _1)));
+          boost::bind(&this_type::begin_write<ConstBufferSequence, Handler>, shared_from_this(), buffers, _1)));
       }
 #endif // defined(MA_HAS_RVALUE_REFS)
     
@@ -266,14 +266,14 @@ namespace ma
       }; // class wrapped_read_handler             
 
       template <typename Handler>
-      void do_start(const Handler& handler)
+      void begin_start(const Handler& handler)
       {
         boost::system::error_code error = start();
         io_service_.post(detail::bind_handler(handler, error));
       }
 
       template <typename Handler>
-      void do_stop(const Handler& handler)
+      void begin_stop(const Handler& handler)
       { 
         if (boost::optional<boost::system::error_code> result = stop())        
         {          
@@ -286,7 +286,7 @@ namespace ma
       }
 
       template <typename Handler, typename Iterator>
-      void do_read_some(const Iterator& begin, const Iterator& end, const Handler& handler)
+      void begin_read_some(const Iterator& begin, const Iterator& end, const Handler& handler)
       {
         if (boost::optional<boost::system::error_code> result = read_some())
         { 
@@ -324,7 +324,7 @@ namespace ma
       }
 
       template <typename ConstBufferSequence, typename Handler>
-      void do_write(const ConstBufferSequence& buffers, const Handler& handler)
+      void begin_write(const ConstBufferSequence& buffers, const Handler& handler)
       {  
         if (boost::optional<boost::system::error_code> result = write(buffers, handler))        
         {          
