@@ -336,8 +336,7 @@ namespace ma
         if (!socket_read_in_progress_)
         {
           cyclic_buffer::mutable_buffers_type buffers(buffer_.prepared());
-          std::size_t buffers_size = std::distance(
-            boost::asio::buffers_begin(buffers), boost::asio::buffers_end(buffers));
+          std::size_t buffers_size = boost::asio::buffer_size(buffers);
           if (buffers_size)
           {
             // We have enough resources to start read
@@ -350,8 +349,7 @@ namespace ma
         if (!socket_write_in_progress_)
         {
           cyclic_buffer::const_buffers_type buffers(buffer_.data());
-          std::size_t buffers_size = std::distance(
-            boost::asio::buffers_begin(buffers), boost::asio::buffers_end(buffers));
+          std::size_t buffers_size = boost::asio::buffer_size(buffers);
           if (buffers_size)
           {
             // We have enough resources to start write
