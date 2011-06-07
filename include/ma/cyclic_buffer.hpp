@@ -60,6 +60,11 @@ namespace ma
         return boost::addressof(buffers_[0]) + filled_buffers_;
       }
 
+      bool empty() const
+      {
+        return !filled_buffers_;
+      }
+
     private:
       boost::array<value_type, 2> buffers_;
       std::size_t filled_buffers_;
