@@ -5,7 +5,6 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include <utility>
 #include <ma/config.hpp>
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/strand_wrapped_handler.hpp>
