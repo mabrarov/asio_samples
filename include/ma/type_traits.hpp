@@ -13,6 +13,7 @@
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
 #include <ma/config.hpp>
+
 #if defined(BOOST_HAS_RVALUE_REFS)
 
 #include <boost/type_traits/remove_cv.hpp>
@@ -24,10 +25,10 @@ namespace ma
   struct remove_cv_reference
   {
     typedef typename boost::remove_cv<
-      typename boost::remove_reference<T>::type>::type type;
+        typename boost::remove_reference<T>::type>::type type;
   }; // struct remove_cv_reference
-
 } // namespace ma
+
 #endif // defined(BOOST_HAS_RVALUE_REFS)
 
 #endif // MA_TYPE_TRAITS_HPP
