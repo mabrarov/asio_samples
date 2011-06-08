@@ -190,10 +190,10 @@
     <ClInclude Include="..\..\..\include\ma\handler_storage_service.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\..\..\resources\qt_echo_server\qt_echo_server.rc" />
+    <ResourceCompile Include="..\..\..\src\qt_echo_server\qt_echo_server.rc" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\..\resources\qt_echo_server\qt_echo_server.ico" />
+    <None Include="..\..\..\src\qt_echo_server\qt_echo_server.ico" />
     <CustomBuild Include="..\..\..\src\ma\echo\server\qt\mainform.ui">
       <FileType>Document</FileType>
       <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(QTDIR)\bin\uic.exe;%(AdditionalInputs)</AdditionalInputs>

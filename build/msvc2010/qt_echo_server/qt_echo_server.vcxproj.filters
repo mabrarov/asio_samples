@@ -233,12 +233,12 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\..\resources\qt_echo_server\qt_echo_server.ico">
+    <None Include="..\..\..\src\qt_echo_server\qt_echo_server.ico">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\..\..\resources\qt_echo_server\qt_echo_server.rc">
+    <ResourceCompile Include="..\..\..\src\qt_echo_server\qt_echo_server.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
