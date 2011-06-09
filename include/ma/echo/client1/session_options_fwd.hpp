@@ -12,16 +12,16 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
-namespace ma
-{    
-  namespace echo
-  {
-    namespace client1
-    {
-      class session_options;
+namespace ma {
+
+namespace echo {
+
+namespace client1 {
+
+class session_options;
         
-    } // namespace client1
-  } // namespace echo
+} // namespace client1
+} // namespace echo
 } // namespace ma
 
 #endif // MA_ECHO_CLIENT1_SESSION_OPTIONS_FWD_HPP

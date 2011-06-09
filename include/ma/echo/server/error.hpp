@@ -27,10 +27,10 @@ namespace server_error {
 
 enum error_t 
 {
-  invalid_state,
-  operation_aborted,
-  inactivity_timeout,
-  no_memory_for_session
+  invalid_state         = 100,
+  operation_aborted     = 200,
+  inactivity_timeout    = 300,
+  no_memory_for_session = 400
 }; // enum error_t 
 
 inline boost::system::error_code make_error_code(error_t e)

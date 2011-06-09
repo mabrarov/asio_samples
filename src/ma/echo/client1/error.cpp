@@ -7,20 +7,20 @@
 
 #include <ma/echo/client1/error.hpp>
 
-namespace ma
-{    
-  namespace echo
-  {    
-    namespace client1
-    {   
-      const client1_error_category_impl client1_error_category_instance;
-       
-      const boost::system::error_category& client1_error_category()
-      {
-        return client1_error_category_instance;
-      } // client1_error_category
+namespace ma {
 
-    } // namespace server
-  } // namespace echo
+namespace echo { 
+
+namespace client1 {
+
+const client1_error_category_impl client1_error_category_instance;
+       
+const boost::system::error_category& client1_error_category()
+{
+  return client1_error_category_instance;
+}
+
+} // namespace server
+} // namespace echo
 } // namespace ma
 
