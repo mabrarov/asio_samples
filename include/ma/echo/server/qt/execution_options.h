@@ -16,44 +16,46 @@
 #include <boost/assert.hpp>
 #include <ma/echo/server/qt/execution_options_fwd.h>
 
-namespace ma
-{    
-  namespace echo
+namespace ma {
+
+namespace echo {
+
+namespace server {
+
+namespace qt {
+
+class execution_options
+{
+public:          
+  execution_options(std::size_t session_manager_thread_count, 
+      std::size_t session_thread_count)
+    : session_manager_thread_count_(session_manager_thread_count)
+    , session_thread_count_(session_thread_count)            
   {
-    namespace server
-    {    
-      namespace qt 
-      {
-        class execution_options
-        {
-        public:          
-          execution_options(std::size_t session_manager_thread_count,
-            std::size_t session_thread_count)
-            : session_manager_thread_count_(session_manager_thread_count)
-            , session_thread_count_(session_thread_count)            
-          {
-            BOOST_ASSERT_MSG(session_manager_thread_count > 0, "session_manager_thread_count must be > 0");
-            BOOST_ASSERT_MSG(session_thread_count > 0, "session_thread_count must be > 0");
-          }
+    BOOST_ASSERT_MSG(session_manager_thread_count > 0, 
+        "session_manager_thread_count must be > 0");
+    BOOST_ASSERT_MSG(session_thread_count > 0, 
+        "session_thread_count must be > 0");
+  }
 
-          std::size_t session_manager_thread_count() const
-          {
-            return session_manager_thread_count_;
-          }
+  std::size_t session_manager_thread_count() const
+  {
+    return session_manager_thread_count_;
+  }
 
-          std::size_t session_thread_count() const
-          {
-            return session_thread_count_;
-          }
+  std::size_t session_thread_count() const
+  {
+    return session_thread_count_;
+  }
 
-        private:
-          std::size_t session_manager_thread_count_;
-          std::size_t session_thread_count_;
-        }; // struct execution_options
+private:
+  std::size_t session_manager_thread_count_;
+  std::size_t session_thread_count_;
+}; // struct execution_options
         
-      } // namespace qt
-    } // namespace server
-  } // namespace echo
+} // namespace qt
+} // namespace server
+} // namespace echo
 } // namespace ma
 
 #endif // MA_ECHO_SERVER_QT_EXECUTION_OPTIONS_HPP

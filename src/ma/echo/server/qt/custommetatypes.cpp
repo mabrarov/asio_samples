@@ -11,37 +11,37 @@
 #include <ma/echo/server/qt/meta_type_register_error.h>
 #include <ma/echo/server/qt/custommetatypes.h>
 
-namespace ma
-{    
-namespace echo
+namespace ma {
+
+namespace echo {
+
+namespace server {
+
+namespace qt {
+
+namespace {
+
+template <typename Type>
+void registerMetaType(const char* typeName)
 {
-namespace server
-{    
-namespace qt 
-{  
-  namespace 
+  int typeId = qRegisterMetaType<Type>(typeName);
+  if (!QMetaType::isRegistered(typeId))
   {
-    template <typename Type>
-    void registerMetaType(const char* typeName)
-    {
-      int typeId = qRegisterMetaType<Type>(typeName);
-      if (!QMetaType::isRegistered(typeId))
-      {
-        boost::throw_exception(meta_type_register_error(typeName));
-      }      
-    }
+    boost::throw_exception(meta_type_register_error(typeName));
+  }      
+}
 
-    void registerBoostSystemErrorCodeMetaType()
-    {      
-      registerMetaType<boost::system::error_code>("boost::system::error_code");
-    }
+void registerBoostSystemErrorCodeMetaType()
+{
+  registerMetaType<boost::system::error_code>("boost::system::error_code");
+}
 
-  } // namespace
+} // anonymous namespace
 
-  void registerCustomMetaTypes()
-  {
-    registerBoostSystemErrorCodeMetaType();
-  }
+void registerCustomMetaTypes()
+{
+  registerBoostSystemErrorCodeMetaType();
+}
   
 } // namespace qt
 } // namespace server

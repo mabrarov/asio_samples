@@ -14,35 +14,35 @@
 
 #include <stdexcept>
 
-namespace ma
-{    
-  namespace echo
+namespace ma {
+
+namespace echo {
+
+namespace server {
+
+namespace qt {
+
+class meta_type_register_error : public std::runtime_error
+{
+public:
+  explicit meta_type_register_error(const char* type_name) 
+    : std::runtime_error("failed to register meta type") 
+    , type_name_(type_name)
   {
-    namespace server
-    {    
-      namespace qt 
-      {
-        class meta_type_register_error : public std::runtime_error
-        {
-        public:
-          explicit meta_type_register_error(const char* type_name) 
-            : std::runtime_error("failed to register meta type") 
-            , type_name_(type_name)
-          {
-          }
+  }
 
-          const char* failed_type_name()
-          {
-            return type_name_;
-          }
+  const char* failed_type_name()
+  {
+    return type_name_;
+  }
 
-        private:
-          const char* type_name_;
-        }; // class meta_type_register_error
+private:
+  const char* type_name_;
+}; // class meta_type_register_error
 
-      } // namespace qt
-    } // namespace server
-  } // namespace echo
+} // namespace qt
+} // namespace server
+} // namespace echo
 } // namespace ma
 
 #endif // MA_ECHO_SERVER_QT_META_TYPE_REGISTER_ERROR_H

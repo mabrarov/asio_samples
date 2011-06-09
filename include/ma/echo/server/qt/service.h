@@ -23,61 +23,61 @@
 #include <ma/echo/server/qt/serviceservantsignal_fwd.h>
 #include <ma/echo/server/qt/service_fwd.h>
 
-namespace ma
-{    
-  namespace echo
+namespace ma {
+
+namespace echo {
+
+namespace server {
+
+namespace qt {
+
+class Service : public QObject
+{
+  Q_OBJECT
+
+public:          
+  explicit Service(QObject* parent = 0);
+  ~Service();
+  void asyncStart(const execution_options&, const session_manager_options&);
+
+  ServiceState::State currentState()
   {
-    namespace server
-    {    
-      namespace qt 
-      {        
-        class Service : public QObject
-        {
-          Q_OBJECT
+    return currentState_;
+  }
 
-        public:          
-          explicit Service(QObject* parent = 0);
-          ~Service();
-          void asyncStart(const execution_options&, const session_manager_options&);
+public slots:
+  void asyncStop();
+  void terminate();
 
-          ServiceState::State currentState()
-          {
-            return currentState_;
-          }
+signals:
+  void exceptionHappened();
+  void startCompleted(const boost::system::error_code&);
+  void stopCompleted(const boost::system::error_code&);
+  void workCompleted(const boost::system::error_code&);
 
-        public slots:
-          void asyncStop();
-          void terminate();
+private slots:
+  void onWorkThreadExceptionHappened();
+  void onSessionManagerStartCompleted(const boost::system::error_code&);
+  void onSessionManagerWaitCompleted(const boost::system::error_code&);
+  void onSessionManagerStopCompleted(const boost::system::error_code&);
 
-        signals:
-          void exceptionHappened();
-          void startCompleted(const boost::system::error_code&);
-          void stopCompleted(const boost::system::error_code&);
-          void workCompleted(const boost::system::error_code&);
+private:
+  class servant;
 
-        private slots:
-          void onWorkThreadExceptionHappened();
-          void onSessionManagerStartCompleted(const boost::system::error_code&);
-          void onSessionManagerWaitCompleted(const boost::system::error_code&);
-          void onSessionManagerStopCompleted(const boost::system::error_code&);
+  Q_DISABLE_COPY(Service) 
 
-        private:
-          class servant;
+  void createServant(const execution_options&, const session_manager_options&);
+  void destroyServant();
 
-          Q_DISABLE_COPY(Service) 
+  ServiceState::State currentState_;
+  ServiceForwardSignal* forwardSignal_;          
+  boost::scoped_ptr<servant> servant_;
+  boost::shared_ptr<ServiceServantSignal> servantSignal_;
+}; // class Service
 
-          void createServant(const execution_options&, const session_manager_options&);
-          void destroyServant();
-
-          ServiceState::State currentState_;
-          ServiceForwardSignal* forwardSignal_;          
-          boost::scoped_ptr<servant> servant_;
-          boost::shared_ptr<ServiceServantSignal> servantSignal_;
-        }; // class Service
-
-      } // namespace qt
-    } // namespace server
-  } // namespace echo
+} // namespace qt
+} // namespace server
+} // namespace echo
 } // namespace ma
 
 #endif // MA_ECHO_SERVER_QT_SERVICE_H

@@ -12,19 +12,19 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
-namespace ma
-{    
-  namespace echo
-  {
-    namespace server
-    {    
-      namespace qt 
-      {
-        class ServiceServantSignal;
+namespace ma {
 
-      } // namespace qt
-    } // namespace server
-  } // namespace echo
+namespace echo {
+
+namespace server {
+
+namespace qt {
+
+class ServiceServantSignal;
+
+} // namespace qt
+} // namespace server
+} // namespace echo
 } // namespace ma
 
 #endif // MA_ECHO_SERVER_QT_SERVICESERVANTSIGNAL_FWD_H

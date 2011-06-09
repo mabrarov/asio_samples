@@ -23,58 +23,60 @@
 #include <ma/echo/server/qt/execution_options.h>
 #include <ui_mainform.h>
 
-namespace ma
-{    
-  namespace echo
-  {
-    namespace server
-    {    
-      namespace qt 
-      {
-        class MainForm : public QWidget
-        {
-          Q_OBJECT
+namespace ma {
 
-        public:
-          MainForm(Service& service, QWidget* parent = 0, Qt::WFlags flags = 0);
-          ~MainForm();
+namespace echo {
 
-        private slots:      
-           void on_startButton_clicked();
-           void on_stopButton_clicked();
-           void on_terminateButton_clicked();
+namespace server {
 
-           void on_service_exceptionHappened();
-           void on_service_startCompleted(const boost::system::error_code&);
-           void on_service_stopCompleted(const boost::system::error_code&);
-           void on_service_workCompleted(const boost::system::error_code&);
+namespace qt {
 
-        private:
-          typedef boost::tuple<execution_options, session_manager_options> ServiceConfig;
-          typedef boost::tuple<int, QWidget*> OptionWidget;
+class MainForm : public QWidget
+{
+  Q_OBJECT
 
-          Q_DISABLE_COPY(MainForm) 
+public:
+  MainForm(Service& service, QWidget* parent = 0, Qt::WFlags flags = 0);
+  ~MainForm();
 
-          execution_options readExecutionOptions() const;
-          session_options readSessionOptions() const;
-          session_manager_options readSessionManagerOptions() const;
-          ServiceConfig readServiceConfig() const;
-          void showError(const QString& message, QWidget* widget = 0);
+private slots:      
+  void on_startButton_clicked();
+  void on_stopButton_clicked();
+  void on_terminateButton_clicked();
 
-          static QString getServiceStateWindowTitle(ServiceState::State serviceState);
-          void updateWidgetsStates(bool ignorePrevServiceState = false);          
+  void on_service_exceptionHappened();
+  void on_service_startCompleted(const boost::system::error_code&);
+  void on_service_stopCompleted(const boost::system::error_code&);
+  void on_service_workCompleted(const boost::system::error_code&);
 
-          void writeLog(const QString&);
+private:
+  typedef boost::tuple<execution_options, session_manager_options> 
+      ServiceConfig;
 
-          Ui::mainForm ui_;
-          std::vector<OptionWidget> optionsWidgets_;
-          ServiceState::State prevServiceState_;
-          Service& service_;          
-        }; // class MainForm
+  typedef boost::tuple<int, QWidget*> OptionWidget;
 
-      } // namespace qt
-    } // namespace server
-  } // namespace echo
+  Q_DISABLE_COPY(MainForm) 
+
+  execution_options readExecutionOptions() const;
+  session_options readSessionOptions() const;
+  session_manager_options readSessionManagerOptions() const;
+  ServiceConfig readServiceConfig() const;
+  void showError(const QString& message, QWidget* widget = 0);
+
+  static QString getServiceStateWindowTitle(ServiceState::State serviceState);
+  void updateWidgetsStates(bool ignorePrevServiceState = false);          
+
+  void writeLog(const QString&);
+
+  Ui::mainForm ui_;
+  std::vector<OptionWidget> optionsWidgets_;
+  ServiceState::State prevServiceState_;
+  Service& service_;          
+}; // class MainForm
+
+} // namespace qt
+} // namespace server
+} // namespace echo
 } // namespace ma
 
 #endif // MA_ECHO_SERVER_QT_MAINFORM_H

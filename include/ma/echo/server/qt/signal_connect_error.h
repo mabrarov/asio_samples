@@ -15,34 +15,34 @@
 #include <stdexcept>
 #include <boost/throw_exception.hpp>
 
-namespace ma
-{    
-  namespace echo
+namespace ma {
+
+namespace echo {
+
+namespace server {
+
+namespace qt {
+
+class signal_connect_error : public std::runtime_error
+{
+public:
+  signal_connect_error() 
+    : std::runtime_error("failed to connect Qt signal")             
   {
-    namespace server
-    {    
-      namespace qt 
-      {
-        class signal_connect_error : public std::runtime_error
-        {
-        public:
-          signal_connect_error() 
-            : std::runtime_error("failed to connect Qt signal")             
-          {
-          }          
-        }; // class signal_connect_error
+  }          
+}; // class signal_connect_error
 
-        inline void checkConnect(bool connectResult)
-        {
-          if (!connectResult) 
-          {
-            boost::throw_exception(signal_connect_error());
-          }
-        }
+inline void checkConnect(bool connectResult)
+{
+  if (!connectResult) 
+  {
+    boost::throw_exception(signal_connect_error());
+  }
+}
 
-      } // namespace qt
-    } // namespace server
-  } // namespace echo
+} // namespace qt
+} // namespace server
+} // namespace echo
 } // namespace ma
 
 #endif // MA_ECHO_SERVER_QT_SIGNAL_CONNECT_ERROR_H

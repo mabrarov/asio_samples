@@ -12,19 +12,19 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
-namespace ma
-{    
-  namespace echo
-  {
-    namespace server
-    {    
-      namespace qt 
-      {
-        class execution_options;        
+namespace ma {
+
+namespace echo {
+
+namespace server {
+
+namespace qt {
+
+class execution_options;        
         
-      } // namespace qt
-    } // namespace server
-  } // namespace echo
+} // namespace qt
+} // namespace server
+} // namespace echo
 } // namespace ma
 
 #endif // MA_ECHO_SERVER_SESSION_MANAGER_OPTIONS_HPP
