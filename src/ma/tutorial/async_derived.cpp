@@ -94,7 +94,12 @@ boost::optional<boost::system::error_code> async_derived::do_something()
   counter_ = 10000;
   std::cout << start_message_fmt_ % name_ % counter_;
 
-  timer_.expires_from_now(boost::posix_time::seconds(3));
+  boost::system::error_code timer_error;
+  timer_.expires_from_now(boost::posix_time::seconds(3), timer_error);
+  if (timer_error)
+  {
+    return timer_error;
+  }
 
 #if defined(MA_HAS_RVALUE_REFS) \
     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
@@ -134,7 +139,14 @@ void async_derived::handle_timer(const boost::system::error_code& error)
     --counter_;
     std::cout << cycle_message_fmt_ % name_ % counter_;
 
-    timer_.expires_from_now(boost::posix_time::milliseconds(1));
+    boost::system::error_code timer_error;
+    timer_.expires_from_now(boost::posix_time::milliseconds(1), timer_error);
+    if (timer_error)
+    {
+      std::cout << error_end_message_fmt_ % name_ % counter_;
+      complete_do_something(timer_error);
+      return;
+    }    
 
 #if defined(MA_HAS_RVALUE_REFS) \
     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)

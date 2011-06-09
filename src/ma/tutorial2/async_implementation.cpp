@@ -19,298 +19,361 @@
 #include <utility>
 #endif // defined(MA_HAS_RVALUE_REFS)
 
-namespace ma
+namespace ma {
+
+namespace tutorial2 {
+
+namespace {
+
+typedef boost::shared_ptr<async_implementation> async_implementation_ptr;
+
+class forward_binder 
 {
-  namespace tutorial2
-  { 
-    namespace 
-    {
-      typedef boost::shared_ptr<async_implementation> async_implementation_ptr;
+private:
+  typedef forward_binder this_type;
+  this_type& operator=(const this_type&);
 
-      class forward_binder 
-      {
-      private:
-        typedef forward_binder this_type;
-        this_type& operator=(const this_type&);
-
-      public:
-        typedef void result_type;
-        typedef void (async_implementation::*function_type)(const do_something_handler_ptr&);        
+public:
+  typedef void result_type;
+  typedef void (async_implementation::*function_type)(
+      const do_something_handler_ptr&);
 
 #if defined(MA_HAS_RVALUE_REFS)
-        template <typename AsyncImplementationPtr, typename DoSomethingHandlerPtr>
-        forward_binder(AsyncImplementationPtr&& async_implementation,
-          DoSomethingHandlerPtr&& do_something_handler, function_type function)
-          : async_implementation_(std::forward<AsyncImplementationPtr>(async_implementation))
-          , do_something_handler_(std::forward<DoSomethingHandlerPtr>(do_something_handler))
-          , function_(function)
-        {
-        }
 
-        forward_binder(this_type&& other)
-          : async_implementation_(std::move(other.async_implementation_))
-          , do_something_handler_(std::move(other.do_something_handler_))
-          , function_(other.function_)          
-        {
-        }
-#else       
-        forward_binder(const async_implementation_ptr& async_implementation,
-          const do_something_handler_ptr& do_something_handler, function_type function)
-          : async_implementation_(async_implementation)
-          , do_something_handler_(do_something_handler)
-          , function_(function)
-        {
-        }
+  template <typename AsyncImplementationPtr, typename DoSomethingHandlerPtr>
+  forward_binder(AsyncImplementationPtr&& async_implementation, 
+      DoSomethingHandlerPtr&& do_something_handler, function_type function)
+    : async_implementation_(std::forward<AsyncImplementationPtr>(
+          async_implementation))
+    , do_something_handler_(std::forward<DoSomethingHandlerPtr>(
+          do_something_handler))
+    , function_(function)
+  {
+  }
+
+  forward_binder(this_type&& other)
+    : async_implementation_(std::move(other.async_implementation_))
+    , do_something_handler_(std::move(other.do_something_handler_))
+    , function_(other.function_)
+  {
+  }
+
+#else // defined(MA_HAS_RVALUE_REFS)
+
+  forward_binder(const async_implementation_ptr& async_implementation, 
+      const do_something_handler_ptr& do_something_handler, 
+      function_type function)
+    : async_implementation_(async_implementation)
+    , do_something_handler_(do_something_handler)
+    , function_(function)
+  {
+  }
+
 #endif // defined(MA_HAS_RVALUE_REFS)
 
-        ~forward_binder()
-        {
-        }
+  ~forward_binder()
+  {
+  }
 
-        void operator()()
-        {
-          ((*async_implementation_).*function_)(do_something_handler_);
-        }
+  void operator()()
+  {
+    ((*async_implementation_).*function_)(do_something_handler_);
+  }
 
-        friend void* asio_handler_allocate(std::size_t size, this_type* context)
-        {
-          return context->do_something_handler_->allocate(size);
-        }
+  friend void* asio_handler_allocate(std::size_t size, this_type* context)
+  {
+    return context->do_something_handler_->allocate(size);
+  }
 
-        friend void asio_handler_deallocate(void* pointer, std::size_t /*size*/, this_type* context)
-        {
-          context->do_something_handler_->deallocate(pointer);
-        }
+  friend void asio_handler_deallocate(void* pointer, std::size_t /*size*/, 
+      this_type* context)
+  {
+    context->do_something_handler_->deallocate(pointer);
+  }
 
-      private:
-        async_implementation_ptr async_implementation_;
-        do_something_handler_ptr do_something_handler_;
-        function_type function_;
-      }; // class forward_binder
+private:
+  async_implementation_ptr async_implementation_;
+  do_something_handler_ptr do_something_handler_;
+  function_type function_;
+}; // class forward_binder
 
-      class do_something_handler_adapter
-      {        
-      private:
-        typedef do_something_handler_adapter this_type;
-        this_type& operator=(const this_type&);
+class do_something_handler_adapter
+{        
+private:
+  typedef do_something_handler_adapter this_type;
+  this_type& operator=(const this_type&);
 
-      public:
-        typedef void result_type;
+public:
+  typedef void result_type;
 
-        explicit do_something_handler_adapter(const do_something_handler_ptr& do_something_handler)
-          : do_something_handler_(do_something_handler)
-        {
-        }
-
-#if defined(MA_HAS_RVALUE_REFS)
-        do_something_handler_adapter(this_type&& other)
-          : do_something_handler_(std::move(other.do_something_handler_))
-        {
-        }
-#endif
-
-        ~do_something_handler_adapter()
-        {
-        }
-
-        void operator()(const boost::system::error_code& error)
-        {
-          do_something_handler_->handle_do_something_completion(error);
-        }
-
-        friend void* asio_handler_allocate(std::size_t size, this_type* context)
-        {
-          return context->do_something_handler_->allocate(size);
-        }
-
-        friend void asio_handler_deallocate(void* pointer, std::size_t /*size*/, this_type* context)
-        {
-          context->do_something_handler_->deallocate(pointer);
-        }
-
-      private:
-        do_something_handler_ptr do_something_handler_;
-      }; // class do_something_handler_adapter
-
-      class do_something_handler_binder
-      {        
-      private:
-        typedef do_something_handler_binder this_type;
-        this_type& operator=(const this_type&);
-
-      public:
-        typedef void result_type;
-
-        do_something_handler_binder(const do_something_handler_ptr& do_something_handler,
-          const boost::system::error_code& error)
-          : do_something_handler_(do_something_handler)
-          , error_(error)
-        {
-        }
+  explicit do_something_handler_adapter(
+      const do_something_handler_ptr& do_something_handler)
+    : do_something_handler_(do_something_handler)
+  {
+  }
 
 #if defined(MA_HAS_RVALUE_REFS)
-        do_something_handler_binder(this_type&& other)
-          : do_something_handler_(std::move(other.do_something_handler_))
-          , error_(std::move(other.error_))
-        {
-        }
-#endif
 
-        ~do_something_handler_binder()
-        {
-        }
+  do_something_handler_adapter(this_type&& other)
+    : do_something_handler_(std::move(other.do_something_handler_))
+  {
+  }
 
-        void operator()()
-        {
-          do_something_handler_->handle_do_something_completion(error_);
-        }
+#endif // defined(MA_HAS_RVALUE_REFS)
 
-        friend void* asio_handler_allocate(std::size_t size, this_type* context)
-        {
-          return context->do_something_handler_->allocate(size);
-        }
+  ~do_something_handler_adapter()
+  {
+  }
 
-        friend void asio_handler_deallocate(void* pointer, std::size_t /*size*/, this_type* context)
-        {
-          context->do_something_handler_->deallocate(pointer);
-        }
+  void operator()(const boost::system::error_code& error)
+  {
+    do_something_handler_->handle_do_something_completion(error);
+  }
 
-      private:
-        do_something_handler_ptr do_something_handler_;
-        boost::system::error_code error_;
-      }; // class do_something_handler_binder
+  friend void* asio_handler_allocate(std::size_t size, this_type* context)
+  {
+    return context->do_something_handler_->allocate(size);
+  }
 
-#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)      
-      class timer_handler_binder
-      {
-      private:
-        typedef timer_handler_binder this_type;
-        this_type& operator=(const this_type&);
+  friend void asio_handler_deallocate(void* pointer, std::size_t /*size*/, 
+      this_type* context)
+  {
+    context->do_something_handler_->deallocate(pointer);
+  }
 
-      public:
-        typedef void result_type;
-        typedef void (async_implementation::*function_type)(const boost::system::error_code&);
+private:
+  do_something_handler_ptr do_something_handler_;
+}; // class do_something_handler_adapter
 
-        template <typename AsyncImplementationPtr>
-        timer_handler_binder(function_type function, AsyncImplementationPtr&& async_implementation)
-          : function_(function)
-          , async_implementation_(std::forward<AsyncImplementationPtr>(async_implementation))
-        {
-        } 
+class do_something_handler_binder
+{        
+private:
+  typedef do_something_handler_binder this_type;
+  this_type& operator=(const this_type&);
 
-        timer_handler_binder(this_type&& other)
-          : function_(other.function_)
-          , async_implementation_(std::move(other.async_implementation_))
-        {
-        }
+public:
+  typedef void result_type;
 
-        void operator()(const boost::system::error_code& error)
-        {
-          ((*async_implementation_).*function_)(error);
-        }
+  do_something_handler_binder(const do_something_handler_ptr& do_something_handler,
+    const boost::system::error_code& error)
+    : do_something_handler_(do_something_handler)
+    , error_(error)
+  {
+  }
 
-      private:
-        function_type function_;
-        async_implementation_ptr async_implementation_;
-      }; // class timer_handler_binder
-#endif // defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#if defined(MA_HAS_RVALUE_REFS)
 
-    } // anonymous namespace
+  do_something_handler_binder(this_type&& other)
+    : do_something_handler_(std::move(other.do_something_handler_))
+    , error_(std::move(other.error_))
+  {
+  }
 
-    async_implementation::async_implementation(boost::asio::io_service& io_service, const std::string& name)
-      : strand_(io_service)
-      , do_something_handler_(io_service)
-      , timer_(io_service)
-      , name_(name)
-      , start_message_fmt_("%s started. counter = %07d\n")
-      , cycle_message_fmt_("%s is working. counter = %07d\n")
-      , error_end_message_fmt_("%s stopped work with error. counter = %07d\n")
-      , success_end_message_fmt_("%s successfully complete work. counter = %07d\n")
-    {
-    }
+#endif // defined(MA_HAS_RVALUE_REFS)
 
-    async_implementation::~async_implementation()
-    {
-    }
+  ~do_something_handler_binder()
+  {
+  }
 
-    void async_implementation::async_do_something(const do_something_handler_ptr& handler)
-    {
-      strand_.post(forward_binder(shared_from_this(), handler, &this_type::begin_do_something));      
-    }
+  void operator()()
+  {
+    do_something_handler_->handle_do_something_completion(error_);
+  }
 
-    void async_implementation::complete_do_something(const boost::system::error_code& error)
-    {
-      do_something_handler_.post(error);
-    }
+  friend void* asio_handler_allocate(std::size_t size, this_type* context)
+  {
+    return context->do_something_handler_->allocate(size);
+  }
 
-    bool async_implementation::has_do_something_handler() const
-    {
-      return do_something_handler_.has_target();
-    }
+  friend void asio_handler_deallocate(void* pointer, std::size_t /*size*/, 
+      this_type* context)
+  {
+    context->do_something_handler_->deallocate(pointer);
+  }
 
-    void async_implementation::begin_do_something(const do_something_handler_ptr& handler)
-    {
-      if (boost::optional<boost::system::error_code> result = do_something())
-      {
-        strand_.get_io_service().post(do_something_handler_binder(handler, *result));
-      }
-      else
-      {
-        do_something_handler_.put(do_something_handler_adapter(handler));
-      }
-    }
+private:
+  do_something_handler_ptr  do_something_handler_;
+  boost::system::error_code error_;
+}; // class do_something_handler_binder
 
-    boost::optional<boost::system::error_code> async_implementation::do_something()
-    {
-      if (has_do_something_handler())
-      {
-        return boost::system::error_code(boost::asio::error::operation_not_supported);
-      }      
-      counter_ = 10000;
-      std::cout << start_message_fmt_ % name_ % counter_;
+#if defined(MA_HAS_RVALUE_REFS) \
+    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
-      timer_.expires_from_now(boost::posix_time::seconds(3));
-#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
-      timer_.async_wait(MA_STRAND_WRAP(strand_, ma::make_custom_alloc_handler(timer_allocator_,
-        timer_handler_binder(&this_type::handle_timer, shared_from_this()))));
+class timer_handler_binder
+{
+private:
+  typedef timer_handler_binder this_type;
+  this_type& operator=(const this_type&);
+
+public:
+  typedef void result_type;
+  typedef void (async_implementation::*function_type)(
+      const boost::system::error_code&);
+
+  template <typename AsyncImplementationPtr>
+  timer_handler_binder(function_type function, 
+      AsyncImplementationPtr&& async_implementation)
+    : function_(function)
+    , async_implementation_(std::forward<AsyncImplementationPtr>(
+          async_implementation))
+  {
+  } 
+
+  timer_handler_binder(this_type&& other)
+    : function_(other.function_)
+    , async_implementation_(std::move(other.async_implementation_))
+  {
+  }
+
+  void operator()(const boost::system::error_code& error)
+  {
+    ((*async_implementation_).*function_)(error);
+  }
+
+private:
+  function_type            function_;
+  async_implementation_ptr async_implementation_;
+}; // class timer_handler_binder
+
+#endif // defined(MA_HAS_RVALUE_REFS) 
+       //     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+
+} // anonymous namespace
+
+async_implementation::async_implementation(boost::asio::io_service& io_service,
+    const std::string& name)
+  : strand_(io_service)
+  , do_something_handler_(io_service)
+  , timer_(io_service)
+  , name_(name)
+  , start_message_fmt_("%s started. counter = %07d\n")
+  , cycle_message_fmt_("%s is working. counter = %07d\n")
+  , error_end_message_fmt_("%s stopped work with error. counter = %07d\n")
+  , success_end_message_fmt_("%s successfully complete work. counter = %07d\n")
+{
+}
+
+async_implementation::~async_implementation()
+{
+}
+
+void async_implementation::async_do_something(
+    const do_something_handler_ptr& handler)
+{
+  strand_.post(forward_binder(shared_from_this(), handler, 
+      &this_type::begin_do_something));
+}
+
+void async_implementation::complete_do_something(
+    const boost::system::error_code& error)
+{
+  do_something_handler_.post(error);
+}
+
+bool async_implementation::has_do_something_handler() const
+{
+  return do_something_handler_.has_target();
+}
+
+void async_implementation::begin_do_something(
+    const do_something_handler_ptr& handler)
+{
+  if (boost::optional<boost::system::error_code> result = do_something())
+  {
+    strand_.get_io_service().post(
+        do_something_handler_binder(handler, *result));
+  }
+  else
+  {
+    do_something_handler_.put(do_something_handler_adapter(handler));
+  }
+}
+
+boost::optional<boost::system::error_code> async_implementation::do_something()
+{
+  if (has_do_something_handler())
+  {
+    return boost::system::error_code(
+        boost::asio::error::operation_not_supported);
+  }
+
+  counter_ = 10000;
+  std::cout << start_message_fmt_ % name_ % counter_;
+
+  boost::system::error_code timer_error;
+  timer_.expires_from_now(boost::posix_time::seconds(3), timer_error);
+  if (timer_error)
+  {
+    return timer_error;
+  }
+
+#if defined(MA_HAS_RVALUE_REFS) \
+    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+
+  timer_.async_wait(MA_STRAND_WRAP(strand_, ma::make_custom_alloc_handler(
+      timer_allocator_, timer_handler_binder(&this_type::handle_timer, 
+          shared_from_this()))));
+
 #else
-      timer_.async_wait(MA_STRAND_WRAP(strand_, ma::make_custom_alloc_handler(timer_allocator_,
-        boost::bind(&this_type::handle_timer, shared_from_this(), boost::asio::placeholders::error))));
+
+  timer_.async_wait(MA_STRAND_WRAP(strand_, ma::make_custom_alloc_handler(
+      timer_allocator_, boost::bind(&this_type::handle_timer, 
+          shared_from_this(), boost::asio::placeholders::error))));
+
 #endif
 
-      return boost::optional<boost::system::error_code>();    
-    }
+  return boost::optional<boost::system::error_code>();    
+}
 
-    void async_implementation::handle_timer(const boost::system::error_code& error)
+void async_implementation::handle_timer(const boost::system::error_code& error)
+{
+  if (!has_do_something_handler())
+  {
+    return;
+  }
+
+  if (error)
+  {
+    std::cout << error_end_message_fmt_ % name_ % counter_;
+    complete_do_something(error);
+    return;
+  }
+
+  if (counter_)
+  {        
+    --counter_;
+    std::cout << cycle_message_fmt_ % name_ % counter_;
+
+    boost::system::error_code timer_error;
+    timer_.expires_from_now(boost::posix_time::seconds(1), timer_error);
+    if (timer_error)
     {
-      if (!has_do_something_handler())
-      {
-        return;
-      }      
-      if (error)
-      {
-        std::cout << error_end_message_fmt_ % name_ % counter_;
-        complete_do_something(error);
-        return;
-      }
-      if (counter_)
-      {        
-        --counter_;
-        std::cout << cycle_message_fmt_ % name_ % counter_;
+      std::cout << error_end_message_fmt_ % name_ % counter_;
+      complete_do_something(timer_error);
+      return;
+    }    
 
-        timer_.expires_from_now(boost::posix_time::milliseconds(1));
-#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
-        timer_.async_wait(MA_STRAND_WRAP(strand_, ma::make_custom_alloc_handler(timer_allocator_,
-          timer_handler_binder(&this_type::handle_timer, shared_from_this()))));
+#if defined(MA_HAS_RVALUE_REFS) \
+    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+
+    timer_.async_wait(MA_STRAND_WRAP(strand_, ma::make_custom_alloc_handler(
+        timer_allocator_, timer_handler_binder(&this_type::handle_timer, 
+            shared_from_this()))));
+
 #else
-        timer_.async_wait(MA_STRAND_WRAP(strand_, ma::make_custom_alloc_handler(timer_allocator_,
-          boost::bind(&this_type::handle_timer, shared_from_this(), boost::asio::placeholders::error))));
-#endif
-        return;
-      }
-      std::cout << success_end_message_fmt_ % name_ % counter_;
-      complete_do_something(boost::system::error_code());
-    }
 
-  } // namespace tutorial2
+    timer_.async_wait(MA_STRAND_WRAP(strand_, ma::make_custom_alloc_handler(
+        timer_allocator_, boost::bind(&this_type::handle_timer, 
+            shared_from_this(), boost::asio::placeholders::error))));
+
+#endif
+
+    return;
+  }
+
+  std::cout << success_end_message_fmt_ % name_ % counter_;
+  complete_do_something(boost::system::error_code());
+}
+
+} // namespace tutorial2
 } // namespace ma

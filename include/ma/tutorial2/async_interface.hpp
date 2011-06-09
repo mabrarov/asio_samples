@@ -14,38 +14,39 @@
 
 #include <ma/tutorial2/do_something_handler_fwd.hpp>
 
-namespace ma
+namespace ma {
+
+namespace tutorial2 {
+
+class async_interface
 {
-  namespace tutorial2
-  {    
-    class async_interface
-    {
-    private:
-      typedef async_interface this_type;
+private:
+  typedef async_interface this_type;
 
-    public:
-      virtual void async_do_something(const do_something_handler_ptr&) = 0;
+public:
+  virtual void async_do_something(const do_something_handler_ptr&) = 0;
 
-    protected:
-      async_interface()
-      {
-      }
+protected:
+  async_interface()
+  {
+  }
 
-      async_interface(const this_type&)
-      {
-      }
+  async_interface(const this_type&)
+  {
+  }
 
-      this_type& operator=(const this_type&)
-      {
-        return *this;
-      }
+  this_type& operator=(const this_type&)
+  {
+    return *this;
+  }
 
-      ~async_interface()
-      {
-      }
-    }; // class async_interface 
+  ~async_interface()
+  {
+  }
 
-  } // namespace tutorial
+}; // class async_interface 
+
+} // namespace tutorial
 } // namespace ma
 
 #endif // MA_TUTORIAL2_ASYNC_INTERFACE_HPP

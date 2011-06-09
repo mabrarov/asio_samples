@@ -22,47 +22,48 @@
 #include <ma/handler_allocator.hpp>
 #include <ma/tutorial2/async_interface.hpp>
 
-namespace ma
+namespace ma {
+
+namespace tutorial2 {    
+
+class async_implementation 
+  : private boost::noncopyable
+  , public async_interface
+  , public boost::enable_shared_from_this<async_implementation>
 {
-  namespace tutorial2
-  {    
-    class async_implementation 
-      : private boost::noncopyable
-      , public async_interface
-      , public boost::enable_shared_from_this<async_implementation>
-    {
-    private:
-      typedef async_implementation this_type;
+private:
+  typedef async_implementation this_type;
 
-    public:
-      async_implementation(boost::asio::io_service& io_service, const std::string& name);
-      ~async_implementation();
+public:
+  async_implementation(boost::asio::io_service& io_service, 
+      const std::string& name);
+  ~async_implementation();
 
-      void async_do_something(const do_something_handler_ptr&);
+  virtual void async_do_something(const do_something_handler_ptr&);
 
-    private:
-      void complete_do_something(const boost::system::error_code&);      
-      bool has_do_something_handler() const;
-      void begin_do_something(const do_something_handler_ptr&);
-      boost::optional<boost::system::error_code> do_something();      
-      void handle_timer(const boost::system::error_code&);
+private:
+  void complete_do_something(const boost::system::error_code&);
+  bool has_do_something_handler() const;
+  void begin_do_something(const do_something_handler_ptr&);
+  boost::optional<boost::system::error_code> do_something();
+  void handle_timer(const boost::system::error_code&);
 
-      boost::asio::io_service::strand strand_;
-      ma::handler_storage<boost::system::error_code> do_something_handler_;
+  boost::asio::io_service::strand strand_;
+  ma::handler_storage<boost::system::error_code> do_something_handler_;
 
-      std::size_t counter_;
-      boost::asio::deadline_timer timer_;
+  std::size_t counter_;
+  boost::asio::deadline_timer timer_;
 
-      std::string name_;
-      boost::format start_message_fmt_;
-      boost::format cycle_message_fmt_;
-      boost::format error_end_message_fmt_;
-      boost::format success_end_message_fmt_;
+  std::string name_;
+  boost::format start_message_fmt_;
+  boost::format cycle_message_fmt_;
+  boost::format error_end_message_fmt_;
+  boost::format success_end_message_fmt_;
 
-      ma::in_place_handler_allocator<128> timer_allocator_;
-    }; // class async_implementation
+  ma::in_place_handler_allocator<128> timer_allocator_;
+}; // class async_implementation
 
-  } // namespace tutorial
+} // namespace tutorial
 } // namespace ma
 
 #endif // MA_TUTORIAL2_ASYNC_IMPLEMENTATION_HPP

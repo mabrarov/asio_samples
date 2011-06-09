@@ -14,14 +14,14 @@
 
 #include <boost/shared_ptr.hpp>
 
-namespace ma
-{
-  namespace tutorial2
-  {    
-    class do_something_handler;
-    typedef boost::shared_ptr<do_something_handler> do_something_handler_ptr;
+namespace ma {
 
-  } // namespace tutorial2
+namespace tutorial2 {
+
+class do_something_handler;
+typedef boost::shared_ptr<do_something_handler> do_something_handler_ptr;
+
+} // namespace tutorial2
 } // namespace ma
 
 #endif // MA_TUTORIAL2_DO_SOMETHING_HANDLER_FWD_HPP

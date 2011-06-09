@@ -16,48 +16,50 @@
 #include <boost/system/error_code.hpp>
 #include <ma/tutorial2/do_something_handler_fwd.hpp>
 
-namespace ma
+namespace ma {
+
+namespace tutorial2 {
+
+class do_something_handler
 {
-  namespace tutorial2
-  {    
-    class do_something_handler
-    {
-    private:
-      typedef do_something_handler this_type;
+private:
+  typedef do_something_handler this_type;
 
-    public:
-      virtual void handle_do_something_completion(const boost::system::error_code&) = 0;
+public:
+  virtual void handle_do_something_completion(
+      const boost::system::error_code&) = 0;
 
-      virtual void* allocate(std::size_t size)
-      {
-        return ::operator new(size);
-      }
+  virtual void* allocate(std::size_t size)
+  {
+    return ::operator new(size);
+  }
 
-      virtual void deallocate(void* pointer)
-      {
-        ::operator delete(pointer);
-      }
+  virtual void deallocate(void* pointer)
+  {
+    ::operator delete(pointer);
+  }
 
-    protected:
-      do_something_handler()
-      {
-      }
+protected:
+  do_something_handler()
+  {
+  }
 
-      do_something_handler(const this_type&)
-      {
-      }
+  do_something_handler(const this_type&)
+  {
+  }
 
-      this_type& operator=(const this_type&)
-      {
-        return *this;
-      }
+  this_type& operator=(const this_type&)
+  {
+    return *this;
+  }
 
-      ~do_something_handler()
-      {
-      }      
-    }; // class do_something_handler
+  ~do_something_handler()
+  {
+  }
 
-  } // namespace tutorial2
+}; // class do_something_handler
+
+} // namespace tutorial2
 } // namespace ma
 
 #endif // MA_TUTORIAL2_DO_SOMETHING_HANDLER_HPP
