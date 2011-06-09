@@ -346,7 +346,7 @@ void session::continue_work()
     if (!buffers.empty())
     {
       // We have enough resources to start read
-      begin_read(buffers);
+      read_socket(buffers);
       socket_read_in_progress_ = true;
     }  
   }
@@ -358,7 +358,7 @@ void session::continue_work()
     if (!buffers.empty())
     {
       // We have enough resources to start write
-      begin_write(buffers);
+      write_socket(buffers);
       socket_write_in_progress_ = true;
     }   
   }
@@ -367,7 +367,7 @@ void session::continue_work()
   if (inactivity_timeout_ 
       && (socket_read_in_progress_ || socket_write_in_progress_))
   {
-    boost::system::error_code error = begin_timer();
+    boost::system::error_code error = start_timer();
     if (error)
     {
       set_wait_error(error);
@@ -392,7 +392,7 @@ void session::continue_stop()
   }
 }
 
-void session::begin_read(const cyclic_buffer::mutable_buffers_type& buffers)
+void session::read_socket(const cyclic_buffer::mutable_buffers_type& buffers)
 {
 #if defined(MA_HAS_RVALUE_REFS) \
     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
@@ -412,7 +412,7 @@ void session::begin_read(const cyclic_buffer::mutable_buffers_type& buffers)
 #endif
 }
 
-void session::begin_write(const cyclic_buffer::const_buffers_type& buffers)
+void session::write_socket(const cyclic_buffer::const_buffers_type& buffers)
 {
 #if defined(MA_HAS_RVALUE_REFS) \
     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
@@ -432,7 +432,7 @@ void session::begin_write(const cyclic_buffer::const_buffers_type& buffers)
 #endif
 }
 
-boost::system::error_code session::begin_timer()
+boost::system::error_code session::start_timer()
 {
   boost::system::error_code error;
   timer_.expires_from_now(*inactivity_timeout_, error);

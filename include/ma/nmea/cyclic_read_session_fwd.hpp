@@ -14,14 +14,14 @@
 
 #include <boost/shared_ptr.hpp>
 
-namespace ma
-{
-  namespace nmea
-  {         
-    class cyclic_read_session;
-    typedef boost::shared_ptr<cyclic_read_session> cyclic_read_session_ptr;
+namespace ma {
 
-  } // namespace nmea
+namespace nmea {
+
+class cyclic_read_session;
+typedef boost::shared_ptr<cyclic_read_session> cyclic_read_session_ptr;
+
+} // namespace nmea
 } // namespace ma
 
 #endif // MA_NMEA_CYCLIC_READ_SESSION_FWD_HPP

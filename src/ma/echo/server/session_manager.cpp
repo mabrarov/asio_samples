@@ -411,18 +411,16 @@ void session_manager::accept_session(const session_data_ptr& the_session_data)
 void session_manager::continue_accept()
 {
   // Get new, ready to start session
-  boost::system::error_code error;
-  session_data_ptr the_session_data;
-  boost::tie(error, the_session_data) = create_session();
-  if (error)
+  create_session_result create_result = create_session();
+  if (create_result.get<0>())
   {
     // Handle new session creation error
-    set_wait_error(error);
+    set_wait_error(create_result.get<0>());
     // Can't do anything more
     return;
   }
   // Start session acceptation
-  accept_session(the_session_data);
+  accept_session(create_result.get<1>());
 }
 
 void session_manager::handle_session_accept(

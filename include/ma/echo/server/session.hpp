@@ -253,9 +253,9 @@ private:
   void continue_work();
   void continue_stop();
 
-  void begin_read(const cyclic_buffer::mutable_buffers_type&);
-  void begin_write(const cyclic_buffer::const_buffers_type&);
-  boost::system::error_code begin_timer();
+  void read_socket(const cyclic_buffer::mutable_buffers_type&);
+  void write_socket(const cyclic_buffer::const_buffers_type&);
+  boost::system::error_code start_timer();
   boost::system::error_code cancel_timer();
   boost::system::error_code shutdown_socket_send();
   boost::system::error_code close_socket_for_stop();        

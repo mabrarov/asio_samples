@@ -38,17 +38,17 @@ typedef std::vector<frame_ptr>               frame_buffer_type;
 typedef boost::shared_ptr<frame_buffer_type> frame_buffer_ptr;
 
 void handle_start(const session_ptr& the_session, 
-  handler_allocator_type& the_allocator, 
-  const frame_buffer_ptr& frame_buffer, 
-  const boost::system::error_code& error);
+    handler_allocator_type& the_allocator, 
+    const frame_buffer_ptr& frame_buffer, 
+    const boost::system::error_code& error);
 
 void handle_stop(const boost::system::error_code& error);
 
 void handle_read(const session_ptr& the_session, 
-  handler_allocator_type& the_allocator, 
-  const frame_buffer_ptr& frame_buffer, 
-  const boost::system::error_code& error, 
-  std::size_t frames_transferred);
+    handler_allocator_type& the_allocator, 
+    const frame_buffer_ptr& frame_buffer, 
+    const boost::system::error_code& error, 
+    std::size_t frames_transferred);
 
 void handle_console_close(const session_ptr&);
 
@@ -81,9 +81,12 @@ int main(int argc, char* argv[])
     std::size_t concurrent_count = 2 > cpu_count ? 2 : cpu_count;
     std::size_t thread_count = 2;
 
-    std::cout << "Number of found CPUs             : " << cpu_count        << std::endl
-              << "Number of concurrent work threads: " << concurrent_count << std::endl
-              << "Total number of work threads     : " << thread_count     << std::endl;
+    std::cout << "Number of found CPUs             : " 
+              << cpu_count << std::endl
+              << "Number of concurrent work threads: " 
+              << concurrent_count << std::endl
+              << "Total number of work threads     : " 
+              << thread_count << std::endl;
 
 #if defined(WIN32)
     std::wstring wide_device_name(argv[1]);
@@ -93,8 +96,10 @@ int main(int argc, char* argv[])
     std::string device_name(argv[1]);
 #endif
 
-    std::size_t read_buffer_size = std::max<std::size_t>(1024, session::min_read_buffer_size);
-    std::size_t message_queue_size = std::max<std::size_t>(64, session::min_message_queue_size);
+    std::size_t read_buffer_size = 
+        std::max<std::size_t>(1024, session::min_read_buffer_size);
+    std::size_t message_queue_size = 
+        std::max<std::size_t>(64, session::min_message_queue_size);
 
     if (argc > 2)
     {
@@ -108,36 +113,48 @@ int main(int argc, char* argv[])
       }
       catch (const boost::bad_lexical_cast& e)
       {
-        std::cerr << L"Invalid parameter value/format: " << e.what() << std::endl;
+        std::cerr << L"Invalid parameter value/format: " 
+            << e.what() << std::endl;
         print_usage();
         return EXIT_FAILURE;
       }
       catch (const std::exception& e)
       {    
-        std::cerr << "Unexpected error during parameters parsing: " << e.what() << std::endl;
+        std::cerr << "Unexpected error during parameters parsing: " 
+            << e.what() << std::endl;
         print_usage();
         return EXIT_FAILURE;
       } 
     } // if (argc > 2)
 
 #if defined(WIN32)
-    std::wcout << L"NMEA 0183 device serial port: " << wide_device_name   << std::endl
-               << L"Read buffer size (bytes)    : " << read_buffer_size   << std::endl
-               << L"Read buffer size (messages) : " << message_queue_size << std::endl;  
+    std::wcout << L"NMEA 0183 device serial port: " 
+               << wide_device_name << std::endl
+               << L"Read buffer size (bytes)    : " 
+               << read_buffer_size << std::endl
+               << L"Read buffer size (messages) : " 
+               << message_queue_size << std::endl;
 #else
-    std::cout << "NMEA 0183 device serial port: " << device_name        << std::endl
-              << "Read buffer size (bytes)    : " << read_buffer_size   << std::endl
-              << "Read buffer size (messages) : " << message_queue_size << std::endl;
+    std::cout << "NMEA 0183 device serial port: " 
+              << device_name << std::endl
+              << "Read buffer size (bytes)    : " 
+              << read_buffer_size << std::endl
+              << "Read buffer size (messages) : " 
+              << message_queue_size << std::endl;
 #endif // defined(WIN32)
-
     
     handler_allocator_type the_allocator;
-    frame_buffer_ptr the_frame_buffer(boost::make_shared<frame_buffer_type>(message_queue_size));
+
+    frame_buffer_ptr the_frame_buffer(
+        boost::make_shared<frame_buffer_type>(message_queue_size));
             
-    // An io_service for the thread pool (for the executors... Java Executors API? Apache MINA :)
-    boost::asio::io_service session_io_service(concurrent_count);   
-    session_ptr the_session(boost::make_shared<session>(boost::ref(session_io_service), 
-      read_buffer_size, message_queue_size, "$", "\x0a"));
+    // An io_service for the thread pool 
+    // (for the executors... Java Executors API? Apache MINA :)
+    boost::asio::io_service session_io_service(concurrent_count);
+
+    session_ptr the_session(boost::make_shared<session>(
+        boost::ref(session_io_service), read_buffer_size, 
+        message_queue_size, "$", "\x0a"));
 
     // Prepare the lower layer - open the serial port  
     boost::system::error_code error;
@@ -145,27 +162,34 @@ int main(int argc, char* argv[])
     if (error)
     {
 #if defined(WIN32)
-      std::wstring error_message = ma::codecvt_cast::in(error.message(), wcodecvt);
-      std::wcerr << L"Failed to open serial port: " << error_message << std::endl;
+      std::wstring error_message = 
+          ma::codecvt_cast::in(error.message(), wcodecvt);
+      std::wcerr << L"Failed to open serial port: " 
+          << error_message << std::endl;
 #else      
-      std::cerr << "Failed to open serial port: " << error.message() << std::endl;
+      std::cerr << "Failed to open serial port: " 
+          << error.message() << std::endl;
 #endif // defined(WIN32)      
       return EXIT_FAILURE;
     }
 
     // Start session (not actually, because there are no work threads yet)
     the_session->async_start(ma::make_custom_alloc_handler(the_allocator, 
-      boost::bind(&handle_start, the_session, boost::ref(the_allocator), the_frame_buffer, _1)));    
+        boost::bind(&handle_start, the_session, boost::ref(the_allocator), 
+            the_frame_buffer, _1)));    
 
     // Setup console controller
-    ma::console_controller console_controller(boost::bind(&handle_console_close, the_session));        
+    ma::console_controller console_controller(
+        boost::bind(&handle_console_close, the_session));
+
     std::cout << "Press Ctrl+C (Ctrl+Break) to exit...\n";
 
     // Create work threads
     boost::thread_group work_threads;
     for (std::size_t i = 0; i != thread_count; ++i)
     {
-      work_threads.create_thread(boost::bind(&boost::asio::io_service::run, &session_io_service));
+      work_threads.create_thread(
+          boost::bind(&boost::asio::io_service::run, &session_io_service));
     }
     work_threads.join_all();
 
@@ -186,67 +210,79 @@ void handle_console_close(const session_ptr& session)
 }
 
 void handle_start(const session_ptr& the_session, 
-  handler_allocator_type& the_allocator, 
-  const frame_buffer_ptr& frame_buffer, 
-  const boost::system::error_code& error)                  
+    handler_allocator_type& the_allocator, 
+    const frame_buffer_ptr& frame_buffer, 
+    const boost::system::error_code& error)
 {  
   if (error)
   {
-    std::cout << "Start unsuccessful. The error is: " << error.message() << '\n'; 
+    std::cout << "Start unsuccessful. The error is: " 
+        << error.message() << '\n';
     return;
   }  
-  std::cout << "Session started successfully. Begin read...\n";      
-  the_session->async_read_some(
-    frame_buffer->begin(), frame_buffer->end(), 
-    ma::make_custom_alloc_handler(the_allocator, 
-      boost::bind(&handle_read, the_session, boost::ref(the_allocator), frame_buffer, _1, _2)));
+
+  std::cout << "Session started successfully. Begin read...\n";
+
+  the_session->async_read_some(frame_buffer->begin(), frame_buffer->end(), 
+      ma::make_custom_alloc_handler(the_allocator, boost::bind(&handle_read, 
+          the_session, boost::ref(the_allocator), frame_buffer, _1, _2)));
 }
 
 void handle_stop(const boost::system::error_code& error)
 {   
   if (error)
   {
-    std::cout << "The session stop was unsuccessful. The error is: " << error.message() << '\n';
+    std::cout << "The session stop was unsuccessful. The error is: " 
+        << error.message() << '\n';
     return;
   }
+
   std::cout << "The session stop was successful.\n";  
 }
 
 void handle_read(const session_ptr& the_session, 
-  handler_allocator_type& the_allocator, 
-  const frame_buffer_ptr& frame_buffer, 
-  const boost::system::error_code& error, 
-  std::size_t frames_transferred)
+    handler_allocator_type& the_allocator, 
+    const frame_buffer_ptr& frame_buffer, 
+    const boost::system::error_code& error, 
+    std::size_t frames_transferred)
 {  
   print_frames(*frame_buffer, frames_transferred);
+
   if (boost::asio::error::eof == error)
   {
-    std::cout << "Input stream was closed. But it\'s a serial port so begin read operation again...\n";
+    std::cout << "Input stream was closed." \
+        " But it\'s a serial port so begin read operation again...\n";
+
     the_session->async_read_some(frame_buffer->begin(), frame_buffer->end(), 
-      ma::make_custom_alloc_handler(the_allocator, 
-        boost::bind(&handle_read, the_session, boost::ref(the_allocator), frame_buffer, _1, _2)));
+        ma::make_custom_alloc_handler(the_allocator, boost::bind(&handle_read, 
+            the_session, boost::ref(the_allocator), frame_buffer, _1, _2)));
     return;
   } 
+
   if (error)  
   {      
     std::cout << "Read unsuccessful. Begin the session stop...\n";
-    the_session->async_stop(ma::make_custom_alloc_handler(the_allocator, boost::bind(&handle_stop, _1)));
+    the_session->async_stop(ma::make_custom_alloc_handler(the_allocator, 
+        boost::bind(&handle_stop, _1)));
     return;
   }
+
   the_session->async_read_some(frame_buffer->begin(), frame_buffer->end(), 
-    ma::make_custom_alloc_handler(the_allocator, 
-      boost::bind(&handle_read, the_session, boost::ref(the_allocator), frame_buffer, _1, _2)));
+      ma::make_custom_alloc_handler(the_allocator, boost::bind(&handle_read, 
+          the_session, boost::ref(the_allocator), frame_buffer, _1, _2)));
 }
 
 void print_frames(const frame_buffer_type& frames, std::size_t size)
 {  
-  for (frame_buffer_type::const_iterator iterator = frames.begin(); size; ++iterator, --size)
+  for (frame_buffer_type::const_iterator iterator = frames.begin(); 
+      size; ++iterator, --size)
   {
     std::cout << *(*iterator) << '\n';
-  }    
+  }
 }
 
 void print_usage()
 {  
-  std::cout << "Usage: nmea_client <com_port> [<read_buffer_size> [<message_queue_size>] ]" << std::endl;  
+  std::cout << "Usage: nmea_client" \
+      " <com_port> [<read_buffer_size> [<message_queue_size>] ]" << std::endl;
 }
