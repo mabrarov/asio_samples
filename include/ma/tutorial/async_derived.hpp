@@ -22,43 +22,43 @@
 #include <ma/handler_allocator.hpp>
 #include <ma/tutorial/async_base.hpp>
 
-namespace ma
+namespace ma {
+
+namespace tutorial {
+
+class async_derived 
+  : private boost::base_from_member<boost::asio::io_service::strand>
+  , public async_base
+  , public boost::enable_shared_from_this<async_derived>
 {
-  namespace tutorial
-  {    
-    class async_derived 
-      : private boost::base_from_member<boost::asio::io_service::strand>
-      , public async_base
-      , public boost::enable_shared_from_this<async_derived>
-    {
-    private:      
-      typedef boost::base_from_member<boost::asio::io_service::strand> strand_base;
-      typedef async_derived this_type;
+private:      
+  typedef boost::base_from_member<boost::asio::io_service::strand> strand_base;
+  typedef async_derived this_type;
 
-    public:
-      async_derived(boost::asio::io_service& io_service, const std::string& name);
-      ~async_derived();      
+public:
+  async_derived(boost::asio::io_service& io_service, const std::string& name);
+  ~async_derived();
 
-    protected:
-      async_base_ptr get_shared_base();
-      boost::optional<boost::system::error_code> do_something();
+protected:
+  virtual async_base_ptr get_shared_base();
+  virtual boost::optional<boost::system::error_code> do_something();
 
-    private:     
-      void handle_timer(const boost::system::error_code& error);
+private:
+  void handle_timer(const boost::system::error_code& error);
       
-      std::size_t counter_;
-      boost::asio::deadline_timer timer_;
+  std::size_t counter_;
+  boost::asio::deadline_timer timer_;
 
-      const std::string name_;
-      boost::format start_message_fmt_;
-      boost::format cycle_message_fmt_;
-      boost::format error_end_message_fmt_;
-      boost::format success_end_message_fmt_;
+  const std::string name_;
+  boost::format start_message_fmt_;
+  boost::format cycle_message_fmt_;
+  boost::format error_end_message_fmt_;
+  boost::format success_end_message_fmt_;
 
-      ma::in_place_handler_allocator<128> timer_allocator_;
-    }; // class async_derived
+  ma::in_place_handler_allocator<128> timer_allocator_;
+}; // class async_derived
 
-  } // namespace tutorial
+} // namespace tutorial
 } // namespace ma
 
 #endif // MA_TUTORIAL_ASYNC_DERIVED_HPP

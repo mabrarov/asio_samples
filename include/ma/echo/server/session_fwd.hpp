@@ -14,17 +14,17 @@
 
 #include <boost/shared_ptr.hpp>
 
-namespace ma
-{    
-  namespace echo
-  {
-    namespace server
-    {    
-      class session;
-      typedef boost::shared_ptr<session> session_ptr;
+namespace ma {
 
-    } // namespace server
-  } // namespace echo
+namespace echo {
+
+namespace server {
+
+class session;
+typedef boost::shared_ptr<session> session_ptr;
+
+} // namespace server
+} // namespace echo
 } // namespace ma
 
 #endif // MA_ECHO_SERVER_SESSION_FWD_HPP

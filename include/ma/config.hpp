@@ -15,11 +15,15 @@
 #include <boost/config.hpp>
 
 #if defined(BOOST_HAS_RVALUE_REFS)
+
 #define MA_HAS_RVALUE_REFS
 #define MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR
-#else
+
+#else // defined(BOOST_HAS_RVALUE_REFS)
+
 #undef MA_HAS_RVALUE_REFS
 #undef MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR
+
 #endif // defined(BOOST_HAS_RVALUE_REFS)
 
 #define MA_BOOST_ASIO_HEAVY_STRAND_WRAPPED_HANDLER

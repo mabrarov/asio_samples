@@ -26,32 +26,32 @@
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/tutorial/async_derived.hpp>
 
-namespace
-{
-  typedef ma::in_place_handler_allocator<128> allocator_type;
-  typedef boost::shared_ptr<ma::tutorial::async_base> async_base_ptr;
+namespace {
 
-  void handle_do_something(const async_base_ptr& /*async_base*/,
+typedef ma::in_place_handler_allocator<128> allocator_type;
+typedef boost::shared_ptr<ma::tutorial::async_base> async_base_ptr;
+
+void handle_do_something(const async_base_ptr& /*async_base*/,
     const boost::system::error_code& error,
     const boost::shared_ptr<const std::string>& name, 
     const boost::shared_ptr<allocator_type>& /*allocator*/)
-  {  
-    if (error)
-    {
-      std::cout << boost::format("%s complete work with error\n") % *name;
-    }
-    else
-    {
-      std::cout << boost::format("%s successfully complete work\n") % *name;
-    }
-  }
-
-  void handle_program_exit(boost::asio::io_service& io_service)
+{  
+  if (error)
   {
-    std::cout << "User exit request detected. Stopping work io_service...\n";
-    io_service.stop();
-    std::cout << "Work io_service stopped.\n";
+    std::cout << boost::format("%s complete work with error\n") % *name;
   }
+  else
+  {
+    std::cout << boost::format("%s successfully complete work\n") % *name;
+  }
+}
+
+void handle_program_exit(boost::asio::io_service& io_service)
+{
+  std::cout << "User exit request detected. Stopping work io_service...\n";
+  io_service.stop();
+  std::cout << "Work io_service stopped.\n";
+}
 
 } // anonymous namespace
 
@@ -70,27 +70,36 @@ int main(int /*argc*/, char* /*argv*/[])
     io_service work_io_service(cpu_count);
 
     // Setup console controller
-    ma::console_controller console_controller(boost::bind(handle_program_exit, boost::ref(work_io_service)));
+    ma::console_controller console_controller(boost::bind(handle_program_exit, 
+        boost::ref(work_io_service)));
     std::cout << "Press Ctrl+C (Ctrl+Break) to exit.\n";
 
-    boost::optional<io_service::work> work_io_service_guard(boost::in_place(boost::ref(work_io_service)));
+    boost::optional<io_service::work> work_io_service_guard(
+        boost::in_place(boost::ref(work_io_service)));
+
     boost::thread_group work_threads;
     for (std::size_t i = 0; i != work_thread_count; ++i)
     {
-      work_threads.create_thread(boost::bind(&io_service::run, boost::ref(work_io_service)));
+      work_threads.create_thread(boost::bind(
+          &io_service::run, boost::ref(work_io_service)));
     }
 
     boost::format name_format("active_object%03d");
     for (std::size_t i = 0; i != 20; ++i)
     {
-      boost::shared_ptr<const std::string> name = boost::make_shared<std::string>((name_format % i).str());
-      boost::shared_ptr<allocator_type> allocator = boost::make_shared<allocator_type>();
+      boost::shared_ptr<const std::string> name = 
+          boost::make_shared<std::string>((name_format % i).str());
+
+      boost::shared_ptr<allocator_type> allocator = 
+          boost::make_shared<allocator_type>();
       
       async_base_ptr active_object = 
-        boost::make_shared<ma::tutorial::async_derived>(boost::ref(work_io_service), *name); 
+          boost::make_shared<ma::tutorial::async_derived>(
+              boost::ref(work_io_service), *name); 
 
-      active_object->async_do_something(ma::make_custom_alloc_handler(*allocator,
-        boost::bind(&handle_do_something, active_object, _1, name, allocator)));
+      active_object->async_do_something(ma::make_custom_alloc_handler(
+          *allocator, boost::bind(&handle_do_something, active_object, _1, 
+              name, allocator)));
     }
 
     work_io_service_guard.reset();
@@ -100,7 +109,7 @@ int main(int /*argc*/, char* /*argv*/[])
   }
   catch (const std::exception& e)
   {
-    std::cerr << "Unexpected error: " << e.what() << std::endl;    
+    std::cerr << "Unexpected error: " << e.what() << std::endl;
   }
   return EXIT_FAILURE;
 }

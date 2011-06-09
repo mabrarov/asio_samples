@@ -19,14 +19,15 @@
 #include <boost/type_traits/remove_cv.hpp>
 #include <boost/type_traits/remove_reference.hpp>
 
-namespace ma
-{  
-  template <typename T>
-  struct remove_cv_reference
-  {
-    typedef typename boost::remove_cv<
-        typename boost::remove_reference<T>::type>::type type;
-  }; // struct remove_cv_reference
+namespace ma {  
+
+template <typename T>
+struct remove_cv_reference
+{
+  typedef typename boost::remove_cv<
+      typename boost::remove_reference<T>::type>::type type;
+}; // struct remove_cv_reference
+
 } // namespace ma
 
 #endif // defined(BOOST_HAS_RVALUE_REFS)

@@ -29,128 +29,144 @@
 #include <ma/type_traits.hpp>
 #endif // defined(MA_HAS_RVALUE_REFS)
 
-namespace ma
-{
-  namespace tutorial
-  {    
-    class async_base : private boost::noncopyable
-    {
-    private:
-      typedef async_base this_type;
+namespace ma {
 
-    public:
+namespace tutorial {
+
+class async_base : private boost::noncopyable
+{
+private:
+  typedef async_base this_type;
+
+public:
+
 #if defined(MA_HAS_RVALUE_REFS)
 
 #if defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
-      template <typename Handler>
-      void async_do_something(Handler&& handler)
-      {
-        typedef typename ma::remove_cv_reference<Handler>::type handler_type;
-        strand_.post(ma::make_context_alloc_handler2(std::forward<Handler>(handler), 
-          forward_handler_binder<handler_type>(&this_type::begin_do_something<handler_type>, get_shared_base())));
-      }
-#else
-      template <typename Handler>
-      void async_do_something(Handler&& handler)
-      {
-        typedef typename ma::remove_cv_reference<Handler>::type handler_type;
-        strand_.post(ma::make_context_alloc_handler2(std::forward<Handler>(handler), 
-          boost::bind(&this_type::begin_do_something<handler_type>, get_shared_base(), _1)));
-      }
+
+  template <typename Handler>
+  void async_do_something(Handler&& handler)
+  {
+    typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+    strand_.post(ma::make_context_alloc_handler2(
+        std::forward<Handler>(handler), forward_handler_binder<handler_type>(
+            &this_type::begin_do_something<handler_type>, get_shared_base())));
+  }
+
+#else // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+
+  template <typename Handler>
+  void async_do_something(Handler&& handler)
+  {
+    typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+    strand_.post(ma::make_context_alloc_handler2(
+        std::forward<Handler>(handler), boost::bind(
+            &this_type::begin_do_something<handler_type>, 
+            get_shared_base(), _1)));
+  }
+
 #endif // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
 #else  // defined(MA_HAS_RVALUE_REFS)
-      template <typename Handler>
-      void async_do_something(const Handler& handler)
-      {
-        strand_.post(ma::make_context_alloc_handler2(handler, 
-          boost::bind(&this_type::begin_do_something<Handler>, get_shared_base(), _1)));
-      }
+
+  template <typename Handler>
+  void async_do_something(const Handler& handler)
+  {
+    strand_.post(ma::make_context_alloc_handler2(handler, 
+        boost::bind(&this_type::begin_do_something<Handler>, 
+            get_shared_base(), _1)));
+  }
+
 #endif // defined(MA_HAS_RVALUE_REFS)
 
-    protected:
-      typedef boost::shared_ptr<this_type> async_base_ptr;
+protected:
+  typedef boost::shared_ptr<this_type> async_base_ptr;
 
-      async_base(boost::asio::io_service::strand& strand)
-        : strand_(strand)
-        , do_something_handler_(strand.get_io_service())
-      {
-      }
+  async_base(boost::asio::io_service::strand& strand)
+    : strand_(strand)
+    , do_something_handler_(strand.get_io_service())
+  {
+  }
 
-      ~async_base() 
-      {
-      }
+  ~async_base() 
+  {
+  }
 
-      virtual async_base_ptr get_shared_base() = 0;
+  virtual async_base_ptr get_shared_base() = 0;
 
-      virtual boost::optional<boost::system::error_code> do_something() = 0;
+  virtual boost::optional<boost::system::error_code> do_something() = 0;
 
-      void complete_do_something(const boost::system::error_code& error)
-      {
-        do_something_handler_.post(error);
-      }
+  void complete_do_something(const boost::system::error_code& error)
+  {
+    do_something_handler_.post(error);
+  }
 
-      bool has_do_something_handler() const
-      {
-        return do_something_handler_.has_target();
-      }
+  bool has_do_something_handler() const
+  {
+    return do_something_handler_.has_target();
+  }
 
-    private:
+private:
 
-#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
-      template <typename Arg>
-      class forward_handler_binder
-      {
-      private:
-        typedef forward_handler_binder this_type;
-        this_type& operator=(const this_type&);
+#if defined(MA_HAS_RVALUE_REFS) \
+    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
-      public:
-        typedef void result_type;
-        typedef void (async_base::*function_type)(const Arg&);
+  template <typename Arg>
+  class forward_handler_binder
+  {
+  private:
+    typedef forward_handler_binder this_type;
+    this_type& operator=(const this_type&);
 
-        template <typename AsyncBasePtr>
-        forward_handler_binder(function_type function, AsyncBasePtr&& async_base)
-          : function_(function)
-          , async_base_(std::forward<AsyncBasePtr>(async_base))
-        {
-        }
+  public:
+    typedef void result_type;
+    typedef void (async_base::*function_type)(const Arg&);
 
-        forward_handler_binder(this_type&& other)
-          : function_(other.function_)
-          , async_base_(std::move(other.async_base_))
-        {
-        }
+    template <typename AsyncBasePtr>
+    forward_handler_binder(function_type function, AsyncBasePtr&& async_base)
+      : function_(function)
+      , async_base_(std::forward<AsyncBasePtr>(async_base))
+    {
+    }
 
-        void operator()(const Arg& arg)
-        {
-          ((*async_base_).*function_)(arg);
-        }
+    forward_handler_binder(this_type&& other)
+      : function_(other.function_)
+      , async_base_(std::move(other.async_base_))
+    {
+    }
 
-      private:
-        function_type function_;
-        async_base_ptr async_base_;          
-      }; // class forward_handler_binder
-#endif // defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+    void operator()(const Arg& arg)
+    {
+      ((*async_base_).*function_)(arg);
+    }
 
-      template <typename Handler>
-      void begin_do_something(const Handler& handler)
-      {    
-        if (boost::optional<boost::system::error_code> result = do_something())
-        {
-          strand_.get_io_service().post(ma::detail::bind_handler(handler, *result));
-        }
-        else
-        {
-          do_something_handler_.put(handler);
-        }
-      }
+  private:
+    function_type function_;
+    async_base_ptr async_base_;          
+  }; // class forward_handler_binder
 
-      boost::asio::io_service::strand& strand_;
-      ma::handler_storage<boost::system::error_code> do_something_handler_;
-    }; // class async_base
+#endif // defined(MA_HAS_RVALUE_REFS) 
+       //     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
-  } // namespace tutorial
+  template <typename Handler>
+  void begin_do_something(const Handler& handler)
+  {    
+    if (boost::optional<boost::system::error_code> result = do_something())
+    {
+      strand_.get_io_service().post(ma::detail::bind_handler(
+          handler, *result));
+    }
+    else
+    {
+      do_something_handler_.put(handler);
+    }
+  }
+
+  boost::asio::io_service::strand& strand_;
+  ma::handler_storage<boost::system::error_code> do_something_handler_;
+}; // class async_base
+
+} // namespace tutorial
 } // namespace ma
 
 #endif // MA_TUTORIAL_ASYNC_BASE_HPP

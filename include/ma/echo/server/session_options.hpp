@@ -17,75 +17,76 @@
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 #include <ma/echo/server/session_options_fwd.hpp>
 
-namespace ma
-{    
-  namespace echo
+namespace ma {
+
+namespace echo {
+
+namespace server {
+
+class session_options
+{ 
+public:        
+  typedef boost::optional<int>  optional_int;
+  typedef boost::optional<bool> optional_bool;
+  typedef boost::posix_time::time_duration time_duration;
+  typedef boost::optional<time_duration>   optional_time_duration;
+
+  explicit session_options(std::size_t buffer_size, 
+      const optional_int& socket_recv_buffer_size = optional_int(), 
+      const optional_int& socket_send_buffer_size = optional_int(),
+      const optional_bool& no_delay = optional_bool(),
+      const optional_time_duration& inactivity_timeout = 
+          optional_time_duration())
+    : no_delay_(no_delay)
+    , socket_recv_buffer_size_(socket_recv_buffer_size)
+    , socket_send_buffer_size_(socket_send_buffer_size)
+    , buffer_size_(buffer_size) 
+    , inactivity_timeout_(inactivity_timeout)
   {
-    namespace server
-    {
-      class session_options
-      { 
-      public:        
-        typedef boost::optional<int>  optional_int;
-        typedef boost::optional<bool> optional_bool;
-        typedef boost::posix_time::time_duration time_duration;
-        typedef boost::optional<time_duration>   optional_time_duration;
+    BOOST_ASSERT_MSG(buffer_size > 0, "buffer_size must be > 0");
 
-        explicit session_options(std::size_t buffer_size, 
-          const optional_int& socket_recv_buffer_size = optional_int(), 
-          const optional_int& socket_send_buffer_size = optional_int(),
-          const optional_bool& no_delay = optional_bool(),
-          const optional_time_duration& inactivity_timeout = optional_time_duration())
-          : no_delay_(no_delay)
-          , socket_recv_buffer_size_(socket_recv_buffer_size)
-          , socket_send_buffer_size_(socket_send_buffer_size)
-          , buffer_size_(buffer_size) 
-          , inactivity_timeout_(inactivity_timeout)
-        {
-          BOOST_ASSERT_MSG(buffer_size > 0, "buffer_size must be > 0");
+    BOOST_ASSERT_MSG(!socket_recv_buffer_size || (*socket_recv_buffer_size) >= 0,
+      "defined socket_recv_buffer_size must be >= 0");
 
-          BOOST_ASSERT_MSG(!socket_recv_buffer_size || (*socket_recv_buffer_size) >= 0,
-            "defined socket_recv_buffer_size must be >= 0");
+    BOOST_ASSERT_MSG(!socket_send_buffer_size || (*socket_send_buffer_size) >= 0,
+      "defined socket_send_buffer_size must be >= 0");
+  }        
 
-          BOOST_ASSERT_MSG(!socket_send_buffer_size || (*socket_send_buffer_size) >= 0,
-            "defined socket_send_buffer_size must be >= 0");
-        }        
+  optional_bool no_delay() const
+  {
+    return no_delay_;
+  }
 
-        optional_bool no_delay() const
-        {
-          return no_delay_;
-        }
+  optional_int socket_recv_buffer_size() const
+  {
+    return socket_recv_buffer_size_;
+  }
 
-        optional_int socket_recv_buffer_size() const
-        {
-          return socket_recv_buffer_size_;
-        }
+  optional_int socket_send_buffer_size() const
+  {
+    return socket_send_buffer_size_;
+  }
 
-        optional_int socket_send_buffer_size() const
-        {
-          return socket_send_buffer_size_;
-        }
+  std::size_t buffer_size() const
+  {
+    return buffer_size_;
+  }
 
-        std::size_t buffer_size() const
-        {
-          return buffer_size_;
-        }
+  optional_time_duration inactivity_timeout() const
+  {
+    return inactivity_timeout_;
+  }
 
-        optional_time_duration inactivity_timeout() const
-        {
-          return inactivity_timeout_;
-        }
-
-      private:
-        optional_bool no_delay_;
-        optional_int  socket_recv_buffer_size_;
-        optional_int  socket_send_buffer_size_;
-        std::size_t   buffer_size_;
-        optional_time_duration inactivity_timeout_;
-      }; // struct session_options
+private:
+  optional_bool no_delay_;
+  optional_int  socket_recv_buffer_size_;
+  optional_int  socket_send_buffer_size_;
+  std::size_t   buffer_size_;
+  optional_time_duration inactivity_timeout_;
+}; // struct session_options
         
-    } // namespace server
-  } // namespace echo
+} // namespace server
+} // namespace echo
 } // namespace ma
 
 #endif // MA_ECHO_SERVER_SESSION_OPTIONS_HPP

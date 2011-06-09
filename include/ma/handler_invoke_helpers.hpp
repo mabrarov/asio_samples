@@ -20,22 +20,27 @@
 #include <utility>
 #endif // defined(MA_HAS_RVALUE_REFS)
 
-namespace ma_asio_handler_invoke_helpers
-{
+namespace ma_asio_handler_invoke_helpers {
+
 #if defined(MA_HAS_RVALUE_REFS)
-  template <typename Function, typename Context>
-  inline void invoke(Function&& function, Context& context)
-  {
-    using namespace boost::asio;
-    asio_handler_invoke(std::forward<Function>(function), boost::addressof(context));
-  }
-#else
-  template <typename Function, typename Context>
-  inline void invoke(const Function& function, Context& context)
-  {
-    using namespace boost::asio;
-    asio_handler_invoke(function, boost::addressof(context));
-  }
+
+template <typename Function, typename Context>
+inline void invoke(Function&& function, Context& context)
+{
+  using namespace boost::asio;
+  asio_handler_invoke(std::forward<Function>(function), 
+      boost::addressof(context));
+}
+
+#else // defined(MA_HAS_RVALUE_REFS)
+
+template <typename Function, typename Context>
+inline void invoke(const Function& function, Context& context)
+{
+  using namespace boost::asio;
+  asio_handler_invoke(function, boost::addressof(context));
+}
+
 #endif // defined(MA_HAS_RVALUE_REFS)
 
 } // namespace ma_asio_handler_invoke_helpers

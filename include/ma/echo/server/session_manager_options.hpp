@@ -18,66 +18,64 @@
 #include <ma/echo/server/session_options.hpp>
 #include <ma/echo/server/session_manager_options_fwd.hpp>
 
-namespace ma
-{    
-  namespace echo
-  {    
-    namespace server
-    {                
-      class session_manager_options
-      { 
-      public:
-        typedef boost::asio::ip::tcp::endpoint endpoint_type;
+namespace ma {
 
-        session_manager_options(const endpoint_type& accepting_endpoint,
-          std::size_t max_session_count, 
-          std::size_t recycled_session_count,
-          int listen_backlog, 
-          const session_options& managed_session_options)
-          : listen_backlog_(listen_backlog)
-          , max_session_count_(max_session_count)
-          , recycled_session_count_(recycled_session_count)
-          , accepting_endpoint_(accepting_endpoint)                
-          , managed_session_options_(managed_session_options)
-        {
-          BOOST_ASSERT_MSG(max_session_count > 0, "max_session_count must be > 0");
-        }
+namespace echo {
 
-        int listen_backlog() const
-        {
-          return listen_backlog_;
-        }
+namespace server {
 
-        std::size_t max_session_count() const
-        {
-          return max_session_count_;
-        }
+class session_manager_options
+{ 
+public:
+  typedef boost::asio::ip::tcp::endpoint endpoint_type;
 
-        std::size_t recycled_session_count() const
-        {
-          return recycled_session_count_;
-        }
+  session_manager_options(const endpoint_type& accepting_endpoint, 
+      std::size_t max_session_count, std::size_t recycled_session_count,
+      int listen_backlog, const session_options& managed_session_options)
+    : listen_backlog_(listen_backlog)
+    , max_session_count_(max_session_count)
+    , recycled_session_count_(recycled_session_count)
+    , accepting_endpoint_(accepting_endpoint)                
+    , managed_session_options_(managed_session_options)
+  {
+    BOOST_ASSERT_MSG(max_session_count > 0, "max_session_count must be > 0");
+  }
 
-        endpoint_type accepting_endpoint() const
-        {
-          return accepting_endpoint_;
-        }
+  int listen_backlog() const
+  {
+    return listen_backlog_;
+  }
 
-        session_options managed_session_options() const
-        {
-          return managed_session_options_;
-        }
+  std::size_t max_session_count() const
+  {
+    return max_session_count_;
+  }
+
+  std::size_t recycled_session_count() const
+  {
+    return recycled_session_count_;
+  }
+
+  endpoint_type accepting_endpoint() const
+  {
+    return accepting_endpoint_;
+  }
+
+  session_options managed_session_options() const
+  {
+    return managed_session_options_;
+  }
         
-      private:
-        int             listen_backlog_;
-        std::size_t     max_session_count_;
-        std::size_t     recycled_session_count_;
-        endpoint_type   accepting_endpoint_;
-        session_options managed_session_options_;
-      }; // class session_manager_options
+private:
+  int             listen_backlog_;
+  std::size_t     max_session_count_;
+  std::size_t     recycled_session_count_;
+  endpoint_type   accepting_endpoint_;
+  session_options managed_session_options_;
+}; // class session_manager_options
         
-    } // namespace server
-  } // namespace echo
+} // namespace server
+} // namespace echo
 } // namespace ma
 
 #endif // MA_ECHO_SERVER_SESSION_MANAGER_OPTIONS_HPP

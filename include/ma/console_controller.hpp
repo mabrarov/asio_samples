@@ -20,28 +20,28 @@
 #include <boost/function.hpp>
 #include <boost/thread/recursive_mutex.hpp>
 
-namespace ma 
+namespace ma {
+
+class console_controller : private boost::noncopyable
 {
-  class console_controller : private boost::noncopyable
-  {
-  public:
-    typedef boost::function<void (void)> ctrl_function_type;
+public:
+  typedef boost::function<void (void)> ctrl_function_type;
 
-    console_controller(const ctrl_function_type& crl_function);    
-    ~console_controller();    
+  console_controller(const ctrl_function_type& crl_function);
+  ~console_controller();
 
-  private:    
-    typedef boost::recursive_mutex mutex_type;
+private:
+  typedef boost::recursive_mutex mutex_type;
 
 #if defined(WIN32)
-    static BOOL WINAPI console_ctrl_proc(DWORD ctrl_type);
+  static BOOL WINAPI console_ctrl_proc(DWORD ctrl_type);
 #else
-    static void console_ctrl_proc(int signal); 
-#endif
+  static void console_ctrl_proc(int signal); 
+#endif // defined(WIN32)
 
-    static mutex_type ctrl_mutex_;
-    static ctrl_function_type ctrl_function_;	
-  }; // class console_controller
+  static mutex_type ctrl_mutex_;
+  static ctrl_function_type ctrl_function_;	
+}; // class console_controller
 
 } // namespace ma
 
