@@ -63,12 +63,16 @@ namespace ma {
   * @li boost::function is more flexible and general,
   * @li handler_storage supports Boost.Asio custom memory allocation,
   * @li handler_storage is automatically cleaned up during 
-  * io_service destruction.
+  * io_service destruction,
+  * @li handler_storage is noncopyable.
   *
   * @par Thread Safety
   * @e Distinct @e objects: Safe.@n
   * @e Shared @e objects: Unsafe.
   *   
+  * Attention! 
+  * Because of the speed decisions no additional run-time checks are done in
+  * release version.
   */
 template <typename Arg>
 class handler_storage : private boost::noncopyable
@@ -89,26 +93,37 @@ public:
     service_.destroy(implementation_);
   } 
 
+  // boost::asio::basic_io_object-like member function.
   boost::asio::io_service& io_service()
   {
     return service_.get_io_service();
   }
 
+  // boost::asio::basic_io_object-like member function.
   boost::asio::io_service& get_io_service()
   {
     return service_.get_io_service();
   }
 
+  // Get pointer to the stored handler. 
+  // Because of type erasure it's "pointer to void" so "reinterpret_cast"
+  // should be used. See usage example at "nmea_client" project.
+  // If storage doesn't contain any handler then returns null pointer.
   void* target() const
   {
     return service_.target(implementation_);
   }
 
+  // Check if handler storage is empty (doesn't contain any handler).
+  // It doesn't clear handler storage. See frequent STL-related errors 
+  // at PVS-Studio site 8) - it's not an advertisement but really interesting 
+  // reading.
   bool empty() const
   {
     return service_.empty(implementation_);
   }
 
+  // Check if handler storage contains handler.
   bool has_target() const
   {
     return service_.has_target(implementation_);
@@ -116,6 +131,11 @@ public:
 
 #if defined(MA_HAS_RVALUE_REFS)
 
+  // Attention! 
+  // Really, "put" means "try to put, if can't (io_service's destructor is 
+  // already called) then do nothing".
+  // For test of was "put" successful or not, "has_target" can be used (called
+  // right after the call of "put").
   template <typename Handler>
   void put(Handler&& handler)
   {      
@@ -126,6 +146,11 @@ public:
 
 #else // defined(MA_HAS_RVALUE_REFS)
 
+  // Attention! 
+  // Really, "put" means "try to put, if can't (io_service's destructor is 
+  // already called) then do nothing".
+  // For test of was "put" successful or not, "has_target" can be used (called
+  // right after the call of "put").
   template <typename Handler>
   void put(const Handler& handler)
   {
@@ -134,6 +159,11 @@ public:
 
 #endif // defined(MA_HAS_RVALUE_REFS)
 
+  // Attention! 
+  // Alwasy check if handler storage has any handler stored in it.
+  // Use "has_target". Always - even if you already have called "put" method.
+  // Really, "put" means "try to put, if can't (io_service's destructor is
+  // already called) then do nothing".
   void post(const arg_type& arg)
   {      
     service_.post(implementation_, arg);

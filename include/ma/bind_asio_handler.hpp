@@ -25,6 +25,22 @@ namespace ma {
 
 namespace detail {
 
+/// Provides special binders with Asio-specific support.
+/**
+  * The bind-wrapped functors forward Asio execution/allocation contexts to the
+  * ones provided by the source handler.
+  *
+  * Boost.Asio custom memory allocation ("allocation context"): 
+  * http://www.boost.org/doc/libs/1_45_0/doc/html/boost_asio/overview/core/allocation.html
+  *
+  * The usage of free functions called "bind_handler" can help in construction
+  * of "bindX"-wrapped functors.
+  *
+  * It's a modified copy of Boost.Asio sources (details/internals).
+  * Move semantic supported.
+  * Move constructor is explicitly defined to support MSVC 2010.
+  */
+
 template <typename Handler, typename Arg1>
 class binder1
 {
