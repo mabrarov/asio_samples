@@ -26,54 +26,54 @@ namespace ma {
 
 /// Provides storage for handlers.
 /**
-  * The handler_storage class provides the storage for handlers:
-  * http://www.boost.org/doc/libs/1_45_0/doc/html/boost_asio/reference/Handler.html   
-  * It supports Boost.Asio custom memory allocation: 
-  * http://www.boost.org/doc/libs/1_45_0/doc/html/boost_asio/overview/core/allocation.html
-  *
-  * A value h of a stored handler class should work correctly 
-  * in the expression h(arg) where arg is an lvalue of type const Arg.
-  *
-  * Stored handler must have nothrow copy-constructor. 
-  * This restriction is predicted by asio custom memory allocation.
-  *
-  * Every instance of handler_storage class is tied to 
-  * some instance of boost::asio::io_service class.
-  *
-  * The stored handler can't be invoked (and must not be invoked) directly.
-  * It can be only destroyed or posted (with immediate stored value 
-  * destruction) to the io_service object to which the handler_storage object 
-  * is tied by usage of boost::asio::io_service::post method.
-  *
-  * The handler_storage class instances are automatically cleaned up
-  * during destruction of the tied io_service (those handler_storage class 
-  * instances that are alive to that moment).
-  * That clean up is done by destruction of the stored value (handler) - 
-  * not the handler_storage instance itself.   
-  * Because of the automatic clean up, users of handler_storage must remember
-  * that the stored value (handler) may be destroyed without explicit
-  * user activity. Also this implies to the thread safety.
-  * The handler_storage instances must not outlive the tied io_service object.
-  * A handler_storage object can store a value (handler) that is 
-  * the owner of the handler_storage object itself.
-  * This is one of the reasons of automatic clean up.
-  *
-  * handler_storage is like boost::function, except:
-  * 
-  * @li boost::function is more flexible and general,
-  * @li handler_storage supports Boost.Asio custom memory allocation,
-  * @li handler_storage is automatically cleaned up during 
-  * io_service destruction,
-  * @li handler_storage is noncopyable.
-  *
-  * @par Thread Safety
-  * @e Distinct @e objects: Safe.@n
-  * @e Shared @e objects: Unsafe.
-  *   
-  * Attention! 
-  * Because of the speed decisions no additional run-time checks are done in
-  * release version.
-  */
+ * The handler_storage class provides the storage for handlers:
+ * http://www.boost.org/doc/libs/1_46_1/doc/html/boost_asio/reference/Handler.html   
+ * It supports Boost.Asio custom memory allocation: 
+ * http://www.boost.org/doc/libs/1_46_1/doc/html/boost_asio/overview/core/allocation.html
+ *
+ * A value h of a stored handler class should work correctly 
+ * in the expression h(arg) where arg is an lvalue of type const Arg.
+ *
+ * Stored handler must have nothrow copy-constructor. 
+ * This restriction is predicted by asio custom memory allocation.
+ *
+ * Every instance of handler_storage class is tied to 
+ * some instance of boost::asio::io_service class.
+ *
+ * The stored handler can't be invoked (and must not be invoked) directly.
+ * It can be only destroyed or posted (with immediate stored value 
+ * destruction) to the io_service object to which the handler_storage object 
+ * is tied by usage of boost::asio::io_service::post method.
+ *
+ * The handler_storage class instances are automatically cleaned up
+ * during destruction of the tied io_service (those handler_storage class 
+ * instances that are alive to that moment).
+ * That clean up is done by destruction of the stored value (handler) - 
+ * not the handler_storage instance itself.   
+ * Because of the automatic clean up, users of handler_storage must remember
+ * that the stored value (handler) may be destroyed without explicit
+ * user activity. Also this implies to the thread safety.
+ * The handler_storage instances must not outlive the tied io_service object.
+ * A handler_storage object can store a value (handler) that is 
+ * the owner of the handler_storage object itself.
+ * This is one of the reasons of automatic clean up.
+ *
+ * handler_storage is like boost::function, except:
+ * 
+ * @li boost::function is more flexible and general,
+ * @li handler_storage supports Boost.Asio custom memory allocation,
+ * @li handler_storage is automatically cleaned up during 
+ * io_service destruction,
+ * @li handler_storage is noncopyable.
+ *
+ * @par Thread Safety
+ * @e Distinct @e objects: Safe.@n
+ * @e Shared @e objects: Unsafe.
+ *   
+ * Attention! 
+ * Because of the speed decisions no additional run-time checks are done in
+ * release version.
+ */
 template <typename Arg>
 class handler_storage : private boost::noncopyable
 {
@@ -93,37 +93,41 @@ public:
     service_.destroy(implementation_);
   } 
 
-  // boost::asio::basic_io_object-like member function.
+  /// boost::asio::basic_io_object-like member function.
   boost::asio::io_service& io_service()
   {
     return service_.get_io_service();
   }
 
-  // boost::asio::basic_io_object-like member function.
+  /// boost::asio::basic_io_object-like member function.
   boost::asio::io_service& get_io_service()
   {
     return service_.get_io_service();
   }
 
-  // Get pointer to the stored handler. 
-  // Because of type erasure it's "pointer to void" so "reinterpret_cast"
-  // should be used. See usage example at "nmea_client" project.
-  // If storage doesn't contain any handler then returns null pointer.
+  /// Get pointer to the stored handler. 
+  /**
+   * Because of type erasure it's "pointer to void" so "reinterpret_cast"
+   * should be used. See usage example at "nmea_client" project.
+   * If storage doesn't contain any handler then returns null pointer.
+   */
   void* target() const
   {
     return service_.target(implementation_);
   }
 
-  // Check if handler storage is empty (doesn't contain any handler).
-  // It doesn't clear handler storage. See frequent STL-related errors 
-  // at PVS-Studio site 8) - it's not an advertisement but really interesting 
-  // reading.
+  /// Check if handler storage is empty (doesn't contain any handler).
+  /** 
+   * It doesn't clear handler storage. See frequent STL-related errors 
+   * at PVS-Studio site 8) - it's not an advertisement but really interesting 
+   * reading.
+   */
   bool empty() const
   {
     return service_.empty(implementation_);
   }
 
-  // Check if handler storage contains handler.
+  /// Check if handler storage contains handler.
   bool has_target() const
   {
     return service_.has_target(implementation_);
@@ -131,11 +135,14 @@ public:
 
 #if defined(MA_HAS_RVALUE_REFS)
 
-  // Attention! 
-  // Really, "put" means "try to put, if can't (io_service's destructor is 
-  // already called) then do nothing".
-  // For test of was "put" successful or not, "has_target" can be used (called
-  // right after the call of "put").
+  /// Store handler in this handler storage.
+  /**
+   * Attention! 
+   * Really, "put" means "try to put, if can't (io_service's destructor is 
+   * already called) then do nothing".
+   * For test of was "put" successful or not, "has_target" can be used (called
+   * right after the call of "put").
+   */
   template <typename Handler>
   void put(Handler&& handler)
   {      
@@ -146,11 +153,14 @@ public:
 
 #else // defined(MA_HAS_RVALUE_REFS)
 
-  // Attention! 
-  // Really, "put" means "try to put, if can't (io_service's destructor is 
-  // already called) then do nothing".
-  // For test of was "put" successful or not, "has_target" can be used (called
-  // right after the call of "put").
+  /// Store handler in this handler storage.
+  /**
+   * Attention! 
+   * Really, "put" means "try to put, if can't (io_service's destructor is 
+   * already called) then do nothing".
+   * For test of was "put" successful or not, "has_target" can be used (called
+   * right after the call of "put").
+   */
   template <typename Handler>
   void put(const Handler& handler)
   {
@@ -159,21 +169,24 @@ public:
 
 #endif // defined(MA_HAS_RVALUE_REFS)
 
-  // Attention! 
-  // Alwasy check if handler storage has any handler stored in it.
-  // Use "has_target". Always - even if you already have called "put" method.
-  // Really, "put" means "try to put, if can't (io_service's destructor is
-  // already called) then do nothing".
+  /// Post the stored handler to storage related io_service instance.
+  /**
+   * Attention! 
+   * Alwasy check if handler storage has any handler stored in it.
+   * Use "has_target". Always - even if you already have called "put" method.
+   * Really, "put" means "try to put, if can't (io_service's destructor is
+   * already called) then do nothing".
+   */
   void post(const arg_type& arg)
   {      
     service_.post(implementation_, arg);
   }    
     
 private:
-  // The service associated with the storage.
+  /// The service associated with the storage.
   service_type& service_;
 
-  // The underlying implementation of the storage.
+  /// The underlying implementation of the storage.
   implementation_type implementation_;
 }; // class handler_storage  
 
