@@ -62,8 +62,8 @@ namespace ma {
  * 
  * @li boost::function is more flexible and general,
  * @li handler_storage supports Boost.Asio custom memory allocation,
- * @li handler_storage is automatically cleaned up during 
- * io_service destruction,
+ * @li handler_storage is automatically cleaned up during io_service 
+ * destruction,
  * @li handler_storage is noncopyable.
  *
  * @par Thread Safety

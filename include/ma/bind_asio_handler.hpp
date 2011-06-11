@@ -25,29 +25,31 @@ namespace ma {
 
 namespace detail {
 
-/// Provides special binders with Asio-specific support.
+/// Provides binders with support of Asio specificity.
 /**
- * The functor created with binder forwards Asio execution/allocation contexts
- * to the ones provided by the source handler.
+ * Functors created by listed binders forward Asio execution/allocation 
+ * contexts to the ones provided by source handler.
  *
- * "Execution context" means handler related free function 
- * "asio_handler_invoke" or the default one defined in Asio.
+ * "Execution context" means handler related free function asio_handler_invoke
+ * or the default one defined by Asio.
  * http://www.boost.org/doc/libs/1_46_1/doc/html/boost_asio/reference/Handler.html
  *
- * "Allocation context" means handler related pair of free functions
- * "asio_handler_allocate" and "asio_handler_deallocate" or the default ones
- * defined in Asio.
+ * "Allocation context" means handler related pair of free functions:
+ * asio_handler_allocate and asio_handler_deallocate or the default ones
+ * defined by Asio.
  * http://www.boost.org/doc/libs/1_46_1/doc/html/boost_asio/reference/Handler.html
  *
  * The source handler must meet the requirements of Asio handler.
- * The binded arguments must meet the requirements of Asio handler except
- * the existance of "asio_handler_allocate", "asio_handler_deallocate",
- * "asio_handler_invoke" and "operator()".
+ * The binded arguments must meet the requirements of Asio handler except 
+ * existance of asio_handler_allocate, asio_handler_deallocate, 
+ * asio_handler_invoke and operator() - these functions aren't applied to 
+ * binded arguments.
  *
- * The usage of free functions called "bind_handler" can help in construction
- * of wrapped functors.
+ * Usage of free functions called bind_handler can help in construction of 
+ * functors.
  *
- * It's a modified copy of Boost.Asio sources (details/internals).
+ * It's a modified copy of Boost.Asio sources: asio/detail/bind_handler.hpp.
+ * The reason of copy is that those sources are in private area of Boost.Asio.
  *
  * Move semantic supported.
  * Move constructor is explicitly defined to support MSVC 2010.

@@ -14,21 +14,21 @@
 
 #include <boost/config.hpp>
 
-/// Provides "asio-samples"-specific configuration options.
+/// Provides asio-samples configuration options.
 /**
- * Listed options mostly provide different aditional optimizations.  
+ * Listed options mostly provide aditional optimizations.
  */
 #if defined(BOOST_HAS_RVALUE_REFS)
 
 /// Turns on move semantic support.
 #define MA_HAS_RVALUE_REFS
 
-/// Defines has the boost::bind-created functors  
-/// move constructor (explicit or implicit) or no.
+/// Defines has the functors created by means of boost::bind move constructor
+/// (explicit or implicit).
 /**
- * If boost::bind-created functors has no move constructor then some of the
- * "asio-samples" explicitly define and use binders with (explicit) move 
- * constructor.
+ * If functors created by means of boost::bind has no move constructor then 
+ * some of the asio-samples explicitly define and use binders with (explicit -
+ * to support MSVC 2010) move constructor.
  */
 #define MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR
 
@@ -39,8 +39,7 @@
 
 #endif // defined(BOOST_HAS_RVALUE_REFS)
 
-/// Defines does the boost::asio::io_service::strand::wrap produce "heavy" 
-/// wrapped functor or not.
+/// Defines does asio::io_service::strand::wrap produce "heavy" functor.
 /**
  * Because of the guarantee given by Asio: 
  * http://www.boost.org/doc/libs/1_46_1/doc/html/boost_asio/reference/io_service__strand/wrap.html
@@ -48,12 +47,14 @@
  * that, when invoked, executes code equivalent to: 
  *   strand.dispatch(boost::bind(f, a1, ... an)); 
  * ...
- * the result of strand::wrap is too heavy. Beeing called from the usage of 
- * "asio_handler_invoke" it does double-call (and double check) through the 
- * related strand. Because Asio never calls handler directly (by "operator()")
- * but always do it by the means of "asio_handler_invoke" this guarantee is 
- * related to the user-side code only and can be cut as expensive and not 
- * needed.
+ * the result of asio::io_service::strand::wrap is too "heavy": being called by
+ * means of asio_handler_invoke it does double-call (and double check) through 
+ * the related asio::io_service::strand. 
+ *
+ * Because of Asio never calls handler directly by operator() (except the 
+ * default implementation of asio_handler_invoke) but always do it by the means
+ * of asio_handler_invoke this guarantee is needed to Asio users only and can 
+ * be cut as unneeded.
  *
  * The author of Asio knows this and agrees with such a kind of optimization.
  * See asio-users mailing list history for details.

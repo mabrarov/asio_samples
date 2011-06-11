@@ -22,6 +22,11 @@
 
 namespace ma {
 
+/// Hook-helper for console application. Supports setup of the own functor that
+/// will be called when user tries to close console application.
+/**
+ * Supported OS: MS Windows family, Linux (Ubuntu 10.x tested).
+ */
 class console_controller : private boost::noncopyable
 {
 public:
