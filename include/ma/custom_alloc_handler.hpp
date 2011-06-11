@@ -24,6 +24,56 @@
 
 namespace ma {
 
+/// Wrapper that overrides allocation context of the source handler by the 
+/// means provided by specified handler allocator.
+/** 
+ * "Allocation context" means handler related pair of free functions:
+ * asio_handler_allocate and asio_handler_deallocate or the default ones
+ * defined by Asio.
+ * http://www.boost.org/doc/libs/1_46_1/doc/html/boost_asio/reference/Handler.html
+ *
+ * "Execution context" means handler related free function asio_handler_invoke
+ * or the default one defined by Asio.
+ * http://www.boost.org/doc/libs/1_46_1/doc/html/boost_asio/reference/Handler.html
+ *
+ * Functors created by custom_alloc_handler:
+ *
+ * @li override Asio allocation context by the means provided by specified
+ * handler allocator.
+ * @li forward Asio execution context to the one provided by handler parameter.
+ * @li forward operator() to to the ones provided by handler parameter.
+ *
+ * The handler parameter must meet the requirements of Asio handler.
+ * The allocator parameter must provide member functions:
+ *
+ * @li void* allocate(std::size_t size)
+ * @li void deallocate(void* pointer)
+ *
+ * See ma/handler_allocator.hpp for implementations of handler allocator.
+ *
+ * The functors created by means of custom_alloc_handler meet the requirements
+ * of Asio handler and store only a reference (pointer in debug version) to the
+ * specified allocator. So the source handler is responsible for the 
+ * availability (life time) of the specified handler allocator.
+ *
+ * Usage of free function make_custom_alloc_handler can help in construction of
+ * functors.
+ *
+ * custom_alloc_handler is very similar to context_alloc_handler with such 
+ * differences:
+ *
+ * @li context_alloc_handler makes and stores copy of context and 
+ * custom_alloc_handler stores only reference to provided handler allocator.
+ * @li custom_alloc_handler has additional debug check against an error found
+ * in some of the Boost.Asio versions (older than Boost 1.46). See
+ * http://asio-samples.blogspot.com/2010/07/chris.html for details.
+ * @li custom_alloc_handler can be replaced with context_alloc_handler which is
+ * more general. But such a replacement won't provide debug check and will 
+ * require an explicit pass of a pointer to the handler allocator.
+ *
+ * Move semantic supported.
+ * Move constructor is explicitly defined to support MSVC 2010.
+ */
 template <typename Allocator, typename Handler>
 class custom_alloc_handler
 {
