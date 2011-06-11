@@ -27,23 +27,25 @@ namespace detail {
 
 /// Provides binders with support of Asio specificity.
 /**
- * Functors created by listed binders forward Asio execution/allocation 
+ * Functors created by listed binders forward Asio allocation/execution
  * contexts to the ones provided by source handler.
- *
- * "Execution context" means handler related free function asio_handler_invoke
- * or the default one defined by Asio.
- * http://www.boost.org/doc/libs/1_46_1/doc/html/boost_asio/reference/Handler.html
- *
+ * 
  * "Allocation context" means handler related pair of free functions:
  * asio_handler_allocate and asio_handler_deallocate or the default ones
  * defined by Asio.
  * http://www.boost.org/doc/libs/1_46_1/doc/html/boost_asio/reference/Handler.html
  *
+ * "Execution context" means handler related free function asio_handler_invoke
+ * or the default one defined by Asio.
+ * http://www.boost.org/doc/libs/1_46_1/doc/html/boost_asio/reference/Handler.html
+ * 
  * The source handler must meet the requirements of Asio handler.
  * The binded arguments must meet the requirements of Asio handler except 
  * existance of asio_handler_allocate, asio_handler_deallocate, 
  * asio_handler_invoke and operator() - these functions aren't applied to 
  * binded arguments.
+ * The functors created by means of listed binders meet the requirements of 
+ * Asio handler.
  *
  * Usage of free functions called bind_handler can help in construction of 
  * functors.

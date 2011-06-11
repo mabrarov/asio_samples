@@ -24,6 +24,41 @@
 
 namespace ma {
 
+/// Wrappers that override allocation/execution contexts of the source handler.
+/** 
+ * "Allocation context" means handler related pair of free functions:
+ * asio_handler_allocate and asio_handler_deallocate or the default ones
+ * defined by Asio.
+ * http://www.boost.org/doc/libs/1_46_1/doc/html/boost_asio/reference/Handler.html
+ *
+ * "Execution context" means handler related free function asio_handler_invoke
+ * or the default one defined by Asio.
+ * http://www.boost.org/doc/libs/1_46_1/doc/html/boost_asio/reference/Handler.html
+ *
+ * Functors created by listed wrappers:
+ *
+ * @li override Asio allocation context to the one provided by context 
+ * parameter.
+ * @li override Asio execution context to the one provided by handler 
+ * parameter.
+ * @li forward operator() to to the ones provided by handler parameter.
+ *
+ * The handler parameter must meet the requirements of Asio handler.
+ * The context parameter must meet the requirements of Asio handler except 
+ * existance of operator() - it isn't applied to context parameter.
+ * The functors created by means of listed wrappers meet the requirements of 
+ * Asio handler.
+ *
+ * Usage of free functions called make_context_wrapped_handler and 
+ * make_context_wrapped_handler2 can help in construction of functors.
+ *
+ * It's a much modified copy of Boost.Asio sources: 
+ * asio/detail/wrapped_handler.hpp (rewrapped_handler). The reason of copy is 
+ * that those sources are in private area of Boost.Asio.
+ *
+ * Move semantic supported.
+ * Move constructor is explicitly defined to support MSVC 2010.
+ */
 template <typename Context, typename Handler>
 class context_wrapped_handler
 {
