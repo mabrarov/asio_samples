@@ -241,13 +241,14 @@ void MainForm::on_service_startCompleted(
     writeLog(tr("Echo service start was canceled."));
   }
   else if (error)
-  {      
-    writeLog(tr("Echo service start completed with error."));
+  {    
+    writeLog(tr("Echo service start completed with error: ")
+        + QString::fromLocal8Bit(error.message().c_str()));
   }
   else 
   {
     writeLog(tr("Echo service start completed successfully."));
-  } 
+  }
   updateWidgetsStates();
 }
           
@@ -263,8 +264,9 @@ void MainForm::on_service_stopCompleted(const boost::system::error_code& error)
     writeLog(tr("Echo service stop was canceled."));
   }
   else if (error)
-  {      
-    writeLog(tr("Echo service stop completed with error."));
+  {
+    writeLog(tr("Echo service stop completed with error: ")
+        + QString::fromLocal8Bit(error.message().c_str()));
   }    
   else 
   {
@@ -285,8 +287,9 @@ void MainForm::on_service_workCompleted(const boost::system::error_code& error)
     writeLog(tr("Echo service work was canceled."));
   }
   else if (error)
-  {      
-    writeLog(tr("Echo service work completed with error."));
+  {
+    writeLog(tr("Echo service work completed with error: ")
+        + QString::fromLocal8Bit(error.message().c_str()));
   }    
   else 
   {

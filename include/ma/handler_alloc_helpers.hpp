@@ -22,6 +22,10 @@
 #include <utility>
 #endif // defined(MA_HAS_RVALUE_REFS)
 
+// Calls to asio_handler_allocate and asio_handler_deallocate must be made from
+// a namespace that does not contain any overloads of these functions. The
+// ma_asio_handler_alloc_helpers namespace is defined here for that purpose.
+// It's a modified copy of Asio sources: asio/detail/handler_alloc_helpers.hpp
 namespace ma_asio_handler_alloc_helpers {
 
 template <typename Context>
@@ -43,6 +47,10 @@ inline void deallocate(void* pointer, std::size_t size, Context& context)
 namespace ma {
 
 namespace detail {
+
+// Below listed code is a modified copy of Asio sources. Those sources were 
+// replaced in last versions of Asio. But IMHO below suggested way is more
+// clear than the last versions of Asio use.
 
 // Traits for handler allocation.
 template <typename AllocContext, typename Object>
