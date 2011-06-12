@@ -22,24 +22,24 @@
 
 namespace ma {      
 
-/// Read/write buffer with circular behaviour.
+/// Input/output buffer with circular behaviour.
 /** 
  * Buffer space is limited and cannot grow up. Also buffer space is separated
- * between two parts:
+ * into the two sequences:
  *
- * @li unfilled (input) part,
- * @li filled (output) part.
+ * @li unfilled (input) sequence,
+ * @li filled (output) sequence.
  *
- * It is not necessarily each part to be represented as one noncontinuous 
- * memory block. In general each part can be represented by one or two 
- * noncontinuous memory blocks - Asio buffers.
+ * It is not guaranteed each sequence to be represented as one continuous 
+ * memory block. In general each sequence can be represented by zero, one or 
+ * two continuous memory blocks - Asio buffers.
  */
 class cyclic_buffer : private boost::noncopyable
 {
 private:
 
-  /// Generalized buffer sequence that represents cyclic_buffer space: unfilled
-  /// or filled.
+  /// Generalized buffer sequence that represents cyclic_buffer sequence: 
+  /// unfilled or filled.
   /**
    * buffers_2 is CopyConstructible to meet Asio constant/mutable buffer
    * sequence requirements. See:
@@ -112,26 +112,27 @@ public:
   {
   }
 
-  /// Return to the state as right after construction.
+  /// Return buffer to the state as was right after construction.
   void reset()
   {
     unfilled_size_  = size_;
     unfilled_start_ = filled_start_ = filled_size_ = 0;
   }
 
-  /// Reduce filled part by marking first size bytes of filled part as unfilled
-  /// part.
+  /// Reduce filled sequence by marking first size bytes of filled sequence as
+  /// unfilled sequence.
   /**
-   * Doesn't move or copy anything. Size of unfilled part part grows up by size
-   * bytes. Start of unfilled part doesn't change. Size of filled part reduces 
-   * by size bytes. Start of filled part moves up (circular) by size bytes.
+   * Doesn't move or copy anything. Size of unfilled sequence grows up by size
+   * bytes. Start of unfilled sequence doesn't change. Size of filled sequence 
+   * reduces by size bytes. Start of filled sequence moves up (circular) by
+   * size bytes.
    */
   void commit(std::size_t size)
   {
     if (size > filled_size_)
     {
       boost::throw_exception(std::length_error(
-          "output sequence size is too small to consume given size"));
+          "filled sequence size is too small to consume given size"));
     }
     filled_size_   -= size;
     unfilled_size_ += size;
@@ -146,19 +147,20 @@ public:
     }
   }
 
-  /// Reduce unfilled part by marking first size bytes of unfilled part as 
-  /// filled part.
+  /// Reduce unfilled sequence by marking first size bytes of unfilled sequence
+  /// as filled sequence.
   /**
-   * Doesn't move or copy anything. Size of filled part part grows up by size
-   * bytes. Start of filled part doesn't change. Size of unfilled part reduces 
-   * by size bytes. Start of unfilled part moves up (circular) by size bytes.
+   * Doesn't move or copy anything. Size of filled sequence grows up by size
+   * bytes. Start of filled sequence doesn't change. Size of unfilled sequence 
+   * reduces by size bytes. Start of unfilled sequence moves up (circular) by
+   * size bytes.
    */
   void consume(std::size_t size)         
   {
     if (size > unfilled_size_)
     {
       boost::throw_exception(std::length_error(
-          "input sequence size is too small to consume given size"));
+          "unfilled sequence size is too small to consume given size"));
     }
     filled_size_   += size;
     unfilled_size_ -= size;
@@ -173,7 +175,7 @@ public:
     }
   }
 
-  /// Return constant buffer sequence representing filled part.
+  /// Return constant buffer sequence representing filled sequence.
   const_buffers_type data() const
   {
     if (!filled_size_)
@@ -191,7 +193,7 @@ public:
         + filled_start_, filled_size_));
   }
 
-  /// Return mutable buffer sequence representing unfilled part.
+  /// Return mutable buffer sequence representing unfilled sequence.
   mutable_buffers_type prepared() const
   {                    
     if (!unfilled_size_)
