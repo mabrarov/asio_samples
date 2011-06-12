@@ -20,6 +20,10 @@
 #include <utility>
 #endif // defined(MA_HAS_RVALUE_REFS)
 
+// Calls to asio_handler_invoke must be made from a namespace that does not
+// contain any overloads of this function. The ma_asio_handler_invoke_helpers
+// namespace is defined here for that purpose. It's a modified copy of Asio
+// sources: asio/detail/handler_invoke_helpers.hpp
 namespace ma_asio_handler_invoke_helpers {
 
 #if defined(MA_HAS_RVALUE_REFS)
