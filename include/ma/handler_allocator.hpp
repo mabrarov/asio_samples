@@ -19,6 +19,10 @@
 
 namespace ma {
 
+/// Handler allocator to use with ma::custom_alloc_handler. 
+/// in_place_handler_allocator is based on static size memory block located at 
+/// in_place_handler_allocator itself. The size of in_place_handler_allocator
+/// is part of in_place_handler_allocator type signature.
 template <std::size_t alloc_size>
 class in_place_handler_allocator : private boost::noncopyable
 {  
@@ -28,10 +32,13 @@ public:
   {
   }
 
+  /// For debug purposes (ability to check destruction order, etc).
   ~in_place_handler_allocator()
   {
   }
 
+  /// Try to allocate memory from internal memory block if it is free and is
+  /// large enough. Elsewhere allocate memory by means of global operator new.
   void* allocate(std::size_t size)
   {
     if (!in_use_ && size <= storage_.size)
@@ -42,6 +49,8 @@ public:
     return ::operator new(size);      
   }
 
+  /// Deallocate memory which had previously been allocated by usage of 
+  /// allocate method.
   void deallocate(void* pointer)
   {
     if (pointer == storage_.address())
@@ -56,7 +65,13 @@ private:
   boost::aligned_storage<alloc_size> storage_;    
   bool in_use_;
 }; //class in_place_handler_allocator
-  
+ 
+/// Handler allocator to use with ma::custom_alloc_handler. 
+/// in_heap_handler_allocator is based on static size memory block located at 
+/// heap. The size of in_heap_handler_allocator is defined during construction.
+/*
+ * Lazy initialization supported.
+ */
 class in_heap_handler_allocator : private boost::noncopyable
 {  
 private:
@@ -82,7 +97,7 @@ private:
     return storage_.get();
   }
 
-public:    
+public:
   explicit in_heap_handler_allocator(std::size_t size, bool lazy = false)
     : storage_(lazy ? 0 : allocate_storage(size))      
     , size_(size)      
@@ -90,10 +105,13 @@ public:
   {
   }
 
+  /// For debug purposes (ability to check destruction order, etc).
   ~in_heap_handler_allocator()
   {
   }
 
+  /// Try to allocate memory from internal memory block if it is free and is
+  /// large enough. Elsewhere allocate memory by means of global operator new.
   void* allocate(std::size_t size)
   {
     if (!in_use_ && size <= size_)
@@ -104,6 +122,8 @@ public:
     return ::operator new(size);      
   }
 
+  /// Deallocate memory which had previously been allocated by usage of 
+  /// allocate method.
   void deallocate(void* pointer)
   {
     if (storage_initialized())
@@ -120,7 +140,7 @@ public:
 private:    
   boost::scoped_array<byte_type> storage_;    
   std::size_t size_;    
-  bool in_use_;
+  bool        in_use_;
 }; //class in_heap_handler_allocator  
 
 } //namespace ma
