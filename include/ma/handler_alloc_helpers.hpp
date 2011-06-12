@@ -48,11 +48,13 @@ namespace ma {
 
 namespace detail {
 
-// Below listed code is a modified copy of Asio sources. Those sources were 
-// replaced in last versions of Asio. But IMHO below suggested way is more
-// clear than the last versions of Asio use.
+/**
+ * Below listed code is a modified copy of Asio sources. Those sources were 
+ * replaced in last versions of Asio. But IMHO below suggested way is more
+ * clear than the last versions of Asio use.
+ */
 
-// Traits for handler allocation.
+/// Traits for handler allocation.
 template <typename AllocContext, typename Object>
 struct handler_alloc_traits
 {
@@ -65,7 +67,7 @@ struct handler_alloc_traits
 template <typename Alloc_Traits>
 class handler_ptr;
 
-// Helper class to provide RAII on uninitialized handler memory.
+/// Helper class to provide RAII on uninitialized handler memory.
 template <typename Alloc_Traits>
 class raw_handler_ptr : private boost::noncopyable
 {
@@ -75,8 +77,7 @@ public:
   typedef typename Alloc_Traits::pointer_type       pointer_type;
   BOOST_STATIC_CONSTANT(std::size_t, value_size = Alloc_Traits::value_size);
 
-  // Constructor allocates the memory
-  // Can throw
+  /// Constructor that allocates the memory. Can throw.
   raw_handler_ptr(alloc_context_type& alloc_context)
     : alloc_context_(alloc_context)
     , pointer_(static_cast<pointer_type>(
@@ -84,15 +85,15 @@ public:
   {
   }
 
-  // Steal constructor. Doesn't throw.
+  /// Steal constructor. Doesn't throw.
   raw_handler_ptr(alloc_context_type& alloc_context, pointer_type pointer)
     : alloc_context_(alloc_context)
     , pointer_(pointer)
   {
   }
 
-  // Destructor automatically deallocates memory, unless it has been stolen by
-  // a handler_ptr object.
+  /// Destructor that automatically deallocates memory, unless it has been 
+  /// stolen by a handler_ptr object.
   ~raw_handler_ptr()
   {
     if (pointer_)
@@ -104,11 +105,12 @@ public:
 
 private:
   friend class handler_ptr<Alloc_Traits>;
+
   alloc_context_type& alloc_context_;
-  pointer_type pointer_;
+  pointer_type        pointer_;
 }; // raw_handler_ptr
 
-// Helper class to provide RAII on uninitialized handler memory.
+/// Helper class to provide RAII on uninitialized handler memory.
 template <typename Alloc_Traits>
 class handler_ptr : private boost::noncopyable
 {
@@ -120,15 +122,15 @@ public:
   BOOST_STATIC_CONSTANT(std::size_t, value_size = Alloc_Traits::value_size);
   typedef raw_handler_ptr<Alloc_Traits> raw_ptr_type;
 
-  // Take ownership of existing memory.
+  /// Take ownership of existing memory.
   handler_ptr(alloc_context_type& alloc_context, pointer_type pointer)
     : alloc_context_(boost::addressof(alloc_context))
     , pointer_(pointer)
   {
   }
 
-  // Construct object in raw memory and 
-  // take ownership if construction succeeds.
+  /// Construct object in raw memory and take ownership if construction 
+  /// succeeds.
   handler_ptr(raw_ptr_type& raw_ptr)
     : alloc_context_(boost::addressof(raw_ptr.alloc_context_))
     , pointer_(new (raw_ptr.pointer_) value_type)
@@ -138,8 +140,8 @@ public:
 
 #if defined(MA_HAS_RVALUE_REFS)
 
-  // Construct object in raw memory and 
-  // take ownership if construction succeeds.
+  /// Construct object in raw memory and take ownership if construction 
+  /// succeeds. Forwards arg1,..., argn to the object's constructor.
   template <typename Arg1>
   handler_ptr(raw_ptr_type& raw_ptr, Arg1&& a1)
     : alloc_context_(boost::addressof(raw_ptr.alloc_context_))
@@ -148,8 +150,8 @@ public:
     raw_ptr.pointer_ = 0;
   }
 
-  // Construct object in raw memory 
-  // and take ownership if construction succeeds.
+  /// Construct object in raw memory and take ownership if construction 
+  /// succeeds. Forwards arg1,..., argn to the object's constructor.
   template <typename Arg1, typename Arg2>
   handler_ptr(raw_ptr_type& raw_ptr, Arg1&& a1, Arg2&& a2)
     : alloc_context_(boost::addressof(raw_ptr.alloc_context_))
@@ -159,8 +161,8 @@ public:
     raw_ptr.pointer_ = 0;
   }
 
-  // Construct object in raw memory 
-  // and take ownership if construction succeeds.
+  /// Construct object in raw memory and take ownership if construction 
+  /// succeeds. Forwards arg1,..., argn to the object's constructor.
   template <typename Arg1, typename Arg2, typename Arg3>
   handler_ptr(raw_ptr_type& raw_ptr, Arg1&& a1, Arg2&& a2, Arg3&& a3)
     : alloc_context_(boost::addressof(raw_ptr.alloc_context_))
@@ -170,8 +172,8 @@ public:
     raw_ptr.pointer_ = 0;
   }
 
-  // Construct object in raw memory 
-  // and take ownership if construction succeeds.
+  /// Construct object in raw memory and take ownership if construction 
+  /// succeeds. Forwards arg1,..., argn to the object's constructor.
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4>
   handler_ptr(raw_ptr_type& raw_ptr, Arg1&& a1, Arg2&& a2, Arg3&& a3, 
       Arg4&& a4)
@@ -183,8 +185,8 @@ public:
     raw_ptr.pointer_ = 0;
   }
 
-  // Construct object in raw memory 
-  // and take ownership if construction succeeds.
+  /// Construct object in raw memory and take ownership if construction 
+  /// succeeds. Forwards arg1,..., argn to the object's constructor.
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4, 
       typename Arg5>
   handler_ptr(raw_ptr_type& raw_ptr, Arg1&& a1, Arg2&& a2, Arg3&& a3, 
@@ -197,8 +199,8 @@ public:
     raw_ptr.pointer_ = 0;
   }
 
-  // Construct object in raw memory 
-  // and take ownership if construction succeeds.
+  /// Construct object in raw memory and take ownership if construction 
+  /// succeeds. Forwards arg1,..., argn to the object's constructor.
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4, 
       typename Arg5, typename Arg6>
   handler_ptr(raw_ptr_type& raw_ptr, Arg1&& a1, Arg2&& a2, Arg3&& a3, 
@@ -212,8 +214,8 @@ public:
     raw_ptr.pointer_ = 0;
   }
 
-  // Construct object in raw memory 
-  // and take ownership if construction succeeds.
+  /// Construct object in raw memory and take ownership if construction 
+  /// succeeds. Forwards arg1,..., argn to the object's constructor.
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4, 
       typename Arg5, typename Arg6, typename Arg7>
   handler_ptr(raw_ptr_type& raw_ptr, Arg1&& a1, Arg2&& a2, Arg3&& a3, 
@@ -227,8 +229,8 @@ public:
     raw_ptr.pointer_ = 0;
   }
 
-  // Construct object in raw memory and 
-  // take ownership if construction succeeds.
+  /// Construct object in raw memory and take ownership if construction 
+  /// succeeds. Forwards arg1,..., argn to the object's constructor.
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4, 
       typename Arg5, typename Arg6, typename Arg7, typename Arg8>
   handler_ptr(raw_ptr_type& raw_ptr, Arg1&& a1, Arg2&& a2, Arg3&& a3,
@@ -245,8 +247,8 @@ public:
 
 #else // defined(MA_HAS_RVALUE_REFS)
 
-  // Construct object in raw memory and 
-  // take ownership if construction succeeds.
+  /// Construct object in raw memory and take ownership if construction 
+  /// succeeds. Forwards arg1,..., argn to the object's constructor.
   template <typename Arg1>
   handler_ptr(raw_ptr_type& raw_ptr, const Arg1& a1)
     : alloc_context_(boost::addressof(raw_ptr.alloc_context_))
@@ -255,8 +257,8 @@ public:
     raw_ptr.pointer_ = 0;
   }
 
-  // Construct object in raw memory 
-  // and take ownership if construction succeeds.
+  /// Construct object in raw memory and take ownership if construction 
+  /// succeeds. Forwards arg1,..., argn to the object's constructor.
   template <typename Arg1, typename Arg2>
   handler_ptr(raw_ptr_type& raw_ptr, const Arg1& a1, const Arg2& a2)
     : alloc_context_(boost::addressof(raw_ptr.alloc_context_))
@@ -265,8 +267,8 @@ public:
     raw_ptr.pointer_ = 0;
   }
 
-  // Construct object in raw memory 
-  // and take ownership if construction succeeds.
+  /// Construct object in raw memory and take ownership if construction 
+  /// succeeds. Forwards arg1,..., argn to the object's constructor.
   template <typename Arg1, typename Arg2, typename Arg3>
   handler_ptr(raw_ptr_type& raw_ptr, const Arg1& a1, const Arg2& a2,
       const Arg3& a3)
@@ -276,8 +278,8 @@ public:
     raw_ptr.pointer_ = 0;
   }
 
-  // Construct object in raw memory 
-  // and take ownership if construction succeeds.
+  /// Construct object in raw memory and take ownership if construction 
+  /// succeeds. Forwards arg1,..., argn to the object's constructor.
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4>
   handler_ptr(raw_ptr_type& raw_ptr, const Arg1& a1, const Arg2& a2, 
       const Arg3& a3, const Arg4& a4)
@@ -287,8 +289,8 @@ public:
     raw_ptr.pointer_ = 0;
   }
 
-  // Construct object in raw memory 
-  // and take ownership if construction succeeds.
+  /// Construct object in raw memory and take ownership if construction 
+  /// succeeds. Forwards arg1,..., argn to the object's constructor.
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4, 
       typename Arg5>
   handler_ptr(raw_ptr_type& raw_ptr, const Arg1& a1, const Arg2& a2, 
@@ -299,8 +301,8 @@ public:
     raw_ptr.pointer_ = 0;
   }
 
-  // Construct object in raw memory 
-  // and take ownership if construction succeeds.
+  /// Construct object in raw memory and take ownership if construction 
+  /// succeeds. Forwards arg1,..., argn to the object's constructor.
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4, 
       typename Arg5, typename Arg6>
   handler_ptr(raw_ptr_type& raw_ptr, const Arg1& a1, const Arg2& a2, 
@@ -311,8 +313,8 @@ public:
     raw_ptr.pointer_ = 0;
   }
 
-  // Construct object in raw memory 
-  // and take ownership if construction succeeds.
+  /// Construct object in raw memory and take ownership if construction 
+  /// succeeds. Forwards arg1,..., argn to the object's constructor.
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4, 
       typename Arg5, typename Arg6, typename Arg7>
   handler_ptr(raw_ptr_type& raw_ptr, const Arg1& a1, const Arg2& a2, 
@@ -324,8 +326,8 @@ public:
     raw_ptr.pointer_ = 0;
   }
 
-  // Construct object in raw memory and 
-  // take ownership if construction succeeds.
+  /// Construct object in raw memory and take ownership if construction 
+  /// succeeds. Forwards arg1,..., argn to the object's constructor.
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4, 
       typename Arg5, typename Arg6, typename Arg7, typename Arg8>
   handler_ptr(raw_ptr_type& raw_ptr, const Arg1& a1, const Arg2& a2, 
@@ -340,27 +342,25 @@ public:
 
 #endif // defined(MA_HAS_RVALUE_REFS)
 
-  // Destructor automatically deallocates memory, 
-  // unless it has been released.
+  /// Destructor automatically deallocates memory, unless it has been released.
   ~handler_ptr()
   {
     reset();
   }
 
-  // Get the memory.
+  /// Get the memory.
   pointer_type get() const
   {
     return pointer_;
   }
 
-  // Change allocation context used for memory deallocation
-  // Never throws
+  /// Change allocation context used for memory deallocation. Never throws.
   void set_alloc_context(alloc_context_type& alloc_context)
   {
     alloc_context_ = boost::addressof(alloc_context);
   }
 
-  // Release ownership of the memory.
+  /// Release ownership of the memory.
   pointer_type release()
   {
     pointer_type tmp = pointer_;
@@ -368,13 +368,14 @@ public:
     return tmp;
   }
 
-  // Explicitly destroy and deallocate the memory.
+  /// Explicitly destroy object and deallocate memory.
   void reset()
   {
     if (pointer_)
     {
       // Move memory ownership to guard
       raw_ptr_type raw_ptr(*alloc_context_, pointer_);
+      // Zero stored pointer with saving its value to a temporary
       pointer_type tmp = pointer_;
       pointer_ = 0;
       // Destroy stored value
