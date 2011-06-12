@@ -22,6 +22,18 @@
 
 namespace ma {      
 
+/// Read/write buffer with circular behaviour.
+/** 
+ * Buffer space is limited and cannot grow up. Also buffer space is separated
+ * between two parts:
+ *
+ * @li unfilled (input) part,
+ * @li filled (output) part.
+ *
+ * It is not necessarily each part to be represented as one noncontinuous 
+ * memory block. In general each part can be represented by one or two 
+ * noncontinuous memory blocks - Asio buffers.
+ */
 class cyclic_buffer : private boost::noncopyable
 {
 private:
@@ -77,100 +89,100 @@ public:
   explicit cyclic_buffer(std::size_t size)
     : data_(new char[size])
     , size_(size)
-    , input_start_(0)
-    , input_size_(size)
-    , output_start_(0)
-    , output_size_(0)
+    , unfilled_start_(0)
+    , unfilled_size_(size)
+    , filled_start_(0)
+    , filled_size_(0)
   {
   }
 
   void reset()
   {
-    input_size_  = size_;
-    input_start_ = output_start_ = output_size_ = 0;
+    unfilled_size_  = size_;
+    unfilled_start_ = filled_start_ = filled_size_ = 0;
   }
 
   void commit(std::size_t size)
   {
-    if (size > output_size_)
+    if (size > filled_size_)
     {
       boost::throw_exception(std::length_error(
           "output sequence size is too small to consume given size"));
     }
-    output_size_ -= size;
-    input_size_  += size;
-    std::size_t d = size_ - output_start_;
+    filled_size_   -= size;
+    unfilled_size_ += size;
+    std::size_t d = size_ - filled_start_;
     if (size < d)
     {
-      output_start_ += size;
+      filled_start_ += size;
     }
     else
     {
-      output_start_ = size - d;
+      filled_start_ = size - d;
     }
   }
 
   void consume(std::size_t size)         
   {
-    if (size > input_size_)
+    if (size > unfilled_size_)
     {
       boost::throw_exception(std::length_error(
           "input sequence size is too small to consume given size"));
     }
-    output_size_ += size;
-    input_size_  -= size;
-    std::size_t d = size_ - input_start_;
+    filled_size_   += size;
+    unfilled_size_ -= size;
+    std::size_t d = size_ - unfilled_start_;
     if (size < d)
     {
-      input_start_ += size;
+      unfilled_start_ += size;
     }
     else
     {
-      input_start_ = size - d;
+      unfilled_start_ = size - d;
     }
   }
 
   const_buffers_type data() const
   {
-    if (!output_size_)
+    if (!filled_size_)
     {
       return const_buffers_type();
     }
-    std::size_t d = size_ - output_start_;
-    if (output_size_ > d)
+    std::size_t d = size_ - filled_start_;
+    if (filled_size_ > d)
     {
       return const_buffers_type(
-        boost::asio::const_buffer(data_.get() + output_start_, d),
-        boost::asio::const_buffer(data_.get(), output_size_ - d));
+          boost::asio::const_buffer(data_.get() + filled_start_, d), 
+          boost::asio::const_buffer(data_.get(), filled_size_ - d));
     }          
-    return const_buffers_type(
-      boost::asio::const_buffer(data_.get() + output_start_, output_size_));
+    return const_buffers_type(boost::asio::const_buffer(data_.get() 
+        + filled_start_, filled_size_));
   }
 
   mutable_buffers_type prepared() const
   {                    
-    if (!input_size_)
+    if (!unfilled_size_)
     {
       return mutable_buffers_type();
     }          
-    std::size_t d = size_ - input_start_;
-    if (input_size_ > d)
+    std::size_t d = size_ - unfilled_start_;
+    if (unfilled_size_ > d)
     {
       return mutable_buffers_type(
-        boost::asio::mutable_buffer(data_.get() + input_start_, d),
-        boost::asio::mutable_buffer(data_.get(), input_size_ - d));
+          boost::asio::mutable_buffer(data_.get() + unfilled_start_, d),
+          boost::asio::mutable_buffer(data_.get(), unfilled_size_ - d));
     }
-    return mutable_buffers_type(
-      boost::asio::mutable_buffer(data_.get() + input_start_, input_size_));          
+    return mutable_buffers_type(boost::asio::mutable_buffer(data_.get() 
+        + unfilled_start_, unfilled_size_));          
   }
 
 private:
   boost::scoped_array<char> data_;
   std::size_t size_;
-  std::size_t input_start_;
-  std::size_t input_size_;
-  std::size_t output_start_;
-  std::size_t output_size_;
+  std::size_t unfilled_start_;
+  std::size_t unfilled_size_;
+  std::size_t filled_start_;
+  std::size_t filled_size_;
 }; // class cyclic_buffer
 
 } // namespace ma
