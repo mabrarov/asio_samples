@@ -56,18 +56,18 @@ private:
     typedef const value_type* const_iterator;
 
     buffers_2()
-      : filled_buffers_count_(0)
+      : buffers_count_(0)
     {
     }
     
     explicit buffers_2(const value_type& buffer1)
-      : filled_buffers_count_(1)
+      : buffers_count_(1)
     {
       buffers_[0] = buffer1;
     }
 
     buffers_2(const value_type& buffer1, const value_type& buffer2)
-      : filled_buffers_count_(2)
+      : buffers_count_(2)
     {
       buffers_[0] = buffer1;
       buffers_[1] = buffer2;
@@ -82,18 +82,18 @@ private:
     /// Asio requirement.
     const_iterator end() const
     {
-      return boost::addressof(buffers_[0]) + filled_buffers_count_;
+      return boost::addressof(buffers_[0]) + buffers_count_;
     }
 
     /// Small but useful optimization.
     bool empty() const
     {
-      return !filled_buffers_count_;
+      return !buffers_count_;
     }
 
   private:
     boost::array<value_type, 2> buffers_;
-    std::size_t filled_buffers_count_;
+    unsigned short buffers_count_;
   }; // class buffers_2
 
 public:
