@@ -37,54 +37,70 @@ namespace ma {
 class cyclic_buffer : private boost::noncopyable
 {
 private:
+
+  /// Generalized buffer sequence that represents cyclic_buffer space: unfilled
+  /// or filled.
+  /**
+   * buffers_2 is CopyConstructible to meet Asio constant/mutable buffer
+   * sequence requirements. See:
+   * http://www.boost.org/doc/libs/1_46_1/doc/html/boost_asio/reference/ConstBufferSequence.html
+   * and
+   * http://www.boost.org/doc/libs/1_46_1/doc/html/boost_asio/reference/MutableBufferSequence.html
+   */
   template <typename Buffer>
-  class buffers2
+  class buffers_2
   {
   public:
-    typedef Buffer            value_type;
+    /// Asio requirements.
+    typedef Buffer            value_type;    
     typedef const value_type* const_iterator;
 
-    buffers2()
-      : filled_buffers_(0)
+    buffers_2()
+      : filled_buffers_count_(0)
     {
     }
-
-    explicit buffers2(const value_type& buffer1)
-      : filled_buffers_(1)
+    
+    explicit buffers_2(const value_type& buffer1)
+      : filled_buffers_count_(1)
     {
       buffers_[0] = buffer1;
     }
 
-    buffers2(const value_type& buffer1, const value_type& buffer2)
-      : filled_buffers_(2)
+    buffers_2(const value_type& buffer1, const value_type& buffer2)
+      : filled_buffers_count_(2)
     {
       buffers_[0] = buffer1;
       buffers_[1] = buffer2;
     }
 
+    /// Asio requirement.
     const_iterator begin() const
     {
       return boost::addressof(buffers_[0]);
     }
 
+    /// Asio requirement.
     const_iterator end() const
     {
-      return boost::addressof(buffers_[0]) + filled_buffers_;
+      return boost::addressof(buffers_[0]) + filled_buffers_count_;
     }
 
+    /// Small but useful optimization.
     bool empty() const
     {
-      return !filled_buffers_;
+      return !filled_buffers_count_;
     }
 
   private:
     boost::array<value_type, 2> buffers_;
-    std::size_t filled_buffers_;
-  }; // class buffers2
+    std::size_t filled_buffers_count_;
+  }; // class buffers_2
 
-public:        
-  typedef buffers2<boost::asio::const_buffer>   const_buffers_type;
-  typedef buffers2<boost::asio::mutable_buffer> mutable_buffers_type;        
+public:
+  /// Constant buffer sequence.
+  typedef buffers_2<boost::asio::const_buffer>   const_buffers_type;
+  /// Mutable buffer sequence.
+  typedef buffers_2<boost::asio::mutable_buffer> mutable_buffers_type;        
 
   explicit cyclic_buffer(std::size_t size)
     : data_(new char[size])
@@ -96,12 +112,20 @@ public:
   {
   }
 
+  /// Return to the state as right after construction.
   void reset()
   {
     unfilled_size_  = size_;
     unfilled_start_ = filled_start_ = filled_size_ = 0;
   }
 
+  /// Reduce filled part by marking first size bytes of filled part as unfilled
+  /// part.
+  /**
+   * Doesn't move or copy anything. Size of unfilled part part grows up by size
+   * bytes. Start of unfilled part doesn't change. Size of filled part reduces 
+   * by size bytes. Start of filled part moves up (circular) by size bytes.
+   */
   void commit(std::size_t size)
   {
     if (size > filled_size_)
@@ -122,6 +146,13 @@ public:
     }
   }
 
+  /// Reduce unfilled part by marking first size bytes of unfilled part as 
+  /// filled part.
+  /**
+   * Doesn't move or copy anything. Size of filled part part grows up by size
+   * bytes. Start of filled part doesn't change. Size of unfilled part reduces 
+   * by size bytes. Start of unfilled part moves up (circular) by size bytes.
+   */
   void consume(std::size_t size)         
   {
     if (size > unfilled_size_)
@@ -142,6 +173,7 @@ public:
     }
   }
 
+  /// Return constant buffer sequence representing filled part.
   const_buffers_type data() const
   {
     if (!filled_size_)
@@ -159,6 +191,7 @@ public:
         + filled_start_, filled_size_));
   }
 
+  /// Return mutable buffer sequence representing unfilled part.
   mutable_buffers_type prepared() const
   {                    
     if (!unfilled_size_)
