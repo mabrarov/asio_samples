@@ -27,6 +27,32 @@ namespace ma {
 
 #if defined(MA_BOOST_ASIO_HEAVY_STRAND_WRAPPED_HANDLER)
 
+/// The wrapper to use with asio::io_service::strand.
+/**
+ * strand_wrapped_handler creates handler that works similar to the one created
+ * by asio::io_service::strand::wrap except the guarantee given by Asio: 
+ * http://www.boost.org/doc/libs/1_46_1/doc/html/boost_asio/reference/io_service__strand/wrap.html
+ * ...
+ * that, when invoked, executes code equivalent to: 
+ *   strand.dispatch(boost::bind(f, a1, ... an)); 
+ * ...
+ * strand_wrapped_handler does strand.dispatch only when it is called by the 
+ * means of asio_handler_invoke. See MA_BOOST_ASIO_HEAVY_STRAND_WRAPPED_HANDLER
+ * in ma/config.hpp for details.
+ *
+ * Note that strand_wrapped_handler (like the one created by 
+ * asio::io_service::strand::wrap) doesn't simply override-with-replacement the
+ * execution context of the source handler (like context_wrapped_handler does).
+ * strand_wrapped_handler adds strand related execution context before the one
+ * provided by source handler.
+ *
+ * "Execution context" means handler related free function asio_handler_invoke
+ * or the default one defined by Asio.
+ * http://www.boost.org/doc/libs/1_46_1/doc/html/boost_asio/reference/Handler.html
+ *
+ * Use MA_STRAND_WRAP macros to create a strand-wrapped handler according to
+ * asio-samples configuration (MA_BOOST_ASIO_HEAVY_STRAND_WRAPPED_HANDLER).
+ */
 template <typename Handler>
 class strand_wrapped_handler
 {
