@@ -21,6 +21,10 @@ namespace echo {
 
 namespace server {
 
+/**
+ * See 
+ * http://blog.think-async.com/2010/04/system-error-support-in-c0x-part-4.html
+ */
 const boost::system::error_category& server_error_category();
 
 namespace server_error {

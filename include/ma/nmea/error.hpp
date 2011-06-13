@@ -19,13 +19,17 @@ namespace ma {
 
 namespace nmea {
 
+/**
+ * See 
+ * http://blog.think-async.com/2010/04/system-error-support-in-c0x-part-4.html
+ */
 const boost::system::error_category& session_error_category();
 
 namespace session_error {
 
 enum error_t 
 {
-  invalid_state = 100,
+  invalid_state     = 100,
   operation_aborted = 200
 }; // enum error_t 
 

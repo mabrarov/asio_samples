@@ -21,6 +21,12 @@
 
 namespace ma {  
 
+/// Boost.MPL-like construction for type extraction in templates with rvalue
+/// reference support.
+/**
+ * First removes reference (if it is a refernce) than removes CV-qualifiers. 
+ * It's simply a composition of Boost.MPL provided features.
+ */
 template <typename T>
 struct remove_cv_reference
 {
