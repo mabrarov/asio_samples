@@ -30,6 +30,8 @@
 
 namespace ma {
 
+/// Exception thrown when handler_storage::post is used with empty 
+/// handler_storage.
 class bad_handler_call : public std::runtime_error
 {
 public:
@@ -39,6 +41,7 @@ public:
   } 
 }; // class bad_handler_call
 
+/// asio::io_service::service implementing handler_storage.
 template <typename Arg>
 class handler_storage_service : public boost::asio::io_service::service
 {
@@ -50,6 +53,10 @@ public:
   typedef Arg arg_type;    
 
 private:
+  /// Base class to hold up handlers with the specified signature.
+  /**
+   * handler_base provides type erasure.
+   */
   class handler_base
   {
   private:
@@ -95,6 +102,7 @@ private:
     data_func_type data_func_;
   }; // class handler_base    
       
+  /// Wrapper class to hold up handlers with the specified signature.
   template <typename Handler>
   class handler_wrapper : public handler_base
   {
@@ -225,12 +233,17 @@ public:
 
   private:
     friend class handler_storage_service<arg_type>;
+    // Pointers to previous and next implementations in a double-linked 
+    // intrusive list of implementations.
     implementation_type* prev_;
-    implementation_type* next_;      
+    implementation_type* next_;
+    // Pointer to the stored handler or null pointer.
     handler_base* handler_ptr_;
   }; // class implementation_type
 
 private:
+
+  /// Double-linked intrusive list of implementations related to this service.
   class impl_list : private boost::noncopyable
   {
   public:
@@ -294,26 +307,32 @@ public:
   }
 
   void shutdown_service()
-  {   
+  {
+    // Restrict usage of service that is or was in shutdown state.
     shutdown_done_ = true;
+    // Destroy all still active implemenations. Actually, it doesn't destroy 
+    // handler_storage instances but clears them all.
     while (!impl_list_.empty())
     {
       destroy(*impl_list_.front());
-    }      
+    }
   }
 
   void construct(implementation_type& impl)
-  {      
+  {
+    // Add implementation to the list of active implementations.
     mutex_type::scoped_lock lock(mutex_);
     impl_list_.push_front(impl);     
   }
 
   void destroy(implementation_type& impl)
-  {   
+  {
+    // Exclude implementation from the list of active implementations.
     mutex_type::scoped_lock lock(mutex_);        
     impl_list_.erase(impl);
     lock.unlock();
 
+    // Destroy stored handler if it exists.
     handler_base* handler_ptr = impl.handler_ptr_;
     impl.handler_ptr_ = 0;      
     if (handler_ptr)
@@ -325,10 +344,13 @@ public:
   template <typename Handler>
   void put(implementation_type& impl, Handler handler)
   {
+    // If service is or was in shutdown state then we can't do anything with
+    // handler.
     if (!shutdown_done_)
     {      
       typedef handler_wrapper<Handler> value_type;
       typedef detail::handler_alloc_traits<Handler, value_type> alloc_traits;
+
       // Allocate raw memory for handler
       detail::raw_handler_ptr<alloc_traits> raw_ptr(handler);
       // Wrap local handler and copy wrapper into allocated memory
@@ -346,7 +368,7 @@ public:
   }
 
   void post(implementation_type& impl, const arg_type& arg) const
-  {      
+  {
     if (!impl.handler_ptr_)
     {
       boost::throw_exception(bad_handler_call());
@@ -377,9 +399,13 @@ public:
   }
 
 private:
+  // Guard for the impl_list_
   mutex_type mutex_;
-  impl_list impl_list_;
-  bool shutdown_done_;
+  // Double-linked intrusive list of active (constructed but still not
+  // destructed) implementations.
+  impl_list  impl_list_;
+  // Shutdown state flag.
+  bool       shutdown_done_;
 }; // class handler_storage_service
 
 template <typename Arg>
