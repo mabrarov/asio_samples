@@ -96,12 +96,16 @@ public:
 
   friend void* asio_handler_allocate(std::size_t size, this_type* context)
   {
+    // Forward to asio_handler_allocate provided by the specified allocation 
+    // context.
     return ma_asio_handler_alloc_helpers::allocate(size, context->context_);
   }
 
   friend void asio_handler_deallocate(void* pointer, std::size_t size, 
       this_type* context)
   {
+    // Forward to asio_handler_deallocate provided by the specified allocation
+    // context.
     ma_asio_handler_alloc_helpers::deallocate(pointer, size, context->context_);
   }
 
@@ -110,6 +114,7 @@ public:
   template <typename Function>
   friend void asio_handler_invoke(Function&& function, this_type* context)
   {
+    // Forward to asio_handler_invoke provided by source handler.
     ma_asio_handler_invoke_helpers::invoke(std::forward<Function>(function), 
         context->handler_);
   }
@@ -119,6 +124,7 @@ public:
   template <typename Function>
   friend void asio_handler_invoke(const Function& function, this_type* context)
   {
+    // Forward to asio_handler_invoke provided by source handler.
     ma_asio_handler_invoke_helpers::invoke(function, context->handler_);
   }
 
@@ -207,6 +213,7 @@ private:
 
 #if defined(MA_HAS_RVALUE_REFS)
 
+/// Helper for creation of wrapped handler.
 template <typename Context, typename Handler>
 inline context_alloc_handler<
     typename ma::remove_cv_reference<Context>::type, 
@@ -221,6 +228,7 @@ make_context_alloc_handler(Context&& context, Handler&& handler)
 
 #else // defined(MA_HAS_RVALUE_REFS)
 
+/// Helper for creation of wrapped handler.
 template <typename Context, typename Handler>
 inline context_alloc_handler<Context, Handler>
 make_context_alloc_handler(const Context& context, const Handler& handler)
@@ -230,6 +238,14 @@ make_context_alloc_handler(const Context& context, const Handler& handler)
 
 #endif // defined(MA_HAS_RVALUE_REFS)
   
+/// Specialized version of context_alloc_handler that is optimized for reuse of
+/// specified context by the specified source handler.
+/**
+ * The context wrapped by context_alloc_handler2 is additionally passed (by
+ * const reference) to the source handler as first parameter. Comparing to
+ * context_alloc_handler context_alloc_handler2 helps to reduce the resulted
+ * handler size and its copy cost.
+ */
 template <typename Context, typename Handler>
 class context_alloc_handler2
 {
@@ -302,32 +318,32 @@ public:
 
   void operator()()
   {
-    handler_(context_);
+    handler_(static_cast<Context&>(context_));
   }
 
   template <typename Arg1>
   void operator()(const Arg1& arg1)
   {
-    handler_(context_, arg1);
+    handler_(static_cast<Context&>(context_), arg1);
   }
 
   template <typename Arg1, typename Arg2>
   void operator()(const Arg1& arg1, const Arg2& arg2)
   {
-    handler_(context_, arg1, arg2);
+    handler_(static_cast<Context&>(context_), arg1, arg2);
   }
 
   template <typename Arg1, typename Arg2, typename Arg3>
   void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3)
   {
-    handler_(context_, arg1, arg2, arg3);
+    handler_(static_cast<Context&>(context_), arg1, arg2, arg3);
   }
 
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4>
   void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3, 
       const Arg4& arg4)
   {
-    handler_(context_, arg1, arg2, arg3, arg4);
+    handler_(static_cast<Context&>(context_), arg1, arg2, arg3, arg4);
   }
 
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4, 
@@ -335,7 +351,7 @@ public:
   void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3, 
       const Arg4& arg4, const Arg5& arg5)
   {
-    handler_(context_, arg1, arg2, arg3, arg4, arg5);
+    handler_(static_cast<Context&>(context_), arg1, arg2, arg3, arg4, arg5);
   }
 
   void operator()() const
@@ -346,26 +362,26 @@ public:
   template <typename Arg1>
   void operator()(const Arg1& arg1) const
   {
-    handler_(context_, arg1);
+    handler_(static_cast<Context&>(context_), arg1);
   }
 
   template <typename Arg1, typename Arg2>
   void operator()(const Arg1& arg1, const Arg2& arg2) const
   {
-    handler_(context_, arg1, arg2);
+    handler_(static_cast<Context&>(context_), arg1, arg2);
   }
 
   template <typename Arg1, typename Arg2, typename Arg3>
   void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3) const
   {
-    handler_(context_, arg1, arg2, arg3);
+    handler_(static_cast<Context&>(context_), arg1, arg2, arg3);
   }
 
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4>
   void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3, 
       const Arg4& arg4) const
   {
-    handler_(context_, arg1, arg2, arg3, arg4);
+    handler_(static_cast<Context&>(context_), arg1, arg2, arg3, arg4);
   }
 
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4, 
@@ -373,7 +389,7 @@ public:
   void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3, 
       const Arg4& arg4, const Arg5& arg5) const
   {
-    handler_(context_, arg1, arg2, arg3, arg4, arg5);
+    handler_(static_cast<Context&>(context_), arg1, arg2, arg3, arg4, arg5);
   }
 
 private:

@@ -61,6 +61,7 @@ class binder1
 {
 private:
   typedef binder1<Handler, Arg1> this_type;
+  // Asio doesn't require this.
   this_type& operator=(const this_type&);
 
 public:
@@ -107,12 +108,14 @@ public:
 
   friend void* asio_handler_allocate(std::size_t size, this_type* context)
   {
+    // Forward to asio_handler_allocate provided by source handler.
     return ma_asio_handler_alloc_helpers::allocate(size, context->handler_);
   }
 
   friend void asio_handler_deallocate(void* pointer, std::size_t size, 
       this_type* context)
   {
+    // Forward to asio_handler_deallocate provided by source handler.
     ma_asio_handler_alloc_helpers::deallocate(pointer, size, 
         context->handler_);
   }
@@ -122,6 +125,7 @@ public:
   template <typename Function>
   friend void asio_handler_invoke(Function&& function, this_type* context)
   {
+    // Forward to asio_handler_invoke provided by source handler.
     ma_asio_handler_invoke_helpers::invoke(std::forward<Function>(function), 
         context->handler_);
   }
@@ -131,6 +135,7 @@ public:
   template <typename Function>
   friend void asio_handler_invoke(const Function& function, this_type* context)
   {
+    // Forward to asio_handler_invoke provided by source handler.
     ma_asio_handler_invoke_helpers::invoke(function, context->handler_);
   }
 
@@ -143,6 +148,7 @@ private:
 
 #if defined(MA_HAS_RVALUE_REFS)
 
+/// Helper for creation of binded handler.
 template <typename Handler, typename Arg1>
 inline binder1<typename ma::remove_cv_reference<Handler>::type,
     typename ma::remove_cv_reference<Arg1>::type> 
@@ -156,6 +162,7 @@ bind_handler(Handler&& handler, Arg1&& arg1)
 
 #else // defined(MA_HAS_RVALUE_REFS)
 
+/// Helper for creation of binded handler.
 template <typename Handler, typename Arg1>
 inline binder1<Handler, Arg1> 
 bind_handler(const Handler& handler, const Arg1& arg1)
