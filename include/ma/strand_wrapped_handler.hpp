@@ -42,11 +42,11 @@ namespace ma {
  *
  * Note that strand_wrapped_handler (like the one created by 
  * asio::io_service::strand::wrap) doesn't simply override-with-replacement the
- * execution context of the source handler (like context_wrapped_handler does).
- * strand_wrapped_handler adds strand related execution context before the one
- * provided by source handler.
+ * execution strategy of the source handler (like context_wrapped_handler 
+ * does). strand_wrapped_handler adds strand related execution strategy before 
+ * the one provided by source handler.
  *
- * "Execution context" means handler related free function asio_handler_invoke
+ * "Execution strategy" means handler related free function asio_handler_invoke
  * or the default one defined by Asio.
  * http://www.boost.org/doc/libs/1_46_1/doc/html/boost_asio/reference/Handler.html
  *
