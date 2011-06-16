@@ -48,8 +48,8 @@
  *   strand.dispatch(boost::bind(f, a1, ... an)); 
  * ...
  * the result of asio::io_service::strand::wrap is too "heavy": being called by
- * means of asio_handler_invoke it does double-call (and double check) through 
- * the related asio::io_service::strand. 
+ * means of asio_handler_invoke it does recursive-call (and double check) 
+ * through the related asio::io_service::strand. 
  *
  * Because of Asio never calls handler directly by operator() (except the 
  * default implementation of asio_handler_invoke) but always do it by the means
