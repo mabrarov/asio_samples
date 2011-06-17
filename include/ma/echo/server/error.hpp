@@ -67,6 +67,10 @@ public:
       return "Invalid state.";
     case server_error::operation_aborted:
       return "Operation aborted.";
+    case server_error::inactivity_timeout:
+      return "Inactivity timeout.";
+    case server_error::no_memory_for_session:
+      return "No memory for session.";
     default:
       return "Unknown ma::echo::server error.";
     }

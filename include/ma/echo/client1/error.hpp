@@ -66,6 +66,8 @@ public:
       return "Invalid state.";
     case client1_error::operation_aborted:
       return "Operation aborted.";
+    case client1_error::operation_not_supported:
+      return "Operation not supported.";
     default:
       return "Unknown ma::echo::client1 error.";
     }
