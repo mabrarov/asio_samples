@@ -23,15 +23,15 @@
 /// Turns on move semantic support.
 #define MA_HAS_RVALUE_REFS
 
-/// Turns on explicit definition of move constructor.
+/// Turns on explicit definition of move constructor (and copy constructor).
 #define MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR
 
 /// Defines has the functors created by means of boost::bind move constructor
 /// (explicit or implicit).
 /**
- * If functors created by means of boost::bind has no move constructor then 
- * some of the asio-samples explicitly define and use binders with (explicit -
- * see MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR) move constructor.
+ * If functors created by means of boost::bind have no move constructor then 
+ * some of the asio-samples explicitly define and use binders with (explicit or
+ * implicit - see MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR) move constructor.
  */
 #define MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR
 

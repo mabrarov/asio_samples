@@ -80,10 +80,20 @@ template <typename Allocator, typename Handler>
 class custom_alloc_handler
 {
 private:
-  typedef custom_alloc_handler<Allocator, Handler> this_type;  
+  typedef custom_alloc_handler<Allocator, Handler> this_type;
 
 public:
   typedef void result_type;
+
+#if defined(_DEBUG)
+
+  ~custom_alloc_handler()
+  {
+    // For the check of usage of asio custom memory allocation.
+    allocator_ = 0;
+  }
+
+#endif // defined(_DEBUG)
 
 #if defined(MA_HAS_RVALUE_REFS)
 
@@ -94,7 +104,7 @@ public:
   {
   }
 
-#if defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
+#if defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR) || defined(_DEBUG)
 
   custom_alloc_handler(this_type&& other)
     : allocator_(other.allocator_)
@@ -102,7 +112,17 @@ public:
   {
   }
 
-#endif // defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
+#endif // defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR) || defined(_DEBUG)
+
+#if defined(_DEBUG)
+
+  custom_alloc_handler(const this_type& other)
+    : allocator_(other.allocator_)
+    , handler_(other.handler_)
+  {
+  }
+
+#endif // defined(_DEBUG)
 
 #else // defined(MA_HAS_RVALUE_REFS)
 
@@ -113,14 +133,6 @@ public:
   }
 
 #endif // defined(MA_HAS_RVALUE_REFS)
-
-  ~custom_alloc_handler()
-  {
-#if defined(_DEBUG)
-    // For the check of usage of asio custom memory allocation.
-    allocator_ = 0;
-#endif // defined(_DEBUG)              
-  }
 
   friend void* asio_handler_allocate(std::size_t size, this_type* context)
   {

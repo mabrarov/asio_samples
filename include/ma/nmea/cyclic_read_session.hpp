@@ -240,6 +240,14 @@ private:
     {
     }
 
+    wrapped_read_handler(const this_type& other)
+      : read_handler_base(other)
+      , handler_(other.handler_)
+      , begin_(other.begin_)
+      , end_(other.end_)
+    {
+    }
+
 #endif // defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
 
 #else // defined(MA_HAS_RVALUE_REFS)

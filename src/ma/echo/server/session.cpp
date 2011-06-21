@@ -39,21 +39,17 @@ public:
   {
   } 
 
-#if defined(_DEBUG)
-
-  io_handler_binder(const this_type& other)
-    : function_(other.function_)
-    , session_(other.session_)
-  {
-  }
-
-#endif // defined(_DEBUG)
-
 #if defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
 
   io_handler_binder(this_type&& other)
     : function_(other.function_)
     , session_(std::move(other.session_))
+  {
+  }
+
+  io_handler_binder(const this_type& other)
+    : function_(other.function_)
+    , session_(other.session_)
   {
   }
 
@@ -67,7 +63,7 @@ public:
 
 private:
   function_type function_;
-  session_ptr session_;
+  session_ptr   session_;
 }; // class io_handler_binder
 
 class timer_handler_binder
@@ -86,21 +82,17 @@ public:
   {
   } 
 
-#if defined(_DEBUG)
-
-  timer_handler_binder(const this_type& other)
-    : function_(other.function_)
-    , session_(other.session_)
-  {
-  }
-
-#endif // defined(_DEBUG)
-
 #if defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
 
   timer_handler_binder(this_type&& other)
     : function_(other.function_)
     , session_(std::move(other.session_))
+  {
+  }
+
+  timer_handler_binder(const this_type& other)
+    : function_(other.function_)
+    , session_(other.session_)
   {
   }
 
@@ -113,7 +105,7 @@ public:
 
 private:
   function_type function_;
-  session_ptr session_;
+  session_ptr   session_;
 }; // class timer_handler_binder
 
 #endif // defined(MA_HAS_RVALUE_REFS) 

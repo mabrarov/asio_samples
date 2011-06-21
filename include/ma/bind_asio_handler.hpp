@@ -82,6 +82,12 @@ public:
   {
   }
 
+  binder1(const this_type& other)
+    : handler_(other.handler_)
+    , arg1_(other.arg1_)
+  {
+  }
+
 #endif // defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
 
 #else // defined(MA_HAS_RVALUE_REFS)
@@ -199,6 +205,13 @@ public:
     : handler_(std::move(other.handler_))
     , arg1_(std::move(other.arg1_))
     , arg2_(std::move(other.arg2_))
+  {
+  }
+
+  binder2(const this_type& other)
+    : handler_(other.handler_)
+    , arg1_(other.arg1_)
+    , arg2_(other.arg2_)
   {
   }
 
@@ -320,6 +333,14 @@ public:
     , arg1_(std::move(other.arg1_))
     , arg2_(std::move(other.arg2_))
     , arg3_(std::move(other.arg3_))
+  {
+  }
+
+  binder3(const this_type& other)
+    : handler_(other.handler_)
+    , arg1_(other.arg1_)
+    , arg2_(other.arg2_)
+    , arg3_(other.arg3_)
   {
   }
 
@@ -451,6 +472,15 @@ public:
     , arg2_(std::move(other.arg2_))
     , arg3_(std::move(other.arg3_))
     , arg4_(std::move(other.arg4_))
+  {
+  }
+
+  binder4(const this_type& other)
+    : handler_(other.handler_)
+    , arg1_(other.arg1_)
+    , arg2_(other.arg2_)
+    , arg3_(other.arg3_)
+    , arg4_(other.arg4_)
   {
   }
 
@@ -594,6 +624,16 @@ public:
     , arg3_(std::move(other.arg3_))
     , arg4_(std::move(other.arg4_))
     , arg5_(std::move(other.arg5_))
+  {
+  }
+
+  binder5(const this_type& other)
+    : handler_(other.handler_)
+    , arg1_(other.arg1_)
+    , arg2_(other.arg2_)
+    , arg3_(other.arg3_)
+    , arg4_(other.arg4_)
+    , arg5_(other.arg5_)
   {
   }
 

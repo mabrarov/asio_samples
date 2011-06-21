@@ -80,6 +80,12 @@ public:
   {
   }
 
+  strand_wrapped_handler(const this_type& other)
+    : strand_(other.strand_)
+    , handler_(other.handler_)
+  {
+  }
+
 #endif // defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
 
 #else // defined(MA_HAS_RVALUE_REFS)

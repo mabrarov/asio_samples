@@ -46,23 +46,19 @@ public:
   {
   }
 
-#if defined(_DEBUG)
-
-  accept_handler_binder(const this_type& other)
-    : function_(other.function_)
-    , session_manager_(other.session_manager_)
-    , session_data_(other.session_data_)
-  {
-  }
-
-#endif // defined(_DEBUG)
-
 #if defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
 
   accept_handler_binder(this_type&& other)
     : function_(other.function_)
     , session_manager_(std::move(other.session_manager_))
     , session_data_(std::move(other.session_data_))
+  {
+  }
+
+  accept_handler_binder(const this_type& other)
+    : function_(other.function_)
+    , session_manager_(other.session_manager_)
+    , session_data_(other.session_data_)
   {
   }
 
@@ -100,23 +96,19 @@ public:
   {
   }
 
-#if defined(_DEBUG)
-
-  session_dispatch_binder(const this_type& other)
-    : function_(other.function_)
-    , session_manager_(other.session_manager_)
-    , session_data_(other.session_data_)
-  {
-  }
-
-#endif // defined(_DEBUG)
-
 #if defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
 
   session_dispatch_binder(this_type&& other)
     : function_(other.function_)
     , session_manager_(std::move(other.session_manager_))
     , session_data_(std::move(other.session_data_))
+  {
+  }
+
+  session_dispatch_binder(const this_type& other)
+    : function_(other.function_)
+    , session_manager_(other.session_manager_)
+    , session_data_(other.session_data_)
   {
   }
 
@@ -156,18 +148,6 @@ public:
   {
   }                  
 
-#if defined(_DEBUG)
-
-  session_handler_binder(const this_type& other)
-    : function_(other.function_)
-    , session_manager_(other.session_manager_)
-    , session_data_(other.session_data_)
-    , error_(other.error_)
-  {
-  }
-
-#endif // defined(_DEBUG)
-
 #if defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
 
   session_handler_binder(this_type&& other)
@@ -175,6 +155,14 @@ public:
     , session_manager_(std::move(other.session_manager_))
     , session_data_(std::move(other.session_data_))
     , error_(std::move(other.error_))
+  {
+  }
+
+  session_handler_binder(const this_type& other)
+    : function_(other.function_)
+    , session_manager_(other.session_manager_)
+    , session_data_(other.session_data_)
+    , error_(other.error_)
   {
   }
 

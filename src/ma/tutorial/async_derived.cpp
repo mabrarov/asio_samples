@@ -47,6 +47,12 @@ public:
   {
   }
 
+  timer_handler_binder(const this_type& other)
+    : function_(other.function_)
+    , async_derived_(other.async_derived_)
+  {
+  }
+
 #endif // defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
 
   void operator()(const boost::system::error_code& error)

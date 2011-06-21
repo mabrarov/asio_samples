@@ -59,6 +59,13 @@ public:
   {
   }
 
+  forward_binder(const this_type& other)
+    : async_implementation_(other.async_implementation_)
+    , do_something_handler_(other.do_something_handler_)
+    , function_(other.function_)
+  {
+  }
+
 #endif // defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
 
 #else // defined(MA_HAS_RVALUE_REFS)
@@ -121,6 +128,11 @@ public:
   {
   }
 
+  do_something_handler_adapter(const this_type& other)
+    : do_something_handler_(other.do_something_handler_)
+  {
+  }
+
 #endif // defined(MA_HAS_RVALUE_REFS) 
        //     && defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
 
@@ -168,6 +180,12 @@ public:
   do_something_handler_binder(this_type&& other)
     : do_something_handler_(std::move(other.do_something_handler_))
     , error_(std::move(other.error_))
+  {
+  }
+
+  do_something_handler_binder(const this_type& other)
+    : do_something_handler_(other.do_something_handler_)
+    , error_(other.error_)
   {
   }
 
@@ -226,6 +244,12 @@ public:
   timer_handler_binder(this_type&& other)
     : function_(other.function_)
     , async_implementation_(std::move(other.async_implementation_))
+  {
+  }
+
+  timer_handler_binder(const this_type& other)
+    : function_(other.function_)
+    , async_implementation_(other.async_implementation_)
   {
   }
 

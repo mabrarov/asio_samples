@@ -82,6 +82,12 @@ public:
   {
   }
 
+  context_alloc_handler(const this_type& other)
+    : context_(other.context_)
+    , handler_(other.handler_)
+  {
+  }
+
 #endif // defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
 
 #else // defined(MA_HAS_RVALUE_REFS)
@@ -276,6 +282,12 @@ public:
   {
   }
 
+  context_alloc_handler2(const this_type& other)
+    : context_(other.context_)
+    , handler_(other.handler_)
+  {
+  }
+
 #endif // defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
 
 #else // defined(MA_HAS_RVALUE_REFS)
@@ -325,32 +337,32 @@ public:
 
   void operator()()
   {
-    handler_(static_cast<Context&>(context_));
+    handler_(static_cast<const Context&>(context_));
   }
 
   template <typename Arg1>
   void operator()(const Arg1& arg1)
   {
-    handler_(static_cast<Context&>(context_), arg1);
+    handler_(static_cast<const Context&>(context_), arg1);
   }
 
   template <typename Arg1, typename Arg2>
   void operator()(const Arg1& arg1, const Arg2& arg2)
   {
-    handler_(static_cast<Context&>(context_), arg1, arg2);
+    handler_(static_cast<const Context&>(context_), arg1, arg2);
   }
 
   template <typename Arg1, typename Arg2, typename Arg3>
   void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3)
   {
-    handler_(static_cast<Context&>(context_), arg1, arg2, arg3);
+    handler_(static_cast<const Context&>(context_), arg1, arg2, arg3);
   }
 
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4>
   void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3, 
       const Arg4& arg4)
   {
-    handler_(static_cast<Context&>(context_), arg1, arg2, arg3, arg4);
+    handler_(static_cast<const Context&>(context_), arg1, arg2, arg3, arg4);
   }
 
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4, 
@@ -358,7 +370,8 @@ public:
   void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3, 
       const Arg4& arg4, const Arg5& arg5)
   {
-    handler_(static_cast<Context&>(context_), arg1, arg2, arg3, arg4, arg5);
+    handler_(static_cast<const Context&>(context_), arg1, arg2, arg3, arg4,
+        arg5);
   }
 
   void operator()() const
@@ -369,26 +382,26 @@ public:
   template <typename Arg1>
   void operator()(const Arg1& arg1) const
   {
-    handler_(static_cast<Context&>(context_), arg1);
+    handler_(context_, arg1);
   }
 
   template <typename Arg1, typename Arg2>
   void operator()(const Arg1& arg1, const Arg2& arg2) const
   {
-    handler_(static_cast<Context&>(context_), arg1, arg2);
+    handler_(context_, arg1, arg2);
   }
 
   template <typename Arg1, typename Arg2, typename Arg3>
   void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3) const
   {
-    handler_(static_cast<Context&>(context_), arg1, arg2, arg3);
+    handler_(context_, arg1, arg2, arg3);
   }
 
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4>
   void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3, 
       const Arg4& arg4) const
   {
-    handler_(static_cast<Context&>(context_), arg1, arg2, arg3, arg4);
+    handler_(context_, arg1, arg2, arg3, arg4);
   }
 
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4, 
@@ -396,7 +409,7 @@ public:
   void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3, 
       const Arg4& arg4, const Arg5& arg5) const
   {
-    handler_(static_cast<Context&>(context_), arg1, arg2, arg3, arg4, arg5);
+    handler_(context_, arg1, arg2, arg3, arg4, arg5);
   }
 
 private:

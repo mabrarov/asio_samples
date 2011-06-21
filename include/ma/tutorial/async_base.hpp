@@ -136,6 +136,12 @@ private:
     {
     }
 
+    forward_handler_binder(const this_type& other)
+      : function_(other.function_)
+      , async_base_(other.async_base_)
+    {
+    }
+
 #endif // defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
 
     void operator()(const Arg& arg)

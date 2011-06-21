@@ -170,21 +170,17 @@ private:
     {
     }
 
-#if defined(_DEBUG)
-
-    forward_handler_binder(const this_type& other)
-      : function_(other.function_)
-      , session_(other.session_)
-    {
-    }
-
-#endif // defined(_DEBUG)
-
 #if defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
 
     forward_handler_binder(this_type&& other)
       : function_(other.function_)
       , session_(std::move(other.session_))
+    {
+    }    
+
+    forward_handler_binder(const this_type& other)
+      : function_(other.function_)
+      , session_(other.session_)
     {
     }
 
@@ -197,7 +193,7 @@ private:
 
   private:
     function_type function_;
-    session_ptr session_;          
+    session_ptr   session_;          
   }; // class forward_handler_binder
 
 #endif // defined(MA_HAS_RVALUE_REFS) 

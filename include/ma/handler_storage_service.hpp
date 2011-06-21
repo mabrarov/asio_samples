@@ -132,6 +132,14 @@ private:
     {
     }
 
+    handler_wrapper(const this_type& other)
+      : handler_base(other)
+      , io_service_(other.io_service_)
+      , work_(other.work_)
+      , handler_(other.handler_)
+    {
+    }
+
 #endif // defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
 
 #else // defined(MA_HAS_RVALUE_REFS)
