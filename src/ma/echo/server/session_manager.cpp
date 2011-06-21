@@ -29,7 +29,6 @@ class session_manager::accept_handler_binder
 {
 private:
   typedef accept_handler_binder this_type;
-  this_type& operator=(const this_type&);
 
 public:
   typedef void result_type;
@@ -48,13 +47,17 @@ public:
   }
 
 #if defined(_DEBUG)
+
   accept_handler_binder(const this_type& other)
     : function_(other.function_)
     , session_manager_(other.session_manager_)
     , session_data_(other.session_data_)
   {
   }
+
 #endif // defined(_DEBUG)
+
+#if defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
 
   accept_handler_binder(this_type&& other)
     : function_(other.function_)
@@ -62,6 +65,8 @@ public:
     , session_data_(std::move(other.session_data_))
   {
   }
+
+#endif // defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
 
   void operator()(const boost::system::error_code& error)
   {
@@ -78,7 +83,6 @@ class session_manager::session_dispatch_binder
 {
 private:
   typedef session_dispatch_binder this_type;
-  this_type& operator=(const this_type&);
 
 public:
   typedef void (*function_type)(
@@ -97,13 +101,17 @@ public:
   }
 
 #if defined(_DEBUG)
+
   session_dispatch_binder(const this_type& other)
     : function_(other.function_)
     , session_manager_(other.session_manager_)
     , session_data_(other.session_data_)
   {
   }
+
 #endif // defined(_DEBUG)
+
+#if defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
 
   session_dispatch_binder(this_type&& other)
     : function_(other.function_)
@@ -111,6 +119,8 @@ public:
     , session_data_(std::move(other.session_data_))
   {
   }
+
+#endif // defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
 
   void operator()(const boost::system::error_code& error)
   {
@@ -127,7 +137,6 @@ class session_manager::session_handler_binder
 {
 private:
   typedef session_handler_binder this_type;
-  this_type& operator=(const this_type&);
 
 public:
   typedef void result_type;
@@ -148,6 +157,7 @@ public:
   }                  
 
 #if defined(_DEBUG)
+
   session_handler_binder(const this_type& other)
     : function_(other.function_)
     , session_manager_(other.session_manager_)
@@ -155,7 +165,10 @@ public:
     , error_(other.error_)
   {
   }
+
 #endif // defined(_DEBUG)
+
+#if defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
 
   session_handler_binder(this_type&& other)
     : function_(other.function_)
@@ -164,6 +177,8 @@ public:
     , error_(std::move(other.error_))
   {
   }
+
+#endif // defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
 
   void operator()()
   {

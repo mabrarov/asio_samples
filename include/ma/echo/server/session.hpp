@@ -158,7 +158,6 @@ private:
   {
   private:
     typedef forward_handler_binder this_type;
-    this_type& operator=(const this_type&);
 
   public:
     typedef void result_type;
@@ -172,18 +171,24 @@ private:
     }
 
 #if defined(_DEBUG)
+
     forward_handler_binder(const this_type& other)
       : function_(other.function_)
       , session_(other.session_)
     {
     }
-#endif
+
+#endif // defined(_DEBUG)
+
+#if defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
 
     forward_handler_binder(this_type&& other)
       : function_(other.function_)
       , session_(std::move(other.session_))
     {
     }
+
+#endif // defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
 
     void operator()(const Arg& arg)
     {

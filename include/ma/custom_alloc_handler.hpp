@@ -13,6 +13,7 @@
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
 #include <cstddef>
+#include <boost/utility.hpp>
 #include <ma/config.hpp>
 #include <ma/handler_alloc_helpers.hpp>
 #include <ma/handler_invoke_helpers.hpp>
@@ -53,9 +54,9 @@ namespace ma {
  * See ma/handler_allocator.hpp for implementations of handler allocator.
  *
  * The functors created by means of custom_alloc_handler meet the requirements
- * of Asio handler and store only a reference (pointer in debug version) to the
- * specified allocator. So the source handler is responsible for the 
- * availability (life time) of the specified handler allocator.
+ * of Asio handler and store only a pointer to the specified allocator. So the
+ * source handler is responsible for the availability (life time) of the 
+ * specified handler allocator.
  *
  * Usage of free function make_custom_alloc_handler can help in construction of
  * functors.
@@ -64,7 +65,7 @@ namespace ma {
  * differences:
  *
  * @li context_alloc_handler makes and stores copy of context and 
- * custom_alloc_handler stores only reference to provided handler allocator.
+ * custom_alloc_handler stores only pointer to provided handler allocator.
  * @li custom_alloc_handler has additional debug check against an error found
  * in some of the Boost.Asio versions (older than Boost 1.46). See
  * http://asio-samples.blogspot.com/2010/07/chris.html for details.
@@ -79,8 +80,7 @@ template <typename Allocator, typename Handler>
 class custom_alloc_handler
 {
 private:
-  typedef custom_alloc_handler<Allocator, Handler> this_type;
-  this_type& operator=(const this_type&);
+  typedef custom_alloc_handler<Allocator, Handler> this_type;  
 
 public:
   typedef void result_type;
@@ -89,14 +89,12 @@ public:
 
   template <typename H>
   custom_alloc_handler(Allocator& allocator, H&& handler)
-#if defined(_DEBUG)
     : allocator_(boost::addressof(allocator))
-#else
-    : allocator_(allocator)
-#endif // defined(_DEBUG)  
     , handler_(std::forward<H>(handler))
   {
   }
+
+#if defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
 
   custom_alloc_handler(this_type&& other)
     : allocator_(other.allocator_)
@@ -104,14 +102,12 @@ public:
   {
   }
 
+#endif // defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
+
 #else // defined(MA_HAS_RVALUE_REFS)
 
   custom_alloc_handler(Allocator& allocator, const Handler& handler)
-#if defined(_DEBUG)
     : allocator_(boost::addressof(allocator))
-#else
-    : allocator_(allocator)
-#endif // defined(_DEBUG)  
     , handler_(handler)
   {
   }
@@ -128,21 +124,13 @@ public:
 
   friend void* asio_handler_allocate(std::size_t size, this_type* context)
   {
-#if defined(_DEBUG)
     return context->allocator_->allocate(size);
-#else
-    return context->allocator_.allocate(size);
-#endif // defined(_DEBUG)  
   }
 
   friend void asio_handler_deallocate(void* pointer, std::size_t /*size*/, 
       this_type* context)
   {
-#if defined(_DEBUG)
     context->allocator_->deallocate(pointer);
-#else
-    context->allocator_.deallocate(pointer);
-#endif // defined(_DEBUG)  
   } 
 
 #if defined(MA_HAS_RVALUE_REFS)
@@ -241,14 +229,8 @@ public:
   }
 
 private:
-
-#if defined(_DEBUG)
   Allocator* allocator_;
-#else
-  Allocator& allocator_;
-#endif // defined(_DEBUG)
-
-  Handler handler_;
+  Handler    handler_;
 }; //class custom_alloc_handler 
 
 #if defined(MA_HAS_RVALUE_REFS)

@@ -60,9 +60,7 @@ template <typename Handler, typename Arg1>
 class binder1
 {
 private:
-  typedef binder1<Handler, Arg1> this_type;
-  // Asio doesn't require this.
-  this_type& operator=(const this_type&);
+  typedef binder1<Handler, Arg1> this_type;  
 
 public:
   typedef void result_type;      
@@ -76,11 +74,15 @@ public:
   {
   }
 
+#if defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
+
   binder1(this_type&& other)
     : handler_(std::move(other.handler_))
     , arg1_(std::move(other.arg1_))
   {
   }
+
+#endif // defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
 
 #else // defined(MA_HAS_RVALUE_REFS)
 
@@ -176,8 +178,7 @@ template <typename Handler, typename Arg1, typename Arg2>
 class binder2
 {
 private:
-  typedef binder2<Handler, Arg1, Arg2> this_type;
-  this_type& operator=(const this_type&);
+  typedef binder2<Handler, Arg1, Arg2> this_type;  
 
 public:
   typedef void result_type;      
@@ -192,12 +193,16 @@ public:
   {
   }
 
+#if defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
+
   binder2(this_type&& other)
     : handler_(std::move(other.handler_))
     , arg1_(std::move(other.arg1_))
     , arg2_(std::move(other.arg2_))
   {
   }
+
+#endif // defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
 
 #else // defined(MA_HAS_RVALUE_REFS)
 
@@ -292,8 +297,7 @@ template <typename Handler, typename Arg1, typename Arg2, typename Arg3>
 class binder3
 {
 private:
-  typedef binder3<Handler, Arg1, Arg2, Arg3> this_type;
-  this_type& operator=(const this_type&);
+  typedef binder3<Handler, Arg1, Arg2, Arg3> this_type;  
 
 public:
   typedef void result_type;
@@ -309,6 +313,8 @@ public:
   {
   }
 
+#if defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
+
   binder3(this_type&& other)
     : handler_(std::move(other.handler_))
     , arg1_(std::move(other.arg1_))
@@ -316,6 +322,8 @@ public:
     , arg3_(std::move(other.arg3_))
   {
   }
+
+#endif // defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
 
 #else // defined(MA_HAS_RVALUE_REFS)
 
@@ -418,8 +426,7 @@ template <typename Handler, typename Arg1, typename Arg2, typename Arg3,
 class binder4
 {
 private:
-  typedef binder4<Handler, Arg1, Arg2, Arg3, Arg4> this_type;
-  this_type& operator=(const this_type&);
+  typedef binder4<Handler, Arg1, Arg2, Arg3, Arg4> this_type;  
 
 public:
   typedef void result_type;
@@ -436,6 +443,8 @@ public:
   {
   }
 
+#if defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
+
   binder4(this_type&& other)
     : handler_(std::move(other.handler_))
     , arg1_(std::move(other.arg1_))
@@ -444,6 +453,8 @@ public:
     , arg4_(std::move(other.arg4_))
   {
   }
+
+#endif // defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
 
 #else // defined(MA_HAS_RVALUE_REFS)
 
@@ -555,8 +566,7 @@ template <typename Handler, typename Arg1, typename Arg2, typename Arg3,
 class binder5
 {
 private:
-  typedef binder5<Handler, Arg1, Arg2, Arg3, Arg4, Arg5> this_type;
-  this_type& operator=(const this_type&);
+  typedef binder5<Handler, Arg1, Arg2, Arg3, Arg4, Arg5> this_type;  
 
 public:
   typedef void result_type;
@@ -574,7 +584,9 @@ public:
     , arg5_(std::forward<A5>(arg5))
   {
   }
-  
+
+#if defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
+
   binder5(this_type&& other)
     : handler_(std::move(other.handler_))
     , arg1_(std::move(other.arg1_))
@@ -584,6 +596,8 @@ public:
     , arg5_(std::move(other.arg5_))
   {
   }
+
+#endif // defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
 
 #else // defined(MA_HAS_RVALUE_REFS)
 

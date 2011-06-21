@@ -61,7 +61,6 @@ private:
   {
   private:
     typedef handler_base this_type;
-    this_type& operator=(const this_type&);
 
   public:
     typedef void (*invoke_func_type)(handler_base*, const arg_type&);
@@ -97,9 +96,9 @@ private:
     }
 
   private:        
-    invoke_func_type invoke_func_;
+    invoke_func_type  invoke_func_;
     destroy_func_type destroy_func_; 
-    data_func_type data_func_;
+    data_func_type    data_func_;
   }; // class handler_base    
       
   /// Wrapper class to hold up handlers with the specified signature.
@@ -108,7 +107,6 @@ private:
   {
   private:
     typedef handler_wrapper<Handler> this_type;
-    this_type& operator=(const this_type&);    
 
   public:
 
@@ -123,7 +121,9 @@ private:
       , handler_(std::forward<H>(handler))
     {
     }
-      
+    
+#if defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
+
     handler_wrapper(this_type&& other)
       : handler_base(std::move(other))
       , io_service_(other.io_service_)
@@ -131,6 +131,8 @@ private:
       , handler_(std::move(other.handler_))
     {
     }
+
+#endif // defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
 
 #else // defined(MA_HAS_RVALUE_REFS)
 

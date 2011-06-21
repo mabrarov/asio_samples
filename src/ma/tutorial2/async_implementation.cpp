@@ -31,7 +31,6 @@ class forward_binder
 {
 private:
   typedef forward_binder this_type;
-  this_type& operator=(const this_type&);
 
 public:
   typedef void result_type;
@@ -51,12 +50,16 @@ public:
   {
   }
 
+#if defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
+
   forward_binder(this_type&& other)
     : async_implementation_(std::move(other.async_implementation_))
     , do_something_handler_(std::move(other.do_something_handler_))
     , function_(other.function_)
   {
   }
+
+#endif // defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
 
 #else // defined(MA_HAS_RVALUE_REFS)
 
@@ -101,7 +104,6 @@ class do_something_handler_adapter
 {        
 private:
   typedef do_something_handler_adapter this_type;
-  this_type& operator=(const this_type&);
 
 public:
   typedef void result_type;
@@ -112,14 +114,15 @@ public:
   {
   }
 
-#if defined(MA_HAS_RVALUE_REFS)
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
 
   do_something_handler_adapter(this_type&& other)
     : do_something_handler_(std::move(other.do_something_handler_))
   {
   }
 
-#endif // defined(MA_HAS_RVALUE_REFS)
+#endif // defined(MA_HAS_RVALUE_REFS) 
+       //     && defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
 
   ~do_something_handler_adapter()
   {
@@ -149,8 +152,7 @@ class do_something_handler_binder
 {        
 private:
   typedef do_something_handler_binder this_type;
-  this_type& operator=(const this_type&);
-
+  
 public:
   typedef void result_type;
 
@@ -161,7 +163,7 @@ public:
   {
   }
 
-#if defined(MA_HAS_RVALUE_REFS)
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
 
   do_something_handler_binder(this_type&& other)
     : do_something_handler_(std::move(other.do_something_handler_))
@@ -169,7 +171,8 @@ public:
   {
   }
 
-#endif // defined(MA_HAS_RVALUE_REFS)
+#endif // defined(MA_HAS_RVALUE_REFS) 
+       //     && defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
 
   ~do_something_handler_binder()
   {
@@ -203,8 +206,7 @@ class timer_handler_binder
 {
 private:
   typedef timer_handler_binder this_type;
-  this_type& operator=(const this_type&);
-
+  
 public:
   typedef void result_type;
   typedef void (async_implementation::*function_type)(
@@ -219,11 +221,15 @@ public:
   {
   } 
 
+#if defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
+
   timer_handler_binder(this_type&& other)
     : function_(other.function_)
     , async_implementation_(std::move(other.async_implementation_))
   {
   }
+
+#endif // defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
 
   void operator()(const boost::system::error_code& error)
   {

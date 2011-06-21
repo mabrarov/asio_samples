@@ -60,8 +60,7 @@ template <typename Context, typename Handler>
 class context_alloc_handler
 {
 private:
-  typedef context_alloc_handler<Context, Handler> this_type;
-  this_type& operator=(const this_type&);
+  typedef context_alloc_handler<Context, Handler> this_type;  
 
 public:
   typedef void result_type;
@@ -75,11 +74,15 @@ public:
   {
   }
 
+#if defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
+
   context_alloc_handler(this_type&& other)
     : context_(std::move(other.context_))
     , handler_(std::move(other.handler_))
   {
   }
+
+#endif // defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
 
 #else // defined(MA_HAS_RVALUE_REFS)
 
@@ -251,8 +254,7 @@ template <typename Context, typename Handler>
 class context_alloc_handler2
 {
 private:
-  typedef context_alloc_handler2<Context, Handler> this_type;
-  this_type& operator=(const this_type&);
+  typedef context_alloc_handler2<Context, Handler> this_type;  
 
 public:
   typedef void result_type;
@@ -266,11 +268,15 @@ public:
   {
   }
 
+#if defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
+
   context_alloc_handler2(this_type&& other)
     : context_(std::move(other.context_))
     , handler_(std::move(other.handler_))
   {
   }
+
+#endif // defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
 
 #else // defined(MA_HAS_RVALUE_REFS)
 

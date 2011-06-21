@@ -26,7 +26,6 @@ class io_handler_binder
 {
 private:
   typedef io_handler_binder this_type;
-  this_type& operator=(const this_type&);
 
 public:
   typedef void result_type;
@@ -41,18 +40,24 @@ public:
   } 
 
 #if defined(_DEBUG)
+
   io_handler_binder(const this_type& other)
     : function_(other.function_)
     , session_(other.session_)
   {
   }
-#endif
+
+#endif // defined(_DEBUG)
+
+#if defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
 
   io_handler_binder(this_type&& other)
     : function_(other.function_)
     , session_(std::move(other.session_))
   {
   }
+
+#endif // defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
 
   void operator()(const boost::system::error_code& error, 
       const std::size_t bytes_transferred)
@@ -69,7 +74,6 @@ class timer_handler_binder
 {
 private:
   typedef timer_handler_binder this_type;
-  this_type& operator=(const this_type&);
 
 public:
   typedef void result_type;
@@ -83,18 +87,24 @@ public:
   } 
 
 #if defined(_DEBUG)
+
   timer_handler_binder(const this_type& other)
     : function_(other.function_)
     , session_(other.session_)
   {
   }
-#endif
+
+#endif // defined(_DEBUG)
+
+#if defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
 
   timer_handler_binder(this_type&& other)
     : function_(other.function_)
     , session_(std::move(other.session_))
   {
   }
+
+#endif // defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
 
   void operator()(const boost::system::error_code& error)
   {

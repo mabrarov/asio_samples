@@ -60,12 +60,17 @@ namespace ma {
  * Move semantic supported.
  * Move constructor is explicitly defined to support MSVC 2010.
  */
+
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable: 4512)
+#endif // #if defined(_MSC_VER)
+
 template <typename Context, typename Handler>
 class context_wrapped_handler
 {
 private:
-  typedef context_wrapped_handler<Context, Handler> this_type;
-  this_type& operator=(const this_type&);
+  typedef context_wrapped_handler<Context, Handler> this_type;  
 
 public:
   typedef void result_type;
@@ -79,11 +84,15 @@ public:
   {
   }
 
+#if defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
+
   context_wrapped_handler(this_type&& other)
     : context_(std::move(other.context_))
     , handler_(std::move(other.handler_))
   {
   }
+
+#endif // defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
 
 #else // defined(MA_HAS_RVALUE_REFS)
 
@@ -211,6 +220,10 @@ private:
   Handler handler_;
 }; //class context_wrapped_handler
 
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif // #if defined(_MSC_VER)
+
 #if defined(MA_HAS_RVALUE_REFS)
 
 template <typename Context, typename Handler>
@@ -235,13 +248,17 @@ make_context_wrapped_handler(const Context& context, const Handler& handler)
 }
 
 #endif // defined(MA_HAS_RVALUE_REFS)
+
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable: 4512)
+#endif // #if defined(_MSC_VER)
   
 template <typename Context, typename Handler>
 class context_wrapped_handler2
 {
 private:
-  typedef context_wrapped_handler2<Context, Handler> this_type;
-  this_type& operator=(const this_type&);
+  typedef context_wrapped_handler2<Context, Handler> this_type;  
 
 public:
   typedef void result_type;
@@ -255,11 +272,15 @@ public:
   {
   }
 
+#if defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
+
   context_wrapped_handler2(this_type&& other)
     : context_(std::move(other.context_))
     , handler_(std::move(other.handler_))
   {
   }
+
+#endif // #if defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
 
 #else // defined(MA_HAS_RVALUE_REFS)
 
@@ -386,6 +407,10 @@ private:
   Context context_;
   Handler handler_;
 }; //class context_wrapped_handler2
+
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif // #if defined(_MSC_VER)
 
 #if defined(MA_HAS_RVALUE_REFS)
 

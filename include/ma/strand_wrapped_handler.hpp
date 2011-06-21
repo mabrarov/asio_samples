@@ -14,6 +14,7 @@
 
 #include <cstddef>
 #include <boost/asio.hpp>
+#include <boost/utility.hpp>
 #include <ma/config.hpp>
 #include <ma/handler_alloc_helpers.hpp>
 #include <ma/context_wrapped_handler.hpp>
@@ -58,8 +59,7 @@ class strand_wrapped_handler
 {
 private:
   typedef strand_wrapped_handler<Handler> this_type;
-  this_type& operator=(const this_type&);
-
+  
 public:
   typedef void result_type;
 
@@ -67,10 +67,12 @@ public:
 
   template <typename H>
   strand_wrapped_handler(boost::asio::io_service::strand& strand, H&& handler)
-    : strand_(strand)
+    : strand_(boost::addressof(strand))
     , handler_(std::forward<H>(handler))
   {
   }
+
+#if defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
 
   strand_wrapped_handler(this_type&& other)
     : strand_(other.strand_)
@@ -78,11 +80,13 @@ public:
   {
   }
 
+#endif // defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
+
 #else // defined(MA_HAS_RVALUE_REFS)
 
   strand_wrapped_handler(boost::asio::io_service::strand& strand, 
       const Handler& handler)
-    : strand_(strand)
+    : strand_(boost::addressof(strand))
     , handler_(handler)
   {
   }
@@ -110,7 +114,7 @@ public:
   template <typename Function>
   friend void asio_handler_invoke(Function&& function, this_type* context)
   {
-    context->strand_.dispatch(make_context_wrapped_handler(context->handler_, 
+    context->strand_->dispatch(make_context_wrapped_handler(context->handler_,
         std::forward<Function>(function)));
   }
 
@@ -119,7 +123,7 @@ public:
   template <typename Function>
   friend void asio_handler_invoke(const Function& function, this_type* context)
   {
-    context->strand_.dispatch(make_context_wrapped_handler(context->handler_, 
+    context->strand_->dispatch(make_context_wrapped_handler(context->handler_,
         function));
   }
 
@@ -202,7 +206,7 @@ public:
   }
 
 private:
-  boost::asio::io_service::strand& strand_;
+  boost::asio::io_service::strand* strand_;
   Handler handler_;
 }; //class strand_wrapped_handler
 

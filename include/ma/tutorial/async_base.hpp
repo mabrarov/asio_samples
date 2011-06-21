@@ -115,8 +115,7 @@ private:
   class forward_handler_binder
   {
   private:
-    typedef forward_handler_binder this_type;
-    this_type& operator=(const this_type&);
+    typedef forward_handler_binder this_type;    
 
   public:
     typedef void result_type;
@@ -129,11 +128,15 @@ private:
     {
     }
 
+#if defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
+
     forward_handler_binder(this_type&& other)
       : function_(other.function_)
       , async_base_(std::move(other.async_base_))
     {
     }
+
+#endif // defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
 
     void operator()(const Arg& arg)
     {
@@ -141,7 +144,7 @@ private:
     }
 
   private:
-    function_type function_;
+    function_type  function_;
     async_base_ptr async_base_;          
   }; // class forward_handler_binder
 

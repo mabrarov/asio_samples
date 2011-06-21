@@ -192,7 +192,6 @@ private:
   {
   private:
     typedef read_handler_base this_type;
-    this_type& operator=(const this_type&);
 
   public:
     typedef read_result_type (*copy_func_type)(
@@ -217,7 +216,6 @@ private:
   {
   private:
     typedef wrapped_read_handler<Handler, Iterator> this_type;
-    this_type& operator=(const this_type&);
 
   public:
 
@@ -232,6 +230,8 @@ private:
     {
     }
 
+#if defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
+
     wrapped_read_handler(this_type&& other)
       : read_handler_base(std::move(other))
       , handler_(std::move(other.handler_))
@@ -239,6 +239,8 @@ private:
       , end_(std::move(other.end_))
     {
     }
+
+#endif // defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
 
 #else // defined(MA_HAS_RVALUE_REFS)
 

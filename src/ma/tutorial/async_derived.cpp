@@ -26,8 +26,7 @@ class timer_handler_binder
 {
 private:
   typedef timer_handler_binder this_type;
-  this_type& operator=(const this_type&);
-
+  
 public:
   typedef void result_type;
   typedef void (async_derived::*function_type)(
@@ -40,11 +39,15 @@ public:
   {
   } 
 
+#if defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
+
   timer_handler_binder(this_type&& other)
     : function_(other.function_)
     , async_derived_(std::move(other.async_derived_))
   {
   }
+
+#endif // defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
 
   void operator()(const boost::system::error_code& error)
   {
