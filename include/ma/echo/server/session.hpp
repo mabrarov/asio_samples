@@ -170,7 +170,7 @@ private:
     {
     }
 
-#if defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
+#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
 
     forward_handler_binder(this_type&& other)
       : function_(other.function_)
@@ -184,7 +184,7 @@ private:
     {
     }
 
-#endif // defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
+#endif // defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
 
     void operator()(const Arg& arg)
     {

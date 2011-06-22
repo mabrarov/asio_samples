@@ -84,7 +84,7 @@ public:
   {
   }
 
-#if defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
+#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
 
   context_wrapped_handler(this_type&& other)
     : context_(std::move(other.context_))
@@ -98,7 +98,7 @@ public:
   {
   }
 
-#endif // defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
+#endif // defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
 
 #else // defined(MA_HAS_RVALUE_REFS)
 
@@ -278,7 +278,7 @@ public:
   {
   }
 
-#if defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
+#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
 
   context_wrapped_handler2(this_type&& other)
     : context_(std::move(other.context_))
@@ -292,7 +292,7 @@ public:
   {
   }
 
-#endif // #if defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
+#endif // #if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
 
 #else // defined(MA_HAS_RVALUE_REFS)
 

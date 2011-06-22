@@ -46,7 +46,7 @@ public:
   {
   }
 
-#if defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
+#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
 
   accept_handler_binder(this_type&& other)
     : function_(other.function_)
@@ -62,7 +62,7 @@ public:
   {
   }
 
-#endif // defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
+#endif // defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
 
   void operator()(const boost::system::error_code& error)
   {
@@ -96,7 +96,7 @@ public:
   {
   }
 
-#if defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
+#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
 
   session_dispatch_binder(this_type&& other)
     : function_(other.function_)
@@ -112,7 +112,7 @@ public:
   {
   }
 
-#endif // defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
+#endif // defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
 
   void operator()(const boost::system::error_code& error)
   {
@@ -148,7 +148,7 @@ public:
   {
   }                  
 
-#if defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
+#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
 
   session_handler_binder(this_type&& other)
     : function_(other.function_)
@@ -166,7 +166,7 @@ public:
   {
   }
 
-#endif // defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
+#endif // defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
 
   void operator()()
   {

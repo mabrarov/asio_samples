@@ -104,7 +104,7 @@ public:
   {
   }
 
-#if defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR) || defined(_DEBUG)
+#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || defined(_DEBUG)
 
   custom_alloc_handler(this_type&& other)
     : allocator_(other.allocator_)
@@ -112,7 +112,7 @@ public:
   {
   }
 
-#endif // defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR) || defined(_DEBUG)
+#endif // defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || defined(_DEBUG)
 
 #if defined(_DEBUG)
 

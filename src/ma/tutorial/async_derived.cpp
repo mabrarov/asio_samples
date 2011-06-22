@@ -39,7 +39,7 @@ public:
   {
   } 
 
-#if defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
+#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
 
   timer_handler_binder(this_type&& other)
     : function_(other.function_)
@@ -53,7 +53,7 @@ public:
   {
   }
 
-#endif // defined(MA_NEED_EXPLICIT_MOVE_CONSTRUCTOR)
+#endif // defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
 
   void operator()(const boost::system::error_code& error)
   {
