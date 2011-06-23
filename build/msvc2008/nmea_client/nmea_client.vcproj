@@ -398,10 +398,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\include\ma\handler_allocation.hpp"
-					>
-				</File>
-				<File
 					RelativePath="..\..\..\include\ma\handler_allocator.hpp"
 					>
 				</File>

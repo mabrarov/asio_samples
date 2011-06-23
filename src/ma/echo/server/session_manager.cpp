@@ -518,6 +518,12 @@ boost::system::error_code session_manager::open(
 
   acceptor_guard closing_guard(acceptor);                
 
+  acceptor.set_option(protocol_type::acceptor::reuse_address(true), error);
+  if (error)
+  {          
+    return error;
+  }
+
   acceptor.bind(endpoint, error);
   if (error)
   {          

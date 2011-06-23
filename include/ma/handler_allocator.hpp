@@ -41,7 +41,7 @@ public:
   /// large enough. Elsewhere allocate memory by means of global operator new.
   void* allocate(std::size_t size)
   {
-    if (!in_use_ && size <= storage_.size)
+    if (!in_use_ && (size <= storage_.size))
     {
       in_use_ = true;
       return storage_.address();
@@ -53,7 +53,7 @@ public:
   /// allocate method.
   void deallocate(void* pointer)
   {
-    if (pointer == storage_.address())
+    if (storage_.address() == pointer)
     {        
       in_use_ = false;
       return;
@@ -114,7 +114,7 @@ public:
   /// large enough. Elsewhere allocate memory by means of global operator new.
   void* allocate(std::size_t size)
   {
-    if (!in_use_ && size <= size_)
+    if (!in_use_ && (size <= size_))
     {        
       in_use_ = true;
       return retrieve_aligned_address();
@@ -128,7 +128,7 @@ public:
   {
     if (storage_initialized())
     {
-      if (pointer == retrieve_aligned_address())
+      if (retrieve_aligned_address() == pointer)
       {
         in_use_ = false;
         return;
