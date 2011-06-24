@@ -14,15 +14,15 @@
 
 #if defined(WIN32)
 #include <mswsock.h>
-#endif // defined(WIN32)
-
 #include <cstddef>
-#include <boost/asio.hpp>
 #include <boost/numeric/conversion/cast.hpp>
-#include <ma/config.hpp>
 #include <ma/bind_asio_handler.hpp>
 #include <ma/handler_alloc_helpers.hpp>
 #include <ma/handler_invoke_helpers.hpp>
+#endif // defined(WIN32)
+
+#include <boost/asio.hpp>
+#include <ma/config.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)
 #include <utility>
@@ -30,6 +30,8 @@
 #endif // defined(MA_HAS_RVALUE_REFS)
 
 namespace ma {
+
+#if defined(WIN32)
 
 namespace detail {
 
@@ -146,6 +148,8 @@ make_connect_ex_handler(const Handler& handler)
 #endif // defined(MA_HAS_RVALUE_REFS)
 
 } // namespace detail
+
+#endif // defined(WIN32)
 
 #if defined(MA_HAS_RVALUE_REFS)
 
