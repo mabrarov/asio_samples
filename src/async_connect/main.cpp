@@ -17,6 +17,8 @@
 #include <boost/asio.hpp>
 #include <boost/system/error_code.hpp>
 #include <ma/async_connect.hpp>
+#include <ma/handler_allocator.hpp>
+#include <ma/custom_alloc_handler.hpp>
 
 namespace {
 
@@ -66,9 +68,9 @@ int main(int /*argc*/, char* /*argv*/[])
 {     
   try
   {  
-    //todo
-    boost::asio::io_service io_service;
+    ma::in_place_handler_allocator<512> handler_allocator;
 
+    boost::asio::io_service io_service;
 
     boost::asio::ip::address peer_address(
         boost::asio::ip::address_v4::loopback());
@@ -76,8 +78,10 @@ int main(int /*argc*/, char* /*argv*/[])
 
     boost::asio::ip::tcp::socket socket(io_service);
 
-    ma::async_connect(socket, peer_endpoint, boost::bind(&handle_connect, 
-        boost::ref(socket), boost::asio::placeholders::error));
+    ma::async_connect(socket, peer_endpoint, 
+        ma::make_custom_alloc_handler(handler_allocator, 
+            boost::bind(&handle_connect, boost::ref(socket), 
+                boost::asio::placeholders::error)));
 
     io_service.run();
 
