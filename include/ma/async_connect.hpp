@@ -197,7 +197,7 @@ void async_connect(Socket& socket,
       detail::make_connect_ex_handler(handler));  
   
   // Initiate the ConnectEx operation.
-  BOOL ok = (*connect_ex_func)(native_socket, peer_endpoint.data(), 
+  BOOL ok = connect_ex_func(native_socket, peer_endpoint.data(), 
       peer_endpoint.size(), NULL, 0, NULL, overlapped.get());
   DWORD last_error = ::GetLastError();
 
