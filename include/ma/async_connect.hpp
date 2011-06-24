@@ -1,0 +1,231 @@
+//
+// Copyright (c) 2010-2011 Marat Abrarov (abrarov@mail.ru)
+//
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+//
+
+#ifndef MA_ASYNC_CONNECT_HPP
+#define MA_ASYNC_CONNECT_HPP
+
+#if defined(_MSC_VER) && (_MSC_VER >= 1020)
+#pragma once
+#endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
+
+#if defined(WIN32)
+#include <mswsock.h>
+#endif // defined(WIN32)
+
+#include <cstddef>
+#include <boost/asio.hpp>
+#include <ma/config.hpp>
+#include <ma/bind_asio_handler.hpp>
+#include <ma/handler_alloc_helpers.hpp>
+#include <ma/handler_invoke_helpers.hpp>
+
+#if defined(MA_HAS_RVALUE_REFS)
+#include <utility>
+#include <ma/type_traits.hpp>
+#endif // defined(MA_HAS_RVALUE_REFS)
+
+namespace ma {
+
+namespace detail {
+
+template <typename Handler>
+class connect_ex_handler
+{
+private:
+  typedef connect_ex_handler<Handler> this_type;  
+
+public:
+  typedef void result_type;
+
+#if defined(MA_HAS_RVALUE_REFS)
+
+  template <typename H>
+  explicit connect_ex_handler(H&& handler)
+    : handler_(std::forward<H>(handler))
+  {
+  }
+
+#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+
+  connect_ex_handler(this_type&& other)
+    : handler_(std::move(other.handler_))
+  {
+  }
+
+  connect_ex_handler(const this_type& other)
+    : handler_(other.handler_)
+  {
+  }
+
+#endif // defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+
+#else // defined(MA_HAS_RVALUE_REFS)
+
+  explicit connect_ex_handler(const Handler& handler)
+    : handler_(handler)
+  {
+  }
+
+#endif // defined(MA_HAS_RVALUE_REFS)
+
+  ~connect_ex_handler()
+  {
+  }
+  
+  friend void* asio_handler_allocate(std::size_t size, this_type* context)
+  {
+    return ma_asio_handler_alloc_helpers::allocate(size, context->handler_);
+  }
+
+  friend void asio_handler_deallocate(void* pointer, std::size_t size, 
+      this_type* context)
+  {
+    ma_asio_handler_alloc_helpers::deallocate(pointer, size, 
+        context->handler_);
+  }
+
+#if defined(MA_HAS_RVALUE_REFS)
+
+  template <typename Function>
+  friend void asio_handler_invoke(Function&& function, this_type* context)
+  {
+    ma_asio_handler_invoke_helpers::invoke(std::forward<Function>(function),
+        context->handler_);
+  }
+
+#else // defined(MA_HAS_RVALUE_REFS)
+
+  template <typename Function>
+  friend void asio_handler_invoke(const Function& function, this_type* context)
+  {
+    ma_asio_handler_invoke_helpers::invoke(function, context->handler_);
+  }
+
+#endif // defined(MA_HAS_RVALUE_REFS)
+
+  void operator()(const boost::system::error_code& error, 
+      std::size_t /*bytes_transferred*/)
+  {
+    handler_(error);
+  }
+
+  void operator()(const boost::system::error_code& error, 
+      std::size_t /*bytes_transferred*/) const
+  {
+    handler_(error);
+  }
+
+private:
+  Handler handler_;
+}; // class connect_ex_handler
+
+#if defined(MA_HAS_RVALUE_REFS)
+
+template <typename Handler>
+inline connect_ex_handler<typename ma::remove_cv_reference<Handler>::type>
+make_connect_ex_handler(Handler&& handler)
+{  
+  typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+  return connect_ex_handler<handler_type>(std::forward<Handler>(handler));
+}
+
+#else // defined(MA_HAS_RVALUE_REFS)
+
+template <typename Handler>
+inline connect_ex_handler<Handler> 
+make_connect_ex_handler(const Handler& handler)
+{
+  return connect_ex_handler<Handler>(handler);
+}
+
+#endif // defined(MA_HAS_RVALUE_REFS)
+
+} // namespace detail
+
+template <typename Socket, typename Handler>
+void async_connect(Socket& socket, 
+    const typename Socket::endpoint_type& peer_endpoint, 
+    const Handler& handler)
+{
+#if defined(WIN32)
+
+  typedef typename Socket::endpoint_type endpoint_type;
+
+  if (!socket.is_open())
+  {
+    // Open the socket before use ConnectEx.
+    boost::system::error_code error;
+    socket.open(peer_endpoint.protocol(), error);
+    if (error)
+    {
+      socket.get_io_service().post(detail::bind_handler(handler, error));
+      return;
+    }
+  }
+
+  SOCKET native_socket = socket.native_handle();
+  GUID connect_ex_guid = WSAID_CONNECTEX;
+  LPFN_CONNECTEX connect_ex_func = 0;
+  DWORD result_bytes;
+
+  int ctrl_result = WSAIoctl(native_socket, SIO_GET_EXTENSION_FUNCTION_POINTER,
+      &connect_ex_guid, sizeof(connect_ex_guid), 
+      &connect_ex_func, sizeof(connect_ex_func), 
+      &result_bytes, NULL, NULL);
+
+  // If ConnectEx wasn't located then fall to common Asio async_connect.
+  if ((SOCKET_ERROR == ctrl_result) || !connect_ex_func)
+  {
+    socket.async_connect(peer_endpoint, handler);
+    return;
+  }
+
+  boost::system::error_code error;
+  socket.bind(endpoint_type(), error);
+  if (error)
+  {
+    socket.get_io_service().post(detail::bind_handler(handler, error));
+    return;
+  }
+
+  // Construct an OVERLAPPED-derived object to contain the handler.
+  boost::asio::windows::overlapped_ptr overlapped(socket.get_io_service(), 
+      detail::make_connect_ex_handler(handler));  
+  
+  // Initiate the ConnectEx operation.
+  BOOL ok = (*connect_ex_func)(native_socket, peer_endpoint.data(), 
+      peer_endpoint.size(), NULL, 0, NULL, overlapped.get());
+  DWORD last_error = ::GetLastError();
+
+  // Check if the operation completed immediately.
+  if ((TRUE != ok) && (ERROR_IO_PENDING != last_error))
+  {
+    // The operation completed immediately, so a completion notification needs
+    // to be posted. When complete() is called, ownership of the OVERLAPPED-
+    // derived object passes to the io_service.
+    boost::system::error_code ec(last_error,
+        boost::asio::error::get_system_category());
+    overlapped.complete(ec, 0);
+  }
+  else
+  {
+    // The operation was successfully initiated, so ownership of the
+    // OVERLAPPED-derived object has passed to the io_service.
+    overlapped.release();
+  }
+
+#else // defined(WIN32)
+
+  socket.async_connect(peer_endpoint, handler);
+
+#endif // defined(WIN32)
+
+}
+
+} // namespace ma
+
+#endif // MA_ASYNC_CONNECT_HPP

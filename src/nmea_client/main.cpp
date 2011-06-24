@@ -10,11 +10,12 @@
 #include <windows.h>
 #endif
 
-#include <cstdlib>
 #include <locale>
-#include <iostream>
-#include <utility>
 #include <vector>
+#include <utility>
+#include <cstdlib>
+#include <iostream>
+#include <exception>
 #include <boost/ref.hpp>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
