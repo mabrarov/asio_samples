@@ -146,12 +146,26 @@ make_connect_ex_handler(const Handler& handler)
 
 } // namespace detail
 
+#if defined(MA_HAS_RVALUE_REFS)
+
+template <typename Socket, typename Handler>
+void async_connect(Socket& socket, 
+    const typename Socket::endpoint_type& peer_endpoint, Handler&& handler)
+
+#else // defined(MA_HAS_RVALUE_REFS)
+
 template <typename Socket, typename Handler>
 void async_connect(Socket& socket, 
     const typename Socket::endpoint_type& peer_endpoint, 
     const Handler& handler)
+
+#endif // defined(MA_HAS_RVALUE_REFS)
 {
 #if defined(WIN32)
+
+#if (_WIN32_WINNT < 0x0501)
+#error The build environment doesn't support necessary Windows SDK header.
+#endif
 
   typedef typename Socket::endpoint_type endpoint_type;
 
@@ -162,7 +176,16 @@ void async_connect(Socket& socket,
     socket.open(peer_endpoint.protocol(), error);
     if (error)
     {
+#if defined(MA_HAS_RVALUE_REFS)
+
+      socket.get_io_service().post(
+          detail::bind_handler(std::forward<Handler>(handler), error));
+
+#else // defined(MA_HAS_RVALUE_REFS)
+
       socket.get_io_service().post(detail::bind_handler(handler, error));
+
+#endif // defined(MA_HAS_RVALUE_REFS)
       return;
     }
   }
@@ -180,7 +203,15 @@ void async_connect(Socket& socket,
   // If ConnectEx wasn't located then fall to common Asio async_connect.
   if ((SOCKET_ERROR == ctrl_result) || !connect_ex_func)
   {
+#if defined(MA_HAS_RVALUE_REFS)
+
+    socket.async_connect(peer_endpoint, std::forward<Handler>(handler));
+
+#else // defined(MA_HAS_RVALUE_REFS)
+
     socket.async_connect(peer_endpoint, handler);
+
+#endif // defined(MA_HAS_RVALUE_REFS)
     return;
   }
 
@@ -188,13 +219,32 @@ void async_connect(Socket& socket,
   socket.bind(endpoint_type(), error);
   if (error)
   {
+#if defined(MA_HAS_RVALUE_REFS)
+
+    socket.get_io_service().post(
+        detail::bind_handler(std::forward<Handler>(handler), error));
+
+#else // defined(MA_HAS_RVALUE_REFS)
+
     socket.get_io_service().post(detail::bind_handler(handler, error));
+
+#endif // defined(MA_HAS_RVALUE_REFS)
     return;
   }
+
+#if defined(MA_HAS_RVALUE_REFS)
+
+  // Construct an OVERLAPPED-derived object to contain the handler.
+  boost::asio::windows::overlapped_ptr overlapped(socket.get_io_service(), 
+      detail::make_connect_ex_handler(std::forward<Handler>(handler)));  
+
+#else // defined(MA_HAS_RVALUE_REFS)
 
   // Construct an OVERLAPPED-derived object to contain the handler.
   boost::asio::windows::overlapped_ptr overlapped(socket.get_io_service(), 
       detail::make_connect_ex_handler(handler));  
+
+#endif // defined(MA_HAS_RVALUE_REFS)
   
   // Initiate the ConnectEx operation.
   BOOL ok = connect_ex_func(native_socket, peer_endpoint.data(), 
@@ -220,7 +270,15 @@ void async_connect(Socket& socket,
 
 #else // defined(WIN32)
 
+#if defined(MA_HAS_RVALUE_REFS)
+
+  socket.async_connect(peer_endpoint, std::forward<Handler>(handler));
+
+#else // defined(MA_HAS_RVALUE_REFS)
+
   socket.async_connect(peer_endpoint, handler);
+
+#endif // defined(MA_HAS_RVALUE_REFS)
 
 #endif // defined(WIN32)
 
