@@ -164,7 +164,8 @@ void async_connect(Socket& socket,
 #if defined(WIN32)
 
 #if (_WIN32_WINNT < 0x0501)
-#error The build environment doesn't support necessary Windows SDK header.
+#error The build environment doesn't support necessary Windows SDK header.\
+  Value of _WIN32_WINNT macro must be >= 0x0501.
 #endif
 
   typedef typename Socket::endpoint_type endpoint_type;
