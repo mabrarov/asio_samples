@@ -22,23 +22,43 @@
 
 namespace {
 
+typedef ma::in_place_handler_allocator<512> allocator_type;
+
 const std::string text_to_write = "Hello, World!";
 
 void handle_connect(boost::asio::ip::tcp::socket& socket, 
+    allocator_type& handler_allocator, std::size_t attempt,
+    const boost::asio::ip::tcp::endpoint& peer_endpoint, 
     const boost::system::error_code& error);
 
 void handle_write(const boost::system::error_code& error, 
     std::size_t bytes_transferred);
 
 void handle_connect(boost::asio::ip::tcp::socket& socket, 
+    allocator_type& handler_allocator, std::size_t attempt, 
+    const boost::asio::ip::tcp::endpoint& peer_endpoint, 
     const boost::system::error_code& error)
 {
   if (error)
   {
     std::cout << "async_connect completed with error: " 
         << error.message() << std::endl;
+
+    boost::system::error_code ignored;
+    socket.close(ignored);
+
+    if (attempt < 10)
+    {
+      ma::async_connect(socket, peer_endpoint, 
+          ma::make_custom_alloc_handler(handler_allocator, 
+              boost::bind(&handle_connect, boost::ref(socket), 
+                  boost::ref(handler_allocator), attempt + 1, peer_endpoint,
+                  boost::asio::placeholders::error)));
+    }
+
     return;
   }
+
   std::cout << "async_connect completed with success" << std::endl;  
   socket.async_write_some(boost::asio::buffer(text_to_write), 
       boost::bind(&handle_write, boost::asio::placeholders::error, 
@@ -57,7 +77,6 @@ void handle_write(const boost::system::error_code& error,
   std::cout << "socket.async_write_some completed with success" << std::endl;
 }
 
-
 } // anonymous namespace
 
 #if defined(WIN32)
@@ -68,7 +87,7 @@ int main(int /*argc*/, char* /*argv*/[])
 {     
   try
   {  
-    ma::in_place_handler_allocator<512> handler_allocator;
+    allocator_type handler_allocator;
 
     boost::asio::io_service io_service;
 
@@ -81,6 +100,7 @@ int main(int /*argc*/, char* /*argv*/[])
     ma::async_connect(socket, peer_endpoint, 
         ma::make_custom_alloc_handler(handler_allocator, 
             boost::bind(&handle_connect, boost::ref(socket), 
+                boost::ref(handler_allocator), 0, peer_endpoint,
                 boost::asio::placeholders::error)));
 
     io_service.run();
