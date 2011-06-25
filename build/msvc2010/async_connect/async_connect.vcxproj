@@ -205,13 +205,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src\async_connect\main.cpp" />
-    <ClCompile Include="..\..\..\src\ma\console_controller.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\include\ma\async_connect.hpp" />
     <ClInclude Include="..\..\..\include\ma\bind_asio_handler.hpp" />
     <ClInclude Include="..\..\..\include\ma\config.hpp" />
-    <ClInclude Include="..\..\..\include\ma\console_controller.hpp" />
     <ClInclude Include="..\..\..\include\ma\context_wrapped_handler.hpp" />
     <ClInclude Include="..\..\..\include\ma\custom_alloc_handler.hpp" />
     <ClInclude Include="..\..\..\include\ma\handler_allocator.hpp" />

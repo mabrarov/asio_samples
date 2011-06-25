@@ -346,14 +346,6 @@
 				RelativePath="..\..\..\src\async_connect\main.cpp"
 				>
 			</File>
-			<Filter
-				Name="ma"
-				>
-				<File
-					RelativePath="..\..\..\src\ma\console_controller.cpp"
-					>
-				</File>
-			</Filter>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -373,10 +365,6 @@
 				</File>
 				<File
 					RelativePath="..\..\..\include\ma\config.hpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\..\include\ma\console_controller.hpp"
 					>
 				</File>
 				<File

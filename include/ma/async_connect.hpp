@@ -147,6 +147,25 @@ make_connect_ex_handler(const Handler& handler)
 
 #endif // defined(MA_HAS_RVALUE_REFS)
 
+template <typename Socket>
+boost::system::error_code bind_to_any(Socket& socket)
+{
+  typedef typename Socket::endpoint_type endpoint_type;
+
+  static const boost::system::error_code ignored(WSAEINVAL, 
+      boost::asio::error::get_system_category());
+
+  boost::system::error_code error;
+  socket.bind(endpoint_type(), error);
+
+  if (ignored == error)
+  {
+    error.clear();
+  }
+
+  return error;
+}
+
 } // namespace detail
 
 #endif // defined(WIN32)
@@ -172,9 +191,7 @@ void async_connect(Socket& socket,
 #error The build environment does not support necessary Windows SDK header.\
   Value of _WIN32_WINNT macro must be >= 0x0501.
 #endif
-
-  typedef typename Socket::endpoint_type endpoint_type;
-
+ 
   if (!socket.is_open())
   {
     // Open the socket before use ConnectEx.
@@ -219,11 +236,9 @@ void async_connect(Socket& socket,
 
 #endif // defined(MA_HAS_RVALUE_REFS)
     return;
-  }
+  }  
 
-  boost::system::error_code error;
-  socket.bind(endpoint_type(), error);
-  if (error)
+  if (boost::system::error_code error = detail::bind_to_any(socket))
   {
 #if defined(MA_HAS_RVALUE_REFS)
 
@@ -264,9 +279,9 @@ void async_connect(Socket& socket,
     // The operation completed immediately, so a completion notification needs
     // to be posted. When complete() is called, ownership of the OVERLAPPED-
     // derived object passes to the io_service.
-    boost::system::error_code ec(last_error,
+    boost::system::error_code error(last_error,
         boost::asio::error::get_system_category());
-    overlapped.complete(ec, 0);
+    overlapped.complete(error, 0);
   }
   else
   {

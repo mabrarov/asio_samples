@@ -44,8 +44,8 @@ void handle_connect(boost::asio::ip::tcp::socket& socket,
     std::cout << "async_connect completed with error: " 
         << error.message() << std::endl;
 
-    boost::system::error_code ignored;
-    socket.close(ignored);
+    //boost::system::error_code ignored;
+    //socket.close(ignored);
 
     if (attempt < 10)
     {

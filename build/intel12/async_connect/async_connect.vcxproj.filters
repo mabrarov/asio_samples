@@ -17,18 +17,12 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\src\ma\console_controller.cpp">
-      <Filter>Source Files\ma</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\src\async_connect\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\include\ma\bind_asio_handler.hpp">
-      <Filter>Header Files\ma</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\ma\console_controller.hpp">
       <Filter>Header Files\ma</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\ma\handler_alloc_helpers.hpp">

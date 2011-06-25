@@ -14,7 +14,6 @@ CONFIG   -= app_bundle
 HEADERS  += ../../../include/ma/async_connect.hpp \
 			../../../include/ma/bind_asio_handler.hpp \
 			../../../include/ma/config.hpp \
-			../../../include/ma/console_controller.hpp \
 			../../../include/ma/context_wrapped_handler.hpp \
 			../../../include/ma/custom_alloc_handler.hpp \
 			../../../include/ma/handler_alloc_helpers.hpp \
@@ -23,8 +22,7 @@ HEADERS  += ../../../include/ma/async_connect.hpp \
             ../../../include/ma/strand_wrapped_handler.hpp \
             ../../../include/ma/type_traits.hpp
 
-SOURCES  += ../../../src/ma/console_controller.cpp \
-            ../../../src/async_connect/main.cpp
+SOURCES  += ../../../src/async_connect/main.cpp
 
 win32:INCLUDEPATH += ../../../../boost_1_46_0
 unix:INCLUDEPATH  += /usr/local/include
