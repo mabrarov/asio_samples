@@ -12,16 +12,17 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
-#if defined(WIN32)
+#include <boost/asio.hpp>
+
+#if defined(WIN32) && !defined(BOOST_ASIO_DISABLE_IOCP)
 #include <mswsock.h>
 #include <cstddef>
 #include <boost/numeric/conversion/cast.hpp>
 #include <ma/bind_asio_handler.hpp>
 #include <ma/handler_alloc_helpers.hpp>
 #include <ma/handler_invoke_helpers.hpp>
-#endif // defined(WIN32)
+#endif // defined(WIN32) && !defined(BOOST_ASIO_DISABLE_IOCP)
 
-#include <boost/asio.hpp>
 #include <ma/config.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)
@@ -31,7 +32,7 @@
 
 namespace ma {
 
-#if defined(WIN32)
+#if defined(WIN32) && !defined(BOOST_ASIO_DISABLE_IOCP)
 
 namespace detail {
 
@@ -168,7 +169,7 @@ boost::system::error_code bind_to_any(Socket& socket)
 
 } // namespace detail
 
-#endif // defined(WIN32)
+#endif // defined(WIN32) && !defined(BOOST_ASIO_DISABLE_IOCP)
 
 #if defined(MA_HAS_RVALUE_REFS)
 
@@ -185,7 +186,7 @@ void async_connect(Socket& socket,
 
 #endif // defined(MA_HAS_RVALUE_REFS)
 {
-#if defined(WIN32)
+#if defined(WIN32) && !defined(BOOST_ASIO_DISABLE_IOCP)
 
 #if (_WIN32_WINNT < 0x0501)
 #error The build environment does not support necessary Windows SDK header.\
@@ -290,7 +291,7 @@ void async_connect(Socket& socket,
     overlapped.release();
   }
 
-#else // defined(WIN32)
+#else // defined(WIN32) && !defined(BOOST_ASIO_DISABLE_IOCP)
 
 #if defined(MA_HAS_RVALUE_REFS)
 
