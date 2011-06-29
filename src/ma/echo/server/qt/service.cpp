@@ -296,7 +296,8 @@ void Service::asyncStop()
   currentState_ = ServiceState::Stopping;
 }
 
-void Service::onSessionManagerStopCompleted(const boost::system::error_code& error)
+void Service::onSessionManagerStopCompleted(
+    const boost::system::error_code& error)
 {
   if (ServiceState::Stopping != currentState_)
   {
