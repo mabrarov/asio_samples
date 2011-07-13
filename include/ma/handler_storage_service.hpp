@@ -312,21 +312,9 @@ public:
   {
   }
 
-  ~handler_storage_service()
+  virtual ~handler_storage_service()
   {
-  }
-
-  void shutdown_service()
-  {
-    // Restrict usage of service that is or was in shutdown state.
-    shutdown_done_ = true;
-    // Destroy all still active implemenations. Actually, it doesn't destroy 
-    // handler_storage instances but clears them all.
-    while (!impl_list_.empty())
-    {
-      destroy(*impl_list_.front());
-    }
-  }
+  }  
 
   void construct(implementation_type& impl)
   {
@@ -409,13 +397,25 @@ public:
   }
 
 private:
+  virtual void shutdown_service()
+  {
+    // Restrict usage of service that is or was in shutdown state.
+    shutdown_done_ = true;
+    // Destroy all still active implemenations. Actually, it doesn't destroy 
+    // handler_storage instances but clears them all.
+    while (!impl_list_.empty())
+    {
+      destroy(*impl_list_.front());
+    }
+  }
+
   // Guard for the impl_list_
   mutex_type mutex_;
   // Double-linked intrusive list of active (constructed but still not
   // destructed) implementations.
-  impl_list  impl_list_;
+  impl_list impl_list_;
   // Shutdown state flag.
-  bool       shutdown_done_;
+  bool shutdown_done_;
 }; // class handler_storage_service
 
 template <typename Arg>
