@@ -34,5 +34,5 @@ unix:LIBS  += /usr/local/lib/libboost_system.a
 win32:DEFINES += WIN32_LEAN_AND_MEAN _UNICODE UNICODE _WIN32_WINNT=0x0501
 
 linux-g++ {
-  QMAKE_CXXFLAGS += -std=c++0x
+  QMAKE_CXXFLAGS += -std=c++0x -Wstrict-aliasing
 }
