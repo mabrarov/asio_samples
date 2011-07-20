@@ -428,8 +428,10 @@ private:
 
   void read_until_head();
   void read_until_tail();
-  void handle_read_head(const boost::system::error_code& error, const std::size_t bytes_transferred);
-  void handle_read_tail(const boost::system::error_code& error, const std::size_t bytes_transferred);      
+  void handle_read_head(const boost::system::error_code& error, 
+      const std::size_t bytes_transferred);
+  void handle_read_tail(const boost::system::error_code& error, 
+      const std::size_t bytes_transferred);      
   void post_stop_handler();
       
   boost::asio::io_service&        io_service_;
