@@ -13,11 +13,45 @@ namespace echo {
 
 namespace server {
 
-const server_error_category_impl server_error_category_instance;
+namespace {
+
+class server_error_category_impl : public boost::system::error_category
+{
+public:
+  server_error_category_impl()
+  {
+  }
+
+  virtual const char* name() const
+  {
+    return "ma::echo::server";
+  }
+
+  virtual std::string message(int ev) const
+  {
+    switch (ev)
+    {
+    case server_error::invalid_state:
+      return "Invalid state.";
+    case server_error::operation_aborted:
+      return "Operation aborted.";
+    case server_error::inactivity_timeout:
+      return "Inactivity timeout.";
+    case server_error::no_memory_for_session:
+      return "No memory for session.";
+    default:
+      return "Unknown ma::echo::server error.";
+    }
+  }
+
+}; // class server_error_category_impl
+
+} // anonymous namespace
 
 const boost::system::error_category& server_error_category()
 {
-  return server_error_category_instance;
+  static const server_error_category_impl error_category_const;
+  return error_category_const;
 }
 
 } // namespace server

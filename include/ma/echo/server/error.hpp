@@ -49,35 +49,8 @@ inline boost::system::error_condition make_error_condition(error_t e)
       server_error_category());
 }
 
-} // namespace server_error
-      
-class server_error_category_impl : public boost::system::error_category
-{
-public:
-  virtual const char* name() const
-  {
-    return "ma::echo::server";
-  }
+} // namespace server_error     
 
-  virtual std::string message(int ev) const
-  {
-    switch (ev)
-    {
-    case server_error::invalid_state:
-      return "Invalid state.";
-    case server_error::operation_aborted:
-      return "Operation aborted.";
-    case server_error::inactivity_timeout:
-      return "Inactivity timeout.";
-    case server_error::no_memory_for_session:
-      return "No memory for session.";
-    default:
-      return "Unknown ma::echo::server error.";
-    }
-  }
-
-}; // class server_error_category_impl
-            
 } // namespace server
 } // namespace echo
 } // namespace ma

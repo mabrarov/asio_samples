@@ -13,11 +13,43 @@ namespace echo {
 
 namespace client1 {
 
-const client1_error_category_impl client1_error_category_instance;
+namespace {
+
+class client1_error_category_impl : public boost::system::error_category
+{
+public:
+  client1_error_category_impl()
+  {
+  }
+
+  virtual const char* name() const
+  {
+    return "ma::echo::client1";
+  }
+
+  virtual std::string message(int ev) const
+  {
+    switch (ev)
+    {
+    case client1_error::invalid_state:
+      return "Invalid state.";
+    case client1_error::operation_aborted:
+      return "Operation aborted.";
+    case client1_error::operation_not_supported:
+      return "Operation not supported.";
+    default:
+      return "Unknown ma::echo::client1 error.";
+    }
+  }
+
+}; // class client1_error_category_impl
+
+} // anonymous namespace
        
 const boost::system::error_category& client1_error_category()
 {
-  return client1_error_category_instance;
+  static const client1_error_category_impl error_category_const;
+  return error_category_const;
 }
 
 } // namespace server

@@ -49,31 +49,6 @@ inline boost::system::error_condition make_error_condition(error_t e)
 }
 
 } // namespace client1_error
-
-class client1_error_category_impl : public boost::system::error_category
-{
-public:
-  virtual const char* name() const
-  {
-    return "ma::echo::client1";
-  }
-
-  virtual std::string message(int ev) const
-  {
-    switch (ev)
-    {
-    case client1_error::invalid_state:
-      return "Invalid state.";
-    case client1_error::operation_aborted:
-      return "Operation aborted.";
-    case client1_error::operation_not_supported:
-      return "Operation not supported.";
-    default:
-      return "Unknown ma::echo::client1 error.";
-    }
-  }
-
-}; // class client1_error_category_impl
             
 } // namespace server
 } // namespace echo

@@ -112,17 +112,13 @@ public:
   {
   }
 
-#endif // defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || defined(_DEBUG)
-
-#if defined(_DEBUG)
-
   custom_alloc_handler(const this_type& other)
     : allocator_(other.allocator_)
     , handler_(other.handler_)
   {
   }
 
-#endif // defined(_DEBUG)
+#endif // defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || defined(_DEBUG)
 
 #else // defined(MA_HAS_RVALUE_REFS)
 

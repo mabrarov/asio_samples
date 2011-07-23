@@ -45,30 +45,7 @@ inline boost::system::error_condition make_error_condition(error_t e)
       static_cast<int>(e), session_error_category());
 }
 
-} // namespace session_error
-    
-class session_error_category_impl : public boost::system::error_category
-{
-public:
-  virtual const char* name() const
-  {
-    return "ma::nmea::session";
-  }
-
-  virtual std::string message(int ev) const
-  {
-    switch (ev)
-    {
-    case session_error::invalid_state:
-      return "Invalid state.";
-    case session_error::operation_aborted:
-      return "Operation aborted.";
-    default:
-      return "Unknown ma::echo::server error.";
-    }
-  }
-
-}; // class session_error_category_impl
+} // namespace session_error    
 
 } // namespace nmea
 } // namespace ma
