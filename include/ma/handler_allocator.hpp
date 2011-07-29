@@ -78,9 +78,8 @@ private:
   typedef char byte_type;
 
   static byte_type* allocate_storage(std::size_t size)
-  {      
-    std::size_t alloc_size = size;      
-    return new byte_type[alloc_size];      
+  {          
+    return new byte_type[size];      
   }
 
   bool storage_initialized() const
