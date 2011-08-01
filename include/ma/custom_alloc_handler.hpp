@@ -85,7 +85,7 @@ private:
 public:
   typedef void result_type;
 
-#if defined(_DEBUG)
+#if !defined(NDEBUG)
 
   ~custom_alloc_handler()
   {
@@ -93,7 +93,7 @@ public:
     allocator_ = 0;
   }
 
-#endif // defined(_DEBUG)
+#endif // !defined(NDEBUG)
 
 #if defined(MA_HAS_RVALUE_REFS)
 
@@ -104,7 +104,7 @@ public:
   {
   }
 
-#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || defined(_DEBUG)
+#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
   custom_alloc_handler(this_type&& other)
     : allocator_(other.allocator_)
@@ -118,7 +118,7 @@ public:
   {
   }
 
-#endif // defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || defined(_DEBUG)
+#endif // defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
 #else // defined(MA_HAS_RVALUE_REFS)
 

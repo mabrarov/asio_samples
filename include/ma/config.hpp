@@ -33,7 +33,9 @@
  * some of the asio-samples explicitly define and use binders with (explicit or
  * implicit - see MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) move constructor.
  */
+#if !(defined(__GNUC__) && (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
 #define MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR
+#endif
 
 #else // defined(BOOST_HAS_RVALUE_REFS)
 
