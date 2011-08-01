@@ -276,13 +276,12 @@ boost::system::error_code session_manager::start()
   }
   external_state_ = external_state::start_in_progress;
 
-  boost::system::error_code error = open(acceptor_, 
-      accepting_endpoint_, listen_backlog_);
+  boost::system::error_code error;
+  open(acceptor_, accepting_endpoint_, listen_backlog_, error);
 
   if (!error)
   {
-    session_data_ptr the_session_data;
-    boost::tie(error, the_session_data) = create_session();
+    session_data_ptr the_session_data = create_session(error);
     if (error)
     {
       boost::system::error_code ignored;
@@ -360,29 +359,29 @@ boost::optional<boost::system::error_code> session_manager::wait()
   return boost::optional<boost::system::error_code>();
 }
 
-session_manager::create_session_result session_manager::create_session()
+session_manager::session_data_ptr session_manager::create_session(
+    boost::system::error_code& error)
 {        
   if (!recycled_sessions_.empty())
   {
     session_data_ptr the_session_data = recycled_sessions_.front();
     recycled_sessions_.erase(the_session_data);          
-    return create_session_result(
-        boost::system::error_code(), the_session_data);
+    error = boost::system::error_code();
+    return the_session_data;
   }
 
   try 
   {   
     session_data_ptr the_session_data = boost::make_shared<session_data>(
         boost::ref(session_io_service_), managed_session_options_);
-
-    return create_session_result(
-        boost::system::error_code(), the_session_data);
+    error = boost::system::error_code();
+    return the_session_data;
   }
   catch (const std::bad_alloc&) 
   {
-    return create_session_result(
-        server_error::no_memory_for_session, session_data_ptr());
-  }        
+    error = server_error::no_memory_for_session;
+    return session_data_ptr();
+  }
 }
 
 void session_manager::accept_session(const session_data_ptr& the_session_data)
@@ -414,16 +413,17 @@ void session_manager::accept_session(const session_data_ptr& the_session_data)
 void session_manager::continue_accept()
 {
   // Get new, ready to start session
-  create_session_result create_result = create_session();
-  if (create_result.get<0>())
+  boost::system::error_code error;
+  session_data_ptr the_session_data = create_session(error);
+  if (error)
   {
     // Handle new session creation error
-    set_wait_error(create_result.get<0>());
+    set_wait_error(error);
     // Can't do anything more
     return;
   }
   // Start session acceptation
-  accept_session(create_result.get<1>());
+  accept_session(the_session_data);
 }
 
 void session_manager::handle_session_accept(
@@ -474,16 +474,17 @@ void session_manager::handle_session_accept(
   recycle_session(the_session_data);
 }
 
-boost::system::error_code session_manager::open(
-    protocol_type::acceptor& acceptor, 
-    const protocol_type::endpoint& endpoint, int backlog)
+void session_manager::open(protocol_type::acceptor& acceptor, 
+    const protocol_type::endpoint& endpoint, int backlog, 
+    boost::system::error_code& error)
 {
-  boost::system::error_code error;
+  boost::system::error_code local_error;
 
-  acceptor.open(endpoint.protocol(), error);
-  if (error)
+  acceptor.open(endpoint.protocol(), local_error);
+  if (local_error)
   {
-    return error;
+    error = local_error;
+    return;
   }
 
   class acceptor_guard : private boost::noncopyable
@@ -518,16 +519,19 @@ boost::system::error_code session_manager::open(
 
   acceptor_guard closing_guard(acceptor);                
 
-  acceptor.set_option(protocol_type::acceptor::reuse_address(true), error);
-  if (error)
-  {          
-    return error;
+  acceptor.set_option(
+      protocol_type::acceptor::reuse_address(true), local_error);
+  if (local_error)
+  {       
+    error = local_error;
+    return;
   }
 
-  acceptor.bind(endpoint, error);
-  if (error)
-  {          
-    return error;
+  acceptor.bind(endpoint, local_error);
+  if (local_error)
+  {     
+    error = local_error;
+    return;
   }
 
   acceptor.listen(backlog, error);
@@ -536,8 +540,6 @@ boost::system::error_code session_manager::open(
   {
     closing_guard.release();
   }
-
-  return error;
 }
 
 bool session_manager::may_complete_stop() const

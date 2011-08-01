@@ -289,10 +289,7 @@ private:
       stopped
     }; // enum value_t
   }; // struct external_state
-
-  typedef boost::tuple<boost::system::error_code, session_data_ptr> 
-      create_session_result;
-
+  
   template <typename Handler>
   void begin_start(const Handler& handler)
   {
@@ -330,14 +327,15 @@ private:
   boost::optional<boost::system::error_code> stop();
   boost::optional<boost::system::error_code> wait();
 
-  create_session_result create_session();
+  session_data_ptr create_session(boost::system::error_code& error);
   void accept_session(const session_data_ptr&);
   void continue_accept();
   void handle_session_accept(const session_data_ptr&, 
       const boost::system::error_code&);
 
-  static boost::system::error_code open(protocol_type::acceptor& acceptor, 
-      const protocol_type::endpoint& endpoint, int backlog);
+  static void open(protocol_type::acceptor& acceptor, 
+      const protocol_type::endpoint& endpoint, int backlog, 
+      boost::system::error_code& error);
 
   bool may_complete_stop() const;
   bool may_complete_wait() const;
