@@ -265,7 +265,7 @@ void Service::onSessionManagerStartCompleted(
         boost::bind(&ServiceServantSignal::emitSessionManagerWaitCompleted, 
             servantSignal_, _1));
 
-    currentState_ = ServiceState::Started;
+    currentState_ = ServiceState::Working;
   }
 
   emit startCompleted(error);  
@@ -284,7 +284,7 @@ void Service::asyncStop()
   {
     forwardSignal_->emitStartCompleted(server_error::operation_aborted);
   }
-  else if (ServiceState::Started == currentState_)
+  else if (ServiceState::Working == currentState_)
   {
     forwardSignal_->emitWorkCompleted(server_error::operation_aborted);
   }
@@ -317,7 +317,7 @@ void Service::terminate()
   {
     forwardSignal_->emitStartCompleted(server_error::operation_aborted);
   }
-  else if (ServiceState::Started == currentState_)
+  else if (ServiceState::Working == currentState_)
   {
     forwardSignal_->emitWorkCompleted(server_error::operation_aborted);
   }
@@ -332,7 +332,7 @@ void Service::terminate()
 void Service::onSessionManagerWaitCompleted(
     const boost::system::error_code& error)
 {
-  if (ServiceState::Started == currentState_)
+  if (ServiceState::Working == currentState_)
   {
     emit workCompleted(error);
   }

@@ -68,7 +68,7 @@ public:
   void async_start(Handler&& handler)
   {
     typedef typename ma::remove_cv_reference<Handler>::type handler_type;
-    strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler),  
+    strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler),
         forward_handler_binder<handler_type>(
             &this_type::begin_start<handler_type>, shared_from_this())));
   }
@@ -79,7 +79,7 @@ public:
     typedef typename ma::remove_cv_reference<Handler>::type handler_type;
     strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler), 
         forward_handler_binder<handler_type>(
-            &this_type::begin_stop<handler_type>, shared_from_this()))); 
+            &this_type::begin_ext_stop<handler_type>, shared_from_this()))); 
   }
 
   template <typename Handler>
@@ -99,7 +99,7 @@ public:
     typedef typename ma::remove_cv_reference<Handler>::type handler_type;
     strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler),  
         boost::bind(&this_type::begin_start<handler_type>, 
-            shared_from_this(), _1)));  
+            shared_from_this(), _1)));
   }
 
   template <typename Handler>
@@ -107,8 +107,8 @@ public:
   {
     typedef typename ma::remove_cv_reference<Handler>::type handler_type;
     strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler), 
-        boost::bind(&this_type::begin_stop<handler_type>, 
-            shared_from_this(), _1))); 
+        boost::bind(&this_type::begin_ext_stop<handler_type>, 
+            shared_from_this(), _1)));
   }
 
   template <typename Handler>
@@ -136,7 +136,8 @@ public:
   void async_stop(const Handler& handler)
   {
     strand_.post(make_context_alloc_handler2(handler, 
-        boost::bind(&this_type::begin_stop<Handler>, shared_from_this(), _1)));
+        boost::bind(&this_type::begin_ext_stop<Handler>, 
+            shared_from_this(), _1)));
   }
 
   template <typename Handler>
@@ -193,7 +194,7 @@ private:
 
   private:
     function_type function_;
-    session_ptr   session_;          
+    session_ptr   session_;
   }; // class forward_handler_binder
 
 #endif // defined(MA_HAS_RVALUE_REFS) 
@@ -203,14 +204,54 @@ private:
   {
     enum value_t
     {
-      ready_to_start,
-      start_in_progress,
-      started,
-      stop_in_progress,
+      ready,      
+      work,
+      stop,
       stopped
-    }; // enum value_t
-  }; // struct external_state        
+    };
+  }; // struct external_state
 
+  struct general_state
+  {
+    enum value_t
+    {
+      work,
+      shutdown,
+      stop,
+      stopped
+    };
+  }; // struct general_state
+
+  struct read_state
+  {
+    enum value_t
+    {
+      wait,
+      in_progress,      
+      stopped
+    };
+  }; // struct read_state
+
+  struct write_state
+  {
+    enum value_t
+    {
+      wait,
+      in_progress,
+      stopped
+    };
+  }; // struct write_state
+
+  struct timer_state
+  {
+    enum value_t
+    {
+      ready,
+      in_progress,
+      stopped
+    };
+  }; // struct timer_state
+  
   template <typename Handler>
   void begin_start(const Handler& handler)
   {
@@ -219,7 +260,7 @@ private:
   }
 
   template <typename Handler>
-  void begin_stop(const Handler& handler)
+  void begin_ext_stop(const Handler& handler)
   {
     if (boost::optional<boost::system::error_code> result = stop())
     {
@@ -249,47 +290,64 @@ private:
   boost::optional<boost::system::error_code> wait();                       
                 
   void handle_read(const boost::system::error_code&, std::size_t);
+  void handle_read_at_work(const boost::system::error_code&, std::size_t);
+  void handle_read_at_shutdown(const boost::system::error_code&, std::size_t);
+  void handle_read_at_stop(const boost::system::error_code&, std::size_t);
+
   void handle_write(const boost::system::error_code&, std::size_t);
-  void handle_timer(const boost::system::error_code&);                
-  void continue_work();
+  void handle_write_at_work(const boost::system::error_code&, std::size_t);
+  void handle_write_at_shutdown(const boost::system::error_code&, std::size_t);
+  void handle_write_at_stop(const boost::system::error_code&, std::size_t);
+
+  void handle_timer(const boost::system::error_code&);
+  void handle_timer_at_work(const boost::system::error_code&);
+  void handle_timer_at_shutdown(const boost::system::error_code&);
+  void handle_timer_at_stop(const boost::system::error_code&);
+    
+  void continue_work();  
+  void continue_timer_activity();
+  boost::system::error_code cancel_timer_activity();
+
+  void continue_shutdown();
+  void continue_shutdown_at_read_wait();
+  void continue_shutdown_at_read_in_progress();
+  void continue_shutdown_at_read_stopped();
+
   void continue_stop();
 
-  void read_socket(const cyclic_buffer::mutable_buffers_type&);
-  void write_socket(const cyclic_buffer::const_buffers_type&);
-  boost::system::error_code start_timer();
-  boost::system::error_code cancel_timer();
-  boost::system::error_code shutdown_socket_send();
-  boost::system::error_code close_socket_for_stop();        
+  void begin_passive_shutdown();
+  void begin_active_shutdown();
+  void begin_stop(boost::system::error_code);  
 
-  bool may_complete_stop() const;        
-  void complete_stop();
-  void set_wait_error(const boost::system::error_code&);
-  void set_stop_error(const boost::system::error_code&);
-
-  boost::system::error_code apply_socket_options();
+  void notify_work_completion(const boost::system::error_code&);  
+    
+  void begin_socket_read(const cyclic_buffer::mutable_buffers_type&);
+  void begin_socket_write(const cyclic_buffer::const_buffers_type&);
+  boost::system::error_code begin_timer_wait();
+  boost::system::error_code apply_socket_options();  
         
-  session_options::optional_int  socket_recv_buffer_size_;
-  session_options::optional_int  socket_send_buffer_size_;
-  session_options::optional_bool no_delay_;
-  session_options::optional_time_duration inactivity_timeout_;
-
-  bool socket_write_in_progress_;
-  bool socket_read_in_progress_;
-  bool timer_wait_in_progress_;
-  bool timer_cancelled_;
-  bool socket_closed_for_stop_;        
-  external_state::value_t external_state_;
+  const session_options::optional_int  socket_recv_buffer_size_;
+  const session_options::optional_int  socket_send_buffer_size_;
+  const session_options::optional_bool no_delay_;
+  const session_options::optional_time_duration inactivity_timeout_;
+  
+  external_state::value_t   external_state_;
+  general_state::value_t    general_state_;
+  read_state::value_t       read_state_;
+  write_state::value_t      write_state_;
+  timer_state::value_t      timer_state_;  
+  bool                      timer_cancelled_;
+  std::size_t               pending_operations_;  
+  boost::system::error_code wait_error_;
 
   boost::asio::io_service&        io_service_;
   boost::asio::io_service::strand strand_;
   protocol_type::socket           socket_;
   boost::asio::deadline_timer     timer_;
-  cyclic_buffer                   buffer_;
-  boost::system::error_code       wait_error_;
-  boost::system::error_code       stop_error_;
+  cyclic_buffer                   buffer_;  
 
   handler_storage<boost::system::error_code> wait_handler_;
-  handler_storage<boost::system::error_code> stop_handler_;        
+  handler_storage<boost::system::error_code> stop_handler_;
 
   in_place_handler_allocator<640> write_allocator_;
   in_place_handler_allocator<256> read_allocator_;

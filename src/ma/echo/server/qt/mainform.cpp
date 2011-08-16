@@ -214,7 +214,7 @@ void MainForm::on_startButton_clicked()
 }
 
 void MainForm::on_stopButton_clicked()
-{        
+{
   service_.asyncStop();
   writeLog(tr("Stopping echo service..."));
   updateWidgetsStates();
@@ -295,7 +295,7 @@ void MainForm::on_service_workCompleted(const boost::system::error_code& error)
   {
     writeLog(tr("Echo service work completed successfully."));
   }
-  if (ServiceState::Started == service_.currentState())
+  if (ServiceState::Working == service_.currentState())
   {
     service_.asyncStop(); 
     writeLog(tr("Stopping echo service" \
@@ -450,8 +450,8 @@ QString MainForm::getServiceStateWindowTitle(ServiceState::State serviceState)
     return QString();
   case ServiceState::Starting:
     return tr("starting");
-  case ServiceState::Started:
-    return tr("started");
+  case ServiceState::Working:
+    return tr("working");
   case ServiceState::Stopping:
     return tr("stopping");    
   default:
@@ -468,7 +468,7 @@ void MainForm::updateWidgetsStates(bool ignorePrevServiceState)
 
     ui_.startButton->setEnabled(serviceStopped);
     ui_.stopButton->setEnabled((ServiceState::Starting == serviceState) 
-        || (ServiceState::Started == serviceState));
+        || (ServiceState::Working == serviceState));
     ui_.terminateButton->setEnabled(!serviceStopped);
 
     typedef std::vector<OptionWidget>::iterator iterator_type;

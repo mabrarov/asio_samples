@@ -32,15 +32,17 @@ public:
     switch (ev)
     {
     case server_error::invalid_state:
-      return "Invalid state.";
+      return "Invalid state";
     case server_error::operation_aborted:
-      return "Operation aborted.";
+      return "Operation aborted";
     case server_error::inactivity_timeout:
-      return "Inactivity timeout.";
-    case server_error::no_memory_for_session:
-      return "No memory for session.";
+      return "Inactivity timeout";
+    case server_error::no_memory:
+      return "No memory";
+    case server_error::passive_shutdown:
+      return "Passive shutdown";
     default:
-      return "Unknown ma::echo::server error.";
+      return "Unknown ma::echo::server error";
     }
   }
 

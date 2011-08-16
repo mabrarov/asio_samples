@@ -158,14 +158,16 @@ public:
 #endif // defined(MA_HAS_RVALUE_REFS)
     
 private:
-  enum external_state_type
+  struct external_state
   {
-    ready_to_start,
-    start_in_progress,
-    started,
-    stop_in_progress,
-    stopped
-  }; // enum external_state_type
+    enum value_t
+    {
+      ready,    
+      work,
+      stop,
+      stopped
+    };
+  }; // struct external_state
 
   typedef boost::circular_buffer<frame_ptr> frame_buffer_type;  
 
@@ -385,7 +387,7 @@ private:
     }
   }
 
-  boost::system::error_code                  start();
+  boost::system::error_code start();
   boost::optional<boost::system::error_code> stop();
   boost::optional<boost::system::error_code> read_some();
   bool may_complete_stop() const;
@@ -395,7 +397,7 @@ private:
   boost::optional<boost::system::error_code> write(
       const ConstBufferSequence& buffers, const Handler& handler)
   {
-    if ((started != external_state_) || port_write_in_progress_)
+    if ((external_state::work != external_state_) || port_write_in_progress_)
     {                             
       return session_error::invalid_state;
     }
@@ -419,9 +421,9 @@ private:
 
     io_service_.post(detail::bind_handler(boost::get<0>(handler), error));
 
-    if ((stop_in_progress == external_state_) && !port_read_in_progress_)
+    if ((external_state::stop == external_state_) && !port_read_in_progress_)
     {
-      external_state_ = stopped;
+      external_state_ = external_state::stopped;
       post_stop_handler();
     }
   }
@@ -448,7 +450,7 @@ private:
       
   bool port_write_in_progress_;
   bool port_read_in_progress_;
-  external_state_type external_state_;
+  external_state::value_t external_state_;
 
   boost::asio::streambuf read_buffer_;
   std::string frame_head_;

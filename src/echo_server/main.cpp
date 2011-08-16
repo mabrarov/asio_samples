@@ -148,10 +148,10 @@ struct session_manager_data : private boost::noncopyable
 
   enum state_type
   {
-    ready_to_start,
-    start_in_progress,
+    ready,
+    start,
     started,
-    stop_in_progress,
+    stop,
     stopped
   }; // enum state_type
 
@@ -167,7 +167,7 @@ struct session_manager_data : private boost::noncopyable
       boost::asio::io_service& session_io_service,
       const ma::echo::server::session_manager_options& options)
     : stopped_by_user(false)
-    , state(ready_to_start)
+    , state(ready)
     , session_manager(boost::make_shared<ma::echo::server::session_manager>(
           boost::ref(io_service), boost::ref(session_io_service), options))
   {
@@ -222,8 +222,7 @@ void handle_session_manager_start(
   boost::unique_lock<session_manager_data::mutex_type> wrapper_lock(
       the_session_manager_data->access_mutex);
 
-  if (session_manager_data::start_in_progress 
-      == the_session_manager_data->state)
+  if (session_manager_data::start == the_session_manager_data->state)
   {     
     if (error)
     {       
@@ -270,8 +269,7 @@ void handle_session_manager_stop(
   boost::unique_lock<session_manager_data::mutex_type> wrapper_lock(
       the_session_manager_data->access_mutex);
 
-  if (session_manager_data::stop_in_progress 
-      == the_session_manager_data->state)
+  if (session_manager_data::stop == the_session_manager_data->state)
   {      
     the_session_manager_data->state = session_manager_data::stopped;
 
@@ -553,7 +551,7 @@ void start_session_manager(
           the_session_manager_data->start_wait_allocator, boost::bind(
               handle_session_manager_start, the_session_manager_data, _1)));
 
-  the_session_manager_data->state = session_manager_data::start_in_progress;
+  the_session_manager_data->state = session_manager_data::start;
 }
 
 void wait_session_manager(
@@ -573,7 +571,7 @@ void stop_session_manager(
           the_session_manager_data->stop_allocator, boost::bind(
               handle_session_manager_stop, the_session_manager_data, _1)));
 
-  the_session_manager_data->state = session_manager_data::stop_in_progress;
+  the_session_manager_data->state = session_manager_data::stop;
 }
 
 void run_io_service(boost::asio::io_service& io_service, 
@@ -620,8 +618,7 @@ void handle_program_exit(
     return;
   }
 
-  if (session_manager_data::stop_in_progress 
-      == the_session_manager_data->state)
+  if (session_manager_data::stop == the_session_manager_data->state)
   {    
     the_session_manager_data->state = session_manager_data::stopped;
 
@@ -744,14 +741,12 @@ int main(int argc, char* argv[])
 
     // Wait until server begins stopping or stops
     session_manager_lock.lock();
-    while (
-        (session_manager_data::stop_in_progress 
-            != the_session_manager_data->state)
-        && (session_manager_data::stopped 
-            != the_session_manager_data->state))
+    while ((session_manager_data::stop != the_session_manager_data->state)
+        && (session_manager_data::stopped != the_session_manager_data->state))
     {
       the_session_manager_data->state_changed.wait(session_manager_lock);
-    }        
+    }
+
     if (session_manager_data::stopped != the_session_manager_data->state)
     {
       // Wait until server stops with timeout
@@ -765,8 +760,9 @@ int main(int argc, char* argv[])
       // Mark server as stopped
       the_session_manager_data->state = session_manager_data::stopped;
     }
+
     // Check the reason of server stop and signal it by exit code
-    if ((EXIT_SUCCESS == exit_code)
+    if ((EXIT_SUCCESS == exit_code) 
         && !the_session_manager_data->stopped_by_user)
     {      
       exit_code = EXIT_FAILURE;

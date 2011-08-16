@@ -26,7 +26,7 @@ enum State
 {
   Stopped,
   Starting,
-  Started,
+  Working,
   Stopping
 }; // enum State
 

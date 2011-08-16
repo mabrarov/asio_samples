@@ -117,14 +117,17 @@ public:
 #endif // defined(MA_HAS_RVALUE_REFS)
 
 private:
-  enum state_type
+  struct external_state
   {
-    ready_to_start,
-    start_in_progress,
-    started,
-    stop_in_progress,
-    stopped
-  }; // enum state_type
+    enum value_t
+    {
+      ready,
+      start,
+      started,
+      stop,
+      stopped
+    };
+  }; // struct external_state
         
   template <typename Handler>
   void begin_start(const Handler& handler)
@@ -179,7 +182,7 @@ private:
         
   bool socket_write_in_progress_;
   bool socket_read_in_progress_;
-  state_type state_;
+  external_state::value_t state_;
 
   boost::asio::io_service& io_service_;
   boost::asio::io_service::strand strand_;      

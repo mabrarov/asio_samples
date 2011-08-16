@@ -185,7 +185,7 @@ private:
 
 session_manager::session_data::session_data(
     boost::asio::io_service& io_service, const session_options& options)
-  : state(ready_to_start)
+  : state(ready)
   , pending_operations(0)
   , managed_session(boost::make_shared<session>(
         boost::ref(io_service), options))
@@ -241,7 +241,7 @@ session_manager::session_manager(boost::asio::io_service& io_service,
   , managed_session_options_(options.managed_session_options())
   , accept_in_progress_(false)        
   , pending_operations_(0)
-  , external_state_(external_state::ready_to_start)
+  , external_state_(external_state::ready)
   , io_service_(io_service)
   , session_io_service_(session_io_service)
   , strand_(io_service)
@@ -265,16 +265,16 @@ void session_manager::reset(bool free_recycled_sessions)
     recycled_sessions_.clear();
   }
 
-  external_state_ = external_state::ready_to_start;
+  external_state_ = external_state::ready;
 }
 
 boost::system::error_code session_manager::start()
 {
-  if (external_state::ready_to_start != external_state_)
+  if (external_state::ready != external_state_)
   {
     return server_error::invalid_state;
   }
-  external_state_ = external_state::start_in_progress;
+  external_state_ = external_state::start;
 
   boost::system::error_code error;
   open(acceptor_, accepting_endpoint_, listen_backlog_, error);
@@ -299,7 +299,7 @@ boost::system::error_code session_manager::start()
   }
   else
   {          
-    external_state_ = external_state::started;
+    external_state_ = external_state::work;
   }       
   return error;
 }
@@ -307,13 +307,13 @@ boost::system::error_code session_manager::start()
 boost::optional<boost::system::error_code> session_manager::stop()
 {        
   if ((external_state::stopped == external_state_)
-      || (external_state::stop_in_progress == external_state_))
+      || (external_state::stop == external_state_))
   {          
     return boost::system::error_code(server_error::invalid_state);
   }
 
   // Start shutdown
-  external_state_ = external_state::stop_in_progress;
+  external_state_ = external_state::stop;
 
   // Do shutdown - abort outer operations
   if (wait_handler_.has_target())
@@ -328,7 +328,7 @@ boost::optional<boost::system::error_code> session_manager::stop()
   session_data_ptr the_session_data = active_sessions_.front();
   while (the_session_data)
   {
-    if (session_data::stop_in_progress != the_session_data->state)
+    if (session_data::stop != the_session_data->state)
     {
       stop_session(the_session_data);
     }
@@ -347,7 +347,7 @@ boost::optional<boost::system::error_code> session_manager::stop()
 
 boost::optional<boost::system::error_code> session_manager::wait()
 {        
-  if ((external_state::started != external_state_)
+  if ((external_state::work != external_state_)
       || wait_handler_.has_target())
   {
     return boost::system::error_code(server_error::invalid_state);
@@ -379,7 +379,7 @@ session_manager::session_data_ptr session_manager::create_session(
   }
   catch (const std::bad_alloc&) 
   {
-    error = server_error::no_memory_for_session;
+    error = server_error::no_memory;
     return session_data_ptr();
   }
 }
@@ -435,7 +435,7 @@ void session_manager::handle_session_accept(
   accept_in_progress_ = false;
 
   // Check for pending session manager stop operation 
-  if (external_state::stop_in_progress == external_state_)
+  if (external_state::stop == external_state_)
   {
     if (may_complete_stop())
     {
@@ -579,7 +579,7 @@ bool session_manager::may_continue_accept() const
 
   if (wait_error_)
   {
-    if (server_error::no_memory_for_session == wait_error_)
+    if (server_error::no_memory == wait_error_)
     {
       return true;
     }
@@ -610,7 +610,7 @@ void session_manager::start_session(const session_data_ptr& the_session_data)
 
 #endif
 
-  the_session_data->state = session_data::start_in_progress;
+  the_session_data->state = session_data::start;
 
   // Register pending operation
   ++pending_operations_;
@@ -638,7 +638,7 @@ void session_manager::stop_session(const session_data_ptr& the_session_data)
 
 #endif
 
-  the_session_data->state = session_data::stop_in_progress;
+  the_session_data->state = session_data::stop;
 
   // Register pending operation
   ++pending_operations_;
@@ -708,7 +708,7 @@ void session_manager::handle_session_start(
   --the_session_data->pending_operations;
 
   // Check if handler is not called too late
-  if (session_data::start_in_progress == the_session_data->state)
+  if (session_data::start == the_session_data->state)
   {
     if (error)
     {
@@ -717,7 +717,7 @@ void session_manager::handle_session_start(
       recycle_session(the_session_data);
 
       // Check for pending session manager stop operation 
-      if (external_state::stop_in_progress == external_state_)
+      if (external_state::stop == external_state_)
       {
         if (may_complete_stop())
         {
@@ -740,9 +740,9 @@ void session_manager::handle_session_start(
       return;
     }
 
-    the_session_data->state = session_data::started;
+    the_session_data->state = session_data::work;
     // Check for pending session manager stop operation 
-    if (external_state::stop_in_progress == external_state_)  
+    if (external_state::stop == external_state_)  
     {                            
       stop_session(the_session_data);
       return;
@@ -756,7 +756,7 @@ void session_manager::handle_session_start(
   // Handler is called too late - complete handler's waiters
   recycle_session(the_session_data);
   // Check for pending session manager stop operation 
-  if (external_state::stop_in_progress == external_state_) 
+  if (external_state::stop == external_state_) 
   {
     if (may_complete_stop())  
     {
@@ -803,7 +803,7 @@ void session_manager::handle_session_wait(
   --the_session_data->pending_operations;
 
   // Check if handler is not called too late
-  if (session_data::started == the_session_data->state)
+  if (session_data::work == the_session_data->state)
   {
     stop_session(the_session_data);
     return;
@@ -813,7 +813,7 @@ void session_manager::handle_session_wait(
   recycle_session(the_session_data);
 
   // Check for pending session manager stop operation
-  if (external_state::stop_in_progress == external_state_)
+  if (external_state::stop == external_state_)
   {
     if (may_complete_stop())  
     {
@@ -860,14 +860,14 @@ void session_manager::handle_session_stop(
   --the_session_data->pending_operations;
 
   // Check if handler is not called too late
-  if (session_data::stop_in_progress == the_session_data->state)        
+  if (session_data::stop == the_session_data->state)        
   {
     the_session_data->state = session_data::stopped;
     active_sessions_.erase(the_session_data);
     recycle_session(the_session_data);
 
     // Check for pending session manager stop operation
-    if (external_state::stop_in_progress == external_state_)
+    if (external_state::stop == external_state_)
     {
       if (may_complete_stop())  
       {
@@ -894,7 +894,7 @@ void session_manager::handle_session_stop(
   recycle_session(the_session_data);
 
   // Check for pending session manager stop operation
-  if (external_state::stop_in_progress == external_state_)
+  if (external_state::stop == external_state_)
   {
     if (may_complete_stop())  
     {
@@ -913,7 +913,7 @@ void session_manager::recycle_session(const session_data_ptr& the_session_data)
     // Reset session state
     the_session_data->managed_session->reset();
     // Reset wrapper
-    the_session_data->state = session_data::ready_to_start;
+    the_session_data->state = session_data::ready;
     // Add to recycle bin
     recycled_sessions_.push_front(the_session_data);
   }

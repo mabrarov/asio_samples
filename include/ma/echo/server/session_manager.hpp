@@ -216,10 +216,10 @@ private:
   {
     enum state_type
     {
-      ready_to_start,
-      start_in_progress,
-      started,
-      stop_in_progress,
+      ready,
+      start,
+      work,
+      stop,
       stopped
     }; // enum state_type
 
@@ -282,10 +282,10 @@ private:
   {
     enum value_t
     {
-      ready_to_start,
-      start_in_progress,
-      started,
-      stop_in_progress,
+      ready,
+      start,
+      work,
+      stop,
       stopped
     }; // enum value_t
   }; // struct external_state

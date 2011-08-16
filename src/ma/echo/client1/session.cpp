@@ -23,7 +23,7 @@ session::session(boost::asio::io_service& io_service,
   , no_delay_(options.no_delay())
   , socket_write_in_progress_(false)
   , socket_read_in_progress_(false) 
-  , state_(ready_to_start)
+  , state_(external_state::ready)
   , io_service_(io_service)
   , strand_(io_service)
   , socket_(io_service)
@@ -39,13 +39,13 @@ void session::reset()
   socket_.close(ignored);
   wait_error_.clear();
   stop_error_.clear();
-  state_ = ready_to_start;
+  state_ = external_state::ready;
   buffer_.reset();          
 }
 
 boost::system::error_code session::start()
 {        
-  if (ready_to_start != state_)
+  if (external_state::ready != state_)
   {
     return client1_error::invalid_state;
   }
@@ -57,13 +57,13 @@ boost::system::error_code session::start()
 
 boost::optional<boost::system::error_code> session::stop()
 {        
-  if ((stopped == state_) || (stop_in_progress == state_))
+  if ((external_state::stopped == state_) || (external_state::stop == state_))
   {
     return client1_error::invalid_state;    
   }
 
   // Start shutdown
-  state_ = stop_in_progress;
+  state_ = external_state::stop;
 
   // Do shutdown - abort outer operations
   if (wait_handler_.has_target())
@@ -89,7 +89,7 @@ boost::optional<boost::system::error_code> session::stop()
 
 boost::optional<boost::system::error_code> session::wait()
 {                
-  if ((started != state_) || wait_handler_.has_target())
+  if ((external_state::started != state_) || wait_handler_.has_target())
   {
     return client1_error::invalid_state;
   }
@@ -115,7 +115,7 @@ void session::complete_stop()
   {
     stop_error_ = error;
   }
-  state_ = stopped;  
+  state_ = external_state::stopped;  
 }
 
 void session::read_socket()
@@ -154,7 +154,7 @@ void session::handle_read(const boost::system::error_code& error,
   socket_read_in_progress_ = false;
 
   // Check for pending session stop operation 
-  if (stop_in_progress == state_)
+  if (external_state::stop == state_)
   {  
     if (may_complete_stop())
     {
@@ -192,7 +192,7 @@ void session::handle_write(const boost::system::error_code& error,
   socket_write_in_progress_ = false;
 
   // Check for pending session manager stop operation 
-  if (stop_in_progress == state_)
+  if (external_state::stop == state_)
   {
     socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_send, stop_error_);
     if (may_complete_stop())
