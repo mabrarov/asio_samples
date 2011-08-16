@@ -260,14 +260,14 @@ void session::handle_read_at_work(const boost::system::error_code& error,
   if (boost::system::error_code error = cancel_timer_activity())
   {
     read_state_ = read_state::stopped;
-    begin_stop(error);
+    begin_general_stop(error);
     return;
   }
   
   if (error && (boost::asio::error::eof != error))
   {
     read_state_ = read_state::stopped;
-    begin_stop(error);
+    begin_general_stop(error);
     return;
   }
 
@@ -295,14 +295,14 @@ void session::handle_read_at_shutdown(const boost::system::error_code& error,
   if (boost::system::error_code error = cancel_timer_activity())
   {
     read_state_ = read_state::stopped;
-    begin_stop(error);
+    begin_general_stop(error);
     return;
   }
 
   if (error && (boost::asio::error::eof != error))
   {
     read_state_ = read_state::stopped;
-    begin_stop(error);
+    begin_general_stop(error);
     return;
   }
 
@@ -374,14 +374,14 @@ void session::handle_write_at_work(const boost::system::error_code& error,
   if (boost::system::error_code error = cancel_timer_activity())
   {
     write_state_ = write_state::stopped;
-    begin_stop(error);
+    begin_general_stop(error);
     return;
   }
   
   if (error)
   {
     write_state_ = write_state::stopped;    
-    begin_stop(error);
+    begin_general_stop(error);
     return;
   }
 
@@ -404,14 +404,14 @@ void session::handle_write_at_shutdown(const boost::system::error_code& error,
   if (boost::system::error_code error = cancel_timer_activity())
   {
     write_state_ = write_state::stopped;
-    begin_stop(error);
+    begin_general_stop(error);
     return;
   }
 
   if (error)
   {
     write_state_ = write_state::stopped;
-    begin_stop(error);
+    begin_general_stop(error);
     return;
   }
 
@@ -475,7 +475,7 @@ void session::handle_timer_at_work(const boost::system::error_code& error)
 
   if (error && (boost::asio::error::operation_aborted != error))
   {    
-    begin_stop(error);
+    begin_general_stop(error);
     return;
   }
 
@@ -488,11 +488,11 @@ void session::handle_timer_at_work(const boost::system::error_code& error)
   
   if (error)
   {
-    begin_stop(error);
+    begin_general_stop(error);
     return;
   }
   
-  begin_stop(server_error::inactivity_timeout);
+  begin_general_stop(server_error::inactivity_timeout);
 }
 
 void session::handle_timer_at_shutdown(const boost::system::error_code& error)
@@ -508,7 +508,7 @@ void session::handle_timer_at_shutdown(const boost::system::error_code& error)
 
   if (error && (boost::asio::error::operation_aborted != error))
   {
-    begin_stop(error);
+    begin_general_stop(error);
     return;
   }
 
@@ -521,11 +521,11 @@ void session::handle_timer_at_shutdown(const boost::system::error_code& error)
   
   if (error)
   {    
-    begin_stop(error);
+    begin_general_stop(error);
     return;
   }
 
-  begin_stop(server_error::inactivity_timeout);
+  begin_general_stop(server_error::inactivity_timeout);
 }
 
 void session::handle_timer_at_stop(const boost::system::error_code& /*error*/)
@@ -605,7 +605,7 @@ void session::continue_timer_activity()
   {
     if (boost::system::error_code error = begin_timer_wait())
     {
-      begin_stop(error);
+      begin_general_stop(error);
       return;
     }
     ++pending_operations_;
@@ -664,7 +664,7 @@ void session::continue_shutdown_at_read_wait()
     socket_.shutdown(protocol_type::socket::shutdown_send, error);
     if (error)
     {
-      begin_stop(error);
+      begin_general_stop(error);
       return;
     }
     write_state_ = write_state::stopped;    
@@ -701,7 +701,7 @@ void session::continue_shutdown_at_read_in_progress()
     socket_.shutdown(protocol_type::socket::shutdown_send, error);
     if (error)
     {
-      begin_stop(error);
+      begin_general_stop(error);
       return;
     }
     write_state_ = write_state::stopped;
@@ -723,13 +723,13 @@ void session::continue_shutdown_at_read_stopped()
     boost::system::error_code error;
     socket_.shutdown(protocol_type::socket::shutdown_send, error);
     write_state_ = write_state::stopped;
-    begin_stop(error);
+    begin_general_stop(error);
     return;
   }
 
   if (write_state::stopped == write_state_)
   {
-    begin_stop(boost::system::error_code());
+    begin_general_stop(boost::system::error_code());
     return;
   }
       
@@ -781,10 +781,10 @@ void session::begin_active_shutdown()
   continue_shutdown();
 }
 
-void session::begin_stop(boost::system::error_code error)
+void session::begin_general_stop(boost::system::error_code error)
 {
-  BOOST_ASSERT_MSG(
-      (general_state::work == general_state_) || (general_state::shutdown == general_state_),
+  BOOST_ASSERT_MSG((general_state::work == general_state_) 
+      || (general_state::shutdown == general_state_),
       "invalid general state");
   
   boost::system::error_code close_error;
@@ -816,7 +816,8 @@ void session::notify_work_completion(const boost::system::error_code& error)
   }
 }
 
-void session::begin_socket_read(const cyclic_buffer::mutable_buffers_type& buffers)
+void session::begin_socket_read(
+    const cyclic_buffer::mutable_buffers_type& buffers)
 {
 #if defined(MA_HAS_RVALUE_REFS) \
     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
@@ -836,7 +837,8 @@ void session::begin_socket_read(const cyclic_buffer::mutable_buffers_type& buffe
 #endif
 }
 
-void session::begin_socket_write(const cyclic_buffer::const_buffers_type& buffers)
+void session::begin_socket_write(
+    const cyclic_buffer::const_buffers_type& buffers)
 {
 #if defined(MA_HAS_RVALUE_REFS) \
     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)

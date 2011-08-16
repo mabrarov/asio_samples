@@ -79,7 +79,7 @@ public:
     typedef typename ma::remove_cv_reference<Handler>::type handler_type;
     strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler), 
         forward_handler_binder<handler_type>(
-            &this_type::begin_ext_stop<handler_type>, shared_from_this()))); 
+            &this_type::begin_stop<handler_type>, shared_from_this()))); 
   }
 
   template <typename Handler>
@@ -107,7 +107,7 @@ public:
   {
     typedef typename ma::remove_cv_reference<Handler>::type handler_type;
     strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler), 
-        boost::bind(&this_type::begin_ext_stop<handler_type>, 
+        boost::bind(&this_type::begin_stop<handler_type>, 
             shared_from_this(), _1)));
   }
 
@@ -136,8 +136,7 @@ public:
   void async_stop(const Handler& handler)
   {
     strand_.post(make_context_alloc_handler2(handler, 
-        boost::bind(&this_type::begin_ext_stop<Handler>, 
-            shared_from_this(), _1)));
+        boost::bind(&this_type::begin_stop<Handler>, shared_from_this(), _1)));
   }
 
   template <typename Handler>
@@ -260,7 +259,7 @@ private:
   }
 
   template <typename Handler>
-  void begin_ext_stop(const Handler& handler)
+  void begin_stop(const Handler& handler)
   {
     if (boost::optional<boost::system::error_code> result = stop())
     {
@@ -304,7 +303,8 @@ private:
   void handle_timer_at_shutdown(const boost::system::error_code&);
   void handle_timer_at_stop(const boost::system::error_code&);
     
-  void continue_work();  
+  void continue_work();
+
   void continue_timer_activity();
   boost::system::error_code cancel_timer_activity();
 
@@ -317,7 +317,7 @@ private:
 
   void begin_passive_shutdown();
   void begin_active_shutdown();
-  void begin_stop(boost::system::error_code);  
+  void begin_general_stop(boost::system::error_code);  
 
   void notify_work_completion(const boost::system::error_code&);  
     

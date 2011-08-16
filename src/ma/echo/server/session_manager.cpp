@@ -9,6 +9,7 @@
 #include <boost/ref.hpp>
 #include <boost/assert.hpp>
 #include <boost/make_shared.hpp>
+#include <boost/utility/addressof.hpp>
 #include <ma/config.hpp>
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/strand_wrapped_handler.hpp>
@@ -195,7 +196,8 @@ session_manager::session_data::session_data(
 void session_manager::session_data_list::push_front(
     const session_data_ptr& value)
 {
-  BOOST_ASSERT((!value->next && !value->prev.lock()));        
+  BOOST_ASSERT((!value->next && !value->prev.lock()));
+
   value->next = front_;
   value->prev.reset();
   if (front_)
@@ -230,7 +232,7 @@ void session_manager::session_data_list::clear()
 {
   front_.reset();
 }
-        
+
 session_manager::session_manager(boost::asio::io_service& io_service, 
     boost::asio::io_service& session_io_service, 
     const session_manager_options& options)
@@ -300,7 +302,8 @@ boost::system::error_code session_manager::start()
   else
   {          
     external_state_ = external_state::work;
-  }       
+  }
+
   return error;
 }
 
@@ -493,34 +496,32 @@ void session_manager::open(protocol_type::acceptor& acceptor,
     typedef protocol_type::acceptor guarded_type;
 
     acceptor_guard(guarded_type& guarded)
-      : active_(true)
-      , guarded_(guarded)
+      : guarded_(boost::addressof(guarded))
     {
     }
 
     ~acceptor_guard()
     {
-      if (active_)
+      if (guarded_)
       {
         boost::system::error_code ignored;
-        guarded_.close(ignored);
+        guarded_->close(ignored);
       }            
     }
 
     void release()
     {
-      active_ = false;
+      guarded_ = 0;
     }
 
-  private:
-    bool active_;
-    guarded_type& guarded_;
+  private:    
+    guarded_type* guarded_;
   }; // class acceptor_guard
 
   acceptor_guard closing_guard(acceptor);                
 
-  acceptor.set_option(
-      protocol_type::acceptor::reuse_address(true), local_error);
+  protocol_type::acceptor::reuse_address reuse_address_opt(true);
+  acceptor.set_option(reuse_address_opt, local_error);
   if (local_error)
   {       
     error = local_error;
