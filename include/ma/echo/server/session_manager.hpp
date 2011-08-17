@@ -287,7 +287,7 @@ private:
       work,
       stop,
       stopped
-    }; // enum value_t
+    };
   }; // struct external_state
   
   template <typename Handler>
@@ -366,9 +366,9 @@ private:
   void post_stop_handler();
 
   protocol_type::endpoint accepting_endpoint_;
-  int                     listen_backlog_;
-  std::size_t             max_session_count_;
-  std::size_t             recycled_session_count_;
+  const int               listen_backlog_;
+  const std::size_t       max_session_count_;
+  const std::size_t       recycled_session_count_;
   session_options         managed_session_options_;
 
   bool                    accept_in_progress_;

@@ -453,8 +453,8 @@ private:
   external_state::value_t external_state_;
 
   boost::asio::streambuf read_buffer_;
-  std::string frame_head_;
-  std::string frame_tail_;
+  const std::string frame_head_;
+  const std::string frame_tail_;
 
   in_place_handler_allocator<256> write_allocator_;
   in_place_handler_allocator<256> read_allocator_;
