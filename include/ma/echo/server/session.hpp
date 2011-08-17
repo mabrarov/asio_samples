@@ -153,6 +153,7 @@ private:
 #if defined(MA_HAS_RVALUE_REFS) \
     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
+  // Home-grown binder to support move semantic
   template <typename Arg>
   class forward_handler_binder
   {
@@ -203,7 +204,7 @@ private:
   {
     enum value_t
     {
-      ready,      
+      ready,
       work,
       stop,
       stopped

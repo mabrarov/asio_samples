@@ -157,6 +157,7 @@ private:
 #if defined(MA_HAS_RVALUE_REFS) \
     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
+  // Home-grown binders to support move semantic
   class accept_handler_binder;
   class session_dispatch_binder;
   class session_handler_binder;
