@@ -27,9 +27,9 @@ namespace ma {
 /// Provides storage for handlers.
 /**
  * The handler_storage class provides the storage for handlers:
- * http://www.boost.org/doc/libs/1_46_1/doc/html/boost_asio/reference/Handler.html   
+ * http://www.boost.org/doc/libs/1_47_0/doc/html/boost_asio/reference/Handler.html   
  * It supports Boost.Asio custom memory allocation: 
- * http://www.boost.org/doc/libs/1_46_1/doc/html/boost_asio/overview/core/allocation.html
+ * http://www.boost.org/doc/libs/1_47_0/doc/html/boost_asio/overview/core/allocation.html
  *
  * A value h of a stored handler class should work correctly 
  * in the expression h(arg) where arg is an lvalue of type const Arg.
