@@ -152,8 +152,7 @@ void session::reset()
 
   // session::reset() might be called right after connection was established
   // so we need to be sure that socket will be closed
-  boost::system::error_code ignored;
-  socket_.close(ignored);
+  close_socket();
 
   // Reset IO buffer: filled sequence is empty, unfilled sequence is empty.
   buffer_.reset();
@@ -170,8 +169,7 @@ boost::system::error_code session::start()
   // Set up configured socket options
   if (boost::system::error_code error = apply_socket_options())
   {
-    boost::system::error_code ignored;
-    socket_.close(ignored);
+    close_socket();
     // Switch to the desired state and notify start handler about error
     external_state_ = external_state::stopped;
     return error;
@@ -662,6 +660,7 @@ void session::continue_timer_activity()
     // Try to set up timer and begin asynchronous wait
     if (boost::system::error_code error = begin_timer_wait())
     {
+      timer_state_ = timer_state::stopped;
       begin_general_stop(error);
       return;
     }
@@ -682,6 +681,13 @@ boost::system::error_code session::cancel_timer_activity()
     // so we do it only once
     timer_cancelled_ = true;
   }
+  return error;
+}
+
+boost::system::error_code session::close_socket()
+{
+  boost::system::error_code error;
+  socket_.close(error);
   return error;
 }
 
@@ -809,6 +815,15 @@ void session::continue_stop()
 
   if (!pending_operations_)
   {
+    BOOST_ASSERT_MSG(read_state::stopped  == read_state_,
+      "invalid read state");
+
+    BOOST_ASSERT_MSG(write_state::stopped == write_state_,
+      "invalid write state");
+
+    BOOST_ASSERT_MSG(timer_state::stopped == timer_state_,
+      "invalid timer state");
+
     // The general stop completed
     general_state_ = general_state::stopped;
 
@@ -864,11 +879,15 @@ void session::begin_general_stop(boost::system::error_code error)
       "invalid general state");
   
   // Close the socket and register error if there was no stop error before
-  boost::system::error_code close_error;
-  socket_.close(close_error);
-  if (!error)
+  if (boost::system::error_code close_error = close_socket())
   {
-    error = close_error;
+    copy_error(error, close_error);
+  }
+
+  // Stop timer and register error if there was no stop error before
+  if (boost::system::error_code timer_error = cancel_timer_activity())
+  {
+    copy_error(error, timer_error);
   }
 
   // General state is changed
@@ -880,16 +899,33 @@ void session::begin_general_stop(boost::system::error_code error)
     notify_work_completion(error);
   }
 
+  // Stop all internal activities that are already ready to stop
+  // Stop read activity if it is ready to stop
+  if (read_state::wait == read_state_)
+  {
+    read_state_ = read_state::stopped;
+  }
+
+  // Stop write activity if it is ready to stop
+  if (write_state::wait == write_state_)
+  {
+    write_state_ = write_state::stopped;
+  }
+
+  // Stop timer activity if it is ready to stop
+  if (timer_state::ready == timer_state_)
+  {
+    timer_state_ = timer_state::stopped;
+  }
+
   continue_stop();
 }
 
 void session::notify_work_completion(const boost::system::error_code& error)
 {
   // Register error if there was no work completion error registered before
-  if (!wait_error_)
-  {
-    wait_error_ = error;
-  }
+  copy_error(wait_error_, error);
+
   // Invoke (post to the io_service) wait handler
   if (wait_handler_.has_target())
   {
@@ -1005,6 +1041,14 @@ boost::system::error_code session::apply_socket_options()
   }
 
   return boost::system::error_code();  
+}
+
+void session::copy_error(boost::system::error_code& dst, const boost::system::error_code& src)
+{
+  if (!dst)
+  {
+    dst = src;
+  }
 }
         
 } // namespace server

@@ -308,6 +308,7 @@ private:
 
   void continue_timer_activity();
   boost::system::error_code cancel_timer_activity();
+  boost::system::error_code close_socket();
 
   void continue_shutdown();
   void continue_shutdown_at_read_wait();
@@ -318,14 +319,17 @@ private:
 
   void begin_passive_shutdown();
   void begin_active_shutdown();
-  void begin_general_stop(boost::system::error_code);  
+  void begin_general_stop(boost::system::error_code);
 
   void notify_work_completion(const boost::system::error_code&);  
     
   void begin_socket_read(const cyclic_buffer::mutable_buffers_type&);
   void begin_socket_write(const cyclic_buffer::const_buffers_type&);
   boost::system::error_code begin_timer_wait();
-  boost::system::error_code apply_socket_options();  
+  boost::system::error_code apply_socket_options();
+
+  static void copy_error(boost::system::error_code& dst, 
+      const boost::system::error_code& src);
         
   const session_options::optional_int  socket_recv_buffer_size_;
   const session_options::optional_int  socket_send_buffer_size_;
