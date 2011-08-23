@@ -26,8 +26,8 @@
 #include <ma/bind_asio_handler.hpp>
 #include <ma/context_alloc_handler.hpp>
 #include <ma/echo/server/session_fwd.hpp>
-#include <ma/echo/server/session_options.hpp>
-#include <ma/echo/server/session_manager_options.hpp>
+#include <ma/echo/server/session_config.hpp>
+#include <ma/echo/server/session_manager_config.hpp>
 #include <ma/echo/server/session_manager_fwd.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)
@@ -53,7 +53,7 @@ public:
 
   session_manager(boost::asio::io_service& io_service, 
       boost::asio::io_service& session_io_service, 
-      const session_manager_options& options);
+      const session_manager_config& config);
 
   ~session_manager()
   {        
@@ -236,7 +236,7 @@ private:
     in_place_handler_allocator<144> start_wait_allocator;
     in_place_handler_allocator<144> stop_allocator;
 
-    session_data(boost::asio::io_service&, const session_options&);
+    session_data(boost::asio::io_service&, const session_config&);
 
     ~session_data()
     {
@@ -370,7 +370,7 @@ private:
   const int               listen_backlog_;
   const std::size_t       max_session_count_;
   const std::size_t       recycled_session_count_;
-  session_options         managed_session_options_;
+  const session_config    managed_session_config_;
 
   bool                    accept_in_progress_;
   std::size_t             pending_operations_;

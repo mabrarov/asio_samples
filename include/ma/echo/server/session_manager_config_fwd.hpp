@@ -5,8 +5,8 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef MA_ECHO_SERVER_SESSION_MANAGER_OPTIONS_FWD_HPP
-#define MA_ECHO_SERVER_SESSION_MANAGER_OPTIONS_FWD_HPP
+#ifndef MA_ECHO_SERVER_SESSION_MANAGER_CONFIG_FWD_HPP
+#define MA_ECHO_SERVER_SESSION_MANAGER_CONFIG_FWD_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1020)
 #pragma once
@@ -18,10 +18,10 @@ namespace echo {
 
 namespace server {
 
-class session_manager_options;
+struct session_manager_config;
 
 } // namespace server
 } // namespace echo
 } // namespace ma
 
-#endif // MA_ECHO_SERVER_SESSION_MANAGER_OPTIONS_HPP
+#endif // MA_ECHO_SERVER_SESSION_MANAGER_CONFIG_FWD_HPP

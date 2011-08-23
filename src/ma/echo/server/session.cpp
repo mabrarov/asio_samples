@@ -116,11 +116,11 @@ private:
 } // anonymous namespace
 
 session::session(boost::asio::io_service& io_service, 
-    const session_options& options)
-  : socket_recv_buffer_size_(options.socket_recv_buffer_size())
-  , socket_send_buffer_size_(options.socket_send_buffer_size())
-  , no_delay_(options.no_delay())
-  , inactivity_timeout_(options.inactivity_timeout())
+    const session_config& config)
+  : socket_recv_buffer_size_(config.socket_recv_buffer_size)
+  , socket_send_buffer_size_(config.socket_send_buffer_size)
+  , no_delay_(config.no_delay)
+  , inactivity_timeout_(config.inactivity_timeout)
   , external_state_(external_state::ready)
   , general_state_(general_state::work)
   , read_state_(read_state::wait)
@@ -132,7 +132,7 @@ session::session(boost::asio::io_service& io_service,
   , strand_(io_service)
   , socket_(io_service)
   , timer_(io_service)
-  , buffer_(options.buffer_size())
+  , buffer_(config.buffer_size)
   , wait_handler_(io_service)
   , stop_handler_(io_service)                
 {

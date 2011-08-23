@@ -186,11 +186,11 @@ private:
        //     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
 session_manager::session_data::session_data(
-    boost::asio::io_service& io_service, const session_options& options)
+    boost::asio::io_service& io_service, const session_config& config)
   : state(ready)
   , pending_operations(0)
   , managed_session(boost::make_shared<session>(
-        boost::ref(io_service), options))
+        boost::ref(io_service), config))
 {
 }            
 
@@ -236,13 +236,13 @@ void session_manager::session_data_list::clear()
 
 session_manager::session_manager(boost::asio::io_service& io_service, 
     boost::asio::io_service& session_io_service, 
-    const session_manager_options& options)
-  : accepting_endpoint_(options.accepting_endpoint())
-  , listen_backlog_(options.listen_backlog())
-  , max_session_count_(options.max_session_count())
-  , recycled_session_count_(options.recycled_session_count())
-  , managed_session_options_(options.managed_session_options())
-  , accept_in_progress_(false)        
+    const session_manager_config& config)
+  : accepting_endpoint_(config.accepting_endpoint)
+  , listen_backlog_(config.listen_backlog)
+  , max_session_count_(config.max_session_count)
+  , recycled_session_count_(config.recycled_session_count)
+  , managed_session_config_(config.managed_session_config)
+  , accept_in_progress_(false)
   , pending_operations_(0)
   , external_state_(external_state::ready)
   , io_service_(io_service)
@@ -377,7 +377,7 @@ session_manager::session_data_ptr session_manager::create_session(
   try 
   {   
     session_data_ptr the_session_data = boost::make_shared<session_data>(
-        boost::ref(session_io_service_), managed_session_options_);
+        boost::ref(session_io_service_), managed_session_config_);
     error = boost::system::error_code();
     return the_session_data;
   }

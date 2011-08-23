@@ -23,7 +23,7 @@
 #include <ma/handler_allocator.hpp>
 #include <ma/bind_asio_handler.hpp>
 #include <ma/context_alloc_handler.hpp>
-#include <ma/echo/server/session_options.hpp>
+#include <ma/echo/server/session_config.hpp>
 #include <ma/echo/server/session_fwd.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)
@@ -47,7 +47,7 @@ private:
 public:
   typedef boost::asio::ip::tcp protocol_type;
 
-  session(boost::asio::io_service& io_service, const session_options& options);
+  session(boost::asio::io_service& io_service, const session_config& config);
 
   ~session()
   {
@@ -331,10 +331,10 @@ private:
   static void copy_error(boost::system::error_code& dst, 
       const boost::system::error_code& src);
         
-  const session_options::optional_int  socket_recv_buffer_size_;
-  const session_options::optional_int  socket_send_buffer_size_;
-  const session_options::optional_bool no_delay_;
-  const session_options::optional_time_duration inactivity_timeout_;
+  const session_config::optional_int  socket_recv_buffer_size_;
+  const session_config::optional_int  socket_send_buffer_size_;
+  const session_config::optional_bool no_delay_;
+  const session_config::optional_time_duration inactivity_timeout_;
   
   external_state::value_t   external_state_;
   general_state::value_t    general_state_;

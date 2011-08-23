@@ -191,7 +191,7 @@ void MainForm::on_startButton_clicked()
   boost::optional<ServiceConfig> serviceConfig;
   try 
   {
-    serviceConfig = readServiceConfig();
+    serviceConfig = buildServiceConfig();
   }
   catch (const widget_option_read_error& e)
   {
@@ -313,7 +313,7 @@ void MainForm::on_service_exceptionHappened()
   updateWidgetsStates();
 } 
 
-execution_options MainForm::readExecutionOptions() const
+execution_config MainForm::buildExecutionConfig() const
 {   
   std::size_t sessionManagerThreadCount;
   std::size_t sessionThreadCount;
@@ -334,12 +334,12 @@ execution_options MainForm::readExecutionOptions() const
       currentWidget, tr("Invalid value.")));
   }
 
-  return execution_options(sessionManagerThreadCount, sessionThreadCount);
+  return execution_config(sessionManagerThreadCount, sessionThreadCount);
 }
 
-session_options MainForm::readSessionOptions() const
+session_config MainForm::buildSessionConfig() const
 {
-  session_options::optional_time_duration inactivityTimeout;
+  session_config::optional_time_duration inactivityTimeout;
   if (boost::optional<int> timeoutSeconds = readOptionalValue(
       *ui_.inactivityTimeoutCheckBox, *ui_.inactivityTimeoutSpinBox))
   {
@@ -364,13 +364,13 @@ session_options MainForm::readSessionOptions() const
     break;
   }
 
-  return session_options(
+  return session_config(
       boost::numeric_cast<std::size_t>(ui_.sessionBufferSizeSpinBox->value()),
       socketRecvBufferSize, socketSendBufferSize, 
       tcpNoDelay, inactivityTimeout);
 }
 
-session_manager_options MainForm::readSessionManagerOptions() const
+session_manager_config MainForm::buildSessionManagerConfig() const
 {
   unsigned short port;
   std::size_t    maxSessions;
@@ -411,16 +411,16 @@ session_manager_options MainForm::readSessionManagerOptions() const
         ui_.addressEdit, tr("Failed to parse numeric IP address.")));
   }
 
-  return session_manager_options(
+  return session_manager_config(
       boost::asio::ip::tcp::endpoint(listenAddress, port), 
-      maxSessions, recycledSessions, listenBacklog, readSessionOptions());
+      maxSessions, recycledSessions, listenBacklog, buildSessionConfig());
 }  
 
-MainForm::ServiceConfig MainForm::readServiceConfig() const
+MainForm::ServiceConfig MainForm::buildServiceConfig() const
 {
-  execution_options executionOptions = readExecutionOptions();
-  session_manager_options sessionManagerOptions = readSessionManagerOptions();
-  return boost::make_tuple(executionOptions, sessionManagerOptions);
+  execution_config executionConfig = buildExecutionConfig();
+  session_manager_config sessionManagerOptions = buildSessionManagerConfig();
+  return boost::make_tuple(executionConfig, sessionManagerOptions);
 }
 
 void MainForm::showError(const QString& message, QWidget* widget)

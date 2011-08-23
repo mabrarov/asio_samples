@@ -336,6 +336,10 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath="..\..\..\src\echo_server\config.hpp"
+				>
+			</File>
 			<Filter
 				Name="ma"
 				>
@@ -410,11 +414,11 @@
 							>
 						</File>
 						<File
-							RelativePath="..\..\..\include\ma\echo\server\session_options.hpp"
+							RelativePath="..\..\..\include\ma\echo\server\session_config.hpp"
 							>
 						</File>
 						<File
-							RelativePath="..\..\..\include\ma\echo\server\session_options_fwd.hpp"
+							RelativePath="..\..\..\include\ma\echo\server\session_config_fwd.hpp"
 							>
 						</File>
 						<File
@@ -426,11 +430,11 @@
 							>
 						</File>
 						<File
-							RelativePath="..\..\..\include\ma\echo\server\session_manager_options.hpp"
+							RelativePath="..\..\..\include\ma\echo\server\session_manager_config.hpp"
 							>
 						</File>
 						<File
-							RelativePath="..\..\..\include\ma\echo\server\session_manager_options_fwd.hpp"
+							RelativePath="..\..\..\include\ma\echo\server\session_manager_config_fwd.hpp"
 							>
 						</File>
 						<File
@@ -448,6 +452,10 @@
 			>
 			<File
 				RelativePath="..\..\..\src\echo_server\main.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\src\echo_server\config.cpp"
 				>
 			</File>
 			<Filter

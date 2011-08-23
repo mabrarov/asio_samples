@@ -59,19 +59,19 @@
     <ClInclude Include="..\..\..\include\ma\echo\server\session_manager_fwd.hpp">
       <Filter>Header Files\ma\echo\server</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\ma\echo\server\session_options.hpp">
+    <ClInclude Include="..\..\..\include\ma\echo\server\session_config.hpp">
       <Filter>Header Files\ma\echo\server</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\ma\echo\server\session_options_fwd.hpp">
+    <ClInclude Include="..\..\..\include\ma\echo\server\session_config_fwd.hpp">
       <Filter>Header Files\ma\echo\server</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\ma\echo\server\session_fwd.hpp">
       <Filter>Header Files\ma\echo\server</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\ma\echo\server\session_manager_options.hpp">
+    <ClInclude Include="..\..\..\include\ma\echo\server\session_manager_config.hpp">
       <Filter>Header Files\ma\echo\server</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\ma\echo\server\session_manager_options_fwd.hpp">
+    <ClInclude Include="..\..\..\include\ma\echo\server\session_manager_config_fwd.hpp">
       <Filter>Header Files\ma\echo\server</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\ma\echo\server\error.hpp">
@@ -98,12 +98,18 @@
     <ClInclude Include="..\..\..\include\ma\handler_allocator.hpp">
       <Filter>Header Files\ma</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\src\echo_server\config.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src\ma\console_controller.cpp">
       <Filter>Source Files\ma</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\echo_server\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\echo_server\config.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\ma\echo\server\session_manager.cpp">

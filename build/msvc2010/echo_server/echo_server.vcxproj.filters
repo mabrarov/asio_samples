@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Header Files">
@@ -59,19 +59,7 @@
     <ClInclude Include="..\..\..\include\ma\echo\server\session_manager_fwd.hpp">
       <Filter>Header Files\ma\echo\server</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\ma\echo\server\session_options.hpp">
-      <Filter>Header Files\ma\echo\server</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\ma\echo\server\session_options_fwd.hpp">
-      <Filter>Header Files\ma\echo\server</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\include\ma\echo\server\session_fwd.hpp">
-      <Filter>Header Files\ma\echo\server</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\ma\echo\server\session_manager_options.hpp">
-      <Filter>Header Files\ma\echo\server</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\ma\echo\server\session_manager_options_fwd.hpp">
       <Filter>Header Files\ma\echo\server</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\ma\echo\server\error.hpp">
@@ -98,6 +86,21 @@
     <ClInclude Include="..\..\..\include\ma\handler_allocator.hpp">
       <Filter>Header Files\ma</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\echo\server\session_manager_config.hpp">
+      <Filter>Header Files\ma\echo\server</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\echo\server\session_manager_config_fwd.hpp">
+      <Filter>Header Files\ma\echo\server</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\echo\server\session_config.hpp">
+      <Filter>Header Files\ma\echo\server</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\echo\server\session_config_fwd.hpp">
+      <Filter>Header Files\ma\echo\server</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\echo_server\config.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src\ma\console_controller.cpp">
@@ -114,6 +117,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\src\ma\echo\server\error.cpp">
       <Filter>Source Files\ma\echo\server</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\echo_server\config.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

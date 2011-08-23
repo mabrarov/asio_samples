@@ -144,8 +144,8 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp</Outputs>
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DWIN32 -DWIN32_LEAN_AND_MEAN -DWINVER=0x0500 -D_WIN32_WINNT=0x0500 -D_WIN32_WINDOWS=0x0410 -D_WIN32_IE=0x0600 -DUNICODE -DNDEBUG -DQT_LARGEFILE_SUPPORT -DQT_NO_DEBUG -DQT_CORE_LIB -DQT_GUI_LIB "-I." "-I.\..\..\..\..\boost_1_47_0" "-I$(QTDIR)\include" "-I$(QTDIR)\include\qtmain" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I.\GeneratedFiles" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I.\..\..\..\include" "-I." "-I.\..\..\..\include\ma\echo\server\qt" "-I.\..\..\..\src\ma\echo\server\qt" "-I." "-I." "-I." "-I."</Command>
     </CustomBuild>
-    <ClInclude Include="..\..\..\include\ma\echo\server\qt\execution_options.h" />
-    <ClInclude Include="..\..\..\include\ma\echo\server\qt\execution_options_fwd.h" />
+    <ClInclude Include="..\..\..\include\ma\echo\server\qt\execution_config.h" />
+    <ClInclude Include="..\..\..\include\ma\echo\server\qt\execution_config_fwd.h" />
     <ClInclude Include="..\..\..\include\ma\echo\server\qt\serviceforwardsignal_fwd.h" />
     <ClInclude Include="..\..\..\include\ma\echo\server\qt\serviceservantsignal_fwd.h" />
     <ClInclude Include="..\..\..\include\ma\echo\server\qt\servicestate.h" />
@@ -162,6 +162,10 @@
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"  "%(FullPath)" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"  -DWIN32 -DWIN32_LEAN_AND_MEAN -DWINVER=0x0500 -D_WIN32_WINNT=0x0500 -D_WIN32_WINDOWS=0x0410 -D_WIN32_IE=0x0600 -DUNICODE -DNDEBUG -DQT_LARGEFILE_SUPPORT -DQT_NO_DEBUG -DQT_CORE_LIB -DQT_GUI_LIB "-I." "-I.\..\..\..\..\boost_1_47_0" "-I$(QTDIR)\include" "-I$(QTDIR)\include\qtmain" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I.\GeneratedFiles" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I.\..\..\..\include" "-I." "-I.\..\..\..\include\ma\echo\server\qt" "-I.\..\..\..\src\ma\echo\server\qt" "-I." "-I." "-I." "-I."</Command>
     </CustomBuild>
     <ClInclude Include="..\..\..\include\ma\echo\server\qt\signal_connect_error.h" />
+    <ClInclude Include="..\..\..\include\ma\echo\server\session_config.hpp" />
+    <ClInclude Include="..\..\..\include\ma\echo\server\session_config_fwd.hpp" />
+    <ClInclude Include="..\..\..\include\ma\echo\server\session_manager_config.hpp" />
+    <ClInclude Include="..\..\..\include\ma\echo\server\session_manager_config_fwd.hpp" />
     <ClInclude Include="..\..\..\include\ma\handler_allocator.hpp" />
     <ClInclude Include="..\..\..\include\ma\strand_wrapped_handler.hpp" />
     <ClInclude Include="..\..\..\include\ma\type_traits.hpp" />
@@ -177,12 +181,8 @@
       <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(QTDIR)\bin\moc.exe"   -DWIN32 -DWIN32_LEAN_AND_MEAN -DWINVER=0x0500 -D_WIN32_WINNT=0x0500 -D_WIN32_WINDOWS=0x0410 -D_WIN32_IE=0x0600 -DUNICODE -DNDEBUG -DQT_LARGEFILE_SUPPORT -DQT_NO_DEBUG -DQT_CORE_LIB -DQT_GUI_LIB  "-I." "-I.\..\..\..\..\boost_1_47_0" "-I$(QTDIR)\include" "-I$(QTDIR)\include\qtmain" "-I$(QTDIR)\include\QtCore" "-I$(QTDIR)\include\QtGui" "-I.\GeneratedFiles" "-I.\GeneratedFiles\$(ConfigurationName)\." "-I.\..\..\..\include" "-I." "-I.\..\..\..\include\ma\echo\server\qt" "-I.\..\..\..\src\ma\echo\server\qt" "-I." "-I." "-I." "-I." "..\..\..\include\ma\echo\server\qt\mainform.h" -o ".\GeneratedFiles\$(ConfigurationName)\moc_%(Filename).cpp"</Command>
     </CustomBuild>
     <ClInclude Include="..\..\..\include\ma\echo\server\session.hpp" />
-    <ClInclude Include="..\..\..\include\ma\echo\server\session_options.hpp" />
-    <ClInclude Include="..\..\..\include\ma\echo\server\session_options_fwd.hpp" />
     <ClInclude Include="..\..\..\include\ma\echo\server\session_fwd.hpp" />
     <ClInclude Include="..\..\..\include\ma\echo\server\session_manager.hpp" />
-    <ClInclude Include="..\..\..\include\ma\echo\server\session_manager_options.hpp" />
-    <ClInclude Include="..\..\..\include\ma\echo\server\session_manager_options_fwd.hpp" />
     <ClInclude Include="..\..\..\include\ma\echo\server\session_manager_fwd.hpp" />
     <ClInclude Include="..\..\..\include\ma\handler_alloc_helpers.hpp" />
     <ClInclude Include="..\..\..\include\ma\handler_invoke_helpers.hpp" />

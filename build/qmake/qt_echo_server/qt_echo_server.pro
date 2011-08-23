@@ -25,16 +25,16 @@ HEADERS  += ../../../include/ma/bind_asio_handler.hpp \
             ../../../include/ma/handler_storage_service.hpp \
             ../../../include/ma/echo/server/error.hpp \
             ../../../include/ma/echo/server/session.hpp \
-            ../../../include/ma/echo/server/session_options.hpp \
-            ../../../include/ma/echo/server/session_options_fwd.hpp \
+            ../../../include/ma/echo/server/session_config.hpp \
+            ../../../include/ma/echo/server/session_config_fwd.hpp \
             ../../../include/ma/echo/server/session_fwd.hpp \
             ../../../include/ma/echo/server/session_manager.hpp \
-            ../../../include/ma/echo/server/session_manager_options.hpp \
-            ../../../include/ma/echo/server/session_manager_options_fwd.hpp \
+            ../../../include/ma/echo/server/session_manager_config.hpp \
+            ../../../include/ma/echo/server/session_manager_config_fwd.hpp \
             ../../../include/ma/echo/server/session_manager_fwd.hpp \
             ../../../include/ma/echo/server/qt/custommetatypes.h \
-            ../../../include/ma/echo/server/qt/execution_options.h \
-            ../../../include/ma/echo/server/qt/execution_options_fwd.h \
+            ../../../include/ma/echo/server/qt/execution_config.h \
+            ../../../include/ma/echo/server/qt/execution_config_fwd.h \
             ../../../include/ma/echo/server/qt/serviceforwardsignal_fwd.h \
             ../../../include/ma/echo/server/qt/serviceservantsignal_fwd.h \
             ../../../include/ma/echo/server/qt/servicestate.h \

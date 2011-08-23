@@ -19,7 +19,7 @@ TRANSLATOR ma::echo::server::qt::Service
 #include <boost/utility/base_from_member.hpp>
 #include <ma/echo/server/error.hpp>
 #include <ma/echo/server/session_manager.hpp>
-#include <ma/echo/server/qt/execution_options.h>
+#include <ma/echo/server/qt/execution_config.h>
 #include <ma/echo/server/qt/signal_connect_error.h>
 #include <ma/echo/server/qt/serviceforwardsignal.h>
 #include <ma/echo/server/qt/serviceservantsignal.h>
@@ -44,9 +44,9 @@ private:
       session_io_service_base;
 
 public:
-  explicit io_service_chain(const execution_options& exec_options)
-    : session_io_service_base(exec_options.session_thread_count())
-    , session_manager_io_service_(exec_options.session_manager_thread_count())
+  explicit io_service_chain(const execution_config& config)
+    : session_io_service_base(config.session_thread_count)
+    , session_manager_io_service_(config.session_manager_thread_count)
   {
   }
 
@@ -71,13 +71,13 @@ private:
   typedef execution_system this_type;
 
 public:
-  explicit execution_system(const execution_options& the_execution_options)
-    : io_service_chain_base(the_execution_options)
+  explicit execution_system(const execution_config& config)
+    : io_service_chain_base(config)
     , session_work_(io_service_chain_base::member.session_io_service())
     , session_manager_work_(
           io_service_chain_base::member.session_manager_io_service())
     , threads_()
-    , execution_options_(the_execution_options)
+    , execution_config_(config)
   {
   }
 
@@ -99,14 +99,14 @@ public:
     thread_func_type func = &this_type::thread_func<Handler>;
 
     for (std::size_t i = 0; 
-        i != execution_options_.session_thread_count(); ++i)
+        i != execution_config_.session_thread_count; ++i)
     {        
       threads_.create_thread(boost::bind(func, 
           boost::ref(this->session_io_service()), wrapped_handler));
     }
 
     for (std::size_t i = 0; 
-        i != execution_options_.session_manager_thread_count(); ++i)
+        i != execution_config_.session_manager_thread_count; ++i)
     {
       threads_.create_thread(boost::bind(func, 
           boost::ref(this->session_manager_io_service()), wrapped_handler));
@@ -140,8 +140,8 @@ private:
 
   boost::asio::io_service::work session_work_;
   boost::asio::io_service::work session_manager_work_;
-  boost::thread_group threads_;
-  execution_options execution_options_;
+  boost::thread_group           threads_;
+  const execution_config        execution_config_;
 }; // class execution_system
 
 } // anonymous namespace
@@ -153,14 +153,14 @@ private:
   typedef servant this_type;
 
 public:
-  servant(const execution_options& the_execution_options, 
-      const session_manager_options& the_session_manager_options)
-    : execution_system_base(the_execution_options)      
+  servant(const execution_config& the_execution_config, 
+      const session_manager_config& the_session_manager_config)
+    : execution_system_base(the_execution_config)      
     , session_manager_(boost::make_shared<session_manager>(
           boost::ref(
               execution_system_base::member.session_manager_io_service()),
           boost::ref(execution_system_base::member.session_io_service()), 
-          the_session_manager_options))
+          the_session_manager_config))
   {
   }
 
@@ -224,8 +224,8 @@ Service::~Service()
 {    
 }
 
-void Service::asyncStart(const execution_options& the_execution_options, 
-    const session_manager_options& the_session_manager_options)
+void Service::asyncStart(const execution_config& the_execution_config, 
+    const session_manager_config& the_session_manager_config)
 {
   if (ServiceState::Stopped != currentState_)
   {      
@@ -233,7 +233,7 @@ void Service::asyncStart(const execution_options& the_execution_options,
     return;
   }
 
-  createServant(the_execution_options, the_session_manager_options);
+  createServant(the_execution_config, the_session_manager_config);
 
   servant_->create_threads(
       boost::bind(&ServiceServantSignal::emitWorkThreadExceptionHappened, 
@@ -346,11 +346,11 @@ void Service::onWorkThreadExceptionHappened()
   }
 }
 
-void Service::createServant(const execution_options& the_execution_options, 
-    const session_manager_options& the_session_manager_options)
+void Service::createServant(const execution_config& the_execution_config, 
+    const session_manager_config& the_session_manager_config)
 {
   servant_.reset(new servant(
-      the_execution_options, the_session_manager_options));
+      the_execution_config, the_session_manager_config));
 
   servantSignal_ = boost::make_shared<ServiceServantSignal>();
         
