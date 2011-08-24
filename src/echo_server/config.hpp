@@ -59,7 +59,7 @@ boost::program_options::variables_map parse_cmd_line(
 
 #else
 
-boost::program_options::variables_map parse_cmd_options(
+boost::program_options::variables_map parse_cmd_line(
     const boost::program_options::options_description& options_description, 
     int argc, char* argv[]);
 
