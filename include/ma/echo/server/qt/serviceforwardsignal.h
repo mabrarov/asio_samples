@@ -38,7 +38,7 @@ signals:
   void workCompleted(const boost::system::error_code&);
 
 public:
-  ServiceForwardSignal(QObject* parent = 0)
+  explicit ServiceForwardSignal(QObject* parent = 0)
     : QObject(parent)
   {
   }

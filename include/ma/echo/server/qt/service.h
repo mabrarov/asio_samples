@@ -40,7 +40,7 @@ public:
   ~Service();
   void asyncStart(const execution_config&, const session_manager_config&);
 
-  ServiceState::State currentState()
+  ServiceState::State currentState() const
   {
     return currentState_;
   }
