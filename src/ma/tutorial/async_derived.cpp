@@ -92,7 +92,8 @@ async_derived::async_base_ptr async_derived::get_shared_base()
   return shared_from_this();
 }
     
-boost::optional<boost::system::error_code> async_derived::do_something()
+boost::optional<boost::system::error_code> 
+async_derived::do_start_do_something()
 {
   if (has_do_something_handler())
   {

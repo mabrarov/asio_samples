@@ -69,27 +69,30 @@ public:
   void async_start(Handler&& handler)
   {
     typedef typename ma::remove_cv_reference<Handler>::type handler_type;
-    strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler), 
+    strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler),
         forward_handler_binder<handler_type>(
-            &this_type::begin_start<handler_type>, shared_from_this())));
+            &this_type::start_external_start<handler_type>, 
+            shared_from_this())));
   }
 
   template <typename Handler>
   void async_stop(Handler&& handler)
   {
     typedef typename ma::remove_cv_reference<Handler>::type handler_type;
-    strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler), 
+    strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler),
         forward_handler_binder<handler_type>(
-            &this_type::begin_stop<handler_type>, shared_from_this()))); 
+            &this_type::start_external_stop<handler_type>, 
+            shared_from_this()))); 
   }
 
   template <typename Handler>
   void async_wait(Handler&& handler)
   {
     typedef typename ma::remove_cv_reference<Handler>::type handler_type;
-    strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler), 
+    strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler),
         forward_handler_binder<handler_type>(
-            &this_type::begin_wait<handler_type>, shared_from_this())));  
+            &this_type::start_external_wait<handler_type>, 
+            shared_from_this())));
   }
 
 #else // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
@@ -98,8 +101,8 @@ public:
   void async_start(Handler&& handler)
   {
     typedef typename ma::remove_cv_reference<Handler>::type handler_type;
-    strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler), 
-        boost::bind(&this_type::begin_start<handler_type>, 
+    strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler),
+        boost::bind(&this_type::start_external_start<handler_type>, 
             shared_from_this(), _1)));
   }
 
@@ -108,7 +111,7 @@ public:
   {
     typedef typename ma::remove_cv_reference<Handler>::type handler_type;
     strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler), 
-        boost::bind(&this_type::begin_stop<handler_type>, 
+        boost::bind(&this_type::start_external_stop<handler_type>, 
             shared_from_this(), _1))); 
   }
 
@@ -117,7 +120,7 @@ public:
   {
     typedef typename ma::remove_cv_reference<Handler>::type handler_type;
     strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler), 
-        boost::bind(&this_type::begin_wait<handler_type>, 
+        boost::bind(&this_type::start_external_wait<handler_type>, 
             shared_from_this(), _1)));  
   }
 
@@ -128,23 +131,22 @@ public:
   template <typename Handler>
   void async_start(const Handler& handler)
   {
-    strand_.post(make_context_alloc_handler2(handler, 
-        boost::bind(&this_type::begin_start<Handler>, 
-            shared_from_this(), _1)));
+    strand_.post(make_context_alloc_handler2(handler, boost::bind(
+        &this_type::start_external_start<Handler>, shared_from_this(), _1)));
   }
 
   template <typename Handler>
   void async_stop(const Handler& handler)
   {
-    strand_.post(make_context_alloc_handler2(handler, 
-        boost::bind(&this_type::begin_stop<Handler>, shared_from_this(), _1)));
+    strand_.post(make_context_alloc_handler2(handler, boost::bind(
+        &this_type::start_external_stop<Handler>, shared_from_this(), _1)));
   }
 
   template <typename Handler>
   void async_wait(const Handler& handler)
   {
-    strand_.post(make_context_alloc_handler2(handler, 
-        boost::bind(&this_type::begin_wait<Handler>, shared_from_this(), _1)));
+    strand_.post(make_context_alloc_handler2(handler, boost::bind(
+        &this_type::start_external_wait<Handler>, shared_from_this(), _1)));
   }
 
 #endif // defined(MA_HAS_RVALUE_REFS)
@@ -292,16 +294,17 @@ private:
   }; // struct external_state
   
   template <typename Handler>
-  void begin_start(const Handler& handler)
+  void start_external_start(const Handler& handler)
   {
-    boost::system::error_code error = start();
+    boost::system::error_code error = do_external_start();
     io_service_.post(detail::bind_handler(handler, error));          
   }
 
   template <typename Handler>
-  void begin_stop(const Handler& handler)
+  void start_external_stop(const Handler& handler)
   {          
-    if (boost::optional<boost::system::error_code> result = stop())
+    if (boost::optional<boost::system::error_code> result = 
+        do_external_stop())
     {          
       io_service_.post(detail::bind_handler(handler, *result));
     }
@@ -312,9 +315,10 @@ private:
   }
 
   template <typename Handler>
-  void begin_wait(const Handler& handler)
+  void start_external_wait(const Handler& handler)
   {          
-    if (boost::optional<boost::system::error_code> result = wait())
+    if (boost::optional<boost::system::error_code> result = 
+        do_external_wait())
     {          
       io_service_.post(detail::bind_handler(handler, *result));
     }
@@ -324,14 +328,14 @@ private:
     }  
   }
 
-  boost::system::error_code start();
-  boost::optional<boost::system::error_code> stop();
-  boost::optional<boost::system::error_code> wait();
+  boost::system::error_code                  do_external_start();
+  boost::optional<boost::system::error_code> do_external_stop();
+  boost::optional<boost::system::error_code> do_external_wait();
 
   session_data_ptr create_session(boost::system::error_code& error);
-  void accept_session(const session_data_ptr&);
+  void start_accept(const session_data_ptr&);
   void continue_accept();
-  void handle_session_accept(const session_data_ptr&, 
+  void handle_accept(const session_data_ptr&, 
       const boost::system::error_code&);
 
   static void open(protocol_type::acceptor& acceptor, 

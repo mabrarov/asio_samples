@@ -271,7 +271,7 @@ void session_manager::reset(bool free_recycled_sessions)
   external_state_ = external_state::ready;
 }
 
-boost::system::error_code session_manager::start()
+boost::system::error_code session_manager::do_external_start()
 {
   if (external_state::ready != external_state_)
   {
@@ -292,7 +292,7 @@ boost::system::error_code session_manager::start()
     }
     else
     {
-      accept_session(the_session_data);
+      start_accept(the_session_data);
     }
   }
 
@@ -308,7 +308,7 @@ boost::system::error_code session_manager::start()
   return error;
 }
 
-boost::optional<boost::system::error_code> session_manager::stop()
+boost::optional<boost::system::error_code> session_manager::do_external_stop()
 {        
   if ((external_state::stopped == external_state_)
       || (external_state::stop == external_state_))
@@ -349,7 +349,7 @@ boost::optional<boost::system::error_code> session_manager::stop()
   return boost::optional<boost::system::error_code>();
 }
 
-boost::optional<boost::system::error_code> session_manager::wait()
+boost::optional<boost::system::error_code> session_manager::do_external_wait()
 {        
   if ((external_state::work != external_state_)
       || wait_handler_.has_target())
@@ -388,7 +388,7 @@ session_manager::session_data_ptr session_manager::create_session(
   }
 }
 
-void session_manager::accept_session(const session_data_ptr& the_session_data)
+void session_manager::start_accept(const session_data_ptr& the_session_data)
 {
 #if defined(MA_HAS_RVALUE_REFS) \
     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
@@ -396,7 +396,7 @@ void session_manager::accept_session(const session_data_ptr& the_session_data)
   acceptor_.async_accept(the_session_data->managed_session->socket(), 
       the_session_data->remote_endpoint, MA_STRAND_WRAP(strand_, 
           make_custom_alloc_handler(accept_allocator_, accept_handler_binder(
-              &this_type::handle_session_accept, shared_from_this(), 
+              &this_type::handle_accept, shared_from_this(), 
               the_session_data))));
 
 #else
@@ -404,8 +404,8 @@ void session_manager::accept_session(const session_data_ptr& the_session_data)
   acceptor_.async_accept(the_session_data->managed_session->socket(), 
       the_session_data->remote_endpoint, MA_STRAND_WRAP(strand_, 
           make_custom_alloc_handler(accept_allocator_, boost::bind(
-              &this_type::handle_session_accept, shared_from_this(), 
-              the_session_data, boost::asio::placeholders::error))));
+              &this_type::handle_accept, shared_from_this(), the_session_data, 
+              boost::asio::placeholders::error))));
 
 #endif
 
@@ -427,10 +427,10 @@ void session_manager::continue_accept()
     return;
   }
   // Start session acceptation
-  accept_session(the_session_data);
+  start_accept(the_session_data);
 }
 
-void session_manager::handle_session_accept(
+void session_manager::handle_accept(
     const session_data_ptr& the_session_data, 
     const boost::system::error_code& error)
 {

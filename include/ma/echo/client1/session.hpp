@@ -66,9 +66,9 @@ public:
   {
     typedef typename ma::remove_cv_reference<Handler>::type handler_type;
 
-    strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler),  
-        boost::bind(&this_type::begin_start<handler_type>, 
-            shared_from_this(), _1)));  
+    strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler),
+        boost::bind(&this_type::start_external_start<handler_type>,
+            shared_from_this(), _1)));
   }
 
   template <typename Handler>
@@ -76,9 +76,9 @@ public:
   {
     typedef typename ma::remove_cv_reference<Handler>::type handler_type;
 
-    strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler), 
-        boost::bind(&this_type::begin_stop<handler_type>, 
-            shared_from_this(), _1))); 
+    strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler),
+        boost::bind(&this_type::start_external_stop<handler_type>,
+            shared_from_this(), _1)));
   }
 
   template <typename Handler>
@@ -86,9 +86,9 @@ public:
   {
     typedef typename ma::remove_cv_reference<Handler>::type handler_type;
 
-    strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler), 
-        boost::bind(&this_type::begin_wait<handler_type>, 
-            shared_from_this(), _1)));  
+    strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler),
+        boost::bind(&this_type::start_external_wait<handler_type>, 
+            shared_from_this(), _1)));
   }
 
 #else // defined(MA_HAS_RVALUE_REFS)
@@ -97,21 +97,21 @@ public:
   void async_start(const Handler& handler)
   {
     strand_.post(make_context_alloc_handler2(handler, boost::bind(
-        &this_type::begin_start<Handler>, shared_from_this(), _1)));
+        &this_type::start_external_start<Handler>, shared_from_this(), _1)));
   }
 
   template <typename Handler>
   void async_stop(const Handler& handler)
   {
     strand_.post(make_context_alloc_handler2(handler, boost::bind(
-        &this_type::begin_stop<Handler>, shared_from_this(), _1))); 
+        &this_type::start_external_stop<Handler>, shared_from_this(), _1)));
   }
 
   template <typename Handler>
   void async_wait(const Handler& handler)
   {
     strand_.post(make_context_alloc_handler2(handler, boost::bind(
-        &this_type::begin_wait<Handler>, shared_from_this(), _1)));  
+        &this_type::start_external_wait<Handler>, shared_from_this(), _1)));
   }
 
 #endif // defined(MA_HAS_RVALUE_REFS)
@@ -130,16 +130,17 @@ private:
   }; // struct external_state
         
   template <typename Handler>
-  void begin_start(const Handler& handler)
+  void start_external_start(const Handler& handler)
   {
-    boost::system::error_code error = start();          
+    boost::system::error_code error = do_start_external_start();          
     io_service_.post(detail::bind_handler(handler, error));
   }
 
   template <typename Handler>
-  void begin_stop(const Handler& handler)
+  void start_external_stop(const Handler& handler)
   {
-    if (boost::optional<boost::system::error_code> result = stop())
+    if (boost::optional<boost::system::error_code> result = 
+        do_start_external_stop())
     {
       io_service_.post(detail::bind_handler(handler, *result));
     }
@@ -150,9 +151,10 @@ private:
   }
 
   template <typename Handler>
-  void begin_wait(const Handler& handler)
+  void start_external_wait(const Handler& handler)
   {
-    if (boost::optional<boost::system::error_code> result = wait())
+    if (boost::optional<boost::system::error_code> result = 
+        do_start_external_wait())
     {
       io_service_.post(detail::bind_handler(handler, *result));
     } 
@@ -162,14 +164,14 @@ private:
     }
   }
 
-  boost::system::error_code start();
-  boost::optional<boost::system::error_code> stop();
-  boost::optional<boost::system::error_code> wait();
+  boost::system::error_code                  do_start_external_start();
+  boost::optional<boost::system::error_code> do_start_external_stop();
+  boost::optional<boost::system::error_code> do_start_external_wait();
 
   bool may_complete_stop() const;
   void complete_stop();
-  void read_socket();        
-  void write_socket();        
+  void start_socket_read();        
+  void start_socket_write();        
   void handle_read(const boost::system::error_code& error, 
       const std::size_t bytes_transferred);
   void handle_write(const boost::system::error_code& error, 

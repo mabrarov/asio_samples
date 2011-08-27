@@ -43,7 +43,7 @@ void session::reset()
   buffer_.reset();          
 }
 
-boost::system::error_code session::start()
+boost::system::error_code session::do_start_external_start()
 {        
   if (external_state::ready != state_)
   {
@@ -52,10 +52,10 @@ boost::system::error_code session::start()
   //todo
   return client1_error::operation_not_supported;
   //state_ = started;
-  //read_socket();
+  //start_socket_read();
 }
 
-boost::optional<boost::system::error_code> session::stop()
+boost::optional<boost::system::error_code> session::do_start_external_stop()
 {        
   if ((external_state::stopped == state_) || (external_state::stop == state_))
   {
@@ -71,7 +71,7 @@ boost::optional<boost::system::error_code> session::stop()
     wait_handler_.post(client1_error::operation_aborted);
   }
 
-  // Do shutdown - flush socket's write_socket buffer
+  // Do shutdown - flush socket's start_socket_write buffer
   if (!socket_write_in_progress_) 
   {
     socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_send, stop_error_);           
@@ -87,7 +87,7 @@ boost::optional<boost::system::error_code> session::stop()
   return boost::optional<boost::system::error_code>();
 }
 
-boost::optional<boost::system::error_code> session::wait()
+boost::optional<boost::system::error_code> session::do_start_external_wait()
 {                
   if ((external_state::started != state_) || wait_handler_.has_target())
   {
@@ -118,7 +118,7 @@ void session::complete_stop()
   state_ = external_state::stopped;  
 }
 
-void session::read_socket()
+void session::start_socket_read()
 {
   cyclic_buffer::mutable_buffers_type buffers(buffer_.prepared());
   if (!buffers.empty())
@@ -133,7 +133,7 @@ void session::read_socket()
   }        
 }
 
-void session::write_socket()
+void session::start_socket_write()
 {
   cyclic_buffer::const_buffers_type buffers(buffer_.data());  
   if (!buffers.empty())
@@ -179,10 +179,10 @@ void session::handle_read(const boost::system::error_code& error,
 
   buffer_.consume(bytes_transferred);
 
-  read_socket();
+  start_socket_read();
   if (!socket_write_in_progress_)
   {
-    write_socket();
+    start_socket_write();
   }
 }
 
@@ -218,10 +218,10 @@ void session::handle_write(const boost::system::error_code& error,
 
   buffer_.commit(bytes_transferred);
 
-  write_socket();
+  start_socket_write();
   if (!socket_read_in_progress_)
   {
-    read_socket();
+    start_socket_read();
   }        
 }
 

@@ -41,7 +41,7 @@ public:
 
 protected:
   virtual async_base_ptr get_shared_base();
-  virtual boost::optional<boost::system::error_code> do_something();
+  virtual boost::optional<boost::system::error_code> do_start_do_something();
 
 private:
   void handle_timer(const boost::system::error_code& error);

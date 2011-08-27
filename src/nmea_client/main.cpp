@@ -241,6 +241,14 @@ void handle_stop(const boost::system::error_code& error)
   std::cout << "The session stop was successful.\n";  
 }
 
+// Only for test of cyclic_read_session::async_write_some
+//void handle_write(const session_ptr& /*the_session*/,
+//    const frame_ptr& /*frame*/, 
+//    const boost::system::error_code& /*error*/, 
+//    std::size_t /*bytes_transferred*/)
+//{  
+//}
+
 void handle_read(const session_ptr& the_session, 
     handler_allocator_type& the_allocator, 
     const frame_buffer_ptr& frame_buffer, 
@@ -271,6 +279,11 @@ void handle_read(const session_ptr& the_session,
   the_session->async_read_some(frame_buffer->begin(), frame_buffer->end(), 
       ma::make_custom_alloc_handler(the_allocator, boost::bind(&handle_read, 
           the_session, boost::ref(the_allocator), frame_buffer, _1, _2)));
+
+  // Only for test of cyclic_read_session::async_write_some
+  //frame_ptr frame = *(frame_buffer->begin());
+  //the_session->async_write_some(boost::asio::buffer(*frame), 
+  //    boost::bind(&handle_write, the_session, frame, _1, _2));
 }
 
 void print_frames(const frame_buffer_type& frames, std::size_t size)

@@ -291,7 +291,7 @@ void async_implementation::async_do_something(
     const do_something_handler_ptr& handler)
 {
   strand_.post(forward_binder(shared_from_this(), handler, 
-      &this_type::begin_do_something));
+      &this_type::start_do_something));
 }
 
 void async_implementation::complete_do_something(
@@ -305,10 +305,11 @@ bool async_implementation::has_do_something_handler() const
   return do_something_handler_.has_target();
 }
 
-void async_implementation::begin_do_something(
+void async_implementation::start_do_something(
     const do_something_handler_ptr& handler)
 {
-  if (boost::optional<boost::system::error_code> result = do_something())
+  if (boost::optional<boost::system::error_code> result = 
+      do_start_do_something())
   {
     strand_.get_io_service().post(
         do_something_handler_binder(handler, *result));
@@ -319,7 +320,8 @@ void async_implementation::begin_do_something(
   }
 }
 
-boost::optional<boost::system::error_code> async_implementation::do_something()
+boost::optional<boost::system::error_code> 
+async_implementation::do_start_do_something()
 {
   if (has_do_something_handler())
   {

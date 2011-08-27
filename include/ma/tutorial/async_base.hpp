@@ -50,7 +50,7 @@ public:
     typedef typename ma::remove_cv_reference<Handler>::type handler_type;
     strand_.post(ma::make_context_alloc_handler2(
         std::forward<Handler>(handler), forward_handler_binder<handler_type>(
-            &this_type::begin_do_something<handler_type>, get_shared_base())));
+            &this_type::start_do_something<handler_type>, get_shared_base())));
   }
 
 #else // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
@@ -61,7 +61,7 @@ public:
     typedef typename ma::remove_cv_reference<Handler>::type handler_type;
     strand_.post(ma::make_context_alloc_handler2(
         std::forward<Handler>(handler), boost::bind(
-            &this_type::begin_do_something<handler_type>, 
+            &this_type::start_do_something<handler_type>, 
             get_shared_base(), _1)));
   }
 
@@ -73,7 +73,7 @@ public:
   void async_do_something(const Handler& handler)
   {
     strand_.post(ma::make_context_alloc_handler2(handler, 
-        boost::bind(&this_type::begin_do_something<Handler>, 
+        boost::bind(&this_type::start_do_something<Handler>, 
             get_shared_base(), _1)));
   }
 
@@ -94,7 +94,8 @@ protected:
 
   virtual async_base_ptr get_shared_base() = 0;
 
-  virtual boost::optional<boost::system::error_code> do_something() = 0;
+  virtual boost::optional<boost::system::error_code> 
+  do_start_do_something() = 0;
 
   void complete_do_something(const boost::system::error_code& error)
   {
@@ -158,9 +159,10 @@ private:
        //     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
   template <typename Handler>
-  void begin_do_something(const Handler& handler)
+  void start_do_something(const Handler& handler)
   {    
-    if (boost::optional<boost::system::error_code> result = do_something())
+    if (boost::optional<boost::system::error_code> result = 
+        do_start_do_something())
     {
       strand_.get_io_service().post(ma::detail::bind_handler(
           handler, *result));

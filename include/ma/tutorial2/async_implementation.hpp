@@ -44,8 +44,8 @@ public:
 private:
   void complete_do_something(const boost::system::error_code&);
   bool has_do_something_handler() const;
-  void begin_do_something(const do_something_handler_ptr&);
-  boost::optional<boost::system::error_code> do_something();
+  void start_do_something(const do_something_handler_ptr&);
+  boost::optional<boost::system::error_code> do_start_do_something();
   void handle_timer(const boost::system::error_code&);
 
   boost::asio::io_service::strand strand_;
