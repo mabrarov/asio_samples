@@ -24,6 +24,7 @@
 #include <ma/handler_storage.hpp>
 #include <ma/handler_allocator.hpp>
 #include <ma/bind_asio_handler.hpp>
+#include <ma/custom_alloc_handler.hpp>
 #include <ma/context_alloc_handler.hpp>
 #include <ma/echo/server/session_fwd.hpp>
 #include <ma/echo/server/session_config.hpp>
@@ -217,32 +218,97 @@ private:
         
   struct session_data : private boost::noncopyable
   {
-    enum state_type
+    struct state_type
     {
-      ready,
-      start,
-      work,
-      stop,
-      stopped
-    }; // enum state_type
-
-    state_type  state;
-    std::size_t pending_operations;
+      enum value_t
+      {
+        ready,
+        start,
+        work,
+        stop,
+        stopped
+      };
+    }; // struct state_type
 
     session_data_weak_ptr prev;
     session_data_ptr      next;
 
-    session_ptr             managed_session;        
+    session_ptr             managed_session;
     protocol_type::endpoint remote_endpoint;
-
+    state_type::value_t     state;
+    std::size_t             pending_operations;
     in_place_handler_allocator<144> start_wait_allocator;
     in_place_handler_allocator<144> stop_allocator;
 
     session_data(boost::asio::io_service&, const session_config&);
 
+#if !defined(NDEBUG)
     ~session_data()
     {
     }
+#endif
+
+    bool has_pending_operations() const;
+    bool is_starting() const;
+    bool is_stopping() const;
+    bool is_working() const;
+    void handle_operation_completion();
+    void mark_as_stopped();
+    void mark_as_working();
+    void reset();
+
+#if defined(MA_HAS_RVALUE_REFS)
+
+    template <typename Handler>
+    void async_start(Handler&& handler)
+    {    
+      managed_session->async_start(std::forward<Handler>(handler));
+      state = state_type::start;
+      ++pending_operations;
+    }
+
+    template <typename Handler>
+    void async_stop(Handler&& handler)
+    {
+      managed_session->async_stop(std::forward<Handler>(handler));      
+      state = state_type::stop;
+      ++pending_operations;
+    }
+
+    template <typename Handler>
+    void async_wait(Handler&& handler)
+    {
+      managed_session->async_wait(std::forward<Handler>(handler));
+      ++pending_operations;
+    }
+
+#else // defined(MA_HAS_RVALUE_REFS)
+
+    template <typename Handler>
+    void async_start(const Handler& handler)
+    {    
+      managed_session->async_start(handler);
+      state = state_type::start;
+      ++pending_operations;
+    }
+
+    template <typename Handler>
+    void async_stop(const Handler& handler)
+    {
+      managed_session->async_stop(handler);      
+      state = state_type::stop;
+      ++pending_operations;
+    }
+
+    template <typename Handler>
+    void async_wait(const Handler& handler)
+    {
+      managed_session->async_wait(handler);
+      ++pending_operations;
+    }
+
+#endif // defined(MA_HAS_RVALUE_REFS)    
+    
   }; // struct session_data
 
   class session_data_list : private boost::noncopyable
