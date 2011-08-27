@@ -979,7 +979,7 @@ void session::start_timer_wait()
         boost::bind(&this_type::handle_timer, shared_from_this(), error)));
     
 #endif
-    
+    return;
   }
   
 #if defined(MA_HAS_RVALUE_REFS) \
