@@ -155,8 +155,7 @@ void session::reset()
   // reset() might be called right after connection was established
   // so we need to be sure that the socket will be closed.
   close_socket();
-
-  // Reset IO buffer.
+  
   // Post condition: filled sequence is empty, unfilled sequence is empty.
   buffer_.reset();
   extern_wait_error_.clear();
@@ -210,7 +209,7 @@ boost::optional<boost::system::error_code> session::do_start_extern_stop()
     start_active_shutdown();
   }
 
-  // If session has already stopped
+  // If session has already stopped due to start_active_shutdown
   if (intern_state::stopped == intern_state_)
   {
     extern_state_ = extern_state::stopped;
@@ -244,8 +243,6 @@ boost::optional<boost::system::error_code> session::do_start_extern_wait()
 
 void session::complete_extern_stop(const boost::system::error_code& error)
 {
-  // Wait handler is notified by do_start_extern_stop, 
-  // start_passive_shutdown, start_stop
   if (extern_stop_handler_.has_target())
   {
     extern_stop_handler_.post(error);
@@ -254,13 +251,12 @@ void session::complete_extern_stop(const boost::system::error_code& error)
 
 void session::complete_extern_wait(const boost::system::error_code& error)
 {
-  // Register error if there was no work completion error registered before
   if (!extern_wait_error_)
   {
     extern_wait_error_ = error;
-  }  
+  }
 
-  // Invoke (post to the io_service) wait handler
+  // Invoke (post to the io_service) parked wait handler
   if (extern_wait_handler_.has_target())
   {
     extern_wait_handler_.post(extern_wait_error_);
@@ -834,7 +830,7 @@ void session::continue_stop()
     BOOST_ASSERT_MSG(timer_state::stopped == timer_state_,
       "invalid timer state");
 
-    // The intern stop completed
+    // The internat stop completed
     intern_state_ = intern_state::stopped;
     
     if (extern_state::stop == extern_state_)
@@ -850,7 +846,7 @@ void session::start_passive_shutdown()
   BOOST_ASSERT_MSG(intern_state::work == intern_state_,
       "invalid internal state");
 
-  // General state is changed
+  // Internal state is changed
   intern_state_ = intern_state::shutdown; 
     
   // Notify wait handler if need
@@ -867,7 +863,7 @@ void session::start_active_shutdown()
   BOOST_ASSERT_MSG(intern_state::work == intern_state_,
       "invalid internal state");
 
-  // General state is changed
+  // Internal state is changed
   intern_state_ = intern_state::shutdown;   
   
   // Notify wait handler if need
@@ -1007,7 +1003,7 @@ boost::system::error_code session::start_timer_wait()
 boost::system::error_code session::cancel_timer()
 {
   boost::system::error_code error;
-  if ((timer_state::in_progress == timer_state_) && !timer_cancelled_)
+  if (!timer_cancelled_ && (timer_state::in_progress == timer_state_))
   {    
     timer_.cancel(error);
     // Timer cancellation can be rather heavy due to synchronization 

@@ -184,9 +184,7 @@ public:
 private:        
   struct  session_wrapper;
   typedef boost::shared_ptr<session_wrapper> wrapped_session_ptr;
-  typedef boost::weak_ptr<session_wrapper>   wrapped_session_weak_ptr;  
-
-  friend struct session_wrapper;
+  typedef boost::weak_ptr<session_wrapper>   wrapped_session_weak_ptr;
   
 #if defined(MA_HAS_RVALUE_REFS) \
     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
@@ -195,10 +193,6 @@ private:
   class accept_handler_binder;
   class session_dispatch_binder;
   class session_handler_binder;
-
-  friend class accept_handler_binder;
-  friend class session_dispatch_binder;
-  friend class session_handler_binder;
 
   template <typename Arg>
   class forward_handler_binder
