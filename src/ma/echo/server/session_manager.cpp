@@ -11,6 +11,8 @@
 #include <boost/make_shared.hpp>
 #include <boost/utility/addressof.hpp>
 #include <ma/config.hpp>
+#include <ma/custom_alloc_handler.hpp>
+#include <ma/handler_invoke_helpers.hpp>
 #include <ma/strand_wrapped_handler.hpp>
 #include <ma/echo/server/error.hpp>
 #include <ma/echo/server/session.hpp>
@@ -33,47 +35,47 @@ private:
 
 public:
   typedef void result_type;
-  typedef void (session_manager::*function_type)(
-      const session_manager::session_data_ptr&,
+
+  typedef void (session_manager::*func_type)(
+      const session_manager::wrapped_session_ptr&,
       const boost::system::error_code&);
 
   template <typename SessionManagerPtr, typename SessionWrapperPtr>
-  accept_handler_binder(function_type function, 
-      SessionManagerPtr&& the_session_manager, 
-      SessionWrapperPtr&& the_session_data)
-    : function_(function)
-    , session_manager_(std::forward<SessionManagerPtr>(the_session_manager))
-    , session_data_(std::forward<SessionWrapperPtr>(the_session_data))
+  accept_handler_binder(func_type func, SessionManagerPtr&& session_manager,
+      SessionWrapperPtr&& session)
+    : func_(func)
+    , session_manager_(std::forward<SessionManagerPtr>(session_manager))
+    , session_(std::forward<SessionWrapperPtr>(session))
   {
   }
 
-#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
   accept_handler_binder(this_type&& other)
-    : function_(other.function_)
+    : func_(other.func_)
     , session_manager_(std::move(other.session_manager_))
-    , session_data_(std::move(other.session_data_))
+    , session_(std::move(other.session_))
   {
   }
 
   accept_handler_binder(const this_type& other)
-    : function_(other.function_)
+    : func_(other.func_)
     , session_manager_(other.session_manager_)
-    , session_data_(other.session_data_)
+    , session_(other.session_)
   {
   }
 
-#endif // defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+#endif
 
   void operator()(const boost::system::error_code& error)
   {
-    ((*session_manager_).*function_)(session_data_, error);
+    ((*session_manager_).*func_)(session_, error);
   }
 
 private:
-  function_type function_;
+  func_type func_;
   session_manager_ptr session_manager_;
-  session_manager::session_data_ptr session_data_;
+  session_manager::wrapped_session_ptr session_;
 }; // class session_manager::accept_handler_binder
 
 class session_manager::session_dispatch_binder
@@ -82,48 +84,48 @@ private:
   typedef session_dispatch_binder this_type;
 
 public:
-  typedef void (*function_type)(
-    const session_manager_weak_ptr&,
-    const session_manager::session_data_ptr&, 
+  typedef void result_type;
+
+  typedef void (*func_type)(const session_manager_weak_ptr&,
+    const session_manager::wrapped_session_ptr&, 
     const boost::system::error_code&);
 
   template <typename SessionManagerPtr, typename SessionWrapperPtr>
-  session_dispatch_binder(function_type function, 
-    SessionManagerPtr&& the_session_manager,
-    SessionWrapperPtr&& the_session_data)
-    : function_(function)
-    , session_manager_(std::forward<SessionManagerPtr>(the_session_manager))
-    , session_data_(std::forward<SessionWrapperPtr>(the_session_data))
+  session_dispatch_binder(func_type func, SessionManagerPtr&& session_manager,
+      SessionWrapperPtr&& session)
+    : func_(func)
+    , session_manager_(std::forward<SessionManagerPtr>(session_manager))
+    , session_(std::forward<SessionWrapperPtr>(session))
   {
   }
 
-#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
   session_dispatch_binder(this_type&& other)
-    : function_(other.function_)
+    : func_(other.func_)
     , session_manager_(std::move(other.session_manager_))
-    , session_data_(std::move(other.session_data_))
+    , session_(std::move(other.session_))
   {
   }
 
   session_dispatch_binder(const this_type& other)
-    : function_(other.function_)
+    : func_(other.func_)
     , session_manager_(other.session_manager_)
-    , session_data_(other.session_data_)
+    , session_(other.session_)
   {
   }
 
-#endif // defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+#endif
 
   void operator()(const boost::system::error_code& error)
   {
-    function_(session_manager_, session_data_, error);
+    func_(session_manager_, session_, error);
   }
 
 private:
-  function_type function_;
+  func_type func_;
   session_manager_weak_ptr session_manager_;
-  session_manager::session_data_ptr session_data_;
+  session_manager::wrapped_session_ptr session_;
 }; // class session_manager::session_dispatch_binder      
 
 class session_manager::session_handler_binder
@@ -133,112 +135,204 @@ private:
 
 public:
   typedef void result_type;
-  typedef void (session_manager::*function_type)(
-      const session_manager::session_data_ptr&,
+
+  typedef void (session_manager::*func_type)(
+      const session_manager::wrapped_session_ptr&,
       const boost::system::error_code&);
 
   template <typename SessionManagerPtr, typename SessionWrapperPtr>
-  session_handler_binder(function_type function, 
-      SessionManagerPtr&& the_session_manager, 
-      SessionWrapperPtr&& the_session_data, 
-      const boost::system::error_code& error)
-    : function_(function)
-    , session_manager_(std::forward<SessionManagerPtr>(the_session_manager))
-    , session_data_(std::forward<SessionWrapperPtr>(the_session_data))
+  session_handler_binder(func_type func, SessionManagerPtr&& session_manager,
+      SessionWrapperPtr&& session, const boost::system::error_code& error)
+    : func_(func)
+    , session_manager_(std::forward<SessionManagerPtr>(session_manager))
+    , session_(std::forward<SessionWrapperPtr>(session))
     , error_(error)
   {
   }                  
 
-#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
   session_handler_binder(this_type&& other)
-    : function_(other.function_)
+    : func_(other.func_)
     , session_manager_(std::move(other.session_manager_))
-    , session_data_(std::move(other.session_data_))
+    , session_(std::move(other.session_))
     , error_(std::move(other.error_))
   {
   }
 
   session_handler_binder(const this_type& other)
-    : function_(other.function_)
+    : func_(other.func_)
     , session_manager_(other.session_manager_)
-    , session_data_(other.session_data_)
+    , session_(other.session_)
     , error_(other.error_)
   {
   }
 
-#endif // defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+#endif
 
   void operator()()
   {
-    ((*session_manager_).*function_)(session_data_, error_);
+    ((*session_manager_).*func_)(session_, error_);
   }
 
 private:
-  function_type function_;
+  func_type func_;
   session_manager_ptr session_manager_;
-  session_manager::session_data_ptr session_data_;
+  session_manager::wrapped_session_ptr session_;
   boost::system::error_code error_;
 }; // class session_manager::session_handler_binder
 
 #endif // defined(MA_HAS_RVALUE_REFS) 
        //     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
-session_manager::session_data::session_data(
-    boost::asio::io_service& io_service, const session_config& config)
-  : managed_session(boost::make_shared<session>(
-        boost::ref(io_service), config))
-  , state(state_type::ready)
-  , pending_operations(0)
+struct session_manager::session_wrapper : private boost::noncopyable
 {
-}
+  typedef session_manager::protocol_type::endpoint endpoint_type;
+  typedef server::session::protocol_type::socket   socket_type;
 
-bool session_manager::session_data::has_pending_operations() const
+  struct state_type
+  {
+    enum value_t
+    {
+      ready,
+      start,
+      work,
+      stop,
+      stopped
+    };
+  }; // struct state_type
+
+  session_manager::wrapped_session_weak_ptr prev;
+  session_manager::wrapped_session_ptr      next;
+
+  endpoint_type       remote_peer;
+  server::session_ptr session;
+  state_type::value_t state;
+  std::size_t         pending_operations;
+
+  in_place_handler_allocator<144> start_wait_allocator;
+  in_place_handler_allocator<144> stop_allocator;
+  
+  session_wrapper(boost::asio::io_service& io_service, 
+      const session_config& config)
+    : session(boost::make_shared<server::session>(
+          boost::ref(io_service), config))
+    , state(state_type::ready)
+    , pending_operations(0)
+  {
+  }
+
+#if !defined(NDEBUG)
+  ~session_wrapper()
+  {
+  }
+#endif
+
+  socket_type& socket()
+  {
+    return session->socket();
+  }
+
+  bool has_pending_operations() const
+  {
+    return 0 != pending_operations;
+  }
+
+  bool is_starting() const
+  {
+    return state_type::start == state;
+  }
+
+  bool is_stopping() const
+  {
+    return state_type::stop == state;
+  }
+
+  bool is_working() const
+  {
+    return state_type::work == state;
+  }
+
+  void handle_operation_completion()
+  {
+    --pending_operations;
+  }
+
+  void mark_as_stopped()
+  {
+    state = state_type::stopped;
+  }
+
+  void mark_as_working()
+  {
+    state = state_type::work;
+  }
+
+  void reset()
+  {      
+    session->reset();
+    state = state_type::ready;
+    pending_operations = 0;
+  }
+
+#if defined(MA_HAS_RVALUE_REFS)
+
+  template <typename Handler>
+  void async_start(Handler&& handler)
+  {    
+    session->async_start(std::forward<Handler>(handler));
+    state = state_type::start;
+    ++pending_operations;
+  }
+
+  template <typename Handler>
+  void async_stop(Handler&& handler)
+  {
+    session->async_stop(std::forward<Handler>(handler));      
+    state = state_type::stop;
+    ++pending_operations;
+  }
+
+  template <typename Handler>
+  void async_wait(Handler&& handler)
+  {
+    session->async_wait(std::forward<Handler>(handler));
+    ++pending_operations;
+  }
+
+#else // defined(MA_HAS_RVALUE_REFS)
+
+  template <typename Handler>
+  void async_start(const Handler& handler)
+  {    
+    session->async_start(handler);
+    state = state_type::start;
+    ++pending_operations;
+  }
+
+  template <typename Handler>
+  void async_stop(const Handler& handler)
+  {
+    session->async_stop(handler);      
+    state = state_type::stop;
+    ++pending_operations;
+  }
+
+  template <typename Handler>
+  void async_wait(const Handler& handler)
+  {
+    session->async_wait(handler);
+    ++pending_operations;
+  }
+
+#endif // defined(MA_HAS_RVALUE_REFS)    
+    
+}; // struct session_manager::session_wrapper
+
+void session_manager::session_list::push_front(
+    const wrapped_session_ptr& value)
 {
-  return 0 != pending_operations;
-}
-
-bool session_manager::session_data::is_starting() const
-{
-  return state_type::start == state;
-}
-
-bool session_manager::session_data::is_stopping() const
-{
-  return state_type::stop == state;
-}
-
-bool session_manager::session_data::is_working() const
-{
-  return state_type::work == state;
-}
-
-void session_manager::session_data::handle_operation_completion()
-{
-  --pending_operations;
-}
-
-void session_manager::session_data::mark_as_stopped()
-{
-  state = session_data::state_type::stopped;
-}
-
-void session_manager::session_data::mark_as_working()
-{
-  state = session_data::state_type::work;
-}
-
-void session_manager::session_data::reset()
-{      
-  managed_session->reset();
-  state = state_type::ready;
-  pending_operations = 0;
-}
-
-void session_manager::session_data_list::push_front(
-    const session_data_ptr& value)
-{
-  BOOST_ASSERT((!value->next && !value->prev.lock()));
+  BOOST_ASSERT((!value->next) && (!value->prev.lock()));
 
   value->next = front_;
   value->prev.reset();
@@ -250,13 +344,13 @@ void session_manager::session_data_list::push_front(
   ++size_;
 }
 
-void session_manager::session_data_list::erase(const session_data_ptr& value)
+void session_manager::session_list::erase(const wrapped_session_ptr& value)
 {
   if (front_ == value)
   {
     front_ = front_->next;
   }
-  session_data_ptr prev = value->prev.lock();
+  wrapped_session_ptr prev = value->prev.lock();
   if (prev)
   {
     prev->next = value->next;
@@ -270,253 +364,796 @@ void session_manager::session_data_list::erase(const session_data_ptr& value)
   --size_;
 }
 
-void session_manager::session_data_list::clear()
+void session_manager::session_list::clear()
 {
   front_.reset();
 }
 
 session_manager::session_manager(boost::asio::io_service& io_service, 
-    boost::asio::io_service& session_io_service, 
+    boost::asio::io_service& session_io_service,
     const session_manager_config& config)
   : accepting_endpoint_(config.accepting_endpoint)
   , listen_backlog_(config.listen_backlog)
   , max_session_count_(config.max_session_count)
   , recycled_session_count_(config.recycled_session_count)
   , managed_session_config_(config.managed_session_config)
-  , accept_in_progress_(false)
+  , extern_state_(extern_state::ready)
+  , intern_state_(intern_state::work)
+  , accept_state_(accept_state::wait)
   , pending_operations_(0)
-  , external_state_(external_state::ready)
   , io_service_(io_service)
   , session_io_service_(session_io_service)
   , strand_(io_service)
   , acceptor_(io_service)        
-  , wait_handler_(io_service)
-  , stop_handler_(io_service)        
+  , extern_wait_handler_(io_service)
+  , extern_stop_handler_(io_service)        
 {          
 }
 
 void session_manager::reset(bool free_recycled_sessions)
 {
-  boost::system::error_code ignored;
-  acceptor_.close(ignored);
+  extern_state_ = extern_state::ready;
+  intern_state_ = intern_state::work;
+  accept_state_ = accept_state::wait;
+  pending_operations_ = 0;  
+  
+  close_acceptor();
 
-  wait_error_.clear();
-  stop_error_.clear();
-        
   active_sessions_.clear();
   if (free_recycled_sessions)
   {
     recycled_sessions_.clear();
   }
 
-  external_state_ = external_state::ready;
+  extern_wait_error_.clear();
 }
 
-boost::system::error_code session_manager::do_external_start()
+boost::system::error_code session_manager::do_start_extern_start()
 {
-  if (external_state::ready != external_state_)
+  if (extern_state::ready != extern_state_)
   {
     return server_error::invalid_state;
   }
-  external_state_ = external_state::start;
-
+  
   boost::system::error_code error;
   open(acceptor_, accepting_endpoint_, listen_backlog_, error);
 
-  if (!error)
-  {
-    session_data_ptr the_session_data = create_session(error);
-    if (error)
-    {
-      boost::system::error_code ignored;
-      acceptor_.close(ignored);
-    }
-    else
-    {
-      start_accept(the_session_data);
-    }
-  }
-
   if (error)
   {
-    external_state_ = external_state::stopped;         
-  }
-  else
-  {          
-    external_state_ = external_state::work;
+    extern_state_ = extern_state::stopped;
+    intern_state_ = intern_state::stopped;
+    accept_state_ = accept_state::stopped;
+    return error;
   }
 
-  return error;
+  extern_state_ = extern_state::work;
+  continue_accept();
+  return boost::system::error_code();
 }
 
-boost::optional<boost::system::error_code> session_manager::do_external_stop()
+boost::optional<boost::system::error_code>
+session_manager::do_start_extern_stop()
 {        
-  if ((external_state::stopped == external_state_)
-      || (external_state::stop == external_state_))
+  if ((extern_state::stopped == extern_state_)
+      || (extern_state::stop == extern_state_))
   {          
     return boost::system::error_code(server_error::invalid_state);
   }
 
-  // Start shutdown
-  external_state_ = external_state::stop;
+  // Begin stop and notify wait handler if need
+  extern_state_ = extern_state::stop;  
+  complete_extern_wait(server_error::operation_aborted);
 
-  // Do shutdown - abort outer operations
-  if (wait_handler_.has_target())
+  // If session manager hasn't already stopped
+  if (intern_state::work == intern_state_)
   {
-    wait_handler_.post(server_error::operation_aborted);
+    start_stop(server_error::operation_aborted);
   }
 
-  // Do shutdown - abort inner operations
-  acceptor_.close(stop_error_);
-
-  // Stop all active sessions
-  session_data_ptr the_session_data = active_sessions_.front();
-  while (the_session_data)
+  // If session has already stopped
+  if (intern_state::stopped == intern_state_)
   {
-    if (!the_session_data->is_stopping())
-    {
-      stop_session(the_session_data);
-    }
-    the_session_data = the_session_data->next;
+    extern_state_ = extern_state::stopped;
+    // Notify stop handler about success
+    return boost::system::error_code();
   }
 
-  // Check for shutdown continuation
-  if (may_complete_stop())
-  {
-    complete_stop();
-    return stop_error_;          
-  }
-
-  return boost::optional<boost::system::error_code>();
+  // Park handler for the late call
+  return boost::optional<boost::system::error_code>();  
 }
 
-boost::optional<boost::system::error_code> session_manager::do_external_wait()
-{        
-  if ((external_state::work != external_state_)
-      || wait_handler_.has_target())
-  {
-    return boost::system::error_code(server_error::invalid_state);
-  }        
-  if (may_complete_wait())
-  {
-    return wait_error_;
-  }        
-  return boost::optional<boost::system::error_code>();
-}
-
-session_manager::session_data_ptr session_manager::create_session(
-    boost::system::error_code& error)
-{        
-  if (!recycled_sessions_.empty())
-  {
-    session_data_ptr the_session_data = recycled_sessions_.front();
-    recycled_sessions_.erase(the_session_data);          
-    error = boost::system::error_code();
-    return the_session_data;
-  }
-
-  try 
-  {   
-    session_data_ptr the_session_data = boost::make_shared<session_data>(
-        boost::ref(session_io_service_), managed_session_config_);
-    error = boost::system::error_code();
-    return the_session_data;
-  }
-  catch (const std::bad_alloc&) 
-  {
-    error = server_error::no_memory;
-    return session_data_ptr();
-  }
-}
-
-void session_manager::start_accept(const session_data_ptr& the_session_data)
+boost::optional<boost::system::error_code>
+session_manager::do_start_extern_wait()
 {
-#if defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+  // Check exetrnal state consistency
+  if ((extern_state::work != extern_state_)
+      || extern_wait_handler_.has_target())
+  {
+    return boost::system::error_code(server_error::invalid_state);
+  }
 
-  acceptor_.async_accept(the_session_data->managed_session->socket(), 
-      the_session_data->remote_endpoint, MA_STRAND_WRAP(strand_, 
-          make_custom_alloc_handler(accept_allocator_, accept_handler_binder(
-              &this_type::handle_accept, shared_from_this(), 
-              the_session_data))));
+  // If session has already stopped
+  if (intern_state::work != intern_state_)
+  {
+    // Notify wait handler about the happened stop
+    return extern_wait_error_;
+  }
 
-#else
+  // Park handler for the late call
+  return boost::optional<boost::system::error_code>();
+}
 
-  acceptor_.async_accept(the_session_data->managed_session->socket(), 
-      the_session_data->remote_endpoint, MA_STRAND_WRAP(strand_, 
-          make_custom_alloc_handler(accept_allocator_, boost::bind(
-              &this_type::handle_accept, shared_from_this(), the_session_data, 
-              boost::asio::placeholders::error))));
+void session_manager::complete_extern_stop(
+    const boost::system::error_code& error)
+{
+  // Wait handler is notified by do_start_extern_stop, 
+  // start_passive_shutdown, start_stop
+  if (extern_stop_handler_.has_target())
+  {
+    extern_stop_handler_.post(error);
+  }
+}
 
-#endif
+void session_manager::complete_extern_wait(
+    const boost::system::error_code& error)
+{
+  // Register error if there was no work completion error registered before
+  if (!extern_wait_error_)
+  {
+    extern_wait_error_ = error;
+  }  
 
-  // Register pending operation
-  ++pending_operations_;
-  accept_in_progress_ = true;
+  // Invoke (post to the io_service) wait handler
+  if (extern_wait_handler_.has_target())
+  {
+    extern_wait_handler_.post(extern_wait_error_);
+  }
 }
 
 void session_manager::continue_accept()
 {
+  BOOST_ASSERT_MSG(intern_state::work == intern_state_,
+      "invalid internal state");
+
+  BOOST_ASSERT_MSG(accept_state::stopped != accept_state_,
+      "invalid accept state");
+
+  if (accept_state::in_progress == accept_state_)
+  {
+    return;
+  }
+
+  if (active_sessions_.size() >= max_session_count_)
+  {
+    return;
+  }
+
   // Get new, ready to start session
   boost::system::error_code error;
-  session_data_ptr the_session_data = create_session(error);
+  wrapped_session_ptr session = create_session(error);
   if (error)
   {
-    // Handle new session creation error
-    set_wait_error(error);
-    // Can't do anything more
+    if (session)
+    {
+      recycle_session(session);
+    }
+
+    if (!active_sessions_.empty())
+    {
+      // Try later    
+      return;
+    }
+  
+    accept_state_ = accept_state::stopped;     
+    if (is_out_of_work())
+    {
+      start_stop(server_error::out_of_work);
+    }
+
     return;
   }
-  // Start session acceptation
-  start_accept(the_session_data);
+
+  start_accept_session(session);
+  // Register pending operation
+  accept_state_ = accept_state::in_progress;
+  ++pending_operations_;  
 }
 
-void session_manager::handle_accept(
-    const session_data_ptr& the_session_data, 
+void session_manager::handle_accept(const wrapped_session_ptr& session,
     const boost::system::error_code& error)
 {
+  BOOST_ASSERT_MSG(accept_state::in_progress == accept_state_,
+      "invalid accept state");
+
+  // Split handler based on current internal state 
+  // that might change during accept operation
+  switch (intern_state_)
+  {
+  case intern_state::work:
+    handle_accept_at_work(session, error);
+    break;  
+
+  case intern_state::stop:
+    handle_accept_at_stop(session, error);
+    break;
+
+  default:
+    BOOST_ASSERT_MSG(false, "invalid internal state");
+    break;
+  }
+}
+
+void session_manager::handle_accept_at_work(const wrapped_session_ptr& session,
+    const boost::system::error_code& error)
+{
+  BOOST_ASSERT_MSG(intern_state::work == intern_state_, 
+      "invalid internal state");
+
+  BOOST_ASSERT_MSG(accept_state::in_progress == accept_state_,
+      "invalid accept state");
+
   // Unregister pending operation
   --pending_operations_;
-  accept_in_progress_ = false;
-
-  // Check for pending session manager stop operation 
-  if (external_state::stop == external_state_)
+  accept_state_ = accept_state::wait;
+    
+  if (error)
   {
-    if (may_complete_stop())
+    accept_state_ = accept_state::stopped;
+    recycle_session(session);
+    
+    if (is_out_of_work())
     {
-      complete_stop();
-      post_stop_handler();
+      start_stop(server_error::out_of_work);
     }
-    recycle_session(the_session_data);
+    return;
+  }
+
+  if (active_sessions_.size() >= max_session_count_)
+  {
+    recycle_session(session);
+    return;
+  }     
+
+  start_session_start(session);
+  ++pending_operations_;
+
+  active_sessions_.push_front(session);
+
+  continue_accept();
+}
+
+void session_manager::handle_accept_at_stop(const wrapped_session_ptr& session,
+    const boost::system::error_code& /*error*/)
+{
+  BOOST_ASSERT_MSG(intern_state::stop == intern_state_, 
+      "invalid internal state");
+
+  BOOST_ASSERT_MSG(accept_state::in_progress == accept_state_,
+      "invalid accept state");
+
+  // Unregister pending operation
+  --pending_operations_;
+  accept_state_ = accept_state::stopped;
+
+  // Reset session and recycle it
+  recycle_session(session);
+
+  continue_stop();  
+}
+
+void session_manager::handle_session_start(const wrapped_session_ptr& session, 
+    const boost::system::error_code& error)
+{
+  // Split handler based on current internal state 
+  // that might change during session start
+  switch (intern_state_)
+  {
+  case intern_state::work:
+    handle_session_start_at_work(session, error);
+    break;  
+
+  case intern_state::stop:
+    handle_session_start_at_stop(session, error);
+    break;
+
+  default:
+    BOOST_ASSERT_MSG(false, "invalid internal state");
+    break;
+  }
+}
+
+void session_manager::handle_session_start_at_work(
+    const wrapped_session_ptr& session, const boost::system::error_code& error)
+{
+  BOOST_ASSERT_MSG(intern_state::work == intern_state_, 
+      "invalid internal state");
+
+  // Unregister pending operation
+  --pending_operations_;
+  session->handle_operation_completion();  
+  
+  if (!session->is_starting())
+  {
+    // Handler is called too late - complete handler's waiters
+    recycle_session(session);
     return;
   }
 
   if (error)
-  {   
-    set_wait_error(error);
-    recycle_session(the_session_data);
-    if (may_continue_accept())
-    {
-      continue_accept();
-    }
-    return;
-  }
-
-  if (active_sessions_.size() < max_session_count_)
   {
-    // Start accepted session 
-    start_session(the_session_data);
-    // Save session as active
-    active_sessions_.push_front(the_session_data);
-    // Continue session acceptation if can
-    if (may_continue_accept())
+    session->mark_as_stopped();
+    active_sessions_.erase(session);
+    recycle_session(session);
+
+    if (is_out_of_work())
     {
-      continue_accept();
+      start_stop(server_error::out_of_work);      
+      return;
     }
+
+    continue_accept();
     return;
   }
 
-  recycle_session(the_session_data);
+  session->mark_as_working();
+
+  start_session_wait(session);
+  ++pending_operations_;
+}
+
+void session_manager::handle_session_start_at_stop(
+    const wrapped_session_ptr& session, const boost::system::error_code& error)
+{
+  BOOST_ASSERT_MSG(intern_state::stop == intern_state_, 
+      "invalid internal state");
+
+  // Unregister pending operation
+  --pending_operations_;
+  session->handle_operation_completion();
+  
+  if (!session->is_starting())
+  {
+    // Handler is called too late - complete handler's waiters
+    recycle_session(session);
+    continue_stop();
+    return;
+  }
+
+  if (error)
+  {
+    // Session didn't started
+    recycle_session(session);
+    continue_stop();
+    return;
+  }
+
+  start_session_stop(session);
+  ++pending_operations_;
+
+  continue_stop();
+}
+
+void session_manager::handle_session_wait(const wrapped_session_ptr& session,
+    const boost::system::error_code& error)
+{
+  // Split handler based on current internal state 
+  // that might change during session wait
+  switch (intern_state_)
+  {
+  case intern_state::work:
+    handle_session_wait_at_work(session, error);
+    break;  
+
+  case intern_state::stop:
+    handle_session_wait_at_stop(session, error);
+    break;
+
+  default:
+    BOOST_ASSERT_MSG(false, "invalid internal state");
+    break;
+  }
+}
+
+void session_manager::handle_session_wait_at_work(
+    const wrapped_session_ptr& session,
+    const boost::system::error_code& /*error*/)
+{
+  BOOST_ASSERT_MSG(intern_state::work == intern_state_, 
+      "invalid internal state");
+
+  // Unregister pending operation
+  --pending_operations_;
+  session->handle_operation_completion();
+  
+  // Check if handler is not called too late
+  if (!session->is_working())
+  {    
+    recycle_session(session);
+    return;
+  }
+
+  start_session_stop(session);
+  ++pending_operations_;
+}
+
+void session_manager::handle_session_wait_at_stop(
+    const wrapped_session_ptr& session, 
+    const boost::system::error_code& /*error*/)
+{
+  BOOST_ASSERT_MSG(intern_state::stop == intern_state_, 
+      "invalid internal state");
+
+  // Unregister pending operation
+  --pending_operations_;
+  session->handle_operation_completion();
+  
+  // Check if handler is not called too late
+  if (!session->is_working())
+  {
+    // Handler is called too late - complete handler's waiters
+    recycle_session(session); 
+    continue_stop();
+    return;
+  }
+
+  start_session_stop(session);
+  ++pending_operations_;
+
+  continue_stop();
+}
+
+void session_manager::handle_session_stop(const wrapped_session_ptr& session,
+    const boost::system::error_code& error)
+{
+  // Split handler based on current internal state 
+  // that might change during session stop
+  switch (intern_state_)
+  {
+  case intern_state::work:
+    handle_session_stop_at_work(session, error);
+    break;  
+
+  case intern_state::stop:
+    handle_session_stop_at_stop(session, error);
+    break;
+
+  default:
+    BOOST_ASSERT_MSG(false, "invalid internal state");
+    break;
+  }
+}
+
+void session_manager::handle_session_stop_at_work(
+    const wrapped_session_ptr& session,
+    const boost::system::error_code& /*error*/)
+{
+  BOOST_ASSERT_MSG(intern_state::work == intern_state_, 
+      "invalid internal state");
+
+  // Unregister pending operation
+  --pending_operations_;
+  session->handle_operation_completion();
+  
+  if (!session->is_stopping())
+  {
+    // Handler is called too late - complete handler's waiters
+    recycle_session(session);
+    return;
+  }
+  
+  session->mark_as_stopped();
+  active_sessions_.erase(session);
+  recycle_session(session);
+
+  if (is_out_of_work())
+  {
+    start_stop(server_error::out_of_work);
+    return;
+  }
+
+  continue_accept();
+}
+
+void session_manager::handle_session_stop_at_stop(
+    const wrapped_session_ptr& session, const boost::system::error_code& error)
+{
+  BOOST_ASSERT_MSG(intern_state::stop == intern_state_, 
+      "invalid internal state");
+
+  // Unregister pending operation
+  --pending_operations_;
+  session->handle_operation_completion();
+
+  if (!error)
+  {
+    session->mark_as_stopped();
+    active_sessions_.erase(session);
+  }
+
+  recycle_session(session);
+  continue_stop();
+}
+
+bool session_manager::is_out_of_work() const
+{
+  return active_sessions_.empty() && (accept_state::stopped == accept_state_);
+}
+
+void session_manager::start_stop(const boost::system::error_code& error)
+{
+  // General state is changed
+  intern_state_ = intern_state::stop;
+
+  // Close the socket and register error if there was no stop error before
+  close_acceptor();
+
+  // Stop all active sessions
+  wrapped_session_ptr session = active_sessions_.front();
+  while (session)
+  {
+    if (!session->is_stopping())
+    {
+      start_session_stop(session);
+      ++pending_operations_;
+    }
+    session = session->next;
+  }  
+
+  if (accept_state::wait == accept_state_)
+  {
+    accept_state_ = accept_state::stopped;
+  }
+
+  // Notify wait handler if need
+  if (extern_state::work == extern_state_)
+  {
+    complete_extern_wait(error);
+  }
+
+  continue_stop();  
+}
+
+void session_manager::continue_stop()
+{
+  BOOST_ASSERT_MSG(intern_state::stop == intern_state_,
+      "invalid internal state");
+
+  if (!pending_operations_)
+  {
+    BOOST_ASSERT_MSG(accept_state::stopped  == accept_state_,
+      "invalid accept state");
+
+    BOOST_ASSERT_MSG(active_sessions_.empty(),
+      "there are still some active sessions");
+    
+    // The intern stop completed
+    intern_state_ = intern_state::stopped;
+    
+    if (extern_state::stop == extern_state_)
+    {
+      extern_state_ = extern_state::stopped;
+      complete_extern_stop(boost::system::error_code());
+    }    
+  }
+}
+
+void session_manager::start_accept_session(const wrapped_session_ptr& session)
+{
+#if defined(MA_HAS_RVALUE_REFS) \
+    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+
+  acceptor_.async_accept(session->socket(), session->remote_peer, 
+      MA_STRAND_WRAP(strand_, make_custom_alloc_handler(accept_allocator_, 
+          accept_handler_binder(&this_type::handle_accept, shared_from_this(),
+              session))));
+
+#else
+
+  acceptor_.async_accept(session->socket(), session->remote_peer, 
+      MA_STRAND_WRAP(strand_, make_custom_alloc_handler(accept_allocator_, 
+          boost::bind(&this_type::handle_accept, shared_from_this(), session, 
+              boost::asio::placeholders::error))));
+
+#endif  
+}
+
+void session_manager::start_session_start(const wrapped_session_ptr& session)
+{ 
+  // Asynchronously start wrapped session
+#if defined(MA_HAS_RVALUE_REFS) \
+    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+
+  session->async_start(make_custom_alloc_handler(session->start_wait_allocator, 
+      session_dispatch_binder(&this_type::dispatch_handle_session_start, 
+          shared_from_this(), session)));
+
+#else
+
+  session->async_start(make_custom_alloc_handler(session->start_wait_allocator, 
+      boost::bind(&this_type::dispatch_handle_session_start, 
+          session_manager_weak_ptr(shared_from_this()), session, _1)));
+
+#endif
+}
+
+void session_manager::start_session_stop(const wrapped_session_ptr& session)
+{
+  // Asynchronously stop wrapped session
+#if defined(MA_HAS_RVALUE_REFS) \
+    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+
+  session->async_stop(make_custom_alloc_handler(session->stop_allocator, 
+      session_dispatch_binder(&this_type::dispatch_handle_session_stop, 
+          shared_from_this(), session)));
+
+#else
+
+  session->async_stop(make_custom_alloc_handler(session->stop_allocator, 
+      boost::bind(&this_type::dispatch_handle_session_stop, 
+          session_manager_weak_ptr(shared_from_this()), session, _1)));
+
+#endif
+}
+
+void session_manager::start_session_wait(const wrapped_session_ptr& session)
+{
+  // Asynchronously wait on wrapped session
+#if defined(MA_HAS_RVALUE_REFS) \
+    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+
+  session->async_wait(make_custom_alloc_handler(session->start_wait_allocator, 
+      session_dispatch_binder(&this_type::dispatch_handle_session_wait, 
+          shared_from_this(), session)));
+
+#else
+
+  session->async_wait(make_custom_alloc_handler(session->start_wait_allocator, 
+      boost::bind(&this_type::dispatch_handle_session_wait, 
+          session_manager_weak_ptr(shared_from_this()), session, _1)));
+
+#endif
+}
+
+void session_manager::recycle_session(const wrapped_session_ptr& session)
+{
+  BOOST_ASSERT_MSG(session, "session must be not null");
+
+  bool is_recyclable = !session->has_pending_operations();
+  bool has_recycle_space = recycled_sessions_.size() < recycled_session_count_;
+
+  // Check session's pending operation number and recycle bin size
+  if (is_recyclable && has_recycle_space)
+  {
+    // Reset session state
+    session->reset();
+    // Add to recycle bin
+    recycled_sessions_.push_front(session);
+  } 
+}
+
+session_manager::wrapped_session_ptr session_manager::create_session(
+    boost::system::error_code& error)
+{        
+  if (!recycled_sessions_.empty())
+  {
+    wrapped_session_ptr session = recycled_sessions_.front();
+    recycled_sessions_.erase(session);          
+    error = boost::system::error_code();
+    return session;
+  }
+
+  try 
+  {   
+    wrapped_session_ptr session = boost::make_shared<session_wrapper>(
+        boost::ref(session_io_service_), managed_session_config_);
+    error = boost::system::error_code();
+    return session;
+  }
+  catch (const std::bad_alloc&) 
+  {
+    error = server_error::no_memory;
+    return wrapped_session_ptr();
+  }
+}
+
+boost::system::error_code session_manager::close_acceptor()
+{
+  boost::system::error_code error;
+  acceptor_.close(error);
+  return error;
+}
+
+void session_manager::dispatch_handle_session_start(
+    const session_manager_weak_ptr& this_weak_ptr, 
+    const wrapped_session_ptr& session, 
+    const boost::system::error_code& error)
+{
+  // Try to lock the manager
+  if (session_manager_ptr this_ptr = this_weak_ptr.lock())
+  {
+    typedef void (session_manager::*func_type)(const wrapped_session_ptr&,
+        const boost::system::error_code&);
+
+    func_type func = &session_manager::handle_session_start;
+
+    // Forward invocation
+#if defined(MA_HAS_RVALUE_REFS) \
+    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+
+    this_ptr->strand_.dispatch(make_custom_alloc_handler(
+        session->start_wait_allocator, 
+        session_handler_binder(func, this_ptr, session, error)));
+
+#else
+
+    this_ptr->strand_.dispatch(make_custom_alloc_handler(
+        session->start_wait_allocator,
+        boost::bind(func, this_ptr, session, error)));
+
+#endif
+  }
+}
+
+void session_manager::dispatch_handle_session_wait(
+    const session_manager_weak_ptr& this_weak_ptr,
+    const wrapped_session_ptr& session, 
+    const boost::system::error_code& error)
+{
+  // Try to lock the manager
+  if (session_manager_ptr this_ptr = this_weak_ptr.lock())
+  {
+    typedef void (session_manager::*func_type)(const wrapped_session_ptr&,
+        const boost::system::error_code&);
+
+    func_type func = &session_manager::handle_session_wait;
+
+    // Forward invocation
+#if defined(MA_HAS_RVALUE_REFS) \
+    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+
+    this_ptr->strand_.dispatch(make_custom_alloc_handler(
+        session->start_wait_allocator, 
+        session_handler_binder(func, this_ptr, session, error)));
+
+#else
+
+    this_ptr->strand_.dispatch(make_custom_alloc_handler(
+        session->start_wait_allocator, 
+        boost::bind(func, this_ptr, session, error)));
+
+#endif
+  }
+}
+
+void session_manager::dispatch_handle_session_stop(
+    const session_manager_weak_ptr& this_weak_ptr,
+    const wrapped_session_ptr& session, 
+    const boost::system::error_code& error)
+{
+  // Try to lock the manager
+  if (session_manager_ptr this_ptr = this_weak_ptr.lock())
+  {
+    typedef void (session_manager::*func_type)(const wrapped_session_ptr&,
+        const boost::system::error_code&);
+
+    func_type func = &session_manager::handle_session_stop;
+
+    // Forward invocation
+#if defined(MA_HAS_RVALUE_REFS) \
+    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+
+    this_ptr->strand_.dispatch(make_custom_alloc_handler(
+        session->stop_allocator, 
+        session_handler_binder(func, this_ptr, session, error)));
+
+#else
+
+    this_ptr->strand_.dispatch(make_custom_alloc_handler(
+        session->stop_allocator, 
+        boost::bind(func, this_ptr, session, error)));
+
+#endif
+  }
 }
 
 void session_manager::open(protocol_type::acceptor& acceptor, 
@@ -582,381 +1219,6 @@ void session_manager::open(protocol_type::acceptor& acceptor,
   if (!error)
   {
     closing_guard.release();
-  }
-}
-
-bool session_manager::may_complete_stop() const
-{
-  return (0 == pending_operations_) && active_sessions_.empty();
-}
-
-bool session_manager::may_complete_wait() const
-{
-  return wait_error_ && active_sessions_.empty() && !accept_in_progress_;
-}
-
-void session_manager::complete_stop()
-{
-  external_state_ = external_state::stopped;  
-}
-
-void session_manager::set_wait_error(const boost::system::error_code& error)
-{
-  if (!wait_error_)
-  {
-    wait_error_ = error;
-  }
-  // Notify wait handler
-  if (wait_handler_.has_target() && may_complete_wait())
-  {            
-    wait_handler_.post(wait_error_);
-  }
-}
-
-bool session_manager::may_continue_accept() const
-{
-  if (accept_in_progress_ || (active_sessions_.size() >= max_session_count_))
-  {
-    return false;
-  }
-
-  if (wait_error_)
-  {
-    if (server_error::no_memory == wait_error_)
-    {
-      return true;
-    }
-    return false;
-  }
-
-  return true;
-}
-
-void session_manager::start_session(const session_data_ptr& the_session_data)
-{ 
-  // Asynchronously start wrapped session
-#if defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
-
-  the_session_data->async_start(make_custom_alloc_handler(
-      the_session_data->start_wait_allocator, session_dispatch_binder(
-          &this_type::dispatch_session_start, shared_from_this(), 
-          the_session_data)));
-
-#else
-
-  the_session_data->async_start(make_custom_alloc_handler(
-      the_session_data->start_wait_allocator, boost::bind(
-          &this_type::dispatch_session_start, 
-          session_manager_weak_ptr(shared_from_this()), 
-          the_session_data, _1)));
-
-#endif
-    
-  ++pending_operations_;
-}
-
-void session_manager::stop_session(const session_data_ptr& the_session_data)
-{
-  // Asynchronously stop wrapped session
-#if defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
-
-  the_session_data->async_stop(make_custom_alloc_handler(
-      the_session_data->stop_allocator, session_dispatch_binder(
-          &this_type::dispatch_session_stop, shared_from_this(), 
-          the_session_data)));
-
-#else
-
-  the_session_data->async_stop(make_custom_alloc_handler(
-      the_session_data->stop_allocator, boost::bind(
-          &this_type::dispatch_session_stop, 
-          session_manager_weak_ptr(shared_from_this()), 
-          the_session_data, _1)));
-
-#endif
-  
-  ++pending_operations_;
-}
-
-void session_manager::wait_session(const session_data_ptr& the_session_data)
-{
-  // Asynchronously wait on wrapped session
-#if defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
-
-  the_session_data->async_wait(make_custom_alloc_handler(
-      the_session_data->start_wait_allocator, session_dispatch_binder(
-          &this_type::dispatch_session_wait, shared_from_this(), 
-          the_session_data)));
-
-#else
-
-  the_session_data->async_wait(make_custom_alloc_handler(
-      the_session_data->start_wait_allocator, boost::bind(
-          &this_type::dispatch_session_wait, 
-          session_manager_weak_ptr(shared_from_this()), 
-          the_session_data, _1)));
-
-#endif
-    
-  ++pending_operations_;
-}
-
-void session_manager::dispatch_session_start(
-    const session_manager_weak_ptr& this_weak_ptr, 
-    const session_data_ptr& the_session_data, 
-    const boost::system::error_code& error)
-{
-  // Try to lock the manager
-  if (session_manager_ptr this_ptr = this_weak_ptr.lock())
-  {
-    // Forward invocation
-#if defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
-
-    this_ptr->strand_.dispatch(make_custom_alloc_handler(
-        the_session_data->start_wait_allocator, session_handler_binder(
-            &this_type::handle_session_start, this_ptr, 
-            the_session_data, error)));
-
-#else
-
-    this_ptr->strand_.dispatch(make_custom_alloc_handler(
-        the_session_data->start_wait_allocator, boost::bind(
-            &this_type::handle_session_start, this_ptr, 
-            the_session_data, error)));
-
-#endif
-  }
-}
-
-void session_manager::handle_session_start(
-    const session_data_ptr& the_session_data, 
-    const boost::system::error_code& error)
-{ 
-  // Unregister pending operation
-  --pending_operations_;
-  the_session_data->handle_operation_completion();
-
-  // Check if handler is not called too late
-  if (the_session_data->is_starting())
-  {
-    if (error)
-    {
-      the_session_data->mark_as_stopped();
-      active_sessions_.erase(the_session_data);
-      recycle_session(the_session_data);
-
-      // Check for pending session manager stop operation 
-      if (external_state::stop == external_state_)
-      {
-        if (may_complete_stop())
-        {
-          complete_stop();
-          post_stop_handler();
-        }
-        return;
-      }
-
-      // Continue session acceptation if can
-      if (may_continue_accept())
-      {                
-        continue_accept();
-      }
-
-      if (wait_handler_.has_target() && may_complete_wait())
-      {
-        wait_handler_.post(wait_error_);
-      }
-      return;
-    }
-
-    the_session_data->mark_as_working();
-    // Check for pending session manager stop operation 
-    if (external_state::stop == external_state_)  
-    {                            
-      stop_session(the_session_data);
-      return;
-    }
-
-    // Wait until session needs to stop
-    wait_session(the_session_data);          
-    return;
-  }
-
-  // Handler is called too late - complete handler's waiters
-  recycle_session(the_session_data);
-  // Check for pending session manager stop operation 
-  if (external_state::stop == external_state_) 
-  {
-    if (may_complete_stop())  
-    {
-      complete_stop();
-      post_stop_handler();
-    }
-  }        
-}
-
-void session_manager::dispatch_session_wait(
-    const session_manager_weak_ptr& this_weak_ptr,
-    const session_data_ptr& the_session_data, 
-    const boost::system::error_code& error)
-{
-  // Try to lock the manager
-  if (session_manager_ptr this_ptr = this_weak_ptr.lock())
-  {
-    // Forward invocation
-#if defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
-
-    this_ptr->strand_.dispatch(make_custom_alloc_handler(
-        the_session_data->start_wait_allocator, session_handler_binder(
-            &this_type::handle_session_wait, this_ptr, 
-            the_session_data, error)));
-
-#else
-
-    this_ptr->strand_.dispatch(make_custom_alloc_handler(
-        the_session_data->start_wait_allocator, boost::bind(
-            &this_type::handle_session_wait, this_ptr, 
-            the_session_data, error)));
-
-#endif
-  }
-}
-
-void session_manager::handle_session_wait(
-    const session_data_ptr& the_session_data, 
-    const boost::system::error_code& /*error*/)
-{
-  // Unregister pending operation
-  --pending_operations_;
-  the_session_data->handle_operation_completion();
-
-  // Check if handler is not called too late
-  if (the_session_data->is_working())
-  {
-    stop_session(the_session_data);
-    return;
-  }
-
-  // Handler is called too late - complete handler's waiters
-  recycle_session(the_session_data);
-
-  // Check for pending session manager stop operation
-  if (external_state::stop == external_state_)
-  {
-    if (may_complete_stop())  
-    {
-      complete_stop();
-      post_stop_handler();
-    }          
-  }        
-}
-
-void session_manager::dispatch_session_stop(
-    const session_manager_weak_ptr& this_weak_ptr,
-    const session_data_ptr& the_session_data, 
-    const boost::system::error_code& error)
-{     
-  // Try to lock the manager
-  if (session_manager_ptr this_ptr = this_weak_ptr.lock())
-  {
-    // Forward invocation
-#if defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
-
-    this_ptr->strand_.dispatch(make_custom_alloc_handler(
-        the_session_data->stop_allocator, session_handler_binder(
-            &this_type::handle_session_stop, this_ptr, 
-            the_session_data, error)));
-
-#else
-
-    this_ptr->strand_.dispatch(make_custom_alloc_handler(
-        the_session_data->stop_allocator, boost::bind(
-            &this_type::handle_session_stop, this_ptr, 
-            the_session_data, error)));
-
-#endif
-  }
-}
-
-void session_manager::handle_session_stop(
-    const session_data_ptr& the_session_data,
-    const boost::system::error_code& /*error*/)
-{
-  // Unregister pending operation
-  --pending_operations_;
-  the_session_data->handle_operation_completion();
-
-  // Check if handler is not called too late
-  if (the_session_data->is_stopping())
-  {
-
-    the_session_data->mark_as_stopped();
-    active_sessions_.erase(the_session_data);
-    recycle_session(the_session_data);
-
-    // Check for pending session manager stop operation
-    if (external_state::stop == external_state_)
-    {
-      if (may_complete_stop())  
-      {
-        complete_stop();
-        post_stop_handler();
-      }
-      return;
-    }
-
-    // Continue session acceptation if can
-    if (may_continue_accept())
-    {                
-      continue_accept();
-    }
-
-    if (wait_handler_.has_target() && may_complete_wait()) 
-    {
-      wait_handler_.post(wait_error_);
-    }
-    return;
-  }
-
-  // Handler is called too late - complete handler's waiters
-  recycle_session(the_session_data);
-
-  // Check for pending session manager stop operation
-  if (external_state::stop == external_state_)
-  {
-    if (may_complete_stop())  
-    {
-      complete_stop();
-      post_stop_handler();
-    }          
-  }                
-}
-
-void session_manager::recycle_session(const session_data_ptr& the_session_data)
-{
-  // Check session's pending operation number and recycle bin size
-  if (!the_session_data->has_pending_operations() 
-    && (recycled_sessions_.size() < recycled_session_count_))
-  {
-    // Reset session state
-    the_session_data->reset();
-    // Add to recycle bin
-    recycled_sessions_.push_front(the_session_data);
-  }
-}
-
-void session_manager::post_stop_handler()
-{
-  if (stop_handler_.has_target()) 
-  {
-    // Signal shutdown completion
-    stop_handler_.post(stop_error_);
   }
 }
 

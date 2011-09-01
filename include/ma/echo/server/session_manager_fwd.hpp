@@ -22,8 +22,8 @@ namespace echo {
 namespace server {
 
 class session_manager;
-typedef boost::shared_ptr<session_manager> session_manager_ptr;    
-typedef boost::weak_ptr<session_manager>   session_manager_weak_ptr;          
+typedef boost::shared_ptr<session_manager> session_manager_ptr;
+typedef boost::weak_ptr<session_manager>   session_manager_weak_ptr;
 
 } // namespace server
 } // namespace echo

@@ -74,7 +74,7 @@ public:
   {
   }
 
-#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
   binder1(this_type&& other)
     : handler_(std::move(other.handler_))
@@ -88,7 +88,7 @@ public:
   {
   }
 
-#endif // defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+#endif
 
 #else // defined(MA_HAS_RVALUE_REFS)
 
@@ -199,7 +199,7 @@ public:
   {
   }
 
-#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
   binder2(this_type&& other)
     : handler_(std::move(other.handler_))
@@ -215,7 +215,7 @@ public:
   {
   }
 
-#endif // defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+#endif
 
 #else // defined(MA_HAS_RVALUE_REFS)
 
@@ -326,7 +326,7 @@ public:
   {
   }
 
-#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
   binder3(this_type&& other)
     : handler_(std::move(other.handler_))
@@ -344,7 +344,7 @@ public:
   {
   }
 
-#endif // defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+#endif
 
 #else // defined(MA_HAS_RVALUE_REFS)
 
@@ -464,7 +464,7 @@ public:
   {
   }
 
-#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
   binder4(this_type&& other)
     : handler_(std::move(other.handler_))
@@ -484,7 +484,7 @@ public:
   {
   }
 
-#endif // defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+#endif
 
 #else // defined(MA_HAS_RVALUE_REFS)
 
@@ -615,7 +615,7 @@ public:
   {
   }
 
-#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
   binder5(this_type&& other)
     : handler_(std::move(other.handler_))
@@ -637,7 +637,7 @@ public:
   {
   }
 
-#endif // defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+#endif
 
 #else // defined(MA_HAS_RVALUE_REFS)
 

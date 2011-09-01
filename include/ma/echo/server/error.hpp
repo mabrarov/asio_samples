@@ -36,6 +36,7 @@ enum error_t
   inactivity_timeout = 300,
   no_memory          = 400,
   passive_shutdown   = 500,
+  out_of_work        = 600
 }; // enum error_t 
 
 inline boost::system::error_code make_error_code(error_t e)

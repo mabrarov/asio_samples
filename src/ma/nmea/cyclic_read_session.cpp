@@ -19,12 +19,12 @@ cyclic_read_session::cyclic_read_session(boost::asio::io_service& io_service,
   : io_service_(io_service)
   , strand_(io_service)
   , serial_port_(io_service)
-  , external_read_handler_(io_service)
-  , external_stop_handler_(io_service)
+  , extern_read_handler_(io_service)
+  , extern_stop_handler_(io_service)
   , frame_buffer_(frame_buffer_size)
   , port_write_in_progress_(false)
   , port_read_in_progress_(false)             
-  , external_state_(external_state::ready)
+  , extern_state_(extern_state::ready)
   , read_buffer_(read_buffer_size)
   , frame_head_(frame_head)
   , frame_tail_(frame_tail)
@@ -64,17 +64,17 @@ void cyclic_read_session::resest()
 
   read_buffer_.consume(boost::asio::buffer_size(read_buffer_.data()));
 
-  external_state_ = external_state::ready;
+  extern_state_ = extern_state::ready;
 }
 
-boost::system::error_code cyclic_read_session::do_start_external_start()
+boost::system::error_code cyclic_read_session::do_start_extern_start()
 {
-  if (external_state::ready != external_state_)
+  if (extern_state::ready != extern_state_)
   {
     return session_error::invalid_state;          
   }
   
-  external_state_ = external_state::work;
+  extern_state_ = extern_state::work;
 
   // Start internal activity
   if (!port_read_in_progress_)
@@ -87,22 +87,22 @@ boost::system::error_code cyclic_read_session::do_start_external_start()
 }
 
 boost::optional<boost::system::error_code> 
-cyclic_read_session::do_start_external_stop()
+cyclic_read_session::do_start_extern_stop()
 {      
-  if ((external_state::stopped == external_state_) 
-      || (external_state::stop == external_state_))
+  if ((extern_state::stopped == extern_state_) 
+      || (extern_state::stop == extern_state_))
   {          
     return boost::optional<boost::system::error_code>(
         session_error::invalid_state);
   }
 
   // Start shutdown
-  external_state_ = external_state::stop;
+  extern_state_ = extern_state::stop;
 
   // Do shutdown - abort outer operations
-  if (external_read_handler_.has_target())
+  if (extern_read_handler_.has_target())
   {
-    external_read_handler_.post(read_result_type(session_error::operation_aborted, 0));
+    extern_read_handler_.post(read_result_type(session_error::operation_aborted, 0));
   }
 
   // Do shutdown - abort inner operations
@@ -120,10 +120,10 @@ cyclic_read_session::do_start_external_stop()
 }
 
 boost::optional<boost::system::error_code> 
-cyclic_read_session::do_start_external_read_some()
+cyclic_read_session::do_start_extern_read_some()
 {
-  if ((external_state::work != external_state_) 
-      || (external_read_handler_.has_target()))
+  if ((extern_state::work != extern_state_) 
+      || (extern_read_handler_.has_target()))
   {          
     return boost::optional<boost::system::error_code>(
         session_error::invalid_state);
@@ -142,7 +142,7 @@ cyclic_read_session::do_start_external_read_some()
     return error;
   }
 
-  // If can't immediately complete then do_start_external_start waiting for completion
+  // If can't immediately complete then do_start_extern_start waiting for completion
   // Start message constructing
   if (!port_read_in_progress_)
   {
@@ -158,7 +158,7 @@ bool cyclic_read_session::may_complete_stop() const
 
 void cyclic_read_session::complete_stop()
 {
-  external_state_ = external_state::stopped;
+  extern_state_ = extern_state::stopped;
 }
 
 void cyclic_read_session::read_until_head()
@@ -189,13 +189,13 @@ void cyclic_read_session::handle_read_head(
 {         
   port_read_in_progress_ = false;
 
-  // Check for pending session do_start_external_stop operation 
-  if (external_state::stop == external_state_)
+  // Check for pending session do_start_extern_stop operation 
+  if (extern_state::stop == extern_state_)
   {          
     if (may_complete_stop())
     {
       complete_stop();
-      post_external_stop_handler();
+      post_extern_stop_handler();
     }
     return;
   }
@@ -203,9 +203,9 @@ void cyclic_read_session::handle_read_head(
   if (error)
   {
     // Check for pending session read operation 
-    if (external_read_handler_.has_target())
+    if (extern_read_handler_.has_target())
     {        
-      external_read_handler_.post(read_result_type(error, 0));
+      extern_read_handler_.post(read_result_type(error, 0));
       return;
     }
 
@@ -225,13 +225,13 @@ void cyclic_read_session::handle_read_tail(
 {                  
   port_read_in_progress_ = false;
 
-  // Check for pending session do_start_external_stop operation 
-  if (external_state::stop == external_state_)
+  // Check for pending session do_start_extern_stop operation 
+  if (extern_state::stop == extern_state_)
   {
     if (may_complete_stop())
     {
       complete_stop();
-      post_external_stop_handler();
+      post_extern_stop_handler();
     }
     return;
   }
@@ -239,9 +239,9 @@ void cyclic_read_session::handle_read_tail(
   if (error)        
   {
     // Check for pending session read operation 
-    if (external_read_handler_.has_target())
+    if (extern_read_handler_.has_target())
     {
-      external_read_handler_.post(read_result_type(error, 0));
+      extern_read_handler_.post(read_result_type(error, 0));
       return;
     }
 
@@ -279,21 +279,21 @@ void cyclic_read_session::handle_read_tail(
   frame_buffer_.push_back(new_frame);
 
   // If there is waiting read operation - complete it            
-  if (external_read_handler_.has_target())
+  if (extern_read_handler_.has_target())
   {        
-    external_read_handler_base* handler = get_external_read_handler();
+    extern_read_handler_base* handler = get_extern_read_handler();
     read_result_type copy_result = handler->copy(frame_buffer_);
     frame_buffer_.erase_begin(copy_result.get<1>());
-    external_read_handler_.post(copy_result);
+    extern_read_handler_.post(copy_result);
   }
 }
 
-void cyclic_read_session::post_external_stop_handler()
+void cyclic_read_session::post_extern_stop_handler()
 {
-  if (external_stop_handler_.has_target()) 
+  if (extern_stop_handler_.has_target()) 
   {
     // Signal shutdown completion
-    external_stop_handler_.post(stop_error_);
+    extern_stop_handler_.post(stop_error_);
   }
 }
             

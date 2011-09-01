@@ -13,6 +13,7 @@
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
 #include <cstddef>
+#include <boost/assert.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/aligned_storage.hpp>
 #include <boost/scoped_array.hpp>
@@ -54,7 +55,9 @@ public:
   void deallocate(void* pointer)
   {
     if (storage_.address() == pointer)
-    {        
+    {
+      BOOST_ASSERT_MSG(in_use_, "invalid internal state");
+
       in_use_ = false;
       return;
     }      
@@ -129,6 +132,8 @@ public:
     {
       if (retrieve_aligned_address() == pointer)
       {
+        BOOST_ASSERT_MSG(in_use_, "invalid internal state");
+
         in_use_ = false;
         return;
       }

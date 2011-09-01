@@ -122,7 +122,7 @@ private:
     {
     }
     
-#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
     handler_wrapper(this_type&& other)
       : handler_base(std::move(other))
@@ -140,7 +140,7 @@ private:
     {
     }
 
-#endif // defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+#endif
 
 #else // defined(MA_HAS_RVALUE_REFS)
 

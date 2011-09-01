@@ -34,35 +34,36 @@ private:
 
 public:
   typedef void result_type;
-  typedef void (async_implementation::*function_type)(
+
+  typedef void (async_implementation::*func_type)(
       const do_something_handler_ptr&);
 
 #if defined(MA_HAS_RVALUE_REFS)
 
   template <typename AsyncImplementationPtr, typename DoSomethingHandlerPtr>
   forward_binder(AsyncImplementationPtr&& async_implementation, 
-      DoSomethingHandlerPtr&& do_something_handler, function_type function)
+      DoSomethingHandlerPtr&& do_something_handler, func_type func)
     : async_implementation_(std::forward<AsyncImplementationPtr>(
           async_implementation))
     , do_something_handler_(std::forward<DoSomethingHandlerPtr>(
           do_something_handler))
-    , function_(function)
+    , func_(func)
   {
   }
 
-#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
   forward_binder(this_type&& other)
     : async_implementation_(std::move(other.async_implementation_))
     , do_something_handler_(std::move(other.do_something_handler_))
-    , function_(other.function_)
+    , func_(other.func_)
   {
   }
 
   forward_binder(const this_type& other)
     : async_implementation_(other.async_implementation_)
     , do_something_handler_(other.do_something_handler_)
-    , function_(other.function_)
+    , func_(other.func_)
   {
   }
 
@@ -72,22 +73,18 @@ public:
 
   forward_binder(const async_implementation_ptr& async_implementation, 
       const do_something_handler_ptr& do_something_handler, 
-      function_type function)
+      func_type function)
     : async_implementation_(async_implementation)
     , do_something_handler_(do_something_handler)
-    , function_(function)
+    , func_(function)
   {
   }
 
-#endif // defined(MA_HAS_RVALUE_REFS)
-
-  ~forward_binder()
-  {
-  }
+#endif // defined(MA_HAS_RVALUE_REFS)  
 
   void operator()()
   {
-    ((*async_implementation_).*function_)(do_something_handler_);
+    ((*async_implementation_).*func_)(do_something_handler_);
   }
 
   friend void* asio_handler_allocate(std::size_t size, this_type* context)
@@ -104,7 +101,7 @@ public:
 private:
   async_implementation_ptr async_implementation_;
   do_something_handler_ptr do_something_handler_;
-  function_type function_;
+  func_type func_;
 }; // class forward_binder
 
 class do_something_handler_adapter
@@ -134,11 +131,7 @@ public:
   }
 
 #endif // defined(MA_HAS_RVALUE_REFS) 
-       //     && defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
-
-  ~do_something_handler_adapter()
-  {
-  }
+       //     && defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)  
 
   void operator()(const boost::system::error_code& error)
   {
@@ -190,11 +183,7 @@ public:
   }
 
 #endif // defined(MA_HAS_RVALUE_REFS) 
-       //     && defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
-
-  ~do_something_handler_binder()
-  {
-  }
+       //     && defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)  
 
   void operator()()
   {
@@ -227,28 +216,28 @@ private:
   
 public:
   typedef void result_type;
-  typedef void (async_implementation::*function_type)(
+  typedef void (async_implementation::*func_type)(
       const boost::system::error_code&);
 
   template <typename AsyncImplementationPtr>
-  timer_handler_binder(function_type function, 
+  timer_handler_binder(func_type function, 
       AsyncImplementationPtr&& async_implementation)
-    : function_(function)
+    : func_(function)
     , async_implementation_(std::forward<AsyncImplementationPtr>(
           async_implementation))
   {
   } 
 
-#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
   timer_handler_binder(this_type&& other)
-    : function_(other.function_)
+    : func_(other.func_)
     , async_implementation_(std::move(other.async_implementation_))
   {
   }
 
   timer_handler_binder(const this_type& other)
-    : function_(other.function_)
+    : func_(other.func_)
     , async_implementation_(other.async_implementation_)
   {
   }
@@ -257,11 +246,11 @@ public:
 
   void operator()(const boost::system::error_code& error)
   {
-    ((*async_implementation_).*function_)(error);
+    ((*async_implementation_).*func_)(error);
   }
 
 private:
-  function_type            function_;
+  func_type            func_;
   async_implementation_ptr async_implementation_;
 }; // class timer_handler_binder
 

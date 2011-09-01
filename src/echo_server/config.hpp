@@ -24,6 +24,8 @@
 #include <ma/echo/server/session_config.hpp>
 #include <ma/echo/server/session_manager_config.hpp>
 
+namespace echo_server {
+
 struct execution_config
 {
 public:    
@@ -83,5 +85,7 @@ ma::echo::server::session_config build_session_config(
 ma::echo::server::session_manager_config build_session_manager_config(
     const boost::program_options::variables_map& options_values,
     const ma::echo::server::session_config& session_config);
+
+} // namespace echo_server
 
 #endif // CONFIG_HPP

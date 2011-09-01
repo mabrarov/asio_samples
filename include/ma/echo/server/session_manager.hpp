@@ -24,7 +24,6 @@
 #include <ma/handler_storage.hpp>
 #include <ma/handler_allocator.hpp>
 #include <ma/bind_asio_handler.hpp>
-#include <ma/custom_alloc_handler.hpp>
 #include <ma/context_alloc_handler.hpp>
 #include <ma/echo/server/session_fwd.hpp>
 #include <ma/echo/server/session_config.hpp>
@@ -70,30 +69,36 @@ public:
   void async_start(Handler&& handler)
   {
     typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+    typedef void (this_type::*func_type)(const handler_type&);
+
+    func_type func = &this_type::start_extern_start<handler_type>;
+
     strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler),
-        forward_handler_binder<handler_type>(
-            &this_type::start_external_start<handler_type>, 
-            shared_from_this())));
+        forward_handler_binder<handler_type>(func, shared_from_this())));
   }
 
   template <typename Handler>
   void async_stop(Handler&& handler)
   {
     typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+    typedef void (this_type::*func_type)(const handler_type&);
+
+    func_type func = &this_type::start_extern_stop<handler_type>;
+
     strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler),
-        forward_handler_binder<handler_type>(
-            &this_type::start_external_stop<handler_type>, 
-            shared_from_this()))); 
+        forward_handler_binder<handler_type>(func, shared_from_this())));
   }
 
   template <typename Handler>
   void async_wait(Handler&& handler)
   {
     typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+    typedef void (this_type::*func_type)(const handler_type&);
+
+    func_type func = &this_type::start_extern_wait<handler_type>;
+
     strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler),
-        forward_handler_binder<handler_type>(
-            &this_type::start_external_wait<handler_type>, 
-            shared_from_this())));
+        forward_handler_binder<handler_type>(func, shared_from_this())));
   }
 
 #else // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
@@ -102,27 +107,36 @@ public:
   void async_start(Handler&& handler)
   {
     typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+    typedef void (this_type::*func_type)(const handler_type&);
+
+    func_type func = &this_type::start_extern_start<handler_type>;
+
     strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler),
-        boost::bind(&this_type::start_external_start<handler_type>, 
-            shared_from_this(), _1)));
+        boost::bind(func, shared_from_this(), _1)));
   }
 
   template <typename Handler>
   void async_stop(Handler&& handler)
   {
     typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+    typedef void (this_type::*func_type)(const handler_type&);
+
+    func_type func = &this_type::start_extern_stop<handler_type>;
+
     strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler), 
-        boost::bind(&this_type::start_external_stop<handler_type>, 
-            shared_from_this(), _1))); 
+        boost::bind(func, shared_from_this(), _1))); 
   }
 
   template <typename Handler>
   void async_wait(Handler&& handler)
   {
     typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+    typedef void (this_type::*func_type)(const handler_type&);
+
+    func_type func = &this_type::start_extern_wait<handler_type>;
+
     strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler), 
-        boost::bind(&this_type::start_external_wait<handler_type>, 
-            shared_from_this(), _1)));  
+        boost::bind(func, shared_from_this(), _1)));  
   }
 
 #endif // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
@@ -132,31 +146,48 @@ public:
   template <typename Handler>
   void async_start(const Handler& handler)
   {
-    strand_.post(make_context_alloc_handler2(handler, boost::bind(
-        &this_type::start_external_start<Handler>, shared_from_this(), _1)));
+    typedef Handler handler_type;
+    typedef void (this_type::*func_type)(const handler_type&);
+
+    func_type func = &this_type::start_extern_start<handler_type>;
+
+    strand_.post(make_context_alloc_handler2(handler, 
+        boost::bind(func, shared_from_this(), _1)));
   }
 
   template <typename Handler>
   void async_stop(const Handler& handler)
   {
-    strand_.post(make_context_alloc_handler2(handler, boost::bind(
-        &this_type::start_external_stop<Handler>, shared_from_this(), _1)));
+    typedef Handler handler_type;
+    typedef void (this_type::*func_type)(const handler_type&);
+
+    func_type func = &this_type::start_extern_stop<handler_type>;
+
+    strand_.post(make_context_alloc_handler2(handler, 
+        boost::bind(func, shared_from_this(), _1)));
   }
 
   template <typename Handler>
   void async_wait(const Handler& handler)
   {
-    strand_.post(make_context_alloc_handler2(handler, boost::bind(
-        &this_type::start_external_wait<Handler>, shared_from_this(), _1)));
+    typedef Handler handler_type;
+    typedef void (this_type::*func_type)(const handler_type&);
+
+    func_type func = &this_type::start_extern_wait<handler_type>;
+
+    strand_.post(make_context_alloc_handler2(handler, 
+        boost::bind(func, shared_from_this(), _1)));
   }
 
 #endif // defined(MA_HAS_RVALUE_REFS)
 
 private:        
-  struct  session_data;
-  typedef boost::shared_ptr<session_data> session_data_ptr;
-  typedef boost::weak_ptr<session_data>   session_data_weak_ptr;      
+  struct  session_wrapper;
+  typedef boost::shared_ptr<session_wrapper> wrapped_session_ptr;
+  typedef boost::weak_ptr<session_wrapper>   wrapped_session_weak_ptr;  
 
+  friend struct session_wrapper;
+  
 #if defined(MA_HAS_RVALUE_REFS) \
     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
@@ -177,154 +208,61 @@ private:
 
   public:
     typedef void result_type;
-    typedef void (session_manager::*function_type)(const Arg&);
+
+    typedef void (session_manager::*func_type)(const Arg&);
 
     template <typename SessionManagerPtr>
-    forward_handler_binder(function_type function, 
-        SessionManagerPtr&& the_session_manager)
-      : function_(function)
-      , session_manager_(std::forward<SessionManagerPtr>(the_session_manager))
+    forward_handler_binder(func_type func, SessionManagerPtr&& session_manager)
+      : func_(func)
+      , session_manager_(std::forward<SessionManagerPtr>(session_manager))
     {
     }
 
-#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
     forward_handler_binder(this_type&& other)
-      : function_(other.function_)
+      : func_(other.func_)
       , session_manager_(std::move(other.session_manager_))
     {
     }
 
     forward_handler_binder(const this_type& other)
-      : function_(other.function_)
+      : func_(other.func_)
       , session_manager_(other.session_manager_)
     {
     }
 
-#endif // defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+#endif
 
     void operator()(const Arg& arg)
     {
-      ((*session_manager_).*function_)(arg);
+      ((*session_manager_).*func_)(arg);
     }
 
   private:
-    function_type function_;
+    func_type func_;
     session_manager_ptr session_manager_;          
   }; // class forward_handler_binder
 
 #endif // defined(MA_HAS_RVALUE_REFS) 
-       //     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
-        
-  struct session_data : private boost::noncopyable
-  {
-    struct state_type
-    {
-      enum value_t
-      {
-        ready,
-        start,
-        work,
-        stop,
-        stopped
-      };
-    }; // struct state_type
+       //     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)           
 
-    session_data_weak_ptr prev;
-    session_data_ptr      next;
-
-    session_ptr             managed_session;
-    protocol_type::endpoint remote_endpoint;
-    state_type::value_t     state;
-    std::size_t             pending_operations;
-    in_place_handler_allocator<144> start_wait_allocator;
-    in_place_handler_allocator<144> stop_allocator;
-
-    session_data(boost::asio::io_service&, const session_config&);
-
-#if !defined(NDEBUG)
-    ~session_data()
-    {
-    }
-#endif
-
-    bool has_pending_operations() const;
-    bool is_starting() const;
-    bool is_stopping() const;
-    bool is_working() const;
-    void handle_operation_completion();
-    void mark_as_stopped();
-    void mark_as_working();
-    void reset();
-
-#if defined(MA_HAS_RVALUE_REFS)
-
-    template <typename Handler>
-    void async_start(Handler&& handler)
-    {    
-      managed_session->async_start(std::forward<Handler>(handler));
-      state = state_type::start;
-      ++pending_operations;
-    }
-
-    template <typename Handler>
-    void async_stop(Handler&& handler)
-    {
-      managed_session->async_stop(std::forward<Handler>(handler));      
-      state = state_type::stop;
-      ++pending_operations;
-    }
-
-    template <typename Handler>
-    void async_wait(Handler&& handler)
-    {
-      managed_session->async_wait(std::forward<Handler>(handler));
-      ++pending_operations;
-    }
-
-#else // defined(MA_HAS_RVALUE_REFS)
-
-    template <typename Handler>
-    void async_start(const Handler& handler)
-    {    
-      managed_session->async_start(handler);
-      state = state_type::start;
-      ++pending_operations;
-    }
-
-    template <typename Handler>
-    void async_stop(const Handler& handler)
-    {
-      managed_session->async_stop(handler);      
-      state = state_type::stop;
-      ++pending_operations;
-    }
-
-    template <typename Handler>
-    void async_wait(const Handler& handler)
-    {
-      managed_session->async_wait(handler);
-      ++pending_operations;
-    }
-
-#endif // defined(MA_HAS_RVALUE_REFS)    
-    
-  }; // struct session_data
-
-  class session_data_list : private boost::noncopyable
+  class session_list : private boost::noncopyable
   {
   public:
-    session_data_list()
+    session_list()
       : size_(0)
     {
     }
 
-    ~session_data_list()
+#if !defined(NDEBUG)
+    ~session_list()
     {
     }
+#endif
 
-    void push_front(const session_data_ptr& value);
-    void erase(const session_data_ptr& value);          
+    void push_front(const wrapped_session_ptr& value);
+    void erase(const wrapped_session_ptr& value);          
     void clear();
 
     std::size_t size() const
@@ -337,126 +275,164 @@ private:
       return 0 == size_;
     }
 
-    session_data_ptr front() const
+    wrapped_session_ptr front() const
     {
       return front_;
     }
 
   private:
-    std::size_t size_;
-    session_data_ptr front_;
-  }; // class session_data_list
+    std::size_t      size_;
+    wrapped_session_ptr front_;
+  }; // class session_list
 
-  struct external_state
+  struct extern_state
   {
     enum value_t
     {
       ready,
-      start,
       work,
       stop,
       stopped
     };
-  }; // struct external_state
+  }; // struct extern_state
+
+  struct intern_state
+  {
+    enum value_t
+    {
+      work,
+      stop,
+      stopped
+    };
+  }; // struct intern_state
+
+  struct accept_state
+  {
+    enum value_t
+    {
+      wait,
+      in_progress,      
+      stopped
+    };
+  }; // struct accept_state
   
   template <typename Handler>
-  void start_external_start(const Handler& handler)
+  void start_extern_start(const Handler& handler)
   {
-    boost::system::error_code error = do_external_start();
+    boost::system::error_code error = do_start_extern_start();
     io_service_.post(detail::bind_handler(handler, error));          
   }
 
   template <typename Handler>
-  void start_external_stop(const Handler& handler)
+  void start_extern_stop(const Handler& handler)
   {          
     if (boost::optional<boost::system::error_code> result = 
-        do_external_stop())
+        do_start_extern_stop())
     {          
       io_service_.post(detail::bind_handler(handler, *result));
     }
     else
     {
-      stop_handler_.put(handler);
+      extern_stop_handler_.put(handler);
     }
   }
 
   template <typename Handler>
-  void start_external_wait(const Handler& handler)
+  void start_extern_wait(const Handler& handler)
   {          
     if (boost::optional<boost::system::error_code> result = 
-        do_external_wait())
+        do_start_extern_wait())
     {          
       io_service_.post(detail::bind_handler(handler, *result));
     }
     else
-    {          
-      wait_handler_.put(handler);
+    {
+      extern_wait_handler_.put(handler);
     }  
   }
 
-  boost::system::error_code                  do_external_start();
-  boost::optional<boost::system::error_code> do_external_stop();
-  boost::optional<boost::system::error_code> do_external_wait();
+  boost::system::error_code                  do_start_extern_start();
+  boost::optional<boost::system::error_code> do_start_extern_stop();
+  boost::optional<boost::system::error_code> do_start_extern_wait();
+  void complete_extern_stop(const boost::system::error_code&);
+  void complete_extern_wait(const boost::system::error_code&);  
 
-  session_data_ptr create_session(boost::system::error_code& error);
-  void start_accept(const session_data_ptr&);
-  void continue_accept();
-  void handle_accept(const session_data_ptr&, 
+  void continue_accept();  
+
+  void handle_accept(const wrapped_session_ptr&, 
       const boost::system::error_code&);
+  void handle_accept_at_work(const wrapped_session_ptr&, 
+      const boost::system::error_code&);
+  void handle_accept_at_stop(const wrapped_session_ptr&, 
+      const boost::system::error_code&);
+
+  void handle_session_start(const wrapped_session_ptr&,
+      const boost::system::error_code&);
+  void handle_session_start_at_work(const wrapped_session_ptr&,
+      const boost::system::error_code&);
+  void handle_session_start_at_stop(const wrapped_session_ptr&,
+      const boost::system::error_code&);
+
+  void handle_session_wait(const wrapped_session_ptr&,
+      const boost::system::error_code&);
+  void handle_session_wait_at_work(const wrapped_session_ptr&,
+      const boost::system::error_code&);
+  void handle_session_wait_at_stop(const wrapped_session_ptr&,
+      const boost::system::error_code&);
+
+  void handle_session_stop(const wrapped_session_ptr&,
+      const boost::system::error_code&);
+  void handle_session_stop_at_work(const wrapped_session_ptr&,
+      const boost::system::error_code&);
+  void handle_session_stop_at_stop(const wrapped_session_ptr&,
+      const boost::system::error_code&);
+
+  bool is_out_of_work() const;
+  void start_stop(const boost::system::error_code&);
+  void continue_stop();
+            
+  void start_accept_session(const wrapped_session_ptr&);  
+  void start_session_start(const wrapped_session_ptr&);
+  void start_session_stop(const wrapped_session_ptr&);
+  void start_session_wait(const wrapped_session_ptr&);
+
+  void recycle_session(const wrapped_session_ptr&);
+  wrapped_session_ptr create_session(boost::system::error_code& error);
+
+  boost::system::error_code close_acceptor();
+
+  static void dispatch_handle_session_start(const session_manager_weak_ptr&,
+      const wrapped_session_ptr&, const boost::system::error_code&);
+  static void dispatch_handle_session_wait(const session_manager_weak_ptr&,
+      const wrapped_session_ptr&, const boost::system::error_code&);
+  static void dispatch_handle_session_stop(const session_manager_weak_ptr&,
+      const wrapped_session_ptr&, const boost::system::error_code&);
 
   static void open(protocol_type::acceptor& acceptor, 
       const protocol_type::endpoint& endpoint, int backlog, 
-      boost::system::error_code& error);
+      boost::system::error_code& error);  
 
-  bool may_complete_stop() const;
-  bool may_complete_wait() const;
-  bool may_continue_accept() const;
-  void complete_stop();  
-  void set_wait_error(const boost::system::error_code&);
-        
-  void start_session(const session_data_ptr&);
-  void stop_session(const session_data_ptr&);
-  void wait_session(const session_data_ptr&);
+  const protocol_type::endpoint accepting_endpoint_;
+  const int                     listen_backlog_;
+  const std::size_t             max_session_count_;
+  const std::size_t             recycled_session_count_;
+  const session_config          managed_session_config_;
 
-  static void dispatch_session_start(const session_manager_weak_ptr&,
-      const session_data_ptr&, const boost::system::error_code&);
-  void handle_session_start(const session_data_ptr&, 
-      const boost::system::error_code&);
-
-  static void dispatch_session_wait(const session_manager_weak_ptr&,
-      const session_data_ptr&, const boost::system::error_code&);
-  void handle_session_wait(const session_data_ptr&, 
-      const boost::system::error_code&);
-
-  static void dispatch_session_stop(const session_manager_weak_ptr&,
-      const session_data_ptr&, const boost::system::error_code&);
-  void handle_session_stop(const session_data_ptr&, 
-      const boost::system::error_code&);
-
-  void recycle_session(const session_data_ptr&);
-  void post_stop_handler();
-
-  protocol_type::endpoint accepting_endpoint_;
-  const int               listen_backlog_;
-  const std::size_t       max_session_count_;
-  const std::size_t       recycled_session_count_;
-  const session_config    managed_session_config_;
-
-  bool                    accept_in_progress_;
-  std::size_t             pending_operations_;
-  external_state::value_t external_state_;        
+  extern_state::value_t extern_state_;
+  intern_state::value_t intern_state_;
+  accept_state::value_t accept_state_;
+  std::size_t           pending_operations_;  
 
   boost::asio::io_service&        io_service_;
   boost::asio::io_service&        session_io_service_;
   boost::asio::io_service::strand strand_;      
   protocol_type::acceptor         acceptor_;
-  session_data_list               active_sessions_;
-  session_data_list               recycled_sessions_;
-  boost::system::error_code       wait_error_;
-  boost::system::error_code       stop_error_;
+  session_list                    active_sessions_;
+  session_list                    recycled_sessions_;
+  boost::system::error_code       extern_wait_error_;
 
-  handler_storage<boost::system::error_code> wait_handler_;
-  handler_storage<boost::system::error_code> stop_handler_;
+  handler_storage<boost::system::error_code> extern_wait_handler_;
+  handler_storage<boost::system::error_code> extern_stop_handler_;
                 
   in_place_handler_allocator<512> accept_allocator_;
 }; // class session_manager

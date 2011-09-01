@@ -53,7 +53,7 @@ public:
   {
   }
 
-#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
   connect_ex_handler(this_type&& other)
     : handler_(std::move(other.handler_))
@@ -76,9 +76,11 @@ public:
 
 #endif // defined(MA_HAS_RVALUE_REFS)
 
+#if !defined(NDEBUG)
   ~connect_ex_handler()
   {
   }
+#endif
   
   friend void* asio_handler_allocate(std::size_t size, this_type* context)
   {

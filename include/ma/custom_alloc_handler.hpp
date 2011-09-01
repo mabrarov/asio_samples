@@ -118,7 +118,7 @@ public:
   {
   }
 
-#endif // defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
+#endif
 
 #else // defined(MA_HAS_RVALUE_REFS)
 

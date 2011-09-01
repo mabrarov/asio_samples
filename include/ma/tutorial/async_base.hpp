@@ -48,9 +48,13 @@ public:
   void async_do_something(Handler&& handler)
   {
     typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+    typedef void (this_type::*func_type)(const handler_type&);
+
+    func_type func = &this_type::start_do_something<handler_type>;
+
     strand_.post(ma::make_context_alloc_handler2(
-        std::forward<Handler>(handler), forward_handler_binder<handler_type>(
-            &this_type::start_do_something<handler_type>, get_shared_base())));
+        std::forward<Handler>(handler), 
+        forward_handler_binder<handler_type>(func, get_shared_base())));
   }
 
 #else // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
@@ -59,10 +63,13 @@ public:
   void async_do_something(Handler&& handler)
   {
     typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+    typedef void (this_type::*func_type)(const handler_type&);
+
+    func_type func = &this_type::start_do_something<handler_type>;
+    
     strand_.post(ma::make_context_alloc_handler2(
-        std::forward<Handler>(handler), boost::bind(
-            &this_type::start_do_something<handler_type>, 
-            get_shared_base(), _1)));
+        std::forward<Handler>(handler), 
+        boost::bind(func, get_shared_base(), _1)));
   }
 
 #endif // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
@@ -72,9 +79,13 @@ public:
   template <typename Handler>
   void async_do_something(const Handler& handler)
   {
+    typedef Handler handler_type;
+    typedef void (this_type::*func_type)(const handler_type&);
+
+    func_type func = &this_type::start_do_something<handler_type>;
+    
     strand_.post(ma::make_context_alloc_handler2(handler, 
-        boost::bind(&this_type::start_do_something<Handler>, 
-            get_shared_base(), _1)));
+        boost::bind(func, get_shared_base(), _1)));
   }
 
 #endif // defined(MA_HAS_RVALUE_REFS)
@@ -129,7 +140,7 @@ private:
     {
     }
 
-#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
     forward_handler_binder(this_type&& other)
       : function_(other.function_)

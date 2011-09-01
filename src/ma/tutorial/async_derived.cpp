@@ -29,26 +29,26 @@ private:
   
 public:
   typedef void result_type;
-  typedef void (async_derived::*function_type)(
-      const boost::system::error_code&);
+
+  typedef void (async_derived::*func_type)(const boost::system::error_code&);
 
   template <typename AsyncDerivedPtr>
-  timer_handler_binder(function_type function, AsyncDerivedPtr&& async_derived)
-    : function_(function)
+  timer_handler_binder(func_type func, AsyncDerivedPtr&& async_derived)
+    : func_(func)
     , async_derived_(std::forward<AsyncDerivedPtr>(async_derived))
   {
   } 
 
-#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
   timer_handler_binder(this_type&& other)
-    : function_(other.function_)
+    : func_(other.func_)
     , async_derived_(std::move(other.async_derived_))
   {
   }
 
   timer_handler_binder(const this_type& other)
-    : function_(other.function_)
+    : func_(other.func_)
     , async_derived_(other.async_derived_)
   {
   }
@@ -57,11 +57,11 @@ public:
 
   void operator()(const boost::system::error_code& error)
   {
-    ((*async_derived_).*function_)(error);
+    ((*async_derived_).*func_)(error);
   }
 
 private:
-  function_type function_;
+  func_type func_;
   async_derived_ptr async_derived_;
 }; // class timer_handler_binder
 

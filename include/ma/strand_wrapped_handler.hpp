@@ -72,7 +72,7 @@ public:
   {
   }
 
-#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
   strand_wrapped_handler(this_type&& other)
     : strand_(other.strand_)
@@ -86,7 +86,7 @@ public:
   {
   }
 
-#endif // defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+#endif
 
 #else // defined(MA_HAS_RVALUE_REFS)
 

@@ -11,6 +11,8 @@
 #include <boost/throw_exception.hpp>
 #include "config.hpp"
 
+namespace echo_server {
+
 namespace {
 
 const char* help_option_name = "help"; 
@@ -213,49 +215,37 @@ boost::program_options::variables_map parse_cmd_line(
 }
 
 void print_config(std::ostream& stream, std::size_t cpu_count,
-    const execution_config& the_execution_config,
+    const execution_config& exec_config, 
     const ma::echo::server::session_manager_config& session_manager_config)
-{
-  using ma::echo::server::session_config;
-
-  const session_config& the_session_config = 
+{  
+  const ma::echo::server::session_config& session_config = 
       session_manager_config.managed_session_config;
 
   stream << "Number of found CPU(s)                : " 
-         << cpu_count 
-         << std::endl
+         << cpu_count << std::endl
          << "Number of session manager's threads   : " 
-         << the_execution_config.session_manager_thread_count 
-         << std::endl
+         << exec_config.session_manager_thread_count << std::endl
          << "Number of sessions' threads           : " 
-         << the_execution_config.session_thread_count 
-         << std::endl
+         << exec_config.session_thread_count << std::endl
          << "Total number of work threads          : " 
-         << the_execution_config.session_thread_count 
-                + the_execution_config.session_manager_thread_count
-         << std::endl
+         << exec_config.session_thread_count 
+                + exec_config.session_manager_thread_count << std::endl
          << "Server listen port                    : " 
-         << session_manager_config.accepting_endpoint.port()
-         << std::endl
+         << session_manager_config.accepting_endpoint.port() << std::endl
          << "Server stop timeout (seconds)         : " 
-         << the_execution_config.stop_timeout.total_seconds() 
-         << std::endl
+         << exec_config.stop_timeout.total_seconds() << std::endl
          << "Maximum number of active sessions     : " 
-         << session_manager_config.max_session_count
-         << std::endl
+         << session_manager_config.max_session_count << std::endl
          << "Maximum number of recycled sessions   : "
-         << session_manager_config.recycled_session_count
-         << std::endl
+         << session_manager_config.recycled_session_count << std::endl
          << "TCP listen backlog size               : "
-         << session_manager_config.listen_backlog
-         << std::endl
+         << session_manager_config.listen_backlog << std::endl
          << "Size of session's buffer (bytes)      : " 
-         << the_session_config.buffer_size
-         << std::endl;
+         << session_config.buffer_size << std::endl;
     
   boost::optional<long> session_inactivity_timeout_sec;
-  if (session_config::optional_time_duration timeout = 
-      the_session_config.inactivity_timeout)
+  if (ma::echo::server::session_config::optional_time_duration timeout = 
+      session_config.inactivity_timeout)
   {
     session_inactivity_timeout_sec = timeout->total_seconds();
   }
@@ -265,18 +255,18 @@ void print_config(std::ostream& stream, std::size_t cpu_count,
   stream << std::endl;
 
   stream << "Size of session's socket receive buffer (bytes): ";
-  print_optional(stream, the_session_config.socket_recv_buffer_size, 
+  print_optional(stream, session_config.socket_recv_buffer_size, 
       default_system_value);
   stream << std::endl;
 
   stream << "Size of session's socket send buffer (bytes)   : ";
-  print_optional(stream, the_session_config.socket_send_buffer_size, 
+  print_optional(stream, session_config.socket_send_buffer_size, 
       default_system_value);
   stream << std::endl;
 
   stream << "Session's socket Nagle algorithm is   : ";
-  print_optional(stream, the_session_config.no_delay, default_system_value);
-  stream << std::endl;      
+  print_optional(stream, session_config.no_delay, default_system_value);
+  stream << std::endl;
 }
 
 bool is_help_mode(const boost::program_options::variables_map& options_values)
@@ -369,3 +359,5 @@ ma::echo::server::session_manager_config build_session_manager_config(
       tcp::endpoint(tcp::v4(), port), max_sessions, recycled_sessions, 
       listen_backlog, session_config);
 }
+
+} // namespace echo_server
