@@ -192,20 +192,13 @@ struct session_manager::session_wrapper : private boost::noncopyable
 
   struct state_type
   {
-    enum value_t
-    {
-      ready,
-      start,
-      work,
-      stop,
-      stopped
-    };
-  }; // struct state_type
+    enum value_t {ready, start, work, stop, stopped};
+  };
 
   session_manager::wrapped_session_weak_ptr prev;
   session_manager::wrapped_session_ptr      next;
 
-  endpoint_type       remote_peer;
+  endpoint_type       remote_endpoint;
   server::session_ptr session;
   state_type::value_t state;
   std::size_t         pending_operations;
@@ -336,21 +329,35 @@ void session_manager::session_list::push_front(
 
   value->next = front_;
   value->prev.reset();
+
   if (front_)
   {
     front_->prev = value;
   }
   front_ = value;
+
+  if (!back_)
+  {
+    back_ = value;
+  }
+
   ++size_;
 }
 
 void session_manager::session_list::erase(const wrapped_session_ptr& value)
 {
-  if (front_ == value)
+  if (value == front_)
   {
     front_ = front_->next;
   }
+
   wrapped_session_ptr prev = value->prev.lock();
+
+  if (value == back_)
+  {
+    back_ = prev;
+  }
+  
   if (prev)
   {
     prev->next = value->next;
@@ -359,6 +366,7 @@ void session_manager::session_list::erase(const wrapped_session_ptr& value)
   {
     value->next->prev = prev;
   }
+
   value->prev.reset();
   value->next.reset();
   --size_;
@@ -366,7 +374,16 @@ void session_manager::session_list::erase(const wrapped_session_ptr& value)
 
 void session_manager::session_list::clear()
 {
+  while (back_)
+  {
+    back_->next.reset();
+    back_ = back_->prev.lock();
+  }
+
   front_.reset();
+
+  BOOST_ASSERT_MSG(!front_, "invalid internal state");
+  BOOST_ASSERT_MSG(!back_, "invalid internal state");
 }
 
 session_manager::session_manager(boost::asio::io_service& io_service, 
@@ -942,14 +959,14 @@ void session_manager::start_accept_session(const wrapped_session_ptr& session)
 #if defined(MA_HAS_RVALUE_REFS) \
     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
-  acceptor_.async_accept(session->socket(), session->remote_peer, 
+  acceptor_.async_accept(session->socket(), session->remote_endpoint, 
       MA_STRAND_WRAP(strand_, make_custom_alloc_handler(accept_allocator_, 
           accept_handler_binder(&this_type::handle_accept, shared_from_this(),
               session))));
 
 #else
 
-  acceptor_.async_accept(session->socket(), session->remote_peer, 
+  acceptor_.async_accept(session->socket(), session->remote_endpoint, 
       MA_STRAND_WRAP(strand_, make_custom_alloc_handler(accept_allocator_, 
           boost::bind(&this_type::handle_accept, shared_from_this(), session, 
               boost::asio::placeholders::error))));

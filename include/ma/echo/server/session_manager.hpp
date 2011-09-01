@@ -255,11 +255,10 @@ private:
     {
     }
 
-#if !defined(NDEBUG)
     ~session_list()
     {
+      clear();
     }
-#endif
 
     void push_front(const wrapped_session_ptr& value);
     void erase(const wrapped_session_ptr& value);          
@@ -280,41 +279,31 @@ private:
       return front_;
     }
 
+    wrapped_session_ptr back() const
+    {
+      return back_;
+    }
+
   private:
-    std::size_t      size_;
+    std::size_t size_;
     wrapped_session_ptr front_;
+    wrapped_session_ptr back_;
   }; // class session_list
 
   struct extern_state
   {
-    enum value_t
-    {
-      ready,
-      work,
-      stop,
-      stopped
-    };
-  }; // struct extern_state
+    enum value_t {ready, work, stop, stopped};
+  };
 
   struct intern_state
   {
-    enum value_t
-    {
-      work,
-      stop,
-      stopped
-    };
-  }; // struct intern_state
+    enum value_t {work, stop, stopped};
+  };
 
   struct accept_state
   {
-    enum value_t
-    {
-      wait,
-      in_progress,      
-      stopped
-    };
-  }; // struct accept_state
+    enum value_t {wait, in_progress, stopped};
+  };
   
   template <typename Handler>
   void start_extern_start(const Handler& handler)
