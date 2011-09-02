@@ -6,7 +6,7 @@
 //
 
 #include <string>
-#include <climits>
+#include <limits>
 #include <boost/optional.hpp>
 #include <boost/throw_exception.hpp>
 #include "config.hpp"
