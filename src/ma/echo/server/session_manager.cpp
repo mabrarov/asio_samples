@@ -1088,24 +1088,21 @@ void session_manager::dispatch_handle_session_start(
   // Try to lock the manager
   if (session_manager_ptr this_ptr = this_weak_ptr.lock())
   {
-    typedef void (session_manager::*func_type)(const wrapped_session_ptr&,
-        const boost::system::error_code&);
-
-    func_type func = &session_manager::handle_session_start;
-
     // Forward invocation
 #if defined(MA_HAS_RVALUE_REFS) \
     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
     this_ptr->strand_.dispatch(make_custom_alloc_handler(
-        session->start_wait_allocator, 
-        session_handler_binder(func, this_ptr, session, error)));
+        session->start_wait_allocator,session_handler_binder(
+            &session_manager::handle_session_start, this_ptr, session,
+                error)));
 
 #else
 
     this_ptr->strand_.dispatch(make_custom_alloc_handler(
-        session->start_wait_allocator,
-        boost::bind(func, this_ptr, session, error)));
+        session->start_wait_allocator, boost::bind(
+            &session_manager::handle_session_start, this_ptr, session, 
+                error)));
 
 #endif
   }
@@ -1119,24 +1116,19 @@ void session_manager::dispatch_handle_session_wait(
   // Try to lock the manager
   if (session_manager_ptr this_ptr = this_weak_ptr.lock())
   {
-    typedef void (session_manager::*func_type)(const wrapped_session_ptr&,
-        const boost::system::error_code&);
-
-    func_type func = &session_manager::handle_session_wait;
-
     // Forward invocation
 #if defined(MA_HAS_RVALUE_REFS) \
     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
     this_ptr->strand_.dispatch(make_custom_alloc_handler(
-        session->start_wait_allocator, 
-        session_handler_binder(func, this_ptr, session, error)));
+        session->start_wait_allocator, session_handler_binder(
+            &session_manager::handle_session_wait, this_ptr, session, error)));
 
 #else
 
     this_ptr->strand_.dispatch(make_custom_alloc_handler(
-        session->start_wait_allocator, 
-        boost::bind(func, this_ptr, session, error)));
+        session->start_wait_allocator, boost::bind(
+            &session_manager::handle_session_wait, this_ptr, session, error)));
 
 #endif
   }
@@ -1150,24 +1142,19 @@ void session_manager::dispatch_handle_session_stop(
   // Try to lock the manager
   if (session_manager_ptr this_ptr = this_weak_ptr.lock())
   {
-    typedef void (session_manager::*func_type)(const wrapped_session_ptr&,
-        const boost::system::error_code&);
-
-    func_type func = &session_manager::handle_session_stop;
-
     // Forward invocation
 #if defined(MA_HAS_RVALUE_REFS) \
     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
     this_ptr->strand_.dispatch(make_custom_alloc_handler(
-        session->stop_allocator, 
-        session_handler_binder(func, this_ptr, session, error)));
+        session->stop_allocator, session_handler_binder(
+            &session_manager::handle_session_stop, this_ptr, session, error)));
 
 #else
 
     this_ptr->strand_.dispatch(make_custom_alloc_handler(
-        session->stop_allocator, 
-        boost::bind(func, this_ptr, session, error)));
+        session->stop_allocator, boost::bind(
+            &session_manager::handle_session_stop, this_ptr, session, error)));
 
 #endif
   }

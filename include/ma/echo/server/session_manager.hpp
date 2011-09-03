@@ -308,10 +308,10 @@ private:
 
   template <typename Handler>
   void start_extern_stop(const Handler& handler)
-  {          
+  {
     if (boost::optional<boost::system::error_code> result = 
         do_start_extern_stop())
-    {          
+    {
       io_service_.post(detail::bind_handler(handler, *result));
     }
     else
@@ -322,7 +322,7 @@ private:
 
   template <typename Handler>
   void start_extern_wait(const Handler& handler)
-  {          
+  {
     if (boost::optional<boost::system::error_code> result = 
         do_start_extern_wait())
     {          
