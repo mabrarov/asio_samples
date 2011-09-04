@@ -444,7 +444,7 @@ boost::system::error_code session_manager::do_start_extern_start()
   }
 
   extern_state_ = extern_state::work;
-  continue_accept();
+  continue_work();
   return boost::system::error_code();
 }
 
@@ -527,15 +527,18 @@ void session_manager::complete_extern_wait(
   }
 }
 
-void session_manager::continue_accept()
+void session_manager::continue_work()
 {
   BOOST_ASSERT_MSG(intern_state::work == intern_state_,
       "invalid internal state");
 
-  BOOST_ASSERT_MSG(accept_state::stopped != accept_state_,
-      "invalid accept state");
+  if (is_out_of_work())
+  {
+    start_stop(server_error::out_of_work);      
+    return;
+  }
 
-  if (accept_state::in_progress == accept_state_)
+  if (accept_state::wait != accept_state_)
   {
     return;
   }
@@ -552,7 +555,7 @@ void session_manager::continue_accept()
   {
     if (session)
     {
-      recycle_session(session);
+      recycle(session);
     }
 
     if (!active_sessions_.empty())
@@ -573,7 +576,7 @@ void session_manager::continue_accept()
   start_accept_session(session);
   // Register pending operation
   accept_state_ = accept_state::in_progress;
-  ++pending_operations_;  
+  ++pending_operations_;
 }
 
 void session_manager::handle_accept(const wrapped_session_ptr& session,
@@ -616,27 +619,22 @@ void session_manager::handle_accept_at_work(const wrapped_session_ptr& session,
   if (error)
   {
     accept_state_ = accept_state::stopped;
-    recycle_session(session);
-    
-    if (is_out_of_work())
-    {
-      start_stop(server_error::out_of_work);
-    }
+    recycle(session);
+    continue_work();
     return;
   }
 
   if (active_sessions_.size() >= max_session_count_)
   {
-    recycle_session(session);
+    recycle(session);
+    continue_work();
     return;
   }     
 
+  active_sessions_.push_front(session);
   start_session_start(session);
   ++pending_operations_;
-
-  active_sessions_.push_front(session);
-
-  continue_accept();
+  continue_work();
 }
 
 void session_manager::handle_accept_at_stop(const wrapped_session_ptr& session,
@@ -653,8 +651,7 @@ void session_manager::handle_accept_at_stop(const wrapped_session_ptr& session,
   accept_state_ = accept_state::stopped;
 
   // Reset session and recycle it
-  recycle_session(session);
-
+  recycle(session);
   continue_stop();  
 }
 
@@ -692,7 +689,8 @@ void session_manager::handle_session_start_at_work(
   if (!session->is_starting())
   {
     // Handler is called too late - complete handler's waiters
-    recycle_session(session);
+    recycle(session);
+    continue_work();
     return;
   }
 
@@ -700,22 +698,15 @@ void session_manager::handle_session_start_at_work(
   {
     session->mark_as_stopped();
     active_sessions_.erase(session);
-    recycle_session(session);
-
-    if (is_out_of_work())
-    {
-      start_stop(server_error::out_of_work);      
-      return;
-    }
-
-    continue_accept();
+    recycle(session);
+    continue_work();
     return;
   }
 
   session->mark_as_working();
-
   start_session_wait(session);
   ++pending_operations_;
+  continue_work();
 }
 
 void session_manager::handle_session_start_at_stop(
@@ -731,7 +722,7 @@ void session_manager::handle_session_start_at_stop(
   if (!session->is_starting())
   {
     // Handler is called too late - complete handler's waiters
-    recycle_session(session);
+    recycle(session);
     continue_stop();
     return;
   }
@@ -739,14 +730,13 @@ void session_manager::handle_session_start_at_stop(
   if (error)
   {
     // Session didn't started
-    recycle_session(session);
+    recycle(session);
     continue_stop();
     return;
   }
 
   start_session_stop(session);
   ++pending_operations_;
-
   continue_stop();
 }
 
@@ -785,12 +775,14 @@ void session_manager::handle_session_wait_at_work(
   // Check if handler is not called too late
   if (!session->is_working())
   {    
-    recycle_session(session);
+    recycle(session);
+    continue_work();
     return;
   }
 
   start_session_stop(session);
   ++pending_operations_;
+  continue_work();
 }
 
 void session_manager::handle_session_wait_at_stop(
@@ -808,14 +800,13 @@ void session_manager::handle_session_wait_at_stop(
   if (!session->is_working())
   {
     // Handler is called too late - complete handler's waiters
-    recycle_session(session); 
+    recycle(session); 
     continue_stop();
     return;
   }
 
   start_session_stop(session);
   ++pending_operations_;
-
   continue_stop();
 }
 
@@ -854,21 +845,15 @@ void session_manager::handle_session_stop_at_work(
   if (!session->is_stopping())
   {
     // Handler is called too late - complete handler's waiters
-    recycle_session(session);
+    recycle(session);
+    continue_work();
     return;
   }
   
   session->mark_as_stopped();
   active_sessions_.erase(session);
-  recycle_session(session);
-
-  if (is_out_of_work())
-  {
-    start_stop(server_error::out_of_work);
-    return;
-  }
-
-  continue_accept();
+  recycle(session);
+  continue_work();
 }
 
 void session_manager::handle_session_stop_at_stop(
@@ -887,7 +872,7 @@ void session_manager::handle_session_stop_at_stop(
     active_sessions_.erase(session);
   }
 
-  recycle_session(session);
+  recycle(session);
   continue_stop();
 }
 
@@ -1031,7 +1016,7 @@ void session_manager::start_session_wait(const wrapped_session_ptr& session)
 #endif
 }
 
-void session_manager::recycle_session(const wrapped_session_ptr& session)
+void session_manager::recycle(const wrapped_session_ptr& session)
 {
   BOOST_ASSERT_MSG(session, "session must be not null");
 

@@ -340,7 +340,7 @@ private:
   void complete_extern_stop(const boost::system::error_code&);
   void complete_extern_wait(const boost::system::error_code&);  
 
-  void continue_accept();  
+  void continue_work();  
 
   void handle_accept(const wrapped_session_ptr&, 
       const boost::system::error_code&);
@@ -379,7 +379,7 @@ private:
   void start_session_stop(const wrapped_session_ptr&);
   void start_session_wait(const wrapped_session_ptr&);
 
-  void recycle_session(const wrapped_session_ptr&);
+  void recycle(const wrapped_session_ptr&);
   wrapped_session_ptr create_session(boost::system::error_code& error);
 
   boost::system::error_code close_acceptor();
