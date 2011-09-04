@@ -427,6 +427,7 @@ void session_manager::reset(bool free_recycled_sessions)
 
 boost::system::error_code session_manager::do_start_extern_start()
 {
+  // Check exetrnal state consistency
   if (extern_state::ready != extern_state_)
   {
     return server_error::invalid_state;
@@ -437,37 +438,42 @@ boost::system::error_code session_manager::do_start_extern_start()
 
   if (error)
   {
+    // Switch states as SM suppose...
     extern_state_ = extern_state::stopped;
     intern_state_ = intern_state::stopped;
     accept_state_ = accept_state::stopped;
+    // ... and notify start handler about error
     return error;
   }
 
+  // Internal states have right values already
   extern_state_ = extern_state::work;
   continue_work();
+
+  // Notify start handler about success
   return boost::system::error_code();
 }
 
 boost::optional<boost::system::error_code>
 session_manager::do_start_extern_stop()
-{        
+{
+  // Check exetrnal state consistency
   if ((extern_state::stopped == extern_state_)
       || (extern_state::stop == extern_state_))
   {          
     return boost::system::error_code(server_error::invalid_state);
   }
-
-  // Begin stop and notify wait handler if need
+  
+  // Switch external SM
   extern_state_ = extern_state::stop;  
   complete_extern_wait(server_error::operation_aborted);
-
-  // If session manager hasn't already stopped
+  
   if (intern_state::work == intern_state_)
   {
     start_stop(server_error::operation_aborted);
   }
 
-  // If session has already stopped
+  // intern_state_ can be changed by start_stop
   if (intern_state::stopped == intern_state_)
   {
     extern_state_ = extern_state::stopped;
@@ -475,7 +481,7 @@ session_manager::do_start_extern_stop()
     return boost::system::error_code();
   }
 
-  // Park handler for the late call
+  // Park stop handler for the late call
   return boost::optional<boost::system::error_code>();  
 }
 
@@ -488,23 +494,19 @@ session_manager::do_start_extern_wait()
   {
     return boost::system::error_code(server_error::invalid_state);
   }
-
-  // If session has already stopped
+  
   if (intern_state::work != intern_state_)
   {
-    // Notify wait handler about the happened stop
     return extern_wait_error_;
   }
 
-  // Park handler for the late call
+  // Park wait handler for the late call
   return boost::optional<boost::system::error_code>();
 }
 
 void session_manager::complete_extern_stop(
     const boost::system::error_code& error)
 {
-  // Wait handler is notified by do_start_extern_stop, 
-  // start_passive_shutdown, start_stop
   if (extern_stop_handler_.has_target())
   {
     extern_stop_handler_.post(error);
@@ -518,9 +520,7 @@ void session_manager::complete_extern_wait(
   if (!extern_wait_error_)
   {
     extern_wait_error_ = error;
-  }  
-
-  // Invoke (post to the io_service) wait handler
+  }
   if (extern_wait_handler_.has_target())
   {
     extern_wait_handler_.post(extern_wait_error_);
@@ -540,11 +540,13 @@ void session_manager::continue_work()
 
   if (accept_state::wait != accept_state_)
   {
+    // Can't start more accept operations - no ready acceptors
     return;
   }
 
   if (active_sessions_.size() >= max_session_count_)
   {
+    // Can't start more accept operations - no space
     return;
   }
 
@@ -560,7 +562,7 @@ void session_manager::continue_work()
 
     if (!active_sessions_.empty())
     {
-      // Try later    
+      // Try later
       return;
     }
   
@@ -569,12 +571,10 @@ void session_manager::continue_work()
     {
       start_stop(server_error::out_of_work);
     }
-
     return;
   }
 
   start_accept_session(session);
-  // Register pending operation
   accept_state_ = accept_state::in_progress;
   ++pending_operations_;
 }
@@ -645,12 +645,10 @@ void session_manager::handle_accept_at_stop(const wrapped_session_ptr& session,
 
   BOOST_ASSERT_MSG(accept_state::in_progress == accept_state_,
       "invalid accept state");
-
-  // Unregister pending operation
+  
   --pending_operations_;
   accept_state_ = accept_state::stopped;
-
-  // Reset session and recycle it
+  
   recycle(session);
   continue_stop();  
 }
@@ -681,14 +679,13 @@ void session_manager::handle_session_start_at_work(
 {
   BOOST_ASSERT_MSG(intern_state::work == intern_state_, 
       "invalid internal state");
-
-  // Unregister pending operation
+  
   --pending_operations_;
   session->handle_operation_completion();  
   
   if (!session->is_starting())
   {
-    // Handler is called too late - complete handler's waiters
+    // Handler is called too late
     recycle(session);
     continue_work();
     return;
@@ -696,6 +693,7 @@ void session_manager::handle_session_start_at_work(
 
   if (error)
   {
+    // Failed to start accepted session
     session->mark_as_stopped();
     active_sessions_.erase(session);
     recycle(session);
@@ -703,6 +701,7 @@ void session_manager::handle_session_start_at_work(
     return;
   }
 
+  // Accepted session started successfully
   session->mark_as_working();
   start_session_wait(session);
   ++pending_operations_;
@@ -714,14 +713,13 @@ void session_manager::handle_session_start_at_stop(
 {
   BOOST_ASSERT_MSG(intern_state::stop == intern_state_, 
       "invalid internal state");
-
-  // Unregister pending operation
+  
   --pending_operations_;
   session->handle_operation_completion();
   
   if (!session->is_starting())
   {
-    // Handler is called too late - complete handler's waiters
+    // Handler is called too late
     recycle(session);
     continue_stop();
     return;
@@ -729,12 +727,13 @@ void session_manager::handle_session_start_at_stop(
 
   if (error)
   {
-    // Session didn't started
+    // Failed to start accepted session
     recycle(session);
     continue_stop();
     return;
   }
 
+  // Accepted session started successfully
   start_session_stop(session);
   ++pending_operations_;
   continue_stop();
@@ -767,19 +766,19 @@ void session_manager::handle_session_wait_at_work(
 {
   BOOST_ASSERT_MSG(intern_state::work == intern_state_, 
       "invalid internal state");
-
-  // Unregister pending operation
+  
   --pending_operations_;
   session->handle_operation_completion();
-  
-  // Check if handler is not called too late
+   
   if (!session->is_working())
-  {    
+  {
+    // Handler is called too late
     recycle(session);
     continue_work();
     return;
   }
 
+  // Session run out of work - stop it
   start_session_stop(session);
   ++pending_operations_;
   continue_work();
@@ -791,20 +790,19 @@ void session_manager::handle_session_wait_at_stop(
 {
   BOOST_ASSERT_MSG(intern_state::stop == intern_state_, 
       "invalid internal state");
-
-  // Unregister pending operation
+  
   --pending_operations_;
   session->handle_operation_completion();
   
-  // Check if handler is not called too late
   if (!session->is_working())
   {
-    // Handler is called too late - complete handler's waiters
+    // Handler is called too late
     recycle(session); 
     continue_stop();
     return;
   }
 
+  // Session run out of work - stop it
   start_session_stop(session);
   ++pending_operations_;
   continue_stop();
@@ -833,23 +831,34 @@ void session_manager::handle_session_stop(const wrapped_session_ptr& session,
 
 void session_manager::handle_session_stop_at_work(
     const wrapped_session_ptr& session,
-    const boost::system::error_code& /*error*/)
+    const boost::system::error_code& error)
 {
   BOOST_ASSERT_MSG(intern_state::work == intern_state_, 
       "invalid internal state");
-
-  // Unregister pending operation
+  
   --pending_operations_;
   session->handle_operation_completion();
   
   if (!session->is_stopping())
   {
-    // Handler is called too late - complete handler's waiters
+    // Handler is called too late
+    recycle(session);
+    continue_work();
+    return;
+  }
+
+  if (error)
+  {
+    // Failed to stop working session.
+    // The only reason is "double stop operations".
+    // It is prevented by usage of session_wrapper::state but 
+    // let's take care of all theoretical variants.
     recycle(session);
     continue_work();
     return;
   }
   
+  // Session has stopped successfully
   session->mark_as_stopped();
   active_sessions_.erase(session);
   recycle(session);
@@ -861,17 +870,23 @@ void session_manager::handle_session_stop_at_stop(
 {
   BOOST_ASSERT_MSG(intern_state::stop == intern_state_, 
       "invalid internal state");
-
-  // Unregister pending operation
+  
   --pending_operations_;
   session->handle_operation_completion();
 
-  if (!error)
+  if (error)
   {
-    session->mark_as_stopped();
-    active_sessions_.erase(session);
+    // Failed to stop working session.
+    // The only reason is "double stop operations".
+    // It is prevented by usage of session_wrapper::state but 
+    // let's take care of all theoretical variants.
+    recycle(session);
+    continue_stop();
+    return;
   }
 
+  session->mark_as_stopped();
+  active_sessions_.erase(session);
   recycle(session);
   continue_stop();
 }
@@ -883,10 +898,10 @@ bool session_manager::is_out_of_work() const
 
 void session_manager::start_stop(const boost::system::error_code& error)
 {
-  // General state is changed
+  // Switch general internal SM
   intern_state_ = intern_state::stop;
 
-  // Close the socket and register error if there was no stop error before
+  // Close acceptors. Additionally it will help to stop accept operations.
   close_acceptor();
 
   // Stop all active sessions
@@ -901,12 +916,13 @@ void session_manager::start_stop(const boost::system::error_code& error)
     session = session->next;
   }  
 
+  // Switch all internal SMs to the right states
   if (accept_state::wait == accept_state_)
   {
     accept_state_ = accept_state::stopped;
   }
 
-  // Notify wait handler if need
+  // Notify external wait handler if need
   if (extern_state::work == extern_state_)
   {
     complete_extern_wait(error);
@@ -928,9 +944,10 @@ void session_manager::continue_stop()
     BOOST_ASSERT_MSG(active_sessions_.empty(),
       "there are still some active sessions");
     
-    // The intern stop completed
+    // Internal stop completed
     intern_state_ = intern_state::stopped;
     
+    // Notify external stop handler if need
     if (extern_state::stop == extern_state_)
     {
       extern_state_ = extern_state::stopped;
@@ -1022,13 +1039,11 @@ void session_manager::recycle(const wrapped_session_ptr& session)
 
   bool is_recyclable = !session->has_pending_operations();
   bool has_recycle_space = recycled_sessions_.size() < recycled_session_count_;
-
-  // Check session's pending operation number and recycle bin size
+  
   if (is_recyclable && has_recycle_space)
   {
-    // Reset session state
     session->reset();
-    // Add to recycle bin
+    // Put the session to "recycle bin"
     recycled_sessions_.push_front(session);
   } 
 }
@@ -1070,10 +1085,10 @@ void session_manager::dispatch_handle_session_start(
     const wrapped_session_ptr& session, 
     const boost::system::error_code& error)
 {
-  // Try to lock the manager
+  // Try to lock the session manager
   if (session_manager_ptr this_ptr = this_weak_ptr.lock())
   {
-    // Forward invocation
+    // Forward completion
 #if defined(MA_HAS_RVALUE_REFS) \
     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
@@ -1098,10 +1113,9 @@ void session_manager::dispatch_handle_session_wait(
     const wrapped_session_ptr& session, 
     const boost::system::error_code& error)
 {
-  // Try to lock the manager
   if (session_manager_ptr this_ptr = this_weak_ptr.lock())
   {
-    // Forward invocation
+    // Forward completion
 #if defined(MA_HAS_RVALUE_REFS) \
     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
@@ -1124,10 +1138,9 @@ void session_manager::dispatch_handle_session_stop(
     const wrapped_session_ptr& session, 
     const boost::system::error_code& error)
 {
-  // Try to lock the manager
   if (session_manager_ptr this_ptr = this_weak_ptr.lock())
   {
-    // Forward invocation
+    // Forward completion
 #if defined(MA_HAS_RVALUE_REFS) \
     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 

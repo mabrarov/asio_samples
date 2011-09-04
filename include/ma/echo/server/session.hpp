@@ -324,6 +324,7 @@ private:
 
   void start_passive_shutdown();
   void start_active_shutdown();
+  void start_shutdown(const boost::system::error_code&);
   void start_stop(boost::system::error_code);  
     
   void start_socket_read(const cyclic_buffer::mutable_buffers_type&);

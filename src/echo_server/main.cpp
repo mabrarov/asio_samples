@@ -126,7 +126,7 @@ struct session_manager_wrapper : private boost::noncopyable
     state_changed.notify_one();
   }
   
-}; // session_manager_wrapper
+}; // struct session_manager_wrapper
 
 int run_server(const execution_config&, 
     const ma::echo::server::session_manager_config&);
@@ -205,7 +205,7 @@ int run_server(const echo_server::execution_config& exec_config,
 
   int exit_code = EXIT_SUCCESS;
 
-  // Wait until server begins stopping or stops
+  // Wait until server starts stopping or stops
   session_manager_lock.lock();
   while (!session_manager->is_stopping() && !session_manager->is_stopped())
   {
@@ -219,6 +219,7 @@ int run_server(const echo_server::execution_config& exec_config,
     if (!session_manager->wait_for_state_change(session_manager_lock, 
         exec_config.stop_timeout))
     {
+      // Timeout of server stop has expired - terminate server
       std::cout << "Server stop timeout expiration." \
             " Terminating server work...\n";
       exit_code = EXIT_FAILURE;
@@ -241,7 +242,7 @@ int run_server(const echo_server::execution_config& exec_config,
   std::cout << "Server work was terminated." \
       " Waiting until all of the work threads will stop...\n";
 
-  // ...and wait until all work done.
+  // ...and wait until all workers stop.
   work_threads.join_all();
   std::cout << "Work threads have stopped. Process will close.\n";
 
@@ -292,8 +293,7 @@ void handle_program_exit(const wrapped_session_manager_ptr& session_manager)
     std::cout << "Server is already stopping. Terminating server work...\n";
     return;
   } 
-
-  // Begin server stop
+  
   start_session_manager_stop(session_manager);
   session_manager->mark_as_stopping();
   session_manager->stopped_by_user = true;
