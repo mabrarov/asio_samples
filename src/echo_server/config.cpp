@@ -102,12 +102,8 @@ std::size_t calc_session_manager_thread_count(std::size_t hardware_concurrency)
 std::size_t calc_session_thread_count(std::size_t hardware_concurrency)
 {
   if (hardware_concurrency)
-  {
-    if ((std::numeric_limits<std::size_t>::max)() == hardware_concurrency)
-    {
-      return hardware_concurrency;
-    }
-    return hardware_concurrency + 1;
+  {    
+    return hardware_concurrency;
   }
   return 2;
 }

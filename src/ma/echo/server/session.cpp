@@ -549,14 +549,7 @@ void session::handle_timer_at_work(const boost::system::error_code& error)
     }
     return;
   }
-  
-  if (error)
-  {
-    // Start session stop due to fatal error
-    start_stop(error);
-    return;
-  }
-  
+      
   // Start session stop due to client inactivity timeout
   start_stop(server_error::inactivity_timeout);
 }
@@ -625,10 +618,10 @@ void session::continue_timer_wait()
   BOOST_ASSERT_MSG(intern_state::stopped != intern_state_,
       "invalid internal state");      
 
-  bool has_activity = (read_state::in_progress == read_state_)
+  bool has_activity = (read_state::in_progress == read_state_) 
       || (write_state::in_progress == write_state_);
 
-  if (has_activity && inactivity_timeout_)
+  if (inactivity_timeout_ && has_activity)
   {
     boost::system::error_code error;
     timer_.expires_from_now(*inactivity_timeout_, error);
