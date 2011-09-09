@@ -619,10 +619,10 @@ void session::continue_timer_wait()
   BOOST_ASSERT_MSG(intern_state::stopped != intern_state_,
       "invalid internal state");      
 
-  bool has_activity = (read_state::in_progress == read_state_) 
+  bool has_io_activity = (read_state::in_progress == read_state_)
       || (write_state::in_progress == write_state_);
 
-  if (inactivity_timeout_ && has_activity)
+  if (inactivity_timeout_ && has_io_activity)
   {
     // Update timer expiry
     boost::system::error_code error;
@@ -696,8 +696,7 @@ void session::continue_shutdown_at_read_wait()
     write_state_ = write_state::stopped;    
   }
 
-  if ((write_state::stopped == write_state_)
-      && (timer_state::in_progress != timer_state_))
+  if (write_state::stopped == write_state_)
   {
     // We won't make any income data handling more
     buffer_.reset();
@@ -708,6 +707,18 @@ void session::continue_shutdown_at_read_wait()
     start_socket_read(read_buffers);
     ++pending_operations_;
     read_state_ = read_state::in_progress;
+  }
+  else
+  {
+    // write_state::in_progress == write_state_
+    cyclic_buffer::mutable_buffers_type read_buffers(buffer_.prepared());
+    if (!read_buffers.empty())
+    {
+      // We have enough resources to begin socket read
+      start_socket_read(read_buffers);
+      ++pending_operations_;
+      read_state_ = read_state::in_progress;
+    }
   }
 
   // Turn on timer if need
