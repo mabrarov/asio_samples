@@ -527,11 +527,12 @@ void session::handle_timer_at_work(const boost::system::error_code& error)
       "invalid timer state");
   
   --pending_operations_;
-  timer_state_ = timer_state::stopped;
+  timer_state_ = timer_state::ready;  
 
   if (error && (boost::asio::error::operation_aborted != error))
   {    
     // Start session stop due to fatal error
+    timer_state_ = timer_state::stopped;
     start_stop(error);
     return;
   }
@@ -539,7 +540,6 @@ void session::handle_timer_at_work(const boost::system::error_code& error)
   if (timer_wait_cancelled_)
   {
     // Continue normal workflow
-    timer_state_ = timer_state::ready;
     if (timer_turned_)
     {
       start_timer_wait();
@@ -551,6 +551,7 @@ void session::handle_timer_at_work(const boost::system::error_code& error)
   }
       
   // Start session stop due to client inactivity timeout
+  timer_state_ = timer_state::stopped;
   start_stop(server_error::inactivity_timeout);
 }
 
@@ -623,6 +624,7 @@ void session::continue_timer_wait()
 
   if (inactivity_timeout_ && has_activity)
   {
+    // Update timer expiry
     boost::system::error_code error;
     timer_.expires_from_now(*inactivity_timeout_, error);
     if (error)
@@ -634,8 +636,10 @@ void session::continue_timer_wait()
     timer_wait_cancelled_ = true;
     timer_turned_         = true;
     
+    // Start async wait if it can be done right now.
+    // Otherwise it will be done by handle_timer.
     if (timer_state::ready == timer_state_)
-    {
+    {      
       start_timer_wait();
       ++pending_operations_;
       timer_state_ = timer_state::in_progress;
@@ -936,8 +940,9 @@ void session::start_timer_wait()
 boost::system::error_code session::cancel_timer_wait()
 {
   boost::system::error_code error;
+  // Cancellation of timer can be rather heavy so do it once
   if (!timer_wait_cancelled_ && (timer_state::in_progress == timer_state_))
-  {    
+  {
     timer_.cancel(error);
   }
   if (!error)
