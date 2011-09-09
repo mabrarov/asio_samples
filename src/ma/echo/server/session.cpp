@@ -128,7 +128,8 @@ session::session(boost::asio::io_service& io_service,
   , read_state_(read_state::wait)
   , write_state_(write_state::wait)
   , timer_state_(timer_state::ready)
-  , timer_cancelled_(false)  
+  , timer_wait_cancelled_(false)  
+  , timer_turned_(false)  
   , pending_operations_(0)  
   , io_service_(io_service)
   , strand_(io_service)
@@ -149,8 +150,9 @@ void session::reset()
   write_state_  = write_state::wait;
   timer_state_  = timer_state::ready;
 
-  timer_cancelled_ = false;
-  pending_operations_ = 0;
+  timer_wait_cancelled_ = false;
+  timer_turned_         = false;
+  pending_operations_   = 0;
   
   // reset() might be called right after connection was established
   // so we need to be sure that the socket will be closed.
@@ -302,7 +304,7 @@ void session::handle_read_at_work(const boost::system::error_code& error,
   read_state_ = read_state::wait;
  
   // Try to cancel timer if it is in progress and wasn't already canceled
-  if (boost::system::error_code error = cancel_timer())
+  if (boost::system::error_code error = cancel_timer_wait())
   {
     // Start session stop due to fatal error
     read_state_ = read_state::stopped;    
@@ -344,7 +346,7 @@ void session::handle_read_at_shutdown(const boost::system::error_code& error,
   read_state_ = read_state::wait;
 
   // Try to cancel timer if it is in progress and wasn't already canceled
-  if (boost::system::error_code error = cancel_timer())
+  if (boost::system::error_code error = cancel_timer_wait())
   {
     read_state_ = read_state::stopped;
     start_stop(error);
@@ -423,7 +425,7 @@ void session::handle_write_at_work(const boost::system::error_code& error,
   --pending_operations_;
   write_state_ = write_state::wait;
     
-  if (boost::system::error_code error = cancel_timer())
+  if (boost::system::error_code error = cancel_timer_wait())
   {
     write_state_ = write_state::stopped;
     start_stop(error);
@@ -457,7 +459,7 @@ void session::handle_write_at_shutdown(const boost::system::error_code& error,
   write_state_ = write_state::wait;
 
   // Try to cancel timer
-  if (boost::system::error_code error = cancel_timer())
+  if (boost::system::error_code error = cancel_timer_wait())
   {
     write_state_ = write_state::stopped;
     start_stop(error);
@@ -500,12 +502,9 @@ void session::handle_timer(const boost::system::error_code& error)
   // that might change during timer wait operation
   switch (intern_state_)
   {
-  case intern_state::work:
-    handle_timer_at_work(error);
-    break;
-
+  case intern_state::work:    
   case intern_state::shutdown:
-    handle_timer_at_shutdown(error);
+    handle_timer_at_work(error);
     break;
 
   case intern_state::stop:
@@ -520,7 +519,8 @@ void session::handle_timer(const boost::system::error_code& error)
 
 void session::handle_timer_at_work(const boost::system::error_code& error)
 {
-  BOOST_ASSERT_MSG(intern_state::work == intern_state_,
+  BOOST_ASSERT_MSG((intern_state::work == intern_state_)
+      || (intern_state::shutdown == intern_state_),
       "invalid internal state");
 
   BOOST_ASSERT_MSG(timer_state::in_progress == timer_state_,
@@ -536,11 +536,17 @@ void session::handle_timer_at_work(const boost::system::error_code& error)
     return;
   }
 
-  if (timer_cancelled_)
+  if (timer_wait_cancelled_)
   {
     // Continue normal workflow
     timer_state_ = timer_state::ready;
-    continue_work();
+    if (timer_turned_)
+    {
+      start_timer_wait();
+      ++pending_operations_;
+      timer_state_ = timer_state::in_progress;
+      timer_wait_cancelled_ = false;
+    }
     return;
   }
   
@@ -551,43 +557,6 @@ void session::handle_timer_at_work(const boost::system::error_code& error)
     return;
   }
   
-  // Start session stop due to client inactivity timeout
-  start_stop(server_error::inactivity_timeout);
-}
-
-void session::handle_timer_at_shutdown(const boost::system::error_code& error)
-{
-  BOOST_ASSERT_MSG(intern_state::shutdown == intern_state_,
-      "invalid internal state");
-
-  BOOST_ASSERT_MSG(timer_state::in_progress == timer_state_,
-      "invalid timer state");
-  
-  --pending_operations_;
-  timer_state_ = timer_state::stopped;
-
-  if (error && (boost::asio::error::operation_aborted != error))
-  {
-    // Start session stop due to fatal error
-    start_stop(error);
-    return;
-  }
-
-  if (timer_cancelled_)
-  {
-    // Continue normal shutdown workflow
-    timer_state_ = timer_state::ready;
-    continue_shutdown();
-    return;
-  }
-  
-  if (error)
-  {
-    // Start session stop due to fatal error
-    start_stop(error);
-    return;
-  }
-
   // Start session stop due to client inactivity timeout
   start_stop(server_error::inactivity_timeout);
 }
@@ -621,13 +590,7 @@ void session::continue_work()
   {    
     start_passive_shutdown();
     return;
-  }
-
-  // Check timer resource availability
-  if (timer_state::in_progress == timer_state_)
-  {
-    return;
-  }
+  }  
   
   if (read_state::wait == read_state_)
   {
@@ -660,23 +623,31 @@ void session::continue_work()
 void session::continue_timer_wait()
 {
   BOOST_ASSERT_MSG(intern_state::stopped != intern_state_,
-      "invalid internal state");
-    
-  bool can_start_timer = timer_state::ready == timer_state_;
+      "invalid internal state");      
 
   bool has_activity = (read_state::in_progress == read_state_)
       || (write_state::in_progress == write_state_);
 
-  if (can_start_timer && has_activity && inactivity_timeout_)
-  {    
-    if (boost::system::error_code error = start_timer_wait())
+  if (has_activity && inactivity_timeout_)
+  {
+    boost::system::error_code error;
+    timer_.expires_from_now(*inactivity_timeout_, error);
+    if (error)
     {
       start_stop(error);
       return;
     }
-    ++pending_operations_;
-    timer_state_ = timer_state::in_progress;
-    timer_cancelled_ = false;
+
+    timer_wait_cancelled_ = true;
+    timer_turned_         = true;
+    
+    if (timer_state::ready == timer_state_)
+    {
+      start_timer_wait();
+      ++pending_operations_;
+      timer_state_ = timer_state::in_progress;
+      timer_wait_cancelled_ = false;
+    }
   }
 }
 
@@ -874,7 +845,7 @@ void session::start_stop(boost::system::error_code error)
   }
 
   // Stop timer and register error if there was no stop error before
-  if (boost::system::error_code timer_error = cancel_timer())
+  if (boost::system::error_code timer_error = cancel_timer_wait())
   {
     if (!error)
     {
@@ -947,15 +918,11 @@ void session::start_socket_write(
 #endif
 }
 
-boost::system::error_code session::start_timer_wait()
+void session::start_timer_wait()
 {
-  boost::system::error_code error;
-  timer_.expires_from_now(*inactivity_timeout_, error);
-  if (error)
-  {
-    return error;
-  }
-  
+  BOOST_ASSERT_MSG(timer_state::ready == timer_state_,
+      "invalid timer state");
+
 #if defined(MA_HAS_RVALUE_REFS) \
     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
@@ -971,19 +938,19 @@ boost::system::error_code session::start_timer_wait()
           boost::asio::placeholders::error))));
 
 #endif
-
-  return boost::system::error_code();
 }
 
-boost::system::error_code session::cancel_timer()
+boost::system::error_code session::cancel_timer_wait()
 {
   boost::system::error_code error;
-  if (!timer_cancelled_ && (timer_state::in_progress == timer_state_))
+  if (!timer_wait_cancelled_ && (timer_state::in_progress == timer_state_))
   {    
     timer_.cancel(error);
-    // Timer cancellation can be rather heavy due to synchronization 
-    // so we do it only once
-    timer_cancelled_ = true;
+  }
+  if (!error)
+  {
+    timer_wait_cancelled_ = true;
+    timer_turned_         = false;
   }
   return error;
 }

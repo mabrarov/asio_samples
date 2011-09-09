@@ -311,7 +311,6 @@ private:
 
   void handle_timer(const boost::system::error_code&);
   void handle_timer_at_work(const boost::system::error_code&);
-  void handle_timer_at_shutdown(const boost::system::error_code&);
   void handle_timer_at_stop(const boost::system::error_code&);
     
   void continue_work();
@@ -329,8 +328,8 @@ private:
     
   void start_socket_read(const cyclic_buffer::mutable_buffers_type&);
   void start_socket_write(const cyclic_buffer::const_buffers_type&);
-  boost::system::error_code start_timer_wait();
-  boost::system::error_code cancel_timer();
+  void start_timer_wait();
+  boost::system::error_code cancel_timer_wait();
   boost::system::error_code close_socket();
   boost::system::error_code apply_socket_options();  
 
@@ -344,7 +343,8 @@ private:
   read_state::value_t   read_state_;
   write_state::value_t  write_state_;
   timer_state::value_t  timer_state_;
-  bool                  timer_cancelled_;
+  bool                  timer_wait_cancelled_;
+  bool                  timer_turned_;
   std::size_t           pending_operations_;
   
   boost::asio::io_service&        io_service_;
