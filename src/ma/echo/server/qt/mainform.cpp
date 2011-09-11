@@ -9,7 +9,6 @@ TRANSLATOR ma::echo::server::qt::MainForm
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include <limits>
 #include <stdexcept>
 #include <boost/optional.hpp>
 #include <boost/thread/thread.hpp>
@@ -47,11 +46,7 @@ std::size_t calcSessionThreadCount(std::size_t hardwareConcurrency)
 {
   if (hardwareConcurrency)
   {
-    if ((std::numeric_limits<std::size_t>::max)() == hardwareConcurrency)
-    {
-      return hardwareConcurrency;
-    }
-    return hardwareConcurrency + 1;
+    return hardwareConcurrency;
   }
   return 2;
 }

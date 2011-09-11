@@ -64,27 +64,25 @@ private:
   boost::asio::io_service session_manager_io_service_;    
 }; // class io_service_chain
 
-class execution_system : public boost::base_from_member<io_service_chain>
-{   
+class executor_service : public io_service_chain
+{
 private:
-  typedef boost::base_from_member<io_service_chain> io_service_chain_base;
-  typedef execution_system this_type;
+  typedef executor_service this_type;
 
 public:
-  explicit execution_system(const execution_config& config)
-    : io_service_chain_base(config)
-    , session_work_(io_service_chain_base::member.session_io_service())
-    , session_manager_work_(
-          io_service_chain_base::member.session_manager_io_service())
+  explicit executor_service(const execution_config& config)
+    : io_service_chain(config)
+    , session_work_(session_io_service())
+    , session_manager_work_(session_manager_io_service())
     , threads_()
     , execution_config_(config)
   {
   }
 
-  ~execution_system()
+  ~executor_service()
   {
-    io_service_chain_base::member.session_manager_io_service().stop();
-    io_service_chain_base::member.session_io_service().stop();
+    session_manager_io_service().stop();
+    session_io_service().stop();
     threads_.join_all();
   }
 
@@ -102,27 +100,17 @@ public:
         i != execution_config_.session_thread_count; ++i)
     {        
       threads_.create_thread(boost::bind(func, 
-          boost::ref(this->session_io_service()), wrapped_handler));
+          boost::ref(session_io_service()), wrapped_handler));
     }
 
     for (std::size_t i = 0; 
         i != execution_config_.session_manager_thread_count; ++i)
     {
       threads_.create_thread(boost::bind(func, 
-          boost::ref(this->session_manager_io_service()), wrapped_handler));
+          boost::ref(session_manager_io_service()), wrapped_handler));
     }
   }
-
-  boost::asio::io_service& session_manager_io_service()
-  {
-    return io_service_chain_base::member.session_manager_io_service();
-  }
-
-  boost::asio::io_service& session_io_service()
-  {
-    return io_service_chain_base::member.session_io_service();
-  }
-    
+      
 private:
   template <typename Handler> 
   static void thread_func(boost::asio::io_service& io_service, 
@@ -142,36 +130,28 @@ private:
   boost::asio::io_service::work session_manager_work_;
   boost::thread_group           threads_;
   const execution_config        execution_config_;
-}; // class execution_system
+}; // class executor_service
 
 } // anonymous namespace
 
-class Service::servant : public boost::base_from_member<execution_system>
-{   
+class Service::servant : public executor_service
+{
 private:
-  typedef boost::base_from_member<execution_system> execution_system_base;
   typedef servant this_type;
 
 public:
   servant(const execution_config& the_execution_config, 
       const session_manager_config& the_session_manager_config)
-    : execution_system_base(the_execution_config)      
+    : executor_service(the_execution_config)      
     , session_manager_(boost::make_shared<session_manager>(
-          boost::ref(
-              execution_system_base::member.session_manager_io_service()),
-          boost::ref(execution_system_base::member.session_io_service()), 
+          boost::ref(session_manager_io_service()), 
+          boost::ref(session_io_service()),
           the_session_manager_config))
   {
   }
 
   ~servant()
-  {      
-  }
-
-  template <typename Handler>
-  void create_threads(const Handler& handler)
   {
-    execution_system_base::member.create_threads(handler);
   }
 
   template <typename Handler>
