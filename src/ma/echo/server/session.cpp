@@ -987,10 +987,10 @@ boost::system::error_code session::apply_socket_options()
     }
   }
 
-  if (socket_recv_buffer_size_)
+  if (socket_send_buffer_size_)
   {
     boost::system::error_code error;
-    socket_type::send_buffer_size opt(*socket_recv_buffer_size_);
+    socket_type::send_buffer_size opt(*socket_send_buffer_size_);
     socket_.set_option(opt, error);
     if (error)
     {
