@@ -728,6 +728,8 @@ void session_manager::handle_session_start_at_stop(
   if (error)
   {
     // Failed to start accepted session
+    session->mark_as_stopped();
+    active_sessions_.erase(session);
     recycle(session);
     continue_stop();
     return;
@@ -830,8 +832,7 @@ void session_manager::handle_session_stop(const wrapped_session_ptr& session,
 }
 
 void session_manager::handle_session_stop_at_work(
-    const wrapped_session_ptr& session,
-    const boost::system::error_code& error)
+    const wrapped_session_ptr& session, const boost::system::error_code& error)
 {
   BOOST_ASSERT_MSG(intern_state::work == intern_state_, 
       "invalid internal state");
@@ -847,16 +848,12 @@ void session_manager::handle_session_stop_at_work(
     return;
   }
 
-  if (error)
-  {
-    // Failed to stop working session.
-    // The only reason is "double stop operations".
-    // It is prevented by usage of session_wrapper::state but 
-    // let's take care of all theoretical variants.
-    recycle(session);
-    continue_work();
-    return;
-  }
+  // Failed to stop working session.
+  // The only reason is "double stop operations".
+  // It is prevented by usage of session_wrapper::state.
+  BOOST_ASSERT_MSG(!error, "session::async_stop failed");
+  // Prevent warning at release build
+  (void) error;
   
   // Session has stopped successfully
   session->mark_as_stopped();
@@ -874,16 +871,20 @@ void session_manager::handle_session_stop_at_stop(
   --pending_operations_;
   session->handle_operation_completion();
 
-  if (error)
+  if (!session->is_stopping())
   {
-    // Failed to stop working session.
-    // The only reason is "double stop operations".
-    // It is prevented by usage of session_wrapper::state but 
-    // let's take care of all theoretical variants.
+    // Handler is called too late
     recycle(session);
     continue_stop();
     return;
   }
+
+  // Failed to stop working session.
+  // The only reason is "double stop operations".
+  // It is prevented by usage of session_wrapper::state.
+  BOOST_ASSERT_MSG(!error, "session::async_stop failed");
+  // Prevent warning at release build
+  (void) error;
 
   session->mark_as_stopped();
   active_sessions_.erase(session);
