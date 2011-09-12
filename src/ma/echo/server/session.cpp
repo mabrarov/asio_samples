@@ -622,7 +622,7 @@ void session::continue_timer_wait()
   bool has_io_activity = (read_state::in_progress == read_state_)
       || (write_state::in_progress == write_state_);
 
-  if (inactivity_timeout_ && has_io_activity &&!timer_turned_)
+  if (inactivity_timeout_ && has_io_activity && !timer_turned_)
   {
     // Update timer expiry
     boost::system::error_code error;
