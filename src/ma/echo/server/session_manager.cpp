@@ -1094,7 +1094,7 @@ void session_manager::dispatch_handle_session_start(
     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
     this_ptr->strand_.dispatch(make_custom_alloc_handler(
-        session->start_wait_allocator,session_handler_binder(
+        session->start_wait_allocator, session_handler_binder(
             &session_manager::handle_session_start, this_ptr, session,
                 error)));
 
