@@ -575,8 +575,6 @@ void session_manager::continue_work()
   }
 
   start_accept_session(session);
-  accept_state_ = accept_state::in_progress;
-  ++pending_operations_;
 }
 
 void session_manager::handle_accept(const wrapped_session_ptr& session,
@@ -633,7 +631,6 @@ void session_manager::handle_accept_at_work(const wrapped_session_ptr& session,
 
   active_sessions_.push_front(session);
   start_session_start(session);
-  ++pending_operations_;
   continue_work();
 }
 
@@ -704,7 +701,6 @@ void session_manager::handle_session_start_at_work(
   // Accepted session started successfully
   session->mark_as_working();
   start_session_wait(session);
-  ++pending_operations_;
   continue_work();
 }
 
@@ -737,7 +733,6 @@ void session_manager::handle_session_start_at_stop(
 
   // Accepted session started successfully
   start_session_stop(session);
-  ++pending_operations_;
   continue_stop();
 }
 
@@ -782,7 +777,6 @@ void session_manager::handle_session_wait_at_work(
 
   // Session run out of work - stop it
   start_session_stop(session);
-  ++pending_operations_;
   continue_work();
 }
 
@@ -806,7 +800,6 @@ void session_manager::handle_session_wait_at_stop(
 
   // Session run out of work - stop it
   start_session_stop(session);
-  ++pending_operations_;
   continue_stop();
 }
 
@@ -912,7 +905,6 @@ void session_manager::start_stop(const boost::system::error_code& error)
     if (!session->is_stopping())
     {
       start_session_stop(session);
-      ++pending_operations_;
     }
     session = session->next;
   }  
@@ -974,7 +966,10 @@ void session_manager::start_accept_session(const wrapped_session_ptr& session)
           boost::bind(&this_type::handle_accept, shared_from_this(), session, 
               boost::asio::placeholders::error))));
 
-#endif  
+#endif
+
+  accept_state_ = accept_state::in_progress;
+  ++pending_operations_;
 }
 
 void session_manager::start_session_start(const wrapped_session_ptr& session)
@@ -994,6 +989,8 @@ void session_manager::start_session_start(const wrapped_session_ptr& session)
           session_manager_weak_ptr(shared_from_this()), session, _1)));
 
 #endif
+
+  ++pending_operations_;
 }
 
 void session_manager::start_session_stop(const wrapped_session_ptr& session)
@@ -1013,6 +1010,8 @@ void session_manager::start_session_stop(const wrapped_session_ptr& session)
           session_manager_weak_ptr(shared_from_this()), session, _1)));
 
 #endif
+
+  ++pending_operations_;
 }
 
 void session_manager::start_session_wait(const wrapped_session_ptr& session)
@@ -1032,6 +1031,8 @@ void session_manager::start_session_wait(const wrapped_session_ptr& session)
           session_manager_weak_ptr(shared_from_this()), session, _1)));
 
 #endif
+
+  ++pending_operations_;
 }
 
 void session_manager::recycle(const wrapped_session_ptr& session)

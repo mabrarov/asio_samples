@@ -543,9 +543,6 @@ void session::handle_timer_at_work(const boost::system::error_code& error)
     if (timer_turned_)
     {
       start_timer_wait();
-      ++pending_operations_;
-      timer_state_ = timer_state::in_progress;
-      timer_wait_cancelled_ = false;
     }
     return;
   }
@@ -592,9 +589,7 @@ void session::continue_work()
     if (!read_buffers.empty())
     {
       // We have enough resources to begin socket read
-      start_socket_read(read_buffers);
-      ++pending_operations_;
-      read_state_ = read_state::in_progress;
+      start_socket_read(read_buffers);      
     }
   }
 
@@ -605,8 +600,6 @@ void session::continue_work()
     {
       // We have enough resources to begin socket write
       start_socket_write(write_buffers);
-      ++pending_operations_;
-      write_state_ = write_state::in_progress;
     }
   }
   
@@ -641,9 +634,6 @@ void session::continue_timer_wait()
     if (timer_state::ready == timer_state_)
     {      
       start_timer_wait();
-      ++pending_operations_;
-      timer_state_ = timer_state::in_progress;
-      timer_wait_cancelled_ = false;
     }
   }
 }
@@ -704,9 +694,7 @@ void session::continue_shutdown_at_read_wait()
     BOOST_ASSERT_MSG(!read_buffers.empty(), "buffer_ must be unfilled");
 
     // We have enough resources to begin socket read
-    start_socket_read(read_buffers);
-    ++pending_operations_;
-    read_state_ = read_state::in_progress;
+    start_socket_read(read_buffers);    
   }
   else
   {
@@ -715,9 +703,7 @@ void session::continue_shutdown_at_read_wait()
     if (!read_buffers.empty())
     {
       // We have enough resources to begin socket read
-      start_socket_read(read_buffers);
-      ++pending_operations_;
-      read_state_ = read_state::in_progress;
+      start_socket_read(read_buffers);      
     }
   }
 
@@ -903,6 +889,9 @@ void session::start_socket_read(
           boost::asio::placeholders::bytes_transferred))));
 
 #endif
+
+  ++pending_operations_;
+  read_state_ = read_state::in_progress;
 }
 
 void session::start_socket_write(
@@ -924,6 +913,9 @@ void session::start_socket_write(
           boost::asio::placeholders::bytes_transferred))));
 
 #endif
+
+  ++pending_operations_;
+  write_state_ = write_state::in_progress;
 }
 
 void session::start_timer_wait()
@@ -946,6 +938,10 @@ void session::start_timer_wait()
           boost::asio::placeholders::error))));
 
 #endif
+
+  ++pending_operations_;
+  timer_state_ = timer_state::in_progress;
+  timer_wait_cancelled_ = false;
 }
 
 boost::system::error_code session::cancel_timer_wait()
