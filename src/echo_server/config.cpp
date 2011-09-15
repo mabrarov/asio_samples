@@ -90,13 +90,10 @@ boost::optional<int> read_socket_buffer_size(
   return buffer_size;
 }
 
-std::size_t calc_session_manager_thread_count(std::size_t hardware_concurrency)
+std::size_t calc_session_manager_thread_count(
+    std::size_t /*hardware_concurrency*/)
 {
-  if (hardware_concurrency < 2)
-  {
-    return 1;
-  }
-  return 2;
+  return 1;
 }
 
 std::size_t calc_session_thread_count(std::size_t hardware_concurrency)

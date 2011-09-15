@@ -33,13 +33,9 @@ namespace qt {
 
 namespace {
 
-std::size_t calcSessionManagerThreadCount(std::size_t hardwareConcurrency)
+std::size_t calcSessionManagerThreadCount(std::size_t /*hardwareConcurrency*/)
 {
-  if (hardwareConcurrency < 2)
-  {
-    return 1;
-  }
-  return 2;
+  return 1;
 }
 
 std::size_t calcSessionThreadCount(std::size_t hardwareConcurrency)
