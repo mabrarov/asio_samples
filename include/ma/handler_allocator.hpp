@@ -67,7 +67,7 @@ public:
 private:    
   boost::aligned_storage<alloc_size> storage_;    
   bool in_use_;
-}; //class in_place_handler_allocator
+}; // class in_place_handler_allocator
  
 /// Handler allocator to use with ma::custom_alloc_handler. 
 /// in_heap_handler_allocator is based on static size memory block located at 
@@ -145,8 +145,8 @@ private:
   boost::scoped_array<byte_type> storage_;    
   std::size_t size_;    
   bool        in_use_;
-}; //class in_heap_handler_allocator  
+}; // class in_heap_handler_allocator  
 
-} //namespace ma
+} // namespace ma
 
 #endif // MA_HANDLER_ALLOCATOR_HPP

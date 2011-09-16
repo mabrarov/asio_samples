@@ -214,7 +214,7 @@ public:
 private:
   boost::asio::io_service::strand* strand_;
   Handler handler_;
-}; //class strand_wrapped_handler
+}; // class strand_wrapped_handler
 
 #if defined(MA_HAS_RVALUE_REFS)
 
@@ -249,6 +249,6 @@ make_strand_wrapped_handler(boost::asio::io_service::strand& strand,
 
 #endif // defined(MA_BOOST_ASIO_HEAVY_STRAND_WRAPPED_HANDLER)
  
-} //namespace ma
+} // namespace ma
 
 #endif // MA_STRAND_WRAPPED_HANDLER_HPP

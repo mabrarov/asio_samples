@@ -224,7 +224,7 @@ public:
 private:
   Context context_;
   Handler handler_;
-}; //class context_wrapped_handler
+}; // class context_wrapped_handler
 
 #if defined(_MSC_VER)
 #pragma warning(pop)
@@ -419,7 +419,7 @@ public:
 private:
   Context context_;
   Handler handler_;
-}; //class context_wrapped_handler2
+}; // class context_wrapped_handler2
 
 #if defined(_MSC_VER)
 #pragma warning(pop)
@@ -450,6 +450,6 @@ make_context_wrapped_handler2(const Context& context, const Handler& handler)
 
 #endif // defined(MA_HAS_RVALUE_REFS)
 
-} //namespace ma
+} // namespace ma
 
 #endif // MA_CONTEXT_WRAPPED_HANDLER_HPP

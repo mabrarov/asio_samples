@@ -104,7 +104,7 @@ public:
     
 private:    
   QWidget* widget_;
-}; //class widget_option_read_error
+}; // class widget_option_read_error
 
 } // anonymous namespace
 

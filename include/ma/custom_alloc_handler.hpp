@@ -239,7 +239,7 @@ public:
 private:
   Allocator* allocator_;
   Handler    handler_;
-}; //class custom_alloc_handler 
+}; // class custom_alloc_handler 
 
 #if defined(MA_HAS_RVALUE_REFS)
 
@@ -264,6 +264,6 @@ make_custom_alloc_handler(Allocator& allocator, const Handler& handler)
 
 #endif // defined(MA_HAS_RVALUE_REFS)
   
-} //namespace ma
+} // namespace ma
 
 #endif // MA_CUSTOM_ALLOC_HANDLER_HPP

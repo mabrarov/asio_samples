@@ -122,6 +122,6 @@ const std::basic_string<Byte> out(
 }
 
 } // namespace codecvt_cast
-} //namespace ma
+} // namespace ma
 
 #endif //MA_CODECVT_CAST_HPP

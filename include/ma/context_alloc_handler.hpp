@@ -219,7 +219,7 @@ public:
 private:
   Context context_;
   Handler handler_;
-}; //class context_alloc_handler
+}; // class context_alloc_handler
 
 #if defined(MA_HAS_RVALUE_REFS)
 
@@ -415,7 +415,7 @@ public:
 private:
   Context context_;
   Handler handler_;
-}; //class context_alloc_handler2  
+}; // class context_alloc_handler2  
 
 #if defined(MA_HAS_RVALUE_REFS)
 
@@ -442,6 +442,6 @@ make_context_alloc_handler2(const Context& context, const Handler& handler)
 
 #endif // defined(MA_HAS_RVALUE_REFS)  
 
-} //namespace ma
+} // namespace ma
 
 #endif // MA_CONTEXT_ALLOC_HANDLER_HPP
