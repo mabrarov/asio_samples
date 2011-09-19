@@ -273,15 +273,9 @@ private:
       return front_;
     }
 
-    wrapped_session_ptr back() const
-    {
-      return back_;
-    }
-
   private:
     std::size_t size_;
     wrapped_session_ptr front_;
-    wrapped_session_ptr back_;
   }; // class session_list
 
   struct extern_state

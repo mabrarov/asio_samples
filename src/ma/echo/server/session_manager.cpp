@@ -334,13 +334,7 @@ void session_manager::session_list::push_front(
   {
     front_->prev = value;
   }
-  front_ = value;
-
-  if (!back_)
-  {
-    back_ = value;
-  }
-
+  front_ = value;  
   ++size_;
 }
 
@@ -352,12 +346,6 @@ void session_manager::session_list::erase(const wrapped_session_ptr& value)
   }
 
   wrapped_session_ptr prev = value->prev.lock();
-
-  if (value == back_)
-  {
-    back_ = prev;
-  }
-  
   if (prev)
   {
     prev->next = value->next;
@@ -374,16 +362,15 @@ void session_manager::session_list::erase(const wrapped_session_ptr& value)
 
 void session_manager::session_list::clear()
 {
-  while (back_)
+  // We don't want to have recusrive calls of wrapped_session's destructor
+  // because the deep of such recursion will be equal to the size of list.
+  // The last can be too great for the stack.
+  while (front_)
   {
-    back_->next.reset();
-    back_ = back_->prev.lock();
+    front_ = front_->next;
   }
 
-  front_.reset();
-
   BOOST_ASSERT_MSG(!front_, "invalid internal state");
-  BOOST_ASSERT_MSG(!back_, "invalid internal state");
 }
 
 session_manager::session_manager(boost::asio::io_service& io_service, 
