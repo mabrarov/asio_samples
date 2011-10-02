@@ -399,6 +399,10 @@
 					RelativePath="..\..\..\include\ma\type_traits.hpp"
 					>
 				</File>
+				<File
+					RelativePath="..\..\..\include\ma\steady_deadline_timer.hpp"
+					>
+				</File>
 				<Filter
 					Name="echo"
 					>
