@@ -51,4 +51,3 @@ const boost::system::error_category& session_error_category()
 } // namespace nmea
 
 } // namespace ma
-

@@ -1216,4 +1216,3 @@ void session_manager::open(protocol_type::acceptor& acceptor,
 } // namespace server
 } // namespace echo
 } // namespace ma
-

@@ -55,4 +55,3 @@ const boost::system::error_category& client1_error_category()
 } // namespace server
 } // namespace echo
 } // namespace ma
-
