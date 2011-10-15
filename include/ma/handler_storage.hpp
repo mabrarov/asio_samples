@@ -137,17 +137,17 @@ public:
 
   /// Store handler in this handler storage.
   /**
-   * Attention! 
-   * Really, "put" means "try to put, if can't (io_service's destructor is 
+   * Attention!
+   * Really, "reset" means "try to put, if can't (io_service's destructor is
    * already called) then do nothing".
-   * For test of was "put" successful or not, "has_target" can be used (called
-   * right after the call of "put").
+   * For test of was "reset" successful or not, "has_target" can be used 
+   * (called right after "reset").
    */
   template <typename Handler>
-  void put(Handler&& handler)
+  void reset(Handler&& handler)
   {      
     typedef typename ma::remove_cv_reference<Handler>::type handler_type;
-    service_.put<handler_type>(implementation_, 
+    service_.reset<handler_type>(implementation_, 
         std::forward<Handler>(handler));
   }
 
@@ -155,16 +155,16 @@ public:
 
   /// Store handler in this handler storage.
   /**
-   * Attention! 
-   * Really, "put" means "try to put, if can't (io_service's destructor is 
+   * Attention!
+   * Really, "reset" means "try to put, if can't (io_service's destructor is
    * already called) then do nothing".
-   * For test of was "put" successful or not, "has_target" can be used (called
-   * right after the call of "put").
+   * For test of was "reset" successful or not, "has_target" can be used 
+   * (called right after "reset").
    */
   template <typename Handler>
-  void put(const Handler& handler)
+  void reset(const Handler& handler)
   {
-    service_.put(implementation_, handler);
+    service_.reset(implementation_, handler);
   }
 
 #endif // defined(MA_HAS_RVALUE_REFS)

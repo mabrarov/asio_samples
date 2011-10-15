@@ -349,7 +349,7 @@ private:
     }
     else
     {
-      extern_stop_handler_.put(handler);
+      extern_stop_handler_.reset(handler);
     }
   }
 
@@ -398,7 +398,7 @@ private:
         reinterpret_cast<char*>(base_handler_ptr)
         - reinterpret_cast<char*>(wrapped_handler_ptr);
 
-    extern_read_handler_.put(wrapped_handler);
+    extern_read_handler_.reset(wrapped_handler);
   }
 
   extern_read_handler_base* get_extern_read_handler() const

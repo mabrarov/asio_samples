@@ -305,7 +305,7 @@ void async_implementation::start_do_something(
   }
   else
   {
-    do_something_handler_.put(do_something_handler_adapter(handler));
+    do_something_handler_.reset(do_something_handler_adapter(handler));
   }
 }
 

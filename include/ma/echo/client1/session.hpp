@@ -146,7 +146,7 @@ private:
     }
     else
     {
-      stop_handler_.put(handler);            
+      stop_handler_.reset(handler);            
     }
   }
 
@@ -160,7 +160,7 @@ private:
     } 
     else
     {
-      wait_handler_.put(handler);
+      wait_handler_.reset(handler);
     }
   }
 

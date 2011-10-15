@@ -65,13 +65,13 @@ private:
   public:
     typedef void (*invoke_func_type)(handler_base*, const arg_type&);
     typedef void (*destroy_func_type)(handler_base*);
-    typedef void* (*data_func_type)(handler_base*);
+    typedef void* (*target_func_type)(handler_base*);
 
     handler_base(invoke_func_type invoke_func, destroy_func_type destroy_func, 
-        data_func_type data_func)
+        target_func_type target_func)
       : invoke_func_(invoke_func)
       , destroy_func_(destroy_func)        
-      , data_func_(data_func)
+      , target_func_(target_func)
     {
     }
 
@@ -85,9 +85,9 @@ private:
       destroy_func_(this);
     }
 
-    void* data()
+    void* target()
     {
-      return data_func_(this);
+      return target_func_(this);
     }
 
   protected:
@@ -98,7 +98,7 @@ private:
   private:        
     invoke_func_type  invoke_func_;
     destroy_func_type destroy_func_; 
-    data_func_type    data_func_;
+    target_func_type  target_func_;
   }; // class handler_base    
       
   /// Wrapper class to hold up handlers with the specified signature.
@@ -115,7 +115,7 @@ private:
     template <typename H>
     handler_wrapper(boost::asio::io_service& io_service, H&& handler)
       : handler_base(&this_type::do_invoke, &this_type::do_destroy, 
-            &this_type::do_data)
+            &this_type::do_target)
       , io_service_(io_service)
       , work_(io_service)
       , handler_(std::forward<H>(handler))
@@ -147,7 +147,7 @@ private:
     handler_wrapper(boost::asio::io_service& io_service, 
         const Handler& handler)
       : handler_base(&this_type::do_invoke, &this_type::do_destroy, 
-            &this_type::do_data)
+            &this_type::do_target)
       , io_service_(io_service)
       , work_(io_service)
       , handler_(handler)
@@ -217,7 +217,7 @@ private:
       ptr.reset();
     }
 
-    static void* do_data(handler_base* base)
+    static void* do_target(handler_base* base)
     {          
       this_type* this_ptr = static_cast<this_type*>(base);
       return boost::addressof(this_ptr->handler_);
@@ -226,7 +226,7 @@ private:
   private:
     boost::asio::io_service& io_service_;
     boost::asio::io_service::work work_;
-    Handler handler_;      
+    Handler handler_;
   }; // class handler_wrapper
     
 public:
@@ -341,7 +341,7 @@ public:
   }
 
   template <typename Handler>
-  void put(implementation_type& impl, Handler handler)
+  void reset(implementation_type& impl, Handler handler)
   {
     // If service is or was in shutdown state then we can't do anything with
     // handler.
@@ -382,7 +382,7 @@ public:
   {
     if (impl.handler_ptr_)
     {
-      return impl.handler_ptr_->data();        
+      return impl.handler_ptr_->target();        
     }
     return 0;
   }
