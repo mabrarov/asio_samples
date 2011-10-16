@@ -63,21 +63,21 @@ private:
     typedef handler_base this_type;
 
   public:
-    typedef void (*invoke_func_type)(handler_base*, const arg_type&);
+    typedef void (*post_func_type)(handler_base*, const arg_type&);
     typedef void (*destroy_func_type)(handler_base*);
     typedef void* (*target_func_type)(handler_base*);
 
-    handler_base(invoke_func_type invoke_func, destroy_func_type destroy_func, 
+    handler_base(post_func_type post_func, destroy_func_type destroy_func,
         target_func_type target_func)
-      : invoke_func_(invoke_func)
+      : post_func_(post_func)
       , destroy_func_(destroy_func)        
       , target_func_(target_func)
     {
     }
 
-    void invoke(const arg_type& arg)
+    void post(const arg_type& arg)
     {
-      invoke_func_(this, arg);
+      post_func_(this, arg);
     }      
 
     void destroy()
@@ -96,7 +96,7 @@ private:
     }
 
   private:        
-    invoke_func_type  invoke_func_;
+    post_func_type    post_func_;
     destroy_func_type destroy_func_; 
     target_func_type  target_func_;
   }; // class handler_base    
@@ -114,7 +114,7 @@ private:
 
     template <typename H>
     handler_wrapper(boost::asio::io_service& io_service, H&& handler)
-      : handler_base(&this_type::do_invoke, &this_type::do_destroy, 
+      : handler_base(&this_type::do_post, &this_type::do_destroy, 
             &this_type::do_target)
       , io_service_(io_service)
       , work_(io_service)
@@ -146,7 +146,7 @@ private:
 
     handler_wrapper(boost::asio::io_service& io_service, 
         const Handler& handler)
-      : handler_base(&this_type::do_invoke, &this_type::do_destroy, 
+      : handler_base(&this_type::do_post, &this_type::do_destroy, 
             &this_type::do_target)
       , io_service_(io_service)
       , work_(io_service)
@@ -160,7 +160,7 @@ private:
     {
     }
 
-    static void do_invoke(handler_base* base, const arg_type& arg)
+    static void do_post(handler_base* base, const arg_type& arg)
     {        
       this_type* this_ptr = static_cast<this_type*>(base);
       // Take ownership of the wrapper object
@@ -311,23 +311,19 @@ public:
     : boost::asio::io_service::service(io_service)      
     , shutdown_done_(false)
   {
-  }
-
-  virtual ~handler_storage_service()
-  {
   }  
 
   void construct(implementation_type& impl)
   {
     // Add implementation to the list of active implementations.
     mutex_type::scoped_lock lock(mutex_);
-    impl_list_.push_front(impl);     
+    impl_list_.push_front(impl);
   }
 
   void destroy(implementation_type& impl)
   {
     // Exclude implementation from the list of active implementations.
-    mutex_type::scoped_lock lock(mutex_);        
+    mutex_type::scoped_lock lock(mutex_);
     impl_list_.erase(impl);
     lock.unlock();
 
@@ -338,7 +334,7 @@ public:
     {
       handler_ptr->destroy();
     }
-  }
+  }  
 
   template <typename Handler>
   void reset(implementation_type& impl, Handler handler)
@@ -366,7 +362,7 @@ public:
     } // if (!shutdown_done_)
   }
 
-  void post(implementation_type& impl, const arg_type& arg) const
+  void post(implementation_type& impl, const arg_type& arg)
   {
     if (!impl.handler_ptr_)
     {
@@ -375,7 +371,7 @@ public:
     // Take the ownership
     handler_base* handler_ptr = impl.handler_ptr_;
     impl.handler_ptr_ = 0;
-    handler_ptr->invoke(arg);
+    handler_ptr->post(arg);
   }
 
   void* target(const implementation_type& impl) const
@@ -396,6 +392,11 @@ public:
   {
     return 0 != impl.handler_ptr_;
   }
+
+protected:
+  virtual ~handler_storage_service()
+  {
+  }  
 
 private:
   virtual void shutdown_service()

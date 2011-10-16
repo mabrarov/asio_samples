@@ -216,7 +216,11 @@ void async_connect(Socket& socket,
     }
   }
 
+#if BOOST_ASIO_VERSION < 100600
+  SOCKET native_socket = socket.native();
+#else
   SOCKET native_socket = socket.native_handle();
+#endif
   GUID connect_ex_guid = WSAID_CONNECTEX;
   LPFN_CONNECTEX connect_ex_func = 0;
   DWORD result_bytes;

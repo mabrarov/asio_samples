@@ -13,7 +13,6 @@
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
 #include <boost/asio.hpp>
-#include <boost/noncopyable.hpp>
 #include <ma/config.hpp>
 #include <ma/handler_storage_service.hpp>
 
@@ -75,35 +74,27 @@ namespace ma {
  * release version.
  */
 template <typename Arg>
-class handler_storage : private boost::noncopyable
+class handler_storage 
+    : public boost::asio::basic_io_object<handler_storage_service<Arg> >
 {
+private:
+  typedef handler_storage<Arg> this_type;
+  typedef boost::asio::basic_io_object<handler_storage_service<Arg> > 
+      basic_io_object_type;
+
 public:
   typedef Arg arg_type;
-  typedef handler_storage_service<arg_type>          service_type;
-  typedef typename service_type::implementation_type implementation_type;
-
+  
   explicit handler_storage(boost::asio::io_service& io_service)
-    : service_(boost::asio::use_service<service_type>(io_service))
+    : basic_io_object_type(io_service)
   {
-    service_.construct(implementation_);
   }
 
+#if !defined(NDEBUG)
   ~handler_storage()
   {
-    service_.destroy(implementation_);
-  } 
-
-  /// boost::asio::basic_io_object-like member function.
-  boost::asio::io_service& io_service()
-  {
-    return service_.get_io_service();
   }
-
-  /// boost::asio::basic_io_object-like member function.
-  boost::asio::io_service& get_io_service()
-  {
-    return service_.get_io_service();
-  }
+#endif
 
   /// Get pointer to the stored handler. 
   /**
@@ -113,7 +104,7 @@ public:
    */
   void* target() const
   {
-    return service_.target(implementation_);
+    return get_service().target(get_implementation());
   }
 
   /// Check if handler storage is empty (doesn't contain any handler).
@@ -124,13 +115,13 @@ public:
    */
   bool empty() const
   {
-    return service_.empty(implementation_);
+    return get_service().empty(get_implementation());
   }
 
   /// Check if handler storage contains handler.
   bool has_target() const
   {
-    return service_.has_target(implementation_);
+    return get_service().has_target(get_implementation());
   }    
 
 #if defined(MA_HAS_RVALUE_REFS)
@@ -147,7 +138,7 @@ public:
   void reset(Handler&& handler)
   {      
     typedef typename ma::remove_cv_reference<Handler>::type handler_type;
-    service_.reset<handler_type>(implementation_, 
+    get_service().reset<handler_type>(get_implementation(), 
         std::forward<Handler>(handler));
   }
 
@@ -164,7 +155,7 @@ public:
   template <typename Handler>
   void reset(const Handler& handler)
   {
-    service_.reset(implementation_, handler);
+    get_service().reset(get_implementation(), handler);
   }
 
 #endif // defined(MA_HAS_RVALUE_REFS)
@@ -178,16 +169,33 @@ public:
    * already called) then do nothing".
    */
   void post(const arg_type& arg)
-  {      
-    service_.post(implementation_, arg);
-  }    
-    
-private:
-  /// The service associated with the storage.
-  service_type& service_;
+  {    
+    get_service().post(get_implementation(), arg);
+  }
 
-  /// The underlying implementation of the storage.
-  implementation_type implementation_;
+private:
+#if BOOST_ASIO_VERSION < 100600  
+  typename basic_io_object_type::service_type& get_service()
+  {
+    return this->service;
+  }
+
+  const typename basic_io_object_type::service_type& get_service() const
+  {
+    return this->service;
+  }
+
+  typename basic_io_object_type::implementation_type& get_implementation()
+  {
+    return this->implementation;
+  }
+
+  const typename basic_io_object_type::implementation_type& 
+  get_implementation() const
+  {
+    return this->implementation;
+  }
+#endif // BOOST_ASIO_VERSION < 100600
 }; // class handler_storage  
 
 } // namespace ma
