@@ -13,11 +13,13 @@
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
 #include <cstddef>
+#include <stdexcept>
 #include <boost/ref.hpp>
 #include <boost/asio.hpp>
 #include <boost/assert.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/thread/mutex.hpp>
+#include <boost/throw_exception.hpp>
 #include <ma/config.hpp>
 #include <ma/bind_asio_handler.hpp>
 #include <ma/handler_alloc_helpers.hpp>
@@ -27,6 +29,17 @@
 #endif // defined(MA_HAS_RVALUE_REFS)
 
 namespace ma {
+
+/// Exception thrown when handler_storage::post is used with empty 
+/// handler_storage.
+class bad_handler_call : public std::runtime_error
+{
+public:
+  bad_handler_call() 
+    : std::runtime_error("call to empty ma::handler_storage") 
+  {
+  } 
+}; // class bad_handler_call
 
 /// asio::io_service::service implementing handler_storage.
 template <typename Arg>
@@ -369,6 +382,10 @@ public:
     {
       impl.handler_ptr_ = 0;
       handler_ptr->post(arg);
+    }
+    else
+    {
+      boost::throw_exception(bad_handler_call());
     }
   }
 

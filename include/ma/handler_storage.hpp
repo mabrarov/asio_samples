@@ -164,6 +164,7 @@ public:
   template <typename Handler>
   void reset(const Handler& handler)
   {
+    typedef Handler handler_type;
     service_.reset<handler_type>(impl_, handler);
   }
 
