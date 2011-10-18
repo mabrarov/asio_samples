@@ -205,7 +205,7 @@ private:
     }
 
     static void* do_target(handler_base* base)
-    {          
+    {
       this_type* this_ptr = static_cast<this_type*>(base);
       return boost::addressof(this_ptr->handler_);
     }
@@ -228,6 +228,15 @@ public:
       , handler_ptr_(0)
     {
     }
+
+#if !defined(NDEBUG)
+    ~implementation_type()
+    {
+      BOOST_ASSERT(!handler_ptr_);
+      BOOST_ASSERT(!next_);
+      BOOST_ASSERT(!prev_);
+    }
+#endif
 
   private:
     friend class handler_storage_service<arg_type>;
@@ -252,7 +261,9 @@ private:
 
     void push_front(implementation_type& impl)
     {
-      BOOST_ASSERT(!impl.next_ && !impl.prev_);
+      BOOST_ASSERT(!impl.next_);
+      BOOST_ASSERT(!impl.prev_);
+
       impl.next_ = front_;
       impl.prev_ = 0;
       if (front_)
