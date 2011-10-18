@@ -69,10 +69,14 @@ namespace ma {
  * @par Thread Safety
  * @e Distinct @e objects: Safe.@n
  * @e Shared @e objects: Unsafe.
- *   
- * Attention! 
- * Because of the speed decisions no additional run-time checks are done in
- * release version.
+ *    
+ * At the point of execution of io_service::~io_service() access to all members
+ * of any handler_storage instance may be done only within context 
+ * of the thread executing io_service::~io_service().
+ *
+ * From the start point of io_service::~io_service() it is not guaranted that
+ * reset(handler) can store handler. If underlying service was was shut down then
+ * reset(handler) won't do anything at all.
  */
 template <typename Arg>
 class handler_storage : private boost::noncopyable
@@ -129,6 +133,7 @@ public:
     return service_.has_target(impl_);
   } 
   
+  /// Clear stored handler if it exists.
   void reset()
   {
     service_.reset(impl_);
@@ -137,9 +142,8 @@ public:
 #if defined(MA_HAS_RVALUE_REFS)
 
   /// Store handler in this handler storage.
-  /**
-   * Attention!
-   * Really, "reset" means "try to put, if can't (io_service's destructor is
+  /**   
+   * Really, "reset" means "try to store, if can't (io_service's destructor is
    * already called) then do nothing".
    * For test of was "reset" successful or not, "has_target" can be used 
    * (called right after "reset").
@@ -154,9 +158,8 @@ public:
 #else // defined(MA_HAS_RVALUE_REFS)
 
   /// Store handler in this handler storage.
-  /**
-   * Attention!
-   * Really, "reset" means "try to put, if can't (io_service's destructor is
+  /**   
+   * Really, "reset" means "try to store, if can't (io_service's destructor is
    * already called) then do nothing".
    * For test of was "reset" successful or not, "has_target" can be used 
    * (called right after "reset").
