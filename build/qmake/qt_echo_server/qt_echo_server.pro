@@ -64,14 +64,15 @@ win32:LIBS += -L"./../../../../boost_1_47_0/lib/x86" \
               -lkernel32 -luser32 -lshell32 -luuid -lole32 -ladvapi32 \
               -lws2_32 -lgdi32 -lcomdlg32 -loleaut32 -limm32 -lwinmm \
               -lwinspool -lws2_32 -lole32 -luser32 -ladvapi32
-unix:LIBS  += /usr/local/lib/libboost_thread.a \
-              /usr/local/lib/libboost_system.a \
-              /usr/local/lib/libboost_date_time.a
+unix:LIBS  += -lboost_thread \
+              -lboost_system \
+              -lboost_date_time
 
 win32:DEFINES += WIN32_LEAN_AND_MEAN _UNICODE UNICODE \
                  WINVER=0x0500 _WIN32_WINNT=0x0500 _WIN32_WINDOWS=0x0410 \
                  _WIN32_IE=0x0600 QT_LARGEFILE_SUPPORT
 
-linux-g++ {
+linux-g++ | linux-g++-64 {
   QMAKE_CXXFLAGS += -std=c++0x -Wstrict-aliasing
 }
+

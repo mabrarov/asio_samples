@@ -36,12 +36,12 @@ unix:INCLUDEPATH  += /usr/local/include
 INCLUDEPATH       += ../../../include
 		
 win32:LIBS += -L../../../../boost_1_47_0/lib/x86
-unix:LIBS  += /usr/local/lib/libboost_thread.a \
-              /usr/local/lib/libboost_system.a \
-              /usr/local/lib/libboost_date_time.a
+unix:LIBS  += -lboost_thread \
+              -lboost_system \
+              -lboost_date_time
 
 win32:DEFINES += WIN32_LEAN_AND_MEAN _UNICODE UNICODE
 
-linux-g++ {
+linux-g++ | linux-g++-64 {
   QMAKE_CXXFLAGS += -std=c++0x -Wstrict-aliasing
 }

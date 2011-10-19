@@ -29,10 +29,10 @@ unix:INCLUDEPATH  += /usr/local/include
 INCLUDEPATH       += ../../../include
 		
 win32:LIBS += -L../../../../boost_1_47_0/lib/x86
-unix:LIBS  += /usr/local/lib/libboost_system.a
+unix:LIBS  += -lboost_system
 
 win32:DEFINES += WIN32_LEAN_AND_MEAN _UNICODE UNICODE _WIN32_WINNT=0x0501
 
-linux-g++ {
+linux-g++ | linux-g++-64 {
   QMAKE_CXXFLAGS += -std=c++0x -Wstrict-aliasing
 }
