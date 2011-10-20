@@ -399,7 +399,6 @@ private:
   extern_state::value_t extern_state_;
   intern_state::value_t intern_state_;
   accept_state::value_t accept_state_;
-  bool                  acceptor_opened_;
   std::size_t           pending_operations_;  
 
   boost::asio::io_service&        io_service_;

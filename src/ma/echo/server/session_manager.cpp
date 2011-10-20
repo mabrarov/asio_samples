@@ -384,7 +384,6 @@ session_manager::session_manager(boost::asio::io_service& io_service,
   , extern_state_(extern_state::ready)
   , intern_state_(intern_state::work)
   , accept_state_(accept_state::ready)
-  , acceptor_opened_(false)
   , pending_operations_(0)
   , io_service_(io_service)
   , session_io_service_(session_io_service)
@@ -403,7 +402,6 @@ void session_manager::reset(bool free_recycled_sessions)
   pending_operations_ = 0;  
   
   close_acceptor();
-  acceptor_opened_ = false;
 
   active_sessions_.clear();
   if (free_recycled_sessions)
@@ -529,28 +527,25 @@ void session_manager::continue_work()
   if (active_sessions_.size() >= max_session_count_)
   {    
     // Can't start more accept operations - no space
-    if (acceptor_opened_)
+    if (acceptor_.is_open())
     {
       close_acceptor();
-      acceptor_opened_ = false;
     }
     return;
   }
 
   // Prepare (open) acceptor
-  if (!acceptor_opened_)
+  if (!acceptor_.is_open())
   {
-    boost::system::error_code error = open_acceptor();
-    if (error)
+    if (boost::system::error_code error = open_acceptor())
     {
-      accept_state_ = accept_state::stopped;     
+      accept_state_ = accept_state::stopped;
       if (is_out_of_work())
       {
         start_stop(server_error::out_of_work);
       }
       return;
     }
-    acceptor_opened_ = true;
   }
 
   // Get new, ready to start session
@@ -567,7 +562,7 @@ void session_manager::continue_work()
       // Try later
       return;
     }  
-    accept_state_ = accept_state::stopped;     
+    accept_state_ = accept_state::stopped;
     if (is_out_of_work())
     {
       start_stop(server_error::out_of_work);
@@ -897,10 +892,9 @@ void session_manager::start_stop(const boost::system::error_code& error)
   intern_state_ = intern_state::stop;
 
   // Close acceptors. Additionally it will help to stop accept operations.
-  if (acceptor_opened_)
+  if (acceptor_.is_open())
   {
     close_acceptor();
-    acceptor_opened_= false;
   }
 
   // Stop all active sessions
