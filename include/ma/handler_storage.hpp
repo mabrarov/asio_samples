@@ -13,6 +13,7 @@
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
 #include <boost/asio.hpp>
+#include <boost/noncopyable.hpp>
 #include <ma/config.hpp>
 #include <ma/handler_storage_service.hpp>
 
@@ -68,33 +69,41 @@ namespace ma {
  * @par Thread Safety
  * @e Distinct @e objects: Safe.@n
  * @e Shared @e objects: Unsafe.
- *   
- * Attention! 
- * Because of the speed decisions no additional run-time checks are done in
- * release version.
+ *    
+ * At the point of execution of io_service::~io_service() access to all members
+ * of any handler_storage instance may be done only within context 
+ * of the thread executing io_service::~io_service().
+ *
+ * From the start point of io_service::~io_service() it is not guaranted that
+ * reset(handler) can store handler. If underlying service was was shut down then
+ * reset(handler) won't do anything at all.
  */
 template <typename Arg>
-class handler_storage 
-    : public boost::asio::basic_io_object<handler_storage_service<Arg> >
+class handler_storage : private boost::noncopyable
 {
 private:
-  typedef handler_storage<Arg> this_type;
-  typedef boost::asio::basic_io_object<handler_storage_service<Arg> > 
-      basic_io_object_type;
+  typedef handler_storage<Arg> this_type;  
 
 public:
   typedef Arg arg_type;
+  typedef handler_storage_service<Arg> service_type;
+  typedef typename service_type::implementation_type implementation_type;
   
   explicit handler_storage(boost::asio::io_service& io_service)
-    : basic_io_object_type(io_service)
+    : service_(boost::asio::use_service<service_type>(io_service))    
   {
+    service_.construct(impl_);
   }
 
-#if !defined(NDEBUG)
   ~handler_storage()
   {
+    service_.destroy(impl_);
   }
-#endif
+
+  boost::asio::io_service& get_io_service()
+  {
+    return service_.get_io_service();
+  }
 
   /// Get pointer to the stored handler. 
   /**
@@ -104,7 +113,7 @@ public:
    */
   void* target() const
   {
-    return get_service().target(get_implementation());
+    return service_.target(impl_);
   }
 
   /// Check if handler storage is empty (doesn't contain any handler).
@@ -115,21 +124,26 @@ public:
    */
   bool empty() const
   {
-    return get_service().empty(get_implementation());
+    return service_.empty(impl_);
   }
 
   /// Check if handler storage contains handler.
   bool has_target() const
   {
-    return get_service().has_target(get_implementation());
-  }    
+    return service_.has_target(impl_);
+  } 
+  
+  /// Clear stored handler if it exists.
+  void reset()
+  {
+    service_.reset(impl_);
+  }
 
 #if defined(MA_HAS_RVALUE_REFS)
 
   /// Store handler in this handler storage.
-  /**
-   * Attention!
-   * Really, "reset" means "try to put, if can't (io_service's destructor is
+  /**   
+   * Really, "reset" means "try to store, if can't (io_service's destructor is
    * already called) then do nothing".
    * For test of was "reset" successful or not, "has_target" can be used 
    * (called right after "reset").
@@ -138,16 +152,14 @@ public:
   void reset(Handler&& handler)
   {      
     typedef typename ma::remove_cv_reference<Handler>::type handler_type;
-    get_service().reset<handler_type>(get_implementation(), 
-        std::forward<Handler>(handler));
+    service_.reset<handler_type>(impl_, std::forward<Handler>(handler));
   }
 
 #else // defined(MA_HAS_RVALUE_REFS)
 
   /// Store handler in this handler storage.
-  /**
-   * Attention!
-   * Really, "reset" means "try to put, if can't (io_service's destructor is
+  /**   
+   * Really, "reset" means "try to store, if can't (io_service's destructor is
    * already called) then do nothing".
    * For test of was "reset" successful or not, "has_target" can be used 
    * (called right after "reset").
@@ -155,7 +167,8 @@ public:
   template <typename Handler>
   void reset(const Handler& handler)
   {
-    get_service().reset(get_implementation(), handler);
+    typedef Handler handler_type;
+    service_.reset<handler_type>(impl_, handler);
   }
 
 #endif // defined(MA_HAS_RVALUE_REFS)
@@ -170,32 +183,12 @@ public:
    */
   void post(const arg_type& arg)
   {    
-    get_service().post(get_implementation(), arg);
+    service_.post(impl_, arg);
   }
 
 private:
-#if BOOST_ASIO_VERSION < 100600  
-  typename basic_io_object_type::service_type& get_service()
-  {
-    return this->service;
-  }
-
-  const typename basic_io_object_type::service_type& get_service() const
-  {
-    return this->service;
-  }
-
-  typename basic_io_object_type::implementation_type& get_implementation()
-  {
-    return this->implementation;
-  }
-
-  const typename basic_io_object_type::implementation_type& 
-  get_implementation() const
-  {
-    return this->implementation;
-  }
-#endif // BOOST_ASIO_VERSION < 100600
+  service_type& service_;
+  implementation_type impl_;
 }; // class handler_storage  
 
 } // namespace ma

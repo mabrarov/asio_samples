@@ -218,7 +218,7 @@ private:
     }
 
     static void* do_target(handler_base* base)
-    {          
+    {
       this_type* this_ptr = static_cast<this_type*>(base);
       return boost::addressof(this_ptr->handler_);
     }
@@ -241,6 +241,15 @@ public:
       , handler_ptr_(0)
     {
     }
+
+#if !defined(NDEBUG)
+    ~implementation_type()
+    {
+      BOOST_ASSERT(!handler_ptr_);
+      BOOST_ASSERT(!next_);
+      BOOST_ASSERT(!prev_);
+    }
+#endif
 
   private:
     friend class handler_storage_service<arg_type>;
@@ -265,7 +274,9 @@ private:
 
     void push_front(implementation_type& impl)
     {
-      BOOST_ASSERT(!impl.next_ && !impl.prev_);
+      BOOST_ASSERT(!impl.next_);
+      BOOST_ASSERT(!impl.prev_);
+
       impl.next_ = front_;
       impl.prev_ = 0;
       if (front_)
@@ -326,15 +337,18 @@ public:
     mutex_type::scoped_lock lock(mutex_);
     impl_list_.erase(impl);
     lock.unlock();
+    reset(impl);
+  }
 
+  void reset(implementation_type& impl)
+  {
     // Destroy stored handler if it exists.
-    handler_base* handler_ptr = impl.handler_ptr_;
-    impl.handler_ptr_ = 0;      
-    if (handler_ptr)
+    if (handler_base* handler_ptr = impl.handler_ptr_)
     {
+      impl.handler_ptr_ = 0;
       handler_ptr->destroy();
     }
-  }  
+  }
 
   template <typename Handler>
   void reset(implementation_type& impl, Handler handler)
@@ -364,14 +378,15 @@ public:
 
   void post(implementation_type& impl, const arg_type& arg)
   {
-    if (!impl.handler_ptr_)
+    if (handler_base* handler_ptr = impl.handler_ptr_)
+    {
+      impl.handler_ptr_ = 0;
+      handler_ptr->post(arg);
+    }
+    else
     {
       boost::throw_exception(bad_handler_call());
     }
-    // Take the ownership
-    handler_base* handler_ptr = impl.handler_ptr_;
-    impl.handler_ptr_ = 0;
-    handler_ptr->post(arg);
   }
 
   void* target(const implementation_type& impl) const
@@ -407,7 +422,9 @@ private:
     // handler_storage instances but clears them all.
     while (!impl_list_.empty())
     {
-      destroy(*impl_list_.front());
+      implementation_type& impl = *impl_list_.front();
+      impl_list_.erase(impl);    
+      reset(impl);
     }
   }
 
