@@ -290,7 +290,7 @@ private:
 
   struct accept_state
   {
-    enum value_t {wait, in_progress, stopped};
+    enum value_t {ready, in_progress, stopped};
   };
   
   template <typename Handler>
@@ -376,6 +376,7 @@ private:
   void recycle(const wrapped_session_ptr&);
   wrapped_session_ptr create_session(boost::system::error_code& error);
 
+  boost::system::error_code open_acceptor();
   boost::system::error_code close_acceptor();
 
   static void dispatch_handle_session_start(const session_manager_weak_ptr&,
@@ -398,6 +399,7 @@ private:
   extern_state::value_t extern_state_;
   intern_state::value_t intern_state_;
   accept_state::value_t accept_state_;
+  bool                  acceptor_opened_;
   std::size_t           pending_operations_;  
 
   boost::asio::io_service&        io_service_;

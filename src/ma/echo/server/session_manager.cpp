@@ -383,7 +383,8 @@ session_manager::session_manager(boost::asio::io_service& io_service,
   , managed_session_config_(config.managed_session_config)
   , extern_state_(extern_state::ready)
   , intern_state_(intern_state::work)
-  , accept_state_(accept_state::wait)
+  , accept_state_(accept_state::ready)
+  , acceptor_opened_(false)
   , pending_operations_(0)
   , io_service_(io_service)
   , session_io_service_(session_io_service)
@@ -398,10 +399,11 @@ void session_manager::reset(bool free_recycled_sessions)
 {
   extern_state_ = extern_state::ready;
   intern_state_ = intern_state::work;
-  accept_state_ = accept_state::wait;
+  accept_state_ = accept_state::ready;  
   pending_operations_ = 0;  
   
   close_acceptor();
+  acceptor_opened_ = false;
 
   active_sessions_.clear();
   if (free_recycled_sessions)
@@ -419,23 +421,16 @@ boost::system::error_code session_manager::do_start_extern_start()
   {
     return server_error::invalid_state;
   }
-  
-  boost::system::error_code error;
-  open(acceptor_, accepting_endpoint_, listen_backlog_, error);
-
-  if (error)
-  {
-    // Switch states as SM suppose...
-    extern_state_ = extern_state::stopped;
-    intern_state_ = intern_state::stopped;
-    accept_state_ = accept_state::stopped;
-    // ... and notify start handler about error
-    return error;
-  }
-
+    
   // Internal states have right values already
   extern_state_ = extern_state::work;
   continue_work();
+
+  if (intern_state_ == intern_state::stopped)
+  {
+    extern_state_ = extern_state::stopped;
+    return extern_wait_error_;
+  }
 
   // Notify start handler about success
   return boost::system::error_code();
@@ -525,16 +520,37 @@ void session_manager::continue_work()
     return;
   }
 
-  if (accept_state::wait != accept_state_)
+  if (accept_state::ready != accept_state_)
   {
     // Can't start more accept operations - no ready acceptors
     return;
   }
 
   if (active_sessions_.size() >= max_session_count_)
-  {
+  {    
     // Can't start more accept operations - no space
+    if (acceptor_opened_)
+    {
+      close_acceptor();
+      acceptor_opened_ = false;
+    }
     return;
+  }
+
+  // Prepare (open) acceptor
+  if (!acceptor_opened_)
+  {
+    boost::system::error_code error = open_acceptor();
+    if (error)
+    {
+      accept_state_ = accept_state::stopped;     
+      if (is_out_of_work())
+      {
+        start_stop(server_error::out_of_work);
+      }
+      return;
+    }
+    acceptor_opened_ = true;
   }
 
   // Get new, ready to start session
@@ -546,13 +562,11 @@ void session_manager::continue_work()
     {
       recycle(session);
     }
-
     if (!active_sessions_.empty())
     {
       // Try later
       return;
-    }
-  
+    }  
     accept_state_ = accept_state::stopped;     
     if (is_out_of_work())
     {
@@ -599,7 +613,7 @@ void session_manager::handle_accept_at_work(const wrapped_session_ptr& session,
 
   // Unregister pending operation
   --pending_operations_;
-  accept_state_ = accept_state::wait;
+  accept_state_ = accept_state::ready;
     
   if (error)
   {
@@ -883,7 +897,11 @@ void session_manager::start_stop(const boost::system::error_code& error)
   intern_state_ = intern_state::stop;
 
   // Close acceptors. Additionally it will help to stop accept operations.
-  close_acceptor();
+  if (acceptor_opened_)
+  {
+    close_acceptor();
+    acceptor_opened_= false;
+  }
 
   // Stop all active sessions
   wrapped_session_ptr session = active_sessions_.front();
@@ -897,7 +915,7 @@ void session_manager::start_stop(const boost::system::error_code& error)
   }  
 
   // Switch all internal SMs to the right states
-  if (accept_state::wait == accept_state_)
+  if (accept_state::ready == accept_state_)
   {
     accept_state_ = accept_state::stopped;
   }
@@ -1060,6 +1078,13 @@ session_manager::wrapped_session_ptr session_manager::create_session(
     error = server_error::no_memory;
     return wrapped_session_ptr();
   }
+}
+
+boost::system::error_code session_manager::open_acceptor()
+{
+  boost::system::error_code error;
+  open(acceptor_, accepting_endpoint_, listen_backlog_, error);  
+  return error;
 }
 
 boost::system::error_code session_manager::close_acceptor()
