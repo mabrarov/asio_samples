@@ -228,6 +228,35 @@ private:
     boost::asio::io_service::work work_;
     Handler handler_;
   }; // class handler_wrapper
+
+  class handler_guard : private boost::noncopyable
+  {
+  public:
+    /// Never throws
+    explicit handler_guard(handler_base* handler_ptr)
+      : handler_ptr_(handler_ptr)
+    {
+    }
+
+    /// Can throw if destructor of user supplied handler can throw
+    ~handler_guard()
+    {
+      if (handler_ptr_)
+      {
+        handler_ptr_->destroy();
+      }
+    }
+
+    handler_base* release()
+    {
+      handler_base* handler_ptr = handler_ptr_;
+      handler_ptr_ = 0;
+      return handler_ptr;
+    }
+
+  private:
+    handler_base* handler_ptr_;
+  }; // class handler_guard
     
 public:
   static boost::asio::io_service::id id;
@@ -272,6 +301,7 @@ private:
     {
     }
 
+    /// Never throws
     void push_front(implementation_type& impl)
     {
       BOOST_ASSERT(!impl.next_);
@@ -286,6 +316,7 @@ private:
       front_ = &impl;
     }
 
+    /// Never throws
     void erase(implementation_type& impl)
     {
       if (front_ == &impl)
@@ -303,11 +334,13 @@ private:
       impl.next_ = impl.prev_ = 0;
     }
 
+    /// Never throws
     implementation_type* front() const
     {
       return front_;
     }
 
+    /// Never throws
     bool empty() const
     {
       return 0 == front_;
@@ -315,7 +348,7 @@ private:
 
   private:
     implementation_type* front_;
-  }; // class impl_list
+  }; // class impl_list  
 
 public:    
   explicit handler_storage_service(boost::asio::io_service& io_service)
@@ -333,13 +366,15 @@ public:
 
   void destroy(implementation_type& impl)
   {
+    handler_guard guard(impl.handler_ptr_);
+    impl.handler_ptr_ = 0;
+
     // Exclude implementation from the list of active implementations.
     mutex_type::scoped_lock lock(mutex_);
     impl_list_.erase(impl);
-    lock.unlock();
-    reset(impl);
   }
 
+  /// Can throw if destructor of user supplied handler can throw
   void reset(implementation_type& impl)
   {
     // Destroy stored handler if it exists.
