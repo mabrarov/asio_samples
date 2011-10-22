@@ -35,38 +35,37 @@
 
 namespace {
 
+class test_handler
+{
+public:
+  explicit test_handler(int value)
+    : value_(value)
+  {
+  }
+
+  void operator()(int val) 
+  {
+    std::cout << value_ << val << std::endl;
+  }
+
+private:
+  int value_;
+}; // class test_handler
+
 void test_handler_storage_move_constructor(boost::asio::io_service& io_service)
 {
-  class test_handler
-  {
-  public:
-    explicit test_handler(int value)
-      : value_(value)
-    {
-    }
-
-    void operator()(int val) 
-    {
-      std::cout << value_ << val << std::endl;
-    }
-
-  private:
-    int value_;
-  }; // class test_handler
-
   typedef ma::handler_storage<int> handler_storage_type;
 
   handler_storage_type handler1(io_service);  
   handler1.reset(test_handler(4));
+
+  boost::thread worker_thread(boost::bind(&boost::asio::io_service::run,
+      boost::ref(io_service)));
+
   handler_storage_type handler2(std::move(handler1));
   handler2.post(2);
 
-  io_service.run_one();
-
-#if BOOST_ASIO_VERSION >= 100600
-  BOOST_ASSERT(io_service.stopped());
-#endif
-
+  worker_thread.join();
   io_service.reset();
 }
 
