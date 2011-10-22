@@ -95,6 +95,16 @@ public:
     service_.construct(impl_);
   }
 
+#if defined(MA_HAS_RVALUE_REFS)
+
+  handler_storage(this_type&& other)
+    : service_(other.service_)
+  {
+    service_.move_construct(impl_, other.impl_);
+  }
+
+#endif // defined(MA_HAS_RVALUE_REFS)
+
   ~handler_storage()
   {
     service_.destroy(impl_);

@@ -364,6 +364,15 @@ public:
     impl_list_.push_front(impl);
   }
 
+  void move_construct(implementation_type& impl, 
+      implementation_type& other_impl)
+  {
+    construct(impl);
+    impl.handler_ptr_ = other_impl.handler_ptr_;
+    other_impl.handler_ptr_ = 0;
+  }
+
+
   void destroy(implementation_type& impl)
   {
     handler_guard guard(impl.handler_ptr_);

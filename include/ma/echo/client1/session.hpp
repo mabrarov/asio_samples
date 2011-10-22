@@ -52,7 +52,7 @@ public:
   {        
   }
 
-  boost::asio::ip::tcp::socket& session::socket()
+  boost::asio::ip::tcp::socket& socket()
   {
     return socket_;
   }
@@ -132,51 +132,51 @@ private:
   template <typename Handler>
   void start_external_start(const Handler& handler)
   {
-    boost::system::error_code error = do_start_external_start();          
-    io_service_.post(detail::bind_handler(handler, error));
+    //todo
+    io_service_.post(detail::bind_handler(handler, 
+        boost::asio::error::operation_not_supported));
+    //boost::system::error_code error = do_start_external_start();          
+    //io_service_.post(detail::bind_handler(handler, error));
   }
 
   template <typename Handler>
   void start_external_stop(const Handler& handler)
   {
-    if (boost::optional<boost::system::error_code> result = 
-        do_start_external_stop())
-    {
-      io_service_.post(detail::bind_handler(handler, *result));
-    }
-    else
-    {
-      stop_handler_.reset(handler);            
-    }
+    //todo
+    io_service_.post(detail::bind_handler(handler, 
+        boost::asio::error::operation_not_supported));
+    //if (boost::optional<boost::system::error_code> result = 
+    //    do_start_external_stop())
+    //{
+    //  io_service_.post(detail::bind_handler(handler, *result));
+    //}
+    //else
+    //{
+    //  stop_handler_.reset(handler);            
+    //}
   }
 
   template <typename Handler>
   void start_external_wait(const Handler& handler)
   {
-    if (boost::optional<boost::system::error_code> result = 
-        do_start_external_wait())
-    {
-      io_service_.post(detail::bind_handler(handler, *result));
-    } 
-    else
-    {
-      wait_handler_.reset(handler);
-    }
+    //todo
+    io_service_.post(detail::bind_handler(handler, 
+        boost::asio::error::operation_not_supported));
+    //if (boost::optional<boost::system::error_code> result = 
+    //    do_start_external_wait())
+    //{
+    //  io_service_.post(detail::bind_handler(handler, *result));
+    //} 
+    //else
+    //{
+    //  wait_handler_.reset(handler);
+    //}
   }
 
-  boost::system::error_code                  do_start_external_start();
-  boost::optional<boost::system::error_code> do_start_external_stop();
-  boost::optional<boost::system::error_code> do_start_external_wait();
-
-  bool may_complete_stop() const;
-  void complete_stop();
-  void start_socket_read();        
-  void start_socket_write();        
-  void handle_read(const boost::system::error_code& error, 
-      const std::size_t bytes_transferred);
-  void handle_write(const boost::system::error_code& error, 
-      const std::size_t bytes_transferred);
-  void post_stop_handler();
+  //todo
+  //boost::system::error_code                  do_start_external_start();
+  //boost::optional<boost::system::error_code> do_start_external_stop();
+  //boost::optional<boost::system::error_code> do_start_external_wait();  
 
   session_options::optional_int  socket_recv_buffer_size_;
   session_options::optional_int  socket_send_buffer_size_;

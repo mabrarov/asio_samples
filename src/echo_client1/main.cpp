@@ -5,10 +5,14 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#if defined(WIN32)
 #include <tchar.h>
 #include <windows.h>
+#endif
+
 #include <iostream>
 #include <exception>
+#include <boost/assert.hpp>
 #include <boost/ref.hpp>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
@@ -18,12 +22,63 @@
 #include <boost/make_shared.hpp>
 #include <boost/program_options.hpp>
 #include <boost/date_time/posix_time/ptime.hpp>
+#include <ma/config.hpp>
 #include <ma/handler_allocator.hpp>
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/echo/client1/session.hpp>
 #include <ma/console_controller.hpp>
+#include <ma/handler_storage.hpp>
 
+#if defined(MA_HAS_RVALUE_REFS)
+
+#include <utility>
+
+namespace {
+
+void test_handler_storage_move_constructor(boost::asio::io_service& io_service)
+{
+  class test_handler
+  {
+  public:
+    explicit test_handler(int value)
+      : value_(value)
+    {
+    }
+
+    void operator()(int val) 
+    {
+      std::cout << value_ << val << std::endl;
+    }
+
+  private:
+    int value_;
+  }; // class test_handler
+
+  typedef ma::handler_storage<int> handler_storage_type;
+
+  handler_storage_type handler1(io_service);  
+  handler1.reset(test_handler(4));
+  handler_storage_type handler2(std::move(handler1));
+  handler2.post(2);
+
+  io_service.run_one();
+
+#if BOOST_ASIO_VERSION >= 100600
+  BOOST_ASSERT(io_service.stopped());
+#endif
+
+  io_service.reset();
+}
+
+} // anonymous namespace
+
+#endif // defined(MA_HAS_RVALUE_REFS)
+
+#if defined(WIN32)
 int _tmain(int argc, _TCHAR* argv[])
+#else
+int main(int argc, char* argv[])
+#endif
 {   
   try 
   {
@@ -45,9 +100,15 @@ int _tmain(int argc, _TCHAR* argv[])
       std::cout << options_description;
       return EXIT_SUCCESS;
     }
+
+    std::size_t cpu_count = boost::thread::hardware_concurrency();
+    std::size_t session_thread_count = cpu_count > 1 ? cpu_count : 2;
+    boost::asio::io_service io_service(session_thread_count);
+
+#if defined(MA_HAS_RVALUE_REFS)    
+    test_handler_storage_move_constructor(io_service);
+#endif    
     
-    //std::size_t cpu_count = boost::thread::hardware_concurrency();
-    //std::size_t session_thread_count = cpu_count > 1 ? cpu_count : 2;
     //todo
     return EXIT_SUCCESS;
   }

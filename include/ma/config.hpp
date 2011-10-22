@@ -18,7 +18,8 @@
 /**
  * Listed options mostly provide aditional optimizations.
  */
-#if defined(BOOST_HAS_RVALUE_REFS)
+#if defined(BOOST_HAS_RVALUE_REFS) \
+    && !(defined(__GNUC__) && (__GNUC__ == 4) && (__GNUC_MINOR__ < 5))
 
 /// Turns on move semantic support.
 #define MA_HAS_RVALUE_REFS
