@@ -49,8 +49,8 @@ struct session_manager_wrapper : private boost::noncopyable
   mutex_type mutex;
   boost::condition_variable state_changed;
   ma::echo::server::session_manager_ptr session_manager;
-  volatile state_type::value_t state;
-  volatile bool stopped_by_user;    
+  state_type::value_t state;
+  bool stopped_by_user;    
   
   ma::in_place_handler_allocator<128> start_wait_allocator;
   ma::in_place_handler_allocator<128> stop_allocator;

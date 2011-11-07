@@ -467,8 +467,7 @@ private:
     while (!impl_list_.empty())
     {
       implementation_type& impl = *impl_list_.front();
-      impl_list_.erase(impl);    
-      reset(impl);
+      destroy(impl);
     }
   }
 
