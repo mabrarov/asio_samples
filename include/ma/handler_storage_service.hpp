@@ -455,6 +455,8 @@ public:
 protected:
   virtual ~handler_storage_service()
   {
+    BOOST_ASSERT_MSG(impl_list_.empty(), 
+        "impl_list_ has to be empty at this point");
   }  
 
 private:

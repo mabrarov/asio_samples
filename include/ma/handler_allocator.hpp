@@ -36,6 +36,7 @@ public:
   /// For debug purposes (ability to check destruction order, etc).
   ~in_place_handler_allocator()
   {
+    BOOST_ASSERT_MSG(!in_use_, "invalid internal state");
   }
 
   /// Try to allocate memory from internal memory block if it is free and is
@@ -110,6 +111,7 @@ public:
   /// For debug purposes (ability to check destruction order, etc).
   ~in_heap_handler_allocator()
   {
+    BOOST_ASSERT_MSG(!in_use_, "invalid internal state");
   }
 
   /// Try to allocate memory from internal memory block if it is free and is
