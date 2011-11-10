@@ -19,7 +19,6 @@
 
 #if defined(MA_HAS_RVALUE_REFS)
 #include <utility>
-#include <ma/type_traits.hpp>
 #endif // defined(MA_HAS_RVALUE_REFS)
 
 namespace ma {  
@@ -67,7 +66,7 @@ namespace ma {
  * @li handler_storage is noncopyable.
  *
  * @par Thread Safety
- * @e Distinct @e objects: Safe.@n
+ * @e Distinct @e objects: Safe until boost::asio::io_service::~io_service().@n
  * @e Shared @e objects: Unsafe.
  *    
  * At the point of execution of io_service::~io_service() access to all members
@@ -75,7 +74,7 @@ namespace ma {
  * of the thread executing io_service::~io_service().
  *
  * From the start point of io_service::~io_service() it is not guaranted that
- * reset(handler) can store handler. If underlying service was was shut down then
+ * reset(handler) can store handler. If underlying service was shut down then
  * reset(handler) won't do anything at all.
  */
 template <typename Arg>
@@ -160,9 +159,8 @@ public:
    */
   template <typename Handler>
   void reset(Handler&& handler)
-  {      
-    typedef typename ma::remove_cv_reference<Handler>::type handler_type;
-    service_.reset<handler_type>(impl_, std::forward<Handler>(handler));
+  {
+    service_.reset(impl_, std::forward<Handler>(handler));
   }
 
 #else // defined(MA_HAS_RVALUE_REFS)
@@ -177,8 +175,7 @@ public:
   template <typename Handler>
   void reset(const Handler& handler)
   {
-    typedef Handler handler_type;
-    service_.reset<handler_type>(impl_, handler);
+    service_.reset(impl_, handler);
   }
 
 #endif // defined(MA_HAS_RVALUE_REFS)

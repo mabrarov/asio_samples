@@ -218,6 +218,7 @@ struct session_manager::session_wrapper : private boost::noncopyable
 #if !defined(NDEBUG)
   ~session_wrapper()
   {
+    BOOST_ASSERT(!next && !prev.lock());
   }
 #endif
 
@@ -354,6 +355,8 @@ void session_manager::session_list::erase(const wrapped_session_ptr& value)
   value->prev.reset();
   value->next.reset();
   --size_;
+
+  BOOST_ASSERT((!value->next) && (!value->prev.lock()));
 }
 
 void session_manager::session_list::clear()

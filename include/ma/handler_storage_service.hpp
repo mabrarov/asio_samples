@@ -46,9 +46,10 @@ template <typename Arg>
 class handler_storage_service : public boost::asio::io_service::service
 {
 private:
-  typedef handler_storage_service<Arg> this_type;    
+  typedef handler_storage_service<Arg> this_type;
   typedef boost::mutex mutex_type;
-
+  typedef boost::lock_guard<mutex_type> lock_guard;
+  
 public:
   typedef Arg arg_type;    
 
@@ -156,9 +157,11 @@ private:
 
 #endif // defined(MA_HAS_RVALUE_REFS)
 
+#if !defined(NDEBUG)
     ~handler_wrapper()
     {
     }
+#endif
 
     static void do_post(handler_base* base, const arg_type& arg)
     {        
@@ -227,37 +230,8 @@ private:
     boost::asio::io_service& io_service_;
     boost::asio::io_service::work work_;
     Handler handler_;
-  }; // class handler_wrapper
+  }; // class handler_wrapper 
 
-  class handler_guard : private boost::noncopyable
-  {
-  public:
-    /// Never throws
-    explicit handler_guard(handler_base* handler_ptr)
-      : handler_ptr_(handler_ptr)
-    {
-    }
-
-    /// Can throw if destructor of user supplied handler can throw
-    ~handler_guard()
-    {
-      if (handler_ptr_)
-      {
-        handler_ptr_->destroy();
-      }
-    }
-
-    handler_base* release()
-    {
-      handler_base* handler_ptr = handler_ptr_;
-      handler_ptr_ = 0;
-      return handler_ptr;
-    }
-
-  private:
-    handler_base* handler_ptr_;
-  }; // class handler_guard
-    
 public:
   static boost::asio::io_service::id id;
 
@@ -267,16 +241,14 @@ public:
     implementation_type()
       : prev_(0)
       , next_(0)
-      , handler_ptr_(0)
+      , handler_(0)
     {
     }
 
 #if !defined(NDEBUG)
     ~implementation_type()
     {
-      BOOST_ASSERT(!handler_ptr_);
-      BOOST_ASSERT(!next_);
-      BOOST_ASSERT(!prev_);
+      BOOST_ASSERT(!handler_ && !next_ && !prev_);
     }
 #endif
 
@@ -286,36 +258,46 @@ public:
     // intrusive list of implementations.
     implementation_type* prev_;
     implementation_type* next_;
-    // Pointer to the stored handler or null pointer.
-    handler_base* handler_ptr_;
+    // Pointer to the stored handler otherwise null pointer.
+    handler_base* handler_;
   }; // class implementation_type
 
 private:
-
-  /// Double-linked intrusive list of implementations related to this service.
+  /// Double-linked intrusive list of implementations.
   class impl_list : private boost::noncopyable
   {
   public:
+    /// Never throws
     impl_list()
       : front_(0)
     {
     }
+    
+#if !defined(NDEBUG)
+    ~impl_list()
+    {
+      BOOST_ASSERT(!front_);
+    }
+#endif
 
+    implementation_type* front() const
+    {
+      return front_;
+    }
+    
     /// Never throws
     void push_front(implementation_type& impl)
     {
-      BOOST_ASSERT(!impl.next_);
-      BOOST_ASSERT(!impl.prev_);
+      BOOST_ASSERT(!impl.next_ && !impl.prev_);
 
-      impl.next_ = front_;
-      impl.prev_ = 0;
+      impl.next_ = front_;      
       if (front_)
       {
         front_->prev_ = &impl;
       }
       front_ = &impl;
-    }
-
+    }    
+        
     /// Never throws
     void erase(implementation_type& impl)
     {
@@ -332,24 +314,30 @@ private:
         impl.next_->prev_= impl.prev_;
       }
       impl.next_ = impl.prev_ = 0;
+
+      BOOST_ASSERT(!impl.next_ && !impl.prev_);
     }
 
     /// Never throws
-    implementation_type* front() const
+    void pop_front()
     {
-      return front_;
-    }
+      BOOST_ASSERT(front_);
 
-    /// Never throws
-    bool empty() const
-    {
-      return 0 == front_;
+      implementation_type& impl = *front_;
+      front_ = impl.next_;            
+      if (front_)
+      {
+        front_->prev_= 0;
+      }
+      impl.next_ = impl.prev_ = 0;
+
+      BOOST_ASSERT(!impl.next_ && !impl.prev_);
     }
 
   private:
     implementation_type* front_;
   }; // class impl_list  
-
+  
 public:    
   explicit handler_storage_service(boost::asio::io_service& io_service)
     : boost::asio::io_service::service(io_service)      
@@ -360,7 +348,7 @@ public:
   void construct(implementation_type& impl)
   {
     // Add implementation to the list of active implementations.
-    mutex_type::scoped_lock lock(mutex_);
+    lock_guard lock(impl_list_mutex_);
     impl_list_.push_front(impl);
   }
 
@@ -368,64 +356,71 @@ public:
       implementation_type& other_impl)
   {
     construct(impl);
-    impl.handler_ptr_ = other_impl.handler_ptr_;
-    other_impl.handler_ptr_ = 0;
+    // Move ownership of the stored handler
+    impl.handler_ = other_impl.handler_;
+    other_impl.handler_ = 0;
   }
-
-
+  
   void destroy(implementation_type& impl)
-  {
-    handler_guard guard(impl.handler_ptr_);
-    impl.handler_ptr_ = 0;
-
-    // Exclude implementation from the list of active implementations.
-    mutex_type::scoped_lock lock(mutex_);
-    impl_list_.erase(impl);
+  {    
+    // Remove implementation from the list of active implementations.
+    {
+      lock_guard lock(impl_list_mutex_);
+      impl_list_.erase(impl);
+    }    
+    // Destroy stored handler if it exists.
+    reset(impl);
   }
 
   /// Can throw if destructor of user supplied handler can throw
   void reset(implementation_type& impl)
   {
     // Destroy stored handler if it exists.
-    if (handler_base* handler_ptr = impl.handler_ptr_)
+    if (handler_base* handler = impl.handler_)
     {
-      impl.handler_ptr_ = 0;
-      handler_ptr->destroy();
+      impl.handler_ = 0;
+      handler->destroy();
     }
   }
 
   template <typename Handler>
   void reset(implementation_type& impl, Handler handler)
   {
-    // If service is or was in shutdown state then we can't do anything with
-    // handler.
+    // If service is (was) in shutdown state then it can't store handler.
     if (!shutdown_done_)
     {      
       typedef handler_wrapper<Handler> value_type;
       typedef detail::handler_alloc_traits<Handler, value_type> alloc_traits;
-
-      // Allocate raw memory for handler
+      // Allocate raw memory for storing the handler
       detail::raw_handler_ptr<alloc_traits> raw_ptr(handler);
-      // Wrap local handler and copy wrapper into allocated memory
+      // Create wrapped handler at allocated memory and 
+      // move ownership of allocated memory to ptr
+#if defined(MA_HAS_RVALUE_REFS)
+      detail::handler_ptr<alloc_traits> ptr(raw_ptr, 
+          boost::ref(this->get_io_service()), std::move(handler));
+#else
       detail::handler_ptr<alloc_traits> ptr(raw_ptr, 
           boost::ref(this->get_io_service()), handler);
-      // Copy current handler ptr
-      handler_base* handler_ptr = impl.handler_ptr_;
-      // Take the ownership
-      impl.handler_ptr_ = ptr.release();
-      if (handler_ptr)
+#endif
+      // Copy current handler
+      handler_base* old_handler = impl.handler_;
+      // Move ownership of already created wrapped handler
+      // (and allocated memory) to the impl
+      impl.handler_ = ptr.release();
+      // Destroy previosly stored handler
+      if (old_handler)
       {
-        handler_ptr->destroy();
+        old_handler->destroy();
       }
-    } // if (!shutdown_done_)
+    }
   }
 
   void post(implementation_type& impl, const arg_type& arg)
   {
-    if (handler_base* handler_ptr = impl.handler_ptr_)
+    if (handler_base* handler = impl.handler_)
     {
-      impl.handler_ptr_ = 0;
-      handler_ptr->post(arg);
+      impl.handler_ = 0;
+      handler->post(arg);
     }
     else
     {
@@ -435,46 +430,62 @@ public:
 
   void* target(const implementation_type& impl) const
   {
-    if (impl.handler_ptr_)
+    if (impl.handler_)
     {
-      return impl.handler_ptr_->target();        
+      return impl.handler_->target();        
     }
     return 0;
   }
 
   bool empty(const implementation_type& impl) const
   {
-    return 0 == impl.handler_ptr_;
+    return 0 == impl.handler_;
   }
 
   bool has_target(const implementation_type& impl) const
   {
-    return 0 != impl.handler_ptr_;
+    return 0 != impl.handler_;
   }
 
 protected:
   virtual ~handler_storage_service()
   {
-    BOOST_ASSERT_MSG(impl_list_.empty(), 
-        "impl_list_ has to be empty at this point");
   }  
 
 private:
   virtual void shutdown_service()
   {
-    // Restrict usage of service that is or was in shutdown state.
+    // Restrict usage of service.
     shutdown_done_ = true;
-    // Destroy all still active implemenations. Actually, it doesn't destroy 
-    // handler_storage instances but clears them all.
-    while (!impl_list_.empty())
+    // Clear all still active implementations.
+    bool done = false;    
+    while (!done)
     {
-      implementation_type& impl = *impl_list_.front();
-      destroy(impl);
+      // Pop front implementation.
+      implementation_type* impl = 0;
+      {
+        lock_guard lock(impl_list_mutex_);        
+        impl = impl_list_.front();
+        if (impl)
+        {
+          impl_list_.pop_front();
+        }
+      }      
+      if (impl)
+      {
+        // Clear popped implementation.
+        reset(*impl);
+      }
+      else
+      {
+        // The end of list.
+        done = true;
+      }
     }
   }
 
   // Guard for the impl_list_
-  mutex_type mutex_;
+  mutex_type impl_list_mutex_;
   // Double-linked intrusive list of active (constructed but still not
   // destructed) implementations.
   impl_list impl_list_;
