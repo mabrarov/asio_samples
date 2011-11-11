@@ -232,90 +232,80 @@ private:
     Handler handler_;
   }; // class handler_wrapper 
 
-public:
-  static boost::asio::io_service::id id;
-
-  class implementation_type : private boost::noncopyable
-  { 
-  public:
-    implementation_type()
-      : prev_(0)
-      , next_(0)
-      , handler_(0)
-    {
-    }
-
-#if !defined(NDEBUG)
-    ~implementation_type()
-    {
-      BOOST_ASSERT(!handler_ && !next_ && !prev_);
-    }
-#endif
-
-  private:
-    friend class handler_storage_service<arg_type>;
-    // Pointers to previous and next implementations in a double-linked 
-    // intrusive list of implementations.
-    implementation_type* prev_;
-    implementation_type* next_;
-    // Pointer to the stored handler otherwise null pointer.
-    handler_base* handler_;
-  }; // class implementation_type
-
-private:
-  /// Double-linked intrusive list of implementations.
-  class impl_list : private boost::noncopyable
+  /// Simplified double-linked intrusive list.
+  template<typename Value>
+  class intrusive_list : private boost::noncopyable
   {
   public:
+    typedef Value  value_type;
+    typedef Value* pointer;
+    typedef Value& reference;
+    
+    /// Required header for items of the list.
+    class entry : private boost::noncopyable
+    {
+    public:
+      entry()
+        : prev_(0)
+        , next_(0)
+      {
+      }
+
+#if !defined(NDEBUG)
+      ~entry()
+      {
+        BOOST_ASSERT(!prev_ && !next_);
+      }
+#endif
+
+    private:
+      friend class intrusive_list<value_type>;      
+      pointer next_;
+      pointer prev_;
+    }; // class entry
+
     /// Never throws
-    impl_list()
+    intrusive_list()
       : front_(0)
     {
     }
-    
-#if !defined(NDEBUG)
-    ~impl_list()
-    {
-      BOOST_ASSERT(!front_);
-    }
-#endif
 
-    implementation_type* front() const
+    pointer front() const
     {
       return front_;
     }
     
     /// Never throws
-    void push_front(implementation_type& impl)
+    void push_front(reference value)
     {
-      BOOST_ASSERT(!impl.next_ && !impl.prev_);
+      BOOST_ASSERT(!value.next_ && !value.prev_);
 
-      impl.next_ = front_;      
+      value.next_ = front_;      
       if (front_)
       {
-        front_->prev_ = &impl;
+        front_->prev_ = &value;
       }
-      front_ = &impl;
+      front_ = &value;
     }    
         
     /// Never throws
-    void erase(implementation_type& impl)
+    void erase(reference value)
     {
-      if (front_ == &impl)
+      if (front_ == &value)
       {
-        front_ = impl.next_;
+        front_ = value.next_;
       }
-      if (impl.prev_)
+      if (value.prev_)
       {
-        impl.prev_->next_ = impl.next_;
+        value.prev_->next_ = value.next_;
       }
-      if (impl.next_)
+      if (value.next_)
       {
-        impl.next_->prev_= impl.prev_;
+        value.next_->prev_= value.prev_;
       }
-      impl.next_ = impl.prev_ = 0;
+      value.next_ = value.prev_ = 0;
 
-      BOOST_ASSERT(!impl.next_ && !impl.prev_);
+      BOOST_ASSERT(!value.next_ && !value.prev_);
     }
 
     /// Never throws
@@ -323,22 +313,45 @@ private:
     {
       BOOST_ASSERT(front_);
 
-      implementation_type& impl = *front_;
-      front_ = impl.next_;            
+      reference value = *front_;
+      front_ = value.next_;            
       if (front_)
       {
         front_->prev_= 0;
       }
-      impl.next_ = impl.prev_ = 0;
+      value.next_ = value.prev_ = 0;
 
-      BOOST_ASSERT(!impl.next_ && !impl.prev_);
+      BOOST_ASSERT(!value.next_ && !value.prev_);
     }
 
   private:
-    implementation_type* front_;
-  }; // class impl_list  
+    pointer front_;
+  }; // class intrusive_list  
+
+public:
+  static boost::asio::io_service::id id;
+
+  class implementation_type : public intrusive_list<implementation_type>::entry
+  { 
+  public:
+    implementation_type()
+      : handler_(0)
+    {
+    }
+
+#if !defined(NDEBUG)
+    ~implementation_type()
+    {
+      BOOST_ASSERT(!handler_);
+    }
+#endif
+
+  private:
+    friend class handler_storage_service<arg_type>;
+    // Pointer to the stored handler otherwise null pointer.
+    handler_base* handler_;
+  }; // class implementation_type
   
-public:    
   explicit handler_storage_service(boost::asio::io_service& io_service)
     : boost::asio::io_service::service(io_service)      
     , shutdown_done_(false)
@@ -488,7 +501,7 @@ private:
   mutex_type impl_list_mutex_;
   // Double-linked intrusive list of active (constructed but still not
   // destructed) implementations.
-  impl_list impl_list_;
+  intrusive_list<implementation_type> impl_list_;
   // Shutdown state flag.
   bool shutdown_done_;
 }; // class handler_storage_service
