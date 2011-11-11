@@ -37,7 +37,7 @@ public:
   typedef void result_type;
 
   typedef void (session_manager::*func_type)(
-      const session_manager::wrapped_session_ptr&,
+      const session_manager::session_wrapper_ptr&,
       const boost::system::error_code&);
 
   template <typename SessionManagerPtr, typename SessionWrapperPtr>
@@ -75,7 +75,7 @@ public:
 private:
   func_type func_;
   session_manager_ptr session_manager_;
-  session_manager::wrapped_session_ptr session_;
+  session_manager::session_wrapper_ptr session_;
 }; // class session_manager::accept_handler_binder
 
 class session_manager::session_dispatch_binder
@@ -87,7 +87,7 @@ public:
   typedef void result_type;
 
   typedef void (*func_type)(const session_manager_weak_ptr&,
-    const session_manager::wrapped_session_ptr&, 
+    const session_manager::session_wrapper_ptr&, 
     const boost::system::error_code&);
 
   template <typename SessionManagerPtr, typename SessionWrapperPtr>
@@ -125,7 +125,7 @@ public:
 private:
   func_type func_;
   session_manager_weak_ptr session_manager_;
-  session_manager::wrapped_session_ptr session_;
+  session_manager::session_wrapper_ptr session_;
 }; // class session_manager::session_dispatch_binder      
 
 class session_manager::session_handler_binder
@@ -137,7 +137,7 @@ public:
   typedef void result_type;
 
   typedef void (session_manager::*func_type)(
-      const session_manager::wrapped_session_ptr&,
+      const session_manager::session_wrapper_ptr&,
       const boost::system::error_code&);
 
   template <typename SessionManagerPtr, typename SessionWrapperPtr>
@@ -178,7 +178,7 @@ public:
 private:
   func_type func_;
   session_manager_ptr session_manager_;
-  session_manager::wrapped_session_ptr session_;
+  session_manager::session_wrapper_ptr session_;
   boost::system::error_code error_;
 }; // class session_manager::session_handler_binder
 
@@ -195,8 +195,8 @@ struct session_manager::session_wrapper : private boost::noncopyable
     enum value_t {ready, start, work, stop, stopped};
   };
 
-  session_manager::wrapped_session_weak_ptr prev;
-  session_manager::wrapped_session_ptr      next;
+  session_manager::session_wrapper*    prev;
+  session_manager::session_wrapper_ptr next;
 
   endpoint_type       remote_endpoint;
   server::session_ptr session;
@@ -208,7 +208,9 @@ struct session_manager::session_wrapper : private boost::noncopyable
   
   session_wrapper(boost::asio::io_service& io_service, 
       const session_config& config)
-    : session(boost::make_shared<server::session>(
+    : prev(0)
+    , next()
+    , session(boost::make_shared<server::session>(
           boost::ref(io_service), config))
     , state(state_type::ready)
     , pending_operations(0)
@@ -218,7 +220,6 @@ struct session_manager::session_wrapper : private boost::noncopyable
 #if !defined(NDEBUG)
   ~session_wrapper()
   {
-    BOOST_ASSERT(!next && !prev.lock());
   }
 #endif
 
@@ -324,26 +325,26 @@ struct session_manager::session_wrapper : private boost::noncopyable
 }; // struct session_manager::session_wrapper
 
 void session_manager::session_list::push_front(
-    const wrapped_session_ptr& value)
+    const session_wrapper_ptr& value)
 {
-  BOOST_ASSERT((!value->next) && (!value->prev.lock()));
+  BOOST_ASSERT(!value->next && !value->prev);
 
   value->next = front_;  
   if (front_)
   {
-    front_->prev = value;
+    front_->prev = value.get();
   }
-  front_ = value;  
+  front_ = value;
   ++size_;
 }
 
-void session_manager::session_list::erase(const wrapped_session_ptr& value)
+void session_manager::session_list::erase(const session_wrapper_ptr& value)
 {
   if (value == front_)
   {
     front_ = front_->next;
   }
-  wrapped_session_ptr prev = value->prev.lock();
+  session_wrapper* prev = value->prev;
   if (prev)
   {
     prev->next = value->next;
@@ -352,11 +353,11 @@ void session_manager::session_list::erase(const wrapped_session_ptr& value)
   {
     value->next->prev = prev;
   }
-  value->prev.reset();
+  value->prev = 0;
   value->next.reset();
   --size_;
 
-  BOOST_ASSERT((!value->next) && (!value->prev.lock()));
+  BOOST_ASSERT(!value->next && !value->prev);
 }
 
 void session_manager::session_list::clear()
@@ -366,10 +367,10 @@ void session_manager::session_list::clear()
   // The last can be too great for the stack.
   while (front_)
   {
-    wrapped_session_ptr tmp = front_->next;
-    front_->prev.reset();
+    session_wrapper_ptr tmp = front_->next;
+    front_->prev = 0;
     front_->next.reset();
-    front_ = tmp;    
+    front_ = tmp; 
   }
   size_ = 0;
 }
@@ -551,7 +552,7 @@ void session_manager::continue_work()
 
   // Get new, ready to start session
   boost::system::error_code error;
-  wrapped_session_ptr session = create_session(error);
+  session_wrapper_ptr session = create_session(error);
   if (error)
   {
     if (session)
@@ -574,7 +575,7 @@ void session_manager::continue_work()
   start_accept_session(session);
 }
 
-void session_manager::handle_accept(const wrapped_session_ptr& session,
+void session_manager::handle_accept(const session_wrapper_ptr& session,
     const boost::system::error_code& error)
 {
   BOOST_ASSERT_MSG(accept_state::in_progress == accept_state_,
@@ -598,7 +599,7 @@ void session_manager::handle_accept(const wrapped_session_ptr& session,
   }
 }
 
-void session_manager::handle_accept_at_work(const wrapped_session_ptr& session,
+void session_manager::handle_accept_at_work(const session_wrapper_ptr& session,
     const boost::system::error_code& error)
 {
   BOOST_ASSERT_MSG(intern_state::work == intern_state_, 
@@ -631,7 +632,7 @@ void session_manager::handle_accept_at_work(const wrapped_session_ptr& session,
   continue_work();
 }
 
-void session_manager::handle_accept_at_stop(const wrapped_session_ptr& session,
+void session_manager::handle_accept_at_stop(const session_wrapper_ptr& session,
     const boost::system::error_code& /*error*/)
 {
   BOOST_ASSERT_MSG(intern_state::stop == intern_state_, 
@@ -647,7 +648,7 @@ void session_manager::handle_accept_at_stop(const wrapped_session_ptr& session,
   continue_stop();  
 }
 
-void session_manager::handle_session_start(const wrapped_session_ptr& session, 
+void session_manager::handle_session_start(const session_wrapper_ptr& session, 
     const boost::system::error_code& error)
 {
   // Split handler based on current internal state 
@@ -669,7 +670,7 @@ void session_manager::handle_session_start(const wrapped_session_ptr& session,
 }
 
 void session_manager::handle_session_start_at_work(
-    const wrapped_session_ptr& session, const boost::system::error_code& error)
+    const session_wrapper_ptr& session, const boost::system::error_code& error)
 {
   BOOST_ASSERT_MSG(intern_state::work == intern_state_, 
       "invalid internal state");
@@ -702,7 +703,7 @@ void session_manager::handle_session_start_at_work(
 }
 
 void session_manager::handle_session_start_at_stop(
-    const wrapped_session_ptr& session, const boost::system::error_code& error)
+    const session_wrapper_ptr& session, const boost::system::error_code& error)
 {
   BOOST_ASSERT_MSG(intern_state::stop == intern_state_, 
       "invalid internal state");
@@ -733,7 +734,7 @@ void session_manager::handle_session_start_at_stop(
   continue_stop();
 }
 
-void session_manager::handle_session_wait(const wrapped_session_ptr& session,
+void session_manager::handle_session_wait(const session_wrapper_ptr& session,
     const boost::system::error_code& error)
 {
   // Split handler based on current internal state 
@@ -755,7 +756,7 @@ void session_manager::handle_session_wait(const wrapped_session_ptr& session,
 }
 
 void session_manager::handle_session_wait_at_work(
-    const wrapped_session_ptr& session,
+    const session_wrapper_ptr& session,
     const boost::system::error_code& /*error*/)
 {
   BOOST_ASSERT_MSG(intern_state::work == intern_state_, 
@@ -778,7 +779,7 @@ void session_manager::handle_session_wait_at_work(
 }
 
 void session_manager::handle_session_wait_at_stop(
-    const wrapped_session_ptr& session, 
+    const session_wrapper_ptr& session, 
     const boost::system::error_code& /*error*/)
 {
   BOOST_ASSERT_MSG(intern_state::stop == intern_state_, 
@@ -800,7 +801,7 @@ void session_manager::handle_session_wait_at_stop(
   continue_stop();
 }
 
-void session_manager::handle_session_stop(const wrapped_session_ptr& session,
+void session_manager::handle_session_stop(const session_wrapper_ptr& session,
     const boost::system::error_code& error)
 {
   // Split handler based on current internal state 
@@ -822,7 +823,7 @@ void session_manager::handle_session_stop(const wrapped_session_ptr& session,
 }
 
 void session_manager::handle_session_stop_at_work(
-    const wrapped_session_ptr& session, const boost::system::error_code& error)
+    const session_wrapper_ptr& session, const boost::system::error_code& error)
 {
   BOOST_ASSERT_MSG(intern_state::work == intern_state_, 
       "invalid internal state");
@@ -853,7 +854,7 @@ void session_manager::handle_session_stop_at_work(
 }
 
 void session_manager::handle_session_stop_at_stop(
-    const wrapped_session_ptr& session, const boost::system::error_code& error)
+    const session_wrapper_ptr& session, const boost::system::error_code& error)
 {
   BOOST_ASSERT_MSG(intern_state::stop == intern_state_, 
       "invalid internal state");
@@ -899,7 +900,7 @@ void session_manager::start_stop(const boost::system::error_code& error)
   }
 
   // Stop all active sessions
-  wrapped_session_ptr session = active_sessions_.front();
+  session_wrapper_ptr session = active_sessions_.front();
   while (session)
   {
     if (!session->is_stopping())
@@ -949,7 +950,7 @@ void session_manager::continue_stop()
   }
 }
 
-void session_manager::start_accept_session(const wrapped_session_ptr& session)
+void session_manager::start_accept_session(const session_wrapper_ptr& session)
 {
 #if defined(MA_HAS_RVALUE_REFS) \
     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
@@ -972,7 +973,7 @@ void session_manager::start_accept_session(const wrapped_session_ptr& session)
   ++pending_operations_;
 }
 
-void session_manager::start_session_start(const wrapped_session_ptr& session)
+void session_manager::start_session_start(const session_wrapper_ptr& session)
 { 
   // Asynchronously start wrapped session
 #if defined(MA_HAS_RVALUE_REFS) \
@@ -993,7 +994,7 @@ void session_manager::start_session_start(const wrapped_session_ptr& session)
   ++pending_operations_;
 }
 
-void session_manager::start_session_stop(const wrapped_session_ptr& session)
+void session_manager::start_session_stop(const session_wrapper_ptr& session)
 {
   // Asynchronously stop wrapped session
 #if defined(MA_HAS_RVALUE_REFS) \
@@ -1014,7 +1015,7 @@ void session_manager::start_session_stop(const wrapped_session_ptr& session)
   ++pending_operations_;
 }
 
-void session_manager::start_session_wait(const wrapped_session_ptr& session)
+void session_manager::start_session_wait(const session_wrapper_ptr& session)
 {
   // Asynchronously wait on wrapped session
 #if defined(MA_HAS_RVALUE_REFS) \
@@ -1035,7 +1036,7 @@ void session_manager::start_session_wait(const wrapped_session_ptr& session)
   ++pending_operations_;
 }
 
-void session_manager::recycle(const wrapped_session_ptr& session)
+void session_manager::recycle(const session_wrapper_ptr& session)
 {
   BOOST_ASSERT_MSG(session, "session must be not null");
 
@@ -1050,12 +1051,12 @@ void session_manager::recycle(const wrapped_session_ptr& session)
   } 
 }
 
-session_manager::wrapped_session_ptr session_manager::create_session(
+session_manager::session_wrapper_ptr session_manager::create_session(
     boost::system::error_code& error)
 {        
   if (!recycled_sessions_.empty())
   {
-    wrapped_session_ptr session = recycled_sessions_.front();
+    session_wrapper_ptr session = recycled_sessions_.front();
     recycled_sessions_.erase(session);          
     error = boost::system::error_code();
     return session;
@@ -1063,7 +1064,7 @@ session_manager::wrapped_session_ptr session_manager::create_session(
 
   try 
   {   
-    wrapped_session_ptr session = boost::make_shared<session_wrapper>(
+    session_wrapper_ptr session = boost::make_shared<session_wrapper>(
         boost::ref(session_io_service_), managed_session_config_);
     error = boost::system::error_code();
     return session;
@@ -1071,7 +1072,7 @@ session_manager::wrapped_session_ptr session_manager::create_session(
   catch (const std::bad_alloc&) 
   {
     error = server_error::no_memory;
-    return wrapped_session_ptr();
+    return session_wrapper_ptr();
   }
 }
 
@@ -1091,7 +1092,7 @@ boost::system::error_code session_manager::close_acceptor()
 
 void session_manager::dispatch_handle_session_start(
     const session_manager_weak_ptr& this_weak_ptr, 
-    const wrapped_session_ptr& session, 
+    const session_wrapper_ptr& session, 
     const boost::system::error_code& error)
 {
   // Try to lock the session manager
@@ -1119,7 +1120,7 @@ void session_manager::dispatch_handle_session_start(
 
 void session_manager::dispatch_handle_session_wait(
     const session_manager_weak_ptr& this_weak_ptr,
-    const wrapped_session_ptr& session, 
+    const session_wrapper_ptr& session, 
     const boost::system::error_code& error)
 {
   if (session_manager_ptr this_ptr = this_weak_ptr.lock())
@@ -1144,7 +1145,7 @@ void session_manager::dispatch_handle_session_wait(
 
 void session_manager::dispatch_handle_session_stop(
     const session_manager_weak_ptr& this_weak_ptr,
-    const wrapped_session_ptr& session, 
+    const session_wrapper_ptr& session, 
     const boost::system::error_code& error)
 {
   if (session_manager_ptr this_ptr = this_weak_ptr.lock())

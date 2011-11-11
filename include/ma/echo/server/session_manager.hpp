@@ -15,7 +15,6 @@
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/optional.hpp>
-#include <boost/weak_ptr.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/tuple/tuple.hpp>
@@ -183,9 +182,8 @@ public:
 
 private:        
   struct  session_wrapper;
-  typedef boost::shared_ptr<session_wrapper> wrapped_session_ptr;
-  typedef boost::weak_ptr<session_wrapper>   wrapped_session_weak_ptr;
-  
+  typedef boost::shared_ptr<session_wrapper> session_wrapper_ptr;
+    
 #if defined(MA_HAS_RVALUE_REFS) \
     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
@@ -254,8 +252,8 @@ private:
       clear();
     }
 
-    void push_front(const wrapped_session_ptr& value);
-    void erase(const wrapped_session_ptr& value);          
+    void push_front(const session_wrapper_ptr& value);
+    void erase(const session_wrapper_ptr& value);          
     void clear();
 
     std::size_t size() const
@@ -268,14 +266,14 @@ private:
       return 0 == size_;
     }
 
-    wrapped_session_ptr front() const
+    session_wrapper_ptr front() const
     {
       return front_;
     }
 
   private:
     std::size_t size_;
-    wrapped_session_ptr front_;
+    session_wrapper_ptr front_;
   }; // class session_list
 
   struct extern_state
@@ -336,55 +334,55 @@ private:
 
   void continue_work();  
 
-  void handle_accept(const wrapped_session_ptr&, 
+  void handle_accept(const session_wrapper_ptr&, 
       const boost::system::error_code&);
-  void handle_accept_at_work(const wrapped_session_ptr&, 
+  void handle_accept_at_work(const session_wrapper_ptr&, 
       const boost::system::error_code&);
-  void handle_accept_at_stop(const wrapped_session_ptr&, 
-      const boost::system::error_code&);
-
-  void handle_session_start(const wrapped_session_ptr&,
-      const boost::system::error_code&);
-  void handle_session_start_at_work(const wrapped_session_ptr&,
-      const boost::system::error_code&);
-  void handle_session_start_at_stop(const wrapped_session_ptr&,
+  void handle_accept_at_stop(const session_wrapper_ptr&, 
       const boost::system::error_code&);
 
-  void handle_session_wait(const wrapped_session_ptr&,
+  void handle_session_start(const session_wrapper_ptr&,
       const boost::system::error_code&);
-  void handle_session_wait_at_work(const wrapped_session_ptr&,
+  void handle_session_start_at_work(const session_wrapper_ptr&,
       const boost::system::error_code&);
-  void handle_session_wait_at_stop(const wrapped_session_ptr&,
+  void handle_session_start_at_stop(const session_wrapper_ptr&,
       const boost::system::error_code&);
 
-  void handle_session_stop(const wrapped_session_ptr&,
+  void handle_session_wait(const session_wrapper_ptr&,
       const boost::system::error_code&);
-  void handle_session_stop_at_work(const wrapped_session_ptr&,
+  void handle_session_wait_at_work(const session_wrapper_ptr&,
       const boost::system::error_code&);
-  void handle_session_stop_at_stop(const wrapped_session_ptr&,
+  void handle_session_wait_at_stop(const session_wrapper_ptr&,
+      const boost::system::error_code&);
+
+  void handle_session_stop(const session_wrapper_ptr&,
+      const boost::system::error_code&);
+  void handle_session_stop_at_work(const session_wrapper_ptr&,
+      const boost::system::error_code&);
+  void handle_session_stop_at_stop(const session_wrapper_ptr&,
       const boost::system::error_code&);
 
   bool is_out_of_work() const;
   void start_stop(const boost::system::error_code&);
   void continue_stop();
             
-  void start_accept_session(const wrapped_session_ptr&);  
-  void start_session_start(const wrapped_session_ptr&);
-  void start_session_stop(const wrapped_session_ptr&);
-  void start_session_wait(const wrapped_session_ptr&);
+  void start_accept_session(const session_wrapper_ptr&);  
+  void start_session_start(const session_wrapper_ptr&);
+  void start_session_stop(const session_wrapper_ptr&);
+  void start_session_wait(const session_wrapper_ptr&);
 
-  void recycle(const wrapped_session_ptr&);
-  wrapped_session_ptr create_session(boost::system::error_code& error);
+  void recycle(const session_wrapper_ptr&);
+  session_wrapper_ptr create_session(boost::system::error_code& error);
 
   boost::system::error_code open_acceptor();
   boost::system::error_code close_acceptor();
 
   static void dispatch_handle_session_start(const session_manager_weak_ptr&,
-      const wrapped_session_ptr&, const boost::system::error_code&);
+      const session_wrapper_ptr&, const boost::system::error_code&);
   static void dispatch_handle_session_wait(const session_manager_weak_ptr&,
-      const wrapped_session_ptr&, const boost::system::error_code&);
+      const session_wrapper_ptr&, const boost::system::error_code&);
   static void dispatch_handle_session_stop(const session_manager_weak_ptr&,
-      const wrapped_session_ptr&, const boost::system::error_code&);
+      const session_wrapper_ptr&, const boost::system::error_code&);
 
   static void open(protocol_type::acceptor& acceptor, 
       const protocol_type::endpoint& endpoint, int backlog, 

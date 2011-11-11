@@ -251,13 +251,6 @@ private:
       {
       }
 
-#if !defined(NDEBUG)
-      ~entry()
-      {
-        BOOST_ASSERT(!prev_ && !next_);
-      }
-#endif
-
     private:
       friend class intrusive_list<value_type>;
       pointer prev_;
@@ -278,34 +271,40 @@ private:
     /// Never throws
     void push_front(reference value)
     {
-      BOOST_ASSERT(!value.next_ && !value.prev_);
+      entry& value_entry = static_cast<entry&>(value);
 
-      value.next_ = front_;      
-      if (front_)
+      BOOST_ASSERT(!value_entry.prev_ && !value_entry.next_);
+
+      value_entry.next_ = front_;      
+      if (value_entry.next_)
       {
-        front_->prev_ = &value;
+        entry& front_entry = static_cast<entry&>(*value_entry.next_);
+        front_entry.prev_ = boost::addressof(value);
       }
-      front_ = &value;
+      front_ = boost::addressof(value);
     }    
         
     /// Never throws
     void erase(reference value)
     {
-      if (front_ == &value)
+      entry& value_entry = static_cast<entry&>(value);
+      if (front_ == boost::addressof(value))
       {
-        front_ = value.next_;
+        front_ = value_entry.next_;
       }
-      if (value.prev_)
+      if (value_entry.prev_)
       {
-        value.prev_->next_ = value.next_;
+        entry& prev_entry = static_cast<entry&>(*value_entry.prev_);
+        prev_entry.next_ = value_entry.next_;
       }
-      if (value.next_)
+      if (value_entry.next_)
       {
-        value.next_->prev_= value.prev_;
+        entry& next_entry = static_cast<entry&>(*value_entry.next_);
+        next_entry.prev_ = value_entry.prev_;
       }
-      value.next_ = value.prev_ = 0;
+      value_entry.prev_ = value_entry.next_ = 0;
 
-      BOOST_ASSERT(!value.next_ && !value.prev_);
+      BOOST_ASSERT(!value_entry.prev_ && !value_entry.next_);
     }
 
     /// Never throws
@@ -313,15 +312,16 @@ private:
     {
       BOOST_ASSERT(front_);
 
-      reference value = *front_;
-      front_ = value.next_;            
+      entry& value_entry = static_cast<entry&>(*front_);
+      front_ = value_entry.next_;            
       if (front_)
       {
-        front_->prev_= 0;
+        entry& front_entry = static_cast<entry&>(*front_);
+        front_entry.prev_= 0;
       }
-      value.next_ = value.prev_ = 0;
+      value_entry.next_ = value_entry.prev_ = 0;
 
-      BOOST_ASSERT(!value.next_ && !value.prev_);
+      BOOST_ASSERT(!value_entry.prev_ && !value_entry.next_);
     }
 
   private:
