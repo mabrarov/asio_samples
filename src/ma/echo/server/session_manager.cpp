@@ -195,8 +195,8 @@ struct session_manager::session_wrapper : private boost::noncopyable
     enum value_t {ready, start, work, stop, stopped};
   };
 
-  session_manager::session_wrapper*    prev;
-  session_manager::session_wrapper_ptr next;
+  session_manager::session_wrapper_weak_ptr prev;
+  session_manager::session_wrapper_ptr      next;
 
   endpoint_type       remote_endpoint;
   server::session_ptr session;
@@ -208,9 +208,7 @@ struct session_manager::session_wrapper : private boost::noncopyable
   
   session_wrapper(boost::asio::io_service& io_service, 
       const session_config& config)
-    : prev(0)
-    , next()
-    , session(boost::make_shared<server::session>(
+    : session(boost::make_shared<server::session>(
           boost::ref(io_service), config))
     , state(state_type::ready)
     , pending_operations(0)
@@ -220,6 +218,7 @@ struct session_manager::session_wrapper : private boost::noncopyable
 #if !defined(NDEBUG)
   ~session_wrapper()
   {
+    BOOST_ASSERT(!next && !prev.lock());
   }
 #endif
 
@@ -327,14 +326,14 @@ struct session_manager::session_wrapper : private boost::noncopyable
 void session_manager::session_list::push_front(
     const session_wrapper_ptr& value)
 {
-  BOOST_ASSERT(!value->next && !value->prev);
+  BOOST_ASSERT((!value->next) && (!value->prev.lock()));
 
   value->next = front_;  
   if (front_)
   {
-    front_->prev = value.get();
+    front_->prev = value;
   }
-  front_ = value;
+  front_ = value;  
   ++size_;
 }
 
@@ -344,7 +343,7 @@ void session_manager::session_list::erase(const session_wrapper_ptr& value)
   {
     front_ = front_->next;
   }
-  session_wrapper* prev = value->prev;
+  session_wrapper_ptr prev = value->prev.lock();
   if (prev)
   {
     prev->next = value->next;
@@ -353,11 +352,11 @@ void session_manager::session_list::erase(const session_wrapper_ptr& value)
   {
     value->next->prev = prev;
   }
-  value->prev = 0;
+  value->prev.reset();
   value->next.reset();
   --size_;
 
-  BOOST_ASSERT(!value->next && !value->prev);
+  BOOST_ASSERT((!value->next) && (!value->prev.lock()));
 }
 
 void session_manager::session_list::clear()
@@ -368,9 +367,9 @@ void session_manager::session_list::clear()
   while (front_)
   {
     session_wrapper_ptr tmp = front_->next;
-    front_->prev = 0;
+    front_->prev.reset();
     front_->next.reset();
-    front_ = tmp; 
+    front_ = tmp;    
   }
   size_ = 0;
 }

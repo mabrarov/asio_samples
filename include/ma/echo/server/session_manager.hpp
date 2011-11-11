@@ -15,6 +15,7 @@
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/optional.hpp>
+#include <boost/weak_ptr.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/tuple/tuple.hpp>
@@ -183,7 +184,8 @@ public:
 private:        
   struct  session_wrapper;
   typedef boost::shared_ptr<session_wrapper> session_wrapper_ptr;
-    
+  typedef boost::weak_ptr<session_wrapper>   session_wrapper_weak_ptr;
+  
 #if defined(MA_HAS_RVALUE_REFS) \
     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
