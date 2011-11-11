@@ -369,9 +369,9 @@ void session_manager::session_list::clear()
     wrapped_session_ptr tmp = front_->next;
     front_->prev.reset();
     front_->next.reset();
-    front_ = tmp;
-    --size_;
+    front_ = tmp;    
   }
+  size_ = 0;
 }
 
 session_manager::session_manager(boost::asio::io_service& io_service, 

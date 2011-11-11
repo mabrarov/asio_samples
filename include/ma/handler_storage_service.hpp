@@ -259,9 +259,9 @@ private:
 #endif
 
     private:
-      friend class intrusive_list<value_type>;      
-      pointer next_;
+      friend class intrusive_list<value_type>;
       pointer prev_;
+      pointer next_;
     }; // class entry
 
     /// Never throws
