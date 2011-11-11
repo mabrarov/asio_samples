@@ -30,6 +30,119 @@
 
 namespace ma {
 
+namespace detail {
+
+/// Simplified double-linked intrusive list.
+template<typename Value>
+class intrusive_list : private boost::noncopyable
+{
+public:
+  typedef Value  value_type;
+  typedef Value* pointer;
+  typedef Value& reference;
+    
+  /// Required header for items of the list.
+  class entry : private boost::noncopyable
+  {
+  public:
+    entry()
+      : prev_(0)
+      , next_(0)
+    {
+    }
+
+  private:
+    friend class intrusive_list<value_type>;
+    pointer prev_;
+    pointer next_;
+  }; // class entry
+
+  /// Never throws
+  intrusive_list()
+    : front_(0)
+  {
+  }
+
+  /// Never throws
+  pointer front() const
+  {
+    return front_;
+  }
+
+  /// Never throws
+  static pointer prev(reference value)
+  {
+    return static_cast<entry&>(value).prev_;
+  }
+
+  /// Never throws
+  static pointer next(reference value)
+  {
+    return static_cast<entry&>(value).next_;
+  }
+    
+  /// Never throws
+  void push_front(reference value)
+  {
+    entry& value_entry = static_cast<entry&>(value);
+
+    BOOST_ASSERT(!value_entry.prev_ && !value_entry.next_);
+
+    value_entry.next_ = front_;      
+    if (value_entry.next_)
+    {
+      entry& front_entry = static_cast<entry&>(*value_entry.next_);
+      front_entry.prev_ = boost::addressof(value);
+    }
+    front_ = boost::addressof(value);
+  }    
+        
+  /// Never throws
+  void erase(reference value)
+  {
+    entry& value_entry = static_cast<entry&>(value);
+    if (front_ == boost::addressof(value))
+    {
+      front_ = value_entry.next_;
+    }
+    if (value_entry.prev_)
+    {
+      entry& prev_entry = static_cast<entry&>(*value_entry.prev_);
+      prev_entry.next_ = value_entry.next_;
+    }
+    if (value_entry.next_)
+    {
+      entry& next_entry = static_cast<entry&>(*value_entry.next_);
+      next_entry.prev_ = value_entry.prev_;
+    }
+    value_entry.prev_ = value_entry.next_ = 0;
+
+    BOOST_ASSERT(!value_entry.prev_ && !value_entry.next_);
+  }
+
+  /// Never throws
+  void pop_front()
+  {
+    BOOST_ASSERT(front_);
+
+    entry& value_entry = static_cast<entry&>(*front_);
+    front_ = value_entry.next_;            
+    if (front_)
+    {
+      entry& front_entry = static_cast<entry&>(*front_);
+      front_entry.prev_= 0;
+    }
+    value_entry.next_ = value_entry.prev_ = 0;
+
+    BOOST_ASSERT(!value_entry.prev_ && !value_entry.next_);
+  }
+
+private:
+  pointer front_;
+}; // class intrusive_list  
+
+} // namespace detail
+
 /// Exception thrown when handler_storage::post is used with empty 
 /// handler_storage.
 class bad_handler_call : public std::runtime_error
@@ -230,108 +343,13 @@ private:
     boost::asio::io_service& io_service_;
     boost::asio::io_service::work work_;
     Handler handler_;
-  }; // class handler_wrapper 
-
-  /// Simplified double-linked intrusive list.
-  template<typename Value>
-  class intrusive_list : private boost::noncopyable
-  {
-  public:
-    typedef Value  value_type;
-    typedef Value* pointer;
-    typedef Value& reference;
-    
-    /// Required header for items of the list.
-    class entry : private boost::noncopyable
-    {
-    public:
-      entry()
-        : prev_(0)
-        , next_(0)
-      {
-      }
-
-    private:
-      friend class intrusive_list<value_type>;
-      pointer prev_;
-      pointer next_;
-    }; // class entry
-
-    /// Never throws
-    intrusive_list()
-      : front_(0)
-    {
-    }
-
-    pointer front() const
-    {
-      return front_;
-    }
-    
-    /// Never throws
-    void push_front(reference value)
-    {
-      entry& value_entry = static_cast<entry&>(value);
-
-      BOOST_ASSERT(!value_entry.prev_ && !value_entry.next_);
-
-      value_entry.next_ = front_;      
-      if (value_entry.next_)
-      {
-        entry& front_entry = static_cast<entry&>(*value_entry.next_);
-        front_entry.prev_ = boost::addressof(value);
-      }
-      front_ = boost::addressof(value);
-    }    
-        
-    /// Never throws
-    void erase(reference value)
-    {
-      entry& value_entry = static_cast<entry&>(value);
-      if (front_ == boost::addressof(value))
-      {
-        front_ = value_entry.next_;
-      }
-      if (value_entry.prev_)
-      {
-        entry& prev_entry = static_cast<entry&>(*value_entry.prev_);
-        prev_entry.next_ = value_entry.next_;
-      }
-      if (value_entry.next_)
-      {
-        entry& next_entry = static_cast<entry&>(*value_entry.next_);
-        next_entry.prev_ = value_entry.prev_;
-      }
-      value_entry.prev_ = value_entry.next_ = 0;
-
-      BOOST_ASSERT(!value_entry.prev_ && !value_entry.next_);
-    }
-
-    /// Never throws
-    void pop_front()
-    {
-      BOOST_ASSERT(front_);
-
-      entry& value_entry = static_cast<entry&>(*front_);
-      front_ = value_entry.next_;            
-      if (front_)
-      {
-        entry& front_entry = static_cast<entry&>(*front_);
-        front_entry.prev_= 0;
-      }
-      value_entry.next_ = value_entry.prev_ = 0;
-
-      BOOST_ASSERT(!value_entry.prev_ && !value_entry.next_);
-    }
-
-  private:
-    pointer front_;
-  }; // class intrusive_list  
+  }; // class handler_wrapper
 
 public:
   static boost::asio::io_service::id id;
 
-  class implementation_type : public intrusive_list<implementation_type>::entry
+  class implementation_type 
+      : public detail::intrusive_list<implementation_type>::entry
   { 
   public:
     implementation_type()
@@ -501,7 +519,7 @@ private:
   mutex_type impl_list_mutex_;
   // Double-linked intrusive list of active (constructed but still not
   // destructed) implementations.
-  intrusive_list<implementation_type> impl_list_;
+  detail::intrusive_list<implementation_type> impl_list_;
   // Shutdown state flag.
   bool shutdown_done_;
 }; // class handler_storage_service
