@@ -17,6 +17,7 @@
 #include <boost/optional.hpp>
 #include <boost/weak_ptr.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/enable_shared_from_this.hpp>
@@ -36,6 +37,136 @@
 #endif // defined(MA_HAS_RVALUE_REFS)
 
 namespace ma {   
+
+namespace detail {
+
+template <typename Value>
+class sp_intrusive_list : private boost::noncopyable
+{
+public:
+  typedef Value  value_type;
+  typedef Value* pointer;
+  typedef Value& reference;
+  typedef boost::weak_ptr<Value>   weak_pointer;
+  typedef boost::shared_ptr<Value> shared_pointer;
+
+  /// Required header for items of the list.
+  class entry : private boost::noncopyable
+  {
+  private:
+    friend class sp_intrusive_list<value_type>;
+    weak_pointer   prev_;
+    shared_pointer next_;
+  }; // class entry
+  
+  /// Never throws
+  sp_intrusive_list()
+    : size_(0)
+  {
+  }
+
+  ~sp_intrusive_list()
+  {
+    clear();
+  }
+
+  /// Never throws
+  shared_pointer front() const
+  {
+    return front_;
+  }
+
+  /// Never throws
+  static shared_pointer prev(const shared_pointer& value)
+  {
+    BOOST_ASSERT(value);
+    return static_cast<entry&>(*value).prev_.lock();
+  }
+
+  /// Never throws
+  static shared_pointer next(const shared_pointer& value)
+  {
+    BOOST_ASSERT(value);
+    return static_cast<entry&>(*value).next_;
+  }
+
+  void push_front(const shared_pointer& value)
+  {
+    BOOST_ASSERT(value);
+    
+    entry& value_entry = static_cast<entry&>(*value);
+
+    BOOST_ASSERT(!value_entry.prev_.lock() && !value_entry.next_);
+
+    value_entry.next_ = front_;
+    if (value_entry.next_)
+    {
+      entry& front_entry = static_cast<entry&>(*value_entry.next_);
+      front_entry.prev_ = value;
+    }
+    front_ = value;  
+    ++size_;
+  }
+
+  void erase(const shared_pointer& value)
+  {
+    BOOST_ASSERT(value);
+
+    entry& value_entry = static_cast<entry&>(*value);
+    if (value == front_)
+    {
+      front_ = value_entry.next_;
+    }
+    shared_pointer prev = value_entry.prev_.lock();
+    if (prev)
+    {
+      entry& prev_entry = static_cast<entry&>(*prev);
+      prev_entry.next_ = value_entry.next_;
+    }
+    if (value_entry.next_)
+    {
+      entry& next_entry = static_cast<entry&>(*value_entry.next_);
+      next_entry.prev_ = value_entry.prev_;
+    }
+    value_entry.prev_.reset();
+    value_entry.next_.reset();
+    --size_;
+
+    BOOST_ASSERT(!value_entry.prev_.lock() && !value_entry.next_);
+  }
+
+  void clear()
+  {
+    // We don't want to have recusrive calls of wrapped_session's destructor
+    // because the deep of such recursion may be equal to the size of list.
+    // The last can be too great for the stack.
+    while (front_)
+    { 
+      entry& front_entry = static_cast<entry&>(*front_);
+      shared_pointer tmp = front_entry.next_;
+      front_entry.prev_.reset();
+      front_entry.next_.reset();
+      front_ = tmp;    
+    }
+    size_ = 0;
+  }
+
+  std::size_t size() const
+  {
+    return size_;
+  }
+
+  bool empty() const
+  {
+    return 0 == size_;
+  }  
+
+private:
+  std::size_t size_;
+  shared_pointer front_;
+}; // class sp_intrusive_list
+
+} // namespace detail
 
 namespace echo {
 
@@ -184,7 +315,90 @@ public:
 private:        
   struct  session_wrapper;
   typedef boost::shared_ptr<session_wrapper> session_wrapper_ptr;
-  typedef boost::weak_ptr<session_wrapper>   session_wrapper_weak_ptr;
+
+  struct session_wrapper
+      : public detail::sp_intrusive_list<session_wrapper>::entry
+  {
+    typedef protocol_type::endpoint endpoint_type;
+    
+    struct state_type
+    {
+      enum value_t {ready, start, work, stop, stopped};
+    };
+  
+    endpoint_type       remote_endpoint;
+    session_ptr         session;
+    state_type::value_t state;
+    std::size_t         pending_operations;
+    in_place_handler_allocator<144> start_wait_allocator;
+    in_place_handler_allocator<144> stop_allocator;
+  
+    session_wrapper(boost::asio::io_service& io_service, 
+        const session_config& config);
+
+#if !defined(NDEBUG)
+    ~session_wrapper()
+    {
+    }
+#endif
+
+    void reset();
+    
+    bool has_pending_operations() const
+    {
+      return 0 != pending_operations;
+    }
+
+    bool is_starting() const
+    {
+      return state_type::start == state;
+    }
+
+    bool is_stopping() const
+    {
+      return state_type::stop == state;
+    }
+
+    bool is_working() const
+    {
+      return state_type::work == state;
+    }
+
+    void handle_operation_completion()
+    {
+      --pending_operations;
+    }
+
+    void mark_as_stopped()
+    {
+      state = state_type::stopped;
+    }
+
+    void mark_as_working()
+    {
+      state = state_type::work;
+    }    
+    
+    void start_started()
+    {
+      state = state_type::start;
+      ++pending_operations;
+    }
+    
+    void stop_started()
+    {
+      state = state_type::stop;
+      ++pending_operations;
+    }
+    
+    void wait_started()
+    {
+      ++pending_operations;
+    }
+    
+  }; // struct session_wrapper
+
+  typedef detail::sp_intrusive_list<session_wrapper> session_list;
   
 #if defined(MA_HAS_RVALUE_REFS) \
     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
@@ -239,44 +453,7 @@ private:
   }; // class forward_handler_binder
 
 #endif // defined(MA_HAS_RVALUE_REFS) 
-       //     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)           
-
-  class session_list : private boost::noncopyable
-  {
-  public:
-    session_list()
-      : size_(0)
-    {
-    }
-
-    ~session_list()
-    {
-      clear();
-    }
-
-    void push_front(const session_wrapper_ptr& value);
-    void erase(const session_wrapper_ptr& value);          
-    void clear();
-
-    std::size_t size() const
-    {
-      return size_;
-    }
-
-    bool empty() const
-    {
-      return 0 == size_;
-    }
-
-    session_wrapper_ptr front() const
-    {
-      return front_;
-    }
-
-  private:
-    std::size_t size_;
-    session_wrapper_ptr front_;
-  }; // class session_list
+       //     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
   struct extern_state
   {

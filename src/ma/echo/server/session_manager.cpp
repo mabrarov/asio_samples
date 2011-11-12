@@ -8,7 +8,6 @@
 #include <new>
 #include <boost/ref.hpp>
 #include <boost/assert.hpp>
-#include <boost/make_shared.hpp>
 #include <boost/utility/addressof.hpp>
 #include <ma/config.hpp>
 #include <ma/custom_alloc_handler.hpp>
@@ -185,193 +184,20 @@ private:
 #endif // defined(MA_HAS_RVALUE_REFS) 
        //     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
-struct session_manager::session_wrapper : private boost::noncopyable
+session_manager::session_wrapper::session_wrapper(
+    boost::asio::io_service& io_service, const session_config& config)
+  : session(boost::make_shared<server::session>(
+        boost::ref(io_service), config))
+  , state(state_type::ready)
+  , pending_operations(0)
 {
-  typedef session_manager::protocol_type::endpoint endpoint_type;
-  typedef server::session::protocol_type::socket   socket_type;
-
-  struct state_type
-  {
-    enum value_t {ready, start, work, stop, stopped};
-  };
-
-  session_manager::session_wrapper_weak_ptr prev;
-  session_manager::session_wrapper_ptr      next;
-
-  endpoint_type       remote_endpoint;
-  server::session_ptr session;
-  state_type::value_t state;
-  std::size_t         pending_operations;
-
-  in_place_handler_allocator<144> start_wait_allocator;
-  in_place_handler_allocator<144> stop_allocator;
-  
-  session_wrapper(boost::asio::io_service& io_service, 
-      const session_config& config)
-    : session(boost::make_shared<server::session>(
-          boost::ref(io_service), config))
-    , state(state_type::ready)
-    , pending_operations(0)
-  {
-  }
-
-#if !defined(NDEBUG)
-  ~session_wrapper()
-  {
-    BOOST_ASSERT(!next && !prev.lock());
-  }
-#endif
-
-  socket_type& socket()
-  {
-    return session->socket();
-  }
-
-  bool has_pending_operations() const
-  {
-    return 0 != pending_operations;
-  }
-
-  bool is_starting() const
-  {
-    return state_type::start == state;
-  }
-
-  bool is_stopping() const
-  {
-    return state_type::stop == state;
-  }
-
-  bool is_working() const
-  {
-    return state_type::work == state;
-  }
-
-  void handle_operation_completion()
-  {
-    --pending_operations;
-  }
-
-  void mark_as_stopped()
-  {
-    state = state_type::stopped;
-  }
-
-  void mark_as_working()
-  {
-    state = state_type::work;
-  }
-
-  void reset()
-  {      
-    session->reset();
-    state = state_type::ready;
-    pending_operations = 0;
-  }
-
-#if defined(MA_HAS_RVALUE_REFS)
-
-  template <typename Handler>
-  void async_start(Handler&& handler)
-  {    
-    session->async_start(std::forward<Handler>(handler));
-    state = state_type::start;
-    ++pending_operations;
-  }
-
-  template <typename Handler>
-  void async_stop(Handler&& handler)
-  {
-    session->async_stop(std::forward<Handler>(handler));      
-    state = state_type::stop;
-    ++pending_operations;
-  }
-
-  template <typename Handler>
-  void async_wait(Handler&& handler)
-  {
-    session->async_wait(std::forward<Handler>(handler));
-    ++pending_operations;
-  }
-
-#else // defined(MA_HAS_RVALUE_REFS)
-
-  template <typename Handler>
-  void async_start(const Handler& handler)
-  {    
-    session->async_start(handler);
-    state = state_type::start;
-    ++pending_operations;
-  }
-
-  template <typename Handler>
-  void async_stop(const Handler& handler)
-  {
-    session->async_stop(handler);      
-    state = state_type::stop;
-    ++pending_operations;
-  }
-
-  template <typename Handler>
-  void async_wait(const Handler& handler)
-  {
-    session->async_wait(handler);
-    ++pending_operations;
-  }
-
-#endif // defined(MA_HAS_RVALUE_REFS)    
-    
-}; // struct session_manager::session_wrapper
-
-void session_manager::session_list::push_front(
-    const session_wrapper_ptr& value)
-{
-  BOOST_ASSERT((!value->next) && (!value->prev.lock()));
-
-  value->next = front_;  
-  if (front_)
-  {
-    front_->prev = value;
-  }
-  front_ = value;  
-  ++size_;
 }
 
-void session_manager::session_list::erase(const session_wrapper_ptr& value)
-{
-  if (value == front_)
-  {
-    front_ = front_->next;
-  }
-  session_wrapper_ptr prev = value->prev.lock();
-  if (prev)
-  {
-    prev->next = value->next;
-  }
-  if (value->next)
-  {
-    value->next->prev = prev;
-  }
-  value->prev.reset();
-  value->next.reset();
-  --size_;
-
-  BOOST_ASSERT((!value->next) && (!value->prev.lock()));
-}
-
-void session_manager::session_list::clear()
-{
-  // We don't want to have recusrive calls of wrapped_session's destructor
-  // because the deep of such recursion may be equal to the size of list.
-  // The last can be too great for the stack.
-  while (front_)
-  {
-    session_wrapper_ptr tmp = front_->next;
-    front_->prev.reset();
-    front_->next.reset();
-    front_ = tmp;    
-  }
-  size_ = 0;
+void session_manager::session_wrapper::reset()
+{      
+  session->reset();
+  state = state_type::ready;
+  pending_operations = 0;
 }
 
 session_manager::session_manager(boost::asio::io_service& io_service, 
@@ -906,7 +732,7 @@ void session_manager::start_stop(const boost::system::error_code& error)
     {
       start_session_stop(session);
     }
-    session = session->next;
+    session = session_list::next(session);
   }  
 
   // Switch all internal SMs to the right states
@@ -954,14 +780,14 @@ void session_manager::start_accept_session(const session_wrapper_ptr& session)
 #if defined(MA_HAS_RVALUE_REFS) \
     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
-  acceptor_.async_accept(session->socket(), session->remote_endpoint, 
+  acceptor_.async_accept(session->session->socket(), session->remote_endpoint,
       MA_STRAND_WRAP(strand_, make_custom_alloc_handler(accept_allocator_, 
           accept_handler_binder(&this_type::handle_accept, shared_from_this(),
               session))));
 
 #else
 
-  acceptor_.async_accept(session->socket(), session->remote_endpoint, 
+  acceptor_.async_accept(session->session->socket(), session->remote_endpoint,
       MA_STRAND_WRAP(strand_, make_custom_alloc_handler(accept_allocator_, 
           boost::bind(&this_type::handle_accept, shared_from_this(), session, 
               boost::asio::placeholders::error))));
@@ -978,18 +804,21 @@ void session_manager::start_session_start(const session_wrapper_ptr& session)
 #if defined(MA_HAS_RVALUE_REFS) \
     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
-  session->async_start(make_custom_alloc_handler(session->start_wait_allocator, 
-      session_dispatch_binder(&this_type::dispatch_handle_session_start, 
-          shared_from_this(), session)));
+  session->session->async_start(
+      make_custom_alloc_handler(session->start_wait_allocator,
+          session_dispatch_binder(&this_type::dispatch_handle_session_start,
+              shared_from_this(), session)));
 
 #else
 
-  session->async_start(make_custom_alloc_handler(session->start_wait_allocator, 
-      boost::bind(&this_type::dispatch_handle_session_start, 
-          session_manager_weak_ptr(shared_from_this()), session, _1)));
+  session->session->async_start(
+      make_custom_alloc_handler(session->start_wait_allocator,
+          boost::bind(&this_type::dispatch_handle_session_start,
+              session_manager_weak_ptr(shared_from_this()), session, _1)));
 
 #endif
-
+  
+  session->start_started();
   ++pending_operations_;
 }
 
@@ -999,18 +828,21 @@ void session_manager::start_session_stop(const session_wrapper_ptr& session)
 #if defined(MA_HAS_RVALUE_REFS) \
     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
-  session->async_stop(make_custom_alloc_handler(session->stop_allocator, 
-      session_dispatch_binder(&this_type::dispatch_handle_session_stop, 
-          shared_from_this(), session)));
+  session->session->async_stop(
+      make_custom_alloc_handler(session->stop_allocator,
+          session_dispatch_binder(&this_type::dispatch_handle_session_stop,
+              shared_from_this(), session)));
 
 #else
 
-  session->async_stop(make_custom_alloc_handler(session->stop_allocator, 
-      boost::bind(&this_type::dispatch_handle_session_stop, 
-          session_manager_weak_ptr(shared_from_this()), session, _1)));
+  session->session->async_stop(
+      make_custom_alloc_handler(session->stop_allocator,
+          boost::bind(&this_type::dispatch_handle_session_stop, 
+              session_manager_weak_ptr(shared_from_this()), session, _1)));
 
 #endif
 
+  session->stop_started();
   ++pending_operations_;
 }
 
@@ -1020,18 +852,21 @@ void session_manager::start_session_wait(const session_wrapper_ptr& session)
 #if defined(MA_HAS_RVALUE_REFS) \
     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
-  session->async_wait(make_custom_alloc_handler(session->start_wait_allocator, 
-      session_dispatch_binder(&this_type::dispatch_handle_session_wait, 
-          shared_from_this(), session)));
+  session->session->async_wait(
+      make_custom_alloc_handler(session->start_wait_allocator,
+          session_dispatch_binder(&this_type::dispatch_handle_session_wait,
+              shared_from_this(), session)));
 
 #else
 
-  session->async_wait(make_custom_alloc_handler(session->start_wait_allocator, 
-      boost::bind(&this_type::dispatch_handle_session_wait, 
-          session_manager_weak_ptr(shared_from_this()), session, _1)));
+  session->session->async_wait(
+      make_custom_alloc_handler(session->start_wait_allocator,
+          boost::bind(&this_type::dispatch_handle_session_wait, 
+              session_manager_weak_ptr(shared_from_this()), session, _1)));
 
 #endif
 
+  session->wait_started();
   ++pending_operations_;
 }
 
