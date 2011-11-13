@@ -33,6 +33,8 @@ namespace ma {
 namespace detail {
 
 /// Simplified double-linked intrusive list.
+/// static_cast&lt;intrusive_list&lt;Value&gt;::entry&gt;(Value) 
+/// must be well formed and accessible from intrusive_list&lt;Value&gt;.
 template<typename Value>
 class intrusive_list : private boost::noncopyable
 {

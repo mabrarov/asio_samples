@@ -40,6 +40,11 @@ namespace ma {
 
 namespace detail {
 
+/// Simplified double-linked intrusive list of boost::shared_ptr.
+/// Const time insertion of boost::shared_ptr.
+/// Const time deletion of boost::shared_ptr (deletion by value).
+/// static_cast&lt;sp_intrusive_list&lt;Value&gt;::entry&gt;(Value) 
+/// must be well formed and accessible from sp_intrusive_list&lt;Value&gt;.
 template <typename Value>
 class sp_intrusive_list : private boost::noncopyable
 {
