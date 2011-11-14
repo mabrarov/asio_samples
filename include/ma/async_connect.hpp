@@ -16,6 +16,7 @@
 
 #if defined(WIN32) && !defined(BOOST_ASIO_DISABLE_IOCP)
 #include <mswsock.h>
+#include <winsock2.h>
 #include <cstddef>
 #include <boost/numeric/conversion/cast.hpp>
 #include <ma/bind_asio_handler.hpp>
@@ -225,9 +226,10 @@ void async_connect(Socket& socket,
   LPFN_CONNECTEX connect_ex_func = 0;
   DWORD result_bytes;
 
-  int ctrl_result = WSAIoctl(native_socket, SIO_GET_EXTENSION_FUNCTION_POINTER,
-      &connect_ex_guid, sizeof(connect_ex_guid), 
-      &connect_ex_func, sizeof(connect_ex_func), 
+  int ctrl_result = ::WSAIoctl(native_socket,
+      SIO_GET_EXTENSION_FUNCTION_POINTER,
+      &connect_ex_guid, sizeof(connect_ex_guid),
+      &connect_ex_func, sizeof(connect_ex_func),
       &result_bytes, NULL, NULL);
 
   // If ConnectEx wasn't located then fall to common Asio async_connect.
@@ -278,7 +280,7 @@ void async_connect(Socket& socket,
   BOOL ok = connect_ex_func(native_socket, peer_endpoint.data(), 
       boost::numeric_cast<int>(peer_endpoint.size()), NULL, 0, NULL, 
       overlapped.get());
-  DWORD last_error = ::GetLastError();
+  DWORD last_error = ::WSAGetLastError();
 
   // Check if the operation completed immediately.
   if ((TRUE != ok) && (ERROR_IO_PENDING != last_error))

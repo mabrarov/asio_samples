@@ -8,6 +8,7 @@
 #include <new>
 #include <boost/ref.hpp>
 #include <boost/assert.hpp>
+#include <boost/make_shared.hpp>
 #include <boost/utility/addressof.hpp>
 #include <ma/config.hpp>
 #include <ma/custom_alloc_handler.hpp>
