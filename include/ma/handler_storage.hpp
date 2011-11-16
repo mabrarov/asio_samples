@@ -184,8 +184,8 @@ public:
   /**
    * Attention! 
    * Alwasy check if handler storage has any handler stored in it.
-   * Use "has_target". Always - even if you already have called "put" method.
-   * Really, "put" means "try to put, if can't (io_service's destructor is
+   * Use "has_target". Always - even if you already have called "reset" method.
+   * Really, "reset" means "try to put, if can't (io_service's destructor is
    * already called) then do nothing".
    */
   void post(const arg_type& arg)

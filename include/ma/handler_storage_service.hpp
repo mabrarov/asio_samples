@@ -399,7 +399,7 @@ public:
   {
     // Add implementation to the list of active implementations.
     lock_guard lock(impl_list_mutex_);
-    impl_list_.push_front(static_cast<implementation_base_type&>(impl));
+    impl_list_.push_front(impl);
   }
 
   void move_construct(implementation_type& impl, 
@@ -416,7 +416,7 @@ public:
     // Remove implementation from the list of active implementations.
     {
       lock_guard lock(impl_list_mutex_);
-      impl_list_.erase(static_cast<implementation_base_type&>(impl));
+      impl_list_.erase(impl);
     }    
     // Destroy stored handler if it exists.
     reset(impl);
