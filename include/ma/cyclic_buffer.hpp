@@ -43,9 +43,9 @@ private:
   /**
    * buffers_2 is CopyConstructible to meet Asio constant/mutable buffer
    * sequence requirements. See:
-   * http://www.boost.org/doc/libs/1_47_0/doc/html/boost_asio/reference/ConstBufferSequence.html
+   * http://www.boost.org/doc/libs/1_48_0/doc/html/boost_asio/reference/ConstBufferSequence.html
    * and
-   * http://www.boost.org/doc/libs/1_47_0/doc/html/boost_asio/reference/MutableBufferSequence.html
+   * http://www.boost.org/doc/libs/1_48_0/doc/html/boost_asio/reference/MutableBufferSequence.html
    */
   template <typename Buffer>
   class buffers_2

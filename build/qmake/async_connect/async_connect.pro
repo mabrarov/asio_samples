@@ -24,11 +24,11 @@ HEADERS  += ../../../include/ma/async_connect.hpp \
 
 SOURCES  += ../../../src/async_connect/main.cpp
 
-win32:INCLUDEPATH += ../../../../boost_1_47_0
+win32:INCLUDEPATH += ../../../../boost_1_48_0
 unix:INCLUDEPATH  += /usr/local/include
 INCLUDEPATH       += ../../../include
 		
-win32:LIBS += -L../../../../boost_1_47_0/lib/x86
+win32:LIBS += -L../../../../boost_1_48_0/lib/x86
 unix:LIBS  += -lboost_system
 
 win32:DEFINES += WIN32_LEAN_AND_MEAN _UNICODE UNICODE _WIN32_WINNT=0x0501

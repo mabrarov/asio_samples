@@ -33,11 +33,11 @@ SOURCES  += ../../../src/ma/console_controller.cpp \
             ../../../src/async_basics2/main.cpp \
             ../../../src/ma/tutorial2/async_implementation.cpp
 
-win32:INCLUDEPATH += ../../../../boost_1_47_0
+win32:INCLUDEPATH += ../../../../boost_1_48_0
 unix:INCLUDEPATH  += /usr/local/include
 INCLUDEPATH       += ../../../include
 		
-win32:LIBS += -L../../../../boost_1_47_0/lib/x86
+win32:LIBS += -L../../../../boost_1_48_0/lib/x86
 unix:LIBS  += -lboost_thread \
               -lboost_system \
               -lboost_date_time

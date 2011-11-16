@@ -33,8 +33,12 @@ namespace ma {
 namespace detail {
 
 /// Simplified double-linked intrusive list.
-/// static_cast&lt;intrusive_list&lt;Value&gt;::entry&gt;(Value) 
-/// must be well formed and accessible from intrusive_list&lt;Value&gt;.
+/**  
+ * Requirements: 
+ * if value is rvalue of type Value then expression
+ * static_cast&lt;intrusive_list&lt;Value&gt;::base_hook&amp;&gt;(Value)
+ * must be well formed and accessible from intrusive_list&lt;Value&gt;.
+ */
 template<typename Value>
 class intrusive_list : private boost::noncopyable
 {
@@ -43,11 +47,11 @@ public:
   typedef Value* pointer;
   typedef Value& reference;
     
-  /// Required header for items of the list.
-  class entry : private boost::noncopyable
+  /// Required hook for items of the list.
+  class base_hook : private boost::noncopyable
   {
   public:
-    entry()
+    base_hook()
       : prev_(0)
       , next_(0)
     {
@@ -57,7 +61,7 @@ public:
     friend class intrusive_list<value_type>;
     pointer prev_;
     pointer next_;
-  }; // class entry
+  }; // class base_hook
 
   /// Never throws
   intrusive_list()
@@ -73,28 +77,28 @@ public:
 
   /// Never throws
   static pointer prev(reference value)
-  {
-    return static_cast<entry&>(value).prev_;
+  {    
+    return get_hook(value).prev_;
   }
 
   /// Never throws
   static pointer next(reference value)
   {
-    return static_cast<entry&>(value).next_;
+    return get_hook(value).next_;
   }
     
   /// Never throws
   void push_front(reference value)
   {
-    entry& value_entry = static_cast<entry&>(value);
+    base_hook& value_hook = get_hook(value);
 
-    BOOST_ASSERT(!value_entry.prev_ && !value_entry.next_);
+    BOOST_ASSERT(!value_hook.prev_ && !value_hook.next_);
 
-    value_entry.next_ = front_;      
-    if (value_entry.next_)
+    value_hook.next_ = front_;      
+    if (value_hook.next_)
     {
-      entry& front_entry = static_cast<entry&>(*value_entry.next_);
-      front_entry.prev_ = boost::addressof(value);
+      base_hook& front_hook = get_hook(*value_hook.next_);
+      front_hook.prev_ = boost::addressof(value);
     }
     front_ = boost::addressof(value);
   }    
@@ -102,24 +106,24 @@ public:
   /// Never throws
   void erase(reference value)
   {
-    entry& value_entry = static_cast<entry&>(value);
+    base_hook& value_hook = get_hook(value);
     if (front_ == boost::addressof(value))
     {
-      front_ = value_entry.next_;
+      front_ = value_hook.next_;
     }
-    if (value_entry.prev_)
+    if (value_hook.prev_)
     {
-      entry& prev_entry = static_cast<entry&>(*value_entry.prev_);
-      prev_entry.next_ = value_entry.next_;
+      base_hook& prev_hook = get_hook(*value_hook.prev_);
+      prev_hook.next_ = value_hook.next_;
     }
-    if (value_entry.next_)
+    if (value_hook.next_)
     {
-      entry& next_entry = static_cast<entry&>(*value_entry.next_);
-      next_entry.prev_ = value_entry.prev_;
+      base_hook& next_hook = get_hook(*value_hook.next_);
+      next_hook.prev_ = value_hook.prev_;
     }
-    value_entry.prev_ = value_entry.next_ = 0;
+    value_hook.prev_ = value_hook.next_ = 0;
 
-    BOOST_ASSERT(!value_entry.prev_ && !value_entry.next_);
+    BOOST_ASSERT(!value_hook.prev_ && !value_hook.next_);
   }
 
   /// Never throws
@@ -127,19 +131,24 @@ public:
   {
     BOOST_ASSERT(front_);
 
-    entry& value_entry = static_cast<entry&>(*front_);
-    front_ = value_entry.next_;            
+    base_hook& value_hook = get_hook(*front_);
+    front_ = value_hook.next_;
     if (front_)
     {
-      entry& front_entry = static_cast<entry&>(*front_);
-      front_entry.prev_= 0;
+      base_hook& front_hook = get_hook(*front_);
+      front_hook.prev_= 0;
     }
-    value_entry.next_ = value_entry.prev_ = 0;
+    value_hook.next_ = value_hook.prev_ = 0;
 
-    BOOST_ASSERT(!value_entry.prev_ && !value_entry.next_);
+    BOOST_ASSERT(!value_hook.prev_ && !value_hook.next_);
   }
 
 private:
+  static base_hook& get_hook(reference value)
+  {
+    return static_cast<base_hook&>(value);
+  }
+
   pointer front_;
 }; // class intrusive_list  
 
@@ -347,20 +356,17 @@ private:
     Handler handler_;
   }; // class handler_wrapper
 
-public:
-  static boost::asio::io_service::id id;
-
-  class implementation_type 
-      : public detail::intrusive_list<implementation_type>::entry
+  class implementation_base_type 
+      : public detail::intrusive_list<implementation_base_type>::base_hook
   { 
   public:
-    implementation_type()
+    implementation_base_type()
       : handler_(0)
     {
     }
 
 #if !defined(NDEBUG)
-    ~implementation_type()
+    ~implementation_base_type()
     {
       BOOST_ASSERT(!handler_);
     }
@@ -370,6 +376,17 @@ public:
     friend class handler_storage_service<arg_type>;
     // Pointer to the stored handler otherwise null pointer.
     handler_base* handler_;
+  }; // class implementation_base_type
+
+  typedef detail::intrusive_list<implementation_base_type> impl_base_list;
+
+public:
+  static boost::asio::io_service::id id;
+
+  class implementation_type : private implementation_base_type
+  {
+  private:
+    friend class handler_storage_service<arg_type>;
   }; // class implementation_type
   
   explicit handler_storage_service(boost::asio::io_service& io_service)
@@ -382,7 +399,7 @@ public:
   {
     // Add implementation to the list of active implementations.
     lock_guard lock(impl_list_mutex_);
-    impl_list_.push_front(impl);
+    impl_list_.push_front(static_cast<implementation_base_type&>(impl));
   }
 
   void move_construct(implementation_type& impl, 
@@ -399,7 +416,7 @@ public:
     // Remove implementation from the list of active implementations.
     {
       lock_guard lock(impl_list_mutex_);
-      impl_list_.erase(impl);
+      impl_list_.erase(static_cast<implementation_base_type&>(impl));
     }    
     // Destroy stored handler if it exists.
     reset(impl);
@@ -498,14 +515,14 @@ private:
       implementation_type* impl = 0;
       {
         lock_guard lock(impl_list_mutex_);        
-        impl = impl_list_.front();
+        impl = static_cast<implementation_type*>(impl_list_.front());
         if (impl)
         {
           impl_list_.pop_front();
         }
       }      
       if (impl)
-      {
+      {        
         // Clear popped implementation.
         reset(*impl);
       }
@@ -521,7 +538,7 @@ private:
   mutex_type impl_list_mutex_;
   // Double-linked intrusive list of active (constructed but still not
   // destructed) implementations.
-  detail::intrusive_list<implementation_type> impl_list_;
+  impl_base_list impl_list_;
   // Shutdown state flag.
   bool shutdown_done_;
 }; // class handler_storage_service
@@ -531,4 +548,4 @@ boost::asio::io_service::id handler_storage_service<Arg>::id;
   
 } // namespace ma
 
-#endif // MA_HANDLER_STORAGE_HPP
+#endif // MA_HANDLER_STORAGE_SERVICE_HPP

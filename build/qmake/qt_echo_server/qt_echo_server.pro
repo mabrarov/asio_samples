@@ -56,11 +56,11 @@ SOURCES  += ../../../src/qt_echo_server/main.cpp \
 
 FORMS    += ../../../src/ma/echo/server/qt/mainform.ui
 
-win32:INCLUDEPATH += ../../../../boost_1_47_0 
+win32:INCLUDEPATH += ../../../../boost_1_48_0 
 unix:INCLUDEPATH  += /usr/local/include
 INCLUDEPATH       += ../../../include
 
-win32:LIBS += -L"./../../../../boost_1_47_0/lib/x86" \
+win32:LIBS += -L"./../../../../boost_1_48_0/lib/x86" \
               -lkernel32 -luser32 -lshell32 -luuid -lole32 -ladvapi32 \
               -lws2_32 -lgdi32 -lcomdlg32 -loleaut32 -limm32 -lwinmm \
               -lwinspool -lws2_32 -lole32 -luser32 -ladvapi32

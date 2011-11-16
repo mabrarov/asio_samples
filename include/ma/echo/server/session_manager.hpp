@@ -40,10 +40,15 @@ namespace ma {
 namespace detail {
 
 /// Simplified double-linked intrusive list of boost::shared_ptr.
-/// Const time insertion of boost::shared_ptr.
-/// Const time deletion of boost::shared_ptr (deletion by value).
-/// static_cast&lt;sp_intrusive_list&lt;Value&gt;::entry&gt;(Value) 
-/// must be well formed and accessible from sp_intrusive_list&lt;Value&gt;.
+/** 
+ * Const time insertion of boost::shared_ptr.
+ * Const time deletion of boost::shared_ptr (deletion by value).
+ *
+ * Requirements: 
+ * if value is rvalue of type Value then expression
+ * static_cast&lt;sp_intrusive_list&lt;Value&gt;::base_hook&amp;&gt;(value)
+ * must be well formed and accessible from sp_intrusive_list&lt;Value&gt;.
+ */
 template <typename Value>
 class sp_intrusive_list : private boost::noncopyable
 {
@@ -54,14 +59,14 @@ public:
   typedef boost::weak_ptr<Value>   weak_pointer;
   typedef boost::shared_ptr<Value> shared_pointer;
 
-  /// Required header for items of the list.
-  class entry : private boost::noncopyable
+  /// Required hook for items of the list.
+  class base_hook : private boost::noncopyable
   {
   private:
     friend class sp_intrusive_list<value_type>;
     weak_pointer   prev_;
     shared_pointer next_;
-  }; // class entry
+  }; // class base_hook
   
   /// Never throws
   sp_intrusive_list()
@@ -83,62 +88,63 @@ public:
   /// Never throws
   static shared_pointer prev(const shared_pointer& value)
   {
-    BOOST_ASSERT(value);
-    return static_cast<entry&>(*value).prev_.lock();
+    BOOST_ASSERT(value);    
+    return get_hook(*value).prev_.lock();
   }
 
   /// Never throws
   static shared_pointer next(const shared_pointer& value)
   {
     BOOST_ASSERT(value);
-    return static_cast<entry&>(*value).next_;
+    return get_hook(*value).next_;
   }
-
+  
+  /// Never throws
   void push_front(const shared_pointer& value)
   {
     BOOST_ASSERT(value);
+        
+    base_hook& value_hook = get_hook(*value);
+
+    BOOST_ASSERT(!value_hook.prev_.lock() && !value_hook.next_);
     
-    entry& value_entry = static_cast<entry&>(*value);
-
-    BOOST_ASSERT(!value_entry.prev_.lock() && !value_entry.next_);
-
-    value_entry.next_ = front_;
-    if (value_entry.next_)
+    value_hook.next_ = front_;
+    if (value_hook.next_)
     {
-      entry& front_entry = static_cast<entry&>(*value_entry.next_);
-      front_entry.prev_ = value;
+      base_hook& front_hook = get_hook(*value_hook.next_);
+      front_hook.prev_ = value;
     }
-    front_ = value;  
+    front_ = value;
     ++size_;
   }
-
+    
   void erase(const shared_pointer& value)
   {
     BOOST_ASSERT(value);
-
-    entry& value_entry = static_cast<entry&>(*value);
+    
+    base_hook& value_hook = get_hook(*value);
     if (value == front_)
     {
-      front_ = value_entry.next_;
+      front_ = value_hook.next_;
     }
-    shared_pointer prev = value_entry.prev_.lock();
+    const shared_pointer prev = value_hook.prev_.lock();
     if (prev)
     {
-      entry& prev_entry = static_cast<entry&>(*prev);
-      prev_entry.next_ = value_entry.next_;
+      base_hook& prev_hook = get_hook(*prev);
+      prev_hook.next_ = value_hook.next_;
     }
-    if (value_entry.next_)
+    if (value_hook.next_)
     {
-      entry& next_entry = static_cast<entry&>(*value_entry.next_);
-      next_entry.prev_ = value_entry.prev_;
+      base_hook& next_hook = get_hook(*value_hook.next_);
+      next_hook.prev_ = value_hook.prev_;
     }
-    value_entry.prev_.reset();
-    value_entry.next_.reset();
+    value_hook.prev_.reset();
+    value_hook.next_.reset();
     --size_;
 
-    BOOST_ASSERT(!value_entry.prev_.lock() && !value_entry.next_);
+    BOOST_ASSERT(!value_hook.prev_.lock() && !value_hook.next_);
   }
-
+  
   void clear()
   {
     // We don't want to have recusrive calls of wrapped_session's destructor
@@ -146,10 +152,10 @@ public:
     // The last can be too great for the stack.
     while (front_)
     { 
-      entry& front_entry = static_cast<entry&>(*front_);
-      shared_pointer tmp = front_entry.next_;
-      front_entry.prev_.reset();
-      front_entry.next_.reset();
+      base_hook& front_hook = get_hook(*front_);
+      const shared_pointer tmp = front_hook.next_;
+      front_hook.prev_.reset();
+      front_hook.next_.reset();
       front_ = tmp;    
     }
     size_ = 0;
@@ -166,6 +172,11 @@ public:
   }  
 
 private:
+  static base_hook& get_hook(reference value)
+  {
+    return static_cast<base_hook&>(value);
+  }
+
   std::size_t size_;
   shared_pointer front_;
 }; // class sp_intrusive_list
@@ -321,7 +332,7 @@ private:
   typedef boost::shared_ptr<session_wrapper> session_wrapper_ptr;
 
   struct session_wrapper
-      : public detail::sp_intrusive_list<session_wrapper>::entry
+      : public detail::sp_intrusive_list<session_wrapper>::base_hook
   {
     typedef protocol_type::endpoint endpoint_type;
     
@@ -399,7 +410,6 @@ private:
     {
       ++pending_operations;
     }
-    
   }; // struct session_wrapper
 
   typedef detail::sp_intrusive_list<session_wrapper> session_list;

@@ -33,11 +33,11 @@ namespace detail {
  * "Alloctaion strategy" means handler related pair of free functions:
  * asio_handler_allocate and asio_handler_deallocate or the default ones
  * defined by Asio.
- * http://www.boost.org/doc/libs/1_47_0/doc/html/boost_asio/reference/Handler.html
+ * http://www.boost.org/doc/libs/1_48_0/doc/html/boost_asio/reference/Handler.html
  *
  * "Execution strategy" means handler related free function asio_handler_invoke
  * or the default one defined by Asio.
- * http://www.boost.org/doc/libs/1_47_0/doc/html/boost_asio/reference/Handler.html
+ * http://www.boost.org/doc/libs/1_48_0/doc/html/boost_asio/reference/Handler.html
  * 
  * The source handler must meet the requirements of Asio handler.
  * The binded arguments must meet the requirements of Asio handler except 
