@@ -333,6 +333,7 @@ private:
   boost::system::error_code close_socket();
   boost::system::error_code apply_socket_options();  
 
+  const std::size_t                   max_transfer_size_;
   const session_config::optional_int  socket_recv_buffer_size_;
   const session_config::optional_int  socket_send_buffer_size_;
   const session_config::optional_bool no_delay_;

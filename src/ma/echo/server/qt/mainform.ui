@@ -250,14 +250,14 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="0">
+       <item row="3" column="0">
         <widget class="QCheckBox" name="sockRecvBufferSizeCheckBox">
          <property name="text">
           <string>Socket's recieve buffer size (bytes)</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="1">
+       <item row="3" column="1">
         <widget class="QSpinBox" name="sockRecvBufferSizeSpinBox">
          <property name="enabled">
           <bool>false</bool>
@@ -282,14 +282,14 @@
          </property>
         </widget>
        </item>
-       <item row="3" column="0">
+       <item row="4" column="0">
         <widget class="QCheckBox" name="sockSendBufferSizeCheckBox">
          <property name="text">
           <string>Socket's send buffer size (bytes)</string>
          </property>
         </widget>
        </item>
-       <item row="3" column="1">
+       <item row="4" column="1">
         <widget class="QSpinBox" name="sockSendBufferSizeSpinBox">
          <property name="enabled">
           <bool>false</bool>
@@ -314,14 +314,14 @@
          </property>
         </widget>
        </item>
-       <item row="4" column="0">
+       <item row="5" column="0">
         <widget class="QLabel" name="tcpNoDelayLabel">
          <property name="text">
           <string>TCP NO_DELAY option</string>
          </property>
         </widget>
        </item>
-       <item row="4" column="1">
+       <item row="5" column="1">
         <widget class="QComboBox" name="tcpNoDelayComboBox">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -378,6 +378,35 @@
          </property>
          <property name="value">
           <number>300</number>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="maxTransferSizeLabel">
+         <property name="text">
+          <string>Max size of single async transfer (bytes)</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QSpinBox" name="maxTransferSizeSpinBox">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimum">
+          <number>1</number>
+         </property>
+         <property name="maximum">
+          <number>10485760</number>
+         </property>
+         <property name="singleStep">
+          <number>32</number>
+         </property>
+         <property name="value">
+          <number>4096</number>
          </property>
         </widget>
        </item>
@@ -487,6 +516,7 @@
   <tabstop>sessionBufferSizeSpinBox</tabstop>
   <tabstop>inactivityTimeoutCheckBox</tabstop>
   <tabstop>inactivityTimeoutSpinBox</tabstop>
+  <tabstop>maxTransferSizeSpinBox</tabstop>
   <tabstop>sockRecvBufferSizeCheckBox</tabstop>
   <tabstop>sockRecvBufferSizeSpinBox</tabstop>
   <tabstop>sockSendBufferSizeCheckBox</tabstop>

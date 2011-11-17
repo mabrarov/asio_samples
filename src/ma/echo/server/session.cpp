@@ -119,7 +119,8 @@ private:
 
 session::session(boost::asio::io_service& io_service, 
     const session_config& config)
-  : socket_recv_buffer_size_(config.socket_recv_buffer_size)
+  : max_transfer_size_(config.max_transfer_size)
+  , socket_recv_buffer_size_(config.socket_recv_buffer_size)
   , socket_send_buffer_size_(config.socket_send_buffer_size)
   , no_delay_(config.no_delay)
   , inactivity_timeout_(config.inactivity_timeout)
@@ -585,7 +586,8 @@ void session::continue_work()
   
   if (read_state::wait == read_state_)
   {
-    cyclic_buffer::mutable_buffers_type read_buffers(buffer_.prepared());
+    cyclic_buffer::mutable_buffers_type read_buffers(
+        buffer_.prepared(max_transfer_size_));
     if (!read_buffers.empty())
     {
       // We have enough resources to begin socket read
@@ -595,7 +597,8 @@ void session::continue_work()
 
   if (write_state::wait == write_state_)
   {
-    cyclic_buffer::const_buffers_type write_buffers(buffer_.data());
+    cyclic_buffer::const_buffers_type write_buffers(
+        buffer_.data(max_transfer_size_));
     if (!write_buffers.empty())
     {
       // We have enough resources to begin socket write

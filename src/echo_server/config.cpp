@@ -25,6 +25,7 @@ const char* recycled_sessions_option_name       = "recycled_sessions";
 const char* listen_backlog_option_name          = "listen_backlog";
 const char* buffer_size_option_name             = "buffer";
 const char* inactivity_timeout_option_name      = "inactivity_timeout";
+const char* max_transfer_size_option_name       = "max_transfer";
 const char* socket_recv_buffer_size_option_name = "sock_recv_buffer";
 const char* socket_send_buffer_size_option_name = "sock_send_buffer";
 const char* socket_no_delay_option_name         = "sock_no_delay";
@@ -162,7 +163,7 @@ boost::program_options::options_description build_cmd_options_description(
     )
     (
       buffer_size_option_name, 
-      boost::program_options::value<std::size_t>()->default_value(1024),
+      boost::program_options::value<std::size_t>()->default_value(4096),
       "set the session's buffer size (bytes)"
     )
     (
@@ -171,6 +172,11 @@ boost::program_options::options_description build_cmd_options_description(
       "set the timeout at one's expiration session will be considered" \
           " as inactive and will be closed (seconds)"
     )
+    (
+      max_transfer_size_option_name, 
+      boost::program_options::value<std::size_t>()->default_value(4096),
+      "set the maximum size of single async transfer (bytes)"
+    )  
     (
       socket_recv_buffer_size_option_name, 
       boost::program_options::value<int>(),
@@ -243,7 +249,10 @@ void print_config(std::ostream& stream, std::size_t cpu_count,
     session_inactivity_timeout_sec = timeout->total_seconds();
   }
 
-  stream << "Session's inactivity timeout (seconds): ";
+  stream << "Session's max size of single transfer (bytes)  : " 
+         << session_config.max_transfer_size << std::endl;
+
+  stream << "Session's inactivity timeout (seconds)         : ";
   print_optional(stream, session_inactivity_timeout_sec, "none");
   stream << std::endl;
 
@@ -257,7 +266,7 @@ void print_config(std::ostream& stream, std::size_t cpu_count,
       default_system_value);
   stream << std::endl;
 
-  stream << "Session's socket Nagle algorithm is   : ";
+  stream << "Session's socket Nagle algorithm is            : ";
   print_optional(stream, session_config.no_delay, default_system_value);
   stream << std::endl;
 }
@@ -320,14 +329,20 @@ ma::echo::server::session_config build_session_config(
     inactivity_timeout = boost::posix_time::seconds(timeout_sec);
   }
 
+  std::size_t max_transfer_size = 
+      options_values[max_transfer_size_option_name].as<std::size_t>();
+  validate_option<std::size_t>(
+      max_transfer_size_option_name, max_transfer_size, 1);
+
   boost::optional<int> socket_recv_buffer_size = read_socket_buffer_size(
       options_values, socket_recv_buffer_size_option_name);
 
   boost::optional<int> socket_send_buffer_size = read_socket_buffer_size(
       options_values, socket_send_buffer_size_option_name);
     
-  return session_config(buffer_size, socket_recv_buffer_size, 
-      socket_send_buffer_size, no_delay, inactivity_timeout);
+  return session_config(buffer_size, max_transfer_size, 
+      socket_recv_buffer_size, socket_send_buffer_size, no_delay, 
+      inactivity_timeout);
 }
 
 ma::echo::server::session_manager_config build_session_manager_config(
