@@ -43,11 +43,11 @@ public:
         "max_session_count must be > 0");
   }
         
-  int             listen_backlog;
-  std::size_t     max_session_count;
-  std::size_t     recycled_session_count;
-  endpoint_type   accepting_endpoint;
-  session_config  managed_session_config;
+  int            listen_backlog;
+  std::size_t    max_session_count;
+  std::size_t    recycled_session_count;
+  endpoint_type  accepting_endpoint;
+  session_config managed_session_config;
 }; // struct session_manager_config
         
 } // namespace server

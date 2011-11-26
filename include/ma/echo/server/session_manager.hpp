@@ -109,9 +109,9 @@ public:
     BOOST_ASSERT(!value_hook.prev_.lock() && !value_hook.next_);
     
     value_hook.next_ = front_;
-    if (value_hook.next_)
+    if (front_)
     {
-      base_hook& front_hook = get_hook(*value_hook.next_);
+      base_hook& front_hook = get_hook(*front_);
       front_hook.prev_ = value;
     }
     front_ = value;
