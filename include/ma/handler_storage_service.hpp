@@ -512,7 +512,7 @@ private:
     while (!done)
     {
       // Pop front implementation.
-      implementation_type* impl = 0;
+      implementation_type* impl;
       {
         lock_guard lock(impl_list_mutex_);        
         impl = static_cast<implementation_type*>(impl_list_.front());
