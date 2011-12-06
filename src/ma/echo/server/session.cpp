@@ -887,9 +887,7 @@ void session::start_socket_read(
 
   socket_.async_read_some(buffers, MA_STRAND_WRAP(strand_, 
       make_custom_alloc_handler(read_allocator_, boost::bind(
-          &this_type::handle_read, shared_from_this(), 
-          boost::asio::placeholders::error, 
-          boost::asio::placeholders::bytes_transferred))));
+          &this_type::handle_read, shared_from_this(), _1, _2))));
 
 #endif
 
@@ -911,9 +909,7 @@ void session::start_socket_write(
 
   socket_.async_write_some(buffers, MA_STRAND_WRAP(strand_, 
       make_custom_alloc_handler(write_allocator_, boost::bind(
-          &this_type::handle_write, shared_from_this(), 
-          boost::asio::placeholders::error, 
-          boost::asio::placeholders::bytes_transferred))));
+          &this_type::handle_write, shared_from_this(), _1, _2))));
 
 #endif
 
@@ -937,8 +933,7 @@ void session::start_timer_wait()
 
   timer_.async_wait(MA_STRAND_WRAP(strand_, 
       make_custom_alloc_handler(timer_allocator_, boost::bind(
-          &this_type::handle_timer, shared_from_this(), 
-          boost::asio::placeholders::error))));
+          &this_type::handle_timer, shared_from_this(), _1))));
 
 #endif
 

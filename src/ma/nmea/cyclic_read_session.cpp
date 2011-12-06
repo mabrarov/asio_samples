@@ -166,8 +166,7 @@ void cyclic_read_session::read_until_head()
   boost::asio::async_read_until(serial_port_, read_buffer_, frame_head_, 
       MA_STRAND_WRAP(strand_, make_custom_alloc_handler(read_allocator_, 
           boost::bind(&this_type::handle_read_head, shared_from_this(), 
-              boost::asio::placeholders::error, 
-              boost::asio::placeholders::bytes_transferred))));
+          _1, _2))));
 
   port_read_in_progress_ = true;          
 }
@@ -177,8 +176,7 @@ void cyclic_read_session::read_until_tail()
   boost::asio::async_read_until(serial_port_, read_buffer_, frame_tail_,
       MA_STRAND_WRAP(strand_, make_custom_alloc_handler(read_allocator_, 
           boost::bind(&this_type::handle_read_tail, shared_from_this(), 
-              boost::asio::placeholders::error, 
-              boost::asio::placeholders::bytes_transferred))));
+          _1, _2))));
 
   port_read_in_progress_ = true;
 }

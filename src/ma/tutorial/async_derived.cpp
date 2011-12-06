@@ -122,8 +122,7 @@ async_derived::do_start_do_something()
 
   timer_.async_wait(MA_STRAND_WRAP(strand_base::member, 
       ma::make_custom_alloc_handler(timer_allocator_, boost::bind(
-          &this_type::handle_timer, shared_from_this(), 
-          boost::asio::placeholders::error))));
+          &this_type::handle_timer, shared_from_this(), _1))));
 
 #endif
 
@@ -169,8 +168,7 @@ void async_derived::handle_timer(const boost::system::error_code& error)
 
     timer_.async_wait(MA_STRAND_WRAP(strand_base::member, 
         ma::make_custom_alloc_handler(timer_allocator_, boost::bind(
-            &this_type::handle_timer, shared_from_this(), 
-            boost::asio::placeholders::error))));
+            &this_type::handle_timer, shared_from_this(), _1))));
 
 #endif
 

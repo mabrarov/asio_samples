@@ -421,9 +421,7 @@ private:
 
     serial_port_.async_write_some(buffers, MA_STRAND_WRAP(strand_, 
         make_custom_alloc_handler(write_allocator_, boost::bind(
-            &this_type::handle_write<Handler>, shared_from_this(),
-            boost::asio::placeholders::error, 
-            boost::asio::placeholders::bytes_transferred,
+            &this_type::handle_write<Handler>, shared_from_this(), _1, _2, 
             boost::make_tuple<Handler>(handler)))));
 
     port_write_in_progress_ = true;

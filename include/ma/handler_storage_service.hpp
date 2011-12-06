@@ -21,6 +21,7 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/throw_exception.hpp>
 #include <ma/config.hpp>
+#include <ma/type_traits.hpp>
 #include <ma/bind_asio_handler.hpp>
 #include <ma/handler_alloc_helpers.hpp>
 
@@ -173,9 +174,9 @@ private:
   typedef handler_storage_service<Arg> this_type;
   typedef boost::mutex mutex_type;
   typedef boost::lock_guard<mutex_type> lock_guard;
-  
+
 public:
-  typedef Arg arg_type;    
+  typedef typename remove_cv_reference<Arg>::type arg_type;
 
 private:
   /// Base class to hold up handlers with the specified signature.

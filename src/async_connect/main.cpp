@@ -52,8 +52,8 @@ void handle_connect(boost::asio::ip::tcp::socket& socket,
       ma::async_connect(socket, peer_endpoint, 
           ma::make_custom_alloc_handler(handler_allocator, 
               boost::bind(&handle_connect, boost::ref(socket), 
-                  boost::ref(handler_allocator), attempt + 1, peer_endpoint,
-                  boost::asio::placeholders::error)));
+                  boost::ref(handler_allocator), attempt + 1, 
+                  peer_endpoint, _1)));
     }
 
     return;
@@ -61,8 +61,7 @@ void handle_connect(boost::asio::ip::tcp::socket& socket,
 
   std::cout << "async_connect completed with success" << std::endl;  
   socket.async_write_some(boost::asio::buffer(text_to_write), 
-      boost::bind(&handle_write, boost::asio::placeholders::error, 
-          boost::asio::placeholders::bytes_transferred));
+      boost::bind(&handle_write, _1, _2));
 }
 
 void handle_write(const boost::system::error_code& error, 
@@ -99,9 +98,8 @@ int main(int /*argc*/, char* /*argv*/[])
 
     ma::async_connect(socket, peer_endpoint, 
         ma::make_custom_alloc_handler(handler_allocator, 
-            boost::bind(&handle_connect, boost::ref(socket), 
-                boost::ref(handler_allocator), 0, peer_endpoint,
-                boost::asio::placeholders::error)));
+            boost::bind(&handle_connect, boost::ref(socket),  
+                boost::ref(handler_allocator), 0, peer_endpoint, _1)));
 
     io_service.run();
 

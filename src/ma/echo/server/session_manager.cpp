@@ -790,8 +790,8 @@ void session_manager::start_accept_session(const session_wrapper_ptr& session)
 
   acceptor_.async_accept(session->session->socket(), session->remote_endpoint,
       MA_STRAND_WRAP(strand_, make_custom_alloc_handler(accept_allocator_, 
-          boost::bind(&this_type::handle_accept, shared_from_this(), session, 
-              boost::asio::placeholders::error))));
+          boost::bind(&this_type::handle_accept, shared_from_this(), 
+          session, _1))));
 
 #endif
 
