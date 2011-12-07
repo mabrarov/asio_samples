@@ -151,7 +151,36 @@ private:
   }
 
   pointer front_;
-}; // class intrusive_list  
+}; // class intrusive_list
+
+// Special derived service id type to keep classes header-file only.
+// Copied from boost/asio/io_service.hpp.
+template <typename Type>
+class service_id : public boost::asio::io_service::id
+{   
+}; // class service_id
+
+// Special service base class to keep classes header-file only.
+// Copied from boost/asio/io_service.hpp.
+template <typename Type>
+class service_base : public boost::asio::io_service::service
+{
+public:
+  static service_id<Type> id;
+  
+  explicit service_base(boost::asio::io_service& io_service)
+    : boost::asio::io_service::service(io_service)
+  {
+  }
+
+protected:
+  virtual ~service_base()
+  {
+  }
+}; // class service_base
+
+template <typename Type>
+service_id<Type> service_base<Type>::id;
 
 } // namespace detail
 
@@ -167,44 +196,28 @@ public:
 }; // class bad_handler_call
 
 /// asio::io_service::service implementing handler_storage.
-template <typename Arg>
-class handler_storage_service : public boost::asio::io_service::service
+class handler_storage_service 
+  : public detail::service_base<handler_storage_service>
 {
 private:
-  typedef handler_storage_service<Arg> this_type;
   typedef boost::mutex mutex_type;
   typedef boost::lock_guard<mutex_type> lock_guard;
 
-public:
-  typedef typename remove_cv_reference<Arg>::type arg_type;
-
-private:
-  /// Base class to hold up handlers with the specified signature.
-  /**
-   * handler_base provides type erasure.
-   */
+  // Base class to hold up handlers.  
   class handler_base
   {
   private:
     typedef handler_base this_type;
 
-  public:
-    typedef void (*post_func_type)(handler_base*, const arg_type&);
-    typedef void (*destroy_func_type)(handler_base*);
-    typedef void* (*target_func_type)(handler_base*);
+  public:    
+    typedef void (*destroy_func_type)(this_type*);
+    typedef void* (*target_func_type)(this_type*);
 
-    handler_base(post_func_type post_func, destroy_func_type destroy_func,
-        target_func_type target_func)
-      : post_func_(post_func)
-      , destroy_func_(destroy_func)        
+    handler_base(destroy_func_type destroy_func, target_func_type target_func)
+      : destroy_func_(destroy_func)
       , target_func_(target_func)
     {
-    }
-
-    void post(const arg_type& arg)
-    {
-      post_func_(this, arg);
-    }      
+    }    
 
     void destroy()
     {
@@ -221,18 +234,49 @@ private:
     {
     }
 
-  private:        
-    post_func_type    post_func_;
+  private:
     destroy_func_type destroy_func_; 
     target_func_type  target_func_;
-  }; // class handler_base    
-      
-  /// Wrapper class to hold up handlers with the specified signature.
-  template <typename Handler>
-  class handler_wrapper : public handler_base
+  }; // class handler_base
+  
+  // Base class to hold up handlers with specified call signature.  
+  template <typename Arg>
+  class postable_handler_base : public handler_base
   {
   private:
-    typedef handler_wrapper<Handler> this_type;
+    typedef postable_handler_base<Arg> this_type;
+
+  public:    
+    typedef void (*post_func_type)(this_type*, const Arg&);
+
+    postable_handler_base(destroy_func_type destroy_func, 
+        target_func_type target_func, post_func_type post_func)
+      : handler_base(destroy_func, target_func)
+      , post_func_(post_func)
+    {
+    }
+
+    void post(const Arg& arg)
+    {
+      post_func_(this, arg);
+    }
+
+  protected:
+    ~postable_handler_base()
+    {
+    }
+
+  private:        
+    post_func_type post_func_;
+  }; // class postable_handler_base    
+
+  // Wrapper class to hold up handlers with specified call signature.
+  template <typename Handler, typename Arg>
+  class handler_wrapper : public postable_handler_base<Arg>
+  {
+  private:
+    typedef handler_wrapper<Handler, Arg> this_type;
+    typedef postable_handler_base<Arg> base_type;
 
   public:
 
@@ -240,8 +284,8 @@ private:
 
     template <typename H>
     handler_wrapper(boost::asio::io_service& io_service, H&& handler)
-      : handler_base(&this_type::do_post, &this_type::do_destroy, 
-            &this_type::do_target)
+      : base_type(&this_type::do_destroy, &this_type::do_target, 
+            &this_type::do_post)
       , io_service_(io_service)
       , work_(io_service)
       , handler_(std::forward<H>(handler))
@@ -251,7 +295,7 @@ private:
 #if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
     handler_wrapper(this_type&& other)
-      : handler_base(std::move(other))
+      : base_type(std::move(other))
       , io_service_(other.io_service_)
       , work_(std::move(other.work_))
       , handler_(std::move(other.handler_))
@@ -259,7 +303,7 @@ private:
     }
 
     handler_wrapper(const this_type& other)
-      : handler_base(other)
+      : base_type(other)
       , io_service_(other.io_service_)
       , work_(other.work_)
       , handler_(other.handler_)
@@ -272,8 +316,8 @@ private:
 
     handler_wrapper(boost::asio::io_service& io_service, 
         const Handler& handler)
-      : handler_base(&this_type::do_post, &this_type::do_destroy, 
-            &this_type::do_target)
+      : base_type(&this_type::do_destroy, &this_type::do_target, 
+            &this_type::do_post)
       , io_service_(io_service)
       , work_(io_service)
       , handler_(handler)
@@ -288,7 +332,7 @@ private:
     }
 #endif
 
-    static void do_post(handler_base* base, const arg_type& arg)
+    static void do_post(base_type* base, const Arg& arg)
     {        
       this_type* this_ptr = static_cast<this_type*>(base);
       // Take ownership of the wrapper object
@@ -357,6 +401,8 @@ private:
     Handler handler_;
   }; // class handler_wrapper
 
+  // Base class for implementation that helps to hide 
+  // public inheritance from detail::intrusive_list::base_hook
   class implementation_base_type 
       : public detail::intrusive_list<implementation_base_type>::base_hook
   { 
@@ -374,7 +420,7 @@ private:
 #endif
 
   private:
-    friend class handler_storage_service<arg_type>;
+    friend class handler_storage_service;
     // Pointer to the stored handler otherwise null pointer.
     handler_base* handler_;
   }; // class implementation_base_type
@@ -382,16 +428,14 @@ private:
   typedef detail::intrusive_list<implementation_base_type> impl_base_list;
 
 public:
-  static boost::asio::io_service::id id;
-
   class implementation_type : private implementation_base_type
   {
   private:
-    friend class handler_storage_service<arg_type>;
+    friend class handler_storage_service;
   }; // class implementation_type
   
   explicit handler_storage_service(boost::asio::io_service& io_service)
-    : boost::asio::io_service::service(io_service)      
+    : detail::service_base<handler_storage_service>(io_service)      
     , shutdown_done_(false)
   {
   }  
@@ -434,13 +478,14 @@ public:
     }
   }
 
-  template <typename Handler>
+  template <typename Handler, typename Arg>
   void reset(implementation_type& impl, Handler handler)
-  {
+  {    
     // If service is (was) in shutdown state then it can't store handler.
     if (!shutdown_done_)
-    {      
-      typedef handler_wrapper<Handler> value_type;
+    {
+      typedef typename ma::remove_cv_reference<Arg>::type arg_type;
+      typedef handler_wrapper<Handler, arg_type> value_type;
       typedef detail::handler_alloc_traits<Handler, value_type> alloc_traits;
       // Allocate raw memory for storing the handler
       detail::raw_handler_ptr<alloc_traits> raw_ptr(handler);
@@ -466,9 +511,12 @@ public:
     }
   }
 
-  void post(implementation_type& impl, const arg_type& arg)
+  template <typename Arg>
+  void post(implementation_type& impl, const Arg& arg)
   {
-    if (handler_base* handler = impl.handler_)
+    typedef typename ma::remove_cv_reference<Arg>::type arg_type;
+    typedef postable_handler_base<arg_type> postable_base;
+    if (postable_base* handler = static_cast<postable_base*>(impl.handler_))
     {
       impl.handler_ = 0;
       handler->post(arg);
@@ -501,7 +549,7 @@ public:
 protected:
   virtual ~handler_storage_service()
   {
-  }  
+  }
 
 private:
   virtual void shutdown_service()
@@ -523,7 +571,7 @@ private:
         }
       }      
       if (impl)
-      {        
+      {
         // Clear popped implementation.
         reset(*impl);
       }
@@ -537,15 +585,12 @@ private:
 
   // Guard for the impl_list_
   mutex_type impl_list_mutex_;
-  // Double-linked intrusive list of active (constructed but still not
-  // destructed) implementations.
+  // Double-linked intrusive list of active (constructed but 
+  // still not destructed) implementations.
   impl_base_list impl_list_;
   // Shutdown state flag.
   bool shutdown_done_;
 }; // class handler_storage_service
-
-template <typename Arg>
-boost::asio::io_service::id handler_storage_service<Arg>::id;
   
 } // namespace ma
 

@@ -14,18 +14,16 @@
 
 #include <ma/config.hpp>
 
-#if defined(BOOST_HAS_RVALUE_REFS)
-
 #include <boost/type_traits/remove_cv.hpp>
 #include <boost/type_traits/remove_reference.hpp>
 
 namespace ma {  
 
-/// Boost.MPL-like construction for type extraction in templates with rvalue
-/// reference support.
+/// Boost.TypeTraits-like construction for type extraction in templates with
+/// rvalue reference support.
 /**
  * First removes reference (if it is a refernce) than removes CV-qualifiers. 
- * It's simply a composition of Boost.MPL provided features.
+ * It's simply composition of features provided by Boost.TypeTraits.
  */
 template <typename T>
 struct remove_cv_reference
@@ -35,7 +33,5 @@ struct remove_cv_reference
 }; // struct remove_cv_reference
 
 } // namespace ma
-
-#endif // defined(BOOST_HAS_RVALUE_REFS)
 
 #endif // MA_TYPE_TRAITS_HPP

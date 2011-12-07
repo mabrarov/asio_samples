@@ -85,9 +85,9 @@ private:
   typedef handler_storage<Arg> this_type;  
 
 public:  
-  typedef handler_storage_service<Arg> service_type;
+  typedef handler_storage_service service_type;
   typedef typename service_type::implementation_type implementation_type;
-  typedef typename remove_cv_reference<Arg>::type arg_type;
+  typedef typename ma::remove_cv_reference<Arg>::type arg_type;
   
   explicit handler_storage(boost::asio::io_service& io_service)
     : service_(boost::asio::use_service<service_type>(io_service))    
@@ -161,7 +161,9 @@ public:
   template <typename Handler>
   void reset(Handler&& handler)
   {
-    service_.reset(impl_, std::forward<Handler>(handler));
+    typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+    service_.reset<handler_type, arg_type>(
+        impl_, std::forward<Handler>(handler));
   }
 
 #else // defined(MA_HAS_RVALUE_REFS)
@@ -176,7 +178,8 @@ public:
   template <typename Handler>
   void reset(const Handler& handler)
   {
-    service_.reset(impl_, handler);
+    typedef Handler handler_type;
+    service_.reset<handler_type, arg_type>(impl_, handler);
   }
 
 #endif // defined(MA_HAS_RVALUE_REFS)
@@ -190,8 +193,8 @@ public:
    * already called) then do nothing".
    */
   void post(const arg_type& arg)
-  {    
-    service_.post(impl_, arg);
+  {
+    service_.post<arg_type>(impl_, arg);
   }
 
 private:
