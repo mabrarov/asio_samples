@@ -15,6 +15,7 @@
 #include <boost/asio.hpp>
 #include <boost/noncopyable.hpp>
 #include <ma/config.hpp>
+#include <ma/type_traits.hpp>
 #include <ma/handler_storage_service.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)
@@ -83,10 +84,10 @@ class handler_storage : private boost::noncopyable
 private:
   typedef handler_storage<Arg> this_type;  
 
-public:
-  typedef Arg arg_type;
+public:  
   typedef handler_storage_service<Arg> service_type;
   typedef typename service_type::implementation_type implementation_type;
+  typedef typename remove_cv_reference<Arg>::type arg_type;
   
   explicit handler_storage(boost::asio::io_service& io_service)
     : service_(boost::asio::use_service<service_type>(io_service))    
