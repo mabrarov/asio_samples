@@ -404,7 +404,7 @@ private:
   // Base class for implementation that helps to hide 
   // public inheritance from detail::intrusive_list::base_hook
   class implementation_base_type 
-      : public detail::intrusive_list<implementation_base_type>::base_hook
+    : public detail::intrusive_list<implementation_base_type>::base_hook
   { 
   public:
     implementation_base_type()

@@ -332,7 +332,7 @@ private:
   typedef boost::shared_ptr<session_wrapper> session_wrapper_ptr;
 
   struct session_wrapper
-      : public detail::sp_intrusive_list<session_wrapper>::base_hook
+    : public detail::sp_intrusive_list<session_wrapper>::base_hook
   {
     typedef protocol_type::endpoint endpoint_type;
     
