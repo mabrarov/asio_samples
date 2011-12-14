@@ -10,6 +10,7 @@
 #include <windows.h>
 #endif
 
+#include <cstdlib>
 #include <iostream>
 #include <exception>
 #include <boost/assert.hpp>
@@ -120,4 +121,4 @@ int main(int argc, char* argv[])
     std::cerr << "Unexpected exception: " << e.what() << std::endl;
   }
   return EXIT_FAILURE;
-} // _tmain
+}

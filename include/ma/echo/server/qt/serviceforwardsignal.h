@@ -13,7 +13,6 @@
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
 #include <boost/system/error_code.hpp>
-#include <boost/thread/recursive_mutex.hpp>
 #include <QtCore/QObject>
 #include <ma/echo/server/qt/serviceforwardsignal_fwd.h>
 
@@ -29,10 +28,7 @@ class ServiceForwardSignal : public QObject
 {
   Q_OBJECT
 
-private:
-  typedef boost::recursive_mutex mutex_type;
-
-signals:          
+signals:
   void startCompleted(const boost::system::error_code&);
   void stopCompleted(const boost::system::error_code&);
   void workCompleted(const boost::system::error_code&);
@@ -61,8 +57,8 @@ public:
   {
     emit workCompleted(error);
   }
-               
-private:          
+
+private:
   Q_DISABLE_COPY(ServiceForwardSignal)
 }; // class ServiceForwardSignal
 

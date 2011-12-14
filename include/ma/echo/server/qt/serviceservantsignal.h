@@ -31,6 +31,7 @@ class ServiceServantSignal : public QObject
 
 private:
   typedef boost::recursive_mutex mutex_type;
+  typedef boost::lock_guard<mutex_type> lock_guard;
 
 public:
   ServiceServantSignal()
@@ -49,36 +50,36 @@ signals:
 
 public:
   void emitWorkThreadExceptionHappened()
-  {           
-    mutex_type::scoped_lock lock(mutex_);
+  {
+    lock_guard lock(mutex_);
     emit workThreadExceptionHappened();
   }
 
   void emitSessionManagerStartCompleted(const boost::system::error_code& error)
-  {       
-    mutex_type::scoped_lock lock(mutex_);
+  {
+    lock_guard lock(mutex_);
     emit sessionManagerStartCompleted(error);
   }
 
   void emitSessionManagerWaitCompleted(const boost::system::error_code& error)
-  {       
-    mutex_type::scoped_lock lock(mutex_);
+  {
+    lock_guard lock(mutex_);
     emit sessionManagerWaitCompleted(error);
   }
 
   void emitSessionManagerStopCompleted(const boost::system::error_code& error)
-  {       
-    mutex_type::scoped_lock lock(mutex_);
+  {
+    lock_guard lock(mutex_);
     emit sessionManagerStopCompleted(error);
   }
 
   void disconnect()
   {
-    mutex_type::scoped_lock lock(mutex_);
+    lock_guard lock(mutex_);
     QObject::disconnect();
   }
 
-private:          
+private:
   Q_DISABLE_COPY(ServiceServantSignal)
 
   mutex_type mutex_;
