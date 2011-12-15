@@ -44,7 +44,7 @@ public:
   {
   }
 
-  void operator()(int val) 
+  void operator()(int val)
   {
     std::cout << value_ << val << std::endl;
   }
@@ -57,7 +57,7 @@ void test_handler_storage_move_constructor(boost::asio::io_service& io_service)
 {
   typedef ma::handler_storage<int> handler_storage_type;
 
-  handler_storage_type handler1(io_service);  
+  handler_storage_type handler1(io_service);
   handler1.reset(test_handler(4));
 
   boost::thread worker_thread(boost::bind(&boost::asio::io_service::run,
@@ -79,19 +79,19 @@ int _tmain(int argc, _TCHAR* argv[])
 #else
 int main(int argc, char* argv[])
 #endif
-{   
-  try 
+{
+  try
   {
     boost::program_options::options_description options_description("Allowed options");
     options_description.add_options()
       (
-        "help", 
+        "help",
         "produce help message"
       );
 
-    boost::program_options::variables_map options_values;  
+    boost::program_options::variables_map options_values;
     boost::program_options::store(
-      boost::program_options::parse_command_line(argc, argv, options_description), 
+      boost::program_options::parse_command_line(argc, argv, options_description),
       options_values);
     boost::program_options::notify(options_values);
 
@@ -105,19 +105,19 @@ int main(int argc, char* argv[])
     std::size_t session_thread_count = cpu_count > 1 ? cpu_count : 2;
     boost::asio::io_service io_service(session_thread_count);
 
-#if defined(MA_HAS_RVALUE_REFS)    
+#if defined(MA_HAS_RVALUE_REFS)
     test_handler_storage_move_constructor(io_service);
-#endif    
-    
+#endif
+
     //todo
     return EXIT_SUCCESS;
   }
   catch (const boost::program_options::error& e)
-  {    
+  {
     std::cerr << "Error reading options: " << e.what() << std::endl;
   }
   catch (const std::exception& e)
-  {    
+  {
     std::cerr << "Unexpected exception: " << e.what() << std::endl;
   }
   return EXIT_FAILURE;

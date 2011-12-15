@@ -26,12 +26,12 @@ namespace ma {
 
 namespace tutorial {
 
-class async_derived 
+class async_derived
   : private boost::base_from_member<boost::asio::io_service::strand>
   , public async_base
   , public boost::enable_shared_from_this<async_derived>
 {
-private:      
+private:
   typedef boost::base_from_member<boost::asio::io_service::strand> strand_base;
   typedef async_derived this_type;
 
@@ -45,7 +45,7 @@ protected:
 
 private:
   void handle_timer(const boost::system::error_code& error);
-      
+
   std::size_t counter_;
   boost::asio::deadline_timer timer_;
 

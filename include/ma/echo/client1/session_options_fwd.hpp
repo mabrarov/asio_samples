@@ -19,7 +19,7 @@ namespace echo {
 namespace client1 {
 
 class session_options;
-        
+
 } // namespace client1
 } // namespace echo
 } // namespace ma

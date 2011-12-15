@@ -20,47 +20,47 @@ namespace ma {
 namespace nmea {
 
 /**
- * See 
+ * See
  * http://blog.think-async.com/2010/04/system-error-support-in-c0x-part-4.html
  */
 const boost::system::error_category& session_error_category();
 
 namespace session_error {
 
-enum error_t 
+enum error_t
 {
   invalid_state     = 100,
   operation_aborted = 200
-}; // enum error_t 
+}; // enum error_t
 
 inline boost::system::error_code make_error_code(error_t e)
-{  
+{
   return boost::system::error_code(
       static_cast<int>(e), session_error_category());
 }
 
 inline boost::system::error_condition make_error_condition(error_t e)
-{  
+{
   return boost::system::error_condition(
       static_cast<int>(e), session_error_category());
 }
 
-} // namespace session_error    
+} // namespace session_error
 
 } // namespace nmea
 } // namespace ma
 
-namespace boost {  
+namespace boost {
 
 namespace system {
 
-template <>  
-struct is_error_code_enum<ma::nmea::session_error::error_t> 
-  : public boost::true_type 
+template <>
+struct is_error_code_enum<ma::nmea::session_error::error_t>
+  : public boost::true_type
 {
 }; // struct is_error_code_enum
 
 } // namespace system
 } // namespace boost
-  
+
 #endif // MA_NMEA_ERROR_HPP

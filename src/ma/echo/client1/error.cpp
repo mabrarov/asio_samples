@@ -9,7 +9,7 @@
 
 namespace ma {
 
-namespace echo { 
+namespace echo {
 
 namespace client1 {
 
@@ -45,7 +45,7 @@ public:
 }; // class client1_error_category_impl
 
 } // anonymous namespace
-       
+
 const boost::system::error_category& client1_error_category()
 {
   static const client1_error_category_impl error_category_const;

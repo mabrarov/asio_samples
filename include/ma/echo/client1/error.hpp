@@ -22,14 +22,14 @@ namespace echo {
 namespace client1 {
 
 /**
- * See 
+ * See
  * http://blog.think-async.com/2010/04/system-error-support-in-c0x-part-4.html
  */
 const boost::system::error_category& client1_error_category();
 
 namespace client1_error {
 
-enum error_t 
+enum error_t
 {
   invalid_state           = 100,
   operation_aborted       = 200,
@@ -43,13 +43,13 @@ inline boost::system::error_code make_error_code(error_t e)
 }
 
 inline boost::system::error_condition make_error_condition(error_t e)
-{  
+{
   return boost::system::error_condition(
       static_cast<int>(e), client1_error_category());
 }
 
 } // namespace client1_error
-            
+
 } // namespace server
 } // namespace echo
 } // namespace ma
@@ -58,13 +58,13 @@ namespace boost {
 
 namespace system {
 
-template <>  
-struct is_error_code_enum<ma::echo::client1::client1_error::error_t> 
-  : public boost::true_type 
+template <>
+struct is_error_code_enum<ma::echo::client1::client1_error::error_t>
+  : public boost::true_type
 {
 }; // struct is_error_code_enum
 
 } // namespace system
 } // namespace boost
-  
+
 #endif // MA_ECHO_CLIENT1_ERROR_HPP

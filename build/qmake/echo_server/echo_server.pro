@@ -1,4 +1,4 @@
-# 
+#
 # Copyright (c) 2010-2011 Marat Abrarov (abrarov@mail.ru)
 #
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
@@ -46,7 +46,7 @@ SOURCES  += ../../../src/ma/console_controller.cpp \
 win32:INCLUDEPATH += ../../../../boost_1_48_0
 unix:INCLUDEPATH  += /usr/local/include
 INCLUDEPATH       += ../../../include
-		
+
 win32:LIBS += -L../../../../boost_1_48_0/lib/x86
 unix:LIBS  += -lboost_thread \
               -lboost_system \

@@ -24,9 +24,9 @@
 
 namespace ma {
 
-namespace tutorial2 {    
+namespace tutorial2 {
 
-class async_implementation 
+class async_implementation
   : private boost::noncopyable
   , public async_interface
   , public boost::enable_shared_from_this<async_implementation>
@@ -35,7 +35,7 @@ private:
   typedef async_implementation this_type;
 
 public:
-  async_implementation(boost::asio::io_service& io_service, 
+  async_implementation(boost::asio::io_service& io_service,
       const std::string& name);
   ~async_implementation();
 

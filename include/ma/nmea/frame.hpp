@@ -21,8 +21,9 @@ namespace nmea {
 
 typedef std::string frame;
 typedef boost::shared_ptr<frame> frame_ptr;
-    
+
 } // namespace nmea
+
 } // namespace ma
 
 #endif // MA_NMEA_FRAME_HPP

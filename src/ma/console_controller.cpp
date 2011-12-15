@@ -6,7 +6,7 @@
 //
 
 #if !defined(WIN32)
-#include <csignal> 
+#include <csignal>
 #endif
 
 #include <stdexcept>
@@ -47,20 +47,20 @@ console_controller::~console_controller()
 #endif
 
   mutex_type::scoped_lock lock(ctrl_mutex_);
-  ctrl_function_.clear();    
+  ctrl_function_.clear();
 }
 
 #if defined(WIN32)
 
 BOOL WINAPI console_controller::console_ctrl_proc(DWORD ctrl_type)
-{    
+{
   mutex_type::scoped_lock lock(ctrl_mutex_);
   switch (ctrl_type)
   {
   case CTRL_C_EVENT:
   case CTRL_BREAK_EVENT:
   case CTRL_CLOSE_EVENT:
-  case CTRL_SHUTDOWN_EVENT:            
+  case CTRL_SHUTDOWN_EVENT:
     ctrl_function_();
     return TRUE;
   default:

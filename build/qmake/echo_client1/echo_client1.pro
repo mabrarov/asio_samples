@@ -1,4 +1,4 @@
-# 
+#
 # Copyright (c) 2010-2011 Marat Abrarov (abrarov@mail.ru)
 #
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
@@ -20,25 +20,25 @@ HEADERS  += ../../../include/ma/handler_storage_service.hpp \
             ../../../include/ma/custom_alloc_handler.hpp \
             ../../../include/ma/strand_wrapped_handler.hpp \
             ../../../include/ma/handler_allocator.hpp \
-            ../../../include/ma/handler_alloc_helpers.hpp \            
+            ../../../include/ma/handler_alloc_helpers.hpp \
             ../../../include/ma/console_controller.hpp \
             ../../../include/ma/config.hpp \
             ../../../include/ma/type_traits.hpp \
             ../../../include/ma/echo/client1/session_options_fwd.hpp \
-            ../../../include/ma/echo/client1/session_options.hpp \            
+            ../../../include/ma/echo/client1/session_options.hpp \
             ../../../include/ma/echo/client1/session_fwd.hpp \
-            ../../../include/ma/echo/client1/session.hpp \            
-            ../../../include/ma/echo/client1/error.hpp            
+            ../../../include/ma/echo/client1/session.hpp \
+            ../../../include/ma/echo/client1/error.hpp
 
 SOURCES  += ../../../src/ma/console_controller.cpp \
-            ../../../src/echo_client1/main.cpp \            
+            ../../../src/echo_client1/main.cpp \
             ../../../src/ma/echo/client1/error.cpp \
-            ../../../src/ma/echo/client1/session.cpp            
+            ../../../src/ma/echo/client1/session.cpp
 
 win32:INCLUDEPATH += ../../../../boost_1_48_0
 unix:INCLUDEPATH  += /usr/local/include
 INCLUDEPATH       += ../../../include
-		
+
 win32:LIBS += -L../../../../boost_1_48_0/lib/x86
 unix:LIBS  += -lboost_thread \
               -lboost_system \

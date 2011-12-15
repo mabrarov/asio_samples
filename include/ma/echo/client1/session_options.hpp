@@ -28,19 +28,19 @@ namespace echo {
 namespace client1 {
 
 class session_options
-{ 
-public:        
+{
+public:
   typedef boost::optional<int>  optional_int;
   typedef boost::optional<bool> optional_bool;
 
-  explicit session_options(std::size_t buffer_size, 
-      const optional_int& socket_recv_buffer_size = optional_int(), 
+  explicit session_options(std::size_t buffer_size,
+      const optional_int& socket_recv_buffer_size = optional_int(),
       const optional_int& socket_send_buffer_size = optional_int(),
       const optional_bool& no_delay = optional_bool())
     : no_delay_(no_delay)
     , socket_recv_buffer_size_(socket_recv_buffer_size)
     , socket_send_buffer_size_(socket_send_buffer_size)
-    , buffer_size_(buffer_size)         
+    , buffer_size_(buffer_size)
   {
     BOOST_ASSERT_MSG(buffer_size > 0, "buffer_size must be > 0");
 
@@ -79,7 +79,7 @@ private:
   optional_int  socket_send_buffer_size_;
   std::size_t   buffer_size_;
 }; // struct session_options
-        
+
 } // namespace client1
 } // namespace echo
 } // namespace ma

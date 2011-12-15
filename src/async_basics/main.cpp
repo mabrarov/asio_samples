@@ -34,9 +34,9 @@ typedef boost::shared_ptr<ma::tutorial::async_base> async_base_ptr;
 
 void handle_do_something(const async_base_ptr& /*async_base*/,
     const boost::system::error_code& error,
-    const boost::shared_ptr<const std::string>& name, 
+    const boost::shared_ptr<const std::string>& name,
     const boost::shared_ptr<allocator_type>& /*allocator*/)
-{  
+{
   if (error)
   {
     std::cout << boost::format("%s complete work with error\n") % *name;
@@ -61,9 +61,9 @@ int _tmain(int /*argc*/, _TCHAR* /*argv*/[])
 #else
 int main(int /*argc*/, char* /*argv*/[])
 #endif
-{     
+{
   try
-  {  
+  {
     std::size_t cpu_count = boost::thread::hardware_concurrency();
     std::size_t work_thread_count = cpu_count < 2 ? 2 : cpu_count;
 
@@ -71,7 +71,7 @@ int main(int /*argc*/, char* /*argv*/[])
     io_service work_io_service(cpu_count);
 
     // Setup console controller
-    ma::console_controller console_controller(boost::bind(handle_program_exit, 
+    ma::console_controller console_controller(boost::bind(handle_program_exit,
         boost::ref(work_io_service)));
     std::cout << "Press Ctrl+C (Ctrl+Break) to exit.\n";
 
@@ -88,18 +88,18 @@ int main(int /*argc*/, char* /*argv*/[])
     boost::format name_format("active_object%03d");
     for (std::size_t i = 0; i != 20; ++i)
     {
-      boost::shared_ptr<const std::string> name = 
+      boost::shared_ptr<const std::string> name =
           boost::make_shared<std::string>((name_format % i).str());
 
-      boost::shared_ptr<allocator_type> allocator = 
+      boost::shared_ptr<allocator_type> allocator =
           boost::make_shared<allocator_type>();
-      
-      async_base_ptr active_object = 
+
+      async_base_ptr active_object =
           boost::make_shared<ma::tutorial::async_derived>(
-              boost::ref(work_io_service), *name); 
+              boost::ref(work_io_service), *name);
 
       active_object->async_do_something(ma::make_custom_alloc_handler(
-          *allocator, boost::bind(&handle_do_something, active_object, _1, 
+          *allocator, boost::bind(&handle_do_something, active_object, _1,
               name, allocator)));
     }
 

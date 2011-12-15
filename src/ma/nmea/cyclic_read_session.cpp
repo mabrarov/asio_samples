@@ -11,7 +11,7 @@
 
 namespace ma {
 
-namespace nmea { 
+namespace nmea {
 
 cyclic_read_session::cyclic_read_session(boost::asio::io_service& io_service,
     const std::size_t read_buffer_size, const std::size_t frame_buffer_size,
@@ -23,7 +23,7 @@ cyclic_read_session::cyclic_read_session(boost::asio::io_service& io_service,
   , extern_stop_handler_(io_service)
   , frame_buffer_(frame_buffer_size)
   , port_write_in_progress_(false)
-  , port_read_in_progress_(false)             
+  , port_read_in_progress_(false)
   , extern_state_(extern_state::ready)
   , read_buffer_(read_buffer_size)
   , frame_head_(frame_head)
@@ -53,13 +53,13 @@ cyclic_read_session::cyclic_read_session(boost::asio::io_service& io_service,
         std::invalid_argument("too large frame_tail"));
   }
 }
-  
+
 void cyclic_read_session::resest()
 {
   boost::system::error_code ignored;
   serial_port_.close(ignored);
 
-  frame_buffer_.clear();        
+  frame_buffer_.clear();
   read_error_.clear();
 
   read_buffer_.consume(boost::asio::buffer_size(read_buffer_.data()));
@@ -71,9 +71,9 @@ boost::system::error_code cyclic_read_session::do_start_extern_start()
 {
   if (extern_state::ready != extern_state_)
   {
-    return session_error::invalid_state;          
+    return session_error::invalid_state;
   }
-  
+
   extern_state_ = extern_state::work;
 
   // Start internal activity
@@ -81,17 +81,17 @@ boost::system::error_code cyclic_read_session::do_start_extern_start()
   {
     read_until_head();
   }
-  
+
   // Signal successful handshake completion.
   return boost::system::error_code();
 }
 
-boost::optional<boost::system::error_code> 
+boost::optional<boost::system::error_code>
 cyclic_read_session::do_start_extern_stop()
-{      
-  if ((extern_state::stopped == extern_state_) 
+{
+  if ((extern_state::stopped == extern_state_)
       || (extern_state::stop == extern_state_))
-  {          
+  {
     return boost::optional<boost::system::error_code>(
         session_error::invalid_state);
   }
@@ -110,27 +110,27 @@ cyclic_read_session::do_start_extern_stop()
 
   // Check for shutdown completion
   if (may_complete_stop())
-  {        
+  {
     complete_stop();
     // Signal shutdown completion
-    return stop_error_;              
+    return stop_error_;
   }
 
   return boost::optional<boost::system::error_code>();
 }
 
-boost::optional<boost::system::error_code> 
+boost::optional<boost::system::error_code>
 cyclic_read_session::do_start_extern_read_some()
 {
-  if ((extern_state::work != extern_state_) 
+  if ((extern_state::work != extern_state_)
       || (extern_read_handler_.has_target()))
-  {          
+  {
     return boost::optional<boost::system::error_code>(
         session_error::invalid_state);
   }
 
   if (!frame_buffer_.empty())
-  {                
+  {
     // Signal that we can safely fill input buffer from the frame_buffer_
     return boost::system::error_code();
   }
@@ -162,34 +162,34 @@ void cyclic_read_session::complete_stop()
 }
 
 void cyclic_read_session::read_until_head()
-{                                 
-  boost::asio::async_read_until(serial_port_, read_buffer_, frame_head_, 
-      MA_STRAND_WRAP(strand_, make_custom_alloc_handler(read_allocator_, 
-          boost::bind(&this_type::handle_read_head, shared_from_this(), 
+{
+  boost::asio::async_read_until(serial_port_, read_buffer_, frame_head_,
+      MA_STRAND_WRAP(strand_, make_custom_alloc_handler(read_allocator_,
+          boost::bind(&this_type::handle_read_head, shared_from_this(),
           _1, _2))));
 
-  port_read_in_progress_ = true;          
+  port_read_in_progress_ = true;
 }
 
 void cyclic_read_session::read_until_tail()
-{                    
+{
   boost::asio::async_read_until(serial_port_, read_buffer_, frame_tail_,
-      MA_STRAND_WRAP(strand_, make_custom_alloc_handler(read_allocator_, 
-          boost::bind(&this_type::handle_read_tail, shared_from_this(), 
+      MA_STRAND_WRAP(strand_, make_custom_alloc_handler(read_allocator_,
+          boost::bind(&this_type::handle_read_tail, shared_from_this(),
           _1, _2))));
 
   port_read_in_progress_ = true;
 }
 
 void cyclic_read_session::handle_read_head(
-    const boost::system::error_code& error, 
+    const boost::system::error_code& error,
     const std::size_t bytes_transferred)
-{         
+{
   port_read_in_progress_ = false;
 
-  // Check for pending session do_start_extern_stop operation 
+  // Check for pending session do_start_extern_stop operation
   if (extern_state::stop == extern_state_)
-  {          
+  {
     if (may_complete_stop())
     {
       complete_stop();
@@ -200,30 +200,30 @@ void cyclic_read_session::handle_read_head(
 
   if (error)
   {
-    // Check for pending session read operation 
+    // Check for pending session read operation
     if (extern_read_handler_.has_target())
-    {        
+    {
       extern_read_handler_.post(read_result_type(error, 0));
       return;
     }
 
     // Store error for the next outer read operation.
-    read_error_ = error;        
+    read_error_ = error;
     return;
-  } 
+  }
 
   // We do not need in-between-frame-garbage and frame's head
-  read_buffer_.consume(bytes_transferred);                    
+  read_buffer_.consume(bytes_transferred);
   read_until_tail();
 }
 
 void cyclic_read_session::handle_read_tail(
-    const boost::system::error_code& error, 
+    const boost::system::error_code& error,
     const std::size_t bytes_transferred)
-{                  
+{
   port_read_in_progress_ = false;
 
-  // Check for pending session do_start_extern_stop operation 
+  // Check for pending session do_start_extern_stop operation
   if (extern_state::stop == extern_state_)
   {
     if (may_complete_stop())
@@ -234,9 +234,9 @@ void cyclic_read_session::handle_read_tail(
     return;
   }
 
-  if (error)        
+  if (error)
   {
-    // Check for pending session read operation 
+    // Check for pending session read operation
     if (extern_read_handler_.has_target())
     {
       extern_read_handler_.post(read_result_type(error, 0));
@@ -260,7 +260,7 @@ void cyclic_read_session::handle_read_tail(
   if (frame_buffer_.full())
   {
     new_frame = frame_buffer_.front();
-    new_frame->assign(data_begin, data_end);        
+    new_frame->assign(data_begin, data_end);
   }
   else
   {
@@ -276,9 +276,9 @@ void cyclic_read_session::handle_read_tail(
   // Save ready frame into the cyclic read buffer
   frame_buffer_.push_back(new_frame);
 
-  // If there is waiting read operation - complete it            
+  // If there is waiting read operation - complete it
   if (extern_read_handler_.has_target())
-  {        
+  {
     extern_read_handler_base* handler = get_extern_read_handler();
     read_result_type copy_result = handler->copy(frame_buffer_);
     frame_buffer_.erase_begin(copy_result.get<1>());
@@ -288,12 +288,12 @@ void cyclic_read_session::handle_read_tail(
 
 void cyclic_read_session::post_extern_stop_handler()
 {
-  if (extern_stop_handler_.has_target()) 
+  if (extern_stop_handler_.has_target())
   {
     // Signal shutdown completion
     extern_stop_handler_.post(stop_error_);
   }
 }
-            
+
 } // namespace nmea
 } // namespace ma

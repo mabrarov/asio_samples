@@ -37,19 +37,19 @@ namespace echo {
 
 namespace client1 {
 
-class session 
+class session
   : private boost::noncopyable
   , public boost::enable_shared_from_this<session>
 {
 private:
-  typedef session this_type;        
+  typedef session this_type;
 
-public:        
-  session(boost::asio::io_service& io_service, 
+public:
+  session(boost::asio::io_service& io_service,
     const session_options& options);
 
   ~session()
-  {        
+  {
   }
 
   boost::asio::ip::tcp::socket& socket()
@@ -87,7 +87,7 @@ public:
     typedef typename ma::remove_cv_reference<Handler>::type handler_type;
 
     strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler),
-        boost::bind(&this_type::start_external_wait<handler_type>, 
+        boost::bind(&this_type::start_external_wait<handler_type>,
             shared_from_this(), _1)));
   }
 
@@ -128,14 +128,14 @@ private:
       stopped
     };
   }; // struct external_state
-        
+
   template <typename Handler>
   void start_external_start(const Handler& handler)
   {
     //todo
-    io_service_.post(detail::bind_handler(handler, 
+    io_service_.post(detail::bind_handler(handler,
         boost::asio::error::operation_not_supported));
-    //boost::system::error_code error = do_start_external_start();          
+    //boost::system::error_code error = do_start_external_start();
     //io_service_.post(detail::bind_handler(handler, error));
   }
 
@@ -143,16 +143,16 @@ private:
   void start_external_stop(const Handler& handler)
   {
     //todo
-    io_service_.post(detail::bind_handler(handler, 
+    io_service_.post(detail::bind_handler(handler,
         boost::asio::error::operation_not_supported));
-    //if (boost::optional<boost::system::error_code> result = 
+    //if (boost::optional<boost::system::error_code> result =
     //    do_start_external_stop())
     //{
     //  io_service_.post(detail::bind_handler(handler, *result));
     //}
     //else
     //{
-    //  stop_handler_.reset(handler);            
+    //  stop_handler_.reset(handler);
     //}
   }
 
@@ -160,13 +160,13 @@ private:
   void start_external_wait(const Handler& handler)
   {
     //todo
-    io_service_.post(detail::bind_handler(handler, 
+    io_service_.post(detail::bind_handler(handler,
         boost::asio::error::operation_not_supported));
-    //if (boost::optional<boost::system::error_code> result = 
+    //if (boost::optional<boost::system::error_code> result =
     //    do_start_external_wait())
     //{
     //  io_service_.post(detail::bind_handler(handler, *result));
-    //} 
+    //}
     //else
     //{
     //  wait_handler_.reset(handler);
@@ -176,30 +176,30 @@ private:
   //todo
   //boost::system::error_code                  do_start_external_start();
   //boost::optional<boost::system::error_code> do_start_external_stop();
-  //boost::optional<boost::system::error_code> do_start_external_wait();  
+  //boost::optional<boost::system::error_code> do_start_external_wait();
 
   session_options::optional_int  socket_recv_buffer_size_;
   session_options::optional_int  socket_send_buffer_size_;
   session_options::optional_bool no_delay_;
-        
+
   bool socket_write_in_progress_;
   bool socket_read_in_progress_;
   external_state::value_t state_;
 
   boost::asio::io_service& io_service_;
-  boost::asio::io_service::strand strand_;      
+  boost::asio::io_service::strand strand_;
   boost::asio::ip::tcp::socket socket_;
 
   handler_storage<boost::system::error_code> wait_handler_;
   handler_storage<boost::system::error_code> stop_handler_;
 
   boost::system::error_code wait_error_;
-  boost::system::error_code stop_error_;        
+  boost::system::error_code stop_error_;
   cyclic_buffer buffer_;
 
   in_place_handler_allocator<640> write_allocator_;
   in_place_handler_allocator<256> read_allocator_;
-}; // class session 
+}; // class session
 
 } // namespace client1
 } // namespace echo

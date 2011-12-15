@@ -53,7 +53,7 @@ public:
     func_type func = &this_type::start_do_something<handler_type>;
 
     strand_.post(ma::make_context_alloc_handler2(
-        std::forward<Handler>(handler), 
+        std::forward<Handler>(handler),
         forward_handler_binder<handler_type>(func, get_shared_base())));
   }
 
@@ -66,9 +66,9 @@ public:
     typedef void (this_type::*func_type)(const handler_type&);
 
     func_type func = &this_type::start_do_something<handler_type>;
-    
+
     strand_.post(ma::make_context_alloc_handler2(
-        std::forward<Handler>(handler), 
+        std::forward<Handler>(handler),
         boost::bind(func, get_shared_base(), _1)));
   }
 
@@ -83,8 +83,8 @@ public:
     typedef void (this_type::*func_type)(const handler_type&);
 
     func_type func = &this_type::start_do_something<handler_type>;
-    
-    strand_.post(ma::make_context_alloc_handler2(handler, 
+
+    strand_.post(ma::make_context_alloc_handler2(handler,
         boost::bind(func, get_shared_base(), _1)));
   }
 
@@ -99,13 +99,13 @@ protected:
   {
   }
 
-  ~async_base() 
+  ~async_base()
   {
   }
 
   virtual async_base_ptr get_shared_base() = 0;
 
-  virtual boost::optional<boost::system::error_code> 
+  virtual boost::optional<boost::system::error_code>
   do_start_do_something() = 0;
 
   void complete_do_something(const boost::system::error_code& error)
@@ -127,7 +127,7 @@ private:
   class forward_handler_binder
   {
   private:
-    typedef forward_handler_binder this_type;    
+    typedef forward_handler_binder this_type;
 
   public:
     typedef void result_type;
@@ -163,16 +163,16 @@ private:
 
   private:
     function_type  function_;
-    async_base_ptr async_base_;          
+    async_base_ptr async_base_;
   }; // class forward_handler_binder
 
-#endif // defined(MA_HAS_RVALUE_REFS) 
+#endif // defined(MA_HAS_RVALUE_REFS)
        //     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
   template <typename Handler>
   void start_do_something(const Handler& handler)
-  {    
-    if (boost::optional<boost::system::error_code> result = 
+  {
+    if (boost::optional<boost::system::error_code> result =
         do_start_do_something())
     {
       strand_.get_io_service().post(ma::detail::bind_handler(

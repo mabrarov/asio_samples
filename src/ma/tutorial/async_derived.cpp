@@ -26,7 +26,7 @@ class timer_handler_binder
 {
 private:
   typedef timer_handler_binder this_type;
-  
+
 public:
   typedef void result_type;
 
@@ -37,7 +37,7 @@ public:
     : func_(func)
     , async_derived_(std::forward<AsyncDerivedPtr>(async_derived))
   {
-  } 
+  }
 
 #if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
@@ -65,12 +65,12 @@ private:
   async_derived_ptr async_derived_;
 }; // class timer_handler_binder
 
-#endif // defined(MA_HAS_RVALUE_REFS) 
+#endif // defined(MA_HAS_RVALUE_REFS)
        //     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
 } // anonymous namespace
 
-async_derived::async_derived(boost::asio::io_service& io_service, 
+async_derived::async_derived(boost::asio::io_service& io_service,
     const std::string& name)
   : strand_base(boost::ref(io_service))
   , async_base(strand_base::member)
@@ -91,8 +91,8 @@ async_derived::async_base_ptr async_derived::get_shared_base()
 {
   return shared_from_this();
 }
-    
-boost::optional<boost::system::error_code> 
+
+boost::optional<boost::system::error_code>
 async_derived::do_start_do_something()
 {
   if (has_do_something_handler())
@@ -114,19 +114,19 @@ async_derived::do_start_do_something()
 #if defined(MA_HAS_RVALUE_REFS) \
     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
-  timer_.async_wait(MA_STRAND_WRAP(strand_base::member, 
+  timer_.async_wait(MA_STRAND_WRAP(strand_base::member,
       ma::make_custom_alloc_handler(timer_allocator_, timer_handler_binder(
           &this_type::handle_timer, shared_from_this()))));
 
 #else
 
-  timer_.async_wait(MA_STRAND_WRAP(strand_base::member, 
+  timer_.async_wait(MA_STRAND_WRAP(strand_base::member,
       ma::make_custom_alloc_handler(timer_allocator_, boost::bind(
           &this_type::handle_timer, shared_from_this(), _1))));
 
 #endif
 
-  return boost::optional<boost::system::error_code>();    
+  return boost::optional<boost::system::error_code>();
 }
 
 void async_derived::handle_timer(const boost::system::error_code& error)
@@ -144,7 +144,7 @@ void async_derived::handle_timer(const boost::system::error_code& error)
   }
 
   if (counter_)
-  {        
+  {
     --counter_;
     std::cout << cycle_message_fmt_ % name_ % counter_;
 
@@ -155,18 +155,18 @@ void async_derived::handle_timer(const boost::system::error_code& error)
       std::cout << error_end_message_fmt_ % name_ % counter_;
       complete_do_something(timer_error);
       return;
-    }    
+    }
 
 #if defined(MA_HAS_RVALUE_REFS) \
     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
-    timer_.async_wait(MA_STRAND_WRAP(strand_base::member, 
+    timer_.async_wait(MA_STRAND_WRAP(strand_base::member,
         ma::make_custom_alloc_handler(timer_allocator_, timer_handler_binder(
             &this_type::handle_timer, shared_from_this()))));
 
 #else
 
-    timer_.async_wait(MA_STRAND_WRAP(strand_base::member, 
+    timer_.async_wait(MA_STRAND_WRAP(strand_base::member,
         ma::make_custom_alloc_handler(timer_allocator_, boost::bind(
             &this_type::handle_timer, shared_from_this(), _1))));
 

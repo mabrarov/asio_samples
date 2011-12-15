@@ -26,22 +26,22 @@ typedef ma::in_place_handler_allocator<512> allocator_type;
 
 const std::string text_to_write = "Hello, World!";
 
-void handle_connect(boost::asio::ip::tcp::socket& socket, 
+void handle_connect(boost::asio::ip::tcp::socket& socket,
     allocator_type& handler_allocator, std::size_t attempt,
-    const boost::asio::ip::tcp::endpoint& peer_endpoint, 
+    const boost::asio::ip::tcp::endpoint& peer_endpoint,
     const boost::system::error_code& error);
 
-void handle_write(const boost::system::error_code& error, 
+void handle_write(const boost::system::error_code& error,
     std::size_t bytes_transferred);
 
-void handle_connect(boost::asio::ip::tcp::socket& socket, 
-    allocator_type& handler_allocator, std::size_t attempt, 
-    const boost::asio::ip::tcp::endpoint& peer_endpoint, 
+void handle_connect(boost::asio::ip::tcp::socket& socket,
+    allocator_type& handler_allocator, std::size_t attempt,
+    const boost::asio::ip::tcp::endpoint& peer_endpoint,
     const boost::system::error_code& error)
 {
   if (error)
   {
-    std::cout << "async_connect completed with error: " 
+    std::cout << "async_connect completed with error: "
         << error.message() << std::endl;
 
     //boost::system::error_code ignored;
@@ -49,27 +49,27 @@ void handle_connect(boost::asio::ip::tcp::socket& socket,
 
     if (attempt < 10)
     {
-      ma::async_connect(socket, peer_endpoint, 
-          ma::make_custom_alloc_handler(handler_allocator, 
-              boost::bind(&handle_connect, boost::ref(socket), 
-                  boost::ref(handler_allocator), attempt + 1, 
+      ma::async_connect(socket, peer_endpoint,
+          ma::make_custom_alloc_handler(handler_allocator,
+              boost::bind(&handle_connect, boost::ref(socket),
+                  boost::ref(handler_allocator), attempt + 1,
                   peer_endpoint, _1)));
     }
 
     return;
   }
 
-  std::cout << "async_connect completed with success" << std::endl;  
-  socket.async_write_some(boost::asio::buffer(text_to_write), 
+  std::cout << "async_connect completed with success" << std::endl;
+  socket.async_write_some(boost::asio::buffer(text_to_write),
       boost::bind(&handle_write, _1, _2));
 }
 
-void handle_write(const boost::system::error_code& error, 
+void handle_write(const boost::system::error_code& error,
     std::size_t /*bytes_transferred*/)
 {
   if (error)
   {
-    std::cout << "socket.async_write_some completed with error: " 
+    std::cout << "socket.async_write_some completed with error: "
         << error.message() << std::endl;
     return;
   }
@@ -83,9 +83,9 @@ int _tmain(int /*argc*/, _TCHAR* /*argv*/[])
 #else
 int main(int /*argc*/, char* /*argv*/[])
 #endif
-{     
+{
   try
-  {  
+  {
     allocator_type handler_allocator;
 
     boost::asio::io_service io_service;
@@ -96,9 +96,9 @@ int main(int /*argc*/, char* /*argv*/[])
 
     boost::asio::ip::tcp::socket socket(io_service);
 
-    ma::async_connect(socket, peer_endpoint, 
-        ma::make_custom_alloc_handler(handler_allocator, 
-            boost::bind(&handle_connect, boost::ref(socket),  
+    ma::async_connect(socket, peer_endpoint,
+        ma::make_custom_alloc_handler(handler_allocator,
+            boost::bind(&handle_connect, boost::ref(socket),
                 boost::ref(handler_allocator), 0, peer_endpoint, _1)));
 
     io_service.run();

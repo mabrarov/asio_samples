@@ -41,7 +41,7 @@ template <typename Handler>
 class connect_ex_handler
 {
 private:
-  typedef connect_ex_handler<Handler> this_type;  
+  typedef connect_ex_handler<Handler> this_type;
 
 public:
   typedef void result_type;
@@ -82,16 +82,16 @@ public:
   {
   }
 #endif
-  
+
   friend void* asio_handler_allocate(std::size_t size, this_type* context)
   {
     return ma_asio_handler_alloc_helpers::allocate(size, context->handler_);
   }
 
-  friend void asio_handler_deallocate(void* pointer, std::size_t size, 
+  friend void asio_handler_deallocate(void* pointer, std::size_t size,
       this_type* context)
   {
-    ma_asio_handler_alloc_helpers::deallocate(pointer, size, 
+    ma_asio_handler_alloc_helpers::deallocate(pointer, size,
         context->handler_);
   }
 
@@ -114,13 +114,13 @@ public:
 
 #endif // defined(MA_HAS_RVALUE_REFS)
 
-  void operator()(const boost::system::error_code& error, 
+  void operator()(const boost::system::error_code& error,
       std::size_t /*bytes_transferred*/)
   {
     handler_(error);
   }
 
-  void operator()(const boost::system::error_code& error, 
+  void operator()(const boost::system::error_code& error,
       std::size_t /*bytes_transferred*/) const
   {
     handler_(error);
@@ -135,7 +135,7 @@ private:
 template <typename Handler>
 inline connect_ex_handler<typename ma::remove_cv_reference<Handler>::type>
 make_connect_ex_handler(Handler&& handler)
-{  
+{
   typedef typename ma::remove_cv_reference<Handler>::type handler_type;
   return connect_ex_handler<handler_type>(std::forward<Handler>(handler));
 }
@@ -143,7 +143,7 @@ make_connect_ex_handler(Handler&& handler)
 #else // defined(MA_HAS_RVALUE_REFS)
 
 template <typename Handler>
-inline connect_ex_handler<Handler> 
+inline connect_ex_handler<Handler>
 make_connect_ex_handler(const Handler& handler)
 {
   return connect_ex_handler<Handler>(handler);
@@ -156,7 +156,7 @@ boost::system::error_code bind_to_any(Socket& socket)
 {
   typedef typename Socket::endpoint_type endpoint_type;
 
-  static const boost::system::error_code ignored(WSAEINVAL, 
+  static const boost::system::error_code ignored(WSAEINVAL,
       boost::asio::error::get_system_category());
 
   boost::system::error_code error;
@@ -177,14 +177,14 @@ boost::system::error_code bind_to_any(Socket& socket)
 #if defined(MA_HAS_RVALUE_REFS)
 
 template <typename Socket, typename Handler>
-void async_connect(Socket& socket, 
+void async_connect(Socket& socket,
     const typename Socket::endpoint_type& peer_endpoint, Handler&& handler)
 
 #else // defined(MA_HAS_RVALUE_REFS)
 
 template <typename Socket, typename Handler>
-void async_connect(Socket& socket, 
-    const typename Socket::endpoint_type& peer_endpoint, 
+void async_connect(Socket& socket,
+    const typename Socket::endpoint_type& peer_endpoint,
     const Handler& handler)
 
 #endif // defined(MA_HAS_RVALUE_REFS)
@@ -195,7 +195,7 @@ void async_connect(Socket& socket,
 #error The build environment does not support necessary Windows SDK header.\
   Value of _WIN32_WINNT macro must be >= 0x0501.
 #endif
- 
+
   if (!socket.is_open())
   {
     // Open the socket before use ConnectEx.
@@ -245,7 +245,7 @@ void async_connect(Socket& socket,
 
 #endif // defined(MA_HAS_RVALUE_REFS)
     return;
-  }  
+  }
 
   if (boost::system::error_code error = detail::bind_to_any(socket))
   {
@@ -265,20 +265,20 @@ void async_connect(Socket& socket,
 #if defined(MA_HAS_RVALUE_REFS)
 
   // Construct an OVERLAPPED-derived object to contain the handler.
-  boost::asio::windows::overlapped_ptr overlapped(socket.get_io_service(), 
-      detail::make_connect_ex_handler(std::forward<Handler>(handler)));  
+  boost::asio::windows::overlapped_ptr overlapped(socket.get_io_service(),
+      detail::make_connect_ex_handler(std::forward<Handler>(handler)));
 
 #else // defined(MA_HAS_RVALUE_REFS)
 
   // Construct an OVERLAPPED-derived object to contain the handler.
-  boost::asio::windows::overlapped_ptr overlapped(socket.get_io_service(), 
-      detail::make_connect_ex_handler(handler));  
+  boost::asio::windows::overlapped_ptr overlapped(socket.get_io_service(),
+      detail::make_connect_ex_handler(handler));
 
 #endif // defined(MA_HAS_RVALUE_REFS)
-  
+
   // Initiate the ConnectEx operation.
-  BOOL ok = connect_ex_func(native_socket, peer_endpoint.data(), 
-      boost::numeric_cast<int>(peer_endpoint.size()), NULL, 0, NULL, 
+  BOOL ok = connect_ex_func(native_socket, peer_endpoint.data(),
+      boost::numeric_cast<int>(peer_endpoint.size()), NULL, 0, NULL,
       overlapped.get());
   DWORD last_error = ::WSAGetLastError();
 

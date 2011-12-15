@@ -33,7 +33,7 @@ namespace {
 
 typedef boost::shared_ptr<ma::tutorial2::async_interface> async_interface_ptr;
 
-class do_something_handler_implementation 
+class do_something_handler_implementation
   : public ma::tutorial2::do_something_handler
   , private boost::noncopyable
 {
@@ -77,7 +77,7 @@ private:
   // For example only: handler "holds up" active object itself
   async_interface_ptr async_interface_;
   std::string         name_;
-  ma::in_place_handler_allocator<128> allocator_;    
+  ma::in_place_handler_allocator<128> allocator_;
 }; // class do_something_handler_implementation
 
 void handle_program_exit(boost::asio::io_service& io_service)
@@ -94,9 +94,9 @@ int _tmain(int /*argc*/, _TCHAR* /*argv*/[])
 #else
 int main(int /*argc*/, char* /*argv*/[])
 #endif
-{     
+{
   try
-  {  
+  {
     std::size_t cpu_count = boost::thread::hardware_concurrency();
     std::size_t work_thread_count = cpu_count < 2 ? 2 : cpu_count;
 
@@ -123,8 +123,8 @@ int main(int /*argc*/, char* /*argv*/[])
     for (std::size_t i = 0; i != 20; ++i)
     {
       std::string name = (name_format % i).str();
-                  
-      async_interface_ptr active_object = 
+
+      async_interface_ptr active_object =
           boost::make_shared<ma::tutorial2::async_implementation>(
               boost::ref(work_io_service), name);
 

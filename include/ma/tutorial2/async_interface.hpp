@@ -44,7 +44,7 @@ protected:
   {
   }
 
-}; // class async_interface 
+}; // class async_interface
 
 } // namespace tutorial
 } // namespace ma
