@@ -32,7 +32,7 @@ template <typename Function, typename Context>
 inline void invoke(Function&& function, Context& context)
 {
   using namespace boost::asio;
-  asio_handler_invoke(std::forward<Function>(function), 
+  asio_handler_invoke(std::forward<Function>(function),
       boost::addressof(context));
 }
 

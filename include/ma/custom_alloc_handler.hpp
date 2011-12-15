@@ -25,9 +25,9 @@
 
 namespace ma {
 
-/// Wrapper that overrides alloctaion strategy of the source handler by the 
+/// Wrapper that overrides alloctaion strategy of the source handler by the
 /// means provided by specified handler allocator.
-/** 
+/**
  * "Alloctaion strategy" means handler related pair of free functions:
  * asio_handler_allocate and asio_handler_deallocate or the default ones
  * defined by Asio.
@@ -41,7 +41,7 @@ namespace ma {
  *
  * @li override Asio alloctaion strategy by the means provided by specified
  * handler allocator.
- * @li forward Asio execution strategy to the one provided by handler 
+ * @li forward Asio execution strategy to the one provided by handler
  * parameter.
  * @li forward operator() to to the ones provided by handler parameter.
  *
@@ -55,22 +55,22 @@ namespace ma {
  *
  * The functors created by means of custom_alloc_handler meet the requirements
  * of Asio handler and store only a pointer to the specified allocator. So the
- * source handler is responsible for the availability (life time) of the 
+ * source handler is responsible for the availability (life time) of the
  * specified handler allocator.
  *
  * Usage of free function make_custom_alloc_handler can help in construction of
  * functors.
  *
- * custom_alloc_handler is very similar to context_alloc_handler with such 
+ * custom_alloc_handler is very similar to context_alloc_handler with such
  * differences:
  *
- * @li context_alloc_handler makes and stores copy of context and 
+ * @li context_alloc_handler makes and stores copy of context and
  * custom_alloc_handler stores only pointer to provided handler allocator.
  * @li custom_alloc_handler has additional debug check against an error found
  * in some of the Boost.Asio versions (older than Boost 1.46). See
  * http://asio-samples.blogspot.com/2010/07/chris.html for details.
  * @li custom_alloc_handler can be replaced with context_alloc_handler which is
- * more general. But such a replacement won't provide debug check and will 
+ * more general. But such a replacement won't provide debug check and will
  * require an explicit pass of a pointer to the handler allocator.
  *
  * Move semantic supported.
@@ -135,18 +135,18 @@ public:
     return context->allocator_->allocate(size);
   }
 
-  friend void asio_handler_deallocate(void* pointer, std::size_t /*size*/, 
+  friend void asio_handler_deallocate(void* pointer, std::size_t /*size*/,
       this_type* context)
   {
     context->allocator_->deallocate(pointer);
-  } 
+  }
 
 #if defined(MA_HAS_RVALUE_REFS)
 
   template <typename Function>
   friend void asio_handler_invoke(Function&& function, this_type* context)
   {
-    ma_asio_handler_invoke_helpers::invoke(std::forward<Function>(function), 
+    ma_asio_handler_invoke_helpers::invoke(std::forward<Function>(function),
         context->handler_);
   }
 
@@ -163,7 +163,7 @@ public:
   void operator()()
   {
     handler_();
-  }    
+  }
 
   template <typename Arg1>
   void operator()(const Arg1& arg1)
@@ -184,19 +184,19 @@ public:
   }
 
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4>
-  void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3, 
+  void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3,
       const Arg4& arg4)
   {
     handler_(arg1, arg2, arg3, arg4);
   }
 
-  template <typename Arg1, typename Arg2, typename Arg3, typename Arg4, 
+  template <typename Arg1, typename Arg2, typename Arg3, typename Arg4,
       typename Arg5>
-  void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3, 
+  void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3,
       const Arg4& arg4, const Arg5& arg5)
   {
     handler_(arg1, arg2, arg3, arg4, arg5);
-  }  
+  }
 
   void operator()() const
   {
@@ -222,15 +222,15 @@ public:
   }
 
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4>
-  void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3, 
+  void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3,
       const Arg4& arg4) const
   {
     handler_(arg1, arg2, arg3, arg4);
   }
 
-  template <typename Arg1, typename Arg2, typename Arg3, typename Arg4, 
+  template <typename Arg1, typename Arg2, typename Arg3, typename Arg4,
       typename Arg5>
-  void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3, 
+  void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3,
       const Arg4& arg4, const Arg5& arg5) const
   {
     handler_(arg1, arg2, arg3, arg4, arg5);
@@ -239,31 +239,31 @@ public:
 private:
   Allocator* allocator_;
   Handler    handler_;
-}; // class custom_alloc_handler 
+}; // class custom_alloc_handler
 
 #if defined(MA_HAS_RVALUE_REFS)
 
 template <typename Allocator, typename Handler>
-inline custom_alloc_handler<Allocator, 
+inline custom_alloc_handler<Allocator,
     typename ma::remove_cv_reference<Handler>::type>
 make_custom_alloc_handler(Allocator& allocator, Handler&& handler)
 {
   typedef typename ma::remove_cv_reference<Handler>::type handler_type;
-  return custom_alloc_handler<Allocator, handler_type>(allocator, 
+  return custom_alloc_handler<Allocator, handler_type>(allocator,
       std::forward<Handler>(handler));
 }
 
 #else // defined(MA_HAS_RVALUE_REFS)
 
 template <typename Allocator, typename Handler>
-inline custom_alloc_handler<Allocator, Handler> 
+inline custom_alloc_handler<Allocator, Handler>
 make_custom_alloc_handler(Allocator& allocator, const Handler& handler)
 {
   return custom_alloc_handler<Allocator, Handler>(allocator, handler);
 }
 
 #endif // defined(MA_HAS_RVALUE_REFS)
-  
+
 } // namespace ma
 
 #endif // MA_CUSTOM_ALLOC_HANDLER_HPP

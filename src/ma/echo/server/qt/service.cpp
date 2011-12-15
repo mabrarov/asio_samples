@@ -40,7 +40,7 @@ class io_service_chain
   , public boost::base_from_member<boost::asio::io_service>
 {
 private:
-  typedef boost::base_from_member<boost::asio::io_service> 
+  typedef boost::base_from_member<boost::asio::io_service>
       session_io_service_base;
 
 public:
@@ -61,7 +61,7 @@ public:
   }
 
 private:
-  boost::asio::io_service session_manager_io_service_;    
+  boost::asio::io_service session_manager_io_service_;
 }; // class io_service_chain
 
 class executor_service : public io_service_chain
@@ -88,32 +88,32 @@ public:
 
   template <typename Handler>
   void create_threads(const Handler& handler)
-  { 
+  {
     typedef boost::tuple<Handler> wrapped_handler_type;
     typedef void (*thread_func_type)(
         boost::asio::io_service&, wrapped_handler_type);
-                              
+
     boost::tuple<Handler> wrapped_handler = boost::make_tuple(handler);
     thread_func_type func = &this_type::thread_func<Handler>;
 
-    for (std::size_t i = 0; 
+    for (std::size_t i = 0;
         i != execution_config_.session_thread_count; ++i)
-    {        
-      threads_.create_thread(boost::bind(func, 
+    {
+      threads_.create_thread(boost::bind(func,
           boost::ref(session_io_service()), wrapped_handler));
     }
 
-    for (std::size_t i = 0; 
+    for (std::size_t i = 0;
         i != execution_config_.session_manager_thread_count; ++i)
     {
-      threads_.create_thread(boost::bind(func, 
+      threads_.create_thread(boost::bind(func,
           boost::ref(session_manager_io_service()), wrapped_handler));
     }
   }
-      
+
 private:
-  template <typename Handler> 
-  static void thread_func(boost::asio::io_service& io_service, 
+  template <typename Handler>
+  static void thread_func(boost::asio::io_service& io_service,
       boost::tuple<Handler> handler)
   {
     try
@@ -121,9 +121,9 @@ private:
       io_service.run();
     }
     catch (...)
-    {        
+    {
       boost::get<0>(handler)();
-    }      
+    }
   }
 
   boost::asio::io_service::work session_work_;
@@ -140,11 +140,11 @@ private:
   typedef servant this_type;
 
 public:
-  servant(const execution_config& the_execution_config, 
+  servant(const execution_config& the_execution_config,
       const session_manager_config& the_session_manager_config)
-    : executor_service(the_execution_config)      
+    : executor_service(the_execution_config)
     , session_manager_(boost::make_shared<session_manager>(
-          boost::ref(session_manager_io_service()), 
+          boost::ref(session_manager_io_service()),
           boost::ref(session_io_service()),
           the_session_manager_config))
   {
@@ -165,50 +165,50 @@ public:
   {
     session_manager_->async_wait(handler);
   }
-    
+
   template <typename Handler>
   void stop_session_manager(const Handler& handler)
   {
     session_manager_->async_stop(handler);
   }
 
-private:     
+private:
   session_manager_ptr session_manager_;
 }; // class Service::servant
 
 Service::Service(QObject* parent)
   : QObject(parent)
   , currentState_(ServiceState::Stopped)
-  , servant_() 
+  , servant_()
   , servantSignal_()
 {
   forwardSignal_ = new ServiceForwardSignal(this);
 
-  checkConnect(QObject::connect(forwardSignal_, 
-      SIGNAL(startCompleted(const boost::system::error_code&)), 
-      SIGNAL(startCompleted(const boost::system::error_code&)), 
+  checkConnect(QObject::connect(forwardSignal_,
+      SIGNAL(startCompleted(const boost::system::error_code&)),
+      SIGNAL(startCompleted(const boost::system::error_code&)),
       Qt::QueuedConnection));
 
-  checkConnect(QObject::connect(forwardSignal_, 
-      SIGNAL(stopCompleted(const boost::system::error_code&)), 
-      SIGNAL(stopCompleted(const boost::system::error_code&)), 
+  checkConnect(QObject::connect(forwardSignal_,
+      SIGNAL(stopCompleted(const boost::system::error_code&)),
+      SIGNAL(stopCompleted(const boost::system::error_code&)),
       Qt::QueuedConnection));
 
-  checkConnect(QObject::connect(forwardSignal_, 
-      SIGNAL(workCompleted(const boost::system::error_code&)), 
-      SIGNAL(workCompleted(const boost::system::error_code&)), 
+  checkConnect(QObject::connect(forwardSignal_,
+      SIGNAL(workCompleted(const boost::system::error_code&)),
+      SIGNAL(workCompleted(const boost::system::error_code&)),
       Qt::QueuedConnection));
 }
 
 Service::~Service()
-{    
+{
 }
 
-void Service::asyncStart(const execution_config& the_execution_config, 
+void Service::asyncStart(const execution_config& the_execution_config,
     const session_manager_config& the_session_manager_config)
 {
   if (ServiceState::Stopped != currentState_)
-  {      
+  {
     forwardSignal_->emitStartCompleted(server_error::invalid_state);
     return;
   }
@@ -216,11 +216,11 @@ void Service::asyncStart(const execution_config& the_execution_config,
   createServant(the_execution_config, the_session_manager_config);
 
   servant_->create_threads(
-      boost::bind(&ServiceServantSignal::emitWorkThreadExceptionHappened, 
+      boost::bind(&ServiceServantSignal::emitWorkThreadExceptionHappened,
           servantSignal_));
 
   servant_->start_session_manager(
-      boost::bind(&ServiceServantSignal::emitSessionManagerStartCompleted, 
+      boost::bind(&ServiceServantSignal::emitSessionManagerStartCompleted,
           servantSignal_, _1));
 
   currentState_ = ServiceState::Starting;
@@ -228,11 +228,11 @@ void Service::asyncStart(const execution_config& the_execution_config,
 
 void Service::onSessionManagerStartCompleted(
     const boost::system::error_code& error)
-{    
+{
   if (ServiceState::Starting != currentState_)
   {
     return;
-  } 
+  }
 
   if (error)
   {
@@ -242,18 +242,18 @@ void Service::onSessionManagerStartCompleted(
   else
   {
     servant_->wait_session_manager(
-        boost::bind(&ServiceServantSignal::emitSessionManagerWaitCompleted, 
+        boost::bind(&ServiceServantSignal::emitSessionManagerWaitCompleted,
             servantSignal_, _1));
 
     currentState_ = ServiceState::Working;
   }
 
-  emit startCompleted(error);  
+  emit startCompleted(error);
 }
-  
+
 void Service::asyncStop()
-{    
-  if ((ServiceState::Stopped == currentState_) 
+{
+  if ((ServiceState::Stopped == currentState_)
       || (ServiceState::Stopping == currentState_))
   {
     forwardSignal_->emitStopCompleted(server_error::invalid_state);
@@ -270,7 +270,7 @@ void Service::asyncStop()
   }
 
   servant_->stop_session_manager(
-      boost::bind(&ServiceServantSignal::emitSessionManagerStopCompleted, 
+      boost::bind(&ServiceServantSignal::emitSessionManagerStopCompleted,
           servantSignal_, _1));
 
   currentState_ = ServiceState::Stopping;
@@ -290,7 +290,7 @@ void Service::onSessionManagerStopCompleted(
 }
 
 void Service::terminate()
-{    
+{
   destroyServant();
 
   if (ServiceState::Starting == currentState_)
@@ -316,7 +316,7 @@ void Service::onSessionManagerWaitCompleted(
   {
     emit workCompleted(error);
   }
-}  
+}
 
 void Service::onWorkThreadExceptionHappened()
 {
@@ -326,31 +326,31 @@ void Service::onWorkThreadExceptionHappened()
   }
 }
 
-void Service::createServant(const execution_config& the_execution_config, 
+void Service::createServant(const execution_config& the_execution_config,
     const session_manager_config& the_session_manager_config)
 {
   servant_.reset(new servant(
       the_execution_config, the_session_manager_config));
 
   servantSignal_ = boost::make_shared<ServiceServantSignal>();
-        
-  checkConnect(QObject::connect(servantSignal_.get(), 
-      SIGNAL(workThreadExceptionHappened()), 
-      SLOT(onWorkThreadExceptionHappened()), 
+
+  checkConnect(QObject::connect(servantSignal_.get(),
+      SIGNAL(workThreadExceptionHappened()),
+      SLOT(onWorkThreadExceptionHappened()),
       Qt::QueuedConnection));
 
-  checkConnect(QObject::connect(servantSignal_.get(), 
-      SIGNAL(sessionManagerStartCompleted(const boost::system::error_code&)), 
+  checkConnect(QObject::connect(servantSignal_.get(),
+      SIGNAL(sessionManagerStartCompleted(const boost::system::error_code&)),
       SLOT(onSessionManagerStartCompleted(const boost::system::error_code&)),
       Qt::QueuedConnection));
 
-  checkConnect(QObject::connect(servantSignal_.get(), 
-      SIGNAL(sessionManagerWaitCompleted(const boost::system::error_code&)), 
+  checkConnect(QObject::connect(servantSignal_.get(),
+      SIGNAL(sessionManagerWaitCompleted(const boost::system::error_code&)),
       SLOT(onSessionManagerWaitCompleted(const boost::system::error_code&)),
       Qt::QueuedConnection));
 
-  checkConnect(QObject::connect(servantSignal_.get(), 
-      SIGNAL(sessionManagerStopCompleted(const boost::system::error_code&)), 
+  checkConnect(QObject::connect(servantSignal_.get(),
+      SIGNAL(sessionManagerStopCompleted(const boost::system::error_code&)),
       SLOT(onSessionManagerStopCompleted(const boost::system::error_code&)),
       Qt::QueuedConnection));
 }
@@ -361,8 +361,8 @@ void Service::destroyServant()
   {
     servantSignal_->disconnect();
     servantSignal_.reset();
-  }    
-  servant_.reset();    
+  }
+  servant_.reset();
 }
 
 } // namespace qt

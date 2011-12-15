@@ -13,12 +13,12 @@
 int main(int argc, char* argv[])
 {
   QApplication application(argc, argv);
-  
+
   using namespace ma::echo::server::qt;
   registerCustomMetaTypes();
   Service echoService;
   MainForm mainForm(echoService);
   mainForm.show();
-  
+
   return application.exec();
 }

@@ -47,7 +47,7 @@ std::size_t calcSessionThreadCount(std::size_t hardwareConcurrency)
   return 2;
 }
 
-boost::optional<int> readOptionalValue(const QCheckBox& checkBox, 
+boost::optional<int> readOptionalValue(const QCheckBox& checkBox,
     const QSpinBox& spinBox)
 {
   if (Qt::Checked == checkBox.checkState())
@@ -84,7 +84,7 @@ private:
 class widget_option_read_error : public option_read_error
 {
 public:
-  explicit widget_option_read_error(QWidget* widget, 
+  explicit widget_option_read_error(QWidget* widget,
       const QString& message = QString())
     : option_read_error(message)
     , widget_(widget)
@@ -101,8 +101,8 @@ public:
   {
     return widget_;
   }
-    
-private:    
+
+private:
   QWidget* widget_;
 }; // class widget_option_read_error
 
@@ -149,28 +149,28 @@ MainForm::MainForm(Service& service, QWidget* parent, Qt::WFlags flags)
   optionsWidgets_.push_back(
       boost::make_tuple(2, ui_.tcpNoDelayComboBox));
 
-  checkConnect(QObject::connect(&service, 
-      SIGNAL(exceptionHappened()), 
+  checkConnect(QObject::connect(&service,
+      SIGNAL(exceptionHappened()),
       SLOT(on_service_exceptionHappened())));
 
-  checkConnect(QObject::connect(&service, 
-      SIGNAL(startCompleted(const boost::system::error_code&)), 
+  checkConnect(QObject::connect(&service,
+      SIGNAL(startCompleted(const boost::system::error_code&)),
       SLOT(on_service_startCompleted(const boost::system::error_code&))));
 
-  checkConnect(QObject::connect(&service, 
-      SIGNAL(stopCompleted(const boost::system::error_code&)), 
+  checkConnect(QObject::connect(&service,
+      SIGNAL(stopCompleted(const boost::system::error_code&)),
       SLOT(on_service_stopCompleted(const boost::system::error_code&))));
 
-  checkConnect(QObject::connect(&service, 
-      SIGNAL(workCompleted(const boost::system::error_code&)), 
+  checkConnect(QObject::connect(&service,
+      SIGNAL(workCompleted(const boost::system::error_code&)),
       SLOT(on_service_workCompleted(const boost::system::error_code&))));
 
   unsigned hardwareConcurrency = boost::thread::hardware_concurrency();
   ui_.sessionManagerThreadsSpinBox->setValue(boost::numeric_cast<int>(
       calcSessionManagerThreadCount(hardwareConcurrency)));
   ui_.sessionThreadsSpinBox->setValue(boost::numeric_cast<int>(
-      calcSessionThreadCount(hardwareConcurrency)));    
-    
+      calcSessionThreadCount(hardwareConcurrency)));
+
   updateWidgetsStates(true);
 }
 
@@ -179,10 +179,10 @@ MainForm::~MainForm()
 }
 
 void MainForm::on_startButton_clicked()
-{    
+{
   //todo: read and validate configuration
   boost::optional<ServiceConfig> serviceConfig;
-  try 
+  try
   {
     serviceConfig = buildServiceConfig();
   }
@@ -215,7 +215,7 @@ void MainForm::on_stopButton_clicked()
 
 void MainForm::on_terminateButton_clicked()
 {
-  writeLog(tr("Terminating echo service..."));    
+  writeLog(tr("Terminating echo service..."));
   service_.terminate();
   writeLog(tr("Echo service terminated."));
   updateWidgetsStates();
@@ -223,36 +223,36 @@ void MainForm::on_terminateButton_clicked()
 
 void MainForm::on_service_startCompleted(
     const boost::system::error_code& error)
-{   
-  if (server_error::invalid_state == error) 
+{
+  if (server_error::invalid_state == error)
   {
     writeLog(tr("Echo service start completed" \
         " with error due to invalid state for start operation."));
   }
-  else if (server_error::operation_aborted == error) 
+  else if (server_error::operation_aborted == error)
   {
     writeLog(tr("Echo service start was canceled."));
   }
   else if (error)
-  {    
+  {
     writeLog(tr("Echo service start completed with error: ")
         + QString::fromLocal8Bit(error.message().c_str()));
   }
-  else 
+  else
   {
     writeLog(tr("Echo service start completed successfully."));
   }
   updateWidgetsStates();
 }
-          
+
 void MainForm::on_service_stopCompleted(const boost::system::error_code& error)
-{    
-  if (server_error::invalid_state == error) 
+{
+  if (server_error::invalid_state == error)
   {
     writeLog(tr("Echo service stop completed" \
         " with error due to invalid state for stop operation."));
   }
-  else if (server_error::operation_aborted == error) 
+  else if (server_error::operation_aborted == error)
   {
     writeLog(tr("Echo service stop was canceled."));
   }
@@ -260,8 +260,8 @@ void MainForm::on_service_stopCompleted(const boost::system::error_code& error)
   {
     writeLog(tr("Echo service stop completed with error: ")
         + QString::fromLocal8Bit(error.message().c_str()));
-  }    
-  else 
+  }
+  else
   {
     writeLog(tr("Echo service stop completed successfully."));
   }
@@ -270,12 +270,12 @@ void MainForm::on_service_stopCompleted(const boost::system::error_code& error)
 
 void MainForm::on_service_workCompleted(const boost::system::error_code& error)
 {
-  if (server_error::invalid_state == error) 
+  if (server_error::invalid_state == error)
   {
     writeLog(tr("Echo service work completed" \
         " with error due to invalid state."));
   }
-  else if (server_error::operation_aborted == error) 
+  else if (server_error::operation_aborted == error)
   {
     writeLog(tr("Echo service work was canceled."));
   }
@@ -283,14 +283,14 @@ void MainForm::on_service_workCompleted(const boost::system::error_code& error)
   {
     writeLog(tr("Echo service work completed with error: ")
         + QString::fromLocal8Bit(error.message().c_str()));
-  }    
-  else 
+  }
+  else
   {
     writeLog(tr("Echo service work completed successfully."));
   }
   if (ServiceState::Working == service_.currentState())
   {
-    service_.asyncStop(); 
+    service_.asyncStop();
     writeLog(tr("Stopping echo service" \
         " (because of its work was completed)..."));
   }
@@ -301,13 +301,13 @@ void MainForm::on_service_exceptionHappened()
 {
   writeLog(tr("Unexpected error during echo service work." \
       " Terminating echo service..."));
-  service_.terminate(); 
+  service_.terminate();
   writeLog(tr("Echo service terminated."));
   updateWidgetsStates();
-} 
+}
 
 execution_config MainForm::buildExecutionConfig() const
-{   
+{
   std::size_t sessionManagerThreadCount;
   std::size_t sessionThreadCount;
   QWidget*    currentWidget = 0;
@@ -336,9 +336,9 @@ session_config MainForm::buildSessionConfig() const
   if (boost::optional<int> timeoutSeconds = readOptionalValue(
       *ui_.inactivityTimeoutCheckBox, *ui_.inactivityTimeoutSpinBox))
   {
-    inactivityTimeout = 
+    inactivityTimeout =
         boost::posix_time::seconds(boost::numeric_cast<long>(*timeoutSeconds));
-  }    
+  }
 
   boost::optional<int> socketRecvBufferSize = readOptionalValue(
       *ui_.sockRecvBufferSizeCheckBox, *ui_.sockRecvBufferSizeSpinBox);
@@ -355,12 +355,12 @@ session_config MainForm::buildSessionConfig() const
   case 2:
     tcpNoDelay = false;
     break;
-  }  
+  }
 
   return session_config(
       boost::numeric_cast<std::size_t>(ui_.sessionBufferSizeSpinBox->value()),
       boost::numeric_cast<std::size_t>(ui_.maxTransferSizeSpinBox->value()),
-      socketRecvBufferSize, socketSendBufferSize, 
+      socketRecvBufferSize, socketSendBufferSize,
       tcpNoDelay, inactivityTimeout);
 }
 
@@ -371,7 +371,7 @@ session_manager_config MainForm::buildSessionManagerConfig() const
   std::size_t    recycledSessions;
   int            listenBacklog;
   QWidget*       currentWidget = 0;
-  try 
+  try
   {
     currentWidget = ui_.portNumberSpinBox;
     port = boost::numeric_cast<unsigned short>(ui_.portNumberSpinBox->value());
@@ -392,13 +392,13 @@ session_manager_config MainForm::buildSessionManagerConfig() const
     boost::throw_exception(widget_option_read_error(
         currentWidget, tr("Invalid value.")));
   }
-    
+
   boost::asio::ip::address listenAddress;
-  try 
+  try
   {
     listenAddress = boost::asio::ip::address::from_string(
         ui_.addressEdit->text().toStdString());
-  } 
+  }
   catch (const std::exception&)
   {
     boost::throw_exception(widget_option_read_error(
@@ -406,9 +406,9 @@ session_manager_config MainForm::buildSessionManagerConfig() const
   }
 
   return session_manager_config(
-      boost::asio::ip::tcp::endpoint(listenAddress, port), 
+      boost::asio::ip::tcp::endpoint(listenAddress, port),
       maxSessions, recycledSessions, listenBacklog, buildSessionConfig());
-}  
+}
 
 MainForm::ServiceConfig MainForm::buildServiceConfig() const
 {
@@ -422,7 +422,7 @@ void MainForm::showError(const QString& message, QWidget* widget)
   if (widget)
   {
     typedef std::vector<OptionWidget>::iterator iterator_type;
-    for (iterator_type i = optionsWidgets_.begin(), 
+    for (iterator_type i = optionsWidgets_.begin(),
         end = optionsWidgets_.end(); i != end; ++i)
     {
       if (widget == i->get<1>())
@@ -447,10 +447,10 @@ QString MainForm::getServiceStateWindowTitle(ServiceState::State serviceState)
   case ServiceState::Working:
     return tr("working");
   case ServiceState::Stopping:
-    return tr("stopping");    
+    return tr("stopping");
   default:
     return tr("unknown state");
-  }    
+  }
 }
 
 void MainForm::updateWidgetsStates(bool ignorePrevServiceState)
@@ -461,22 +461,22 @@ void MainForm::updateWidgetsStates(bool ignorePrevServiceState)
     bool serviceStopped = ServiceState::Stopped == serviceState;
 
     ui_.startButton->setEnabled(serviceStopped);
-    ui_.stopButton->setEnabled((ServiceState::Starting == serviceState) 
+    ui_.stopButton->setEnabled((ServiceState::Starting == serviceState)
         || (ServiceState::Working == serviceState));
     ui_.terminateButton->setEnabled(!serviceStopped);
 
     typedef std::vector<OptionWidget>::iterator iterator_type;
-    for (iterator_type i = optionsWidgets_.begin(), 
+    for (iterator_type i = optionsWidgets_.begin(),
         end = optionsWidgets_.end(); i != end; ++i)
     {
       i->get<1>()->setEnabled(serviceStopped);
     }
 
-    ui_.inactivityTimeoutSpinBox->setEnabled(serviceStopped && 
+    ui_.inactivityTimeoutSpinBox->setEnabled(serviceStopped &&
         (Qt::Checked == ui_.inactivityTimeoutCheckBox->checkState()));
-    ui_.sockRecvBufferSizeSpinBox->setEnabled(serviceStopped && 
+    ui_.sockRecvBufferSizeSpinBox->setEnabled(serviceStopped &&
         (Qt::Checked == ui_.sockRecvBufferSizeCheckBox->checkState()));
-    ui_.sockSendBufferSizeSpinBox->setEnabled(serviceStopped && 
+    ui_.sockSendBufferSizeSpinBox->setEnabled(serviceStopped &&
         (Qt::Checked == ui_.sockSendBufferSizeCheckBox->checkState()));
 
     QString windowTitle = tr("Qt Echo Server");
@@ -484,14 +484,14 @@ void MainForm::updateWidgetsStates(bool ignorePrevServiceState)
     if (!statedWindowTitlePart.isNull())
     {
       windowTitle = tr("%1 (%2)").arg(windowTitle).arg(statedWindowTitlePart);
-    }      
+    }
     setWindowTitle(windowTitle);
   }
   prevServiceState_ = serviceState;
 }
 
 void MainForm::writeLog(const QString& message)
-{    
+{
   QString logMessage = tr("[%1] %2").arg(
       QTime::currentTime().toString(Qt::SystemLocaleLongDate)).arg(message);
 

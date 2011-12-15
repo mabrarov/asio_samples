@@ -21,17 +21,17 @@
 #include <boost/throw_exception.hpp>
 #include <boost/scoped_array.hpp>
 
-namespace ma {      
+namespace ma {
 
 /// Input/output buffer with circular behaviour.
-/** 
+/**
  * Buffer space is limited and cannot grow up. Also buffer space is separated
  * into the two sequences:
  *
  * @li nonfilled (input) sequence,
  * @li filled (output) sequence.
  *
- * It is not guaranteed each sequence to be represented as one continuous 
+ * It is not guaranteed each sequence to be represented as one continuous
  * memory block. In general each sequence can be represented by zero, one or
  * two continuous memory blocks - Asio buffers.
  */
@@ -39,7 +39,7 @@ class cyclic_buffer : private boost::noncopyable
 {
 private:
 
-  /// Generalized buffer sequence that represents cyclic_buffer sequence: 
+  /// Generalized buffer sequence that represents cyclic_buffer sequence:
   /// nonfilled or filled.
   /**
    * buffers_2 is CopyConstructible to meet Asio constant/mutable buffer
@@ -53,14 +53,14 @@ private:
   {
   public:
     /// Asio requirements.
-    typedef Buffer            value_type;    
+    typedef Buffer            value_type;
     typedef const value_type* const_iterator;
 
     buffers_2()
       : buffers_count_(0)
     {
     }
-    
+
     explicit buffers_2(const value_type& buffer1)
       : buffers_count_(1)
     {
@@ -101,7 +101,7 @@ public:
   /// Constant buffer sequence.
   typedef buffers_2<boost::asio::const_buffer>   const_buffers_type;
   /// Mutable buffer sequence.
-  typedef buffers_2<boost::asio::mutable_buffer> mutable_buffers_type;        
+  typedef buffers_2<boost::asio::mutable_buffer> mutable_buffers_type;
 
   explicit cyclic_buffer(std::size_t size)
     : data_(new char[size])
@@ -124,7 +124,7 @@ public:
   /// nonfilled sequence.
   /**
    * Doesn't move or copy anything. Size of nonfilled sequence grows up by size
-   * bytes. Start of nonfilled sequence doesn't change. Size of filled sequence 
+   * bytes. Start of nonfilled sequence doesn't change. Size of filled sequence
    * reduces by size bytes. Start of filled sequence moves up (circular) by
    * size bytes.
    */
@@ -148,7 +148,7 @@ public:
     }
   }
 
-  /// Reduce nonfilled sequence by marking first size bytes of 
+  /// Reduce nonfilled sequence by marking first size bytes of
   /// nonfilled sequence as filled sequence.
   /**
    * Doesn't move or copy anything. Size of filled sequence grows up by size
@@ -156,7 +156,7 @@ public:
    * reduces by size bytes. Start of nonfilled sequence moves up (circular) by
    * size bytes.
    */
-  void consume(std::size_t size)         
+  void consume(std::size_t size)
   {
     if (size > nonfilled_size_)
     {
@@ -187,16 +187,16 @@ public:
     if (filled_size_ > d)
     {
       return const_buffers_type(
-          boost::asio::const_buffer(data_.get() + filled_start_, d), 
+          boost::asio::const_buffer(data_.get() + filled_start_, d),
           boost::asio::const_buffer(data_.get(), filled_size_ - d));
-    }          
+    }
     return const_buffers_type(boost::asio::const_buffer(
         data_.get() + filled_start_, filled_size_));
   }
 
   /// Return mutable buffer sequence representing nonfilled sequence.
   mutable_buffers_type prepared() const
-  {                    
+  {
     if (!nonfilled_size_)
     {
       return mutable_buffers_type();
@@ -225,9 +225,9 @@ public:
     if (buffers_size > d)
     {
       return const_buffers_type(
-          boost::asio::const_buffer(data_.get() + filled_start_, d), 
+          boost::asio::const_buffer(data_.get() + filled_start_, d),
           boost::asio::const_buffer(data_.get(), buffers_size - d));
-    }          
+    }
     return const_buffers_type(boost::asio::const_buffer(
         data_.get() + filled_start_, buffers_size));
   }
@@ -235,12 +235,12 @@ public:
   /// Return mutable buffer sequence representing nonfilled sequence.
   /// The size of returned buffer sequence is not greater than max_size.
   mutable_buffers_type prepared(std::size_t max_size) const
-  {                    
+  {
     if (!nonfilled_size_)
     {
       return mutable_buffers_type();
     }
-    std::size_t buffers_size = 
+    std::size_t buffers_size =
         (std::min<std::size_t>)(nonfilled_size_, max_size);
     std::size_t d = size_ - nonfilled_start_;
     if (buffers_size > d)
@@ -250,7 +250,7 @@ public:
           boost::asio::mutable_buffer(data_.get(), buffers_size - d));
     }
     return mutable_buffers_type(boost::asio::mutable_buffer(
-        data_.get() + nonfilled_start_, buffers_size));          
+        data_.get() + nonfilled_start_, buffers_size));
   }
 
 private:

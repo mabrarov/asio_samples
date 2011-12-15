@@ -25,7 +25,7 @@
 namespace ma {
 
 /// Wrappers that override alloctaion strategy of the source handler.
-/** 
+/**
  * "Alloctaion strategy" means handler related pair of free functions:
  * asio_handler_allocate and asio_handler_deallocate or the default ones
  * defined by Asio.
@@ -37,20 +37,20 @@ namespace ma {
  *
  * Functors created by listed wrappers:
  *
- * @li override Asio alloctaion strategy to the one provided by context 
+ * @li override Asio alloctaion strategy to the one provided by context
  * parameter.
- * @li forward Asio execution strategy to the one provided by handler 
+ * @li forward Asio execution strategy to the one provided by handler
  * parameter.
  * @li forward operator() to to the ones provided by handler parameter.
  *
  * The handler parameter must meet the requirements of Asio handler.
- * The context parameter must meet the requirements of Asio handler except 
- * existance of asio_handler_invoke and operator() - these functions aren't 
+ * The context parameter must meet the requirements of Asio handler except
+ * existance of asio_handler_invoke and operator() - these functions aren't
  * applied to context parameter.
- * The functors created by means of listed wrappers meet the requirements of 
+ * The functors created by means of listed wrappers meet the requirements of
  * Asio handler.
  *
- * Usage of free functions called make_context_alloc_handler and 
+ * Usage of free functions called make_context_alloc_handler and
  * make_context_alloc_handler2 can help in construction of functors.
  *
  * Move semantic supported.
@@ -60,7 +60,7 @@ template <typename Context, typename Handler>
 class context_alloc_handler
 {
 private:
-  typedef context_alloc_handler<Context, Handler> this_type;  
+  typedef context_alloc_handler<Context, Handler> this_type;
 
 public:
   typedef void result_type;
@@ -106,12 +106,12 @@ public:
 
   friend void* asio_handler_allocate(std::size_t size, this_type* context)
   {
-    // Forward to asio_handler_allocate provided by the specified allocation 
+    // Forward to asio_handler_allocate provided by the specified allocation
     // context.
     return ma_asio_handler_alloc_helpers::allocate(size, context->context_);
   }
 
-  friend void asio_handler_deallocate(void* pointer, std::size_t size, 
+  friend void asio_handler_deallocate(void* pointer, std::size_t size,
       this_type* context)
   {
     // Forward to asio_handler_deallocate provided by the specified allocation
@@ -125,7 +125,7 @@ public:
   friend void asio_handler_invoke(Function&& function, this_type* context)
   {
     // Forward to asio_handler_invoke provided by source handler.
-    ma_asio_handler_invoke_helpers::invoke(std::forward<Function>(function), 
+    ma_asio_handler_invoke_helpers::invoke(std::forward<Function>(function),
         context->handler_);
   }
 
@@ -138,12 +138,12 @@ public:
     ma_asio_handler_invoke_helpers::invoke(function, context->handler_);
   }
 
-#endif // defined(MA_HAS_RVALUE_REFS)    
+#endif // defined(MA_HAS_RVALUE_REFS)
 
   void operator()()
   {
     handler_();
-  }    
+  }
 
   template <typename Arg1>
   void operator()(const Arg1& arg1)
@@ -164,15 +164,15 @@ public:
   }
 
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4>
-  void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3, 
+  void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3,
       const Arg4& arg4)
   {
     handler_(arg1, arg2, arg3, arg4);
   }
 
-  template <typename Arg1, typename Arg2, typename Arg3, typename Arg4, 
+  template <typename Arg1, typename Arg2, typename Arg3, typename Arg4,
       typename Arg5>
-  void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3, 
+  void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3,
       const Arg4& arg4, const Arg5& arg5)
   {
     handler_(arg1, arg2, arg3, arg4, arg5);
@@ -202,15 +202,15 @@ public:
   }
 
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4>
-  void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3, 
+  void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3,
       const Arg4& arg4) const
   {
     handler_(arg1, arg2, arg3, arg4);
   }
 
-  template <typename Arg1, typename Arg2, typename Arg3, typename Arg4, 
+  template <typename Arg1, typename Arg2, typename Arg3, typename Arg4,
       typename Arg5>
-  void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3, 
+  void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3,
       const Arg4& arg4, const Arg5& arg5) const
   {
     handler_(arg1, arg2, arg3, arg4, arg5);
@@ -226,7 +226,7 @@ private:
 /// Helper for creation of wrapped handler.
 template <typename Context, typename Handler>
 inline context_alloc_handler<
-    typename ma::remove_cv_reference<Context>::type, 
+    typename ma::remove_cv_reference<Context>::type,
     typename ma::remove_cv_reference<Handler>::type>
 make_context_alloc_handler(Context&& context, Handler&& handler)
 {
@@ -247,7 +247,7 @@ make_context_alloc_handler(const Context& context, const Handler& handler)
 }
 
 #endif // defined(MA_HAS_RVALUE_REFS)
-  
+
 /// Specialized version of context_alloc_handler that is optimized for reuse of
 /// specified context by the specified source handler.
 /**
@@ -260,7 +260,7 @@ template <typename Context, typename Handler>
 class context_alloc_handler2
 {
 private:
-  typedef context_alloc_handler2<Context, Handler> this_type;  
+  typedef context_alloc_handler2<Context, Handler> this_type;
 
 public:
   typedef void result_type;
@@ -309,10 +309,10 @@ public:
     return ma_asio_handler_alloc_helpers::allocate(size, context->context_);
   }
 
-  friend void asio_handler_deallocate(void* pointer, std::size_t size, 
+  friend void asio_handler_deallocate(void* pointer, std::size_t size,
       this_type* context)
   {
-    ma_asio_handler_alloc_helpers::deallocate(pointer, size, 
+    ma_asio_handler_alloc_helpers::deallocate(pointer, size,
         context->context_);
   }
 
@@ -321,7 +321,7 @@ public:
   template <typename Function>
   friend void asio_handler_invoke(Function&& function, this_type* context)
   {
-    ma_asio_handler_invoke_helpers::invoke(std::forward<Function>(function), 
+    ma_asio_handler_invoke_helpers::invoke(std::forward<Function>(function),
         context->handler_);
   }
 
@@ -359,15 +359,15 @@ public:
   }
 
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4>
-  void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3, 
+  void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3,
       const Arg4& arg4)
   {
     handler_(static_cast<const Context&>(context_), arg1, arg2, arg3, arg4);
   }
 
-  template <typename Arg1, typename Arg2, typename Arg3, typename Arg4, 
+  template <typename Arg1, typename Arg2, typename Arg3, typename Arg4,
       typename Arg5>
-  void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3, 
+  void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3,
       const Arg4& arg4, const Arg5& arg5)
   {
     handler_(static_cast<const Context&>(context_), arg1, arg2, arg3, arg4,
@@ -398,15 +398,15 @@ public:
   }
 
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4>
-  void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3, 
+  void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3,
       const Arg4& arg4) const
   {
     handler_(context_, arg1, arg2, arg3, arg4);
   }
 
-  template <typename Arg1, typename Arg2, typename Arg3, typename Arg4, 
+  template <typename Arg1, typename Arg2, typename Arg3, typename Arg4,
       typename Arg5>
-  void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3, 
+  void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3,
       const Arg4& arg4, const Arg5& arg5) const
   {
     handler_(context_, arg1, arg2, arg3, arg4, arg5);
@@ -415,13 +415,13 @@ public:
 private:
   Context context_;
   Handler handler_;
-}; // class context_alloc_handler2  
+}; // class context_alloc_handler2
 
 #if defined(MA_HAS_RVALUE_REFS)
 
 template <typename Context, typename Handler>
 inline context_alloc_handler2<
-    typename ma::remove_cv_reference<Context>::type, 
+    typename ma::remove_cv_reference<Context>::type,
     typename ma::remove_cv_reference<Handler>::type>
 make_context_alloc_handler2(Context&& context, Handler&& handler)
 {
@@ -440,7 +440,7 @@ make_context_alloc_handler2(const Context& context, const Handler& handler)
   return context_alloc_handler2<Context, Handler>(context, handler);
 }
 
-#endif // defined(MA_HAS_RVALUE_REFS)  
+#endif // defined(MA_HAS_RVALUE_REFS)
 
 } // namespace ma
 

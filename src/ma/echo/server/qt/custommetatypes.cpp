@@ -28,7 +28,7 @@ void registerMetaType(const char* typeName)
   if (!QMetaType::isRegistered(typeId))
   {
     boost::throw_exception(meta_type_register_error(typeName));
-  }      
+  }
 }
 
 void registerBoostSystemErrorCodeMetaType()
@@ -42,7 +42,7 @@ void registerCustomMetaTypes()
 {
   registerBoostSystemErrorCodeMetaType();
 }
-  
+
 } // namespace qt
 } // namespace server
 } // namespace echo

@@ -26,7 +26,7 @@
 /// Defines has the functors created by means of boost::bind move constructor
 /// (explicit or implicit).
 /**
- * If functors created by means of boost::bind have no move constructor then 
+ * If functors created by means of boost::bind have no move constructor then
  * some of the asio-samples explicitly define and use binders with (explicit or
  * implicit - see MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) move constructor.
  */
@@ -56,19 +56,19 @@
 
 /// Defines does asio::io_service::strand::wrap produce "heavy" functor.
 /**
- * Because of the guarantee given by Asio: 
+ * Because of the guarantee given by Asio:
  * http://www.boost.org/doc/libs/1_48_0/doc/html/boost_asio/reference/io_service__strand/wrap.html
  * ...
- * that, when invoked, executes code equivalent to: 
- *   strand.dispatch(boost::bind(f, a1, ... an)); 
+ * that, when invoked, executes code equivalent to:
+ *   strand.dispatch(boost::bind(f, a1, ... an));
  * ...
  * the result of asio::io_service::strand::wrap is too "heavy": being called by
- * means of asio_handler_invoke it does recursive-call (and double check) 
- * through the related asio::io_service::strand. 
+ * means of asio_handler_invoke it does recursive-call (and double check)
+ * through the related asio::io_service::strand.
  *
- * Because of Asio never calls handler directly by operator() (except the 
+ * Because of Asio never calls handler directly by operator() (except the
  * default implementation of asio_handler_invoke) but always do it by the means
- * of asio_handler_invoke this guarantee is needed to Asio users only and can 
+ * of asio_handler_invoke this guarantee is needed to Asio users only and can
  * be cut as unneeded.
  *
  * The author of Asio knows this and agrees with such a kind of optimization.

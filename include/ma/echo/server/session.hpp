@@ -37,13 +37,13 @@ namespace echo {
 
 namespace server {
 
-class session 
+class session
   : private boost::noncopyable
   , public boost::enable_shared_from_this<session>
 {
 private:
-  typedef session this_type;        
-        
+  typedef session this_type;
+
 public:
   typedef boost::asio::ip::tcp protocol_type;
 
@@ -58,8 +58,8 @@ public:
     return socket_;
   }
 
-  void reset();                
-        
+  void reset();
+
 #if defined(MA_HAS_RVALUE_REFS)
 
 #if defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
@@ -84,7 +84,7 @@ public:
 
     func_type func = &this_type::start_extern_stop<handler_type>;
 
-    strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler), 
+    strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler),
         forward_handler_binder<handler_type>(func, shared_from_this())));
   }
 
@@ -96,7 +96,7 @@ public:
 
     func_type func = &this_type::start_extern_wait<handler_type>;
 
-    strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler), 
+    strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler),
         forward_handler_binder<handler_type>(func, shared_from_this())));
   }
 
@@ -122,7 +122,7 @@ public:
 
     func_type func = &this_type::start_extern_stop<handler_type>;
 
-    strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler), 
+    strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler),
         boost::bind(func, shared_from_this(), _1)));
   }
 
@@ -134,7 +134,7 @@ public:
 
     func_type func = &this_type::start_extern_wait<handler_type>;
 
-    strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler), 
+    strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler),
         boost::bind(func, shared_from_this(), _1)));
   }
 
@@ -174,12 +174,12 @@ public:
 
     func_type func = &this_type::start_extern_wait<handler_type>;
 
-    strand_.post(make_context_alloc_handler2(handler, 
+    strand_.post(make_context_alloc_handler2(handler,
         boost::bind(func, shared_from_this(), _1)));
   }
 
 #endif // defined(MA_HAS_RVALUE_REFS)
-        
+
 private:
 
 #if defined(MA_HAS_RVALUE_REFS) \
@@ -210,7 +210,7 @@ private:
       : func_(other.func_)
       , session_(std::move(other.session_))
     {
-    }    
+    }
 
     forward_handler_binder(const this_type& other)
       : func_(other.func_)
@@ -230,7 +230,7 @@ private:
     session_ptr session_;
   }; // class forward_handler_binder
 
-#endif // defined(MA_HAS_RVALUE_REFS) 
+#endif // defined(MA_HAS_RVALUE_REFS)
        //     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
   struct extern_state
@@ -257,7 +257,7 @@ private:
   {
     enum value_t {ready, in_progress, stopped};
   };
-  
+
   template <typename Handler>
   void start_extern_start(const Handler& handler)
   {
@@ -275,18 +275,18 @@ private:
     }
     else
     {
-      extern_stop_handler_.reset(handler);            
+      extern_stop_handler_.reset(handler);
     }
   }
 
   template <typename Handler>
   void start_extern_wait(const Handler& handler)
   {
-    if (boost::optional<boost::system::error_code> result = 
+    if (boost::optional<boost::system::error_code> result =
         do_start_extern_wait())
     {
       io_service_.post(detail::bind_handler(handler, *result));
-    } 
+    }
     else
     {
       extern_wait_handler_.reset(handler);
@@ -295,10 +295,10 @@ private:
 
   boost::system::error_code                  do_start_extern_start();
   boost::optional<boost::system::error_code> do_start_extern_stop();
-  boost::optional<boost::system::error_code> do_start_extern_wait(); 
+  boost::optional<boost::system::error_code> do_start_extern_wait();
   void complete_extern_stop(const boost::system::error_code&);
   void complete_extern_wait(const boost::system::error_code&);
-                
+
   void handle_read(const boost::system::error_code&, std::size_t);
   void handle_read_at_work(const boost::system::error_code&, std::size_t);
   void handle_read_at_shutdown(const boost::system::error_code&, std::size_t);
@@ -312,7 +312,7 @@ private:
   void handle_timer(const boost::system::error_code&);
   void handle_timer_at_work(const boost::system::error_code&);
   void handle_timer_at_stop(const boost::system::error_code&);
-    
+
   void continue_work();
   void continue_timer_wait();
   void continue_shutdown();
@@ -324,21 +324,21 @@ private:
   void start_passive_shutdown();
   void start_active_shutdown();
   void start_shutdown(const boost::system::error_code&);
-  void start_stop(boost::system::error_code);  
-    
+  void start_stop(boost::system::error_code);
+
   void start_socket_read(const cyclic_buffer::mutable_buffers_type&);
   void start_socket_write(const cyclic_buffer::const_buffers_type&);
   void start_timer_wait();
   boost::system::error_code cancel_timer_wait();
   boost::system::error_code close_socket();
-  boost::system::error_code apply_socket_options();  
+  boost::system::error_code apply_socket_options();
 
   const std::size_t                   max_transfer_size_;
   const session_config::optional_int  socket_recv_buffer_size_;
   const session_config::optional_int  socket_send_buffer_size_;
   const session_config::optional_bool no_delay_;
   const session_config::optional_time_duration inactivity_timeout_;
-  
+
   extern_state::value_t extern_state_;
   intern_state::value_t intern_state_;
   read_state::value_t   read_state_;
@@ -347,7 +347,7 @@ private:
   bool                  timer_wait_cancelled_;
   bool                  timer_turned_;
   std::size_t           pending_operations_;
-  
+
   boost::asio::io_service&        io_service_;
   boost::asio::io_service::strand strand_;
   protocol_type::socket           socket_;

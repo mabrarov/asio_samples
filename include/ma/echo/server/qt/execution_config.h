@@ -26,23 +26,23 @@ namespace qt {
 
 struct execution_config
 {
-public:          
-  execution_config(std::size_t the_session_manager_thread_count, 
+public:
+  execution_config(std::size_t the_session_manager_thread_count,
       std::size_t the_session_thread_count)
     : session_manager_thread_count(the_session_manager_thread_count)
-    , session_thread_count(the_session_thread_count)            
+    , session_thread_count(the_session_thread_count)
   {
-    BOOST_ASSERT_MSG(the_session_manager_thread_count > 0, 
+    BOOST_ASSERT_MSG(the_session_manager_thread_count > 0,
         "session_manager_thread_count must be > 0");
 
-    BOOST_ASSERT_MSG(the_session_thread_count > 0, 
+    BOOST_ASSERT_MSG(the_session_thread_count > 0,
         "session_thread_count must be > 0");
   }
-  
+
   std::size_t session_manager_thread_count;
   std::size_t session_thread_count;
 }; // struct execution_config
-        
+
 } // namespace qt
 } // namespace server
 } // namespace echo

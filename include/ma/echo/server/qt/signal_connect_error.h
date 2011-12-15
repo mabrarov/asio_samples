@@ -26,15 +26,15 @@ namespace qt {
 class signal_connect_error : public std::runtime_error
 {
 public:
-  signal_connect_error() 
-    : std::runtime_error("failed to connect Qt signal")             
+  signal_connect_error()
+    : std::runtime_error("failed to connect Qt signal")
   {
-  }          
+  }
 }; // class signal_connect_error
 
 inline void checkConnect(bool connectResult)
 {
-  if (!connectResult) 
+  if (!connectResult)
   {
     boost::throw_exception(signal_connect_error());
   }

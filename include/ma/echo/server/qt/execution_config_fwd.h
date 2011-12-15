@@ -20,8 +20,8 @@ namespace server {
 
 namespace qt {
 
-struct execution_config;        
-        
+struct execution_config;
+
 } // namespace qt
 } // namespace server
 } // namespace echo

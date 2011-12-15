@@ -35,16 +35,16 @@
 #include <ma/type_traits.hpp>
 #endif // defined(MA_HAS_RVALUE_REFS)
 
-namespace ma {   
+namespace ma {
 
 namespace detail {
 
 /// Simplified double-linked intrusive list of boost::shared_ptr.
-/** 
+/**
  * Const time insertion of boost::shared_ptr.
  * Const time deletion of boost::shared_ptr (deletion by value).
  *
- * Requirements: 
+ * Requirements:
  * if value is rvalue of type Value then expression
  * static_cast&lt;sp_intrusive_list&lt;Value&gt;::base_hook&amp;&gt;(value)
  * must be well formed and accessible from sp_intrusive_list&lt;Value&gt;.
@@ -67,7 +67,7 @@ public:
     weak_pointer   prev_;
     shared_pointer next_;
   }; // class base_hook
-  
+
   /// Never throws
   sp_intrusive_list()
     : size_(0)
@@ -88,7 +88,7 @@ public:
   /// Never throws
   static shared_pointer prev(const shared_pointer& value)
   {
-    BOOST_ASSERT(value);    
+    BOOST_ASSERT(value);
     return get_hook(*value).prev_.lock();
   }
 
@@ -98,16 +98,16 @@ public:
     BOOST_ASSERT(value);
     return get_hook(*value).next_;
   }
-  
+
   /// Never throws
   void push_front(const shared_pointer& value)
   {
     BOOST_ASSERT(value);
-        
+
     base_hook& value_hook = get_hook(*value);
 
     BOOST_ASSERT(!value_hook.prev_.lock() && !value_hook.next_);
-    
+
     value_hook.next_ = front_;
     if (front_)
     {
@@ -117,11 +117,11 @@ public:
     front_ = value;
     ++size_;
   }
-    
+
   void erase(const shared_pointer& value)
   {
     BOOST_ASSERT(value);
-    
+
     base_hook& value_hook = get_hook(*value);
     if (value == front_)
     {
@@ -144,19 +144,19 @@ public:
 
     BOOST_ASSERT(!value_hook.prev_.lock() && !value_hook.next_);
   }
-  
+
   void clear()
   {
     // We don't want to have recusrive calls of wrapped_session's destructor
     // because the deep of such recursion may be equal to the size of list.
     // The last can be too great for the stack.
     while (front_)
-    { 
+    {
       base_hook& front_hook = get_hook(*front_);
       const shared_pointer tmp = front_hook.next_;
       front_hook.prev_.reset();
       front_hook.next_.reset();
-      front_ = tmp;    
+      front_ = tmp;
     }
     size_ = 0;
   }
@@ -169,7 +169,7 @@ public:
   bool empty() const
   {
     return 0 == size_;
-  }  
+  }
 
 private:
   static base_hook& get_hook(reference value)
@@ -187,22 +187,22 @@ namespace echo {
 
 namespace server {
 
-class session_manager 
+class session_manager
   : private boost::noncopyable
   , public boost::enable_shared_from_this<session_manager>
 {
 private:
-  typedef session_manager this_type;        
+  typedef session_manager this_type;
 
 public:
   typedef boost::asio::ip::tcp protocol_type;
 
-  session_manager(boost::asio::io_service& io_service, 
-      boost::asio::io_service& session_io_service, 
+  session_manager(boost::asio::io_service& io_service,
+      boost::asio::io_service& session_io_service,
       const session_manager_config& config);
 
   ~session_manager()
-  {        
+  {
   }
 
   void reset(bool free_recycled_sessions = true);
@@ -269,8 +269,8 @@ public:
 
     func_type func = &this_type::start_extern_stop<handler_type>;
 
-    strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler), 
-        boost::bind(func, shared_from_this(), _1))); 
+    strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler),
+        boost::bind(func, shared_from_this(), _1)));
   }
 
   template <typename Handler>
@@ -281,8 +281,8 @@ public:
 
     func_type func = &this_type::start_extern_wait<handler_type>;
 
-    strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler), 
-        boost::bind(func, shared_from_this(), _1)));  
+    strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler),
+        boost::bind(func, shared_from_this(), _1)));
   }
 
 #endif // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
@@ -297,7 +297,7 @@ public:
 
     func_type func = &this_type::start_extern_start<handler_type>;
 
-    strand_.post(make_context_alloc_handler2(handler, 
+    strand_.post(make_context_alloc_handler2(handler,
         boost::bind(func, shared_from_this(), _1)));
   }
 
@@ -309,7 +309,7 @@ public:
 
     func_type func = &this_type::start_extern_stop<handler_type>;
 
-    strand_.post(make_context_alloc_handler2(handler, 
+    strand_.post(make_context_alloc_handler2(handler,
         boost::bind(func, shared_from_this(), _1)));
   }
 
@@ -321,13 +321,13 @@ public:
 
     func_type func = &this_type::start_extern_wait<handler_type>;
 
-    strand_.post(make_context_alloc_handler2(handler, 
+    strand_.post(make_context_alloc_handler2(handler,
         boost::bind(func, shared_from_this(), _1)));
   }
 
 #endif // defined(MA_HAS_RVALUE_REFS)
 
-private:        
+private:
   struct  session_wrapper;
   typedef boost::shared_ptr<session_wrapper> session_wrapper_ptr;
 
@@ -335,20 +335,20 @@ private:
     : public detail::sp_intrusive_list<session_wrapper>::base_hook
   {
     typedef protocol_type::endpoint endpoint_type;
-    
+
     struct state_type
     {
       enum value_t {ready, start, work, stop, stopped};
     };
-  
+
     endpoint_type       remote_endpoint;
     session_ptr         session;
     state_type::value_t state;
     std::size_t         pending_operations;
     in_place_handler_allocator<144> start_wait_allocator;
     in_place_handler_allocator<144> stop_allocator;
-  
-    session_wrapper(boost::asio::io_service& io_service, 
+
+    session_wrapper(boost::asio::io_service& io_service,
         const session_config& config);
 
 #if !defined(NDEBUG)
@@ -358,7 +358,7 @@ private:
 #endif
 
     void reset();
-    
+
     bool has_pending_operations() const
     {
       return 0 != pending_operations;
@@ -392,20 +392,20 @@ private:
     void mark_as_working()
     {
       state = state_type::work;
-    }    
-    
+    }
+
     void start_started()
     {
       state = state_type::start;
       ++pending_operations;
     }
-    
+
     void stop_started()
     {
       state = state_type::stop;
       ++pending_operations;
     }
-    
+
     void wait_started()
     {
       ++pending_operations;
@@ -413,7 +413,7 @@ private:
   }; // struct session_wrapper
 
   typedef detail::sp_intrusive_list<session_wrapper> session_list;
-  
+
 #if defined(MA_HAS_RVALUE_REFS) \
     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
@@ -463,10 +463,10 @@ private:
 
   private:
     func_type func_;
-    session_manager_ptr session_manager_;          
+    session_manager_ptr session_manager_;
   }; // class forward_handler_binder
 
-#endif // defined(MA_HAS_RVALUE_REFS) 
+#endif // defined(MA_HAS_RVALUE_REFS)
        //     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
   struct extern_state
@@ -483,18 +483,18 @@ private:
   {
     enum value_t {ready, in_progress, stopped};
   };
-  
+
   template <typename Handler>
   void start_extern_start(const Handler& handler)
   {
     boost::system::error_code error = do_start_extern_start();
-    io_service_.post(detail::bind_handler(handler, error));          
+    io_service_.post(detail::bind_handler(handler, error));
   }
 
   template <typename Handler>
   void start_extern_stop(const Handler& handler)
   {
-    if (boost::optional<boost::system::error_code> result = 
+    if (boost::optional<boost::system::error_code> result =
         do_start_extern_stop())
     {
       io_service_.post(detail::bind_handler(handler, *result));
@@ -508,30 +508,30 @@ private:
   template <typename Handler>
   void start_extern_wait(const Handler& handler)
   {
-    if (boost::optional<boost::system::error_code> result = 
+    if (boost::optional<boost::system::error_code> result =
         do_start_extern_wait())
-    {          
+    {
       io_service_.post(detail::bind_handler(handler, *result));
     }
     else
     {
       extern_wait_handler_.reset(handler);
-    }  
+    }
   }
 
   boost::system::error_code                  do_start_extern_start();
   boost::optional<boost::system::error_code> do_start_extern_stop();
   boost::optional<boost::system::error_code> do_start_extern_wait();
   void complete_extern_stop(const boost::system::error_code&);
-  void complete_extern_wait(const boost::system::error_code&);  
+  void complete_extern_wait(const boost::system::error_code&);
 
-  void continue_work();  
+  void continue_work();
 
-  void handle_accept(const session_wrapper_ptr&, 
+  void handle_accept(const session_wrapper_ptr&,
       const boost::system::error_code&);
-  void handle_accept_at_work(const session_wrapper_ptr&, 
+  void handle_accept_at_work(const session_wrapper_ptr&,
       const boost::system::error_code&);
-  void handle_accept_at_stop(const session_wrapper_ptr&, 
+  void handle_accept_at_stop(const session_wrapper_ptr&,
       const boost::system::error_code&);
 
   void handle_session_start(const session_wrapper_ptr&,
@@ -558,8 +558,8 @@ private:
   bool is_out_of_work() const;
   void start_stop(const boost::system::error_code&);
   void continue_stop();
-            
-  void start_accept_session(const session_wrapper_ptr&);  
+
+  void start_accept_session(const session_wrapper_ptr&);
   void start_session_start(const session_wrapper_ptr&);
   void start_session_stop(const session_wrapper_ptr&);
   void start_session_wait(const session_wrapper_ptr&);
@@ -577,9 +577,9 @@ private:
   static void dispatch_handle_session_stop(const session_manager_weak_ptr&,
       const session_wrapper_ptr&, const boost::system::error_code&);
 
-  static void open(protocol_type::acceptor& acceptor, 
-      const protocol_type::endpoint& endpoint, int backlog, 
-      boost::system::error_code& error);  
+  static void open(protocol_type::acceptor& acceptor,
+      const protocol_type::endpoint& endpoint, int backlog,
+      boost::system::error_code& error);
 
   const protocol_type::endpoint accepting_endpoint_;
   const int                     listen_backlog_;
@@ -590,11 +590,11 @@ private:
   extern_state::value_t extern_state_;
   intern_state::value_t intern_state_;
   accept_state::value_t accept_state_;
-  std::size_t           pending_operations_;  
+  std::size_t           pending_operations_;
 
   boost::asio::io_service&        io_service_;
   boost::asio::io_service&        session_io_service_;
-  boost::asio::io_service::strand strand_;      
+  boost::asio::io_service::strand strand_;
   protocol_type::acceptor         acceptor_;
   session_list                    active_sessions_;
   session_list                    recycled_sessions_;
@@ -602,7 +602,7 @@ private:
 
   handler_storage<boost::system::error_code> extern_wait_handler_;
   handler_storage<boost::system::error_code> extern_stop_handler_;
-                
+
   in_place_handler_allocator<512> accept_allocator_;
 }; // class session_manager
 

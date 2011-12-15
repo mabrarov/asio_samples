@@ -35,7 +35,7 @@ class Service : public QObject
 {
   Q_OBJECT
 
-public:          
+public:
   explicit Service(QObject* parent = 0);
   ~Service();
   void asyncStart(const execution_config&, const session_manager_config&);
@@ -64,13 +64,13 @@ private slots:
 private:
   class servant;
 
-  Q_DISABLE_COPY(Service) 
+  Q_DISABLE_COPY(Service)
 
   void createServant(const execution_config&, const session_manager_config&);
   void destroyServant();
 
   ServiceState::State   currentState_;
-  ServiceForwardSignal* forwardSignal_;          
+  ServiceForwardSignal* forwardSignal_;
   boost::scoped_ptr<servant> servant_;
   boost::shared_ptr<ServiceServantSignal> servantSignal_;
 }; // class Service

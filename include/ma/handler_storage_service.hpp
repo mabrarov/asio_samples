@@ -34,8 +34,8 @@ namespace ma {
 namespace detail {
 
 /// Simplified double-linked intrusive list.
-/**  
- * Requirements: 
+/**
+ * Requirements:
  * if value is rvalue of type Value then expression
  * static_cast&lt;intrusive_list&lt;Value&gt;::base_hook&amp;&gt;(Value)
  * must be well formed and accessible from intrusive_list&lt;Value&gt;.
@@ -47,7 +47,7 @@ public:
   typedef Value  value_type;
   typedef Value* pointer;
   typedef Value& reference;
-    
+
   /// Required hook for items of the list.
   class base_hook : private boost::noncopyable
   {
@@ -78,7 +78,7 @@ public:
 
   /// Never throws
   static pointer prev(reference value)
-  {    
+  {
     return get_hook(value).prev_;
   }
 
@@ -87,7 +87,7 @@ public:
   {
     return get_hook(value).next_;
   }
-    
+
   /// Never throws
   void push_front(reference value)
   {
@@ -95,15 +95,15 @@ public:
 
     BOOST_ASSERT(!value_hook.prev_ && !value_hook.next_);
 
-    value_hook.next_ = front_;      
+    value_hook.next_ = front_;
     if (value_hook.next_)
     {
       base_hook& front_hook = get_hook(*value_hook.next_);
       front_hook.prev_ = boost::addressof(value);
     }
     front_ = boost::addressof(value);
-  }    
-        
+  }
+
   /// Never throws
   void erase(reference value)
   {
@@ -157,7 +157,7 @@ private:
 // Copied from boost/asio/io_service.hpp.
 template <typename Type>
 class service_id : public boost::asio::io_service::id
-{   
+{
 }; // class service_id
 
 // Special service base class to keep classes header-file only.
@@ -167,7 +167,7 @@ class service_base : public boost::asio::io_service::service
 {
 public:
   static service_id<Type> id;
-  
+
   explicit service_base(boost::asio::io_service& io_service)
     : boost::asio::io_service::service(io_service)
   {
@@ -184,32 +184,32 @@ service_id<Type> service_base<Type>::id;
 
 } // namespace detail
 
-/// Exception thrown when handler_storage::post is used with empty 
+/// Exception thrown when handler_storage::post is used with empty
 /// handler_storage.
 class bad_handler_call : public std::runtime_error
 {
 public:
-  bad_handler_call() 
-    : std::runtime_error("call to empty ma::handler_storage") 
+  bad_handler_call()
+    : std::runtime_error("call to empty ma::handler_storage")
   {
-  } 
+  }
 }; // class bad_handler_call
 
 /// asio::io_service::service implementing handler_storage.
-class handler_storage_service 
+class handler_storage_service
   : public detail::service_base<handler_storage_service>
 {
 private:
   typedef boost::mutex mutex_type;
   typedef boost::lock_guard<mutex_type> lock_guard;
 
-  // Base class to hold up handlers.  
+  // Base class to hold up handlers.
   class handler_base
   {
   private:
     typedef handler_base this_type;
 
-  public:    
+  public:
     typedef void (*destroy_func_type)(this_type*);
     typedef void* (*target_func_type)(this_type*);
 
@@ -217,7 +217,7 @@ private:
       : destroy_func_(destroy_func)
       , target_func_(target_func)
     {
-    }    
+    }
 
     void destroy()
     {
@@ -235,21 +235,21 @@ private:
     }
 
   private:
-    destroy_func_type destroy_func_; 
+    destroy_func_type destroy_func_;
     target_func_type  target_func_;
   }; // class handler_base
-  
-  // Base class to hold up handlers with specified call signature.  
+
+  // Base class to hold up handlers with specified call signature.
   template <typename Arg>
   class postable_handler_base : public handler_base
   {
   private:
     typedef postable_handler_base<Arg> this_type;
 
-  public:    
+  public:
     typedef void (*post_func_type)(this_type*, const Arg&);
 
-    postable_handler_base(destroy_func_type destroy_func, 
+    postable_handler_base(destroy_func_type destroy_func,
         target_func_type target_func, post_func_type post_func)
       : handler_base(destroy_func, target_func)
       , post_func_(post_func)
@@ -266,9 +266,9 @@ private:
     {
     }
 
-  private:        
+  private:
     post_func_type post_func_;
-  }; // class postable_handler_base    
+  }; // class postable_handler_base
 
   // Wrapper class to hold up handlers with specified call signature.
   template <typename Handler, typename Arg>
@@ -284,14 +284,14 @@ private:
 
     template <typename H>
     handler_wrapper(boost::asio::io_service& io_service, H&& handler)
-      : base_type(&this_type::do_destroy, &this_type::do_target, 
+      : base_type(&this_type::do_destroy, &this_type::do_target,
             &this_type::do_post)
       , io_service_(io_service)
       , work_(io_service)
       , handler_(std::forward<H>(handler))
     {
     }
-    
+
 #if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
     handler_wrapper(this_type&& other)
@@ -314,9 +314,9 @@ private:
 
 #else // defined(MA_HAS_RVALUE_REFS)
 
-    handler_wrapper(boost::asio::io_service& io_service, 
+    handler_wrapper(boost::asio::io_service& io_service,
         const Handler& handler)
-      : base_type(&this_type::do_destroy, &this_type::do_target, 
+      : base_type(&this_type::do_destroy, &this_type::do_target,
             &this_type::do_post)
       , io_service_(io_service)
       , work_(io_service)
@@ -333,13 +333,13 @@ private:
 #endif
 
     static void do_post(base_type* base, const Arg& arg)
-    {        
+    {
       this_type* this_ptr = static_cast<this_type*>(base);
       // Take ownership of the wrapper object
-      // The deallocation of wrapper object will be done 
+      // The deallocation of wrapper object will be done
       // throw the handler stored in wrapper
       typedef detail::handler_alloc_traits<Handler, this_type> alloc_traits;
-      detail::handler_ptr<alloc_traits> ptr(this_ptr->handler_, this_ptr);          
+      detail::handler_ptr<alloc_traits> ptr(this_ptr->handler_, this_ptr);
       // Make a local copy of handler stored at wrapper object
       // This local copy will be used for wrapper's memory deallocation later
 #if defined(MA_HAS_RVALUE_REFS)
@@ -349,13 +349,13 @@ private:
 #endif
       // Change the handler which will be used for wrapper's memory deallocation
       ptr.set_alloc_context(handler);
-      // Make copies of other data placed at wrapper object      
-      // These copies will be used after the wrapper object destruction 
+      // Make copies of other data placed at wrapper object
+      // These copies will be used after the wrapper object destruction
       // and deallocation of its memory
       boost::asio::io_service& io_service(this_ptr->io_service_);
       boost::asio::io_service::work work(this_ptr->work_);
       (void) work;
-      // Destroy wrapper object and deallocate its memory 
+      // Destroy wrapper object and deallocate its memory
       // through the local copy of handler
       ptr.reset();
       // Post the copy of handler's local copy to io_service
@@ -367,13 +367,13 @@ private:
     }
 
     static void do_destroy(handler_base* base)
-    {          
+    {
       this_type* this_ptr = static_cast<this_type*>(base);
       // Take ownership of the wrapper object
-      // The deallocation of wrapper object will be done 
+      // The deallocation of wrapper object will be done
       // throw the handler stored in wrapper
       typedef detail::handler_alloc_traits<Handler, this_type> alloc_traits;
-      detail::handler_ptr<alloc_traits> ptr(this_ptr->handler_, this_ptr);          
+      detail::handler_ptr<alloc_traits> ptr(this_ptr->handler_, this_ptr);
       // Make a local copy of handler stored at wrapper object
       // This local copy will be used for wrapper's memory deallocation later
 #if defined(MA_HAS_RVALUE_REFS)
@@ -381,10 +381,10 @@ private:
 #else
       Handler handler(this_ptr->handler_);
 #endif
-      // Change the handler which will be used 
+      // Change the handler which will be used
       // for wrapper's memory deallocation
-      ptr.set_alloc_context(handler);   
-      // Destroy wrapper object and deallocate its memory 
+      ptr.set_alloc_context(handler);
+      // Destroy wrapper object and deallocate its memory
       // throw the local copy of handler
       ptr.reset();
     }
@@ -401,11 +401,11 @@ private:
     Handler handler_;
   }; // class handler_wrapper
 
-  // Base class for implementation that helps to hide 
+  // Base class for implementation that helps to hide
   // public inheritance from detail::intrusive_list::base_hook
-  class implementation_base_type 
+  class implementation_base_type
     : public detail::intrusive_list<implementation_base_type>::base_hook
-  { 
+  {
   public:
     implementation_base_type()
       : handler_(0)
@@ -433,12 +433,12 @@ public:
   private:
     friend class handler_storage_service;
   }; // class implementation_type
-  
+
   explicit handler_storage_service(boost::asio::io_service& io_service)
-    : detail::service_base<handler_storage_service>(io_service)      
+    : detail::service_base<handler_storage_service>(io_service)
     , shutdown_done_(false)
   {
-  }  
+  }
 
   void construct(implementation_type& impl)
   {
@@ -447,7 +447,7 @@ public:
     impl_list_.push_front(impl);
   }
 
-  void move_construct(implementation_type& impl, 
+  void move_construct(implementation_type& impl,
       implementation_type& other_impl)
   {
     construct(impl);
@@ -455,14 +455,14 @@ public:
     impl.handler_ = other_impl.handler_;
     other_impl.handler_ = 0;
   }
-  
+
   void destroy(implementation_type& impl)
-  {    
+  {
     // Remove implementation from the list of active implementations.
     {
       lock_guard lock(impl_list_mutex_);
       impl_list_.erase(impl);
-    }    
+    }
     // Destroy stored handler if it exists.
     reset(impl);
   }
@@ -480,7 +480,7 @@ public:
 
   template <typename Handler, typename Arg>
   void reset(implementation_type& impl, Handler handler)
-  {    
+  {
     // If service is (was) in shutdown state then it can't store handler.
     if (!shutdown_done_)
     {
@@ -489,13 +489,13 @@ public:
       typedef detail::handler_alloc_traits<Handler, value_type> alloc_traits;
       // Allocate raw memory for storing the handler
       detail::raw_handler_ptr<alloc_traits> raw_ptr(handler);
-      // Create wrapped handler at allocated memory and 
+      // Create wrapped handler at allocated memory and
       // move ownership of allocated memory to ptr
 #if defined(MA_HAS_RVALUE_REFS)
-      detail::handler_ptr<alloc_traits> ptr(raw_ptr, 
+      detail::handler_ptr<alloc_traits> ptr(raw_ptr,
           boost::ref(this->get_io_service()), std::move(handler));
 #else
-      detail::handler_ptr<alloc_traits> ptr(raw_ptr, 
+      detail::handler_ptr<alloc_traits> ptr(raw_ptr,
           boost::ref(this->get_io_service()), handler);
 #endif
       // Copy current handler
@@ -531,7 +531,7 @@ public:
   {
     if (impl.handler_)
     {
-      return impl.handler_->target();        
+      return impl.handler_->target();
     }
     return 0;
   }
@@ -557,19 +557,19 @@ private:
     // Restrict usage of service.
     shutdown_done_ = true;
     // Clear all still active implementations.
-    bool done = false;    
+    bool done = false;
     while (!done)
     {
       // Pop front implementation.
       implementation_type* impl;
       {
-        lock_guard lock(impl_list_mutex_);        
+        lock_guard lock(impl_list_mutex_);
         impl = static_cast<implementation_type*>(impl_list_.front());
         if (impl)
         {
           impl_list_.pop_front();
         }
-      }      
+      }
       if (impl)
       {
         // Clear popped implementation.
@@ -585,13 +585,13 @@ private:
 
   // Guard for the impl_list_
   mutex_type impl_list_mutex_;
-  // Double-linked intrusive list of active (constructed but 
+  // Double-linked intrusive list of active (constructed but
   // still not destructed) implementations.
   impl_base_list impl_list_;
   // Shutdown state flag.
   bool shutdown_done_;
 }; // class handler_storage_service
-  
+
 } // namespace ma
 
 #endif // MA_HANDLER_STORAGE_SERVICE_HPP

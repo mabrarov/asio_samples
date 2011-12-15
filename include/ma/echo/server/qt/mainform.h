@@ -39,7 +39,7 @@ public:
   MainForm(Service& service, QWidget* parent = 0, Qt::WFlags flags = 0);
   ~MainForm();
 
-private slots:      
+private slots:
   void on_startButton_clicked();
   void on_stopButton_clicked();
   void on_terminateButton_clicked();
@@ -54,7 +54,7 @@ private:
 
   typedef boost::tuple<int, QWidget*> OptionWidget;
 
-  Q_DISABLE_COPY(MainForm) 
+  Q_DISABLE_COPY(MainForm)
 
   execution_config       buildExecutionConfig() const;
   session_config         buildSessionConfig() const;
@@ -69,7 +69,7 @@ private:
   Ui::mainForm              ui_;
   std::vector<OptionWidget> optionsWidgets_;
   ServiceState::State       prevServiceState_;
-  Service&                  service_;          
+  Service&                  service_;
 }; // class MainForm
 
 } // namespace qt

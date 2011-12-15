@@ -40,7 +40,7 @@ public:
     : func_(func)
     , session_(std::forward<SessionPtr>(session))
   {
-  } 
+  }
 
 #if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
@@ -58,7 +58,7 @@ public:
 
 #endif
 
-  void operator()(const boost::system::error_code& error, 
+  void operator()(const boost::system::error_code& error,
       const std::size_t bytes_transferred)
   {
     ((*session_).*func_)(error, bytes_transferred);
@@ -84,7 +84,7 @@ public:
     : func_(func)
     , session_(std::forward<SessionPtr>(session))
   {
-  } 
+  }
 
 #if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
@@ -112,12 +112,12 @@ private:
   session_ptr session_;
 }; // class timer_handler_binder
 
-#endif // defined(MA_HAS_RVALUE_REFS) 
+#endif // defined(MA_HAS_RVALUE_REFS)
        //     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
 } // anonymous namespace
 
-session::session(boost::asio::io_service& io_service, 
+session::session(boost::asio::io_service& io_service,
     const session_config& config)
   : max_transfer_size_(config.max_transfer_size)
   , socket_recv_buffer_size_(config.socket_recv_buffer_size)
@@ -129,16 +129,16 @@ session::session(boost::asio::io_service& io_service,
   , read_state_(read_state::wait)
   , write_state_(write_state::wait)
   , timer_state_(timer_state::ready)
-  , timer_wait_cancelled_(false)  
-  , timer_turned_(false)  
-  , pending_operations_(0)  
+  , timer_wait_cancelled_(false)
+  , timer_turned_(false)
+  , pending_operations_(0)
   , io_service_(io_service)
   , strand_(io_service)
   , socket_(io_service)
   , timer_(io_service)
   , buffer_(config.buffer_size)
   , extern_wait_handler_(io_service)
-  , extern_stop_handler_(io_service)                
+  , extern_stop_handler_(io_service)
 {
 }
 
@@ -154,11 +154,11 @@ void session::reset()
   timer_wait_cancelled_ = false;
   timer_turned_         = false;
   pending_operations_   = 0;
-  
+
   // reset() might be called right after connection was established
   // so we need to be sure that the socket will be closed.
   close_socket();
-  
+
   // Post condition: filled sequence is empty, unfilled sequence is empty.
   buffer_.reset();
   extern_wait_error_.clear();
@@ -185,7 +185,7 @@ boost::system::error_code session::do_start_extern_start()
     // ... and notify start handler about error
     return error;
   }
-  
+
   // Internal states have right values already
   extern_state_ = extern_state::work;
   continue_work();
@@ -202,11 +202,11 @@ boost::optional<boost::system::error_code> session::do_start_extern_stop()
   {
     return boost::system::error_code(server_error::invalid_state);
   }
-  
+
   // Switch external SM
-  extern_state_ = extern_state::stop; 
+  extern_state_ = extern_state::stop;
   complete_extern_wait(server_error::operation_aborted);
-    
+
   if (intern_state::work == intern_state_)
   {
     start_active_shutdown();
@@ -232,7 +232,7 @@ boost::optional<boost::system::error_code> session::do_start_extern_wait()
   {
     return boost::system::error_code(server_error::invalid_state);
   }
-  
+
   if (intern_state::work != intern_state_)
   {
     // Notify wait handler about the happened stop
@@ -256,20 +256,20 @@ void session::complete_extern_wait(const boost::system::error_code& error)
   if (!extern_wait_error_)
   {
     extern_wait_error_ = error;
-  }  
+  }
   if (extern_wait_handler_.has_target())
   {
     extern_wait_handler_.post(extern_wait_error_);
   }
 }
 
-void session::handle_read(const boost::system::error_code& error, 
+void session::handle_read(const boost::system::error_code& error,
     std::size_t bytes_transferred)
 {
   BOOST_ASSERT_MSG(read_state::in_progress == read_state_,
       "invalid read state");
 
-  // Split handler based on current internal state 
+  // Split handler based on current internal state
   // that might change during read operation
   switch (intern_state_)
   {
@@ -291,10 +291,10 @@ void session::handle_read(const boost::system::error_code& error,
   }
 }
 
-void session::handle_read_at_work(const boost::system::error_code& error, 
+void session::handle_read_at_work(const boost::system::error_code& error,
     std::size_t bytes_transferred)
 {
-  BOOST_ASSERT_MSG(intern_state::work == intern_state_, 
+  BOOST_ASSERT_MSG(intern_state::work == intern_state_,
       "invalid internal state");
 
   BOOST_ASSERT_MSG(read_state::in_progress == read_state_,
@@ -303,19 +303,19 @@ void session::handle_read_at_work(const boost::system::error_code& error,
   // Register operation completion and switch to the right state
   --pending_operations_;
   read_state_ = read_state::wait;
- 
+
   // Try to cancel timer if it is in progress and wasn't already canceled
   if (boost::system::error_code error = cancel_timer_wait())
   {
     // Start session stop due to fatal error
-    read_state_ = read_state::stopped;    
+    read_state_ = read_state::stopped;
     start_stop(error);
     return;
   }
-  
+
   // If operation completed with error...
   if (error && (boost::asio::error::eof != error))
-  {    
+  {
     // ...start session stop due to fatal error
     read_state_ = read_state::stopped;
     start_stop(error);
@@ -333,10 +333,10 @@ void session::handle_read_at_work(const boost::system::error_code& error,
   continue_work();
 }
 
-void session::handle_read_at_shutdown(const boost::system::error_code& error, 
+void session::handle_read_at_shutdown(const boost::system::error_code& error,
     std::size_t bytes_transferred)
 {
-  BOOST_ASSERT_MSG(intern_state::shutdown == intern_state_, 
+  BOOST_ASSERT_MSG(intern_state::shutdown == intern_state_,
       "invalid internal state");
 
   BOOST_ASSERT_MSG(read_state::in_progress == read_state_,
@@ -366,7 +366,7 @@ void session::handle_read_at_shutdown(const boost::system::error_code& error,
   {
     read_state_ = read_state::stopped;
   }
-  
+
   // Handle read data
   buffer_.consume(bytes_transferred);
   continue_shutdown();
@@ -375,24 +375,24 @@ void session::handle_read_at_shutdown(const boost::system::error_code& error,
 void session::handle_read_at_stop(const boost::system::error_code& /*error*/,
     std::size_t /*bytes_transferred*/)
 {
-  BOOST_ASSERT_MSG(intern_state::stop == intern_state_, 
+  BOOST_ASSERT_MSG(intern_state::stop == intern_state_,
       "invalid internal state");
 
   BOOST_ASSERT_MSG(read_state::in_progress == read_state_,
       "invalid read state");
 
   --pending_operations_;
-  read_state_ = read_state::stopped;  
+  read_state_ = read_state::stopped;
   continue_stop();
 }
 
-void session::handle_write(const boost::system::error_code& error, 
+void session::handle_write(const boost::system::error_code& error,
     std::size_t bytes_transferred)
 {
   BOOST_ASSERT_MSG(write_state::in_progress == write_state_,
       "invalid write state");
 
-  // Split handler based on current internal state 
+  // Split handler based on current internal state
   // that might change during write operation
   switch (intern_state_)
   {
@@ -425,19 +425,19 @@ void session::handle_write_at_work(const boost::system::error_code& error,
 
   --pending_operations_;
   write_state_ = write_state::wait;
-    
+
   if (boost::system::error_code error = cancel_timer_wait())
   {
     write_state_ = write_state::stopped;
     start_stop(error);
     return;
   }
-  
+
   // If operation completed with error...
   if (error)
   {
     // ...start session stop due to fatal error
-    write_state_ = write_state::stopped;    
+    write_state_ = write_state::stopped;
     start_stop(error);
     return;
   }
@@ -455,7 +455,7 @@ void session::handle_write_at_shutdown(const boost::system::error_code& error,
 
   BOOST_ASSERT_MSG(write_state::in_progress == write_state_,
       "invalid write state");
-  
+
   --pending_operations_;
   write_state_ = write_state::wait;
 
@@ -480,7 +480,7 @@ void session::handle_write_at_shutdown(const boost::system::error_code& error,
   continue_shutdown();
 }
 
-void session::handle_write_at_stop(const boost::system::error_code& /*error*/, 
+void session::handle_write_at_stop(const boost::system::error_code& /*error*/,
     std::size_t /*bytes_transferred*/)
 {
   BOOST_ASSERT_MSG(intern_state::stop == intern_state_,
@@ -488,7 +488,7 @@ void session::handle_write_at_stop(const boost::system::error_code& /*error*/,
 
   BOOST_ASSERT_MSG(write_state::in_progress == write_state_,
       "invalid write state");
-  
+
   --pending_operations_;
   write_state_ = write_state::stopped;
   continue_stop();
@@ -499,11 +499,11 @@ void session::handle_timer(const boost::system::error_code& error)
   BOOST_ASSERT_MSG(timer_state::in_progress == timer_state_,
       "invalid timer state");
 
-  // Split handler based on current internal state 
+  // Split handler based on current internal state
   // that might change during timer wait operation
   switch (intern_state_)
   {
-  case intern_state::work:    
+  case intern_state::work:
   case intern_state::shutdown:
     handle_timer_at_work(error);
     break;
@@ -526,12 +526,12 @@ void session::handle_timer_at_work(const boost::system::error_code& error)
 
   BOOST_ASSERT_MSG(timer_state::in_progress == timer_state_,
       "invalid timer state");
-  
+
   --pending_operations_;
-  timer_state_ = timer_state::ready;  
+  timer_state_ = timer_state::ready;
 
   if (error && (boost::asio::error::operation_aborted != error))
-  {    
+  {
     // Start session stop due to fatal error
     timer_state_ = timer_state::stopped;
     start_stop(error);
@@ -547,7 +547,7 @@ void session::handle_timer_at_work(const boost::system::error_code& error)
     }
     return;
   }
-      
+
   // Start session stop due to client inactivity timeout
   timer_state_ = timer_state::stopped;
   start_stop(server_error::inactivity_timeout);
@@ -560,7 +560,7 @@ void session::handle_timer_at_stop(const boost::system::error_code& /*error*/)
 
   BOOST_ASSERT_MSG(timer_state::in_progress == timer_state_,
       "invalid timer state");
-  
+
   --pending_operations_;
   timer_state_ = timer_state::stopped;
   continue_stop();
@@ -579,11 +579,11 @@ void session::continue_work()
 
   // Check for active shutdown start
   if (read_state::stopped == read_state_)
-  {    
+  {
     start_passive_shutdown();
     return;
-  }  
-  
+  }
+
   if (read_state::wait == read_state_)
   {
     cyclic_buffer::mutable_buffers_type read_buffers(
@@ -591,7 +591,7 @@ void session::continue_work()
     if (!read_buffers.empty())
     {
       // We have enough resources to begin socket read
-      start_socket_read(read_buffers);      
+      start_socket_read(read_buffers);
     }
   }
 
@@ -605,15 +605,15 @@ void session::continue_work()
       start_socket_write(write_buffers);
     }
   }
-  
+
   // Turn on timer if need
-  continue_timer_wait();  
+  continue_timer_wait();
 }
 
 void session::continue_timer_wait()
 {
   BOOST_ASSERT_MSG(intern_state::stopped != intern_state_,
-      "invalid internal state");      
+      "invalid internal state");
 
   bool has_io_activity = (read_state::in_progress == read_state_)
       || (write_state::in_progress == write_state_);
@@ -631,11 +631,11 @@ void session::continue_timer_wait()
 
     timer_wait_cancelled_ = true;
     timer_turned_         = true;
-    
+
     // Start async wait if it can be done right now.
     // Otherwise it will be done by handle_timer.
     if (timer_state::ready == timer_state_)
-    {      
+    {
       start_timer_wait();
     }
   }
@@ -645,7 +645,7 @@ void session::continue_shutdown()
 {
   BOOST_ASSERT_MSG(intern_state::shutdown == intern_state_,
       "invalid internal state");
-  
+
   // Split control flow based on current state of read activity to simplify
   switch (read_state_)
   {
@@ -656,7 +656,7 @@ void session::continue_shutdown()
   case read_state::in_progress:
     continue_shutdown_at_read_in_progress();
     break;
-  
+
   case read_state::stopped:
     continue_shutdown_at_read_stopped();
     break;
@@ -664,7 +664,7 @@ void session::continue_shutdown()
   default:
     BOOST_ASSERT_MSG(false, "invalid read state");
     break;
-  }  
+  }
 }
 
 void session::continue_shutdown_at_read_wait()
@@ -675,8 +675,8 @@ void session::continue_shutdown_at_read_wait()
   BOOST_ASSERT_MSG(read_state::wait == read_state_,
       "invalid read state");
 
-  if (write_state::wait == write_state_)  
-  {  
+  if (write_state::wait == write_state_)
+  {
     // We can shutdown outgoing part of TCP stream
     boost::system::error_code error;
     socket_.shutdown(protocol_type::socket::shutdown_send, error);
@@ -686,7 +686,7 @@ void session::continue_shutdown_at_read_wait()
       start_stop(error);
       return;
     }
-    write_state_ = write_state::stopped;    
+    write_state_ = write_state::stopped;
   }
 
   if (write_state::stopped == write_state_)
@@ -697,7 +697,7 @@ void session::continue_shutdown_at_read_wait()
     BOOST_ASSERT_MSG(!read_buffers.empty(), "buffer_ must be unfilled");
 
     // We have enough resources to begin socket read
-    start_socket_read(read_buffers);    
+    start_socket_read(read_buffers);
   }
   else
   {
@@ -706,7 +706,7 @@ void session::continue_shutdown_at_read_wait()
     if (!read_buffers.empty())
     {
       // We have enough resources to begin socket read
-      start_socket_read(read_buffers);      
+      start_socket_read(read_buffers);
     }
   }
 
@@ -748,8 +748,8 @@ void session::continue_shutdown_at_read_stopped()
   BOOST_ASSERT_MSG(read_state::stopped == read_state_,
       "invalid read state");
 
-  if (write_state::wait == write_state_)  
-  {  
+  if (write_state::wait == write_state_)
+  {
     // We can shutdown outgoing part of TCP stream
     boost::system::error_code ignored;
     socket_.shutdown(protocol_type::socket::shutdown_send, ignored);
@@ -759,12 +759,12 @@ void session::continue_shutdown_at_read_stopped()
 
   if (write_state::stopped == write_state_)
   {
-    // Read and write activities are stopped, 
+    // Read and write activities are stopped,
     // so we can begin normal (unrelated to any error) internal general stop
     start_stop(boost::system::error_code());
     return;
   }
-  
+
   // Turn on timer if need
   continue_timer_wait();
 }
@@ -787,12 +787,12 @@ void session::continue_stop()
 
     // Internal general stop completed
     intern_state_ = intern_state::stopped;
-    
+
     if (extern_state::stop == extern_state_)
     {
       extern_state_ = extern_state::stopped;
       complete_extern_stop(boost::system::error_code());
-    }    
+    }
   }
 }
 
@@ -812,8 +812,8 @@ void session::start_shutdown(const boost::system::error_code& error)
       "invalid internal state");
 
   // Siwtch general internal SM
-  intern_state_ = intern_state::shutdown;   
-  
+  intern_state_ = intern_state::shutdown;
+
   // Notify external wait handler if need
   if (extern_state::work == extern_state_)
   {
@@ -825,20 +825,20 @@ void session::start_shutdown(const boost::system::error_code& error)
 
 void session::start_stop(boost::system::error_code error)
 {
-  BOOST_ASSERT_MSG((intern_state::work == intern_state_) 
+  BOOST_ASSERT_MSG((intern_state::work == intern_state_)
       || (intern_state::shutdown == intern_state_),
       "invalid internal state");
 
   // Siwtch general internal SM
-  intern_state_ = intern_state::stop;  
-  
+  intern_state_ = intern_state::stop;
+
   // Close the socket and register error if there was no stop error before
   if (boost::system::error_code close_error = close_socket())
   {
     if (!error)
     {
       error = close_error;
-    }    
+    }
   }
 
   // Stop timer and register error if there was no stop error before
@@ -867,7 +867,7 @@ void session::start_stop(boost::system::error_code error)
   // Notify wait handler if need
   if (extern_state::work == extern_state_)
   {
-    complete_extern_wait(error);  
+    complete_extern_wait(error);
   }
 
   continue_stop();
@@ -879,13 +879,13 @@ void session::start_socket_read(
 #if defined(MA_HAS_RVALUE_REFS) \
     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
-  socket_.async_read_some(buffers, MA_STRAND_WRAP(strand_, 
+  socket_.async_read_some(buffers, MA_STRAND_WRAP(strand_,
       make_custom_alloc_handler(read_allocator_, io_handler_binder(
           &this_type::handle_read, shared_from_this()))));
 
 #else
 
-  socket_.async_read_some(buffers, MA_STRAND_WRAP(strand_, 
+  socket_.async_read_some(buffers, MA_STRAND_WRAP(strand_,
       make_custom_alloc_handler(read_allocator_, boost::bind(
           &this_type::handle_read, shared_from_this(), _1, _2))));
 
@@ -901,13 +901,13 @@ void session::start_socket_write(
 #if defined(MA_HAS_RVALUE_REFS) \
     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
-  socket_.async_write_some(buffers, MA_STRAND_WRAP(strand_, 
+  socket_.async_write_some(buffers, MA_STRAND_WRAP(strand_,
       make_custom_alloc_handler(write_allocator_, io_handler_binder(
           &this_type::handle_write, shared_from_this()))));
 
 #else
 
-  socket_.async_write_some(buffers, MA_STRAND_WRAP(strand_, 
+  socket_.async_write_some(buffers, MA_STRAND_WRAP(strand_,
       make_custom_alloc_handler(write_allocator_, boost::bind(
           &this_type::handle_write, shared_from_this(), _1, _2))));
 
@@ -925,13 +925,13 @@ void session::start_timer_wait()
 #if defined(MA_HAS_RVALUE_REFS) \
     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
-  timer_.async_wait(MA_STRAND_WRAP(strand_, 
+  timer_.async_wait(MA_STRAND_WRAP(strand_,
       make_custom_alloc_handler(timer_allocator_, timer_handler_binder(
           &this_type::handle_timer, shared_from_this()))));
 
 #else
 
-  timer_.async_wait(MA_STRAND_WRAP(strand_, 
+  timer_.async_wait(MA_STRAND_WRAP(strand_,
       make_custom_alloc_handler(timer_allocator_, boost::bind(
           &this_type::handle_timer, shared_from_this(), _1))));
 
@@ -968,7 +968,7 @@ boost::system::error_code session::close_socket()
 boost::system::error_code session::apply_socket_options()
 {
   typedef protocol_type::socket socket_type;
-  
+
   // Apply all (really) configered socket options
   if (socket_recv_buffer_size_)
   {
@@ -1003,9 +1003,9 @@ boost::system::error_code session::apply_socket_options()
     }
   }
 
-  return boost::system::error_code();  
+  return boost::system::error_code();
 }
-        
+
 } // namespace server
 } // namespace echo
 } // namespace ma

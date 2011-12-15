@@ -25,8 +25,8 @@ namespace qt {
 class meta_type_register_error : public std::runtime_error
 {
 public:
-  explicit meta_type_register_error(const char* type_name) 
-    : std::runtime_error("failed to register meta type") 
+  explicit meta_type_register_error(const char* type_name)
+    : std::runtime_error("failed to register meta type")
     , type_name_(type_name)
   {
   }
