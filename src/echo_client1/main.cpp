@@ -58,7 +58,7 @@ void test_handler_storage_move_constructor(boost::asio::io_service& io_service)
   typedef ma::handler_storage<int> handler_storage_type;
 
   handler_storage_type handler1(io_service);
-  handler1.reset(test_handler(4));
+  handler1.store(test_handler(4));
 
   boost::thread worker_thread(boost::bind(&boost::asio::io_service::run,
       boost::ref(io_service)));

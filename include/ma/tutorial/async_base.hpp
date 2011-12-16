@@ -180,7 +180,7 @@ private:
     }
     else
     {
-      do_something_handler_.reset(handler);
+      do_something_handler_.store(handler);
     }
   }
 

@@ -28,23 +28,23 @@ namespace echo_server {
 
 struct execution_config
 {
-public:    
+public:
   typedef boost::posix_time::time_duration time_duration_type;
-    
+
   execution_config(std::size_t the_session_manager_thread_count,
-      std::size_t the_session_thread_count, 
+      std::size_t the_session_thread_count,
       const time_duration_type& the_stop_timeout)
     : session_manager_thread_count(the_session_manager_thread_count)
     , session_thread_count(the_session_thread_count)
     , stop_timeout(the_stop_timeout)
   {
-    BOOST_ASSERT_MSG(the_session_manager_thread_count > 0, 
+    BOOST_ASSERT_MSG(the_session_manager_thread_count > 0,
         "session_manager_thread_count must be > 0");
 
-    BOOST_ASSERT_MSG(the_session_thread_count > 0, 
+    BOOST_ASSERT_MSG(the_session_thread_count > 0,
         "session_thread_count must be > 0");
   }
-      
+
   std::size_t        session_manager_thread_count;
   std::size_t        session_thread_count;
   time_duration_type stop_timeout;
@@ -56,13 +56,13 @@ boost::program_options::options_description build_cmd_options_description(
 #if defined(WIN32)
 
 boost::program_options::variables_map parse_cmd_line(
-    const boost::program_options::options_description& options_description, 
+    const boost::program_options::options_description& options_description,
     int argc, _TCHAR* argv[]);
 
 #else
 
 boost::program_options::variables_map parse_cmd_line(
-    const boost::program_options::options_description& options_description, 
+    const boost::program_options::options_description& options_description,
     int argc, char* argv[]);
 
 #endif

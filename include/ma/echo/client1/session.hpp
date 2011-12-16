@@ -152,7 +152,7 @@ private:
     //}
     //else
     //{
-    //  stop_handler_.reset(handler);
+    //  stop_handler_.store(handler);
     //}
   }
 
@@ -169,7 +169,7 @@ private:
     //}
     //else
     //{
-    //  wait_handler_.reset(handler);
+    //  wait_handler_.store(handler);
     //}
   }
 

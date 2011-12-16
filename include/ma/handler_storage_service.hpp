@@ -464,11 +464,11 @@ public:
       impl_list_.erase(impl);
     }
     // Destroy stored handler if it exists.
-    reset(impl);
+    clear(impl);
   }
 
   /// Can throw if destructor of user supplied handler can throw
-  void reset(implementation_type& impl)
+  void clear(implementation_type& impl)
   {
     // Destroy stored handler if it exists.
     if (handler_base* handler = impl.handler_)
@@ -479,7 +479,7 @@ public:
   }
 
   template <typename Handler, typename Arg>
-  void reset(implementation_type& impl, Handler handler)
+  void store(implementation_type& impl, Handler handler)
   {
     // If service is (was) in shutdown state then it can't store handler.
     if (!shutdown_done_)
@@ -573,7 +573,7 @@ private:
       if (impl)
       {
         // Clear popped implementation.
-        reset(*impl);
+        clear(*impl);
       }
       else
       {

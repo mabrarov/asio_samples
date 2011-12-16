@@ -75,8 +75,8 @@ namespace ma {
  * of the thread executing io_service::~io_service().
  *
  * From the start point of io_service::~io_service() it is not guaranted that
- * reset(handler) can store handler. If underlying service was shut down then
- * reset(handler) won't do anything at all.
+ * store(handler) can store handler. If underlying service was shut down then
+ * store(handler) won't do anything at all.
  */
 template <typename Arg>
 class handler_storage : private boost::noncopyable
@@ -144,25 +144,25 @@ public:
   }
 
   /// Clear stored handler if it exists.
-  void reset()
+  void clear()
   {
-    service_.reset(impl_);
+    service_.clear(impl_);
   }
 
 #if defined(MA_HAS_RVALUE_REFS)
 
   /// Store handler in this handler storage.
   /**
-   * Really, "reset" means "try to store, if can't (io_service's destructor is
+   * Really, "store" means "try to store, if can't (io_service's destructor is
    * already called) then do nothing".
-   * For test of was "reset" successful or not, "has_target" can be used
-   * (called right after "reset").
+   * For test of was "store" successful or not, "has_target" can be used
+   * (called right after "store").
    */
   template <typename Handler>
-  void reset(Handler&& handler)
+  void store(Handler&& handler)
   {
     typedef typename ma::remove_cv_reference<Handler>::type handler_type;
-    service_.reset<handler_type, arg_type>(
+    service_.store<handler_type, arg_type>(
         impl_, std::forward<Handler>(handler));
   }
 
@@ -170,16 +170,16 @@ public:
 
   /// Store handler in this handler storage.
   /**
-   * Really, "reset" means "try to store, if can't (io_service's destructor is
+   * Really, "store" means "try to store, if can't (io_service's destructor is
    * already called) then do nothing".
-   * For test of was "reset" successful or not, "has_target" can be used
-   * (called right after "reset").
+   * For test of was "store" successful or not, "has_target" can be used
+   * (called right after "store").
    */
   template <typename Handler>
-  void reset(const Handler& handler)
+  void store(const Handler& handler)
   {
     typedef Handler handler_type;
-    service_.reset<handler_type, arg_type>(impl_, handler);
+    service_.store<handler_type, arg_type>(impl_, handler);
   }
 
 #endif // defined(MA_HAS_RVALUE_REFS)
@@ -188,8 +188,8 @@ public:
   /**
    * Attention!
    * Alwasy check if handler storage has any handler stored in it.
-   * Use "has_target". Always - even if you already have called "reset" method.
-   * Really, "reset" means "try to put, if can't (io_service's destructor is
+   * Use "has_target". Always - even if you already have called "store" method.
+   * Really, "store" means "try to store, if can't (io_service's destructor is
    * already called) then do nothing".
    */
   void post(const arg_type& arg)
