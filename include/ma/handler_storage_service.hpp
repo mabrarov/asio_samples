@@ -512,7 +512,7 @@ public:
   }
 
   template <typename Arg>
-  void post(implementation_type& impl, const Arg& arg)
+  static void post(implementation_type& impl, const Arg& arg)
   {
     typedef typename ma::remove_cv_reference<Arg>::type arg_type;
     typedef postable_handler_base<arg_type> postable_base;
@@ -527,7 +527,7 @@ public:
     }
   }
 
-  void* target(const implementation_type& impl) const
+  static void* target(const implementation_type& impl)
   {
     if (impl.handler_)
     {
@@ -536,12 +536,12 @@ public:
     return 0;
   }
 
-  bool empty(const implementation_type& impl) const
+  static bool empty(const implementation_type& impl)
   {
     return 0 == impl.handler_;
   }
 
-  bool has_target(const implementation_type& impl) const
+  static bool has_target(const implementation_type& impl)
   {
     return 0 != impl.handler_;
   }

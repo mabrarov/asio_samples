@@ -401,7 +401,7 @@ private:
     extern_read_handler_.store(wrapped_handler);
   }
 
-  extern_read_handler_base* get_extern_read_handler() const
+  extern_read_handler_base* get_extern_read_handler()
   {
     return reinterpret_cast<extern_read_handler_base*>(
         reinterpret_cast<char*>(extern_read_handler_.target())

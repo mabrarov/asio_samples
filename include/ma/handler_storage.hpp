@@ -121,7 +121,13 @@ public:
    * should be used. See usage example at "nmea_client" project.
    * If storage doesn't contain any handler then returns null pointer.
    */
-  void* target() const
+  void* target()
+  {
+    return service_.target(impl_);
+  }
+
+  /// Get pointer to the stored handler. Const version.
+  const void* target() const
   {
     return service_.target(impl_);
   }
