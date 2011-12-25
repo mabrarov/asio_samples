@@ -156,7 +156,7 @@ public:
 #if defined(MA_HAS_RVALUE_REFS)
       shared_pointer tmp = std::move(front_hook.next_);
 #else
-      const shared_pointer tmp = front_hook.next_;
+      shared_pointer tmp = front_hook.next_;
       front_hook.next_.reset();
 #endif
       front_hook.prev_.reset();
