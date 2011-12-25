@@ -32,7 +32,6 @@ SOURCES  += ../../../src/ma/console_controller.cpp \
             ../../../src/ma/tutorial/async_derived.cpp
 
 win32:INCLUDEPATH += ../../../../boost_1_48_0
-unix:INCLUDEPATH  += /usr/local/include
 INCLUDEPATH       += ../../../include
 
 win32:LIBS += -L../../../../boost_1_48_0/lib/x86

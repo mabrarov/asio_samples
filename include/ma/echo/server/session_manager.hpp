@@ -153,10 +153,14 @@ public:
     while (front_)
     {
       base_hook& front_hook = get_hook(*front_);
+#if defined(MA_HAS_RVALUE_REFS)
+      shared_pointer tmp = std::move(front_hook.next_);
+#else
       const shared_pointer tmp = front_hook.next_;
-      front_hook.prev_.reset();
       front_hook.next_.reset();
-      front_ = tmp;
+#endif
+      front_hook.prev_.reset();
+      front_.swap(tmp);
     }
     size_ = 0;
   }

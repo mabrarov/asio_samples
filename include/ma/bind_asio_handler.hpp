@@ -100,9 +100,11 @@ public:
 
 #endif // defined(MA_HAS_RVALUE_REFS)
 
+#if !defined(NDEBUG)
   ~binder1()
   {
   }
+#endif
 
   void operator()()
   {
@@ -228,9 +230,11 @@ public:
 
 #endif // defined(MA_HAS_RVALUE_REFS)
 
+#if !defined(NDEBUG)
   ~binder2()
   {
   }
+#endif
 
   void operator()()
   {
@@ -359,9 +363,11 @@ public:
 
 #endif // defined(MA_HAS_RVALUE_REFS)
 
+#if !defined(NDEBUG)
   ~binder3()
   {
   }
+#endif
 
   void operator()()
   {
@@ -500,9 +506,11 @@ public:
 
 #endif // defined(MA_HAS_RVALUE_REFS)
 
+#if !defined(NDEBUG)
   ~binder4()
   {
   }
+#endif
 
   void operator()()
   {
@@ -654,9 +662,11 @@ public:
 
 #endif // defined(MA_HAS_RVALUE_REFS)
 
+#if !defined(NDEBUG)
   ~binder5()
   {
   }
+#endif
 
   void operator()()
   {

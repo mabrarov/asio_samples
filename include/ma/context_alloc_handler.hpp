@@ -100,9 +100,11 @@ public:
 
 #endif // defined(MA_HAS_RVALUE_REFS)
 
+#if !defined(NDEBUG)
   ~context_alloc_handler()
   {
   }
+#endif
 
   friend void* asio_handler_allocate(std::size_t size, this_type* context)
   {
@@ -300,9 +302,11 @@ public:
 
 #endif // defined(MA_HAS_RVALUE_REFS)
 
+#if !defined(NDEBUG)
   ~context_alloc_handler2()
   {
   }
+#endif
 
   friend void* asio_handler_allocate(std::size_t size, this_type* context)
   {

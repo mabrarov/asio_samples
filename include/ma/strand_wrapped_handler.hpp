@@ -99,9 +99,11 @@ public:
 
 #endif // defined(MA_HAS_RVALUE_REFS)
 
+#if !defined(NDEBUG)
   ~strand_wrapped_handler()
   {
   }
+#endif
 
   friend void* asio_handler_allocate(std::size_t size, this_type* context)
   {

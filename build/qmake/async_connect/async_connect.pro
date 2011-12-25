@@ -25,7 +25,6 @@ HEADERS  += ../../../include/ma/async_connect.hpp \
 SOURCES  += ../../../src/async_connect/main.cpp
 
 win32:INCLUDEPATH += ../../../../boost_1_48_0
-unix:INCLUDEPATH  += /usr/local/include
 INCLUDEPATH       += ../../../include
 
 win32:LIBS += -L../../../../boost_1_48_0/lib/x86

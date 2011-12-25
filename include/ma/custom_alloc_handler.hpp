@@ -86,14 +86,12 @@ public:
   typedef void result_type;
 
 #if !defined(NDEBUG)
-
   ~custom_alloc_handler()
   {
     // For the check of usage of asio custom memory allocation.
     allocator_ = 0;
   }
-
-#endif // !defined(NDEBUG)
+#endif
 
 #if defined(MA_HAS_RVALUE_REFS)
 
