@@ -188,7 +188,6 @@ private:
 } // namespace detail
 
 namespace echo {
-
 namespace server {
 
 class session_manager

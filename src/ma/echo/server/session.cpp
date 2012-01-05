@@ -13,9 +13,7 @@
 #include <ma/echo/server/session.hpp>
 
 namespace ma {
-
 namespace echo {
-
 namespace server {
 
 namespace {

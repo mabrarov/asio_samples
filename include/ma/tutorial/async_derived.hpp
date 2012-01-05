@@ -23,7 +23,6 @@
 #include <ma/tutorial/async_base.hpp>
 
 namespace ma {
-
 namespace tutorial {
 
 class async_derived

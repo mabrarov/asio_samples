@@ -24,11 +24,8 @@
 #include <ui_mainform.h>
 
 namespace ma {
-
 namespace echo {
-
 namespace server {
-
 namespace qt {
 
 class MainForm : public QWidget

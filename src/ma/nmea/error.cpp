@@ -8,7 +8,6 @@
 #include <ma/nmea/error.hpp>
 
 namespace ma {
-
 namespace nmea {
 
 namespace {
@@ -49,5 +48,4 @@ const boost::system::error_category& session_error_category()
 }
 
 } // namespace nmea
-
 } // namespace ma

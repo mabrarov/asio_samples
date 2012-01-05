@@ -15,7 +15,6 @@
 #include <boost/shared_ptr.hpp>
 
 namespace ma {
-
 namespace nmea {
 
 class cyclic_read_session;

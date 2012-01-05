@@ -15,9 +15,7 @@
 #include <boost/shared_ptr.hpp>
 
 namespace ma {
-
 namespace echo {
-
 namespace server {
 
 class session;

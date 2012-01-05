@@ -18,11 +18,8 @@
 #include <ma/echo/server/qt/serviceservantsignal_fwd.h>
 
 namespace ma {
-
 namespace echo {
-
 namespace server {
-
 namespace qt {
 
 class ServiceServantSignal : public QObject

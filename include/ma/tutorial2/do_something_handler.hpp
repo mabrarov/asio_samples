@@ -17,7 +17,6 @@
 #include <ma/tutorial2/do_something_handler_fwd.hpp>
 
 namespace ma {
-
 namespace tutorial2 {
 
 class do_something_handler

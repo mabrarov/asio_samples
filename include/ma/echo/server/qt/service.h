@@ -24,11 +24,8 @@
 #include <ma/echo/server/qt/service_fwd.h>
 
 namespace ma {
-
 namespace echo {
-
 namespace server {
-
 namespace qt {
 
 class Service : public QObject

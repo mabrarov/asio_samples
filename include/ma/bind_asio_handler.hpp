@@ -22,7 +22,6 @@
 #endif // defined(MA_HAS_RVALUE_REFS)
 
 namespace ma {
-
 namespace detail {
 
 /// Provides binders with support of Asio specificity.

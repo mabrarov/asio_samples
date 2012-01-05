@@ -12,11 +12,8 @@
 #include <ma/echo/server/qt/custommetatypes.h>
 
 namespace ma {
-
 namespace echo {
-
 namespace server {
-
 namespace qt {
 
 namespace {

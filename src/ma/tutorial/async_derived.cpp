@@ -12,7 +12,6 @@
 #include <ma/tutorial/async_derived.hpp>
 
 namespace ma {
-
 namespace tutorial {
 
 namespace {

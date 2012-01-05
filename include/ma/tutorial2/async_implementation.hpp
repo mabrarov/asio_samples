@@ -23,7 +23,6 @@
 #include <ma/tutorial2/async_interface.hpp>
 
 namespace ma {
-
 namespace tutorial2 {
 
 class async_implementation

@@ -26,11 +26,8 @@ TRANSLATOR ma::echo::server::qt::Service
 #include <ma/echo/server/qt/service.h>
 
 namespace ma {
-
 namespace echo {
-
 namespace server {
-
 namespace qt {
 
 namespace {

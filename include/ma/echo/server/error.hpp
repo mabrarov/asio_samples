@@ -16,9 +16,7 @@
 #include <boost/type_traits.hpp>
 
 namespace ma {
-
 namespace echo {
-
 namespace server {
 
 /**
@@ -58,7 +56,6 @@ inline boost::system::error_condition make_error_condition(error_t e)
 } // namespace ma
 
 namespace boost {
-
 namespace system {
 
 template <>

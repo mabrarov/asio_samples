@@ -15,11 +15,8 @@
 #include <stdexcept>
 
 namespace ma {
-
 namespace echo {
-
 namespace server {
-
 namespace qt {
 
 class meta_type_register_error : public std::runtime_error

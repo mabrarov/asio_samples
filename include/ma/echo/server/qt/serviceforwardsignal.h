@@ -17,11 +17,8 @@
 #include <ma/echo/server/qt/serviceforwardsignal_fwd.h>
 
 namespace ma {
-
 namespace echo {
-
 namespace server {
-
 namespace qt {
 
 class ServiceForwardSignal : public QObject

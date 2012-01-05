@@ -20,7 +20,6 @@
 #endif // defined(MA_HAS_RVALUE_REFS)
 
 namespace ma {
-
 namespace tutorial2 {
 
 namespace {

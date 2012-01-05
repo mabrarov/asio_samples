@@ -41,7 +41,6 @@
 #endif // defined(MA_HAS_RVALUE_REFS)
 
 namespace ma {
-
 namespace nmea {
 
 class cyclic_read_session;

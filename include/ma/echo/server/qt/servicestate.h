@@ -13,11 +13,8 @@
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
 namespace ma {
-
 namespace echo {
-
 namespace server {
-
 namespace qt {
 
 namespace ServiceState {

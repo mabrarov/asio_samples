@@ -8,9 +8,7 @@
 #include <ma/echo/server/error.hpp>
 
 namespace ma {
-
 namespace echo {
-
 namespace server {
 
 namespace {

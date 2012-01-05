@@ -19,9 +19,7 @@
 #include <ma/echo/server/session_manager.hpp>
 
 namespace ma {
-
 namespace echo {
-
 namespace server {
 
 #if defined(MA_HAS_RVALUE_REFS) \

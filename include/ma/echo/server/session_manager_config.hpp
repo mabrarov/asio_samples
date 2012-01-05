@@ -19,9 +19,7 @@
 #include <ma/echo/server/session_manager_config_fwd.hpp>
 
 namespace ma {
-
 namespace echo {
-
 namespace server {
 
 struct session_manager_config

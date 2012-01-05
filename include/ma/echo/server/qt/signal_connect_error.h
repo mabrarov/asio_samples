@@ -16,11 +16,8 @@
 #include <boost/throw_exception.hpp>
 
 namespace ma {
-
 namespace echo {
-
 namespace server {
-
 namespace qt {
 
 class signal_connect_error : public std::runtime_error

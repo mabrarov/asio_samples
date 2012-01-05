@@ -19,7 +19,6 @@
 #include <boost/throw_exception.hpp>
 
 namespace ma {
-
 namespace codecvt_cast {
 
 class bad_conversion : public std::runtime_error

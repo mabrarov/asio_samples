@@ -16,7 +16,6 @@
 #include <boost/type_traits.hpp>
 
 namespace ma {
-
 namespace nmea {
 
 /**
@@ -51,7 +50,6 @@ inline boost::system::error_condition make_error_condition(error_t e)
 } // namespace ma
 
 namespace boost {
-
 namespace system {
 
 template <>

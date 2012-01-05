@@ -24,11 +24,8 @@ TRANSLATOR ma::echo::server::qt::MainForm
 #include <ma/echo/server/qt/mainform.h>
 
 namespace ma {
-
 namespace echo {
-
 namespace server {
-
 namespace qt {
 
 namespace {

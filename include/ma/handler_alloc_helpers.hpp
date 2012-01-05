@@ -13,6 +13,7 @@
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
 #include <cstddef>
+#include <boost/config.hpp>
 #include <boost/asio.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/utility/addressof.hpp>
@@ -45,7 +46,6 @@ inline void deallocate(void* pointer, std::size_t size, Context& context)
 } // namespace ma_asio_handler_alloc_helpers
 
 namespace ma {
-
 namespace detail {
 
 /**

@@ -15,7 +15,6 @@
 #include <boost/shared_ptr.hpp>
 
 namespace ma {
-
 namespace tutorial2 {
 
 class do_something_handler;

@@ -30,7 +30,6 @@
 #endif // defined(MA_HAS_RVALUE_REFS)
 
 namespace ma {
-
 namespace tutorial {
 
 class async_base : private boost::noncopyable

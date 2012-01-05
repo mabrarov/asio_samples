@@ -11,9 +11,7 @@
 #include <ma/echo/client1/session.hpp>
 
 namespace ma {
-
 namespace echo {
-
 namespace client1 {
 
 session::session(boost::asio::io_service& io_service,

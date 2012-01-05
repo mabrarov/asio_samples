@@ -17,11 +17,8 @@
 #include <ma/echo/server/qt/execution_config_fwd.h>
 
 namespace ma {
-
 namespace echo {
-
 namespace server {
-
 namespace qt {
 
 struct execution_config

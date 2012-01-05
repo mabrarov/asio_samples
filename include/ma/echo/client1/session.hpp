@@ -32,9 +32,7 @@
 #endif // defined(MA_HAS_RVALUE_REFS)
 
 namespace ma {
-
 namespace echo {
-
 namespace client1 {
 
 class session

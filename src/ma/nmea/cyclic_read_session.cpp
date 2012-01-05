@@ -10,7 +10,6 @@
 #include <ma/nmea/cyclic_read_session.hpp>
 
 namespace ma {
-
 namespace nmea {
 
 cyclic_read_session::cyclic_read_session(boost::asio::io_service& io_service,
