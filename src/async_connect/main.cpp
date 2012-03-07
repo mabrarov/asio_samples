@@ -12,6 +12,7 @@
 #include <cstdlib>
 #include <cstddef>
 #include <iostream>
+#include <exception>
 #include <boost/ref.hpp>
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>

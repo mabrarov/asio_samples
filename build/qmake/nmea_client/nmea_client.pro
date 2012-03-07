@@ -35,10 +35,10 @@ SOURCES  += ../../../src/ma/console_controller.cpp \
             ../../../src/ma/nmea/error.cpp \
             ../../../src/ma/nmea/cyclic_read_session.cpp
 
-win32:INCLUDEPATH += ../../../../boost_1_48_0
+win32:INCLUDEPATH += ../../../../boost_1_49_0
 INCLUDEPATH       += ../../../include
 
-win32:LIBS += -L../../../../boost_1_48_0/lib/x86
+win32:LIBS += -L../../../../boost_1_49_0/lib/x86
 unix:LIBS  += -lboost_thread \
               -lboost_system \
               -lboost_date_time

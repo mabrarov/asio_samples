@@ -54,11 +54,11 @@ boost::optional<int> readOptionalValue(const QCheckBox& checkBox,
   return boost::optional<int>();
 }
 
-class option_read_error : public std::exception
+class option_read_error : public std::runtime_error
 {
 public:
   explicit option_read_error(const QString& message = QString())
-    : std::exception()
+    : std::runtime_error(message.toLocal8Bit().data())
     , message_(message)
   {
   }
