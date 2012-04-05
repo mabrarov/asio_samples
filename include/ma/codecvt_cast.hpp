@@ -74,7 +74,7 @@ const std::basic_string<CharType> in(
     internal_str.assign(first_internal, last_internal);
   }
 
-	return internal_str;
+  return internal_str;
 }
 
 template <typename CharType, typename Byte>

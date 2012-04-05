@@ -15,7 +15,6 @@
 #include <string>
 #include <utility>
 #include <algorithm>
-#include <boost/ref.hpp>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/optional.hpp>
