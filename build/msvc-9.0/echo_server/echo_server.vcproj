@@ -392,6 +392,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\..\include\ma\shared_ptr_factory.hpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\..\include\ma\strand_wrapped_handler.hpp"
 					>
 				</File>
@@ -451,11 +455,11 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\..\src\echo_server\main.cpp"
+				RelativePath="..\..\..\src\echo_server\config.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\src\echo_server\config.cpp"
+				RelativePath="..\..\..\src\echo_server\main.cpp"
 				>
 			</File>
 			<Filter

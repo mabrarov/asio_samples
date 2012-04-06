@@ -24,6 +24,7 @@ HEADERS  += ../../../include/ma/handler_storage_service.hpp \
             ../../../include/ma/console_controller.hpp \
             ../../../include/ma/config.hpp \
             ../../../include/ma/type_traits.hpp \
+            ../../../include/ma/shared_ptr_factory.hpp \
             ../../../include/ma/tutorial2/do_something_handler_fwd.hpp \
             ../../../include/ma/tutorial2/do_something_handler.hpp \
             ../../../include/ma/tutorial2/async_interface.hpp \
