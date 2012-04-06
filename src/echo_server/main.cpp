@@ -58,8 +58,8 @@ struct session_manager_wrapper : private boost::noncopyable
   session_manager_wrapper(boost::asio::io_service& io_service,
       boost::asio::io_service& session_io_service,
       const ma::echo::server::session_manager_config& config)
-    : session_manager(boost::make_shared<ma::echo::server::session_manager>(
-          boost::ref(io_service), boost::ref(session_io_service), config))
+    : session_manager(ma::echo::server::session_manager::create(io_service, 
+          session_io_service, config))
     , state(state_type::ready)
     , stopped_by_user(false)
   {

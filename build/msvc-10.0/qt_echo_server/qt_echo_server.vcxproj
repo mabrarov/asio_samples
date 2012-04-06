@@ -169,6 +169,7 @@
     <ClInclude Include="..\..\..\include\ma\echo\server\session_manager_config.hpp" />
     <ClInclude Include="..\..\..\include\ma\echo\server\session_manager_config_fwd.hpp" />
     <ClInclude Include="..\..\..\include\ma\handler_allocator.hpp" />
+    <ClInclude Include="..\..\..\include\ma\shared_ptr_factory.hpp" />
     <ClInclude Include="..\..\..\include\ma\strand_wrapped_handler.hpp" />
     <ClInclude Include="..\..\..\include\ma\type_traits.hpp" />
     <ClInclude Include="GeneratedFiles\ui_mainform.h" />

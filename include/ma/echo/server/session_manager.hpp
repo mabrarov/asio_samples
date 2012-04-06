@@ -200,13 +200,9 @@ private:
 public:
   typedef boost::asio::ip::tcp protocol_type;
 
-  session_manager(boost::asio::io_service& io_service,
-      boost::asio::io_service& session_io_service,
+  static session_manager_ptr create(boost::asio::io_service& io_service,
+      boost::asio::io_service& session_io_service, 
       const session_manager_config& config);
-
-  ~session_manager()
-  {
-  }
 
   void reset(bool free_recycled_sessions = true);
 
@@ -329,6 +325,15 @@ public:
   }
 
 #endif // defined(MA_HAS_RVALUE_REFS)
+
+protected:
+  session_manager(boost::asio::io_service& io_service,
+      boost::asio::io_service& session_io_service,
+      const session_manager_config& config);
+
+  ~session_manager()
+  {
+  }
 
 private:
   struct  session_wrapper;

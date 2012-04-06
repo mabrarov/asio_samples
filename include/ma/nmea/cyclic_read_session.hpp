@@ -57,13 +57,9 @@ public:
   enum { min_read_buffer_size = max_message_size };
   enum { min_message_queue_size = 1 };
 
-  cyclic_read_session(boost::asio::io_service& io_service,
-      const std::size_t read_buffer_size, const std::size_t frame_buffer_size,
+  static cyclic_read_session_ptr create(boost::asio::io_service& io_service,
+      std::size_t read_buffer_size, std::size_t frame_buffer_size,
       const std::string& frame_head, const std::string& frame_tail);
-
-  ~cyclic_read_session()
-  {
-  }
 
   boost::asio::serial_port& serial_port()
   {
@@ -190,6 +186,15 @@ public:
   }
 
 #endif // defined(MA_HAS_RVALUE_REFS)
+
+protected:
+  cyclic_read_session(boost::asio::io_service& io_service,
+      std::size_t read_buffer_size, std::size_t frame_buffer_size,
+      const std::string& frame_head, const std::string& frame_tail);
+
+  ~cyclic_read_session()
+  {
+  }
 
 private:
   struct extern_state
