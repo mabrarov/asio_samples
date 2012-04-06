@@ -6,10 +6,13 @@
 //
 
 #include <iostream>
+#include <boost/ref.hpp>
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 #include <ma/config.hpp>
+#include <ma/shared_ptr_factory.hpp>
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/strand_wrapped_handler.hpp>
 #include <ma/tutorial2/do_something_handler.hpp>
@@ -257,6 +260,13 @@ private:
        //     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
 } // anonymous namespace
+
+async_interface_ptr async_implementation::create(
+    boost::asio::io_service& io_service, const std::string& name)
+{
+  typedef shared_ptr_factory_helper<this_type> helper;
+  return boost::make_shared<helper>(boost::ref(io_service), name);
+}
 
 async_implementation::async_implementation(boost::asio::io_service& io_service,
     const std::string& name)

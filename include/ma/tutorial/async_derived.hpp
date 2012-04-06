@@ -17,6 +17,7 @@
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
 #include <boost/format.hpp>
+#include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/utility/base_from_member.hpp>
 #include <ma/handler_allocator.hpp>
@@ -24,6 +25,9 @@
 
 namespace ma {
 namespace tutorial {
+
+class async_derived;
+typedef boost::shared_ptr<async_derived> async_derived_ptr;
 
 class async_derived
   : private boost::base_from_member<boost::asio::io_service::strand>
@@ -35,10 +39,12 @@ private:
   typedef async_derived this_type;
 
 public:
-  async_derived(boost::asio::io_service& io_service, const std::string& name);
-  ~async_derived();
+  static async_derived_ptr create(boost::asio::io_service& io_service, 
+      const std::string& name);
 
 protected:
+  async_derived(boost::asio::io_service& io_service, const std::string& name);
+  ~async_derived();
   virtual async_base_ptr get_shared_base();
   virtual boost::optional<boost::system::error_code> do_start_do_something();
 

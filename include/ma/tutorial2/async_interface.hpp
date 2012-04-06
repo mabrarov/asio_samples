@@ -12,10 +12,14 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
+#include <boost/shared_ptr.hpp>
 #include <ma/tutorial2/do_something_handler_fwd.hpp>
 
 namespace ma {
 namespace tutorial2 {
+
+class async_interface;
+typedef boost::shared_ptr<ma::tutorial2::async_interface> async_interface_ptr;
 
 class async_interface
 {
