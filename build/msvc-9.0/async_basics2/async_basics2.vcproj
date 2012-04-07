@@ -416,6 +416,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\..\include\ma\shared_ptr_factory.hpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\..\include\ma\strand_wrapped_handler.hpp"
 					>
 				</File>

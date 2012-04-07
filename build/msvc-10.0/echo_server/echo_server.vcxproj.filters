@@ -101,6 +101,9 @@
     <ClInclude Include="..\..\..\src\echo_server\config.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\shared_ptr_factory.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src\ma\console_controller.cpp">

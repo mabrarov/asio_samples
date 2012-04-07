@@ -140,10 +140,8 @@ public:
   servant(const execution_config& the_execution_config,
       const session_manager_config& the_session_manager_config)
     : executor_service(the_execution_config)
-    , session_manager_(boost::make_shared<session_manager>(
-          boost::ref(session_manager_io_service()),
-          boost::ref(session_io_service()),
-          the_session_manager_config))
+    , session_manager_(session_manager::create(session_manager_io_service(),
+          session_io_service(), the_session_manager_config))
   {
   }
 

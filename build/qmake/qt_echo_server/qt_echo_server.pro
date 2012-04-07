@@ -19,6 +19,7 @@ HEADERS  += ../../../include/ma/bind_asio_handler.hpp \
             ../../../include/ma/handler_allocator.hpp \
             ../../../include/ma/strand_wrapped_handler.hpp \
             ../../../include/ma/type_traits.hpp \
+            ../../../include/ma/shared_ptr_factory.hpp \
             ../../../include/ma/handler_alloc_helpers.hpp \
             ../../../include/ma/handler_invoke_helpers.hpp \
             ../../../include/ma/handler_storage.hpp \

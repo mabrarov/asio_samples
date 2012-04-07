@@ -85,5 +85,8 @@
     <ClInclude Include="..\..\..\include\ma\tutorial2\async_implementation.hpp">
       <Filter>Header Files\ma\tutorial2</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\shared_ptr_factory.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

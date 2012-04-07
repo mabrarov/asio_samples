@@ -11,6 +11,7 @@
 #include <boost/make_shared.hpp>
 #include <boost/utility/addressof.hpp>
 #include <ma/config.hpp>
+#include <ma/shared_ptr_factory.hpp>
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/handler_invoke_helpers.hpp>
 #include <ma/strand_wrapped_handler.hpp>
@@ -185,8 +186,7 @@ private:
 
 session_manager::session_wrapper::session_wrapper(
     boost::asio::io_service& io_service, const session_config& config)
-  : session(boost::make_shared<server::session>(
-        boost::ref(io_service), config))
+  : session(server::session::create(io_service, config))
   , state(state_type::ready)
   , pending_operations(0)
 {
@@ -197,6 +197,16 @@ void session_manager::session_wrapper::reset()
   session->reset();
   state = state_type::ready;
   pending_operations = 0;
+}
+
+session_manager_ptr session_manager::create(
+    boost::asio::io_service& io_service, 
+    boost::asio::io_service& session_io_service, 
+    const session_manager_config& config)
+{
+  typedef shared_ptr_factory_helper<this_type> helper;
+  return boost::make_shared<helper>(boost::ref(io_service), 
+      boost::ref(session_io_service), config);
 }
 
 session_manager::session_manager(boost::asio::io_service& io_service,

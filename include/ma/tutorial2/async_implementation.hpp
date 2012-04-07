@@ -34,11 +34,14 @@ private:
   typedef async_implementation this_type;
 
 public:
+  static async_interface_ptr create(boost::asio::io_service& io_service, 
+      const std::string& name);
+  virtual void async_do_something(const do_something_handler_ptr&);
+
+protected:
   async_implementation(boost::asio::io_service& io_service,
       const std::string& name);
   ~async_implementation();
-
-  virtual void async_do_something(const do_something_handler_ptr&);
 
 private:
   void complete_do_something(const boost::system::error_code&);

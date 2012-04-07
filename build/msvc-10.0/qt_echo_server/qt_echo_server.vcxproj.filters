@@ -231,6 +231,9 @@
     <ClInclude Include="..\..\..\include\ma\echo\server\qt\execution_config_fwd.h">
       <Filter>Header Files\ma\echo\server\qt</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\shared_ptr_factory.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\src\qt_echo_server\qt_echo_server.ico">

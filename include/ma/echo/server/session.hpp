@@ -45,11 +45,8 @@ private:
 public:
   typedef boost::asio::ip::tcp protocol_type;
 
-  session(boost::asio::io_service& io_service, const session_config& config);
-
-  ~session()
-  {
-  }
+  static session_ptr create(boost::asio::io_service& io_service, 
+      const session_config& config);
 
   protocol_type::socket& socket()
   {
@@ -177,6 +174,13 @@ public:
   }
 
 #endif // defined(MA_HAS_RVALUE_REFS)
+
+protected:
+  session(boost::asio::io_service& io_service, const session_config& config);
+
+  ~session()
+  {
+  }
 
 private:
 

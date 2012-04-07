@@ -31,15 +31,14 @@
 
 namespace {
 
-typedef boost::shared_ptr<ma::tutorial2::async_interface> async_interface_ptr;
-
 class do_something_handler_implementation
   : public ma::tutorial2::do_something_handler
   , private boost::noncopyable
 {
 public:
   do_something_handler_implementation(
-      const async_interface_ptr& async_interface, const std::string& name)
+      const ma::tutorial2::async_interface_ptr& async_interface, 
+      const std::string& name)
     : async_interface_(async_interface)
     , name_(name)
     , allocator_()
@@ -75,8 +74,8 @@ public:
 
 private:
   // For example only: handler "holds up" active object itself
-  async_interface_ptr async_interface_;
-  std::string         name_;
+  ma::tutorial2::async_interface_ptr async_interface_;
+  std::string name_;
   ma::in_place_handler_allocator<128> allocator_;
 }; // class do_something_handler_implementation
 
@@ -124,9 +123,8 @@ int main(int /*argc*/, char* /*argv*/[])
     {
       std::string name = (name_format % i).str();
 
-      async_interface_ptr active_object =
-          boost::make_shared<ma::tutorial2::async_implementation>(
-              boost::ref(work_io_service), name);
+      ma::tutorial2::async_interface_ptr active_object = 
+          ma::tutorial2::async_implementation::create(work_io_service, name);
 
       active_object->async_do_something(
           boost::make_shared<do_something_handler_implementation>(

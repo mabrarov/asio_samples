@@ -5,8 +5,11 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#include <boost/ref.hpp>
 #include <boost/assert.hpp>
+#include <boost/make_shared.hpp>
 #include <ma/config.hpp>
+#include <ma/shared_ptr_factory.hpp>
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/strand_wrapped_handler.hpp>
 #include <ma/echo/server/error.hpp>
@@ -114,6 +117,13 @@ private:
        //     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
 } // anonymous namespace
+
+session_ptr session::create(boost::asio::io_service& io_service, 
+    const session_config& config)
+{
+  typedef shared_ptr_factory_helper<this_type> helper;
+  return boost::make_shared<helper>(boost::ref(io_service), config);
+}
 
 session::session(boost::asio::io_service& io_service,
     const session_config& config)

@@ -6,14 +6,26 @@
 //
 
 #include <stdexcept>
+#include <boost/ref.hpp>
 #include <boost/make_shared.hpp>
+#include <ma/shared_ptr_factory.hpp>
 #include <ma/nmea/cyclic_read_session.hpp>
 
 namespace ma {
 namespace nmea {
 
+cyclic_read_session_ptr cyclic_read_session::create(
+    boost::asio::io_service& io_service, std::size_t read_buffer_size, 
+    std::size_t frame_buffer_size, const std::string& frame_head, 
+    const std::string& frame_tail)
+{
+  typedef shared_ptr_factory_helper<this_type> helper;
+  return boost::make_shared<helper>(boost::ref(io_service), read_buffer_size, 
+      frame_buffer_size, frame_head, frame_tail);
+}
+
 cyclic_read_session::cyclic_read_session(boost::asio::io_service& io_service,
-    const std::size_t read_buffer_size, const std::size_t frame_buffer_size,
+    std::size_t read_buffer_size, std::size_t frame_buffer_size,
     const std::string& frame_head, const std::string& frame_tail)
   : io_service_(io_service)
   , strand_(io_service)

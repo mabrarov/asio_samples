@@ -6,7 +6,10 @@
 //
 
 #include <iostream>
+#include <boost/ref.hpp>
+#include <boost/make_shared.hpp>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
+#include <ma/shared_ptr_factory.hpp>
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/strand_wrapped_handler.hpp>
 #include <ma/tutorial/async_derived.hpp>
@@ -15,8 +18,6 @@ namespace ma {
 namespace tutorial {
 
 namespace {
-
-typedef boost::shared_ptr<async_derived> async_derived_ptr;
 
 #if defined(MA_HAS_RVALUE_REFS) \
     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
@@ -68,6 +69,13 @@ private:
        //     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
 } // anonymous namespace
+
+async_derived_ptr async_derived::create(boost::asio::io_service& io_service, 
+    const std::string& name)
+{
+  typedef shared_ptr_factory_helper<this_type> helper;
+  return boost::make_shared<helper>(boost::ref(io_service), name);
+}
 
 async_derived::async_derived(boost::asio::io_service& io_service,
     const std::string& name)
