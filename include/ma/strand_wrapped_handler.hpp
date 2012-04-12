@@ -243,7 +243,7 @@ make_strand_wrapped_handler(boost::asio::io_service::strand& strand,
 #endif // defined(MA_HAS_RVALUE_REFS)
 
 #define MA_STRAND_WRAP(strand, handler) \
-    (make_strand_wrapped_handler((strand), (handler)))
+    (::ma::make_strand_wrapped_handler((strand), (handler)))
 
 #else // defined(MA_BOOST_ASIO_HEAVY_STRAND_WRAPPED_HANDLER)
 
