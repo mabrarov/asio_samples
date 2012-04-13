@@ -9,6 +9,7 @@ TRANSLATOR ma::echo::server::qt::MainForm
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#include <limits>
 #include <stdexcept>
 #include <boost/optional.hpp>
 #include <boost/thread/thread.hpp>
@@ -166,7 +167,8 @@ MainForm::MainForm(Service& service, QWidget* parent, Qt::WFlags flags)
   ui_.sessionManagerThreadsSpinBox->setValue(boost::numeric_cast<int>(
       calcSessionManagerThreadCount(hardwareConcurrency)));
   ui_.sessionThreadsSpinBox->setValue(boost::numeric_cast<int>(
-      calcSessionThreadCount(hardwareConcurrency)));
+      calcSessionThreadCount(hardwareConcurrency)));  
+  ui_.listenBacklogSpinBox->setMaximum(std::numeric_limits<int>::max());
 
   updateWidgetsStates(true);
 }

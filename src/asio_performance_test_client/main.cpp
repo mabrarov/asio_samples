@@ -28,6 +28,39 @@
 
 namespace {
 
+class work_state : private boost::noncopyable
+{
+public:
+  explicit work_state(std::size_t session_count)
+    : session_count_(session_count)
+  {
+  }
+
+  void notify_session_stop()
+  {
+    boost::mutex::scoped_lock lock(mutex_);
+    --session_count_;
+    if (!session_count_)
+    {
+      condition_.notify_all();
+    }
+  }
+
+  void wait_for_all_session_stop(const boost::posix_time::time_duration& timeout)
+  {
+    boost::unique_lock<boost::mutex> lock(mutex_);
+    if (session_count_)
+    {
+      condition_.timed_wait(lock, timeout);
+    }
+  }
+
+private:
+  std::size_t session_count_;
+  boost::mutex mutex_;
+  boost::condition_variable condition_;
+}; // struct work_state
+
 class stats : private boost::noncopyable
 {
 public:
@@ -65,7 +98,8 @@ class session : private boost::noncopyable
 public:
   typedef boost::asio::ip::tcp protocol;
 
-  session(boost::asio::io_service& ios, std::size_t block_size, stats& s)
+  session(boost::asio::io_service& ios, std::size_t block_size, stats& s, 
+      work_state& work_state)
     : strand_(ios)
     , socket_(ios)
     , block_size_(block_size)
@@ -75,7 +109,9 @@ public:
     , unwritten_count_(0)
     , bytes_written_(0)
     , bytes_read_(0)
+    , is_stopped_(false)
     , stats_(s)
+    , work_state_(work_state)
   {
     for (std::size_t i = 0; i < block_size_; ++i)
     {
@@ -96,7 +132,7 @@ public:
 
   void stop()
   {
-    strand_.post(boost::bind(&session::close_socket, this));
+    strand_.post(boost::bind(&session::do_stop, this));
   }
 
 private:
@@ -141,7 +177,11 @@ private:
       boost::system::error_code ignored;
       socket_.close(ignored);
       ++endpoint_iterator;
-      if (endpoint_iterator != protocol::resolver::iterator())
+      if (endpoint_iterator == protocol::resolver::iterator())
+      {
+        do_stop();
+      }
+      else
       {
         start_connect(endpoint_iterator);
       }
@@ -150,7 +190,11 @@ private:
 
   void handle_read(const boost::system::error_code& err, std::size_t length)
   {
-    if (!err)
+    if (err)
+    {
+      do_stop();
+    }
+    else
     {
       bytes_read_ += length;
 
@@ -179,7 +223,11 @@ private:
 
   void handle_write(const boost::system::error_code& err, std::size_t length)
   {
-    if (!err && length > 0)
+    if (err)
+    {
+      do_stop();
+    }
+    else if (length)
     {
       bytes_written_ += length;
 
@@ -205,9 +253,15 @@ private:
     }
   }
 
-  void close_socket()
+  void do_stop()
   {
-    socket_.close();
+    if (!is_stopped_)
+    {
+      boost::system::error_code ignored;
+      socket_.close(ignored);
+      work_state_.notify_session_stop();    
+      is_stopped_ = true;
+    }
   }
 
 private:
@@ -220,7 +274,9 @@ private:
   int unwritten_count_;
   std::size_t bytes_written_;
   std::size_t bytes_read_;
+  bool is_stopped_;
   stats& stats_;
+  work_state& work_state_;
   ma::in_place_handler_allocator<512> connect_allocator_;
   ma::in_place_handler_allocator<512> read_allocator_;
   ma::in_place_handler_allocator<512> write_allocator_;
@@ -235,19 +291,17 @@ public:
 
   client(boost::asio::io_service& ios, 
       const protocol::resolver::iterator& endpoint_iterator,
-      std::size_t block_size, std::size_t session_count, int timeout)
-    : io_service_(ios)
-    , stop_timer_(ios)
+      std::size_t block_size, std::size_t session_count)
+    : io_service_(ios)    
     , sessions_()
     , stats_()
+    , work_state_(session_count)    
   {
-    stop_timer_.expires_from_now(boost::posix_time::seconds(timeout));
-    stop_timer_.async_wait(boost::bind(&client::handle_timeout, this));
-
     for (std::size_t i = 0; i < session_count; ++i)
     {
       session_ptr new_session = boost::make_shared<session>(
-          boost::ref(io_service_), block_size, boost::ref(stats_));
+          boost::ref(io_service_), block_size, 
+          boost::ref(stats_), boost::ref(work_state_));
       new_session->start(endpoint_iterator);
       sessions_.push_back(new_session);
     }
@@ -259,17 +313,22 @@ public:
     stats_.print();
   }
 
-  void handle_timeout()
+  void stop()
   {
     std::for_each(sessions_.begin(), sessions_.end(),
         boost::mem_fn(&session::stop));
   }
 
+  void wait_until_done(const boost::posix_time::time_duration& timeout)
+  {
+    work_state_.wait_for_all_session_stop(timeout);
+  }
+
 private:
-  boost::asio::io_service& io_service_;
-  boost::asio::deadline_timer stop_timer_;
+  boost::asio::io_service& io_service_;  
   std::vector<session_ptr> sessions_;
   stats stats_;
+  work_state work_state_;  
 }; // class client
 
 } // anonymous namespace
@@ -299,15 +358,18 @@ int main(int argc, char* argv[])
     client::protocol::resolver::iterator iter =
         r.resolve(client::protocol::resolver::query(host, port));
 
-    client c(ios, iter, block_size, session_count, timeout);
+    client c(ios, iter, block_size, session_count);
 
     boost::thread_group work_threads;
-    for (int i = 1; i < thread_count; ++i)
+    for (int i = 0; i < thread_count; ++i)
     {
       work_threads.create_thread(
           boost::bind(&boost::asio::io_service::run, &ios));
     }
-    ios.run();
+
+    c.wait_until_done(boost::posix_time::seconds(timeout));
+    c.stop();
+
     work_threads.join_all();
   }
   catch (std::exception& e)
