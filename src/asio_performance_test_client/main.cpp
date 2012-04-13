@@ -126,7 +126,7 @@ public:
 
   void start(const protocol::resolver::iterator& endpoint_iterator)
   {
-    strand_.post(ma::make_custom_alloc_handler(connect_allocator_,
+    strand_.post(ma::make_custom_alloc_handler(write_allocator_,
         boost::bind(&this_type::start_connect, this, endpoint_iterator)));
   }
 
@@ -140,7 +140,7 @@ private:
   {
     protocol::endpoint endpoint = *endpoint_iterator;
     ma::async_connect(socket_, endpoint, MA_STRAND_WRAP(strand_, 
-        ma::make_custom_alloc_handler(connect_allocator_,
+        ma::make_custom_alloc_handler(write_allocator_,
             boost::bind(&session::handle_connect, this,
                 boost::asio::placeholders::error, endpoint_iterator))));
   }
@@ -276,8 +276,7 @@ private:
   std::size_t bytes_read_;
   bool is_stopped_;
   stats& stats_;
-  work_state& work_state_;
-  ma::in_place_handler_allocator<512> connect_allocator_;
+  work_state& work_state_;  
   ma::in_place_handler_allocator<512> read_allocator_;
   ma::in_place_handler_allocator<512> write_allocator_;
 }; // class session

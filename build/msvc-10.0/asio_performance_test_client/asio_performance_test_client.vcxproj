@@ -24,6 +24,7 @@
     <ClInclude Include="..\..\..\include\ma\config.hpp" />
     <ClInclude Include="..\..\..\include\ma\context_wrapped_handler.hpp" />
     <ClInclude Include="..\..\..\include\ma\custom_alloc_handler.hpp" />
+    <ClInclude Include="..\..\..\include\ma\handler_allocator.hpp" />
     <ClInclude Include="..\..\..\include\ma\handler_alloc_helpers.hpp" />
     <ClInclude Include="..\..\..\include\ma\handler_invoke_helpers.hpp" />
     <ClInclude Include="..\..\..\include\ma\strand_wrapped_handler.hpp" />
