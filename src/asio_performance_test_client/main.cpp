@@ -21,6 +21,7 @@
 #include <boost/scoped_array.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
+#include <ma/cyclic_buffer.hpp>
 #include <ma/async_connect.hpp>
 #include <ma/handler_allocator.hpp>
 #include <ma/custom_alloc_handler.hpp>
@@ -98,25 +99,34 @@ class session : private boost::noncopyable
 public:
   typedef boost::asio::ip::tcp protocol;
 
-  session(boost::asio::io_service& ios, std::size_t block_size, stats& s, 
-      work_state& work_state)
+  session(boost::asio::io_service& ios, std::size_t buffer_size, 
+      stats& s, work_state& work_state)
     : strand_(ios)
     , socket_(ios)
-    , block_size_(block_size)
-    , read_data_(new char[block_size])
-    , read_data_length_(0)
-    , write_data_(new char[block_size])
-    , unwritten_count_(0)
+    , buffer_(buffer_size)        
     , bytes_written_(0)
     , bytes_read_(0)
-    , is_stopped_(false)
+    , write_in_progress_(false)
+    , read_in_progress_(false)
+    , stopped_(false)
     , stats_(s)
     , work_state_(work_state)
   {
-    for (std::size_t i = 0; i < block_size_; ++i)
+    typedef ma::cyclic_buffer::mutable_buffers_type buffers_type;
+    std::size_t filled_size = buffer_size / 2;
+    const buffers_type data = buffer_.prepared();    
+    std::size_t size_to_fill = filled_size;
+    for (buffers_type::const_iterator i = data.begin(), end = data.end(); 
+        size_to_fill && (i != end); ++i)
     {
-      write_data_[i] = static_cast<char>(i % 128);
+      char* b = boost::asio::buffer_cast<char*>(*i);
+      std::size_t s = boost::asio::buffer_size(*i);
+      for (; size_to_fill && s; ++b, --size_to_fill, --s)
+      {
+        *b = static_cast<char>(buffer_size % 128);
+      }
     }
+    buffer_.consume(filled_size);
   }
 
   ~session()
@@ -145,136 +155,140 @@ private:
                 boost::asio::placeholders::error, endpoint_iterator))));
   }
 
-  void handle_connect(const boost::system::error_code& err,
+  void handle_connect(const boost::system::error_code& error,
       protocol::resolver::iterator endpoint_iterator)
   {
-    if (!err)
+    if (stopped_)
     {
-      boost::system::error_code set_option_err;
-      protocol::no_delay no_delay(true);
-      socket_.set_option(no_delay, set_option_err);
-      if (!set_option_err)
-      {
-        ++unwritten_count_;
-
-        async_write(socket_, 
-            boost::asio::buffer(write_data_.get(), block_size_),
-            MA_STRAND_WRAP(strand_, ma::make_custom_alloc_handler(
-                write_allocator_, boost::bind(&session::handle_write, this, 
-                    boost::asio::placeholders::error,
-                    boost::asio::placeholders::bytes_transferred))));
-
-        socket_.async_read_some(
-            boost::asio::buffer(read_data_.get(), block_size_),
-            MA_STRAND_WRAP(strand_, ma::make_custom_alloc_handler(
-                read_allocator_, boost::bind(&session::handle_read, this,
-                    boost::asio::placeholders::error,
-                    boost::asio::placeholders::bytes_transferred))));
-      }
+      return;
     }
-    else 
+
+    if (error)
     {
-      boost::system::error_code ignored;
-      socket_.close(ignored);
       ++endpoint_iterator;
-      if (endpoint_iterator == protocol::resolver::iterator())
+      if (protocol::resolver::iterator() != endpoint_iterator)
       {
-        do_stop();
+        boost::system::error_code ignored;
+        socket_.close(ignored);
+        start_connect(endpoint_iterator);      
+        return;
       }
-      else
-      {
-        start_connect(endpoint_iterator);
-      }
+      do_stop();
+      return;
     }
-  }
 
-  void handle_read(const boost::system::error_code& err, std::size_t length)
-  {
-    if (err)
+    boost::system::error_code set_option_error;
+    protocol::no_delay no_delay(true);
+    socket_.set_option(no_delay, set_option_error);
+    if (set_option_error)
     {
       do_stop();
+      return;
     }
-    else
-    {
-      bytes_read_ += length;
 
-      read_data_length_ = length;
-      ++unwritten_count_;
-      if (unwritten_count_ == 1)
-      {
-        read_data_.swap(write_data_);
-
-        async_write(socket_, 
-            boost::asio::buffer(write_data_.get(), read_data_length_),
-            MA_STRAND_WRAP(strand_, ma::make_custom_alloc_handler(
-                write_allocator_, boost::bind(&session::handle_write, this,
-                    boost::asio::placeholders::error,
-                    boost::asio::placeholders::bytes_transferred))));
-
-        socket_.async_read_some(
-            boost::asio::buffer(read_data_.get(), block_size_),
-            MA_STRAND_WRAP(strand_, ma::make_custom_alloc_handler(
-                read_allocator_, boost::bind(&session::handle_read, this,
-                    boost::asio::placeholders::error,
-                    boost::asio::placeholders::bytes_transferred))));
-      }
-    }
+    start_write_some();
+    start_read_some();
   }
 
-  void handle_write(const boost::system::error_code& err, std::size_t length)
+  void handle_read(const boost::system::error_code& error, 
+      std::size_t bytes_transferred)
   {
-    if (err)
+    read_in_progress_ = false;
+
+    if (stopped_)
+    {
+      return;
+    }
+
+    if (error)
     {
       do_stop();
+      return;
     }
-    else if (length)
+
+    bytes_read_ += bytes_transferred;
+    buffer_.consume(bytes_transferred);
+
+    if (!write_in_progress_)
     {
-      bytes_written_ += length;
-
-      --unwritten_count_;
-      if (unwritten_count_ == 1)
-      {
-        read_data_.swap(write_data_);
-
-        async_write(socket_, 
-            boost::asio::buffer(write_data_.get(), read_data_length_),
-            MA_STRAND_WRAP(strand_, ma::make_custom_alloc_handler(
-                write_allocator_, boost::bind(&session::handle_write, this,
-                    boost::asio::placeholders::error,
-                    boost::asio::placeholders::bytes_transferred))));
-
-        socket_.async_read_some(
-            boost::asio::buffer(read_data_.get(), block_size_),
-            MA_STRAND_WRAP(strand_, ma::make_custom_alloc_handler(
-                read_allocator_, boost::bind(&session::handle_read, this,
-                    boost::asio::placeholders::error,
-                    boost::asio::placeholders::bytes_transferred))));
-      }
+      start_write_some();
     }
+    start_read_some();
+  }
+
+  void handle_write(const boost::system::error_code& error, 
+      std::size_t bytes_transferred)
+  {
+    write_in_progress_ = false;
+
+    if (stopped_)
+    {
+      return;
+    }
+
+    if (error)
+    {
+      do_stop();
+      return;
+    }
+
+    bytes_written_ += bytes_transferred;
+    buffer_.commit(bytes_transferred);
+
+    if (!read_in_progress_)
+    {
+      start_read_some();
+    }
+    start_write_some();
   }
 
   void do_stop()
   {
-    if (!is_stopped_)
+    if (!stopped_)
     {
       boost::system::error_code ignored;
       socket_.close(ignored);
       work_state_.notify_session_stop();    
-      is_stopped_ = true;
+      stopped_ = true;
     }
   }
 
-private:
+  void start_write_some()
+  {
+    ma::cyclic_buffer::const_buffers_type write_data = buffer_.data();
+    if (!write_data.empty())
+    {
+      socket_.async_write_some(write_data, MA_STRAND_WRAP(strand_, 
+          ma::make_custom_alloc_handler(write_allocator_, 
+              boost::bind(&session::handle_write, this, 
+                  boost::asio::placeholders::error,
+                  boost::asio::placeholders::bytes_transferred))));
+      write_in_progress_ = true;
+    }
+  }
+
+  void start_read_some()
+  {
+    ma::cyclic_buffer::mutable_buffers_type read_data = buffer_.prepared();
+    if (!read_data.empty())
+    {
+      socket_.async_read_some(read_data, MA_STRAND_WRAP(strand_, 
+          ma::make_custom_alloc_handler(read_allocator_, 
+              boost::bind(&session::handle_read, this,
+                  boost::asio::placeholders::error,
+                  boost::asio::placeholders::bytes_transferred))));
+      read_in_progress_ = true;
+    }
+  }
+
   boost::asio::io_service::strand strand_;
   protocol::socket socket_;
-  std::size_t block_size_;
-  boost::scoped_array<char> read_data_;
-  std::size_t read_data_length_;
-  boost::scoped_array<char> write_data_;
-  int unwritten_count_;
+  ma::cyclic_buffer buffer_;  
   std::size_t bytes_written_;
   std::size_t bytes_read_;
-  bool is_stopped_;
+  bool write_in_progress_;
+  bool read_in_progress_;
+  bool stopped_;
   stats& stats_;
   work_state& work_state_;  
   ma::in_place_handler_allocator<512> read_allocator_;
@@ -290,7 +304,7 @@ public:
 
   client(boost::asio::io_service& ios, 
       const protocol::resolver::iterator& endpoint_iterator,
-      std::size_t block_size, std::size_t session_count)
+      std::size_t buffer_size, std::size_t session_count)
     : io_service_(ios)    
     , sessions_()
     , stats_()
@@ -299,7 +313,7 @@ public:
     for (std::size_t i = 0; i < session_count; ++i)
     {
       session_ptr new_session = boost::make_shared<session>(
-          boost::ref(io_service_), block_size, 
+          boost::ref(io_service_), buffer_size, 
           boost::ref(stats_), boost::ref(work_state_));
       new_session->start(endpoint_iterator);
       sessions_.push_back(new_session);
@@ -338,16 +352,16 @@ int main(int argc, char* argv[])
   {
     if (argc != 7)
     {
-      std::cerr << "Usage: client <host> <port> <threads> <blocksize> ";
+      std::cerr << "Usage: client <host> <port> <threads> <buffersize> ";
       std::cerr << "<sessions> <time>\n";
-      return 1;
+      return EXIT_FAILURE;
     }
 
     using namespace std; // For atoi.
     const char* host = argv[1];
     const char* port = argv[2];
     int thread_count = atoi(argv[3]);
-    std::size_t block_size = atoi(argv[4]);
+    std::size_t buffer_size = atoi(argv[4]);
     std::size_t session_count = atoi(argv[5]);
     int timeout = atoi(argv[6]);
 
@@ -357,7 +371,7 @@ int main(int argc, char* argv[])
     client::protocol::resolver::iterator iter =
         r.resolve(client::protocol::resolver::query(host, port));
 
-    client c(ios, iter, block_size, session_count);
+    client c(ios, iter, buffer_size, session_count);
 
     boost::thread_group work_threads;
     for (int i = 0; i < thread_count; ++i)
@@ -374,6 +388,7 @@ int main(int argc, char* argv[])
   catch (std::exception& e)
   {
     std::cerr << "Exception: " << e.what() << "\n";
+    return EXIT_FAILURE;
   }
   return EXIT_SUCCESS;
 }
