@@ -47,7 +47,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\src\asio_performance_test_client\client.cpp">
+    <ClCompile Include="..\..\..\src\asio_performance_test_client\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

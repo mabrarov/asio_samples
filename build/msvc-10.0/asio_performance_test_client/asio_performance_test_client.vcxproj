@@ -30,7 +30,7 @@
     <ClInclude Include="..\..\..\include\ma\type_traits.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\src\asio_performance_test_client\client.cpp" />
+    <ClCompile Include="..\..\..\src\asio_performance_test_client\main.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{A93D73BD-ABFE-4FC2-A126-5CF27CEAFE10}</ProjectGuid>
