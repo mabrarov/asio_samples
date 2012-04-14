@@ -7,7 +7,7 @@
 
 TEMPLATE =  app
 QT       -= core gui
-TARGET   =  async_connect
+TARGET   =  asio_performance_test_client
 CONFIG   += console thread
 CONFIG   -= app_bundle
 
@@ -16,19 +16,22 @@ HEADERS  += ../../../include/ma/async_connect.hpp \
             ../../../include/ma/config.hpp \
             ../../../include/ma/context_wrapped_handler.hpp \
             ../../../include/ma/custom_alloc_handler.hpp \
+            ../../../include/ma/cyclic_buffer.hpp \
             ../../../include/ma/handler_alloc_helpers.hpp \
-            ../../../include/ma/handler_allocator.hpp \
             ../../../include/ma/handler_invoke_helpers.hpp \
+            ../../../include/ma/handler_allocator.hpp \
             ../../../include/ma/strand_wrapped_handler.hpp \
             ../../../include/ma/type_traits.hpp
 
-SOURCES  += ../../../src/async_connect/main.cpp
+SOURCES  += ../../../src/asio_performance_test_client/main.cpp
 
 win32:INCLUDEPATH += ../../../../boost_1_49_0
 INCLUDEPATH       += ../../../include
 
 win32:LIBS += -L../../../../boost_1_49_0/lib/x86
-unix:LIBS  += -lboost_system
+unix:LIBS  += -lboost_thread \
+              -lboost_system \
+              -lboost_date_time
 
 win32:DEFINES += WIN32_LEAN_AND_MEAN _UNICODE UNICODE _WIN32_WINNT=0x0501
 
