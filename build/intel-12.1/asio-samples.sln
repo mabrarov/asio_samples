@@ -12,6 +12,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "async_basics2", "async_basi
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "async_connect", "async_connect\async_connect.vcxproj", "{AC1C95D5-828B-41BB-899B-01B229EC1FFC}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "asio_performance_test_client", "asio_performance_test_client\asio_performance_test_client.vcxproj", "{A93D73BD-ABFE-4FC2-A126-5CF27CEAFE10}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -68,6 +70,14 @@ Global
 		{AC1C95D5-828B-41BB-899B-01B229EC1FFC}.Release|Win32.Build.0 = Release|Win32
 		{AC1C95D5-828B-41BB-899B-01B229EC1FFC}.Release|x64.ActiveCfg = Release|x64
 		{AC1C95D5-828B-41BB-899B-01B229EC1FFC}.Release|x64.Build.0 = Release|x64
+		{A93D73BD-ABFE-4FC2-A126-5CF27CEAFE10}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A93D73BD-ABFE-4FC2-A126-5CF27CEAFE10}.Debug|Win32.Build.0 = Debug|Win32
+		{A93D73BD-ABFE-4FC2-A126-5CF27CEAFE10}.Debug|x64.ActiveCfg = Debug|x64
+		{A93D73BD-ABFE-4FC2-A126-5CF27CEAFE10}.Debug|x64.Build.0 = Debug|x64
+		{A93D73BD-ABFE-4FC2-A126-5CF27CEAFE10}.Release|Win32.ActiveCfg = Release|Win32
+		{A93D73BD-ABFE-4FC2-A126-5CF27CEAFE10}.Release|Win32.Build.0 = Release|Win32
+		{A93D73BD-ABFE-4FC2-A126-5CF27CEAFE10}.Release|x64.ActiveCfg = Release|x64
+		{A93D73BD-ABFE-4FC2-A126-5CF27CEAFE10}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
