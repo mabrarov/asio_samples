@@ -16,7 +16,6 @@
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/thread.hpp>
-#include <boost/mem_fn.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/scoped_array.hpp>
 #include <boost/shared_ptr.hpp>
@@ -195,6 +194,8 @@ private:
       std::size_t bytes_transferred)
   {
     read_in_progress_ = false;
+    bytes_read_ += bytes_transferred;
+    buffer_.consume(bytes_transferred);
 
     if (stopped_)
     {
@@ -206,9 +207,6 @@ private:
       do_stop();
       return;
     }
-
-    bytes_read_ += bytes_transferred;
-    buffer_.consume(bytes_transferred);
 
     if (!write_in_progress_)
     {
@@ -221,6 +219,8 @@ private:
       std::size_t bytes_transferred)
   {
     write_in_progress_ = false;
+    bytes_written_ += bytes_transferred;
+    buffer_.commit(bytes_transferred);
 
     if (stopped_)
     {
@@ -232,9 +232,6 @@ private:
       do_stop();
       return;
     }
-
-    bytes_written_ += bytes_transferred;
-    buffer_.commit(bytes_transferred);
 
     if (!read_in_progress_)
     {
@@ -303,9 +300,8 @@ class client : private boost::noncopyable
 public:
   typedef session::protocol protocol;
 
-  client(boost::asio::io_service& ios,
-      const protocol::resolver::iterator& endpoint_iterator,
-      std::size_t buffer_size, std::size_t session_count)
+  client(boost::asio::io_service& ios, std::size_t buffer_size, 
+      std::size_t session_count)
     : io_service_(ios)
     , sessions_()
     , stats_()
@@ -313,11 +309,8 @@ public:
   {
     for (std::size_t i = 0; i < session_count; ++i)
     {
-      session_ptr new_session = boost::make_shared<session>(
-          boost::ref(io_service_), buffer_size,
-          boost::ref(stats_), boost::ref(work_state_));
-      new_session->start(endpoint_iterator);
-      sessions_.push_back(new_session);
+      sessions_.push_back(boost::make_shared<session>(boost::ref(io_service_),
+          buffer_size, boost::ref(stats_), boost::ref(work_state_)));
     }
   }
 
@@ -327,10 +320,16 @@ public:
     stats_.print();
   }
 
+  void start(const protocol::resolver::iterator& endpoint_iterator)
+  {
+    std::for_each(sessions_.begin(), sessions_.end(),
+        boost::bind(&session::start, _1, endpoint_iterator));
+  }
+
   void stop()
   {
     std::for_each(sessions_.begin(), sessions_.end(),
-        boost::mem_fn(&session::stop));
+        boost::bind(&session::stop, _1));
   }
 
   void wait_until_done(const boost::posix_time::time_duration& timeout)
@@ -367,12 +366,9 @@ int main(int argc, char* argv[])
     int timeout = atoi(argv[6]);
 
     boost::asio::io_service ios;
-
     client::protocol::resolver r(ios);
-    client::protocol::resolver::iterator iter =
-        r.resolve(client::protocol::resolver::query(host, port));
-
-    client c(ios, iter, buffer_size, session_count);
+    client c(ios, buffer_size, session_count);
+    c.start(r.resolve(client::protocol::resolver::query(host, port)));
 
     boost::thread_group work_threads;
     for (int i = 0; i < thread_count; ++i)
