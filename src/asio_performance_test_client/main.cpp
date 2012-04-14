@@ -371,7 +371,7 @@ int main(int argc, char* argv[])
     c.start(r.resolve(client::protocol::resolver::query(host, port)));
 
     boost::thread_group work_threads;
-    for (int i = 0; i < thread_count; ++i)
+    for (int i = 0; i != thread_count; ++i)
     {
       work_threads.create_thread(
           boost::bind(&boost::asio::io_service::run, &ios));
