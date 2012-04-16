@@ -10,6 +10,12 @@ QT       += core gui
 TARGET    = qt_echo_server
 CONFIG   += qt thread
 
+# Boost C++ Libraries headers
+BOOST_INCLUDE   = ../../../../boost_1_49_0
+# Boost C++ Libraries binaries
+win32:BOOST_LIB = $${BOOST_INCLUDE}/lib/x86
+unix:BOOST_LIB  = $${BOOST_INCLUDE}/lib
+
 HEADERS  += ../../../include/ma/bind_asio_handler.hpp \
             ../../../include/ma/config.hpp \
             ../../../include/ma/context_alloc_handler.hpp \
@@ -58,28 +64,41 @@ SOURCES  += ../../../src/qt_echo_server/main.cpp \
 
 FORMS    += ../../../src/ma/echo/server/qt/mainform.ui
 
-win32:INCLUDEPATH += ../../../../boost_1_49_0 
-INCLUDEPATH       += ../../../include
+INCLUDEPATH += $${BOOST_INCLUDE} \
+               ../../../include
 
-win32:LIBS += -L"./../../../../boost_1_49_0/lib/x86" \
-              -lkernel32 -luser32 -lshell32 -luuid -lole32 -ladvapi32 \
-              -lws2_32 -lgdi32 -lcomdlg32 -loleaut32 -limm32 -lwinmm \
-              -lwinspool -lws2_32 -lole32 -luser32 -ladvapi32
-unix:LIBS  += -lboost_thread \
-              -lboost_system \
-              -lboost_date_time
-
-unix:for(p, INCLUDEPATH) {
-  exists($${p}/boost/chrono.hpp) {
-    LIBS += -lboost_chrono -lrt
-  }
+LIBS       += -L$${BOOST_LIB}
+win32:LIBS += -lkernel32 \
+              -luser32 \
+              -lgdi32 \
+              -lshell32 \
+              -lcomdlg32 \
+              -luuid \
+              -lole32 \
+              -loleaut32 \
+              -ladvapi32 \
+              -lws2_32 \
+              -limm32 \
+              -lwinmm \
+              -lwinspool
+unix:LIBS  += $${BOOST_LIB}/libboost_system.a \
+              $${BOOST_LIB}/libboost_thread.a \
+              $${BOOST_LIB}/libboost_date_time.a
+exists($${BOOST_INCLUDE}/boost/chrono.hpp) {
+  unix:LIBS += $${BOOST_LIB}/libboost_chrono.a \
+               -lrt
 }
 
-win32:DEFINES += WIN32_LEAN_AND_MEAN _UNICODE UNICODE \
-                 WINVER=0x0500 _WIN32_WINNT=0x0500 _WIN32_WINDOWS=0x0410 \
-                 _WIN32_IE=0x0600 QT_LARGEFILE_SUPPORT
+win32:DEFINES += WIN32_LEAN_AND_MEAN \
+                 _UNICODE \
+                 UNICODE \
+                 WINVER=0x0500 \
+                 _WIN32_WINNT=0x0500 \
+                 _WIN32_WINDOWS=0x0410 \
+                 _WIN32_IE=0x0600 \
+                 QT_LARGEFILE_SUPPORT
 
 linux-g++ | linux-g++-64 {
-  QMAKE_CXXFLAGS += -std=c++0x -Wstrict-aliasing
+  QMAKE_CXXFLAGS += -std=c++0x \
+                    -Wstrict-aliasing
 }
-

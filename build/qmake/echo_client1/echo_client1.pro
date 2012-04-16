@@ -5,11 +5,17 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
-TEMPLATE =  app
+TEMPLATE  = app
 QT       -= core gui
-TARGET   =  echo_client1
+TARGET    = echo_client1
 CONFIG   += console thread
 CONFIG   -= app_bundle
+
+# Boost C++ Libraries headers
+BOOST_INCLUDE   = ../../../../boost_1_49_0
+# Boost C++ Libraries binaries
+win32:BOOST_LIB = $${BOOST_INCLUDE}/lib/x86
+unix:BOOST_LIB  = $${BOOST_INCLUDE}/lib
 
 HEADERS  += ../../../include/ma/handler_storage_service.hpp \
             ../../../include/ma/handler_storage.hpp \
@@ -35,17 +41,24 @@ SOURCES  += ../../../src/ma/console_controller.cpp \
             ../../../src/ma/echo/client1/error.cpp \
             ../../../src/ma/echo/client1/session.cpp
 
-win32:INCLUDEPATH += ../../../../boost_1_49_0
-INCLUDEPATH       += ../../../include
+INCLUDEPATH += $${BOOST_INCLUDE} \
+               ../../../include
 
-win32:LIBS += -L../../../../boost_1_49_0/lib/x86
-unix:LIBS  += -lboost_thread \
-              -lboost_system \
-              -lboost_date_time \
-              -lboost_program_options
+LIBS       += -L$${BOOST_LIB}
+unix:LIBS  += $${BOOST_LIB}/libboost_system.a \
+              $${BOOST_LIB}/libboost_thread.a \
+              $${BOOST_LIB}/libboost_date_time.a \
+              $${BOOST_LIB}/libboost_program_options.a
+exists($${BOOST_INCLUDE}/boost/chrono.hpp) {
+  unix:LIBS += $${BOOST_LIB}/libboost_chrono.a \
+               -lrt
+}
 
-win32:DEFINES += WIN32_LEAN_AND_MEAN _UNICODE UNICODE
+win32:DEFINES += WIN32_LEAN_AND_MEAN \
+                 _UNICODE \
+                 UNICODE
 
 linux-g++ | linux-g++-64 {
-  QMAKE_CXXFLAGS += -std=c++0x -Wstrict-aliasing
+  QMAKE_CXXFLAGS += -std=c++0x \
+                    -Wstrict-aliasing
 }

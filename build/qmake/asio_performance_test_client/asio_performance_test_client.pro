@@ -5,11 +5,17 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
-TEMPLATE =  app
+TEMPLATE  = app
 QT       -= core gui
-TARGET   =  asio_performance_test_client
+TARGET    = asio_performance_test_client
 CONFIG   += console thread
 CONFIG   -= app_bundle
+
+# Boost C++ Libraries headers
+BOOST_INCLUDE   = ../../../../boost_1_49_0
+# Boost C++ Libraries binaries
+win32:BOOST_LIB = $${BOOST_INCLUDE}/lib/x86
+unix:BOOST_LIB  = $${BOOST_INCLUDE}/lib
 
 HEADERS  += ../../../include/ma/async_connect.hpp \
             ../../../include/ma/bind_asio_handler.hpp \
@@ -25,16 +31,20 @@ HEADERS  += ../../../include/ma/async_connect.hpp \
 
 SOURCES  += ../../../src/asio_performance_test_client/main.cpp
 
-win32:INCLUDEPATH += ../../../../boost_1_49_0
-INCLUDEPATH       += ../../../include
+INCLUDEPATH += $${BOOST_INCLUDE} \
+               ../../../include
 
-win32:LIBS += -L../../../../boost_1_49_0/lib/x86
-unix:LIBS  += -lboost_thread \
-              -lboost_system \
-              -lboost_date_time
+LIBS       += -L$${BOOST_LIB}
+unix:LIBS  += $${BOOST_LIB}/libboost_system.a \
+              $${BOOST_LIB}/libboost_thread.a \
+              $${BOOST_LIB}/libboost_date_time.a
 
-win32:DEFINES += WIN32_LEAN_AND_MEAN _UNICODE UNICODE _WIN32_WINNT=0x0501
+win32:DEFINES += WIN32_LEAN_AND_MEAN \
+                 _UNICODE \
+                 UNICODE \
+                 _WIN32_WINNT=0x0501
 
 linux-g++ | linux-g++-64 {
-  QMAKE_CXXFLAGS += -std=c++0x -Wstrict-aliasing
+  QMAKE_CXXFLAGS += -std=c++0x \
+                    -Wstrict-aliasing
 }
