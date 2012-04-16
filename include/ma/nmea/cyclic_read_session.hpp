@@ -78,7 +78,8 @@ public:
 
     func_type func = &this_type::start_extern_start<handler_type>;
 
-    strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler),
+    strand_.post(make_explicit_context_alloc_handler(
+        std::forward<Handler>(handler),
         boost::bind(func, shared_from_this(), _1)));
   }
 
@@ -90,7 +91,8 @@ public:
 
     func_type func = &this_type::start_extern_stop<handler_type>;
 
-    strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler),
+    strand_.post(make_explicit_context_alloc_handler(
+        std::forward<Handler>(handler),
         boost::bind(func, shared_from_this(), _1)));
   }
 
@@ -106,7 +108,8 @@ public:
     func_type func =
         &this_type::start_extern_read_some<handler_type, iterator_type>;
 
-    strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler),
+    strand_.post(make_explicit_context_alloc_handler(
+        std::forward<Handler>(handler),
         boost::bind(func, shared_from_this(), std::forward<Iterator>(begin),
             std::forward<Iterator>(end), _1)));
   }
@@ -123,7 +126,8 @@ public:
     func_type func =
         &this_type::start_extern_write_some<buffers_type, handler_type>;
 
-    strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler),
+    strand_.post(make_explicit_context_alloc_handler(
+        std::forward<Handler>(handler),
         boost::bind(func, shared_from_this(),
             std::forward<ConstBufferSequence>(buffers), _1)));
   }
@@ -138,7 +142,7 @@ public:
 
     func_type func = &this_type::start_extern_start<handler_type>;
 
-    strand_.post(make_context_alloc_handler2(handler,
+    strand_.post(make_explicit_context_alloc_handler(handler,
         boost::bind(func, shared_from_this(), _1)));
   }
 
@@ -150,7 +154,7 @@ public:
 
     func_type func = &this_type::start_extern_stop<handler_type>;
 
-    strand_.post(make_context_alloc_handler2(handler,
+    strand_.post(make_explicit_context_alloc_handler(handler,
         boost::bind(func, shared_from_this(), _1)));
   }
 
@@ -166,7 +170,7 @@ public:
     func_type func =
         &this_type::start_extern_read_some<handler_type, iterator_type>;
 
-    strand_.post(make_context_alloc_handler2(handler,
+    strand_.post(make_explicit_context_alloc_handler(handler,
         boost::bind(func, shared_from_this(), begin, end, _1)));
   }
 
@@ -181,7 +185,7 @@ public:
     func_type func =
         &this_type::start_extern_write_some<buffers_type, handler_type>;
 
-    strand_.post(make_context_alloc_handler2(handler,
+    strand_.post(make_explicit_context_alloc_handler(handler,
         boost::bind(func, shared_from_this(), buffers, _1)));
   }
 

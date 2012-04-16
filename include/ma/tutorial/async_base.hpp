@@ -51,7 +51,7 @@ public:
 
     func_type func = &this_type::start_do_something<handler_type>;
 
-    strand_.post(ma::make_context_alloc_handler2(
+    strand_.post(ma::make_explicit_context_alloc_handler(
         std::forward<Handler>(handler),
         forward_handler_binder<handler_type>(func, get_shared_base())));
   }
@@ -66,7 +66,7 @@ public:
 
     func_type func = &this_type::start_do_something<handler_type>;
 
-    strand_.post(ma::make_context_alloc_handler2(
+    strand_.post(ma::make_explicit_context_alloc_handler(
         std::forward<Handler>(handler),
         boost::bind(func, get_shared_base(), _1)));
   }
@@ -83,7 +83,7 @@ public:
 
     func_type func = &this_type::start_do_something<handler_type>;
 
-    strand_.post(ma::make_context_alloc_handler2(handler,
+    strand_.post(ma::make_explicit_context_alloc_handler(handler,
         boost::bind(func, get_shared_base(), _1)));
   }
 

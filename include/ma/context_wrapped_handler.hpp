@@ -51,7 +51,7 @@ namespace ma {
  * Asio handler.
  *
  * Usage of free functions called make_context_wrapped_handler and
- * make_context_wrapped_handler2 can help in construction of functors.
+ * make_explicit_context_wrapped_handler can help in construction of functors.
  *
  * It's a much modified copy of Boost.Asio sources:
  * asio/detail/wrapped_handler.hpp (rewrapped_handler). The reason of copy is
@@ -263,10 +263,10 @@ make_context_wrapped_handler(const Context& context, const Handler& handler)
 #endif // #if defined(_MSC_VER)
 
 template <typename Context, typename Handler>
-class context_wrapped_handler2
+class explicit_context_wrapped_handler
 {
 private:
-  typedef context_wrapped_handler2<Context, Handler> this_type;
+  typedef explicit_context_wrapped_handler<Context, Handler> this_type;
 
 public:
   typedef void result_type;
@@ -274,7 +274,7 @@ public:
 #if defined(MA_HAS_RVALUE_REFS)
 
   template <typename C, typename H>
-  context_wrapped_handler2(C&& context, H&& handler)
+  explicit_context_wrapped_handler(C&& context, H&& handler)
     : context_(std::forward<C>(context))
     , handler_(std::forward<H>(handler))
   {
@@ -282,13 +282,13 @@ public:
 
 #if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
-  context_wrapped_handler2(this_type&& other)
+  explicit_context_wrapped_handler(this_type&& other)
     : context_(std::move(other.context_))
     , handler_(std::move(other.handler_))
   {
   }
 
-  context_wrapped_handler2(const this_type& other)
+  explicit_context_wrapped_handler(const this_type& other)
     : context_(other.context_)
     , handler_(other.handler_)
   {
@@ -298,7 +298,8 @@ public:
 
 #else // defined(MA_HAS_RVALUE_REFS)
 
-  context_wrapped_handler2(const Context& context, const Handler& handler)
+  explicit_context_wrapped_handler(const Context& context, 
+      const Handler& handler)
     : context_(context)
     , handler_(handler)
   {
@@ -307,7 +308,7 @@ public:
 #endif // defined(MA_HAS_RVALUE_REFS)
 
 #if !defined(NDEBUG)
-  ~context_wrapped_handler2()
+  ~explicit_context_wrapped_handler()
   {
   }
 #endif
@@ -423,7 +424,7 @@ public:
 private:
   Context context_;
   Handler handler_;
-}; // class context_wrapped_handler2
+}; // class explicit_context_wrapped_handler
 
 #if defined(_MSC_VER)
 #pragma warning(pop)
@@ -432,24 +433,25 @@ private:
 #if defined(MA_HAS_RVALUE_REFS)
 
 template <typename Context, typename Handler>
-inline context_wrapped_handler2<
+inline explicit_context_wrapped_handler<
     typename ma::remove_cv_reference<Context>::type,
     typename ma::remove_cv_reference<Handler>::type>
-make_context_wrapped_handler2(Context&& context, Handler&& handler)
+make_explicit_context_wrapped_handler(Context&& context, Handler&& handler)
 {
   typedef typename ma::remove_cv_reference<Context>::type context_type;
   typedef typename ma::remove_cv_reference<Handler>::type handler_type;
-  return context_wrapped_handler2<context_type, handler_type>(
+  return explicit_context_wrapped_handler<context_type, handler_type>(
       std::forward<Context>(context), std::forward<Handler>(handler));
 }
 
 #else // defined(MA_HAS_RVALUE_REFS)
 
 template <typename Context, typename Handler>
-inline context_wrapped_handler2<Context, Handler>
-make_context_wrapped_handler2(const Context& context, const Handler& handler)
+inline explicit_context_wrapped_handler<Context, Handler>
+make_explicit_context_wrapped_handler(const Context& context, 
+    const Handler& handler)
 {
-  return context_wrapped_handler2<Context, Handler>(context, handler);
+  return explicit_context_wrapped_handler<Context, Handler>(context, handler);
 }
 
 #endif // defined(MA_HAS_RVALUE_REFS)

@@ -54,6 +54,12 @@ namespace ma {
  * Use MA_STRAND_WRAP macros to create a strand-wrapped handler according to
  * asio-samples configuration (MA_BOOST_ASIO_HEAVY_STRAND_WRAPPED_HANDLER).
  */
+
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable: 4512)
+#endif // #if defined(_MSC_VER)
+
 template <typename Handler>
 class strand_wrapped_handler
 {
@@ -217,6 +223,10 @@ private:
   boost::asio::io_service::strand* strand_;
   Handler handler_;
 }; // class strand_wrapped_handler
+
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif // #if defined(_MSC_VER)
 
 #if defined(MA_HAS_RVALUE_REFS)
 

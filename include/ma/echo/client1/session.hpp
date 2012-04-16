@@ -64,7 +64,8 @@ public:
   {
     typedef typename ma::remove_cv_reference<Handler>::type handler_type;
 
-    strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler),
+    strand_.post(make_explicit_context_alloc_handler(
+        std::forward<Handler>(handler),
         boost::bind(&this_type::start_external_start<handler_type>,
             shared_from_this(), _1)));
   }
@@ -74,7 +75,8 @@ public:
   {
     typedef typename ma::remove_cv_reference<Handler>::type handler_type;
 
-    strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler),
+    strand_.post(make_explicit_context_alloc_handler(
+        std::forward<Handler>(handler),
         boost::bind(&this_type::start_external_stop<handler_type>,
             shared_from_this(), _1)));
   }
@@ -84,7 +86,8 @@ public:
   {
     typedef typename ma::remove_cv_reference<Handler>::type handler_type;
 
-    strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler),
+    strand_.post(make_explicit_context_alloc_handler(
+        std::forward<Handler>(handler),
         boost::bind(&this_type::start_external_wait<handler_type>,
             shared_from_this(), _1)));
   }
@@ -94,21 +97,21 @@ public:
   template <typename Handler>
   void async_start(const Handler& handler)
   {
-    strand_.post(make_context_alloc_handler2(handler, boost::bind(
+    strand_.post(make_explicit_context_alloc_handler(handler, boost::bind(
         &this_type::start_external_start<Handler>, shared_from_this(), _1)));
   }
 
   template <typename Handler>
   void async_stop(const Handler& handler)
   {
-    strand_.post(make_context_alloc_handler2(handler, boost::bind(
+    strand_.post(make_explicit_context_alloc_handler(handler, boost::bind(
         &this_type::start_external_stop<Handler>, shared_from_this(), _1)));
   }
 
   template <typename Handler>
   void async_wait(const Handler& handler)
   {
-    strand_.post(make_context_alloc_handler2(handler, boost::bind(
+    strand_.post(make_explicit_context_alloc_handler(handler, boost::bind(
         &this_type::start_external_wait<Handler>, shared_from_this(), _1)));
   }
 

@@ -68,7 +68,8 @@ public:
 
     func_type func = &this_type::start_extern_start<handler_type>;
 
-    strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler),
+    strand_.post(make_explicit_context_alloc_handler(
+        std::forward<Handler>(handler),
         forward_handler_binder<handler_type>(func, shared_from_this())));
   }
 
@@ -80,7 +81,8 @@ public:
 
     func_type func = &this_type::start_extern_stop<handler_type>;
 
-    strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler),
+    strand_.post(make_explicit_context_alloc_handler(
+        std::forward<Handler>(handler),
         forward_handler_binder<handler_type>(func, shared_from_this())));
   }
 
@@ -92,7 +94,8 @@ public:
 
     func_type func = &this_type::start_extern_wait<handler_type>;
 
-    strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler),
+    strand_.post(make_explicit_context_alloc_handler(
+        std::forward<Handler>(handler),
         forward_handler_binder<handler_type>(func, shared_from_this())));
   }
 
@@ -106,7 +109,8 @@ public:
 
     func_type func = &this_type::start_extern_start<handler_type>;
 
-    strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler),
+    strand_.post(make_explicit_context_alloc_handler(
+        std::forward<Handler>(handler),
         boost::bind(func, shared_from_this(), _1)));
   }
 
@@ -118,7 +122,8 @@ public:
 
     func_type func = &this_type::start_extern_stop<handler_type>;
 
-    strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler),
+    strand_.post(make_explicit_context_alloc_handler(
+        std::forward<Handler>(handler),
         boost::bind(func, shared_from_this(), _1)));
   }
 
@@ -130,7 +135,8 @@ public:
 
     func_type func = &this_type::start_extern_wait<handler_type>;
 
-    strand_.post(make_context_alloc_handler2(std::forward<Handler>(handler),
+    strand_.post(make_explicit_context_alloc_handler(
+        std::forward<Handler>(handler),
         boost::bind(func, shared_from_this(), _1)));
   }
 
@@ -146,7 +152,7 @@ public:
 
     func_type func = &this_type::start_extern_start<handler_type>;
 
-    strand_.post(make_context_alloc_handler2(handler,
+    strand_.post(make_explicit_context_alloc_handler(handler,
         boost::bind(func, shared_from_this(), _1)));
   }
 
@@ -158,7 +164,7 @@ public:
 
     func_type func = &this_type::start_extern_stop<handler_type>;
 
-    strand_.post(make_context_alloc_handler2(handler,
+    strand_.post(make_explicit_context_alloc_handler(handler,
         boost::bind(func, shared_from_this(), _1)));
   }
 
@@ -170,7 +176,7 @@ public:
 
     func_type func = &this_type::start_extern_wait<handler_type>;
 
-    strand_.post(make_context_alloc_handler2(handler,
+    strand_.post(make_explicit_context_alloc_handler(handler,
         boost::bind(func, shared_from_this(), _1)));
   }
 

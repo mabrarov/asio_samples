@@ -270,13 +270,18 @@ private:
     post_func_type post_func_;
   }; // class postable_handler_base
 
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable: 4512)
+#endif // #if defined(_MSC_VER)
+
   // Wrapper class to hold up handlers with specified call signature.
   template <typename Handler, typename Arg>
   class handler_wrapper : public postable_handler_base<Arg>
   {
   private:
     typedef handler_wrapper<Handler, Arg> this_type;
-    typedef postable_handler_base<Arg> base_type;
+    typedef postable_handler_base<Arg>    base_type;
 
   public:
 
@@ -400,6 +405,10 @@ private:
     boost::asio::io_service::work work_;
     Handler handler_;
   }; // class handler_wrapper
+
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif // #if defined(_MSC_VER)
 
   // Base class for implementation that helps to hide
   // public inheritance from detail::intrusive_list::base_hook

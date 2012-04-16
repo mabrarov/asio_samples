@@ -51,11 +51,17 @@ namespace ma {
  * Asio handler.
  *
  * Usage of free functions called make_context_alloc_handler and
- * make_context_alloc_handler2 can help in construction of functors.
+ * make_explicit_context_alloc_handler can help in construction of functors.
  *
  * Move semantic supported.
  * Move constructor is explicitly defined to support MSVC 2010.
  */
+
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable: 4512)
+#endif // #if defined(_MSC_VER)
+
 template <typename Context, typename Handler>
 class context_alloc_handler
 {
@@ -223,6 +229,10 @@ private:
   Handler handler_;
 }; // class context_alloc_handler
 
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif // #if defined(_MSC_VER)
+
 #if defined(MA_HAS_RVALUE_REFS)
 
 /// Helper for creation of wrapped handler.
@@ -253,16 +263,22 @@ make_context_alloc_handler(const Context& context, const Handler& handler)
 /// Specialized version of context_alloc_handler that is optimized for reuse of
 /// specified context by the specified source handler.
 /**
- * The context wrapped by context_alloc_handler2 is additionally passed (by
- * const reference) to the source handler as first parameter. Comparing to
- * context_alloc_handler context_alloc_handler2 helps to reduce the resulted
- * handler size and its copy cost.
+ * The context wrapped by explicit_context_alloc_handler is additionally passed
+ * (by const reference) to the source handler as first parameter. Comparing to
+ * context_alloc_handler explicit_context_alloc_handler helps to reduce 
+ * the resulted handler size and its copy cost.
  */
+
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable: 4512)
+#endif // #if defined(_MSC_VER)
+
 template <typename Context, typename Handler>
-class context_alloc_handler2
+class explicit_context_alloc_handler
 {
 private:
-  typedef context_alloc_handler2<Context, Handler> this_type;
+  typedef explicit_context_alloc_handler<Context, Handler> this_type;
 
 public:
   typedef void result_type;
@@ -270,7 +286,7 @@ public:
 #if defined(MA_HAS_RVALUE_REFS)
 
   template <typename C, typename H>
-  context_alloc_handler2(C&& context, H&& handler)
+  explicit_context_alloc_handler(C&& context, H&& handler)
     : context_(std::forward<C>(context))
     , handler_(std::forward<H>(handler))
   {
@@ -278,13 +294,13 @@ public:
 
 #if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
-  context_alloc_handler2(this_type&& other)
+  explicit_context_alloc_handler(this_type&& other)
     : context_(std::move(other.context_))
     , handler_(std::move(other.handler_))
   {
   }
 
-  context_alloc_handler2(const this_type& other)
+  explicit_context_alloc_handler(const this_type& other)
     : context_(other.context_)
     , handler_(other.handler_)
   {
@@ -294,7 +310,7 @@ public:
 
 #else // defined(MA_HAS_RVALUE_REFS)
 
-  context_alloc_handler2(const Context& context, const Handler& handler)
+  explicit_context_alloc_handler(const Context& context, const Handler& handler)
     : context_(context)
     , handler_(handler)
   {
@@ -303,7 +319,7 @@ public:
 #endif // defined(MA_HAS_RVALUE_REFS)
 
 #if !defined(NDEBUG)
-  ~context_alloc_handler2()
+  ~explicit_context_alloc_handler()
   {
   }
 #endif
@@ -419,29 +435,34 @@ public:
 private:
   Context context_;
   Handler handler_;
-}; // class context_alloc_handler2
+}; // class explicit_context_alloc_handler
+
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif // #if defined(_MSC_VER)
 
 #if defined(MA_HAS_RVALUE_REFS)
 
 template <typename Context, typename Handler>
-inline context_alloc_handler2<
+inline explicit_context_alloc_handler<
     typename ma::remove_cv_reference<Context>::type,
     typename ma::remove_cv_reference<Handler>::type>
-make_context_alloc_handler2(Context&& context, Handler&& handler)
+make_explicit_context_alloc_handler(Context&& context, Handler&& handler)
 {
   typedef typename ma::remove_cv_reference<Context>::type context_type;
   typedef typename ma::remove_cv_reference<Handler>::type handler_type;
-  return context_alloc_handler2<context_type, handler_type>(
+  return explicit_context_alloc_handler<context_type, handler_type>(
       std::forward<Context>(context), std::forward<Handler>(handler));
 }
 
 #else // defined(MA_HAS_RVALUE_REFS)
 
 template <typename Context, typename Handler>
-inline context_alloc_handler2<Context, Handler>
-make_context_alloc_handler2(const Context& context, const Handler& handler)
+inline explicit_context_alloc_handler<Context, Handler>
+make_explicit_context_alloc_handler(const Context& context, 
+    const Handler& handler)
 {
-  return context_alloc_handler2<Context, Handler>(context, handler);
+  return explicit_context_alloc_handler<Context, Handler>(context, handler);
 }
 
 #endif // defined(MA_HAS_RVALUE_REFS)

@@ -76,6 +76,12 @@ namespace ma {
  * Move semantic supported.
  * Move constructor is explicitly defined to support MSVC 2010.
  */
+
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable: 4512)
+#endif // #if defined(_MSC_VER)
+
 template <typename Allocator, typename Handler>
 class custom_alloc_handler
 {
@@ -238,6 +244,10 @@ private:
   Allocator* allocator_;
   Handler    handler_;
 }; // class custom_alloc_handler
+
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif // #if defined(_MSC_VER)
 
 #if defined(MA_HAS_RVALUE_REFS)
 

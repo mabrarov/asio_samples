@@ -37,6 +37,11 @@ namespace ma {
 
 namespace detail {
 
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable: 4512)
+#endif // #if defined(_MSC_VER)
+
 template <typename Handler>
 class connect_ex_handler
 {
@@ -129,6 +134,10 @@ public:
 private:
   Handler handler_;
 }; // class connect_ex_handler
+
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif // #if defined(_MSC_VER)
 
 #if defined(MA_HAS_RVALUE_REFS)
 

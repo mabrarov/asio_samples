@@ -55,6 +55,12 @@ namespace detail {
  * Move semantic supported.
  * Move constructor is explicitly defined to support MSVC 2010.
  */
+
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable: 4512)
+#endif // #if defined(_MSC_VER)
+
 template <typename Handler, typename Arg1>
 class binder1
 {
@@ -155,6 +161,10 @@ private:
   Arg1 arg1_;
 }; // class binder1
 
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif // #if defined(_MSC_VER)
+
 #if defined(MA_HAS_RVALUE_REFS)
 
 /// Helper for creation of binded handler.
@@ -180,6 +190,11 @@ bind_handler(const Handler& handler, const Arg1& arg1)
 }
 
 #endif // defined(MA_HAS_RVALUE_REFS)
+
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable: 4512)
+#endif // #if defined(_MSC_VER)
 
 template <typename Handler, typename Arg1, typename Arg2>
 class binder2
@@ -282,6 +297,10 @@ private:
   Arg2 arg2_;
 }; // class binder2
 
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif // #if defined(_MSC_VER)
+
 #if defined(MA_HAS_RVALUE_REFS)
 
 template <typename Handler, typename Arg1, typename Arg2>
@@ -308,6 +327,11 @@ bind_handler(const Handler& handler, const Arg1& arg1, const Arg2& arg2)
 }
 
 #endif // defined(MA_HAS_RVALUE_REFS)
+
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable: 4512)
+#endif // #if defined(_MSC_VER)
 
 template <typename Handler, typename Arg1, typename Arg2, typename Arg3>
 class binder3
@@ -417,6 +441,10 @@ private:
   Arg3 arg3_;
 }; // class binder3
 
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif // #if defined(_MSC_VER)
+
 #if defined(MA_HAS_RVALUE_REFS)
 
 template <typename Handler, typename Arg1, typename Arg2, typename Arg3>
@@ -446,6 +474,11 @@ bind_handler(const Handler& handler, const Arg1& arg1, const Arg2& arg2,
 }
 
 #endif // defined(MA_HAS_RVALUE_REFS)
+
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable: 4512)
+#endif // #if defined(_MSC_VER)
 
 template <typename Handler, typename Arg1, typename Arg2, typename Arg3,
     typename Arg4>
@@ -561,6 +594,10 @@ private:
   Arg4 arg4_;
 }; // class binder4
 
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif // #if defined(_MSC_VER)
+
 #if defined(MA_HAS_RVALUE_REFS)
 
 template <typename Handler, typename Arg1, typename Arg2, typename Arg3,
@@ -597,6 +634,11 @@ bind_handler(const Handler& handler, const Arg1& arg1, const Arg2& arg2,
 }
 
 #endif // defined(MA_HAS_RVALUE_REFS)
+
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable: 4512)
+#endif // #if defined(_MSC_VER)
 
 template <typename Handler, typename Arg1, typename Arg2, typename Arg3,
     typename Arg4, typename Arg5>
@@ -718,6 +760,10 @@ private:
   Arg4 arg4_;
   Arg5 arg5_;
 }; // class binder5
+
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif // #if defined(_MSC_VER)
 
 #if defined(MA_HAS_RVALUE_REFS)
 
