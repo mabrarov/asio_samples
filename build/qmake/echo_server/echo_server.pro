@@ -26,6 +26,7 @@ HEADERS  += ../../../include/ma/handler_storage_service.hpp \
             ../../../include/ma/config.hpp \
             ../../../include/ma/type_traits.hpp \
             ../../../include/ma/shared_ptr_factory.hpp \
+            ../../../include/ma/steady_deadline_timer.hpp \
             ../../../include/ma/echo/server/session_config_fwd.hpp \
             ../../../include/ma/echo/server/session_manager_config_fwd.hpp \
             ../../../include/ma/echo/server/session_config.hpp \
@@ -52,6 +53,12 @@ unix:LIBS  += -lboost_thread \
               -lboost_system \
               -lboost_date_time \
               -lboost_program_options
+
+unix:for(p, INCLUDEPATH) {
+  exists($${p}/boost/chrono.hpp) {
+    LIBS += -lboost_chrono -lrt
+  }
+}
 
 win32:DEFINES += WIN32_LEAN_AND_MEAN _UNICODE UNICODE
 

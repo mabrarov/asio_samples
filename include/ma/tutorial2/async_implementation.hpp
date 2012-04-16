@@ -20,6 +20,7 @@
 #include <boost/enable_shared_from_this.hpp>
 #include <ma/handler_storage.hpp>
 #include <ma/handler_allocator.hpp>
+#include <ma/steady_deadline_timer.hpp>
 #include <ma/tutorial2/async_interface.hpp>
 
 namespace ma {
@@ -54,7 +55,7 @@ private:
   ma::handler_storage<boost::system::error_code> do_something_handler_;
 
   std::size_t counter_;
-  boost::asio::deadline_timer timer_;
+  steady_deadline_timer timer_;
 
   std::string name_;
   boost::format start_message_fmt_;

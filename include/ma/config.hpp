@@ -12,6 +12,7 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
+#include <boost/version.hpp>
 #include <boost/config.hpp>
 
 /// Provides asio-samples configuration options.
@@ -75,5 +76,21 @@
  * See asio-users mailing list history for details.
  */
 #define MA_BOOST_ASIO_HEAVY_STRAND_WRAPPED_HANDLER
+
+#if BOOST_VERSION >= 104700
+
+// BOOST_DATE_TIME_POSIX_TIME_STD_CONFIG implies Boost.Thread to be rebuilt 
+// i.e. custom (user) configuration of Boost C++ Libraries must be defined. 
+// Add #define BOOST_DATE_TIME_POSIX_TIME_STD_CONFIG to <boost/user/config.hpp>
+// and rebuild Boost (or all Boost libs using Boost.DateTime).
+/// Turns on usage of Boost.Chrono at ma::steady_deadline_timer implementation.
+#define MA_HAS_BOOST_CHRONO
+
+#else
+
+/// ma::steady_deadline_timer equals to boost::asio::deadline_timer
+#undef MA_HAS_BOOST_CHRONO
+
+#endif // BOOST_VERSION >= 104700
 
 #endif // MA_CONFIG_HPP

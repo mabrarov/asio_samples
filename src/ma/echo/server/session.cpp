@@ -131,7 +131,7 @@ session::session(boost::asio::io_service& io_service,
   , socket_recv_buffer_size_(config.socket_recv_buffer_size)
   , socket_send_buffer_size_(config.socket_send_buffer_size)
   , no_delay_(config.no_delay)
-  , inactivity_timeout_(config.inactivity_timeout)
+  , inactivity_timeout_(to_optional_duration(config.inactivity_timeout))
   , extern_state_(extern_state::ready)
   , intern_state_(intern_state::work)
   , read_state_(read_state::wait)

@@ -25,6 +25,7 @@
 #include <ma/context_alloc_handler.hpp>
 #include <ma/echo/server/session_config.hpp>
 #include <ma/echo/server/session_fwd.hpp>
+#include <ma/steady_deadline_timer.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)
 #include <utility>
@@ -260,6 +261,10 @@ private:
     enum value_t {ready, in_progress, stopped};
   };
 
+  typedef steady_deadline_timer          deadline_timer;
+  typedef deadline_timer::duration_type  duration_type;
+  typedef boost::optional<duration_type> optional_duration;
+
   template <typename Handler>
   void start_extern_start(const Handler& handler)
   {
@@ -294,6 +299,28 @@ private:
       extern_wait_handler_.store(handler);
     }
   }
+
+#if defined (MA_HAS_STEADY_DEADLINE_TIMER)
+
+  static optional_duration to_optional_duration(
+      const session_config::optional_time_duration& duration)
+  {
+    if (duration)
+    {
+      return to_steady_deadline_timer_duration(duration.get());
+    }
+    return optional_duration();    
+  }
+
+#else
+
+  static optional_duration to_optional_duration(
+      const session_config::optional_time_duration& duration)
+  {
+    return duration;
+  }
+
+#endif
 
   boost::system::error_code                  do_start_extern_start();
   boost::optional<boost::system::error_code> do_start_extern_stop();
@@ -339,7 +366,7 @@ private:
   const session_config::optional_int  socket_recv_buffer_size_;
   const session_config::optional_int  socket_send_buffer_size_;
   const session_config::optional_bool no_delay_;
-  const session_config::optional_time_duration inactivity_timeout_;
+  const optional_duration             inactivity_timeout_;
 
   extern_state::value_t extern_state_;
   intern_state::value_t intern_state_;
@@ -353,7 +380,7 @@ private:
   boost::asio::io_service&        io_service_;
   boost::asio::io_service::strand strand_;
   protocol_type::socket           socket_;
-  boost::asio::deadline_timer     timer_;
+  deadline_timer                  timer_;
   cyclic_buffer                   buffer_;
   boost::system::error_code       extern_wait_error_;
 

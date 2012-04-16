@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="echo_server"
-	ProjectGUID="{7CE8CB18-679D-4DCB-B64B-6493E1DA8739}"
-	RootNamespace="echo_server"
+	Name="asio_performance_test_client"
+	ProjectGUID="{B410DAEE-1208-4F65-8E05-2197FD5BB792}"
+	RootNamespace="asio_performance_test_client"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
 	>
@@ -46,10 +46,7 @@
 				AdditionalOptions="/MP"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\..\include;..\..\..\..\boost_1_49_0"
-				AdditionalUsingDirectories=""
-				PreprocessorDefinitions="WIN32;WIN32_LEAN_AND_MEAN;WINVER=0x0500;_WIN32_WINNT=0x0500;_WIN32_WINDOWS=0x0500;_WIN32_IE=0x0600;_DEBUG;_CONSOLE"
-				BasicRuntimeChecks="3"
-				SmallerTypeCheck="true"
+				PreprocessorDefinitions="WIN32;WIN32_LEAN_AND_MEAN;WINVER=0x0501;_WIN32_WINNT=0x0501;_WIN32_WINDOWS=0x0501;_WIN32_IE=0x0600;_DEBUG;_CONSOLE;_SCL_SECURE_NO_WARNINGS"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="0"
 				WarningLevel="4"
@@ -73,6 +70,10 @@
 				GenerateMapFile="false"
 				MapFileName="$(TargetDir)$(TargetName).map"
 				SubSystem="1"
+				OptimizeReferences="0"
+				EnableCOMDATFolding="0"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -125,7 +126,7 @@
 				AdditionalOptions="/MP"
 				Optimization="0"
 				AdditionalIncludeDirectories="..\..\..\include;..\..\..\..\boost_1_49_0"
-				PreprocessorDefinitions="WIN32;WIN32_LEAN_AND_MEAN;WINVER=0x0501;_WIN32_WINNT=0x0501;_WIN32_WINDOWS=0x0501;_WIN32_IE=0x0600;_DEBUG;_CONSOLE"
+				PreprocessorDefinitions="WIN32;WIN32_LEAN_AND_MEAN;WINVER=0x0501;_WIN32_WINNT=0x0501;_WIN32_WINDOWS=0x0501;_WIN32_IE=0x0600;_DEBUG;_CONSOLE;_SCL_SECURE_NO_WARNINGS"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="0"
 				WarningLevel="4"
@@ -149,6 +150,10 @@
 				GenerateMapFile="false"
 				MapFileName="$(TargetDir)$(TargetName).map"
 				SubSystem="1"
+				OptimizeReferences="0"
+				EnableCOMDATFolding="0"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
 				TargetMachine="17"
 			/>
 			<Tool
@@ -199,11 +204,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/MP"
-				InlineFunctionExpansion="2"
-				EnableIntrinsicFunctions="true"
-				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="..\..\..\include;..\..\..\..\boost_1_49_0"
-				PreprocessorDefinitions="NDEBUG;WIN32;WIN32_LEAN_AND_MEAN;WINVER=0x0500;_WIN32_WINNT=0x0500;_WIN32_WINDOWS=0x0500;_WIN32_IE=0x0600;_CONSOLE"
+				PreprocessorDefinitions="NDEBUG;WIN32;WIN32_LEAN_AND_MEAN;WINVER=0x0501;_WIN32_WINNT=0x0501;_WIN32_WINDOWS=0x0501;_WIN32_IE=0x0600;_CONSOLE;_SCL_SECURE_NO_WARNINGS"
 				RuntimeLibrary="0"
 				BufferSecurityCheck="false"
 				UsePrecompiledHeader="0"
@@ -225,6 +227,10 @@
 				AdditionalLibraryDirectories="..\..\..\..\boost_1_49_0\lib\x86"
 				GenerateManifest="false"
 				SubSystem="1"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -276,11 +282,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/MP"
-				InlineFunctionExpansion="2"
-				EnableIntrinsicFunctions="true"
-				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="..\..\..\include;..\..\..\..\boost_1_49_0"
-				PreprocessorDefinitions="NDEBUG;WIN32;WIN32_LEAN_AND_MEAN;WINVER=0x0501;_WIN32_WINNT=0x0501;_WIN32_WINDOWS=0x0501;_WIN32_IE=0x0600;_CONSOLE"
+				PreprocessorDefinitions="NDEBUG;WIN32;WIN32_LEAN_AND_MEAN;WINVER=0x0501;_WIN32_WINNT=0x0501;_WIN32_WINDOWS=0x0501;_WIN32_IE=0x0600;_CONSOLE;_SCL_SECURE_NO_WARNINGS"
 				RuntimeLibrary="0"
 				BufferSecurityCheck="false"
 				UsePrecompiledHeader="0"
@@ -302,8 +305,11 @@
 				AdditionalLibraryDirectories="..\..\..\..\boost_1_49_0\lib\amd64"
 				GenerateManifest="false"
 				SubSystem="1"
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
 				TargetMachine="17"
-				Profile="true"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -332,31 +338,33 @@
 	</References>
 	<Files>
 		<Filter
+			Name="Source Files"
+			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
+			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
+			>
+			<File
+				RelativePath="..\..\..\src\asio_performance_test_client\main.cpp"
+				>
+			</File>
+		</Filter>
+		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
-			<File
-				RelativePath="..\..\..\src\echo_server\config.hpp"
-				>
-			</File>
 			<Filter
 				Name="ma"
 				>
+				<File
+					RelativePath="..\..\..\include\ma\async_connect.hpp"
+					>
+				</File>
 				<File
 					RelativePath="..\..\..\include\ma\bind_asio_handler.hpp"
 					>
 				</File>
 				<File
 					RelativePath="..\..\..\include\ma\config.hpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\..\include\ma\console_controller.hpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\..\include\ma\context_alloc_handler.hpp"
 					>
 				</File>
 				<File
@@ -368,7 +376,7 @@
 					>
 				</File>
 				<File
-					RelativePath=".\..\..\..\include\ma\cyclic_buffer.hpp"
+					RelativePath="..\..\..\include\ma\cyclic_buffer.hpp"
 					>
 				</File>
 				<File
@@ -384,22 +392,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\include\ma\handler_storage.hpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\..\include\ma\handler_storage_service.hpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\..\include\ma\shared_ptr_factory.hpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\..\include\ma\steady_deadline_timer.hpp"
-					>
-				</File>
-				<File
 					RelativePath="..\..\..\include\ma\strand_wrapped_handler.hpp"
 					>
 				</File>
@@ -407,92 +399,6 @@
 					RelativePath="..\..\..\include\ma\type_traits.hpp"
 					>
 				</File>
-				<Filter
-					Name="echo"
-					>
-					<Filter
-						Name="server"
-						>
-						<File
-							RelativePath="..\..\..\include\ma\echo\server\error.hpp"
-							>
-						</File>
-						<File
-							RelativePath=".\..\..\..\include\ma\echo\server\session.hpp"
-							>
-						</File>
-						<File
-							RelativePath="..\..\..\include\ma\echo\server\session_config.hpp"
-							>
-						</File>
-						<File
-							RelativePath="..\..\..\include\ma\echo\server\session_config_fwd.hpp"
-							>
-						</File>
-						<File
-							RelativePath="..\..\..\include\ma\echo\server\session_fwd.hpp"
-							>
-						</File>
-						<File
-							RelativePath=".\..\..\..\include\ma\echo\server\session_manager.hpp"
-							>
-						</File>
-						<File
-							RelativePath="..\..\..\include\ma\echo\server\session_manager_config.hpp"
-							>
-						</File>
-						<File
-							RelativePath="..\..\..\include\ma\echo\server\session_manager_config_fwd.hpp"
-							>
-						</File>
-						<File
-							RelativePath="..\..\..\include\ma\echo\server\session_manager_fwd.hpp"
-							>
-						</File>
-					</Filter>
-				</Filter>
-			</Filter>
-		</Filter>
-		<Filter
-			Name="Source Files"
-			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
-			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
-			>
-			<File
-				RelativePath="..\..\..\src\echo_server\config.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\src\echo_server\main.cpp"
-				>
-			</File>
-			<Filter
-				Name="ma"
-				>
-				<File
-					RelativePath="..\..\..\src\ma\console_controller.cpp"
-					>
-				</File>
-				<Filter
-					Name="echo"
-					>
-					<Filter
-						Name="server"
-						>
-						<File
-							RelativePath="..\..\..\src\ma\echo\server\error.cpp"
-							>
-						</File>
-						<File
-							RelativePath="..\..\..\src\ma\echo\server\session.cpp"
-							>
-						</File>
-						<File
-							RelativePath="..\..\..\src\ma\echo\server\session_manager.cpp"
-							>
-						</File>
-					</Filter>
-				</Filter>
 			</Filter>
 		</Filter>
 	</Files>

@@ -224,6 +224,7 @@
     <ClInclude Include="..\..\..\include\ma\echo\server\session_manager.hpp" />
     <ClInclude Include="..\..\..\include\ma\context_wrapped_handler.hpp" />
     <ClInclude Include="..\..\..\include\ma\shared_ptr_factory.hpp" />
+    <ClInclude Include="..\..\..\include\ma\steady_deadline_timer.hpp" />
     <ClInclude Include="..\..\..\include\ma\strand_wrapped_handler.hpp" />
     <ClInclude Include="..\..\..\include\ma\type_traits.hpp" />
     <ClInclude Include="..\..\..\src\echo_server\config.hpp" />

@@ -234,6 +234,9 @@
     <ClInclude Include="..\..\..\include\ma\shared_ptr_factory.hpp">
       <Filter>Header Files\ma</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\steady_deadline_timer.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\src\qt_echo_server\qt_echo_server.ico">

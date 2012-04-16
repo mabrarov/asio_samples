@@ -25,6 +25,7 @@ HEADERS  += ../../../include/ma/handler_storage_service.hpp \
             ../../../include/ma/config.hpp \
             ../../../include/ma/type_traits.hpp \
             ../../../include/ma/shared_ptr_factory.hpp \
+            ../../../include/ma/steady_deadline_timer.hpp \
             ../../../include/ma/tutorial2/do_something_handler_fwd.hpp \
             ../../../include/ma/tutorial2/do_something_handler.hpp \
             ../../../include/ma/tutorial2/async_interface.hpp \
@@ -41,6 +42,12 @@ win32:LIBS += -L../../../../boost_1_49_0/lib/x86
 unix:LIBS  += -lboost_thread \
               -lboost_system \
               -lboost_date_time
+
+unix:for(p, INCLUDEPATH) {
+  exists($${p}/boost/chrono.hpp) {
+    LIBS += -lboost_chrono -lrt
+  }
+}
 
 win32:DEFINES += WIN32_LEAN_AND_MEAN _UNICODE UNICODE
 

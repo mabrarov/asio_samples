@@ -233,6 +233,7 @@
     <ClInclude Include="..\..\..\include\ma\handler_storage.hpp" />
     <ClInclude Include="..\..\..\include\ma\handler_storage_service.hpp" />
     <ClInclude Include="..\..\..\include\ma\shared_ptr_factory.hpp" />
+    <ClInclude Include="..\..\..\include\ma\steady_deadline_timer.hpp" />
     <ClInclude Include="..\..\..\include\ma\strand_wrapped_handler.hpp" />
     <ClInclude Include="..\..\..\include\ma\tutorial\async_base.hpp" />
     <ClInclude Include="..\..\..\include\ma\tutorial\async_derived.hpp" />
