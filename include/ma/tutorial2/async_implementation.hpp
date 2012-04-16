@@ -35,7 +35,7 @@ private:
   typedef async_implementation this_type;
 
 public:
-  static async_interface_ptr create(boost::asio::io_service& io_service, 
+  static async_interface_ptr create(boost::asio::io_service& io_service,
       const std::string& name);
   virtual void async_do_something(const do_something_handler_ptr&);
 

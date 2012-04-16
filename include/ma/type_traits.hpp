@@ -17,12 +17,12 @@
 #include <boost/type_traits/remove_cv.hpp>
 #include <boost/type_traits/remove_reference.hpp>
 
-namespace ma {  
+namespace ma {
 
 /// Boost.TypeTraits-like construction for type extraction in templates with
 /// rvalue reference support.
 /**
- * First removes reference (if it is a refernce) than removes CV-qualifiers. 
+ * First removes reference (if it is a refernce) than removes CV-qualifiers.
  * It's simply composition of features provided by Boost.TypeTraits.
  */
 template <typename T>

@@ -200,12 +200,12 @@ void session_manager::session_wrapper::reset()
 }
 
 session_manager_ptr session_manager::create(
-    boost::asio::io_service& io_service, 
-    boost::asio::io_service& session_io_service, 
+    boost::asio::io_service& io_service,
+    boost::asio::io_service& session_io_service,
     const session_manager_config& config)
 {
   typedef shared_ptr_factory_helper<this_type> helper;
-  return boost::make_shared<helper>(boost::ref(io_service), 
+  return boost::make_shared<helper>(boost::ref(io_service),
       boost::ref(session_io_service), config);
 }
 

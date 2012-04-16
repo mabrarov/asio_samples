@@ -153,7 +153,7 @@ int main(int argc, char* argv[])
     // (for the executors... Java Executors API? Apache MINA :)
     boost::asio::io_service session_io_service(concurrent_count);
 
-    session_ptr the_session(session::create(session_io_service, 
+    session_ptr the_session(session::create(session_io_service,
         read_buffer_size, message_queue_size, "$", "\x0a"));
 
     // Prepare the lower layer - open the serial port

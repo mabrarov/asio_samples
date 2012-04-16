@@ -46,7 +46,7 @@ private:
 public:
   typedef boost::asio::ip::tcp protocol_type;
 
-  static session_ptr create(boost::asio::io_service& io_service, 
+  static session_ptr create(boost::asio::io_service& io_service,
       const session_config& config);
 
   protocol_type::socket& socket()
@@ -315,7 +315,7 @@ private:
     {
       return to_steady_deadline_timer_duration(duration.get());
     }
-    return optional_duration();    
+    return optional_duration();
   }
 
 #else

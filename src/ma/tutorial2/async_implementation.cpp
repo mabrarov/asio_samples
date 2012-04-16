@@ -332,7 +332,7 @@ async_implementation::do_start_do_something()
 
   boost::system::error_code timer_error;
   timer_.expires_from_now(
-      to_steady_deadline_timer_duration(boost::posix_time::seconds(3)), 
+      to_steady_deadline_timer_duration(boost::posix_time::seconds(3)),
       timer_error);
   if (timer_error)
   {
@@ -378,7 +378,7 @@ void async_implementation::handle_timer(const boost::system::error_code& error)
 
     boost::system::error_code timer_error;
     timer_.expires_from_now(
-        to_steady_deadline_timer_duration(boost::posix_time::seconds(1)), 
+        to_steady_deadline_timer_duration(boost::posix_time::seconds(1)),
         timer_error);
     if (timer_error)
     {

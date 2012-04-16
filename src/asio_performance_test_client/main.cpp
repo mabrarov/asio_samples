@@ -300,7 +300,7 @@ class client : private boost::noncopyable
 public:
   typedef session::protocol protocol;
 
-  client(boost::asio::io_service& ios, std::size_t buffer_size, 
+  client(boost::asio::io_service& ios, std::size_t buffer_size,
       std::size_t session_count)
     : io_service_(ios)
     , sessions_()

@@ -118,7 +118,7 @@ private:
 
 } // anonymous namespace
 
-session_ptr session::create(boost::asio::io_service& io_service, 
+session_ptr session::create(boost::asio::io_service& io_service,
     const session_config& config)
 {
   typedef shared_ptr_factory_helper<this_type> helper;

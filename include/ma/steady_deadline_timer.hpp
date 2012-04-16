@@ -22,7 +22,7 @@
 #endif // defined(MA_HAS_RVALUE_REFS)
 
 #if defined(MA_HAS_BOOST_CHRONO)
-#include <boost/chrono.hpp> 
+#include <boost/chrono.hpp>
 #endif
 
 namespace ma {
@@ -39,10 +39,10 @@ struct steady_time_traits
   {
     return time + duration;
   }
-  
+
   static bool less_than(const time_type& time1, const time_type & time2)
   {
-    return time1 < time2; 
+    return time1 < time2;
   }
 
   static time_type now()
@@ -64,10 +64,10 @@ struct steady_time_traits
 #else
     return boost::posix_time::microseconds(d.count() / 1000);
 #endif
-  }  
+  }
 }; // struct steady_time_traits
 
-typedef boost::asio::basic_deadline_timer<steady_time_traits::time_type, 
+typedef boost::asio::basic_deadline_timer<steady_time_traits::time_type,
     steady_time_traits> steady_deadline_timer;
 
 #define MA_HAS_STEADY_DEADLINE_TIMER

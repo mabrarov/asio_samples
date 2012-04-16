@@ -15,12 +15,12 @@ namespace ma {
 namespace nmea {
 
 cyclic_read_session_ptr cyclic_read_session::create(
-    boost::asio::io_service& io_service, std::size_t read_buffer_size, 
-    std::size_t frame_buffer_size, const std::string& frame_head, 
+    boost::asio::io_service& io_service, std::size_t read_buffer_size,
+    std::size_t frame_buffer_size, const std::string& frame_head,
     const std::string& frame_tail)
 {
   typedef shared_ptr_factory_helper<this_type> helper;
-  return boost::make_shared<helper>(boost::ref(io_service), read_buffer_size, 
+  return boost::make_shared<helper>(boost::ref(io_service), read_buffer_size,
       frame_buffer_size, frame_head, frame_tail);
 }
 

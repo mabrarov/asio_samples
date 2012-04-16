@@ -201,7 +201,7 @@ public:
   typedef boost::asio::ip::tcp protocol_type;
 
   static session_manager_ptr create(boost::asio::io_service& io_service,
-      boost::asio::io_service& session_io_service, 
+      boost::asio::io_service& session_io_service,
       const session_manager_config& config);
 
   void reset(bool free_recycled_sessions = true);
@@ -219,7 +219,7 @@ public:
     func_type func = &this_type::start_extern_start<handler_type>;
 
     strand_.post(make_explicit_context_alloc_handler(
-        std::forward<Handler>(handler), 
+        std::forward<Handler>(handler),
         forward_handler_binder<handler_type>(func, shared_from_this())));
   }
 

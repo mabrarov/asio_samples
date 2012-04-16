@@ -37,7 +37,7 @@ class do_something_handler_implementation
 {
 public:
   do_something_handler_implementation(
-      const ma::tutorial2::async_interface_ptr& async_interface, 
+      const ma::tutorial2::async_interface_ptr& async_interface,
       const std::string& name)
     : async_interface_(async_interface)
     , name_(name)
@@ -123,7 +123,7 @@ int main(int /*argc*/, char* /*argv*/[])
     {
       std::string name = (name_format % i).str();
 
-      ma::tutorial2::async_interface_ptr active_object = 
+      ma::tutorial2::async_interface_ptr active_object =
           ma::tutorial2::async_implementation::create(work_io_service, name);
 
       active_object->async_do_something(

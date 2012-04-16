@@ -42,24 +42,24 @@ struct shared_ptr_factory_helper : T
 
   template <typename Arg1, typename Arg2, typename Arg3>
   shared_ptr_factory_helper(Arg1&& arg1, Arg2&& arg2, Arg3&& arg3)
-    : T(std::forward<Arg1>(arg1), std::forward<Arg2>(arg2), 
+    : T(std::forward<Arg1>(arg1), std::forward<Arg2>(arg2),
           std::forward<Arg3>(arg3))
   {
   }
 
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4>
   shared_ptr_factory_helper(Arg1&& arg1, Arg2&& arg2, Arg3&& arg3, Arg4&& arg4)
-    : T(std::forward<Arg1>(arg1), std::forward<Arg2>(arg2), 
+    : T(std::forward<Arg1>(arg1), std::forward<Arg2>(arg2),
           std::forward<Arg3>(arg3), std::forward<Arg4>(arg4))
   {
   }
 
-  template <typename Arg1, typename Arg2, typename Arg3, 
+  template <typename Arg1, typename Arg2, typename Arg3,
       typename Arg4, typename Arg5>
-  shared_ptr_factory_helper(Arg1&& arg1, Arg2&& arg2, Arg3&& arg3, 
+  shared_ptr_factory_helper(Arg1&& arg1, Arg2&& arg2, Arg3&& arg3,
       Arg4&& arg4, Arg5&& arg5)
-    : T(std::forward<Arg1>(arg1), std::forward<Arg2>(arg2), 
-          std::forward<Arg3>(arg3), std::forward<Arg4>(arg4), 
+    : T(std::forward<Arg1>(arg1), std::forward<Arg2>(arg2),
+          std::forward<Arg3>(arg3), std::forward<Arg4>(arg4),
           std::forward<Arg5>(arg5))
   {
   }
@@ -79,22 +79,22 @@ struct shared_ptr_factory_helper : T
   }
 
   template <typename Arg1, typename Arg2, typename Arg3>
-  shared_ptr_factory_helper(const Arg1& arg1, 
+  shared_ptr_factory_helper(const Arg1& arg1,
       const Arg2& arg2, const Arg3& arg3)
     : T(arg1, arg2, arg3)
   {
   }
 
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4>
-  shared_ptr_factory_helper(const Arg1& arg1, const Arg2& arg2, 
+  shared_ptr_factory_helper(const Arg1& arg1, const Arg2& arg2,
       const Arg3& arg3, const Arg4& arg4)
     : T(arg1, arg2, arg3, arg4)
   {
   }
 
-  template <typename Arg1, typename Arg2, typename Arg3, 
+  template <typename Arg1, typename Arg2, typename Arg3,
       typename Arg4, typename Arg5>
-  shared_ptr_factory_helper(const Arg1& arg1, const Arg2& arg2, 
+  shared_ptr_factory_helper(const Arg1& arg1, const Arg2& arg2,
       const Arg3& arg3, const Arg4& arg4, const Arg5& arg5)
     : T(arg1, arg2, arg3, arg4, arg5)
   {

@@ -298,7 +298,7 @@ public:
 
 #else // defined(MA_HAS_RVALUE_REFS)
 
-  explicit_context_wrapped_handler(const Context& context, 
+  explicit_context_wrapped_handler(const Context& context,
       const Handler& handler)
     : context_(context)
     , handler_(handler)
@@ -448,7 +448,7 @@ make_explicit_context_wrapped_handler(Context&& context, Handler&& handler)
 
 template <typename Context, typename Handler>
 inline explicit_context_wrapped_handler<Context, Handler>
-make_explicit_context_wrapped_handler(const Context& context, 
+make_explicit_context_wrapped_handler(const Context& context,
     const Handler& handler)
 {
   return explicit_context_wrapped_handler<Context, Handler>(context, handler);

@@ -70,7 +70,7 @@ private:
 
 } // anonymous namespace
 
-async_derived_ptr async_derived::create(boost::asio::io_service& io_service, 
+async_derived_ptr async_derived::create(boost::asio::io_service& io_service,
     const std::string& name)
 {
   typedef shared_ptr_factory_helper<this_type> helper;
@@ -113,7 +113,7 @@ async_derived::do_start_do_something()
 
   boost::system::error_code timer_error;
   timer_.expires_from_now(
-      to_steady_deadline_timer_duration(boost::posix_time::seconds(3)), 
+      to_steady_deadline_timer_duration(boost::posix_time::seconds(3)),
       timer_error);
   if (timer_error)
   {
@@ -159,7 +159,7 @@ void async_derived::handle_timer(const boost::system::error_code& error)
 
     boost::system::error_code timer_error;
     timer_.expires_from_now(
-        to_steady_deadline_timer_duration(boost::posix_time::milliseconds(1)), 
+        to_steady_deadline_timer_duration(boost::posix_time::milliseconds(1)),
         timer_error);
     if (timer_error)
     {

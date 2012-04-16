@@ -265,7 +265,7 @@ make_context_alloc_handler(const Context& context, const Handler& handler)
 /**
  * The context wrapped by explicit_context_alloc_handler is additionally passed
  * (by const reference) to the source handler as first parameter. Comparing to
- * context_alloc_handler explicit_context_alloc_handler helps to reduce 
+ * context_alloc_handler explicit_context_alloc_handler helps to reduce
  * the resulted handler size and its copy cost.
  */
 
@@ -459,7 +459,7 @@ make_explicit_context_alloc_handler(Context&& context, Handler&& handler)
 
 template <typename Context, typename Handler>
 inline explicit_context_alloc_handler<Context, Handler>
-make_explicit_context_alloc_handler(const Context& context, 
+make_explicit_context_alloc_handler(const Context& context,
     const Handler& handler)
 {
   return explicit_context_alloc_handler<Context, Handler>(context, handler);

@@ -94,7 +94,7 @@ int main(int /*argc*/, char* /*argv*/[])
       boost::shared_ptr<allocator_type> allocator =
           boost::make_shared<allocator_type>();
 
-      async_base_ptr active_object = 
+      async_base_ptr active_object =
           ma::tutorial::async_derived::create(work_io_service, *name);
 
       active_object->async_do_something(ma::make_custom_alloc_handler(

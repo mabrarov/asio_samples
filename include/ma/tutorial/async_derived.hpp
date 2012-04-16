@@ -40,7 +40,7 @@ private:
   typedef async_derived this_type;
 
 public:
-  static async_derived_ptr create(boost::asio::io_service& io_service, 
+  static async_derived_ptr create(boost::asio::io_service& io_service,
       const std::string& name);
 
 protected:
