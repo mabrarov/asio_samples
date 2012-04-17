@@ -1,4 +1,4 @@
-# 
+#
 # Copyright (c) 2010-2012 Marat Abrarov (abrarov@mail.ru)
 #
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
@@ -63,6 +63,8 @@ SOURCES  += ../../../src/qt_echo_server/main.cpp \
             ../../../src/ma/echo/server/qt/mainform.cpp
 
 FORMS    += ../../../src/ma/echo/server/qt/mainform.ui
+
+RC_FILE   = ../../../src/qt_echo_server/qt_echo_server.rc
 
 INCLUDEPATH += $${BOOST_INCLUDE} \
                ../../../include
