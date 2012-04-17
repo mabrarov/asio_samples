@@ -39,6 +39,7 @@ unix:LIBS  += $${BOOST_LIB}/libboost_system.a
 win32:DEFINES += WIN32_LEAN_AND_MEAN \
                  _UNICODE \
                  UNICODE \
+                 WINVER=0x0501 \
                  _WIN32_WINNT=0x0501
 
 linux-g++ | linux-g++-64 {

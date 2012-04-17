@@ -97,8 +97,7 @@ win32:DEFINES += WIN32_LEAN_AND_MEAN \
                  WINVER=0x0500 \
                  _WIN32_WINNT=0x0500 \
                  _WIN32_WINDOWS=0x0410 \
-                 _WIN32_IE=0x0600 \
-                 QT_LARGEFILE_SUPPORT
+                 _WIN32_IE=0x0600
 
 linux-g++ | linux-g++-64 {
   QMAKE_CXXFLAGS += -std=c++0x \
