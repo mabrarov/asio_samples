@@ -46,7 +46,7 @@ public:
   template <typename Handler>
   void async_do_something(Handler&& handler)
   {
-    typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+    typedef typename remove_cv_reference<Handler>::type handler_type;
     typedef void (this_type::*func_type)(const handler_type&);
 
     func_type func = &this_type::start_do_something<handler_type>;
@@ -61,7 +61,7 @@ public:
   template <typename Handler>
   void async_do_something(Handler&& handler)
   {
-    typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+    typedef typename remove_cv_reference<Handler>::type handler_type;
     typedef void (this_type::*func_type)(const handler_type&);
 
     func_type func = &this_type::start_do_something<handler_type>;

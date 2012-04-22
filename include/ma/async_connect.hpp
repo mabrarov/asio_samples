@@ -142,10 +142,10 @@ private:
 #if defined(MA_HAS_RVALUE_REFS)
 
 template <typename Handler>
-inline connect_ex_handler<typename ma::remove_cv_reference<Handler>::type>
+inline connect_ex_handler<typename remove_cv_reference<Handler>::type>
 make_connect_ex_handler(Handler&& handler)
 {
-  typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+  typedef typename remove_cv_reference<Handler>::type handler_type;
   return connect_ex_handler<handler_type>(std::forward<Handler>(handler));
 }
 

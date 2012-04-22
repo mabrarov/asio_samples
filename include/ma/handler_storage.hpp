@@ -87,7 +87,7 @@ private:
 public:
   typedef handler_storage_service service_type;
   typedef typename service_type::implementation_type implementation_type;
-  typedef typename ma::remove_cv_reference<Arg>::type arg_type;
+  typedef typename remove_cv_reference<Arg>::type arg_type;
 
   explicit handler_storage(boost::asio::io_service& io_service)
     : service_(boost::asio::use_service<service_type>(io_service))
@@ -167,7 +167,7 @@ public:
   template <typename Handler>
   void store(Handler&& handler)
   {
-    typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+    typedef typename remove_cv_reference<Handler>::type handler_type;
     service_.store<handler_type, arg_type>(
         impl_, std::forward<Handler>(handler));
   }

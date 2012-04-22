@@ -25,6 +25,7 @@
 #include <ma/handler_allocator.hpp>
 #include <ma/bind_asio_handler.hpp>
 #include <ma/context_alloc_handler.hpp>
+#include <ma/sp_intrusive_list.hpp>
 #include <ma/echo/server/session_fwd.hpp>
 #include <ma/echo/server/session_config.hpp>
 #include <ma/echo/server/session_manager_config.hpp>
@@ -36,156 +37,6 @@
 #endif // defined(MA_HAS_RVALUE_REFS)
 
 namespace ma {
-
-namespace detail {
-
-/// Simplified double-linked intrusive list of boost::shared_ptr.
-/**
- * Const time insertion of boost::shared_ptr.
- * Const time deletion of boost::shared_ptr (deletion by value).
- *
- * Requirements:
- * if value is rvalue of type Value then expression
- * static_cast&lt;sp_intrusive_list&lt;Value&gt;::base_hook&amp;&gt;(value)
- * must be well formed and accessible from sp_intrusive_list&lt;Value&gt;.
- */
-template <typename Value>
-class sp_intrusive_list : private boost::noncopyable
-{
-public:
-  typedef Value  value_type;
-  typedef Value* pointer;
-  typedef Value& reference;
-  typedef boost::weak_ptr<Value>   weak_pointer;
-  typedef boost::shared_ptr<Value> shared_pointer;
-
-  /// Required hook for items of the list.
-  class base_hook : private boost::noncopyable
-  {
-  private:
-    friend class sp_intrusive_list<value_type>;
-    weak_pointer   prev_;
-    shared_pointer next_;
-  }; // class base_hook
-
-  /// Never throws
-  sp_intrusive_list()
-    : size_(0)
-  {
-  }
-
-  ~sp_intrusive_list()
-  {
-    clear();
-  }
-
-  /// Never throws
-  shared_pointer front() const
-  {
-    return front_;
-  }
-
-  /// Never throws
-  static shared_pointer prev(const shared_pointer& value)
-  {
-    BOOST_ASSERT(value);
-    return get_hook(*value).prev_.lock();
-  }
-
-  /// Never throws
-  static shared_pointer next(const shared_pointer& value)
-  {
-    BOOST_ASSERT(value);
-    return get_hook(*value).next_;
-  }
-
-  /// Never throws
-  void push_front(const shared_pointer& value)
-  {
-    BOOST_ASSERT(value);
-
-    base_hook& value_hook = get_hook(*value);
-
-    BOOST_ASSERT(!value_hook.prev_.lock() && !value_hook.next_);
-
-    value_hook.next_ = front_;
-    if (front_)
-    {
-      base_hook& front_hook = get_hook(*front_);
-      front_hook.prev_ = value;
-    }
-    front_ = value;
-    ++size_;
-  }
-
-  void erase(const shared_pointer& value)
-  {
-    BOOST_ASSERT(value);
-
-    base_hook& value_hook = get_hook(*value);
-    if (value == front_)
-    {
-      front_ = value_hook.next_;
-    }
-    const shared_pointer prev = value_hook.prev_.lock();
-    if (prev)
-    {
-      base_hook& prev_hook = get_hook(*prev);
-      prev_hook.next_ = value_hook.next_;
-    }
-    if (value_hook.next_)
-    {
-      base_hook& next_hook = get_hook(*value_hook.next_);
-      next_hook.prev_ = value_hook.prev_;
-    }
-    value_hook.prev_.reset();
-    value_hook.next_.reset();
-    --size_;
-
-    BOOST_ASSERT(!value_hook.prev_.lock() && !value_hook.next_);
-  }
-
-  void clear()
-  {
-    // We don't want to have recusrive calls of wrapped_session's destructor
-    // because the deep of such recursion may be equal to the size of list.
-    // The last can be too great for the stack.
-    while (front_)
-    {
-      base_hook& front_hook = get_hook(*front_);
-#if defined(MA_HAS_RVALUE_REFS)
-      shared_pointer tmp = std::move(front_hook.next_);
-#else
-      shared_pointer tmp = front_hook.next_;
-      front_hook.next_.reset();
-#endif
-      front_hook.prev_.reset();
-      front_.swap(tmp);
-    }
-    size_ = 0;
-  }
-
-  std::size_t size() const
-  {
-    return size_;
-  }
-
-  bool empty() const
-  {
-    return 0 == size_;
-  }
-
-private:
-  static base_hook& get_hook(reference value)
-  {
-    return static_cast<base_hook&>(value);
-  }
-
-  std::size_t size_;
-  shared_pointer front_;
-}; // class sp_intrusive_list
-
-} // namespace detail
 
 namespace echo {
 namespace server {
@@ -213,7 +64,7 @@ public:
   template <typename Handler>
   void async_start(Handler&& handler)
   {
-    typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+    typedef typename remove_cv_reference<Handler>::type handler_type;
     typedef void (this_type::*func_type)(const handler_type&);
 
     func_type func = &this_type::start_extern_start<handler_type>;
@@ -226,7 +77,7 @@ public:
   template <typename Handler>
   void async_stop(Handler&& handler)
   {
-    typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+    typedef typename remove_cv_reference<Handler>::type handler_type;
     typedef void (this_type::*func_type)(const handler_type&);
 
     func_type func = &this_type::start_extern_stop<handler_type>;
@@ -239,7 +90,7 @@ public:
   template <typename Handler>
   void async_wait(Handler&& handler)
   {
-    typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+    typedef typename remove_cv_reference<Handler>::type handler_type;
     typedef void (this_type::*func_type)(const handler_type&);
 
     func_type func = &this_type::start_extern_wait<handler_type>;
@@ -254,7 +105,7 @@ public:
   template <typename Handler>
   void async_start(Handler&& handler)
   {
-    typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+    typedef typename remove_cv_reference<Handler>::type handler_type;
     typedef void (this_type::*func_type)(const handler_type&);
 
     func_type func = &this_type::start_extern_start<handler_type>;
@@ -267,7 +118,7 @@ public:
   template <typename Handler>
   void async_stop(Handler&& handler)
   {
-    typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+    typedef typename remove_cv_reference<Handler>::type handler_type;
     typedef void (this_type::*func_type)(const handler_type&);
 
     func_type func = &this_type::start_extern_stop<handler_type>;
@@ -280,7 +131,7 @@ public:
   template <typename Handler>
   void async_wait(Handler&& handler)
   {
-    typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+    typedef typename remove_cv_reference<Handler>::type handler_type;
     typedef void (this_type::*func_type)(const handler_type&);
 
     func_type func = &this_type::start_extern_wait<handler_type>;
@@ -345,8 +196,7 @@ private:
   struct  session_wrapper;
   typedef boost::shared_ptr<session_wrapper> session_wrapper_ptr;
 
-  struct session_wrapper
-    : public detail::sp_intrusive_list<session_wrapper>::base_hook
+  struct session_wrapper : public sp_intrusive_list<session_wrapper>::base_hook
   {
     typedef protocol_type::endpoint endpoint_type;
 
@@ -426,7 +276,7 @@ private:
     }
   }; // struct session_wrapper
 
-  typedef detail::sp_intrusive_list<session_wrapper> session_list;
+  typedef sp_intrusive_list<session_wrapper> session_list;
 
 #if defined(MA_HAS_RVALUE_REFS) \
     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)

@@ -73,7 +73,7 @@ public:
   template <typename Handler>
   void async_start(Handler&& handler)
   {
-    typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+    typedef typename remove_cv_reference<Handler>::type handler_type;
     typedef void (this_type::*func_type)(const handler_type&);
 
     func_type func = &this_type::start_extern_start<handler_type>;
@@ -86,7 +86,7 @@ public:
   template <typename Handler>
   void async_stop(Handler&& handler)
   {
-    typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+    typedef typename remove_cv_reference<Handler>::type handler_type;
     typedef void (this_type::*func_type)(const handler_type&);
 
     func_type func = &this_type::start_extern_stop<handler_type>;
@@ -100,8 +100,8 @@ public:
   template <typename Handler, typename Iterator>
   void async_read_some(Iterator&& begin, Iterator&& end, Handler&& handler)
   {
-    typedef typename ma::remove_cv_reference<Iterator>::type iterator_type;
-    typedef typename ma::remove_cv_reference<Handler>::type  handler_type;
+    typedef typename remove_cv_reference<Iterator>::type iterator_type;
+    typedef typename remove_cv_reference<Handler>::type  handler_type;
     typedef void (this_type::*func_type)(const iterator_type&,
         const iterator_type&, const handler_type&);
 
@@ -117,9 +117,9 @@ public:
   template <typename ConstBufferSequence, typename Handler>
   void async_write_some(ConstBufferSequence&& buffers, Handler&& handler)
   {
-    typedef typename ma::remove_cv_reference<ConstBufferSequence>::type
+    typedef typename remove_cv_reference<ConstBufferSequence>::type
         buffers_type;
-    typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+    typedef typename remove_cv_reference<Handler>::type handler_type;
     typedef void (this_type::*func_type)(const buffers_type&,
         const handler_type&);
 

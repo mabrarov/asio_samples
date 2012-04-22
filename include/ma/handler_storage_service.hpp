@@ -493,7 +493,7 @@ public:
     // If service is (was) in shutdown state then it can't store handler.
     if (!shutdown_done_)
     {
-      typedef typename ma::remove_cv_reference<Arg>::type arg_type;
+      typedef typename remove_cv_reference<Arg>::type arg_type;
       typedef handler_wrapper<Handler, arg_type> value_type;
       typedef detail::handler_alloc_traits<Handler, value_type> alloc_traits;
       // Allocate raw memory for storing the handler
@@ -523,7 +523,7 @@ public:
   template <typename Arg>
   static void post(implementation_type& impl, const Arg& arg)
   {
-    typedef typename ma::remove_cv_reference<Arg>::type arg_type;
+    typedef typename remove_cv_reference<Arg>::type arg_type;
     typedef postable_handler_base<arg_type> postable_base;
     if (postable_base* handler = static_cast<postable_base*>(impl.handler_))
     {

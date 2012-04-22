@@ -62,7 +62,7 @@ public:
   template <typename Handler>
   void async_start(Handler&& handler)
   {
-    typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+    typedef typename remove_cv_reference<Handler>::type handler_type;
 
     strand_.post(make_explicit_context_alloc_handler(
         std::forward<Handler>(handler),
@@ -73,7 +73,7 @@ public:
   template <typename Handler>
   void async_stop(Handler&& handler)
   {
-    typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+    typedef typename remove_cv_reference<Handler>::type handler_type;
 
     strand_.post(make_explicit_context_alloc_handler(
         std::forward<Handler>(handler),
@@ -84,7 +84,7 @@ public:
   template <typename Handler>
   void async_wait(Handler&& handler)
   {
-    typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+    typedef typename remove_cv_reference<Handler>::type handler_type;
 
     strand_.post(make_explicit_context_alloc_handler(
         std::forward<Handler>(handler),

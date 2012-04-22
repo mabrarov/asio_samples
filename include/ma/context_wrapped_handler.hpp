@@ -236,12 +236,12 @@ private:
 
 template <typename Context, typename Handler>
 inline context_wrapped_handler<
-    typename ma::remove_cv_reference<Context>::type,
-    typename ma::remove_cv_reference<Handler>::type>
+    typename remove_cv_reference<Context>::type,
+    typename remove_cv_reference<Handler>::type>
 make_context_wrapped_handler(Context&& context, Handler&& handler)
 {
-  typedef typename ma::remove_cv_reference<Context>::type context_type;
-  typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+  typedef typename remove_cv_reference<Context>::type context_type;
+  typedef typename remove_cv_reference<Handler>::type handler_type;
   return context_wrapped_handler<context_type, handler_type>(
       std::forward<Context>(context), std::forward<Handler>(handler));
 }
@@ -434,12 +434,12 @@ private:
 
 template <typename Context, typename Handler>
 inline explicit_context_wrapped_handler<
-    typename ma::remove_cv_reference<Context>::type,
-    typename ma::remove_cv_reference<Handler>::type>
+    typename remove_cv_reference<Context>::type,
+    typename remove_cv_reference<Handler>::type>
 make_explicit_context_wrapped_handler(Context&& context, Handler&& handler)
 {
-  typedef typename ma::remove_cv_reference<Context>::type context_type;
-  typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+  typedef typename remove_cv_reference<Context>::type context_type;
+  typedef typename remove_cv_reference<Handler>::type handler_type;
   return explicit_context_wrapped_handler<context_type, handler_type>(
       std::forward<Context>(context), std::forward<Handler>(handler));
 }

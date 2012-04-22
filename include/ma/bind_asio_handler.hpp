@@ -169,12 +169,12 @@ private:
 
 /// Helper for creation of binded handler.
 template <typename Handler, typename Arg1>
-inline binder1<typename ma::remove_cv_reference<Handler>::type,
-    typename ma::remove_cv_reference<Arg1>::type>
+inline binder1<typename remove_cv_reference<Handler>::type,
+    typename remove_cv_reference<Arg1>::type>
 bind_handler(Handler&& handler, Arg1&& arg1)
 {
-  typedef typename ma::remove_cv_reference<Handler>::type handler_type;
-  typedef typename ma::remove_cv_reference<Arg1>::type arg1_type;
+  typedef typename remove_cv_reference<Handler>::type handler_type;
+  typedef typename remove_cv_reference<Arg1>::type arg1_type;
   return binder1<handler_type, arg1_type>(
       std::forward<Handler>(handler), std::forward<Arg1>(arg1));
 }
@@ -304,14 +304,14 @@ private:
 #if defined(MA_HAS_RVALUE_REFS)
 
 template <typename Handler, typename Arg1, typename Arg2>
-inline binder2<typename ma::remove_cv_reference<Handler>::type,
-    typename ma::remove_cv_reference<Arg1>::type,
-    typename ma::remove_cv_reference<Arg2>::type>
+inline binder2<typename remove_cv_reference<Handler>::type,
+    typename remove_cv_reference<Arg1>::type,
+    typename remove_cv_reference<Arg2>::type>
 bind_handler(Handler&& handler, Arg1&& arg1, Arg2&& arg2)
 {
-  typedef typename ma::remove_cv_reference<Handler>::type handler_type;
-  typedef typename ma::remove_cv_reference<Arg1>::type arg1_type;
-  typedef typename ma::remove_cv_reference<Arg2>::type arg2_type;
+  typedef typename remove_cv_reference<Handler>::type handler_type;
+  typedef typename remove_cv_reference<Arg1>::type arg1_type;
+  typedef typename remove_cv_reference<Arg2>::type arg2_type;
   return binder2<handler_type, arg1_type, arg2_type>(
       std::forward<Handler>(handler), std::forward<Arg1>(arg1),
       std::forward<Arg2>(arg2));
@@ -448,16 +448,16 @@ private:
 #if defined(MA_HAS_RVALUE_REFS)
 
 template <typename Handler, typename Arg1, typename Arg2, typename Arg3>
-inline binder3<typename ma::remove_cv_reference<Handler>::type,
-    typename ma::remove_cv_reference<Arg1>::type,
-    typename ma::remove_cv_reference<Arg2>::type,
-    typename ma::remove_cv_reference<Arg3>::type>
+inline binder3<typename remove_cv_reference<Handler>::type,
+    typename remove_cv_reference<Arg1>::type,
+    typename remove_cv_reference<Arg2>::type,
+    typename remove_cv_reference<Arg3>::type>
 bind_handler(Handler&& handler, Arg1&& arg1, Arg2&& arg2, Arg3&& arg3)
 {
-  typedef typename ma::remove_cv_reference<Handler>::type handler_type;
-  typedef typename ma::remove_cv_reference<Arg1>::type arg1_type;
-  typedef typename ma::remove_cv_reference<Arg2>::type arg2_type;
-  typedef typename ma::remove_cv_reference<Arg3>::type arg3_type;
+  typedef typename remove_cv_reference<Handler>::type handler_type;
+  typedef typename remove_cv_reference<Arg1>::type arg1_type;
+  typedef typename remove_cv_reference<Arg2>::type arg2_type;
+  typedef typename remove_cv_reference<Arg3>::type arg3_type;
   return binder3<handler_type, arg1_type, arg2_type, arg3_type>(
       std::forward<Handler>(handler), std::forward<Arg1>(arg1),
       std::forward<Arg2>(arg2), std::forward<Arg3>(arg3));
@@ -602,19 +602,19 @@ private:
 
 template <typename Handler, typename Arg1, typename Arg2, typename Arg3,
     typename Arg4>
-inline binder4<typename ma::remove_cv_reference<Handler>::type,
-    typename ma::remove_cv_reference<Arg1>::type,
-    typename ma::remove_cv_reference<Arg2>::type,
-    typename ma::remove_cv_reference<Arg3>::type,
-    typename ma::remove_cv_reference<Arg4>::type>
+inline binder4<typename remove_cv_reference<Handler>::type,
+    typename remove_cv_reference<Arg1>::type,
+    typename remove_cv_reference<Arg2>::type,
+    typename remove_cv_reference<Arg3>::type,
+    typename remove_cv_reference<Arg4>::type>
 bind_handler(Handler&& handler, Arg1&& arg1, Arg2&& arg2, Arg3&& arg3,
     Arg4&& arg4)
 {
-  typedef typename ma::remove_cv_reference<Handler>::type handler_type;
-  typedef typename ma::remove_cv_reference<Arg1>::type arg1_type;
-  typedef typename ma::remove_cv_reference<Arg2>::type arg2_type;
-  typedef typename ma::remove_cv_reference<Arg3>::type arg3_type;
-  typedef typename ma::remove_cv_reference<Arg4>::type arg4_type;
+  typedef typename remove_cv_reference<Handler>::type handler_type;
+  typedef typename remove_cv_reference<Arg1>::type arg1_type;
+  typedef typename remove_cv_reference<Arg2>::type arg2_type;
+  typedef typename remove_cv_reference<Arg3>::type arg3_type;
+  typedef typename remove_cv_reference<Arg4>::type arg4_type;
   return binder4<handler_type, arg1_type, arg2_type, arg3_type, arg4_type>(
       std::forward<Handler>(handler), std::forward<Arg1>(arg1),
       std::forward<Arg2>(arg2), std::forward<Arg3>(arg3),
@@ -769,21 +769,21 @@ private:
 
 template <typename Handler, typename Arg1, typename Arg2, typename Arg3,
     typename Arg4, typename Arg5>
-inline binder5<typename ma::remove_cv_reference<Handler>::type,
-    typename ma::remove_cv_reference<Arg1>::type,
-    typename ma::remove_cv_reference<Arg2>::type,
-    typename ma::remove_cv_reference<Arg3>::type,
-    typename ma::remove_cv_reference<Arg4>::type,
-    typename ma::remove_cv_reference<Arg5>::type>
+inline binder5<typename remove_cv_reference<Handler>::type,
+    typename remove_cv_reference<Arg1>::type,
+    typename remove_cv_reference<Arg2>::type,
+    typename remove_cv_reference<Arg3>::type,
+    typename remove_cv_reference<Arg4>::type,
+    typename remove_cv_reference<Arg5>::type>
 bind_handler(Handler&& handler, Arg1&& arg1, Arg2&& arg2, Arg3&& arg3,
     Arg4&& arg4, Arg5&& arg5)
 {
-  typedef typename ma::remove_cv_reference<Handler>::type handler_type;
-  typedef typename ma::remove_cv_reference<Arg1>::type arg1_type;
-  typedef typename ma::remove_cv_reference<Arg2>::type arg2_type;
-  typedef typename ma::remove_cv_reference<Arg3>::type arg3_type;
-  typedef typename ma::remove_cv_reference<Arg4>::type arg4_type;
-  typedef typename ma::remove_cv_reference<Arg5>::type arg5_type;
+  typedef typename remove_cv_reference<Handler>::type handler_type;
+  typedef typename remove_cv_reference<Arg1>::type arg1_type;
+  typedef typename remove_cv_reference<Arg2>::type arg2_type;
+  typedef typename remove_cv_reference<Arg3>::type arg3_type;
+  typedef typename remove_cv_reference<Arg4>::type arg4_type;
+  typedef typename remove_cv_reference<Arg5>::type arg5_type;
   return binder5<handler_type, arg1_type, arg2_type, arg3_type, arg4_type,
       arg5_type>(std::forward<Handler>(handler), std::forward<Arg1>(arg1),
       std::forward<Arg2>(arg2), std::forward<Arg3>(arg3),

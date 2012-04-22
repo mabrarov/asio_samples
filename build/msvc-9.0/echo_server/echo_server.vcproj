@@ -396,6 +396,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\..\include\ma\sp_intrusive_list.hpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\..\include\ma\steady_deadline_timer.hpp"
 					>
 				</File>

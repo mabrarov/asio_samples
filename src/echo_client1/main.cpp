@@ -29,6 +29,7 @@
 #include <ma/echo/client1/session.hpp>
 #include <ma/console_controller.hpp>
 #include <ma/handler_storage.hpp>
+#include <ma/sp_intrusive_list.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)
 
@@ -70,6 +71,32 @@ void test_handler_storage_move_constructor(boost::asio::io_service& io_service)
   io_service.reset();
 }
 
+class sp_list_test : public ma::sp_intrusive_list<sp_list_test>::base_hook
+{
+public: 
+  explicit sp_list_test(std::size_t num)
+    : num_(num)
+  {
+  }
+
+  ~sp_list_test()
+  {
+    std::cout << num_ << std::endl;
+  }
+private:
+  std::size_t num_;
+}; // sp_list_test
+
+void test_sp_intrusive_list()
+{
+  ma::sp_intrusive_list<sp_list_test> sp_list;
+  for (std::size_t i = 0; i != 10; ++i)
+  {
+    std::cout << i << std::endl;
+    sp_list.push_front(boost::make_shared<sp_list_test>(i));
+  }
+}
+
 } // anonymous namespace
 
 #endif // defined(MA_HAS_RVALUE_REFS)
@@ -104,10 +131,6 @@ int main(int argc, char* argv[])
     std::size_t cpu_count = boost::thread::hardware_concurrency();
     std::size_t session_thread_count = cpu_count > 1 ? cpu_count : 2;
     boost::asio::io_service io_service(session_thread_count);
-
-#if defined(MA_HAS_RVALUE_REFS)
-    test_handler_storage_move_constructor(io_service);
-#endif
 
     //todo
     return EXIT_SUCCESS;

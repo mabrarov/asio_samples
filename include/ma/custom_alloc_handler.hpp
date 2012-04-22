@@ -253,10 +253,10 @@ private:
 
 template <typename Allocator, typename Handler>
 inline custom_alloc_handler<Allocator,
-    typename ma::remove_cv_reference<Handler>::type>
+    typename remove_cv_reference<Handler>::type>
 make_custom_alloc_handler(Allocator& allocator, Handler&& handler)
 {
-  typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+  typedef typename remove_cv_reference<Handler>::type handler_type;
   return custom_alloc_handler<Allocator, handler_type>(allocator,
       std::forward<Handler>(handler));
 }

@@ -231,11 +231,11 @@ private:
 #if defined(MA_HAS_RVALUE_REFS)
 
 template <typename Handler>
-inline strand_wrapped_handler<typename ma::remove_cv_reference<Handler>::type>
+inline strand_wrapped_handler<typename remove_cv_reference<Handler>::type>
 make_strand_wrapped_handler(boost::asio::io_service::strand& strand,
     Handler&& handler)
 {
-  typedef typename ma::remove_cv_reference<Handler>::type handler_type;
+  typedef typename remove_cv_reference<Handler>::type handler_type;
   return strand_wrapped_handler<handler_type>(strand,
       std::forward<Handler>(handler));
 }
