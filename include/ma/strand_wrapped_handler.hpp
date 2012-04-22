@@ -84,6 +84,10 @@ public:
     : strand_(other.strand_)
     , handler_(std::move(other.handler_))
   {
+#if !defined(NDEBUG)
+    // For the check of usage of asio invocation.
+    other.strand_ = 0;
+#endif
   }
 
   strand_wrapped_handler(const this_type& other)
@@ -108,6 +112,8 @@ public:
 #if !defined(NDEBUG)
   ~strand_wrapped_handler()
   {
+    // For the check of usage of asio invocation.
+    strand_ = 0;
   }
 #endif
 
@@ -128,7 +134,8 @@ public:
   template <typename Function>
   friend void asio_handler_invoke(Function&& function, this_type* context)
   {
-    context->strand_->dispatch(make_context_wrapped_handler(context->handler_,
+    boost::asio::io_service::strand& strand = *context->strand_;
+    strand.dispatch(make_context_wrapped_handler(context->handler_,
         std::forward<Function>(function)));
   }
 

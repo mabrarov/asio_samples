@@ -114,6 +114,10 @@ public:
     : allocator_(other.allocator_)
     , handler_(std::move(other.handler_))
   {
+#if !defined(NDEBUG)
+    // For the check of usage of asio invocation.
+    other.allocator_ = 0;
+#endif
   }
 
   custom_alloc_handler(const this_type& other)
