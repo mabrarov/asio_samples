@@ -30,6 +30,7 @@
 #include <ma/console_controller.hpp>
 #include <ma/handler_storage.hpp>
 #include <ma/sp_intrusive_list.hpp>
+#include <ma/shared_ptr_factory.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)
 
@@ -95,6 +96,27 @@ void test_sp_intrusive_list()
     std::cout << i << std::endl;
     sp_list.push_front(boost::make_shared<sp_list_test>(i));
   }
+}
+
+class A : private boost::noncopyable
+{
+};
+
+class B : private boost::noncopyable
+{
+public:
+  explicit B(int /*data*/)
+  {
+  }
+};
+
+void test_shared_ptr_factory()
+{
+  typedef ma::shared_ptr_factory_helper<A> A_helper;
+  boost::shared_ptr<A> a = boost::make_shared<A_helper>();
+
+  typedef ma::shared_ptr_factory_helper<B> B_helper;
+  boost::shared_ptr<B> b = boost::make_shared<B_helper>(42);
 }
 
 } // anonymous namespace

@@ -18,6 +18,8 @@
 #include <utility>
 #endif // defined(MA_HAS_RVALUE_REFS)
 
+namespace ma {
+
 template <typename T>
 struct shared_ptr_factory_helper : T
 {
@@ -103,5 +105,7 @@ struct shared_ptr_factory_helper : T
 #endif // defined(MA_HAS_RVALUE_REFS)
 
 }; // struct shared_ptr_factory_helper
+
+} // namespace ma
 
 #endif // MA_SHARED_PTR_FACTORY_HPP
