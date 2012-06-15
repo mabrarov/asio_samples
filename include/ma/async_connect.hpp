@@ -161,7 +161,8 @@ make_connect_ex_handler(const Handler& handler)
 #endif // defined(MA_HAS_RVALUE_REFS)
 
 template <typename Socket>
-boost::system::error_code bind_to_any(Socket& socket)
+boost::system::error_code bind_to_any(Socket& socket, 
+    const typename Socket::endpoint_type::protocol_type& protocol)
 {
   typedef typename Socket::endpoint_type endpoint_type;
 
@@ -169,7 +170,7 @@ boost::system::error_code bind_to_any(Socket& socket)
       boost::asio::error::get_system_category());
 
   boost::system::error_code error;
-  socket.bind(endpoint_type(), error);
+  socket.bind(endpoint_type(protocol, 0), error);
 
   if (ignored == error)
   {
@@ -256,7 +257,8 @@ void async_connect(Socket& socket,
     return;
   }
 
-  if (boost::system::error_code error = detail::bind_to_any(socket))
+  if (boost::system::error_code error = detail::bind_to_any(socket, 
+      peer_endpoint.protocol()))
   {
 #if defined(MA_HAS_RVALUE_REFS)
 

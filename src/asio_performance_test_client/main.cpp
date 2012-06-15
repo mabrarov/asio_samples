@@ -67,6 +67,7 @@ class stats : private boost::noncopyable
 public:
   stats()
     : mutex_()
+    , total_sessions_connected_(0)
     , total_bytes_written_(0)
     , total_bytes_read_(0)
   {
@@ -75,6 +76,7 @@ public:
   void add(std::size_t bytes_written, std::size_t bytes_read)
   {
     boost::mutex::scoped_lock lock(mutex_);
+    ++total_sessions_connected_;
     total_bytes_written_ += bytes_written;
     total_bytes_read_ += bytes_read;
   }
@@ -82,19 +84,21 @@ public:
   void print()
   {
     boost::mutex::scoped_lock lock(mutex_);
+    std::cout << total_sessions_connected_ << " total sessions connected\n";
     std::cout << total_bytes_written_ << " total bytes written\n";
     std::cout << total_bytes_read_ << " total bytes read\n";
   }
 
 private:
   boost::mutex mutex_;
+  std::size_t total_sessions_connected_;
   std::size_t total_bytes_written_;
   std::size_t total_bytes_read_;
 }; // class stats
 
 class session : private boost::noncopyable
 {
-  typedef session this_type;
+  typedef session this_type;  
 
 public:
   typedef boost::asio::ip::tcp protocol;
@@ -106,6 +110,7 @@ public:
     , buffer_(buffer_size)
     , bytes_written_(0)
     , bytes_read_(0)
+    , was_connected_(false)
     , write_in_progress_(false)
     , read_in_progress_(false)
     , stopped_(false)
@@ -131,13 +136,17 @@ public:
 
   ~session()
   {
-    stats_.add(bytes_written_, bytes_read_);
+    if (was_connected_)
+    {
+      stats_.add(bytes_written_, bytes_read_);
+    }
   }
 
   void start(const protocol::resolver::iterator& endpoint_iterator)
   {
     strand_.post(ma::make_custom_alloc_handler(write_allocator_,
-        boost::bind(&this_type::start_connect, this, endpoint_iterator)));
+        boost::bind(&this_type::start_connect, this, 
+            endpoint_iterator, endpoint_iterator)));
   }
 
   void stop()
@@ -146,17 +155,20 @@ public:
   }
 
 private:
-  void start_connect(const protocol::resolver::iterator& endpoint_iterator)
+  void start_connect(
+      const protocol::resolver::iterator& initial_endpoint_iterator,
+      const protocol::resolver::iterator& current_endpoint_iterator)
   {
-    protocol::endpoint endpoint = *endpoint_iterator;
+    protocol::endpoint endpoint = *current_endpoint_iterator;
     ma::async_connect(socket_, endpoint, MA_STRAND_WRAP(strand_,
         ma::make_custom_alloc_handler(write_allocator_,
-            boost::bind(&session::handle_connect, this,
-                boost::asio::placeholders::error, endpoint_iterator))));
+            boost::bind(&session::handle_connect, this, _1, 
+                initial_endpoint_iterator, current_endpoint_iterator))));
   }
 
   void handle_connect(const boost::system::error_code& error,
-      protocol::resolver::iterator endpoint_iterator)
+      const protocol::resolver::iterator& initial_endpoint_iterator,
+      protocol::resolver::iterator current_endpoint_iterator)
   {
     if (stopped_)
     {
@@ -165,17 +177,22 @@ private:
 
     if (error)
     {
-      ++endpoint_iterator;
-      if (protocol::resolver::iterator() != endpoint_iterator)
+      boost::system::error_code ignored;
+      socket_.close(ignored);
+
+      ++current_endpoint_iterator;
+      if (protocol::resolver::iterator() == current_endpoint_iterator)
       {
-        boost::system::error_code ignored;
-        socket_.close(ignored);
-        start_connect(endpoint_iterator);
-        return;
+        start_connect(initial_endpoint_iterator, initial_endpoint_iterator);
       }
-      do_stop();
+      else
+      {
+        start_connect(initial_endpoint_iterator, current_endpoint_iterator);
+      }
       return;
     }
+
+    was_connected_ = true;
 
     boost::system::error_code set_option_error;
     protocol::no_delay no_delay(true);
@@ -258,9 +275,7 @@ private:
     {
       socket_.async_write_some(write_data, MA_STRAND_WRAP(strand_,
           ma::make_custom_alloc_handler(write_allocator_,
-              boost::bind(&session::handle_write, this,
-                  boost::asio::placeholders::error,
-                  boost::asio::placeholders::bytes_transferred))));
+              boost::bind(&session::handle_write, this, _1, _2))));
       write_in_progress_ = true;
     }
   }
@@ -272,9 +287,7 @@ private:
     {
       socket_.async_read_some(read_data, MA_STRAND_WRAP(strand_,
           ma::make_custom_alloc_handler(read_allocator_,
-              boost::bind(&session::handle_read, this,
-                  boost::asio::placeholders::error,
-                  boost::asio::placeholders::bytes_transferred))));
+              boost::bind(&session::handle_read, this, _1, _2))));
       read_in_progress_ = true;
     }
   }
@@ -284,6 +297,7 @@ private:
   ma::cyclic_buffer buffer_;
   std::size_t bytes_written_;
   std::size_t bytes_read_;
+  bool was_connected_;
   bool write_in_progress_;
   bool read_in_progress_;
   bool stopped_;
