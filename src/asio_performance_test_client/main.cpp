@@ -103,11 +103,12 @@ class session : private boost::noncopyable
 public:
   typedef boost::asio::ip::tcp protocol;
 
-  session(boost::asio::io_service& ios, std::size_t buffer_size,
-      stats& s, work_state& work_state)
+  session(boost::asio::io_service& ios, std::size_t buffer_size, 
+      std::size_t max_connect_attempts, stats& s, work_state& work_state)
     : strand_(ios)
     , socket_(ios)
     , buffer_(buffer_size)
+    , max_connect_attempts_(max_connect_attempts)
     , bytes_written_(0)
     , bytes_read_(0)
     , was_connected_(false)
@@ -145,7 +146,7 @@ public:
   void start(const protocol::resolver::iterator& endpoint_iterator)
   {
     strand_.post(ma::make_custom_alloc_handler(write_allocator_,
-        boost::bind(&this_type::start_connect, this, 
+        boost::bind(&this_type::start_connect, this, 0, 
             endpoint_iterator, endpoint_iterator)));
   }
 
@@ -155,18 +156,19 @@ public:
   }
 
 private:
-  void start_connect(
+  void start_connect(std::size_t connect_attempt,
       const protocol::resolver::iterator& initial_endpoint_iterator,
       const protocol::resolver::iterator& current_endpoint_iterator)
   {
     protocol::endpoint endpoint = *current_endpoint_iterator;
     ma::async_connect(socket_, endpoint, MA_STRAND_WRAP(strand_,
         ma::make_custom_alloc_handler(write_allocator_,
-            boost::bind(&session::handle_connect, this, _1, 
+            boost::bind(&session::handle_connect, this, _1, connect_attempt,
                 initial_endpoint_iterator, current_endpoint_iterator))));
   }
 
-  void handle_connect(const boost::system::error_code& error,
+  void handle_connect(const boost::system::error_code& error, 
+      std::size_t connect_attempt,
       const protocol::resolver::iterator& initial_endpoint_iterator,
       protocol::resolver::iterator current_endpoint_iterator)
   {
@@ -181,15 +183,26 @@ private:
       socket_.close(ignored);
 
       ++current_endpoint_iterator;
-      if (protocol::resolver::iterator() == current_endpoint_iterator)
+      if (protocol::resolver::iterator() != current_endpoint_iterator)
       {
-        start_connect(initial_endpoint_iterator, initial_endpoint_iterator);
+        start_connect(connect_attempt, 
+            initial_endpoint_iterator, current_endpoint_iterator);      
+        return;        
       }
-      else
+
+      if (max_connect_attempts_) 
       {
-        start_connect(initial_endpoint_iterator, current_endpoint_iterator);
+        ++connect_attempt;
+        if (connect_attempt >= max_connect_attempts_)
+        {
+          do_stop();
+          return;
+        }
       }
-      return;
+
+      start_connect(connect_attempt, 
+          initial_endpoint_iterator, initial_endpoint_iterator);
+      return;      
     }
 
     was_connected_ = true;
@@ -295,6 +308,7 @@ private:
   boost::asio::io_service::strand strand_;
   protocol::socket socket_;
   ma::cyclic_buffer buffer_;
+  const std::size_t max_connect_attempts_;
   std::size_t bytes_written_;
   std::size_t bytes_read_;
   bool was_connected_;
@@ -315,7 +329,7 @@ public:
   typedef session::protocol protocol;
 
   client(boost::asio::io_service& ios, std::size_t buffer_size,
-      std::size_t session_count)
+      std::size_t session_count, std::size_t max_connect_attempts)
     : io_service_(ios)
     , sessions_()
     , stats_()
@@ -323,8 +337,9 @@ public:
   {
     for (std::size_t i = 0; i < session_count; ++i)
     {
-      sessions_.push_back(boost::make_shared<session>(boost::ref(io_service_),
-          buffer_size, boost::ref(stats_), boost::ref(work_state_)));
+      sessions_.push_back(boost::make_shared<session>(
+          boost::ref(io_service_), buffer_size, max_connect_attempts, 
+          boost::ref(stats_), boost::ref(work_state_)));
     }
   }
 
@@ -364,28 +379,29 @@ int main(int argc, char* argv[])
 {
   try
   {
-    if (argc != 7)
+    if (argc != 8)
     {
       std::cerr << "Usage: client <host> <port> <threads> <buffersize> ";
-      std::cerr << "<sessions> <time>\n";
+      std::cerr << "<sessions> <time> <maxconnectattempts>\n";
       return EXIT_FAILURE;
     }
 
     using namespace std; // For atoi.
     const char* host = argv[1];
     const char* port = argv[2];
-    int thread_count = atoi(argv[3]);
+    std::size_t thread_count = atoi(argv[3]);
     std::size_t buffer_size = atoi(argv[4]);
     std::size_t session_count = atoi(argv[5]);
     int timeout = atoi(argv[6]);
+    std::size_t max_connect_attempts = atoi(argv[7]);
 
-    boost::asio::io_service ios;
+    boost::asio::io_service ios(thread_count);
     client::protocol::resolver r(ios);
-    client c(ios, buffer_size, session_count);
+    client c(ios, buffer_size, session_count, max_connect_attempts);
     c.start(r.resolve(client::protocol::resolver::query(host, port)));
 
     boost::thread_group work_threads;
-    for (int i = 0; i != thread_count; ++i)
+    for (std::size_t i = 0; i != thread_count; ++i)
     {
       work_threads.create_thread(
           boost::bind(&boost::asio::io_service::run, &ios));
