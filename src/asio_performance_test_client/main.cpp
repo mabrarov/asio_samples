@@ -10,7 +10,6 @@
 
 #include <algorithm>
 #include <iostream>
-#include <string>
 #include <vector>
 #include <boost/ref.hpp>
 #include <boost/asio.hpp>
@@ -21,6 +20,7 @@
 #include <boost/scoped_array.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
+#include <boost/lexical_cast.hpp>
 #include <ma/cyclic_buffer.hpp>
 #include <ma/async_connect.hpp>
 #include <ma/handler_allocator.hpp>
@@ -104,10 +104,10 @@ class session : private boost::noncopyable
 public:
   typedef boost::asio::ip::tcp protocol;
 
-  session(boost::asio::io_service& ios, std::size_t buffer_size, 
+  session(boost::asio::io_service& io_service, std::size_t buffer_size, 
       std::size_t max_connect_attempts, stats& s, work_state& work_state)
-    : strand_(ios)
-    , socket_(ios)
+    : strand_(io_service)
+    , socket_(io_service)
     , buffer_(buffer_size)
     , max_connect_attempts_(max_connect_attempts)
     , bytes_written_(0)
@@ -329,9 +329,9 @@ class client : private boost::noncopyable
 public:
   typedef session::protocol protocol;
 
-  client(boost::asio::io_service& ios, std::size_t buffer_size,
+  client(boost::asio::io_service& io_service, std::size_t buffer_size,
       std::size_t session_count, std::size_t max_connect_attempts)
-    : io_service_(ios)
+    : io_service_(io_service)
     , sessions_()
     , stats_()
     , work_state_(session_count)
@@ -382,30 +382,35 @@ int main(int argc, char* argv[])
   {
     if (argc != 8)
     {
-      std::cerr << "Usage: client <host> <port> <threads> <buffersize> ";
-      std::cerr << "<sessions> <time> <maxconnectattempts>\n";
+      std::cerr << "Usage: asio_performance_test_client <host> <port>"
+                << " <threads> <buffersize> <sessions> <time>"
+                << " <maxconnectattempts>\n";
       return EXIT_FAILURE;
     }
+    
+    const char* const host = argv[1];
+    const char* const port = argv[2];
+    const std::size_t thread_count  = 
+        boost::lexical_cast<std::size_t>(argv[3]);
+    const std::size_t buffer_size   = 
+        boost::lexical_cast<std::size_t>(argv[4]);
+    const std::size_t session_count = 
+        boost::lexical_cast<std::size_t>(argv[5]);
+    const long timeout = 
+        boost::lexical_cast<long>(argv[6]);
+    const std::size_t max_connect_attempts = 
+        boost::lexical_cast<std::size_t>(argv[7]);
 
-    using namespace std; // For atoi.
-    const char* host = argv[1];
-    const char* port = argv[2];
-    std::size_t thread_count = atoi(argv[3]);
-    std::size_t buffer_size = atoi(argv[4]);
-    std::size_t session_count = atoi(argv[5]);
-    int timeout = atoi(argv[6]);
-    std::size_t max_connect_attempts = atoi(argv[7]);
-
-    boost::asio::io_service ios(thread_count);
-    client::protocol::resolver r(ios);
-    client c(ios, buffer_size, session_count, max_connect_attempts);
-    c.start(r.resolve(client::protocol::resolver::query(host, port)));
+    boost::asio::io_service io_service(thread_count);
+    client::protocol::resolver resolver(io_service);
+    client c(io_service, buffer_size, session_count, max_connect_attempts);
+    c.start(resolver.resolve(client::protocol::resolver::query(host, port)));
 
     boost::thread_group work_threads;
     for (std::size_t i = 0; i != thread_count; ++i)
     {
       work_threads.create_thread(
-          boost::bind(&boost::asio::io_service::run, &ios));
+          boost::bind(&boost::asio::io_service::run, &io_service));
     }
 
     c.wait_until_done(boost::posix_time::seconds(timeout));
