@@ -16,6 +16,7 @@
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/thread.hpp>
+#include <boost/cstdint.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/scoped_array.hpp>
 #include <boost/shared_ptr.hpp>
@@ -73,7 +74,7 @@ public:
   {
   }
 
-  void add(std::size_t bytes_written, std::size_t bytes_read)
+  void add(boost::uint_fast64_t bytes_written, boost::uint_fast64_t bytes_read)
   {
     boost::mutex::scoped_lock lock(mutex_);
     ++total_sessions_connected_;
@@ -89,11 +90,11 @@ public:
     std::cout << total_bytes_read_ << " total bytes read\n";
   }
 
-private:
+private:  
   boost::mutex mutex_;
   std::size_t total_sessions_connected_;
-  std::size_t total_bytes_written_;
-  std::size_t total_bytes_read_;
+  boost::uint_fast64_t total_bytes_written_;
+  boost::uint_fast64_t total_bytes_read_;
 }; // class stats
 
 class session : private boost::noncopyable
@@ -309,8 +310,8 @@ private:
   protocol::socket socket_;
   ma::cyclic_buffer buffer_;
   const std::size_t max_connect_attempts_;
-  std::size_t bytes_written_;
-  std::size_t bytes_read_;
+  boost::uint_fast64_t bytes_written_;
+  boost::uint_fast64_t bytes_read_;
   bool was_connected_;
   bool write_in_progress_;
   bool read_in_progress_;
