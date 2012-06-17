@@ -51,6 +51,7 @@ private:
 public:
   typedef boost::asio::ip::tcp protocol_type;
 
+  // Note that session_io_service has to outlive io_service
   static session_manager_ptr create(boost::asio::io_service& io_service,
       boost::asio::io_service& session_io_service,
       const session_manager_config& config);
@@ -184,6 +185,7 @@ public:
 #endif // defined(MA_HAS_RVALUE_REFS)
 
 protected:
+  // Note that session_io_service has to outlive io_service
   session_manager(boost::asio::io_service& io_service,
       boost::asio::io_service& session_io_service,
       const session_manager_config& config);

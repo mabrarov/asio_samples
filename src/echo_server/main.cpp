@@ -159,8 +159,7 @@ int run_server(const echo_server::execution_config& exec_config,
 
   wrapped_session_manager_ptr session_manager(
       boost::make_shared<session_manager_wrapper>(
-          boost::ref(session_manager_ios),
-          boost::ref(session_ios),
+          boost::ref(session_manager_ios), boost::ref(session_ios),
           session_manager_config));
 
   std::cout << "Server is starting...\n";
