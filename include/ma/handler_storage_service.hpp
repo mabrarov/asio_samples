@@ -205,6 +205,7 @@ private:
 
   // Base class to hold up handlers.
   class handler_base
+    : public detail::intrusive_list<handler_base>::base_hook
   {
   private:
     typedef handler_base this_type;
@@ -238,6 +239,8 @@ private:
     destroy_func_type destroy_func_;
     target_func_type  target_func_;
   }; // class handler_base
+
+  typedef detail::intrusive_list<handler_base> handler_base_list;
 
   // Base class to hold up handlers with specified call signature.
   template <typename Arg>
@@ -451,33 +454,46 @@ public:
 
   void construct(implementation_type& impl)
   {
-    // Add implementation to the list of active implementations.
-    lock_guard lock(impl_list_mutex_);
-    impl_list_.push_front(impl);
+    if (!shutdown_done_)
+    {
+      // Add implementation to the list of active implementations.
+      lock_guard impl_list_lock(impl_list_mutex_);
+      impl_list_.push_front(impl);
+    }
   }
 
   void move_construct(implementation_type& impl,
       implementation_type& other_impl)
   {
-    construct(impl);
-    // Move ownership of the stored handler
-    impl.handler_ = other_impl.handler_;
-    other_impl.handler_ = 0;
+    if (!shutdown_done_)
+    {
+      // Add implementation to the list of active implementations.
+      {
+        lock_guard impl_list_lock(impl_list_mutex_);
+        impl_list_.push_front(impl);
+      }
+      // Move ownership of the stored handler
+      impl.handler_ = other_impl.handler_;
+      other_impl.handler_ = 0;
+    }
   }
 
   void destroy(implementation_type& impl)
   {
-    // Remove implementation from the list of active implementations.
+    if (!shutdown_done_)
     {
-      lock_guard lock(impl_list_mutex_);
-      impl_list_.erase(impl);
+      {
+        // Remove implementation from the list of active implementations.
+        lock_guard impl_list_lock(impl_list_mutex_);
+        impl_list_.erase(impl);
+      }
+      // Destroy stored handler if it exists.
+      clear(impl);
     }
-    // Destroy stored handler if it exists.
-    clear(impl);
   }
 
   /// Can throw if destructor of user supplied handler can throw
-  void clear(implementation_type& impl)
+  static void clear(implementation_type& impl)
   {
     // Destroy stored handler if it exists.
     if (handler_base* handler = impl.handler_)
@@ -564,38 +580,37 @@ private:
   virtual void shutdown_service()
   {
     // Restrict usage of service.
-    shutdown_done_ = true;
-    // Clear all still active implementations.
-    bool done = false;
-    while (!done)
+    shutdown_done_ = true;    
+    // Take ownership of all still active handlers.
+    handler_base_list stored_handlers;
     {
-      // Pop front implementation.
-      implementation_type* impl;
+      lock_guard impl_list_lock(impl_list_mutex_);
+      implementation_base_type* impl = impl_list_.front();
+      while (impl)
       {
-        lock_guard lock(impl_list_mutex_);
-        impl = static_cast<implementation_type*>(impl_list_.front());
-        if (impl)
+        if (handler_base* handler = impl->handler_)
         {
-          impl_list_.pop_front();
+          stored_handlers.push_front(*handler);
+          impl->handler_ = 0;
         }
+        impl = impl_list_.next(*impl);      
       }
-      if (impl)
+    }
+    // Destroy all handlers
+    {
+      handler_base* handler = stored_handlers.front();
+      while (handler)
       {
-        // Clear popped implementation.
-        clear(*impl);
-      }
-      else
-      {
-        // The end of list.
-        done = true;
+        handler_base* next_handler = stored_handlers.next(*handler);
+        handler->destroy();
+        handler = next_handler;
       }
     }
   }
 
   // Guard for the impl_list_
   mutex_type impl_list_mutex_;
-  // Double-linked intrusive list of active (constructed but
-  // still not destructed) implementations.
+  // Double-linked intrusive list of active implementations.
   impl_base_list impl_list_;
   // Shutdown state flag.
   bool shutdown_done_;
