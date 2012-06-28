@@ -595,26 +595,22 @@ private:
     handler_base_list stored_handlers;
     {
       lock_guard impl_list_lock(impl_list_mutex_);
-      impl_base* impl = impl_list_.front();
-      while (impl)
+      for (impl_base* impl = impl_list_.front(); impl; 
+          impl = impl_list_.next(*impl))
       {
         if (handler_base* handler = impl->handler_)
         {
           stored_handlers.push_front(*handler);
           impl->handler_ = 0;
         }
-        impl = impl_list_.next(*impl);      
       }
     }
     // Destroy all handlers
+    for (handler_base* handler = stored_handlers.front(); handler; )
     {
-      handler_base* handler = stored_handlers.front();
-      while (handler)
-      {
-        handler_base* next_handler = stored_handlers.next(*handler);
-        handler->destroy();
-        handler = next_handler;
-      }
+      handler_base* next_handler = stored_handlers.next(*handler);
+      handler->destroy();
+      handler = next_handler;
     }
   }
 
