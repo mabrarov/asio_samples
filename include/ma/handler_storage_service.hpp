@@ -49,10 +49,19 @@ public:
   typedef Value& reference;
 
   /// Required hook for items of the list.
-  class base_hook : private boost::noncopyable
+  class base_hook
   {
+  private:
+    typedef base_hook this_type;
+
   public:
     base_hook()
+      : prev_(0)
+      , next_(0)
+    {
+    }
+
+    base_hook(const this_type& other)
       : prev_(0)
       , next_(0)
     {
@@ -415,17 +424,18 @@ private:
 
   // Base class for implementation that helps to hide
   // public inheritance from detail::intrusive_list::base_hook
-  class implementation_base_type
-    : public detail::intrusive_list<implementation_base_type>::base_hook
+  class impl_base 
+    : public detail::intrusive_list<impl_base>::base_hook
+    , private boost::noncopyable
   {
   public:
-    implementation_base_type()
+    impl_base()
       : handler_(0)
     {
     }
 
 #if !defined(NDEBUG)
-    ~implementation_base_type()
+    ~impl_base()
     {
       BOOST_ASSERT(!handler_);
     }
@@ -435,12 +445,12 @@ private:
     friend class handler_storage_service;
     // Pointer to the stored handler otherwise null pointer.
     handler_base* handler_;
-  }; // class implementation_base_type
+  }; // class impl_base
 
-  typedef detail::intrusive_list<implementation_base_type> impl_base_list;
+  typedef detail::intrusive_list<impl_base> impl_base_list;
 
 public:
-  class implementation_type : private implementation_base_type
+  class implementation_type : private impl_base
   {
   private:
     friend class handler_storage_service;
@@ -585,7 +595,7 @@ private:
     handler_base_list stored_handlers;
     {
       lock_guard impl_list_lock(impl_list_mutex_);
-      implementation_base_type* impl = impl_list_.front();
+      impl_base* impl = impl_list_.front();
       while (impl)
       {
         if (handler_base* handler = impl->handler_)
