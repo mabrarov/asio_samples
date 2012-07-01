@@ -12,7 +12,7 @@ CONFIG   += console thread
 CONFIG   -= app_bundle
 
 # Boost C++ Libraries headers
-BOOST_INCLUDE   = ../../../../boost_1_49_0
+BOOST_INCLUDE   = ../../../../boost_1_50_0
 # Boost C++ Libraries binaries
 win32:BOOST_LIB = $${BOOST_INCLUDE}/lib/x86
 unix:BOOST_LIB  = $${BOOST_INCLUDE}/lib

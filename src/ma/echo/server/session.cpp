@@ -623,28 +623,30 @@ void session::continue_timer_wait()
   BOOST_ASSERT_MSG(intern_state::stopped != intern_state_,
       "invalid internal state");
 
-  bool has_io_activity = (read_state::in_progress == read_state_)
-      || (write_state::in_progress == write_state_);
-
-  if (inactivity_timeout_ && has_io_activity && !timer_turned_)
+  if (inactivity_timeout_)
   {
-    // Update timer expiry
-    boost::system::error_code error;
-    timer_.expires_from_now(*inactivity_timeout_, error);
-    if (error)
+    bool has_io_activity = (read_state::in_progress == read_state_)
+        || (write_state::in_progress == write_state_);
+    if (has_io_activity && !timer_turned_)
     {
-      start_stop(error);
-      return;
-    }
+      // Update timer expiry
+      boost::system::error_code error;
+      timer_.expires_from_now(*inactivity_timeout_, error);
+      if (error)
+      {
+        start_stop(error);
+        return;
+      }
 
-    timer_wait_cancelled_ = true;
-    timer_turned_         = true;
+      timer_wait_cancelled_ = true;
+      timer_turned_         = true;
 
-    // Start async wait if it can be done right now.
-    // Otherwise it will be done by handle_timer.
-    if (timer_state::ready == timer_state_)
-    {
-      start_timer_wait();
+      // Start async wait if it can be done right now.
+      // Otherwise it will be done by handle_timer.
+      if (timer_state::ready == timer_state_)
+      {
+        start_timer_wait();
+      }
     }
   }
 }
@@ -976,6 +978,17 @@ boost::system::error_code session::close_socket()
 boost::system::error_code session::apply_socket_options()
 {
   typedef protocol_type::socket socket_type;
+
+  // Setup abortive shutdown sequence for closesocket
+  {
+    boost::system::error_code error;
+    socket_type::linger opt(false, 0);
+    socket_.set_option(opt, error);
+    if (error)
+    {
+      return error;
+    }
+  }
 
   // Apply all (really) configered socket options
   if (socket_recv_buffer_size_)
