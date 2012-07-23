@@ -688,9 +688,7 @@ void session::continue_shutdown_at_read_wait()
   if (write_state::wait == write_state_)
   {
     // We can shutdown outgoing part of TCP stream
-    boost::system::error_code error;
-    socket_.shutdown(protocol_type::socket::shutdown_send, error);
-    if (error)
+    if (boost::system::error_code error = shutdown_socket())
     {
       // Fatal error
       start_stop(error);
@@ -735,9 +733,7 @@ void session::continue_shutdown_at_read_in_progress()
   if (write_state::wait == write_state_)
   {
     // We can shutdown outgoing part of TCP stream
-    boost::system::error_code error;
-    socket_.shutdown(protocol_type::socket::shutdown_send, error);
-    if (error)
+    if (boost::system::error_code error = shutdown_socket())
     {
       // Fatal error
       start_stop(error);
@@ -761,8 +757,7 @@ void session::continue_shutdown_at_read_stopped()
   if (write_state::wait == write_state_)
   {
     // We can shutdown outgoing part of TCP stream
-    boost::system::error_code ignored;
-    socket_.shutdown(protocol_type::socket::shutdown_send, ignored);
+    shutdown_socket();
     // Shutdown error has be ignored because read activity is already stopped
     write_state_ = write_state::stopped;
   }
@@ -965,6 +960,13 @@ boost::system::error_code session::cancel_timer_wait()
     timer_wait_cancelled_ = true;
     timer_turned_         = false;
   }
+  return error;
+}
+
+boost::system::error_code session::shutdown_socket()
+{
+  boost::system::error_code error;
+  socket_.shutdown(protocol_type::socket::shutdown_send, error);
   return error;
 }
 

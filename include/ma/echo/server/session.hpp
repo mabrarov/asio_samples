@@ -365,6 +365,7 @@ private:
   void start_socket_write(const cyclic_buffer::const_buffers_type&);
   void start_timer_wait();
   boost::system::error_code cancel_timer_wait();
+  boost::system::error_code shutdown_socket();
   boost::system::error_code close_socket();
   boost::system::error_code apply_socket_options();
 
