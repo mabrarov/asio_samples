@@ -67,8 +67,7 @@ class stats : private boost::noncopyable
 {
 public:
   stats()
-    : mutex_()
-    , total_sessions_connected_(0)
+    : total_sessions_connected_(0)
     , total_bytes_written_(0)
     , total_bytes_read_(0)
   {
@@ -76,7 +75,6 @@ public:
 
   void add(boost::uint_fast64_t bytes_written, boost::uint_fast64_t bytes_read)
   {
-    boost::mutex::scoped_lock lock(mutex_);
     ++total_sessions_connected_;
     total_bytes_written_ += bytes_written;
     total_bytes_read_ += bytes_read;
@@ -84,14 +82,12 @@ public:
 
   void print()
   {
-    boost::mutex::scoped_lock lock(mutex_);
     std::cout << total_sessions_connected_ << " total sessions connected\n";
     std::cout << total_bytes_written_ << " total bytes written\n";
     std::cout << total_bytes_read_ << " total bytes read\n";
   }
 
 private:  
-  boost::mutex mutex_;
   std::size_t total_sessions_connected_;
   boost::uint_fast64_t total_bytes_written_;
   boost::uint_fast64_t total_bytes_read_;
@@ -105,7 +101,7 @@ public:
   typedef boost::asio::ip::tcp protocol;
 
   session(boost::asio::io_service& io_service, std::size_t buffer_size, 
-      std::size_t max_connect_attempts, stats& s, work_state& work_state)
+      std::size_t max_connect_attempts, work_state& work_state)
     : strand_(io_service)
     , socket_(io_service)
     , buffer_(buffer_size)
@@ -116,7 +112,6 @@ public:
     , write_in_progress_(false)
     , read_in_progress_(false)
     , stopped_(false)
-    , stats_(s)
     , work_state_(work_state)
   {
     typedef ma::cyclic_buffer::mutable_buffers_type buffers_type;
@@ -136,14 +131,6 @@ public:
     buffer_.consume(filled_size);
   }
 
-  ~session()
-  {
-    if (was_connected_)
-    {
-      stats_.add(bytes_written_, bytes_read_);
-    }
-  }
-
   void start(const protocol::resolver::iterator& endpoint_iterator)
   {
     strand_.post(ma::make_custom_alloc_handler(write_allocator_,
@@ -154,6 +141,21 @@ public:
   void stop()
   {
     strand_.post(boost::bind(&session::do_stop, this));
+  }
+
+  bool was_connected() const
+  {
+    return was_connected_;
+  }
+
+  boost::uint_fast64_t bytes_written() const
+  {
+    return bytes_written_;
+  }
+
+  boost::uint_fast64_t bytes_read() const
+  {
+    return bytes_read_;
   }
 
 private:
@@ -180,8 +182,7 @@ private:
 
     if (error)
     {
-      boost::system::error_code ignored;
-      socket_.close(ignored);
+      close_socket();
 
       ++current_endpoint_iterator;
       if (protocol::resolver::iterator() != current_endpoint_iterator)
@@ -275,10 +276,9 @@ private:
   {
     if (!stopped_)
     {
-      boost::system::error_code ignored;
-      socket_.close(ignored);
-      work_state_.notify_session_stop();
+      close_socket();
       stopped_ = true;
+      work_state_.notify_session_stop();
     }
   }
 
@@ -306,6 +306,12 @@ private:
     }
   }
 
+  void close_socket()
+  {
+    boost::system::error_code ignored;
+    socket_.close(ignored);
+  }
+
   boost::asio::io_service::strand strand_;
   protocol::socket socket_;
   ma::cyclic_buffer buffer_;
@@ -316,7 +322,6 @@ private:
   bool write_in_progress_;
   bool read_in_progress_;
   bool stopped_;
-  stats& stats_;
   work_state& work_state_;
   ma::in_place_handler_allocator<512> read_allocator_;
   ma::in_place_handler_allocator<512> write_allocator_;
@@ -326,6 +331,9 @@ typedef boost::shared_ptr<session> session_ptr;
 
 class client : private boost::noncopyable
 {
+private:
+  typedef client this_type;
+
 public:
   typedef session::protocol protocol;
 
@@ -338,15 +346,15 @@ public:
   {
     for (std::size_t i = 0; i < session_count; ++i)
     {
-      sessions_.push_back(boost::make_shared<session>(
-          boost::ref(io_service_), buffer_size, max_connect_attempts, 
-          boost::ref(stats_), boost::ref(work_state_)));
+      sessions_.push_back(boost::make_shared<session>(boost::ref(io_service_),
+          buffer_size, max_connect_attempts, boost::ref(work_state_)));
     }
   }
 
   ~client()
   {
-    sessions_.clear();
+    std::for_each(sessions_.begin(), sessions_.end(),
+        boost::bind(&this_type::register_stats, this, _1));
     stats_.print();
   }
 
@@ -368,6 +376,14 @@ public:
   }
 
 private:
+  void register_stats(const session_ptr& session)
+  {
+    if (session->was_connected())
+    {
+      stats_.add(session->bytes_written(), session->bytes_read());
+    }
+  }
+
   boost::asio::io_service& io_service_;
   std::vector<session_ptr> sessions_;
   stats stats_;

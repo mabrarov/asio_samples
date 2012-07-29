@@ -5,110 +5,318 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#if defined(WIN32)
-#include <tchar.h>
-#endif
-
-#include <cstdlib>
-#include <cstddef>
+#include <algorithm>
 #include <iostream>
-#include <exception>
+#include <vector>
 #include <boost/ref.hpp>
-#include <boost/bind.hpp>
 #include <boost/asio.hpp>
-#include <boost/system/error_code.hpp>
+#include <boost/bind.hpp>
+#include <boost/thread.hpp>
+#include <boost/cstdint.hpp>
+#include <boost/noncopyable.hpp>
+#include <boost/scoped_array.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
+#include <boost/lexical_cast.hpp>
 #include <ma/async_connect.hpp>
 #include <ma/handler_allocator.hpp>
 #include <ma/custom_alloc_handler.hpp>
+#include <ma/strand_wrapped_handler.hpp>
 
 namespace {
 
-typedef ma::in_place_handler_allocator<512> allocator_type;
-
-const std::string text_to_write = "Hello, World!";
-
-void handle_connect(boost::asio::ip::tcp::socket& socket,
-    allocator_type& handler_allocator, std::size_t attempt,
-    const boost::asio::ip::tcp::endpoint& peer_endpoint,
-    const boost::system::error_code& error);
-
-void handle_write(const boost::system::error_code& error,
-    std::size_t bytes_transferred);
-
-void handle_connect(boost::asio::ip::tcp::socket& socket,
-    allocator_type& handler_allocator, std::size_t attempt,
-    const boost::asio::ip::tcp::endpoint& peer_endpoint,
-    const boost::system::error_code& error)
+class work_state : private boost::noncopyable
 {
-  if (error)
+public:
+  explicit work_state(std::size_t session_count)
+    : session_count_(session_count)
   {
-    std::cout << "async_connect completed with error: "
-        << error.message() << std::endl;
+  }
 
-    //boost::system::error_code ignored;
-    //socket.close(ignored);
-
-    if (attempt < 10)
+  void notify_session_stop()
+  {
+    boost::mutex::scoped_lock lock(mutex_);
+    --session_count_;
+    if (!session_count_)
     {
-      ma::async_connect(socket, peer_endpoint,
-          ma::make_custom_alloc_handler(handler_allocator,
-              boost::bind(&handle_connect, boost::ref(socket),
-                  boost::ref(handler_allocator), attempt + 1,
-                  peer_endpoint, _1)));
+      condition_.notify_all();
+    }
+  }
+
+  void wait_for_all_session_stop(
+      const boost::posix_time::time_duration& timeout)
+  {
+    boost::unique_lock<boost::mutex> lock(mutex_);
+    if (session_count_)
+    {
+      condition_.timed_wait(lock, timeout);
+    }
+  }
+
+private:
+  std::size_t session_count_;
+  boost::mutex mutex_;
+  boost::condition_variable condition_;
+}; // struct work_state
+
+class stats : private boost::noncopyable
+{
+public:
+  stats()
+    : total_sessions_connected_(0)
+  {
+  }
+
+  void add(std::size_t connect_count)
+  {
+    total_sessions_connected_ += connect_count;
+  }
+
+  void print()
+  {
+    std::cout << total_sessions_connected_ << " total sessions connected\n";    
+  }
+
+private:  
+  boost::uint_fast64_t total_sessions_connected_;  
+}; // class stats
+
+class session : private boost::noncopyable
+{
+  typedef session this_type;  
+
+public:
+  typedef boost::asio::ip::tcp protocol;
+
+  session(boost::asio::io_service& io_service, work_state& work_state)
+    : strand_(io_service)
+    , socket_(io_service)
+    , connect_count_(0)    
+    , stopped_(false)
+    , work_state_(work_state)
+  {    
+  }
+
+  void start(const protocol::resolver::iterator& endpoint_iterator)
+  {
+    strand_.post(ma::make_custom_alloc_handler(connect_allocator_,
+        boost::bind(&this_type::start_connect, this, 0, 
+            endpoint_iterator, endpoint_iterator)));
+  }
+
+  void stop()
+  {
+    strand_.post(boost::bind(&session::do_stop, this));
+  }
+
+  std::size_t connect_count() const
+  {
+    return connect_count_;
+  }
+
+private:
+  void start_connect(std::size_t connect_attempt,
+      const protocol::resolver::iterator& initial_endpoint_iterator,
+      const protocol::resolver::iterator& current_endpoint_iterator)
+  {
+    protocol::endpoint endpoint = *current_endpoint_iterator;
+    ma::async_connect(socket_, endpoint, MA_STRAND_WRAP(strand_,
+        ma::make_custom_alloc_handler(connect_allocator_,
+            boost::bind(&session::handle_connect, this, _1, connect_attempt,
+                initial_endpoint_iterator, current_endpoint_iterator))));
+  }
+
+  void handle_connect(const boost::system::error_code& error, 
+      std::size_t connect_attempt,
+      const protocol::resolver::iterator& initial_endpoint_iterator,
+      protocol::resolver::iterator current_endpoint_iterator)
+  {
+    if (stopped_)
+    {
+      return;
     }
 
-    return;
-  }
+    if (error)
+    {
+      close_socket();
 
-  std::cout << "async_connect completed with success" << std::endl;
-  socket.async_write_some(boost::asio::buffer(text_to_write),
-      boost::bind(&handle_write, _1, _2));
-}
+      ++current_endpoint_iterator;
+      if (protocol::resolver::iterator() != current_endpoint_iterator)
+      {
+        start_connect(connect_attempt, 
+            initial_endpoint_iterator, current_endpoint_iterator);
+      } 
+      else 
+      {
+        start_connect(connect_attempt, 
+            initial_endpoint_iterator, initial_endpoint_iterator);
+      }
+      return;      
+    }
 
-void handle_write(const boost::system::error_code& error,
-    std::size_t /*bytes_transferred*/)
-{
-  if (error)
+    ++connect_count_;    
+    if (boost::system::error_code error = apply_socket_options())
+    {
+      do_stop();
+      return;
+    }
+    shutdown_socket();
+    close_socket();
+
+    start_connect(0, initial_endpoint_iterator, initial_endpoint_iterator);
+  }  
+
+  boost::system::error_code session::apply_socket_options()
   {
-    std::cout << "socket.async_write_some completed with error: "
-        << error.message() << std::endl;
-    return;
+    typedef protocol::socket socket_type;
+
+    // Setup abortive shutdown sequence for closesocket
+    {
+      boost::system::error_code error;
+      socket_type::linger opt(false, 0);
+      socket_.set_option(opt, error);
+      if (error)
+      {
+        return error;
+      }
+    }
+
+    return boost::system::error_code();
   }
-  std::cout << "socket.async_write_some completed with success" << std::endl;
-}
+
+  boost::system::error_code shutdown_socket()
+  {
+    boost::system::error_code error;
+    socket_.shutdown(protocol::socket::shutdown_send, error);
+    return error;
+  }
+
+  void close_socket()
+  {
+    boost::system::error_code ignored;
+    socket_.close(ignored);
+  }
+
+  void do_stop()
+  {
+    if (!stopped_)
+    {
+      close_socket();
+      stopped_ = true;
+      work_state_.notify_session_stop();      
+    }
+  }  
+
+  boost::asio::io_service::strand strand_;
+  protocol::socket socket_;  
+  std::size_t connect_count_;
+  bool stopped_;
+  work_state& work_state_;
+  ma::in_place_handler_allocator<512> connect_allocator_;
+}; // class session
+
+typedef boost::shared_ptr<session> session_ptr;
+
+class client : private boost::noncopyable
+{
+private:
+  typedef client this_type;
+
+public:
+  typedef session::protocol protocol;
+
+  client(boost::asio::io_service& io_service, std::size_t session_count)
+    : io_service_(io_service)
+    , sessions_()
+    , stats_()
+    , work_state_(session_count)
+  {
+    for (std::size_t i = 0; i < session_count; ++i)
+    {
+      sessions_.push_back(boost::make_shared<session>(
+          boost::ref(io_service_), boost::ref(work_state_)));
+    }
+  }
+
+  ~client()
+  {
+    std::for_each(sessions_.begin(), sessions_.end(),
+        boost::bind(&this_type::register_stats, this, _1));
+    stats_.print();
+  }
+
+  void start(const protocol::resolver::iterator& endpoint_iterator)
+  {
+    std::for_each(sessions_.begin(), sessions_.end(),
+        boost::bind(&session::start, _1, endpoint_iterator));
+  }
+
+  void stop()
+  {
+    std::for_each(sessions_.begin(), sessions_.end(),
+        boost::bind(&session::stop, _1));
+  }
+
+  void wait_until_done(const boost::posix_time::time_duration& timeout)
+  {
+    work_state_.wait_for_all_session_stop(timeout);
+  }
+
+private:
+  void register_stats(const session_ptr& session)
+  {
+    stats_.add(session->connect_count());
+  }
+
+  boost::asio::io_service& io_service_;
+  std::vector<session_ptr> sessions_;
+  stats stats_;
+  work_state work_state_;
+}; // class client
 
 } // anonymous namespace
 
-#if defined(WIN32)
-int _tmain(int /*argc*/, _TCHAR* /*argv*/[])
-#else
-int main(int /*argc*/, char* /*argv*/[])
-#endif
+int main(int argc, char* argv[])
 {
   try
   {
-    allocator_type handler_allocator;
+    if (argc != 6)
+    {
+      std::cerr << "Usage: async_connect <host> <port>"
+                << " <threads> <sessions> <time>\n";
+      return EXIT_FAILURE;
+    }
+    
+    const char* const host = argv[1];
+    const char* const port = argv[2];
+    const std::size_t thread_count  = 
+        boost::lexical_cast<std::size_t>(argv[3]);    
+    const std::size_t session_count = 
+        boost::lexical_cast<std::size_t>(argv[4]);
+    const long timeout = 
+        boost::lexical_cast<long>(argv[5]);
 
-    boost::asio::io_service io_service;
+    boost::asio::io_service io_service(thread_count);
+    client::protocol::resolver resolver(io_service);
+    client c(io_service, session_count);
+    c.start(resolver.resolve(client::protocol::resolver::query(host, port)));
 
-    boost::asio::ip::address peer_address(
-        boost::asio::ip::address_v4::loopback());
-    boost::asio::ip::tcp::endpoint peer_endpoint(peer_address, 7);
+    boost::thread_group work_threads;
+    for (std::size_t i = 0; i != thread_count; ++i)
+    {
+      work_threads.create_thread(
+          boost::bind(&boost::asio::io_service::run, &io_service));
+    }
 
-    boost::asio::ip::tcp::socket socket(io_service);
+    c.wait_until_done(boost::posix_time::seconds(timeout));
+    c.stop();
 
-    ma::async_connect(socket, peer_endpoint,
-        ma::make_custom_alloc_handler(handler_allocator,
-            boost::bind(&handle_connect, boost::ref(socket),
-                boost::ref(handler_allocator), 0, peer_endpoint, _1)));
-
-    io_service.run();
-
-    return EXIT_SUCCESS;
+    work_threads.join_all();
   }
-  catch (const std::exception& e)
+  catch (std::exception& e)
   {
-    std::cerr << "Unexpected error: " << e.what() << std::endl;
+    std::cerr << "Exception: " << e.what() << "\n";
+    return EXIT_FAILURE;
   }
-  return EXIT_FAILURE;
+  return EXIT_SUCCESS;
 }
