@@ -18,7 +18,9 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/optional.hpp>
 #include <ma/async_connect.hpp>
+#include <ma/steady_deadline_timer.hpp>
 #include <ma/handler_allocator.hpp>
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/strand_wrapped_handler.hpp>
@@ -81,6 +83,10 @@ private:
   boost::uint_fast64_t total_sessions_connected_;  
 }; // class stats
 
+typedef ma::steady_deadline_timer      deadline_timer;
+typedef deadline_timer::duration_type  duration_type;
+typedef boost::optional<duration_type> optional_duration;
+
 class session : private boost::noncopyable
 {
   typedef session this_type;  
@@ -88,9 +94,12 @@ class session : private boost::noncopyable
 public:
   typedef boost::asio::ip::tcp protocol;
 
-  session(boost::asio::io_service& io_service, work_state& work_state)
-    : strand_(io_service)
+  session(boost::asio::io_service& io_service, 
+      const optional_duration& connect_pause, work_state& work_state)
+    : connect_pause_(connect_pause)
+    , strand_(io_service)
     , socket_(io_service)
+    , timer_(io_service)
     , connect_count_(0)    
     , stopped_(false)
     , work_state_(work_state)
@@ -106,7 +115,7 @@ public:
 
   void stop()
   {
-    strand_.post(boost::bind(&session::do_stop, this));
+    strand_.post(boost::bind(&this_type::do_stop, this));
   }
 
   std::size_t connect_count() const
@@ -122,7 +131,7 @@ private:
     protocol::endpoint endpoint = *current_endpoint_iterator;
     ma::async_connect(socket_, endpoint, MA_STRAND_WRAP(strand_,
         ma::make_custom_alloc_handler(connect_allocator_,
-            boost::bind(&session::handle_connect, this, _1, connect_attempt,
+            boost::bind(&this_type::handle_connect, this, _1, connect_attempt,
                 initial_endpoint_iterator, current_endpoint_iterator))));
   }
 
@@ -160,13 +169,46 @@ private:
       do_stop();
       return;
     }
-    shutdown_socket();
-    close_socket();
-
-    start_connect(0, initial_endpoint_iterator, initial_endpoint_iterator);
+    
+    if (connect_pause_)
+    {
+      timer_.expires_from_now(*connect_pause_);
+      timer_.async_wait(MA_STRAND_WRAP(strand_,
+          ma::make_custom_alloc_handler(timer_allocator_,
+              boost::bind(&this_type::handle_timer, this, 
+                  _1, initial_endpoint_iterator))));
+    }
+    else
+    {
+      continue_work(initial_endpoint_iterator);
+    }
   }  
 
-  boost::system::error_code session::apply_socket_options()
+  void handle_timer(const boost::system::error_code& error, 
+      const protocol::resolver::iterator& initial_endpoint_iterator)
+  {
+    if (stopped_)
+    {
+      return;
+    }
+
+    if (error && error != boost::asio::error::operation_aborted)
+    {
+      do_stop();
+      return;
+    }
+
+    continue_work(initial_endpoint_iterator);
+  }
+
+  void continue_work(const protocol::resolver::iterator& initial_endpoint_iterator)
+  {
+    shutdown_socket();
+    close_socket();
+    start_connect(0, initial_endpoint_iterator, initial_endpoint_iterator);
+  }
+
+  boost::system::error_code apply_socket_options()
   {
     typedef protocol::socket socket_type;
 
@@ -207,12 +249,15 @@ private:
     }
   }  
 
+  const optional_duration connect_pause_;
   boost::asio::io_service::strand strand_;
-  protocol::socket socket_;  
-  std::size_t connect_count_;
-  bool stopped_;
-  work_state& work_state_;
+  protocol::socket socket_;
+  deadline_timer   timer_;
+  std::size_t      connect_count_;
+  bool             stopped_;
+  work_state&      work_state_;
   ma::in_place_handler_allocator<512> connect_allocator_;
+  ma::in_place_handler_allocator<256> timer_allocator_;
 }; // class session
 
 typedef boost::shared_ptr<session> session_ptr;
@@ -225,7 +270,8 @@ private:
 public:
   typedef session::protocol protocol;
 
-  client(boost::asio::io_service& io_service, std::size_t session_count)
+  client(boost::asio::io_service& io_service, std::size_t session_count, 
+      const optional_duration& connect_pause)
     : io_service_(io_service)
     , sessions_()
     , stats_()
@@ -234,7 +280,7 @@ public:
     for (std::size_t i = 0; i < session_count; ++i)
     {
       sessions_.push_back(boost::make_shared<session>(
-          boost::ref(io_service_), boost::ref(work_state_)));
+          boost::ref(io_service_), connect_pause, boost::ref(work_state_)));
     }
   }
 
@@ -280,10 +326,10 @@ int main(int argc, char* argv[])
 {
   try
   {
-    if (argc != 6)
+    if (argc != 7)
     {
-      std::cerr << "Usage: async_connect <host> <port>"
-                << " <threads> <sessions> <time>\n";
+      std::cerr << "Usage: async_connect <host> <port> <threads> <sessions>"
+                << " <connect_pause_milliseconds> <time_seconds>\n";
       return EXIT_FAILURE;
     }
     
@@ -293,12 +339,21 @@ int main(int argc, char* argv[])
         boost::lexical_cast<std::size_t>(argv[3]);    
     const std::size_t session_count = 
         boost::lexical_cast<std::size_t>(argv[4]);
-    const long timeout = 
+    const long connect_pause_millis = 
         boost::lexical_cast<long>(argv[5]);
+    const long timeout = 
+        boost::lexical_cast<long>(argv[6]);
+
+    optional_duration connect_pause;
+    if (connect_pause_millis)
+    {
+      connect_pause = ma::to_steady_deadline_timer_duration(
+          boost::posix_time::milliseconds(connect_pause_millis));
+    }
 
     boost::asio::io_service io_service(thread_count);
     client::protocol::resolver resolver(io_service);
-    client c(io_service, session_count);
+    client c(io_service, session_count, connect_pause);
     c.start(resolver.resolve(client::protocol::resolver::query(host, port)));
 
     boost::thread_group work_threads;

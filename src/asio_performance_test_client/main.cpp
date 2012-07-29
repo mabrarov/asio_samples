@@ -140,7 +140,7 @@ public:
 
   void stop()
   {
-    strand_.post(boost::bind(&session::do_stop, this));
+    strand_.post(boost::bind(&this_type::do_stop, this));
   }
 
   bool was_connected() const
@@ -166,7 +166,7 @@ private:
     protocol::endpoint endpoint = *current_endpoint_iterator;
     ma::async_connect(socket_, endpoint, MA_STRAND_WRAP(strand_,
         ma::make_custom_alloc_handler(write_allocator_,
-            boost::bind(&session::handle_connect, this, _1, connect_attempt,
+            boost::bind(&this_type::handle_connect, this, _1, connect_attempt,
                 initial_endpoint_iterator, current_endpoint_iterator))));
   }
 
@@ -289,7 +289,7 @@ private:
     {
       socket_.async_write_some(write_data, MA_STRAND_WRAP(strand_,
           ma::make_custom_alloc_handler(write_allocator_,
-              boost::bind(&session::handle_write, this, _1, _2))));
+              boost::bind(&this_type::handle_write, this, _1, _2))));
       write_in_progress_ = true;
     }
   }
@@ -301,7 +301,7 @@ private:
     {
       socket_.async_read_some(read_data, MA_STRAND_WRAP(strand_,
           ma::make_custom_alloc_handler(read_allocator_,
-              boost::bind(&session::handle_read, this, _1, _2))));
+              boost::bind(&this_type::handle_read, this, _1, _2))));
       read_in_progress_ = true;
     }
   }
@@ -399,8 +399,8 @@ int main(int argc, char* argv[])
     if (argc != 8)
     {
       std::cerr << "Usage: asio_performance_test_client <host> <port>"
-                << " <threads> <buffersize> <sessions> <time>"
-                << " <maxconnectattempts>\n";
+                << " <threads> <buffer_size> <sessions> <time_seconds>"
+                << " <max_connect_attempts>\n";
       return EXIT_FAILURE;
     }
     
