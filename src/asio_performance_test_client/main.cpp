@@ -82,9 +82,12 @@ public:
 
   void print()
   {
-    std::cout << total_sessions_connected_ << " total sessions connected\n";
-    std::cout << total_bytes_written_ << " total bytes written\n";
-    std::cout << total_bytes_read_ << " total bytes read\n";
+    std::cout << "Total sessions connected: " << total_sessions_connected_ 
+              << std::endl
+              << "Total bytes written     : " << total_bytes_written_ 
+              << std::endl
+              << "Total bytes read        : " << total_bytes_read_ 
+              << std::endl;
   }
 
 private:  
@@ -131,14 +134,14 @@ public:
     buffer_.consume(filled_size);
   }
 
-  void start(const protocol::resolver::iterator& endpoint_iterator)
+  void async_start(const protocol::resolver::iterator& endpoint_iterator)
   {
     strand_.post(ma::make_custom_alloc_handler(write_allocator_,
         boost::bind(&this_type::start_connect, this, 0, 
             endpoint_iterator, endpoint_iterator)));
   }
 
-  void stop()
+  void async_stop()
   {
     strand_.post(boost::bind(&this_type::do_stop, this));
   }
@@ -361,13 +364,13 @@ public:
   void start(const protocol::resolver::iterator& endpoint_iterator)
   {
     std::for_each(sessions_.begin(), sessions_.end(),
-        boost::bind(&session::start, _1, endpoint_iterator));
+        boost::bind(&session::async_start, _1, endpoint_iterator));
   }
 
   void stop()
   {
     std::for_each(sessions_.begin(), sessions_.end(),
-        boost::bind(&session::stop, _1));
+        boost::bind(&session::async_stop, _1));
   }
 
   void wait_until_done(const boost::posix_time::time_duration& timeout)
@@ -412,10 +415,25 @@ int main(int argc, char* argv[])
         boost::lexical_cast<std::size_t>(argv[4]);
     const std::size_t session_count = 
         boost::lexical_cast<std::size_t>(argv[5]);
-    const long timeout = 
+    const long time_seconds = 
         boost::lexical_cast<long>(argv[6]);
     const std::size_t max_connect_attempts = 
         boost::lexical_cast<std::size_t>(argv[7]);
+
+    std::cout << "Host   : " << host 
+              << std::endl
+              << "Port   : " << port 
+              << std::endl
+              << "Threads: " << thread_count
+              << std::endl
+              << "Size of buffer (bytes): " << buffer_size
+              << std::endl
+              << "Sessions              : " << session_count
+              << std::endl
+              << "Time (seconds)        : " << time_seconds
+              << std::endl
+              << "Max connect attempts  : " << max_connect_attempts
+              << std::endl;
 
     boost::asio::io_service io_service(thread_count);
     client::protocol::resolver resolver(io_service);
@@ -429,7 +447,7 @@ int main(int argc, char* argv[])
           boost::bind(&boost::asio::io_service::run, &io_service));
     }
 
-    c.wait_until_done(boost::posix_time::seconds(timeout));
+    c.wait_until_done(boost::posix_time::seconds(time_seconds));
     c.stop();
 
     work_threads.join_all();
