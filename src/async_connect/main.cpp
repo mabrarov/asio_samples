@@ -112,8 +112,7 @@ public:
   void async_start(const protocol::resolver::iterator& endpoint_iterator)
   {
     strand_.post(ma::make_custom_alloc_handler(connect_allocator_,
-        boost::bind(&this_type::start_connect, this, 0, 
-            endpoint_iterator, endpoint_iterator)));
+        boost::bind(&this_type::do_start, this, endpoint_iterator)));
   }
 
   void async_stop()
@@ -127,19 +126,28 @@ public:
   }
 
 private:
-  void start_connect(std::size_t connect_attempt,
+  void do_start(const protocol::resolver::iterator& initial_endpoint_iterator)
+  {
+    if (stopped_)
+    {
+      return;
+    }
+
+    start_connect(initial_endpoint_iterator, initial_endpoint_iterator);
+  }
+
+  void start_connect(
       const protocol::resolver::iterator& initial_endpoint_iterator,
       const protocol::resolver::iterator& current_endpoint_iterator)
   {
     protocol::endpoint endpoint = *current_endpoint_iterator;
     ma::async_connect(socket_, endpoint, MA_STRAND_WRAP(strand_,
         ma::make_custom_alloc_handler(connect_allocator_,
-            boost::bind(&this_type::handle_connect, this, _1, connect_attempt,
+            boost::bind(&this_type::handle_connect, this, _1, 
                 initial_endpoint_iterator, current_endpoint_iterator))));
   }
 
   void handle_connect(const boost::system::error_code& error, 
-      std::size_t connect_attempt,
       const protocol::resolver::iterator& initial_endpoint_iterator,
       protocol::resolver::iterator current_endpoint_iterator)
   {
@@ -155,13 +163,11 @@ private:
       ++current_endpoint_iterator;
       if (protocol::resolver::iterator() != current_endpoint_iterator)
       {
-        start_connect(connect_attempt, 
-            initial_endpoint_iterator, current_endpoint_iterator);
+        start_connect(initial_endpoint_iterator, current_endpoint_iterator);
       } 
       else 
       {
-        start_connect(connect_attempt, 
-            initial_endpoint_iterator, initial_endpoint_iterator);
+        start_connect(initial_endpoint_iterator, initial_endpoint_iterator);
       }
       return;      
     }
@@ -219,7 +225,7 @@ private:
   {
     shutdown_socket();
     close_socket();
-    start_connect(0, initial_endpoint_iterator, initial_endpoint_iterator);
+    start_connect(initial_endpoint_iterator, initial_endpoint_iterator);
   }
 
   boost::system::error_code apply_socket_options()
@@ -264,13 +270,15 @@ private:
 
   void do_stop()
   {
-    if (!stopped_)
+    if (stopped_)
     {
-      close_socket();
-      cancel_timer();
-      stopped_ = true;
-      work_state_.notify_session_stop();      
+      return;
     }
+    
+    close_socket();
+    cancel_timer();
+    stopped_ = true;
+    work_state_.notify_session_stop();
   }  
 
   const optional_duration connect_pause_;
@@ -358,6 +366,11 @@ private:
 
   void do_start(const protocol::resolver::iterator& endpoint_iterator)
   {
+    if (stopped_)
+    {
+      return;
+    }
+
     if (block_pause_)
     {
       std::size_t offset = start_block(endpoint_iterator, 0, block_size_);
@@ -421,6 +434,11 @@ private:
 
   void do_stop()
   {
+    if (stopped_)
+    {
+      return;
+    }
+
     cancel_timer();
     stopped_ = true;
     std::for_each(sessions_.begin(), sessions_.end(),
