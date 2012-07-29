@@ -221,7 +221,8 @@ private:
     continue_work(initial_endpoint_iterator);
   }
 
-  void continue_work(const protocol::resolver::iterator& initial_endpoint_iterator)
+  void continue_work(
+      const protocol::resolver::iterator& initial_endpoint_iterator)
   {
     shutdown_socket();
     close_socket();
@@ -351,12 +352,13 @@ public:
 private:
   typedef std::vector<session_ptr> session_vector;
 
-  std::size_t start_block(const protocol::resolver::iterator& endpoint_iterator, 
+  std::size_t start_block(
+      const protocol::resolver::iterator& endpoint_iterator,
       std::size_t offset, std::size_t max_block_size)
   {
     std::size_t block_size = 0;
     for (session_vector::const_iterator i = sessions_.begin() + offset,
-        end = sessions_.end(); (i != end) && (block_size != max_block_size); 
+        end = sessions_.end(); (i != end) && (block_size != max_block_size);
         ++i, ++block_size)
     {
       (*i)->async_start(endpoint_iterator);
