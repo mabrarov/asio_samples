@@ -86,6 +86,9 @@
     <Report>
       <Path>D:\Users\Marat\Documents\work\cpp\asio_samples\build\msvc-10.0\echo_server120729.vsp</Path>
     </Report>
+    <Report>
+      <Path>D:\Users\Marat\Documents\work\cpp\asio_samples\build\msvc-10.0\echo_server120730.vsp</Path>
+    </Report>
   </Reports>
   <Launches>
     <Binary>
