@@ -49,5 +49,8 @@
     <ClInclude Include="..\..\..\include\ma\async_connect.hpp">
       <Filter>Header Files\ma</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\steady_deadline_timer.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
