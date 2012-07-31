@@ -26,6 +26,7 @@ HEADERS  += ../../../include/ma/async_connect.hpp \
             ../../../include/ma/handler_alloc_helpers.hpp \
             ../../../include/ma/handler_invoke_helpers.hpp \
             ../../../include/ma/handler_allocator.hpp \
+            ../../../include/ma/steady_deadline_timer.hpp \
             ../../../include/ma/strand_wrapped_handler.hpp \
             ../../../include/ma/type_traits.hpp
 
@@ -38,6 +39,10 @@ LIBS       += -L$${BOOST_LIB}
 unix:LIBS  += $${BOOST_LIB}/libboost_system.a \
               $${BOOST_LIB}/libboost_thread.a \
               $${BOOST_LIB}/libboost_date_time.a
+exists($${BOOST_INCLUDE}/boost/chrono.hpp) {
+  unix:LIBS += $${BOOST_LIB}/libboost_chrono.a \
+               -lrt
+}
 
 win32:DEFINES += WIN32_LEAN_AND_MEAN \
                  _UNICODE \

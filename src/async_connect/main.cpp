@@ -527,9 +527,9 @@ int main(int argc, char* argv[])
               << std::endl;
 
     optional_duration block_pause = 
-        to_optional_duration(block_pause_millis);    
+        to_optional_duration(block_pause_millis);
     optional_duration connect_pause = 
-        to_optional_duration(connect_pause_millis);    
+        to_optional_duration(connect_pause_millis);
 
     boost::asio::io_service io_service(thread_count);
     client::protocol::resolver resolver(io_service);
