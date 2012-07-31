@@ -13,6 +13,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{D1810138-9E2E-445A-B06D-FC036EAF4E2A}</ProjectGuid>
     <Keyword>Qt4VSv1.0</Keyword>
+    <RootNamespace>qt_echo_server</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

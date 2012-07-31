@@ -45,7 +45,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{A93D73BD-ABFE-4FC2-A126-5CF27CEAFE10}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>asio_performance_test</RootNamespace>
+    <RootNamespace>asio_performance_test_client</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

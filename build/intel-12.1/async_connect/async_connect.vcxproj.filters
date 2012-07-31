@@ -46,6 +46,9 @@
     <ClInclude Include="..\..\..\include\ma\handler_allocator.hpp">
       <Filter>Header Files\ma</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\steady_deadline_timer.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\include\ma\strand_wrapped_handler.hpp">
       <Filter>Header Files\ma</Filter>
     </ClInclude>

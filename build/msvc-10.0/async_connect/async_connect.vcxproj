@@ -20,7 +20,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{AC1C95D5-828B-41BB-899B-01B229EC1FFC}</ProjectGuid>
-    <RootNamespace>connector</RootNamespace>
+    <RootNamespace>async_connect</RootNamespace>
     <Keyword>Win32Proj</Keyword>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
