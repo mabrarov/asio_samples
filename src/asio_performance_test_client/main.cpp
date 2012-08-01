@@ -84,15 +84,15 @@ public:
 
   void print()
   {
-    std::cout << "Total sessions connected: " << total_sessions_connected_ 
+    std::cout << "Total sessions connected: " << total_sessions_connected_
               << std::endl
-              << "Total bytes written     : " << total_bytes_written_ 
+              << "Total bytes written     : " << total_bytes_written_
               << std::endl
-              << "Total bytes read        : " << total_bytes_read_ 
+              << "Total bytes read        : " << total_bytes_read_
               << std::endl;
   }
 
-private:  
+private:
   std::size_t total_sessions_connected_;
   boost::uint_fast64_t total_bytes_written_;
   boost::uint_fast64_t total_bytes_read_;
@@ -100,12 +100,12 @@ private:
 
 class session : private boost::noncopyable
 {
-  typedef session this_type;  
+  typedef session this_type;
 
 public:
   typedef boost::asio::ip::tcp protocol;
 
-  session(boost::asio::io_service& io_service, std::size_t buffer_size, 
+  session(boost::asio::io_service& io_service, std::size_t buffer_size,
       std::size_t max_connect_attempts, work_state& work_state)
     : strand_(io_service)
     , socket_(io_service)
@@ -172,7 +172,7 @@ private:
       return;
     }
 
-    start_connect(connect_attempt, 
+    start_connect(connect_attempt,
         initial_endpoint_iterator, initial_endpoint_iterator);
   }
 
@@ -187,7 +187,7 @@ private:
                 initial_endpoint_iterator, current_endpoint_iterator))));
   }
 
-  void handle_connect(const boost::system::error_code& error, 
+  void handle_connect(const boost::system::error_code& error,
       std::size_t connect_attempt,
       const protocol::resolver::iterator& initial_endpoint_iterator,
       protocol::resolver::iterator current_endpoint_iterator)
@@ -204,12 +204,12 @@ private:
       ++current_endpoint_iterator;
       if (protocol::resolver::iterator() != current_endpoint_iterator)
       {
-        start_connect(connect_attempt, 
-            initial_endpoint_iterator, current_endpoint_iterator);      
-        return;        
+        start_connect(connect_attempt,
+            initial_endpoint_iterator, current_endpoint_iterator);
+        return;
       }
 
-      if (max_connect_attempts_) 
+      if (max_connect_attempts_)
       {
         ++connect_attempt;
         if (connect_attempt >= max_connect_attempts_)
@@ -219,17 +219,14 @@ private:
         }
       }
 
-      start_connect(connect_attempt, 
+      start_connect(connect_attempt,
           initial_endpoint_iterator, initial_endpoint_iterator);
-      return;      
+      return;
     }
 
     was_connected_ = true;
 
-    boost::system::error_code set_option_error;
-    protocol::no_delay no_delay(true);
-    socket_.set_option(no_delay, set_option_error);
-    if (set_option_error)
+    if (boost::system::error_code error = apply_socket_options())
     {
       do_stop();
       return;
@@ -323,6 +320,23 @@ private:
               boost::bind(&this_type::handle_read, this, _1, _2))));
       read_in_progress_ = true;
     }
+  }
+
+  boost::system::error_code apply_socket_options()
+  {
+    typedef protocol::socket socket_type;
+
+    {
+      boost::system::error_code error;
+      protocol::no_delay no_delay(true);
+      socket_.set_option(no_delay, error);
+      if (error)
+      {
+        return error;
+      }
+    }
+
+    return boost::system::error_code();
   }
 
   void close_socket()
@@ -444,7 +458,7 @@ private:
   }
 
   void start_deferred_session_start(
-      const protocol::resolver::iterator& endpoint_iterator, 
+      const protocol::resolver::iterator& endpoint_iterator,
       std::size_t offset)
   {
     BOOST_ASSERT_MSG(!timer_in_progess_, "invalid timer state");
@@ -452,13 +466,13 @@ private:
     timer_.expires_from_now(*block_pause_);
     timer_.async_wait(MA_STRAND_WRAP(strand_,
         ma::make_custom_alloc_handler(timer_allocator_,
-            boost::bind(&this_type::handle_timer, this, 
+            boost::bind(&this_type::handle_timer, this,
                 _1, endpoint_iterator, offset))));
     timer_in_progess_ = true;
-  }  
+  }
 
-  void handle_timer(const boost::system::error_code& error, 
-      const protocol::resolver::iterator& endpoint_iterator, 
+  void handle_timer(const boost::system::error_code& error,
+      const protocol::resolver::iterator& endpoint_iterator,
       std::size_t offset)
   {
     timer_in_progess_ = false;
@@ -511,8 +525,8 @@ private:
     }
   }
 
-  const std::size_t       block_size_;
-  const optional_duration block_pause_;
+  const std::size_t        block_size_;
+  const optional_duration  block_pause_;
   boost::asio::io_service& io_service_;
   boost::asio::io_service::strand strand_;
   deadline_timer timer_;
@@ -551,27 +565,27 @@ int main(int argc, char* argv[])
                 << " <buffer_size> <max_connect_attempts> <time_seconds>\n";
       return EXIT_FAILURE;
     }
-    
+
     const char* const host = argv[1];
     const char* const port = argv[2];
-    const std::size_t thread_count  = 
-        boost::lexical_cast<std::size_t>(argv[3]);    
-    const std::size_t session_count = 
+    const std::size_t thread_count  =
+        boost::lexical_cast<std::size_t>(argv[3]);
+    const std::size_t session_count =
         boost::lexical_cast<std::size_t>(argv[4]);
-    const std::size_t block_size = 
+    const std::size_t block_size =
         boost::lexical_cast<std::size_t>(argv[5]);
-    const long block_pause_millis = 
-      boost::lexical_cast<long>(argv[6]);    
-    const std::size_t buffer_size   = 
-        boost::lexical_cast<std::size_t>(argv[7]);    
-    const std::size_t max_connect_attempts = 
+    const long block_pause_millis =
+      boost::lexical_cast<long>(argv[6]);
+    const std::size_t buffer_size   =
+        boost::lexical_cast<std::size_t>(argv[7]);
+    const std::size_t max_connect_attempts =
         boost::lexical_cast<std::size_t>(argv[8]);
-    const long time_seconds = 
+    const long time_seconds =
         boost::lexical_cast<long>(argv[9]);
 
-    std::cout << "Host      : " << host 
+    std::cout << "Host      : " << host
               << std::endl
-              << "Port      : " << port 
+              << "Port      : " << port
               << std::endl
               << "Threads   : " << thread_count
               << std::endl
@@ -579,7 +593,7 @@ int main(int argc, char* argv[])
               << std::endl
               << "Block size: " << block_size
               << std::endl
-              << "Block pause (milliseconds): " << block_pause_millis 
+              << "Block pause (milliseconds): " << block_pause_millis
               << std::endl
               << "Size of buffer (bytes)    : " << buffer_size
               << std::endl
@@ -588,12 +602,12 @@ int main(int argc, char* argv[])
               << "Time (seconds)            : " << time_seconds
               << std::endl;
 
-    optional_duration block_pause = 
-        to_optional_duration(block_pause_millis);    
+    optional_duration block_pause =
+        to_optional_duration(block_pause_millis);
 
     boost::asio::io_service io_service(thread_count);
     client::protocol::resolver resolver(io_service);
-    client c(io_service, session_count, block_size, block_pause, 
+    client c(io_service, session_count, block_size, block_pause,
         buffer_size, max_connect_attempts);
     c.async_start(resolver.resolve(
         client::protocol::resolver::query(host, port)));
