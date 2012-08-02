@@ -110,7 +110,7 @@ typedef boost::optional<bool> optional_bool;
 struct session_config
 {
 public:
-  session_config(std::size_t the_buffer_size, 
+  session_config(std::size_t the_buffer_size,
       std::size_t the_max_connect_attempts,
       const optional_bool& the_no_delay)
     : buffer_size(the_buffer_size)
@@ -137,7 +137,7 @@ public:
     , no_delay_(config.no_delay)
     , strand_(io_service)
     , socket_(io_service)
-    , buffer_(config.buffer_size)    
+    , buffer_(config.buffer_size)
     , bytes_written_(0)
     , bytes_read_(0)
     , was_connected_(false)
@@ -377,7 +377,7 @@ private:
   const optional_bool no_delay_;
   boost::asio::io_service::strand strand_;
   protocol::socket socket_;
-  ma::cyclic_buffer buffer_;  
+  ma::cyclic_buffer buffer_;
   boost::uint_fast64_t bytes_written_;
   boost::uint_fast64_t bytes_read_;
   bool was_connected_;
@@ -398,7 +398,7 @@ typedef boost::optional<duration_type> optional_duration;
 struct client_config
 {
 public:
-  client_config(std::size_t the_session_count, 
+  client_config(std::size_t the_session_count,
       std::size_t the_block_size,
       const optional_duration the_block_pause,
       const session_config& the_managed_session_config)
@@ -646,7 +646,7 @@ std::size_t calc_thread_count(std::size_t hardware_concurrency)
 boost::program_options::options_description build_cmd_options_description(
     std::size_t hardware_concurrency)
 {
-  boost::program_options::options_description description("Allowed options");  
+  boost::program_options::options_description description("Allowed options");
 
   description.add_options()
     (
@@ -705,7 +705,7 @@ boost::program_options::options_description build_cmd_options_description(
       time_option_name,
       boost::program_options::value<long>()->default_value(600),
       "set the duration of test (seconds)"
-    );  
+    );
 
   return description;
 }
@@ -738,7 +738,7 @@ program_config build_program_config(
 {
   const std::string host = options_values[host_option_name].as<std::string>();
   const std::string port = options_values[port_option_name].as<std::string>();
-  const std::size_t thread_count  = 
+  const std::size_t thread_count  =
       options_values[threads_option_name].as<std::size_t>();
   const std::size_t session_count =
       options_values[sessions_option_name].as<std::size_t>();
@@ -797,7 +797,7 @@ std::string to_milliseconds_string(const optional_duration& duration)
   }
 }
 
-std::string to_string(const optional_bool& no_delay)
+std::string to_bool_string(const optional_bool& no_delay)
 {
   if (no_delay)
   {
@@ -811,39 +811,39 @@ std::string to_string(const optional_bool& no_delay)
 
 void print(const program_config& config)
 {
-  const client_config&  program_client_config = 
+  const client_config&  program_client_config =
       config.program_client_config;
-  const session_config& managed_session_config = 
+  const session_config& managed_session_config =
       program_client_config.managed_session_config;
 
-  std::cout << "Host      : " 
+  std::cout << "Host      : "
             << config.host
             << std::endl
-            << "Port      : " 
+            << "Port      : "
             << config.port
             << std::endl
-            << "Threads   : " 
+            << "Threads   : "
             << config.thread_count
             << std::endl
-            << "Sessions  : " 
+            << "Sessions  : "
             << program_client_config.session_count
             << std::endl
-            << "Block size: " 
+            << "Block size: "
             << program_client_config.block_size
             << std::endl
-            << "Block pause (milliseconds)   : " 
+            << "Block pause (milliseconds)   : "
             << to_milliseconds_string(program_client_config.block_pause)
             << std::endl
-            << "Session's buffer size (bytes): " 
+            << "Session's buffer size (bytes): "
             << managed_session_config.buffer_size
             << std::endl
-            << "Maximum number od connect attempts per session: " 
+            << "Maximum number of connect attempts per session: "
             << managed_session_config.max_connect_attempts
             << std::endl
             << "TCP_NODELAY   : "
-            << to_string(managed_session_config.no_delay)
+            << to_bool_string(managed_session_config.no_delay)
             << std::endl
-            << "Time (seconds): " 
+            << "Time (seconds): "
             << to_seconds_string(config.test_duration)
             << std::endl;
 }
@@ -880,7 +880,7 @@ int main(int argc, char* argv[])
 
     const program_config config = build_program_config(cmd_options);
     print(config);
-    
+
     boost::asio::io_service io_service(config.thread_count);
     client::protocol::resolver resolver(io_service);
     client c(io_service, config.program_client_config);
@@ -912,7 +912,7 @@ int main(int argc, char* argv[])
   }
   catch (std::exception& e)
   {
-    std::cerr << "Exception: " << e.what() << "\n";    
+    std::cerr << "Exception: " << e.what() << "\n";
   }
   return EXIT_FAILURE;
 }
