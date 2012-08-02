@@ -11,11 +11,8 @@ TARGET    = async_basics2
 CONFIG   += console thread
 CONFIG   -= app_bundle
 
-# Boost C++ Libraries headers
-BOOST_INCLUDE   = ../../../../boost_1_50_0
-# Boost C++ Libraries binaries
-win32:BOOST_LIB = $${BOOST_INCLUDE}/lib/x86
-unix:BOOST_LIB  = $${BOOST_INCLUDE}/lib
+# Common project configuration
+include(../config.pri)
 
 HEADERS  += ../../../include/ma/handler_storage_service.hpp \
             ../../../include/ma/handler_storage.hpp \

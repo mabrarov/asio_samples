@@ -11,11 +11,8 @@ TARGET    = async_connect
 CONFIG   += console thread
 CONFIG   -= app_bundle
 
-# Boost C++ Libraries headers
-BOOST_INCLUDE   = ../../../../boost_1_50_0
-# Boost C++ Libraries binaries
-win32:BOOST_LIB = $${BOOST_INCLUDE}/lib/x86
-unix:BOOST_LIB  = $${BOOST_INCLUDE}/lib
+# Common project configuration
+include(../config.pri)
 
 HEADERS  += ../../../include/ma/async_connect.hpp \
             ../../../include/ma/bind_asio_handler.hpp \

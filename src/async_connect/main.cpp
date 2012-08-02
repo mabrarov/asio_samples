@@ -695,11 +695,15 @@ std::string to_milliseconds_string(
   return boost::lexical_cast<std::string>(duration.total_milliseconds());
 }
 
+#if defined(MA_HAS_STEADY_DEADLINE_TIMER)
+
 std::string to_milliseconds_string(const duration_type& duration)
 {
   return to_milliseconds_string(
       deadline_timer::traits_type::to_posix_duration(duration));
 }
+
+#endif // defined(MA_HAS_STEADY_DEADLINE_TIMER)
 
 std::string to_milliseconds_string(const optional_duration& duration)
 {
