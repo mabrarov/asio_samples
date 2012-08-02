@@ -37,10 +37,14 @@ INCLUDEPATH += $${BOOST_INCLUDE} \
 LIBS       += -L$${BOOST_LIB}
 unix:LIBS  += $${BOOST_LIB}/libboost_system.a \
               $${BOOST_LIB}/libboost_thread.a \
-              $${BOOST_LIB}/libboost_date_time.a
+              $${BOOST_LIB}/libboost_date_time.a \
+              $${BOOST_LIB}/libboost_program_options.a
 exists($${BOOST_INCLUDE}/boost/chrono.hpp) {
   unix:LIBS += $${BOOST_LIB}/libboost_chrono.a \
                -lrt
+}
+exists($${BOOST_INCLUDE}/boost/timer/timer.hpp) {
+  unix:LIBS += $${BOOST_LIB}/libboost_timer.a
 }
 
 win32:DEFINES += WIN32_LEAN_AND_MEAN \
