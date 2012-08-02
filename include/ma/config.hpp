@@ -93,4 +93,15 @@
 
 #endif // BOOST_VERSION >= 104700
 
+#if BOOST_VERSION >= 104800
+
+/// Turns on usage of Boost.Timer.
+#define MA_HAS_BOOST_TIMER
+
+#else
+
+#undef MA_HAS_BOOST_TIMER
+
+#endif // BOOST_VERSION >= 104800
+
 #endif // MA_CONFIG_HPP
