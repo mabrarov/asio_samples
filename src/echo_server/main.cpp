@@ -392,13 +392,13 @@ int main(int argc, char* argv[])
   try
   {
     using namespace echo_server;
-
-    // Parse user defined command line options
-    std::size_t cpu_count = boost::thread::hardware_concurrency();
+    
+    const std::size_t cpu_count = boost::thread::hardware_concurrency();
 
     const boost::program_options::options_description
         cmd_options_description = build_cmd_options_description(cpu_count);
 
+    // Parse user defined command line options
     const boost::program_options::variables_map cmd_options =
         parse_cmd_line(cmd_options_description, argc, argv);
 
