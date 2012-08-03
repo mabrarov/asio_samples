@@ -75,9 +75,9 @@ int main(int /*argc*/, char* /*argv*/[])
         boost::ref(work_io_service)));
     std::cout << "Press Ctrl+C (Ctrl+Break) to exit.\n";
 
+    boost::thread_group work_threads;
     boost::optional<io_service::work> work_guard(
         boost::in_place(boost::ref(work_io_service)));
-    boost::thread_group work_threads;
     for (std::size_t i = 0; i != work_thread_count; ++i)
     {
       work_threads.create_thread(boost::bind(
