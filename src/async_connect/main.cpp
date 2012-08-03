@@ -801,26 +801,33 @@ int main(int argc, char* argv[])
     boost::asio::io_service io_service(config.thread_count);
     client::protocol::resolver resolver(io_service);
     client c(io_service, config.program_client_config);
+
     boost::thread_group work_threads;
+    boost::optional<boost::asio::io_service::work> work_guard(
+        boost::in_place(boost::ref(io_service)));
+    for (std::size_t i = 0; i != config.thread_count; ++i)
     {
-      boost::asio::io_service::work io_service_work_guard(io_service);
-      for (std::size_t i = 0; i != config.thread_count; ++i)
-      {
-        work_threads.create_thread(
-            boost::bind(&boost::asio::io_service::run, &io_service));
-      }
-      {
-#if defined(MA_HAS_BOOST_TIMER)
-        boost::timer::auto_cpu_timer cpu_timer("Test duration :" \
-            " %ws wall, %us user + %ss system = %ts CPU (%p%)\n");
-#endif // defined(MA_HAS_BOOST_TIMER)
-        c.async_start(resolver.resolve(
-            client::protocol::resolver::query(config.host, config.port)));
-        c.wait_until_done(config.test_duration);
-      }
-      c.async_stop();
+      work_threads.create_thread(
+          boost::bind(&boost::asio::io_service::run, &io_service));
     }
+
+#if defined(MA_HAS_BOOST_TIMER)
+    boost::timer::cpu_timer timer;
+#endif // defined(MA_HAS_BOOST_TIMER)
+
+    c.async_start(resolver.resolve(
+        client::protocol::resolver::query(config.host, config.port)));
+    c.wait_until_done(config.test_duration);
+    c.async_stop();
+
+    work_guard = boost::none;
     work_threads.join_all();
+
+#if defined(MA_HAS_BOOST_TIMER)
+    timer.stop();
+    std::cout << "Test duration :" << timer.format();
+#endif // defined(MA_HAS_BOOST_TIMER)
+
     return EXIT_SUCCESS;
   }
   catch (const boost::program_options::error& e)
