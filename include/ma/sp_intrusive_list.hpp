@@ -99,6 +99,7 @@ public:
     ++size_;
   }
 
+  /// Never throws
   void erase(const shared_pointer& value)
   {
     BOOST_ASSERT(value);
@@ -126,6 +127,7 @@ public:
     BOOST_ASSERT(!value_hook.prev_.lock() && !value_hook.next_);
   }
 
+  /// Never throws
   void clear()
   {
     // We don't want to have recusrive calls of wrapped_session's destructor
