@@ -274,6 +274,18 @@ private:
   {
     typedef protocol::socket socket_type;
 
+    // Setup abortive shutdown sequence for closesocket
+    {
+      boost::system::error_code error;
+      socket_type::linger opt(false, 0);
+      socket_.set_option(opt, error);
+      if (error)
+      {
+        return error;
+      }
+    }
+
+    // Apply all (really) configered socket options
     if (no_delay_)
     {
       boost::system::error_code error;
@@ -734,11 +746,11 @@ std::string to_milliseconds_string(const optional_duration& duration)
   }
 }
 
-std::string to_bool_string(const optional_bool& no_delay)
+std::string to_bool_string(const optional_bool& value)
 {
-  if (no_delay)
+  if (value)
   {
-    return *no_delay ? "on" : "off";
+    return *value ? "on" : "off";
   }
   else
   {
