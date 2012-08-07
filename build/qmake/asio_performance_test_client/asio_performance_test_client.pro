@@ -25,6 +25,7 @@ HEADERS  += ../../../include/ma/async_connect.hpp \
             ../../../include/ma/handler_allocator.hpp \
             ../../../include/ma/steady_deadline_timer.hpp \
             ../../../include/ma/strand_wrapped_handler.hpp \
+            ../../../include/ma/limited_int.hpp \
             ../../../include/ma/type_traits.hpp
 
 SOURCES  += ../../../src/asio_performance_test_client/main.cpp

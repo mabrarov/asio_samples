@@ -18,9 +18,9 @@
 namespace ma {
 
 template <typename Integer>
-class limited_int 
+class limited_int
   : private boost::incrementable<boost::addable<
-      boost::addable<limited_int<Integer>, Integer> > >
+        boost::addable<limited_int<Integer>, Integer> > >
 {
 private:
   typedef limited_int<Integer> this_type;
@@ -41,7 +41,7 @@ public:
   }
 
   value_type value() const
-  {    
+  {
     return value_;
   }
 
@@ -93,7 +93,7 @@ public:
     {
       return *this;
     }
-    
+
     const value_type max = (this_type::max)();
     if (max == value_)
     {
@@ -103,7 +103,7 @@ public:
     }
 
     ++value_;
-    return *this;    
+    return *this;
   }
 
   static value_type max()

@@ -79,7 +79,7 @@ typedef ma::limited_int<boost::uintmax_t> limited_counter;
 template <typename Integer>
 std::string to_string(const ma::limited_int<Integer>& limited_value)
 {
-  if (limited_value.overflowed()) 
+  if (limited_value.overflowed())
   {
     return ">" + boost::lexical_cast<std::string>(limited_value.value());
   }
@@ -115,7 +115,7 @@ public:
               << "Total bytes written     : "
               << to_string(total_bytes_written_)
               << std::endl
-              << "Total bytes read        : " 
+              << "Total bytes read        : "
               << to_string(total_bytes_read_)
               << std::endl;
   }
@@ -828,7 +828,7 @@ optional_int build_optional_int(
   {
     return optional_int();
   }
-  return options_values[option_name].as<int>();  
+  return options_values[option_name].as<int>();
 }
 
 program_config build_program_config(
@@ -863,7 +863,7 @@ program_config build_program_config(
     no_delay = options_values[no_delay_option_name].as<bool>();
   }
 
-  session_config client_session_config(buffer_size, max_connect_attempts, 
+  session_config client_session_config(buffer_size, max_connect_attempts,
       socket_recv_buffer_size, socket_send_buffer_size, no_delay);
 
   client_config program_client_config(session_count, block_size,
@@ -918,7 +918,7 @@ std::string to_string(const optional_int& value)
   }
 }
 
-std::string to_bool_string(const optional_bool& value)
+std::string to_string(const optional_bool& value)
 {
   if (value)
   {
@@ -962,13 +962,13 @@ void print(const program_config& config)
             << managed_session_config.max_connect_attempts
             << std::endl
             << "Size of session's socket receive buffer (bytes): "
-            << to_string(managed_session_config.socket_recv_buffer_size)
+            << (to_string)(managed_session_config.socket_recv_buffer_size)
             << std::endl
             << "Size of session's socket send buffer (bytes)   : "
-            << to_string(managed_session_config.socket_send_buffer_size)
+            << (to_string)(managed_session_config.socket_send_buffer_size)
             << std::endl
             << "TCP_NODELAY   : "
-            << to_bool_string(managed_session_config.no_delay)
+            << (to_string)(managed_session_config.no_delay)
             << std::endl
             << "Time (seconds): "
             << to_seconds_string(config.test_duration)

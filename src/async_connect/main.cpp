@@ -75,7 +75,7 @@ typedef ma::limited_int<boost::uintmax_t> limited_counter;
 template <typename Integer>
 std::string to_string(const ma::limited_int<Integer>& limited_value)
 {
-  if (limited_value.overflowed()) 
+  if (limited_value.overflowed())
   {
     return ">" + boost::lexical_cast<std::string>(limited_value.value());
   }
@@ -746,7 +746,7 @@ std::string to_milliseconds_string(const optional_duration& duration)
   }
 }
 
-std::string to_bool_string(const optional_bool& value)
+std::string to_string(const optional_bool& value)
 {
   if (value)
   {
@@ -787,7 +787,7 @@ void print(const program_config& config)
             << to_milliseconds_string(managed_session_config.connect_pause)
             << std::endl
             << "TCP_NODELAY   : "
-            << to_bool_string(managed_session_config.no_delay)
+            << (to_string)(managed_session_config.no_delay)
             << std::endl
             << "Time (seconds): "
             << to_seconds_string(config.test_duration)
