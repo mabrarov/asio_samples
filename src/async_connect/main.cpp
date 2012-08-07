@@ -28,6 +28,7 @@
 #include <ma/handler_allocator.hpp>
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/strand_wrapped_handler.hpp>
+#include <ma/limited_int.hpp>
 
 #if defined(MA_HAS_BOOST_TIMER)
 #include <boost/timer/timer.hpp>
@@ -69,15 +70,30 @@ private:
   boost::condition_variable condition_;
 }; // struct work_state
 
+typedef ma::limited_int<boost::uintmax_t> limited_counter;
+
+template <typename Integer>
+std::string to_string(const ma::limited_int<Integer>& limited_value)
+{
+  if (limited_value.overflowed()) 
+  {
+    return ">" + boost::lexical_cast<std::string>(limited_value.value());
+  }
+  else
+  {
+    return boost::lexical_cast<std::string>(limited_value.value());
+  }
+}
+
 class stats : private boost::noncopyable
 {
 public:
   stats()
-    : total_sessions_connected_(0)
+    : total_sessions_connected_()
   {
   }
 
-  void add(std::size_t connect_count)
+  void add(const limited_counter& connect_count)
   {
     total_sessions_connected_ += connect_count;
   }
@@ -85,11 +101,12 @@ public:
   void print()
   {
     std::cout << "Total sessions connected: "
-              << total_sessions_connected_ << std::endl;
+              << to_string(total_sessions_connected_)
+              << std::endl;
   }
 
 private:
-  boost::uint_fast64_t total_sessions_connected_;
+  limited_counter total_sessions_connected_;
 }; // class stats
 
 typedef ma::steady_deadline_timer      deadline_timer;
@@ -125,7 +142,7 @@ public:
     , strand_(io_service)
     , socket_(io_service)
     , timer_(io_service)
-    , connect_count_(0)
+    , connect_count_()
     , stopped_(false)
     , timer_in_progess_(false)
     , work_state_(work_state)
@@ -144,7 +161,7 @@ public:
         boost::bind(&this_type::do_stop, this)));
   }
 
-  std::size_t connect_count() const
+  limited_counter connect_count() const
   {
     return connect_count_;
   }
@@ -311,7 +328,7 @@ private:
   boost::asio::io_service::strand strand_;
   protocol::socket socket_;
   deadline_timer   timer_;
-  std::size_t      connect_count_;
+  limited_counter  connect_count_;
   bool             stopped_;
   bool             timer_in_progess_;
   work_state&      work_state_;

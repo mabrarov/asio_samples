@@ -31,6 +31,7 @@
 #include <ma/handler_allocator.hpp>
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/strand_wrapped_handler.hpp>
+#include <ma/limited_int.hpp>
 
 #if defined(MA_HAS_BOOST_TIMER)
 #include <boost/timer/timer.hpp>
@@ -72,37 +73,56 @@ private:
   boost::condition_variable condition_;
 }; // struct work_state
 
+typedef ma::limited_int<boost::uintmax_t> limited_counter;
+
+template <typename Integer>
+std::string to_string(const ma::limited_int<Integer>& limited_value)
+{
+  if (limited_value.overflowed()) 
+  {
+    return ">" + boost::lexical_cast<std::string>(limited_value.value());
+  }
+  else
+  {
+    return boost::lexical_cast<std::string>(limited_value.value());
+  }
+}
+
 class stats : private boost::noncopyable
 {
 public:
   stats()
-    : total_sessions_connected_(0)
-    , total_bytes_written_(0)
-    , total_bytes_read_(0)
+    : total_sessions_connected_()
+    , total_bytes_written_()
+    , total_bytes_read_()
   {
   }
 
-  void add(boost::uint_fast64_t bytes_written, boost::uint_fast64_t bytes_read)
+  void add(const limited_counter& bytes_written,
+      const limited_counter& bytes_read)
   {
     ++total_sessions_connected_;
     total_bytes_written_ += bytes_written;
-    total_bytes_read_ += bytes_read;
+    total_bytes_read_    += bytes_read;
   }
 
   void print()
   {
-    std::cout << "Total sessions connected: " << total_sessions_connected_
+    std::cout << "Total sessions connected: "
+              << to_string(total_sessions_connected_)
               << std::endl
-              << "Total bytes written     : " << total_bytes_written_
+              << "Total bytes written     : "
+              << to_string(total_bytes_written_)
               << std::endl
-              << "Total bytes read        : " << total_bytes_read_
+              << "Total bytes read        : " 
+              << to_string(total_bytes_read_)
               << std::endl;
   }
 
 private:
-  std::size_t total_sessions_connected_;
-  boost::uint_fast64_t total_bytes_written_;
-  boost::uint_fast64_t total_bytes_read_;
+  limited_counter total_sessions_connected_;
+  limited_counter total_bytes_written_;
+  limited_counter total_bytes_read_;
 }; // class stats
 
 typedef boost::optional<bool> optional_bool;
@@ -138,8 +158,8 @@ public:
     , strand_(io_service)
     , socket_(io_service)
     , buffer_(config.buffer_size)
-    , bytes_written_(0)
-    , bytes_read_(0)
+    , bytes_written_()
+    , bytes_read_()
     , was_connected_(false)
     , write_in_progress_(false)
     , read_in_progress_(false)
@@ -180,12 +200,12 @@ public:
     return was_connected_;
   }
 
-  boost::uint_fast64_t bytes_written() const
+  limited_counter bytes_written() const
   {
     return bytes_written_;
   }
 
-  boost::uint_fast64_t bytes_read() const
+  limited_counter bytes_read() const
   {
     return bytes_read_;
   }
@@ -378,8 +398,8 @@ private:
   boost::asio::io_service::strand strand_;
   protocol::socket socket_;
   ma::cyclic_buffer buffer_;
-  boost::uint_fast64_t bytes_written_;
-  boost::uint_fast64_t bytes_read_;
+  limited_counter bytes_written_;
+  limited_counter bytes_read_;
   bool was_connected_;
   bool write_in_progress_;
   bool read_in_progress_;
