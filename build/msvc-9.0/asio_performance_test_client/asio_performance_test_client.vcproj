@@ -392,6 +392,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\..\include\ma\limited_int.hpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\..\include\ma\steady_deadline_timer.hpp"
 					>
 				</File>
