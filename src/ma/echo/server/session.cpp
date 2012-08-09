@@ -803,7 +803,7 @@ void session::continue_stop()
 
 void session::start_passive_shutdown()
 {
-  start_shutdown(server_error::passive_shutdown);
+  start_shutdown(server_error::out_of_work);
 }
 
 void session::start_active_shutdown()

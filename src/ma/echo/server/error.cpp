@@ -37,8 +37,6 @@ public:
       return "Inactivity timeout";
     case server_error::no_memory:
       return "No memory";
-    case server_error::passive_shutdown:
-      return "Passive shutdown";
     case server_error::out_of_work:
       return "Run out of work";
     default:

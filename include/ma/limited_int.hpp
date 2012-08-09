@@ -29,14 +29,14 @@ public:
   typedef Integer value_type;
 
   limited_int()
-    : value_(0)
-    , overflowed_(false)
+    : overflowed_(false)
+    , value_(0)
   {
   }
 
   limited_int(value_type value)
-    : value_(value)
-    , overflowed_(false)
+    : overflowed_(false)
+    , value_(value)
   {
   }
 
@@ -106,14 +106,14 @@ public:
     return *this;
   }
 
-  static value_type max()
+  static value_type (max)()
   {
-    return (std::numeric_limits<Integer>::max)();
+    return (std::numeric_limits<value_type>::max)();
   }
 
 private:
-  value_type value_;
-  bool       overflowed_;
+  bool overflowed_;
+  value_type value_;  
 }; // class limited_int
 
 } // namespace ma

@@ -29,6 +29,7 @@
 #include <ma/echo/server/session_fwd.hpp>
 #include <ma/echo/server/session_config.hpp>
 #include <ma/echo/server/session_manager_config.hpp>
+#include <ma/echo/server/session_manager_stats.hpp>
 #include <ma/echo/server/session_manager_fwd.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)
@@ -57,6 +58,8 @@ public:
       const session_manager_config& config);
 
   void reset(bool free_recycled_sessions = true);
+
+  session_manager_stats stats() const;
 
 #if defined(MA_HAS_RVALUE_REFS)
 

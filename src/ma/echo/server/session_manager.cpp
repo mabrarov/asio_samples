@@ -199,6 +199,12 @@ void session_manager::session_wrapper::reset()
   pending_operations = 0;
 }
 
+session_manager_stats session_manager::stats() const
+{
+  //todo
+  return session_manager_stats();
+}
+
 session_manager_ptr session_manager::create(
     boost::asio::io_service& io_service,
     boost::asio::io_service& session_io_service,
