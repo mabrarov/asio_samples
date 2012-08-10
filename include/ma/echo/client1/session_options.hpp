@@ -43,12 +43,12 @@ public:
     BOOST_ASSERT_MSG(buffer_size > 0, "buffer_size must be > 0");
 
     BOOST_ASSERT_MSG(
-      !socket_recv_buffer_size || (*socket_recv_buffer_size) > 0,
-      "defined socket_recv_buffer_size must be > 0");
+        !socket_recv_buffer_size || (*socket_recv_buffer_size) > 0,
+        "defined socket_recv_buffer_size must be > 0");
 
     BOOST_ASSERT_MSG(
-      !socket_send_buffer_size || (*socket_send_buffer_size) > 0,
-      "defined socket_send_buffer_size must be > 0");
+        !socket_send_buffer_size || (*socket_send_buffer_size) > 0,
+        "defined socket_send_buffer_size must be > 0");
   }
 
   optional_bool no_delay() const

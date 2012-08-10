@@ -11,6 +11,7 @@
 #endif
 
 #include <cstdlib>
+#include <string>
 #include <iostream>
 #include <exception>
 #include <boost/ref.hpp>
@@ -20,6 +21,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/noncopyable.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/program_options.hpp>
@@ -70,6 +72,11 @@ struct session_manager_wrapper : private boost::noncopyable
   {
   }
 #endif
+
+  ma::echo::server::session_manager_stats stats() const
+  {
+    return session_manager->stats();
+  }
 
   bool is_starting() const
   {
@@ -127,6 +134,47 @@ struct session_manager_wrapper : private boost::noncopyable
   }
 
 }; // struct session_manager_wrapper
+
+template <typename Integer>
+std::string to_string(const ma::limited_int<Integer>& limited_value)
+{
+  if (limited_value.overflowed())
+  {
+    return ">" + boost::lexical_cast<std::string>(limited_value.value());
+  }
+  else
+  {
+    return boost::lexical_cast<std::string>(limited_value.value());
+  }
+}
+
+void print_stats(const ma::echo::server::session_manager_stats& stats)
+{
+  std::cout << "Active sessions           : "
+            << boost::lexical_cast<std::string>(stats.active)
+            << std::endl
+            << "Maximum of active sessions: "
+            << boost::lexical_cast<std::string>(stats.max_active)
+            << std::endl
+            << "Recycled sessions         : "
+            << boost::lexical_cast<std::string>(stats.recycled)
+            << std::endl
+            << "Total accepeted sessions  : "
+            << to_string(stats.total_accepted)
+            << std::endl
+            << "Active shutdowned sessions: "
+            << to_string(stats.active_shutdowned)
+            << std::endl
+            << "Out of work sessions      : "
+            << to_string(stats.out_of_work)
+            << std::endl
+            << "Timed out sessions        : "
+            << to_string(stats.timed_out)
+            << std::endl
+            << "Error stopped sessions    : "
+            << to_string(stats.error_stopped)
+            << std::endl;
+}
 
 int run_server(const execution_config&,
     const ma::echo::server::session_manager_config&);
@@ -245,6 +293,7 @@ int run_server(const echo_server::execution_config& exec_config,
   work_threads.join_all();
   std::cout << "Work threads have stopped. Process will close.\n";
 
+  print_stats(session_manager->stats());
   return exit_code;
 }
 
@@ -392,7 +441,7 @@ int main(int argc, char* argv[])
   try
   {
     using namespace echo_server;
-    
+
     const std::size_t cpu_count = boost::thread::hardware_concurrency();
 
     const boost::program_options::options_description

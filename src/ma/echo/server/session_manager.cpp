@@ -837,10 +837,10 @@ void session_manager::continue_stop()
   if (!pending_operations_)
   {
     BOOST_ASSERT_MSG(accept_state::stopped  == accept_state_,
-      "invalid accept state");
+        "invalid accept state");
 
     BOOST_ASSERT_MSG(active_sessions_.empty(),
-      "there are still some active sessions");
+        "there are still some active sessions");
 
     // Internal stop completed
     intern_state_ = intern_state::stopped;
