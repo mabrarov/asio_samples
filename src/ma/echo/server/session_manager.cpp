@@ -582,7 +582,7 @@ void session_manager::handle_session_start_at_work(
     stats_collector_.notify_session_stop(error);
     // Failed to start accepted session
     session->mark_as_stopped();
-    active_sessions_.erase(session);
+    remove_from_active(session);
     recycle(session);
     continue_work();
     return;
@@ -619,7 +619,7 @@ void session_manager::handle_session_start_at_stop(
     stats_collector_.notify_session_stop(error);
     // Failed to start accepted session
     session->mark_as_stopped();
-    active_sessions_.erase(session);
+    remove_from_active(session);
     recycle(session);
     continue_stop();
     return;
@@ -752,7 +752,7 @@ void session_manager::handle_session_stop_at_work(
 
   // Session has stopped successfully
   session->mark_as_stopped();
-  active_sessions_.erase(session);
+  remove_from_active(session);
   recycle(session);
   continue_work();
 }
@@ -782,7 +782,7 @@ void session_manager::handle_session_stop_at_stop(
   (void) error;
 
   session->mark_as_stopped();
-  active_sessions_.erase(session);
+  remove_from_active(session);
   recycle(session);
   continue_stop();
 }
@@ -969,7 +969,7 @@ session_manager::session_wrapper_ptr session_manager::create_session(
   if (!recycled_sessions_.empty())
   {
     session_wrapper_ptr session = recycled_sessions_.front();
-    recycled_sessions_.erase(session);
+    remove_from_recycled(session);
     error = boost::system::error_code();
     return session;
   }
@@ -999,6 +999,20 @@ void session_manager::add_to_recycled(const session_wrapper_ptr& session)
 {
   // Put the session to "recycle bin"
   recycled_sessions_.push_front(session);
+  // Collect statistics
+  stats_collector_.set_recycled_session_count(recycled_sessions_.size());
+}
+
+void session_manager::remove_from_active(const session_wrapper_ptr& session)
+{
+  active_sessions_.erase(session);
+  // Collect statistics
+  stats_collector_.set_active_session_count(active_sessions_.size());
+}
+
+void session_manager::remove_from_recycled(const session_wrapper_ptr& session)
+{
+  recycled_sessions_.erase(session);
   // Collect statistics
   stats_collector_.set_recycled_session_count(recycled_sessions_.size());
 }

@@ -39,9 +39,9 @@ public:
 
   void asyncStart(const execution_config&, const session_manager_config&);
 
-  ServiceState::State currentState() const
+  ServiceState::State state() const
   {
-    return currentState_;
+    return state_;
   }
 
   session_manager_stats stats() const;
@@ -70,7 +70,7 @@ private:
   void createServant(const execution_config&, const session_manager_config&);
   void destroyServant();
 
-  ServiceState::State   currentState_;  
+  ServiceState::State   state_;
   ServiceForwardSignal* forwardSignal_;
   session_manager_stats stats_;
   boost::scoped_ptr<servant> servant_;

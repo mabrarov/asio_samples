@@ -18,6 +18,7 @@
 #include <QtGui/QWidget>
 #include <ma/echo/server/session_config.hpp>
 #include <ma/echo/server/session_manager_config.hpp>
+#include <ma/echo/server/session_manager_stats_fwd.hpp>
 #include <ma/echo/server/qt/service_fwd.h>
 #include <ma/echo/server/qt/servicestate.h>
 #include <ma/echo/server/qt/execution_config.h>
@@ -44,7 +45,7 @@ private slots:
   void on_startButton_clicked();
   void on_stopButton_clicked();
   void on_terminateButton_clicked();
-  void on_timer_timeout();
+  void on_statsTimer_timeout();
 
   void on_service_exceptionHappened();
   void on_service_startCompleted(const boost::system::error_code&);
@@ -63,14 +64,17 @@ private:
   session_manager_config buildSessionManagerConfig() const;
   ServiceConfig          buildServiceConfig() const;
 
+  void startStatsTimer();
+  void stopStatsTimer();
+  void conditionalStopStatsTimer(ServiceState::State state);
   void showConfigError(const QString& message, QWidget* widget = 0);
-  static QString getServiceStateWindowTitle(ServiceState::State serviceState);
+  void showStats(const session_manager_stats& stats);
+  void writeLog(const QString& message);
   void updateWidgetsStates(bool ignorePrevServiceState = false);
-  void showStats();
-  void writeLog(const QString&);
+  static QString buildServiceStateWindowTitle(ServiceState::State state);
 
   Ui::mainForm ui_;
-  QTimer*      timer_;
+  QTimer*      statsTimer_;
   std::vector<OptionWidget> optionsWidgets_;
   ServiceState::State       prevServiceState_;
   Service&                  service_;

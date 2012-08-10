@@ -499,6 +499,8 @@ private:
 
   void add_to_active(const session_wrapper_ptr& session);
   void add_to_recycled(const session_wrapper_ptr& session);
+  void remove_from_active(const session_wrapper_ptr& session);
+  void remove_from_recycled(const session_wrapper_ptr& session);
 
   boost::system::error_code open_acceptor();
   boost::system::error_code close_acceptor();

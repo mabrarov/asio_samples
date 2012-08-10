@@ -242,6 +242,17 @@ private:
         initial_endpoint_iterator, initial_endpoint_iterator);
   }
 
+  void do_stop()
+  {
+    if (stopped_)
+    {
+      return;
+    }
+
+    shutdown_socket();
+    stop();
+  }
+
   void start_connect(std::size_t connect_attempt,
       const protocol::resolver::iterator& initial_endpoint_iterator,
       const protocol::resolver::iterator& current_endpoint_iterator)
@@ -280,7 +291,7 @@ private:
         ++connect_attempt;
         if (connect_attempt >= max_connect_attempts_)
         {
-          do_stop();
+          stop();
           return;
         }
       }
@@ -294,7 +305,7 @@ private:
 
     if (boost::system::error_code error = apply_socket_options())
     {
-      do_stop();
+      stop();
       return;
     }
 
@@ -314,9 +325,16 @@ private:
       return;
     }
 
+    if (boost::asio::error::eof == error)
+    {
+      shutdown_socket();
+      stop();
+      return;
+    }
+
     if (error)
     {
-      do_stop();
+      stop();
       return;
     }
 
@@ -341,7 +359,7 @@ private:
 
     if (error)
     {
-      do_stop();
+      stop();
       return;
     }
 
@@ -352,13 +370,8 @@ private:
     start_write_some();
   }
 
-  void do_stop()
+  void stop()
   {
-    if (stopped_)
-    {
-      return;
-    }
-
     close_socket();
     stopped_ = true;
     work_state_.notify_session_stop();
@@ -438,6 +451,13 @@ private:
     }
 
     return boost::system::error_code();
+  }
+
+  boost::system::error_code shutdown_socket()
+  {
+    boost::system::error_code error;
+    socket_.shutdown(protocol::socket::shutdown_send, error);
+    return error;
   }
 
   void close_socket()

@@ -31,8 +31,11 @@ HEADERS  += ../../../include/ma/handler_storage_service.hpp \
             ../../../include/ma/shared_ptr_factory.hpp \
             ../../../include/ma/sp_intrusive_list.hpp \
             ../../../include/ma/steady_deadline_timer.hpp \
+            ../../../include/ma/limited_int.hpp \
             ../../../include/ma/echo/server/session_config_fwd.hpp \
             ../../../include/ma/echo/server/session_manager_config_fwd.hpp \
+            ../../../include/ma/echo/server/session_manager_stats.hpp \
+            ../../../include/ma/echo/server/session_manager_stats_fwd.hpp \
             ../../../include/ma/echo/server/session_config.hpp \
             ../../../include/ma/echo/server/session_manager_config.hpp \
             ../../../include/ma/echo/server/session_fwd.hpp \

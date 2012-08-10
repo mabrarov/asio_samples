@@ -113,7 +113,7 @@ public:
 
 private:
   bool overflowed_;
-  value_type value_;  
+  value_type value_;
 }; // class limited_int
 
 } // namespace ma

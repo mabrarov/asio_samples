@@ -33,18 +33,20 @@ namespace qt {
 
 namespace {
 
-QString toQString(std::size_t value)
-{  
+const int statsTimerIntervalMillis = 1000;
+
+QString format(std::size_t value)
+{
   return QString("%1").arg(value);
 }
 
-QString toQString(const session_manager_stats::limited_counter& counter)
+QString format(const session_manager_stats::limited_counter& counter)
 {
   if (counter.overflowed())
   {
     return QString(">%1").arg(counter.value());
   }
-  else 
+  else
   {
     return QString("%1").arg(counter.value());
   }
@@ -126,16 +128,16 @@ private:
 } // anonymous namespace
 
 MainForm::MainForm(Service& service, QWidget* parent, Qt::WFlags flags)
-  : QWidget(parent, flags)  
+  : QWidget(parent, flags)
   , optionsWidgets_()
-  , prevServiceState_(service.currentState())
+  , prevServiceState_(service.state())
   , service_(service)
 {
   ui_.setupUi(this);
-  timer_ = new QTimer(this);
 
-  checkConnect(QObject::connect(timer_,
-      SIGNAL(timeout()), SLOT(on_timer_timeout())));
+  statsTimer_ = new QTimer(this);
+  checkConnect(QObject::connect(statsTimer_,
+      SIGNAL(timeout()), SLOT(on_statsTimer_timeout())));
 
   optionsWidgets_.push_back(
       boost::make_tuple(0, ui_.sessionManagerThreadsSpinBox));
@@ -190,7 +192,7 @@ MainForm::MainForm(Service& service, QWidget* parent, Qt::WFlags flags)
   ui_.sessionManagerThreadsSpinBox->setValue(boost::numeric_cast<int>(
       calcSessionManagerThreadCount(hardwareConcurrency)));
   ui_.sessionThreadsSpinBox->setValue(boost::numeric_cast<int>(
-      calcSessionThreadCount(hardwareConcurrency)));  
+      calcSessionThreadCount(hardwareConcurrency)));
   ui_.listenBacklogSpinBox->setMaximum(std::numeric_limits<int>::max());
 
   updateWidgetsStates(true);
@@ -198,11 +200,11 @@ MainForm::MainForm(Service& service, QWidget* parent, Qt::WFlags flags)
 
 MainForm::~MainForm()
 {
+  stopStatsTimer();
 }
 
 void MainForm::on_startButton_clicked()
 {
-  //todo: read and validate configuration
   boost::optional<ServiceConfig> serviceConfig;
   try
   {
@@ -223,8 +225,10 @@ void MainForm::on_startButton_clicked()
   if (serviceConfig)
   {
     service_.asyncStart(serviceConfig->get<0>(), serviceConfig->get<1>());
-    showStats();
     writeLog(tr("Starting echo service..."));
+
+    startStatsTimer();
+    showStats(service_.stats());
   }
   updateWidgetsStates();
 }
@@ -233,27 +237,30 @@ void MainForm::on_stopButton_clicked()
 {
   service_.asyncStop();
   writeLog(tr("Stopping echo service..."));
+
+  showStats(service_.stats());
   updateWidgetsStates();
 }
 
 void MainForm::on_terminateButton_clicked()
 {
-  timer_->stop();
   writeLog(tr("Terminating echo service..."));
   service_.terminate();
   writeLog(tr("Echo service terminated."));
+
+  showStats(service_.stats());
+  conditionalStopStatsTimer(service_.state());
   updateWidgetsStates();
 }
 
-void MainForm::on_timer_timeout()
+void MainForm::on_statsTimer_timeout()
 {
-  showStats();
+  showStats(service_.stats());
 }
 
 void MainForm::on_service_startCompleted(
     const boost::system::error_code& error)
 {
-  showStats();
   if (server_error::invalid_state == error)
   {
     writeLog(tr("Echo service start completed" \
@@ -270,15 +277,16 @@ void MainForm::on_service_startCompleted(
   }
   else
   {
-    timer_->start(1000);
-    writeLog(tr("Echo service start completed successfully."));    
+    writeLog(tr("Echo service start completed successfully."));
   }
+
+  showStats(service_.stats());
+  conditionalStopStatsTimer(service_.state());
   updateWidgetsStates();
 }
 
 void MainForm::on_service_stopCompleted(const boost::system::error_code& error)
 {
-  showStats();
   if (server_error::invalid_state == error)
   {
     writeLog(tr("Echo service stop completed" \
@@ -295,15 +303,16 @@ void MainForm::on_service_stopCompleted(const boost::system::error_code& error)
   }
   else
   {
-    timer_->stop();
     writeLog(tr("Echo service stop completed successfully."));
   }
+
+  showStats(service_.stats());
+  conditionalStopStatsTimer(service_.state());
   updateWidgetsStates();
 }
 
 void MainForm::on_service_workCompleted(const boost::system::error_code& error)
 {
-  showStats();
   if (server_error::invalid_state == error)
   {
     writeLog(tr("Echo service work completed" \
@@ -322,23 +331,27 @@ void MainForm::on_service_workCompleted(const boost::system::error_code& error)
   {
     writeLog(tr("Echo service work completed successfully."));
   }
-  if (ServiceState::Working == service_.currentState())
+  if (ServiceState::Working == service_.state())
   {
     service_.asyncStop();
     writeLog(tr("Stopping echo service" \
         " (because of its work was completed)..."));
   }
+
+  showStats(service_.stats());
+  conditionalStopStatsTimer(service_.state());
   updateWidgetsStates();
 }
 
 void MainForm::on_service_exceptionHappened()
 {
-  timer_->stop();
-  showStats();
   writeLog(tr("Unexpected error during echo service work." \
       " Terminating echo service..."));
   service_.terminate();
   writeLog(tr("Echo service terminated."));
+
+  showStats(service_.stats());
+  conditionalStopStatsTimer(service_.state());
   updateWidgetsStates();
 }
 
@@ -453,6 +466,24 @@ MainForm::ServiceConfig MainForm::buildServiceConfig() const
   return boost::make_tuple(executionConfig, sessionManagerOptions);
 }
 
+void MainForm::startStatsTimer()
+{
+  statsTimer_->start(statsTimerIntervalMillis);
+}
+
+void MainForm::stopStatsTimer()
+{
+  statsTimer_->stop();
+}
+
+void MainForm::conditionalStopStatsTimer(ServiceState::State state)
+{
+  if (ServiceState::Stopped == state)
+  {
+    statsTimer_->stop();
+  }
+}
+
 void MainForm::showConfigError(const QString& message, QWidget* widget)
 {
   if (widget)
@@ -472,26 +503,31 @@ void MainForm::showConfigError(const QString& message, QWidget* widget)
   QMessageBox::critical(this, tr("Invalid configuration"), message);
 }
 
-QString MainForm::getServiceStateWindowTitle(ServiceState::State serviceState)
+void MainForm::showStats(const session_manager_stats& stats)
 {
-  switch (serviceState)
-  {
-  case ServiceState::Stopped:
-    return QString();
-  case ServiceState::Starting:
-    return tr("starting");
-  case ServiceState::Working:
-    return tr("working");
-  case ServiceState::Stopping:
-    return tr("stopping");
-  default:
-    return tr("unknown state");
-  }
+  ui_.activeSessionsEdit->setText(format(stats.active));
+  ui_.maxActiveSessionsEdit->setText(format(stats.max_active));
+  ui_.recycledSessionsEdit->setText(format(stats.recycled));
+  ui_.totalAcceptedSessionsEdit->setText(format(stats.total_accepted));
+  ui_.activeShutdownedSessionsEdit->setText(
+      format(stats.active_shutdowned));
+  ui_.outOfWorkSessionsEdit->setText(format(stats.out_of_work));
+  ui_.timedOutSessionsEdit->setText(format(stats.timed_out));
+  ui_.errorStoppedSessionsEdit->setText(format(stats.error_stopped));
+}
+
+void MainForm::writeLog(const QString& message)
+{
+  QString logMessage = tr("[%1] %2").arg(
+      QTime::currentTime().toString(Qt::SystemLocaleLongDate)).arg(message);
+
+  ui_.logTextEdit->appendPlainText(logMessage);
+  ui_.logTextEdit->moveCursor(QTextCursor::End);
 }
 
 void MainForm::updateWidgetsStates(bool ignorePrevServiceState)
 {
-  ServiceState::State serviceState = service_.currentState();
+  ServiceState::State serviceState = service_.state();
   if ((serviceState != prevServiceState_) || ignorePrevServiceState)
   {
     bool serviceStopped = ServiceState::Stopped == serviceState;
@@ -516,7 +552,7 @@ void MainForm::updateWidgetsStates(bool ignorePrevServiceState)
         (Qt::Checked == ui_.sockSendBufferSizeCheckBox->checkState()));
 
     QString windowTitle = tr("Qt Echo Server");
-    QString statedWindowTitlePart = getServiceStateWindowTitle(serviceState);
+    QString statedWindowTitlePart = buildServiceStateWindowTitle(serviceState);
     if (!statedWindowTitlePart.isNull())
     {
       windowTitle = tr("%1 (%2)").arg(windowTitle).arg(statedWindowTitlePart);
@@ -526,27 +562,21 @@ void MainForm::updateWidgetsStates(bool ignorePrevServiceState)
   prevServiceState_ = serviceState;
 }
 
-void MainForm::showStats()
+QString MainForm::buildServiceStateWindowTitle(ServiceState::State state)
 {
-  const session_manager_stats stats = service_.stats();
-  ui_.activeSessionsEdit->setText(toQString(stats.active));
-  ui_.maxActiveSessionsEdit->setText(toQString(stats.max_active));
-  ui_.recycledSessionsEdit->setText(toQString(stats.recycled));
-  ui_.totalAcceptedSessionsEdit->setText(toQString(stats.total_accepted));
-  ui_.activeShutdownedSessionsEdit->setText(
-      toQString(stats.active_shutdowned));
-  ui_.outOfWorkSessionsEdit->setText(toQString(stats.out_of_work));
-  ui_.timedOutSessionsEdit->setText(toQString(stats.timed_out));
-  ui_.errorStoppedSessionsEdit->setText(toQString(stats.error_stopped));
-}
-
-void MainForm::writeLog(const QString& message)
-{
-  QString logMessage = tr("[%1] %2").arg(
-      QTime::currentTime().toString(Qt::SystemLocaleLongDate)).arg(message);
-
-  ui_.logTextEdit->appendPlainText(logMessage);
-  ui_.logTextEdit->moveCursor(QTextCursor::End);
+  switch (state)
+  {
+  case ServiceState::Stopped:
+    return QString();
+  case ServiceState::Starting:
+    return tr("starting");
+  case ServiceState::Working:
+    return tr("working");
+  case ServiceState::Stopping:
+    return tr("stopping");
+  default:
+    return tr("unknown state");
+  }
 }
 
 } // namespace qt

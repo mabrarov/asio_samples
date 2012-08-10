@@ -29,6 +29,7 @@ HEADERS  += ../../../include/ma/bind_asio_handler.hpp \
             ../../../include/ma/handler_invoke_helpers.hpp \
             ../../../include/ma/handler_storage.hpp \
             ../../../include/ma/handler_storage_service.hpp \
+            ../../../include/ma/limited_int.hpp \
             ../../../include/ma/echo/server/error.hpp \
             ../../../include/ma/echo/server/session.hpp \
             ../../../include/ma/echo/server/session_config.hpp \
@@ -37,6 +38,8 @@ HEADERS  += ../../../include/ma/bind_asio_handler.hpp \
             ../../../include/ma/echo/server/session_manager.hpp \
             ../../../include/ma/echo/server/session_manager_config.hpp \
             ../../../include/ma/echo/server/session_manager_config_fwd.hpp \
+            ../../../include/ma/echo/server/session_manager_stats.hpp \
+            ../../../include/ma/echo/server/session_manager_stats_fwd.hpp \
             ../../../include/ma/echo/server/session_manager_fwd.hpp \
             ../../../include/ma/echo/server/qt/custommetatypes.h \
             ../../../include/ma/echo/server/qt/execution_config.h \
