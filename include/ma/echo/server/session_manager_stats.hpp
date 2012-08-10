@@ -30,7 +30,7 @@ public:
     : active(0)
     , max_active(0)
     , recycled(0)
-    , total_served()
+    , total_accepted()
     , active_shutdowned()
     , out_of_work()
     , timed_out()
@@ -41,7 +41,7 @@ public:
   session_manager_stats(std::size_t the_active,
       std::size_t the_max_active,
       std::size_t the_recycled,
-      const limited_counter& the_total_served,
+      const limited_counter& the_total_accepted,
       const limited_counter& the_active_shutdowned,
       const limited_counter& the_out_of_work,
       const limited_counter& the_timed_out,
@@ -49,7 +49,7 @@ public:
     : active(the_active)
     , max_active(the_max_active)
     , recycled(the_recycled)
-    , total_served(the_total_served)
+    , total_accepted(the_total_accepted)
     , active_shutdowned(the_active_shutdowned)
     , out_of_work(the_out_of_work)
     , timed_out(the_timed_out)
@@ -60,7 +60,7 @@ public:
   std::size_t active;
   std::size_t max_active;
   std::size_t recycled;
-  limited_counter total_served;
+  limited_counter total_accepted;
   limited_counter active_shutdowned;
   limited_counter out_of_work;
   limited_counter timed_out;

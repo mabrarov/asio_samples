@@ -78,9 +78,7 @@ public:
 
   ~executor_service()
   {
-    session_manager_io_service().stop();
-    session_io_service().stop();
-    threads_.join_all();
+    stop_threads();
   }
 
   template <typename Handler>
@@ -106,6 +104,13 @@ public:
       threads_.create_thread(boost::bind(func,
           boost::ref(session_manager_io_service()), wrapped_handler));
     }
+  }
+
+  void stop_threads()
+  {
+    session_manager_io_service().stop();
+    session_io_service().stop();
+    threads_.join_all();
   }
 
 private:
@@ -167,6 +172,11 @@ public:
     session_manager_->async_stop(handler);
   }
 
+  session_manager_stats stats() const
+  {
+    return session_manager_->stats();
+  }
+
 private:
   session_manager_ptr session_manager_;
 }; // class Service::servant
@@ -174,6 +184,7 @@ private:
 Service::Service(QObject* parent)
   : QObject(parent)
   , currentState_(ServiceState::Stopped)
+  , stats_()
   , servant_()
   , servantSignal_()
 {
@@ -219,6 +230,18 @@ void Service::asyncStart(const execution_config& the_execution_config,
           servantSignal_, _1));
 
   currentState_ = ServiceState::Starting;
+}
+
+session_manager_stats Service::stats() const
+{
+  if (servant_)
+  {
+    return servant_->stats();
+  }
+  else
+  {
+    return stats_;
+  }
 }
 
 void Service::onSessionManagerStartCompleted(
@@ -326,6 +349,7 @@ void Service::createServant(const execution_config& the_execution_config,
 {
   servant_.reset(new servant(
       the_execution_config, the_session_manager_config));
+  stats_ = servant_->stats();
 
   servantSignal_ = boost::make_shared<ServiceServantSignal>();
 
@@ -357,6 +381,8 @@ void Service::destroyServant()
     servantSignal_->disconnect();
     servantSignal_.reset();
   }
+  servant_->stop_threads();
+  stats_ = servant_->stats();
   servant_.reset();
 }
 

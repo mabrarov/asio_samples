@@ -17,9 +17,11 @@ TRANSLATOR ma::echo::server::qt::MainForm
 #include <boost/numeric/conversion/cast.hpp>
 #include <QtGlobal>
 #include <QtCore/QTime>
+#include <QtCore/QTimer>
 #include <QtGui/QTextCursor>
 #include <QtGui/QMessageBox>
 #include <ma/echo/server/error.hpp>
+#include <ma/echo/server/session_manager_stats.hpp>
 #include <ma/echo/server/qt/service.h>
 #include <ma/echo/server/qt/signal_connect_error.h>
 #include <ma/echo/server/qt/mainform.h>
@@ -30,6 +32,23 @@ namespace server {
 namespace qt {
 
 namespace {
+
+QString toQString(std::size_t value)
+{  
+  return QString("%1").arg(value);
+}
+
+QString toQString(const session_manager_stats::limited_counter& counter)
+{
+  if (counter.overflowed())
+  {
+    return QString(">%1").arg(counter.value());
+  }
+  else 
+  {
+    return QString("%1").arg(counter.value());
+  }
+}
 
 std::size_t calcSessionManagerThreadCount(std::size_t /*hardwareConcurrency*/)
 {
@@ -107,12 +126,16 @@ private:
 } // anonymous namespace
 
 MainForm::MainForm(Service& service, QWidget* parent, Qt::WFlags flags)
-  : QWidget(parent, flags)
+  : QWidget(parent, flags)  
   , optionsWidgets_()
   , prevServiceState_(service.currentState())
   , service_(service)
 {
   ui_.setupUi(this);
+  timer_ = new QTimer(this);
+
+  checkConnect(QObject::connect(timer_,
+      SIGNAL(timeout()), SLOT(on_timer_timeout())));
 
   optionsWidgets_.push_back(
       boost::make_tuple(0, ui_.sessionManagerThreadsSpinBox));
@@ -187,19 +210,20 @@ void MainForm::on_startButton_clicked()
   }
   catch (const widget_option_read_error& e)
   {
-    showError(e.message(), e.widget());
+    showConfigError(e.message(), e.widget());
   }
   catch (const option_read_error& e)
   {
-    showError(e.message());
+    showConfigError(e.message());
   }
   catch (const std::exception&)
   {
-    showError(tr("Unexpected error reading configuration."));
+    showConfigError(tr("Unexpected error reading configuration."));
   }
   if (serviceConfig)
   {
     service_.asyncStart(serviceConfig->get<0>(), serviceConfig->get<1>());
+    showStats();
     writeLog(tr("Starting echo service..."));
   }
   updateWidgetsStates();
@@ -214,15 +238,22 @@ void MainForm::on_stopButton_clicked()
 
 void MainForm::on_terminateButton_clicked()
 {
+  timer_->stop();
   writeLog(tr("Terminating echo service..."));
   service_.terminate();
   writeLog(tr("Echo service terminated."));
   updateWidgetsStates();
 }
 
+void MainForm::on_timer_timeout()
+{
+  showStats();
+}
+
 void MainForm::on_service_startCompleted(
     const boost::system::error_code& error)
 {
+  showStats();
   if (server_error::invalid_state == error)
   {
     writeLog(tr("Echo service start completed" \
@@ -239,13 +270,15 @@ void MainForm::on_service_startCompleted(
   }
   else
   {
-    writeLog(tr("Echo service start completed successfully."));
+    timer_->start(1000);
+    writeLog(tr("Echo service start completed successfully."));    
   }
   updateWidgetsStates();
 }
 
 void MainForm::on_service_stopCompleted(const boost::system::error_code& error)
 {
+  showStats();
   if (server_error::invalid_state == error)
   {
     writeLog(tr("Echo service stop completed" \
@@ -262,6 +295,7 @@ void MainForm::on_service_stopCompleted(const boost::system::error_code& error)
   }
   else
   {
+    timer_->stop();
     writeLog(tr("Echo service stop completed successfully."));
   }
   updateWidgetsStates();
@@ -269,6 +303,7 @@ void MainForm::on_service_stopCompleted(const boost::system::error_code& error)
 
 void MainForm::on_service_workCompleted(const boost::system::error_code& error)
 {
+  showStats();
   if (server_error::invalid_state == error)
   {
     writeLog(tr("Echo service work completed" \
@@ -298,6 +333,8 @@ void MainForm::on_service_workCompleted(const boost::system::error_code& error)
 
 void MainForm::on_service_exceptionHappened()
 {
+  timer_->stop();
+  showStats();
   writeLog(tr("Unexpected error during echo service work." \
       " Terminating echo service..."));
   service_.terminate();
@@ -416,7 +453,7 @@ MainForm::ServiceConfig MainForm::buildServiceConfig() const
   return boost::make_tuple(executionConfig, sessionManagerOptions);
 }
 
-void MainForm::showError(const QString& message, QWidget* widget)
+void MainForm::showConfigError(const QString& message, QWidget* widget)
 {
   if (widget)
   {
@@ -426,7 +463,7 @@ void MainForm::showError(const QString& message, QWidget* widget)
     {
       if (widget == i->get<1>())
       {
-        ui_.tabWidget->setCurrentIndex(i->get<0>());
+        ui_.configTabWidget->setCurrentIndex(i->get<0>());
         break;
       }
     }
@@ -487,6 +524,20 @@ void MainForm::updateWidgetsStates(bool ignorePrevServiceState)
     setWindowTitle(windowTitle);
   }
   prevServiceState_ = serviceState;
+}
+
+void MainForm::showStats()
+{
+  const session_manager_stats stats = service_.stats();
+  ui_.activeSessionsEdit->setText(toQString(stats.active));
+  ui_.maxActiveSessionsEdit->setText(toQString(stats.max_active));
+  ui_.recycledSessionsEdit->setText(toQString(stats.recycled));
+  ui_.totalAcceptedSessionsEdit->setText(toQString(stats.total_accepted));
+  ui_.activeShutdownedSessionsEdit->setText(
+      toQString(stats.active_shutdowned));
+  ui_.outOfWorkSessionsEdit->setText(toQString(stats.out_of_work));
+  ui_.timedOutSessionsEdit->setText(toQString(stats.timed_out));
+  ui_.errorStoppedSessionsEdit->setText(toQString(stats.error_stopped));
 }
 
 void MainForm::writeLog(const QString& message)

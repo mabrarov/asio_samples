@@ -184,6 +184,34 @@ private:
 #endif // defined(MA_HAS_RVALUE_REFS)
        //     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
+void session_manager::stats_collector::notify_session_stop(
+    const boost::system::error_code& error)
+{
+  if (server_error::operation_aborted == error)
+  {
+    lock_guard_type lock_guard(mutex_);
+    ++stats_.active_shutdowned;
+    return;
+  }
+
+  if (server_error::out_of_work == error)
+  {
+    lock_guard_type lock_guard(mutex_);
+    ++stats_.out_of_work;
+    return;
+  }
+
+  if (server_error::inactivity_timeout == error)
+  {
+    lock_guard_type lock_guard(mutex_);
+    ++stats_.timed_out;
+    return;
+  }
+    
+  lock_guard_type lock_guard(mutex_);
+  ++stats_.error_stopped;
+}
+
 session_manager::session_wrapper::session_wrapper(
     boost::asio::io_service& io_service, const session_config& config)
   : session(server::session::create(io_service, config))
@@ -197,12 +225,6 @@ void session_manager::session_wrapper::reset()
   session->reset();
   state = state_type::ready;
   pending_operations = 0;
-}
-
-session_manager_stats session_manager::stats() const
-{
-  //todo
-  return session_manager_stats();
 }
 
 session_manager_ptr session_manager::create(
@@ -231,6 +253,7 @@ session_manager::session_manager(boost::asio::io_service& io_service,
   , session_io_service_(session_io_service)
   , strand_(io_service)
   , acceptor_(io_service)
+  , stats_collector_()
   , extern_wait_handler_(io_service)
   , extern_stop_handler_(io_service)
 {
@@ -251,7 +274,13 @@ void session_manager::reset(bool free_recycled_sessions)
     recycled_sessions_.clear();
   }
 
+  stats_collector_.reset();
   extern_wait_error_.clear();
+}
+
+session_manager_stats session_manager::stats()
+{
+  return stats_collector_.stats();
 }
 
 boost::system::error_code session_manager::do_start_extern_start()
@@ -452,6 +481,10 @@ void session_manager::handle_accept_at_work(const session_wrapper_ptr& session,
   --pending_operations_;
   accept_state_ = accept_state::ready;
 
+  // Collect statistics
+  stats_collector_.notify_session_accept(error);
+
+  // Handle result
   if (error)
   {
     accept_state_ = accept_state::stopped;
@@ -462,18 +495,20 @@ void session_manager::handle_accept_at_work(const session_wrapper_ptr& session,
 
   if (active_sessions_.size() >= max_session_count_)
   {
+    // Session was successfully accepted but has to be immediately stopped
+    stats_collector_.notify_session_stop(server_error::operation_aborted);
     recycle(session);
     continue_work();
     return;
   }
 
-  active_sessions_.push_front(session);
+  add_to_active(session);
   start_session_start(session);
   continue_work();
 }
 
 void session_manager::handle_accept_at_stop(const session_wrapper_ptr& session,
-    const boost::system::error_code& /*error*/)
+    const boost::system::error_code& error)
 {
   BOOST_ASSERT_MSG(intern_state::stop == intern_state_,
       "invalid internal state");
@@ -484,6 +519,19 @@ void session_manager::handle_accept_at_stop(const session_wrapper_ptr& session,
   --pending_operations_;
   accept_state_ = accept_state::stopped;
 
+  // Collect statistics
+  stats_collector_.notify_session_accept(error);
+
+  // Handle result
+  if (error)
+  {
+    recycle(session);
+    continue_stop();
+    return;
+  }
+
+  // Session was successfully accepted but has to be immediately stopped
+  stats_collector_.notify_session_stop(server_error::operation_aborted);
   recycle(session);
   continue_stop();
 }
@@ -520,6 +568,8 @@ void session_manager::handle_session_start_at_work(
 
   if (!session->is_starting())
   {
+    // Collect statistics
+    stats_collector_.notify_session_stop(server_error::operation_aborted);
     // Handler is called too late
     recycle(session);
     continue_work();
@@ -528,6 +578,8 @@ void session_manager::handle_session_start_at_work(
 
   if (error)
   {
+    // Collect statistics
+    stats_collector_.notify_session_stop(error);
     // Failed to start accepted session
     session->mark_as_stopped();
     active_sessions_.erase(session);
@@ -553,6 +605,8 @@ void session_manager::handle_session_start_at_stop(
 
   if (!session->is_starting())
   {
+    // Collect statistics
+    stats_collector_.notify_session_stop(server_error::operation_aborted);
     // Handler is called too late
     recycle(session);
     continue_stop();
@@ -561,6 +615,8 @@ void session_manager::handle_session_start_at_stop(
 
   if (error)
   {
+    // Collect statistics
+    stats_collector_.notify_session_stop(error);
     // Failed to start accepted session
     session->mark_as_stopped();
     active_sessions_.erase(session);
@@ -597,7 +653,7 @@ void session_manager::handle_session_wait(const session_wrapper_ptr& session,
 
 void session_manager::handle_session_wait_at_work(
     const session_wrapper_ptr& session,
-    const boost::system::error_code& /*error*/)
+    const boost::system::error_code& error)
 {
   BOOST_ASSERT_MSG(intern_state::work == intern_state_,
       "invalid internal state");
@@ -607,12 +663,16 @@ void session_manager::handle_session_wait_at_work(
 
   if (!session->is_working())
   {
+    // Collect statistics
+    stats_collector_.notify_session_stop(server_error::operation_aborted);
     // Handler is called too late
     recycle(session);
     continue_work();
     return;
   }
 
+  // Collect statistics
+  stats_collector_.notify_session_stop(error);
   // Session run out of work - stop it
   start_session_stop(session);
   continue_work();
@@ -620,7 +680,7 @@ void session_manager::handle_session_wait_at_work(
 
 void session_manager::handle_session_wait_at_stop(
     const session_wrapper_ptr& session,
-    const boost::system::error_code& /*error*/)
+    const boost::system::error_code& error)
 {
   BOOST_ASSERT_MSG(intern_state::stop == intern_state_,
       "invalid internal state");
@@ -630,12 +690,16 @@ void session_manager::handle_session_wait_at_stop(
 
   if (!session->is_working())
   {
+    // Collect statistics
+    stats_collector_.notify_session_stop(server_error::operation_aborted);
     // Handler is called too late
     recycle(session);
     continue_stop();
     return;
   }
 
+  // Collect statistics
+  stats_collector_.notify_session_stop(error);
   // Session run out of work - stop it
   start_session_stop(session);
   continue_stop();
@@ -895,8 +959,7 @@ void session_manager::recycle(const session_wrapper_ptr& session)
   if (is_recyclable && has_recycle_space)
   {
     session->reset();
-    // Put the session to "recycle bin"
-    recycled_sessions_.push_front(session);
+    add_to_recycled(session);
   }
 }
 
@@ -923,6 +986,21 @@ session_manager::session_wrapper_ptr session_manager::create_session(
     error = server_error::no_memory;
     return session_wrapper_ptr();
   }
+}
+
+void session_manager::add_to_active(const session_wrapper_ptr& session)
+{
+  active_sessions_.push_front(session);
+  // Collect statistics
+  stats_collector_.set_active_session_count(active_sessions_.size());
+}
+  
+void session_manager::add_to_recycled(const session_wrapper_ptr& session)
+{
+  // Put the session to "recycle bin"
+  recycled_sessions_.push_front(session);
+  // Collect statistics
+  stats_collector_.set_recycled_session_count(recycled_sessions_.size());
 }
 
 boost::system::error_code session_manager::open_acceptor()

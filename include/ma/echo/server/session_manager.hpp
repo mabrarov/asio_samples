@@ -15,11 +15,10 @@
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/optional.hpp>
-#include <boost/weak_ptr.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/noncopyable.hpp>
-#include <boost/tuple/tuple.hpp>
 #include <boost/enable_shared_from_this.hpp>
+#include <boost/thread/mutex.hpp>
 #include <ma/config.hpp>
 #include <ma/handler_storage.hpp>
 #include <ma/handler_allocator.hpp>
@@ -59,7 +58,7 @@ public:
 
   void reset(bool free_recycled_sessions = true);
 
-  session_manager_stats stats() const;
+  session_manager_stats stats();
 
 #if defined(MA_HAS_RVALUE_REFS)
 
@@ -198,6 +197,68 @@ protected:
   }
 
 private:
+  class stats_collector : private boost::noncopyable
+  {
+  private:
+    typedef boost::mutex mutex_type;
+    typedef boost::lock_guard<mutex_type> lock_guard_type;
+
+  public:
+    stats_collector()
+      : stats_()
+      , mutex_()
+    {
+    }
+
+    session_manager_stats stats()
+    {
+      lock_guard_type lock_guard(mutex_);
+      return stats_;
+    }
+
+    void set_active_session_count(std::size_t active_count)
+    {
+      lock_guard_type lock_guard(mutex_);
+      stats_.active = active_count;
+      if (stats_.max_active < active_count)
+      {
+        stats_.max_active = active_count;
+      }
+    }
+
+    void set_recycled_session_count(std::size_t recycled_count)
+    {
+      lock_guard_type lock_guard(mutex_);
+      stats_.recycled = recycled_count;
+    }
+
+    void notify_session_accept(const boost::system::error_code& error)
+    {
+      if (!error)
+      {
+        lock_guard_type lock_guard(mutex_);
+        ++stats_.total_accepted;
+      }
+    }
+
+    void notify_session_stop(const boost::system::error_code& error);
+
+    void reset()
+    {
+      lock_guard_type lock_guard(mutex_);
+      stats_.active = stats_.max_active = stats_.recycled = 0;
+      stats_.total_accepted    = 0;
+      stats_.active_shutdowned = 0;
+      stats_.out_of_work       = 0;
+      stats_.timed_out         = 0;
+      stats_.error_stopped     = 0;
+    }
+
+  private:
+    mutex_type mutex_;
+    session_manager_stats stats_;    
+  }; // class stats_collector
+
   struct  session_wrapper;
   typedef boost::shared_ptr<session_wrapper> session_wrapper_ptr;
 
@@ -436,6 +497,9 @@ private:
   void recycle(const session_wrapper_ptr&);
   session_wrapper_ptr create_session(boost::system::error_code& error);
 
+  void add_to_active(const session_wrapper_ptr& session);
+  void add_to_recycled(const session_wrapper_ptr& session);
+
   boost::system::error_code open_acceptor();
   boost::system::error_code close_acceptor();
 
@@ -468,7 +532,7 @@ private:
   session_list                    active_sessions_;
   session_list                    recycled_sessions_;
   boost::system::error_code       extern_wait_error_;
-
+  stats_collector                 stats_collector_;
   handler_storage<boost::system::error_code> extern_wait_handler_;
   handler_storage<boost::system::error_code> extern_stop_handler_;
 

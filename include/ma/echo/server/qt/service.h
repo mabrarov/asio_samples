@@ -17,6 +17,7 @@
 #include <boost/system/error_code.hpp>
 #include <QtCore/QObject>
 #include <ma/echo/server/session_manager_config_fwd.hpp>
+#include <ma/echo/server/session_manager_stats.hpp>
 #include <ma/echo/server/qt/servicestate.h>
 #include <ma/echo/server/qt/execution_config_fwd.h>
 #include <ma/echo/server/qt/serviceforwardsignal_fwd.h>
@@ -35,12 +36,15 @@ class Service : public QObject
 public:
   explicit Service(QObject* parent = 0);
   ~Service();
+
   void asyncStart(const execution_config&, const session_manager_config&);
 
   ServiceState::State currentState() const
   {
     return currentState_;
   }
+
+  session_manager_stats stats() const;
 
 public slots:
   void asyncStop();
@@ -66,8 +70,9 @@ private:
   void createServant(const execution_config&, const session_manager_config&);
   void destroyServant();
 
-  ServiceState::State   currentState_;
+  ServiceState::State   currentState_;  
   ServiceForwardSignal* forwardSignal_;
+  session_manager_stats stats_;
   boost::scoped_ptr<servant> servant_;
   boost::shared_ptr<ServiceServantSignal> servantSignal_;
 }; // class Service

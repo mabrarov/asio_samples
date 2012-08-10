@@ -23,6 +23,10 @@
 #include <ma/echo/server/qt/execution_config.h>
 #include <ui_mainform.h>
 
+QT_BEGIN_NAMESPACE
+class Qtimer;
+QT_END_NAMESPACE
+
 namespace ma {
 namespace echo {
 namespace server {
@@ -40,6 +44,7 @@ private slots:
   void on_startButton_clicked();
   void on_stopButton_clicked();
   void on_terminateButton_clicked();
+  void on_timer_timeout();
 
   void on_service_exceptionHappened();
   void on_service_startCompleted(const boost::system::error_code&);
@@ -58,12 +63,14 @@ private:
   session_manager_config buildSessionManagerConfig() const;
   ServiceConfig          buildServiceConfig() const;
 
-  void showError(const QString& message, QWidget* widget = 0);
+  void showConfigError(const QString& message, QWidget* widget = 0);
   static QString getServiceStateWindowTitle(ServiceState::State serviceState);
   void updateWidgetsStates(bool ignorePrevServiceState = false);
+  void showStats();
   void writeLog(const QString&);
 
-  Ui::mainForm              ui_;
+  Ui::mainForm ui_;
+  QTimer*      timer_;
   std::vector<OptionWidget> optionsWidgets_;
   ServiceState::State       prevServiceState_;
   Service&                  service_;
