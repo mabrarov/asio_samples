@@ -143,10 +143,18 @@ public:
     , socket_(io_service)
     , timer_(io_service)
     , connect_count_()
+    , connected_(false)
     , stopped_(false)
     , timer_in_progess_(false)
     , work_state_(work_state)
   {
+  }
+
+  ~session()
+  {
+    BOOST_ASSERT_MSG(!connected_, "Invalid connect state");
+    BOOST_ASSERT_MSG(!timer_in_progess_, "Timer wait is still in progress");
+    BOOST_ASSERT_MSG(stopped_, "Session was not stopped");
   }
 
   void async_start(const protocol::resolver::iterator& endpoint_iterator)
@@ -177,6 +185,20 @@ private:
     start_connect(initial_endpoint_iterator, initial_endpoint_iterator);
   }
 
+  void do_stop()
+  {
+    if (stopped_)
+    {
+      return;
+    }
+
+    if (connected_)
+    {
+      shutdown_socket();
+    }
+    stop();
+  }
+
   void start_connect(
       const protocol::resolver::iterator& initial_endpoint_iterator,
       const protocol::resolver::iterator& current_endpoint_iterator)
@@ -192,6 +214,12 @@ private:
       const protocol::resolver::iterator& initial_endpoint_iterator,
       protocol::resolver::iterator current_endpoint_iterator)
   {
+    // Collect statistics at first step
+    if (!error)
+    {
+      ++connect_count_;
+    }
+
     if (stopped_)
     {
       return;
@@ -213,10 +241,11 @@ private:
       return;
     }
 
-    ++connect_count_;
+    connected_ = true;
+
     if (boost::system::error_code error = apply_socket_options())
     {
-      do_stop();
+      stop();
       return;
     }
 
@@ -255,7 +284,7 @@ private:
 
     if (error && error != boost::asio::error::operation_aborted)
     {
-      do_stop();
+      stop();
       return;
     }
 
@@ -322,14 +351,10 @@ private:
     }
   }
 
-  void do_stop()
+  void stop()
   {
-    if (stopped_)
-    {
-      return;
-    }
-
     close_socket();
+    connected_ = false;
     cancel_timer();
     stopped_ = true;
     work_state_.notify_session_stop();
@@ -341,8 +366,9 @@ private:
   protocol::socket socket_;
   deadline_timer   timer_;
   limited_counter  connect_count_;
-  bool             stopped_;
-  bool             timer_in_progess_;
+  bool connected_;
+  bool stopped_;
+  bool timer_in_progess_;
   work_state&      work_state_;
   ma::in_place_handler_allocator<256> stop_allocator_;
   ma::in_place_handler_allocator<512> connect_allocator_;

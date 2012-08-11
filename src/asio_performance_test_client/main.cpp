@@ -179,10 +179,11 @@ public:
     , buffer_(config.buffer_size)
     , bytes_written_()
     , bytes_read_()
-    , was_connected_(false)
+    , connected_(false)
     , write_in_progress_(false)
     , read_in_progress_(false)
     , stopped_(false)
+    , was_connected_(false)
     , work_state_(work_state)
   {
     typedef ma::cyclic_buffer::mutable_buffers_type buffers_type;
@@ -200,6 +201,14 @@ public:
       }
     }
     buffer_.consume(filled_size);
+  }
+
+  ~session()
+  {
+    BOOST_ASSERT_MSG(!connected_, "Invalid connect state");
+    BOOST_ASSERT_MSG(!read_in_progress_, "Invalid read state");
+    BOOST_ASSERT_MSG(!write_in_progress_, "Invalid write state");
+    BOOST_ASSERT_MSG(stopped_, "Session was not stopped");
   }
 
   void async_start(const protocol::resolver::iterator& endpoint_iterator)
@@ -249,7 +258,10 @@ private:
       return;
     }
 
-    shutdown_socket();
+    if (connected_)
+    {
+      shutdown_socket();
+    }
     stop();
   }
 
@@ -269,6 +281,9 @@ private:
       const protocol::resolver::iterator& initial_endpoint_iterator,
       protocol::resolver::iterator current_endpoint_iterator)
   {
+    // Collect statistics at first step
+    was_connected_ = !error;
+
     if (stopped_)
     {
       return;
@@ -301,7 +316,7 @@ private:
       return;
     }
 
-    was_connected_ = true;
+    connected_ = true;
 
     if (boost::system::error_code error = apply_socket_options())
     {
@@ -317,6 +332,8 @@ private:
       std::size_t bytes_transferred)
   {
     read_in_progress_ = false;
+
+    // Collect statistics at first step
     bytes_read_ += bytes_transferred;
     buffer_.consume(bytes_transferred);
 
@@ -349,6 +366,8 @@ private:
       std::size_t bytes_transferred)
   {
     write_in_progress_ = false;
+
+    // Collect statistics at first step
     bytes_written_ += bytes_transferred;
     buffer_.commit(bytes_transferred);
 
@@ -373,7 +392,8 @@ private:
   void stop()
   {
     close_socket();
-    stopped_ = true;
+    connected_ = false;
+    stopped_   = true;
     work_state_.notify_session_stop();
   }
 
@@ -475,10 +495,11 @@ private:
   ma::cyclic_buffer buffer_;
   limited_counter bytes_written_;
   limited_counter bytes_read_;
-  bool was_connected_;
+  bool connected_;
   bool write_in_progress_;
   bool read_in_progress_;
   bool stopped_;
+  bool was_connected_;
   work_state& work_state_;
   ma::in_place_handler_allocator<256> stop_allocator_;
   ma::in_place_handler_allocator<512> read_allocator_;
