@@ -58,7 +58,7 @@
 /// Defines does asio::io_service::strand::wrap produce "heavy" functor.
 /**
  * Because of the guarantee given by Asio:
- * http://www.boost.org/doc/libs/1_49_0/doc/html/boost_asio/reference/io_service__strand/wrap.html
+ * http://www.boost.org/doc/libs/1_50_0/doc/html/boost_asio/reference/io_service__strand/wrap.html
  * ...
  * that, when invoked, executes code equivalent to:
  *   strand.dispatch(boost::bind(f, a1, ... an));
