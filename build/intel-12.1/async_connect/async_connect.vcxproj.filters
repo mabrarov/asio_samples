@@ -55,5 +55,8 @@
     <ClInclude Include="..\..\..\include\ma\async_connect.hpp">
       <Filter>Header Files\ma</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\limited_int.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

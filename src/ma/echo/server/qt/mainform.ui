@@ -7,13 +7,13 @@
     <x>0</x>
     <y>0</y>
     <width>425</width>
-    <height>400</height>
+    <height>516</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Qt Echo Server</string>
   </property>
-  <layout class="QVBoxLayout" name="mainLayout" stretch="0,0,0,1,0">
+  <layout class="QVBoxLayout" name="mainLayout" stretch="0,0,1,0">
    <item>
     <widget class="QLabel" name="configurationLabel">
      <property name="text">
@@ -22,7 +22,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QTabWidget" name="tabWidget">
+    <widget class="QTabWidget" name="configTabWidget">
      <property name="currentIndex">
       <number>0</number>
      </property>
@@ -377,7 +377,7 @@
           <number>10</number>
          </property>
          <property name="value">
-          <number>300</number>
+          <number>600</number>
          </property>
         </widget>
        </item>
@@ -415,23 +415,182 @@
     </widget>
    </item>
    <item>
-    <widget class="QLabel" name="logLabel">
-     <property name="text">
-      <string>Log</string>
+    <widget class="QTabWidget" name="stateTabWidget">
+     <property name="currentIndex">
+      <number>0</number>
      </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QPlainTextEdit" name="logTextEdit">
-     <property name="tabChangesFocus">
-      <bool>true</bool>
-     </property>
-     <property name="lineWrapMode">
-      <enum>QPlainTextEdit::NoWrap</enum>
-     </property>
-     <property name="readOnly">
-      <bool>true</bool>
-     </property>
+     <widget class="QWidget" name="statisticsTab">
+      <attribute name="title">
+       <string>Statistics</string>
+      </attribute>
+      <layout class="QFormLayout" name="formLayout">
+       <item row="0" column="0">
+        <widget class="QLabel" name="activeSessionsLabel">
+         <property name="text">
+          <string>Active sessions</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QLineEdit" name="activeSessionsEdit">
+         <property name="text">
+          <string>0</string>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="maxActiveSessionsLabel">
+         <property name="text">
+          <string>Maximum of active sessions</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QLineEdit" name="maxActiveSessionsEdit">
+         <property name="text">
+          <string>0</string>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="recycledSessionsLabel">
+         <property name="text">
+          <string>Recycled sessions</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QLineEdit" name="recycledSessionsEdit">
+         <property name="text">
+          <string>0</string>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="totalAcceptedSessionsLabel">
+         <property name="text">
+          <string>Total accepted sessions</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QLineEdit" name="totalAcceptedSessionsEdit">
+         <property name="text">
+          <string>0</string>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="activeShutdownedSessionsLabel">
+         <property name="text">
+          <string>Active shutdowned sessions</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
+        <widget class="QLineEdit" name="activeShutdownedSessionsEdit">
+         <property name="text">
+          <string>0</string>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0">
+        <widget class="QLabel" name="outOfWorkSessionsLabel">
+         <property name="text">
+          <string>Out of work sessions</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1">
+        <widget class="QLineEdit" name="outOfWorkSessionsEdit">
+         <property name="text">
+          <string>0</string>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="0">
+        <widget class="QLabel" name="timedOutSessionsLabel">
+         <property name="text">
+          <string>Timed out sessions</string>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="1">
+        <widget class="QLineEdit" name="timedOutSessionsEdit">
+         <property name="text">
+          <string>0</string>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="0">
+        <widget class="QLabel" name="errorStoppedSessionsLabel">
+         <property name="text">
+          <string>Error stopped sessions</string>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="1">
+        <widget class="QLineEdit" name="errorStoppedSessionsEdit">
+         <property name="text">
+          <string>0</string>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="logTab">
+      <attribute name="title">
+       <string>Log</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="logTabLayout">
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <property name="margin">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="QPlainTextEdit" name="logTextEdit">
+         <property name="frameShape">
+          <enum>QFrame::NoFrame</enum>
+         </property>
+         <property name="tabChangesFocus">
+          <bool>true</bool>
+         </property>
+         <property name="lineWrapMode">
+          <enum>QPlainTextEdit::NoWrap</enum>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
     </widget>
    </item>
    <item>
@@ -505,9 +664,23 @@
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <tabstops>
-  <tabstop>tabWidget</tabstop>
+  <tabstop>configTabWidget</tabstop>
   <tabstop>sessionManagerThreadsSpinBox</tabstop>
   <tabstop>sessionThreadsSpinBox</tabstop>
+  <tabstop>stateTabWidget</tabstop>
+  <tabstop>activeSessionsEdit</tabstop>
+  <tabstop>maxActiveSessionsEdit</tabstop>
+  <tabstop>recycledSessionsEdit</tabstop>
+  <tabstop>totalAcceptedSessionsEdit</tabstop>
+  <tabstop>activeShutdownedSessionsEdit</tabstop>
+  <tabstop>outOfWorkSessionsEdit</tabstop>
+  <tabstop>timedOutSessionsEdit</tabstop>
+  <tabstop>errorStoppedSessionsEdit</tabstop>
+  <tabstop>pushButton</tabstop>
+  <tabstop>startButton</tabstop>
+  <tabstop>stopButton</tabstop>
+  <tabstop>terminateButton</tabstop>
+  <tabstop>exitButton</tabstop>
   <tabstop>maxSessionCountSpinBox</tabstop>
   <tabstop>recycledSessionCountSpinBox</tabstop>
   <tabstop>listenBacklogSpinBox</tabstop>
@@ -523,11 +696,6 @@
   <tabstop>sockSendBufferSizeSpinBox</tabstop>
   <tabstop>tcpNoDelayComboBox</tabstop>
   <tabstop>logTextEdit</tabstop>
-  <tabstop>pushButton</tabstop>
-  <tabstop>startButton</tabstop>
-  <tabstop>stopButton</tabstop>
-  <tabstop>terminateButton</tabstop>
-  <tabstop>exitButton</tabstop>
  </tabstops>
  <resources/>
  <connections>

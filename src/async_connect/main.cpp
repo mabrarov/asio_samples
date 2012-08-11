@@ -28,6 +28,7 @@
 #include <ma/handler_allocator.hpp>
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/strand_wrapped_handler.hpp>
+#include <ma/limited_int.hpp>
 
 #if defined(MA_HAS_BOOST_TIMER)
 #include <boost/timer/timer.hpp>
@@ -69,15 +70,30 @@ private:
   boost::condition_variable condition_;
 }; // struct work_state
 
+typedef ma::limited_int<boost::uintmax_t> limited_counter;
+
+template <typename Integer>
+std::string to_string(const ma::limited_int<Integer>& limited_value)
+{
+  if (limited_value.overflowed())
+  {
+    return ">" + boost::lexical_cast<std::string>(limited_value.value());
+  }
+  else
+  {
+    return boost::lexical_cast<std::string>(limited_value.value());
+  }
+}
+
 class stats : private boost::noncopyable
 {
 public:
   stats()
-    : total_sessions_connected_(0)
+    : total_sessions_connected_()
   {
   }
 
-  void add(std::size_t connect_count)
+  void add(const limited_counter& connect_count)
   {
     total_sessions_connected_ += connect_count;
   }
@@ -85,11 +101,12 @@ public:
   void print()
   {
     std::cout << "Total sessions connected: "
-              << total_sessions_connected_ << std::endl;
+              << to_string(total_sessions_connected_)
+              << std::endl;
   }
 
 private:
-  boost::uint_fast64_t total_sessions_connected_;
+  limited_counter total_sessions_connected_;
 }; // class stats
 
 typedef ma::steady_deadline_timer      deadline_timer;
@@ -125,11 +142,19 @@ public:
     , strand_(io_service)
     , socket_(io_service)
     , timer_(io_service)
-    , connect_count_(0)
+    , connect_count_()
+    , connected_(false)
     , stopped_(false)
     , timer_in_progess_(false)
     , work_state_(work_state)
   {
+  }
+
+  ~session()
+  {
+    BOOST_ASSERT_MSG(!connected_, "Invalid connect state");
+    BOOST_ASSERT_MSG(!timer_in_progess_, "Timer wait is still in progress");
+    BOOST_ASSERT_MSG(stopped_, "Session was not stopped");
   }
 
   void async_start(const protocol::resolver::iterator& endpoint_iterator)
@@ -144,7 +169,7 @@ public:
         boost::bind(&this_type::do_stop, this)));
   }
 
-  std::size_t connect_count() const
+  limited_counter connect_count() const
   {
     return connect_count_;
   }
@@ -158,6 +183,20 @@ private:
     }
 
     start_connect(initial_endpoint_iterator, initial_endpoint_iterator);
+  }
+
+  void do_stop()
+  {
+    if (stopped_)
+    {
+      return;
+    }
+
+    if (connected_)
+    {
+      shutdown_socket();
+    }
+    stop();
   }
 
   void start_connect(
@@ -175,6 +214,12 @@ private:
       const protocol::resolver::iterator& initial_endpoint_iterator,
       protocol::resolver::iterator current_endpoint_iterator)
   {
+    // Collect statistics at first step
+    if (!error)
+    {
+      ++connect_count_;
+    }
+
     if (stopped_)
     {
       return;
@@ -196,10 +241,11 @@ private:
       return;
     }
 
-    ++connect_count_;
+    connected_ = true;
+
     if (boost::system::error_code error = apply_socket_options())
     {
-      do_stop();
+      stop();
       return;
     }
 
@@ -238,7 +284,7 @@ private:
 
     if (error && error != boost::asio::error::operation_aborted)
     {
-      do_stop();
+      stop();
       return;
     }
 
@@ -257,6 +303,18 @@ private:
   {
     typedef protocol::socket socket_type;
 
+    // Setup abortive shutdown sequence for closesocket
+    {
+      boost::system::error_code error;
+      socket_type::linger opt(false, 0);
+      socket_.set_option(opt, error);
+      if (error)
+      {
+        return error;
+      }
+    }
+
+    // Apply all (really) configered socket options
     if (no_delay_)
     {
       boost::system::error_code error;
@@ -293,14 +351,10 @@ private:
     }
   }
 
-  void do_stop()
+  void stop()
   {
-    if (stopped_)
-    {
-      return;
-    }
-
     close_socket();
+    connected_ = false;
     cancel_timer();
     stopped_ = true;
     work_state_.notify_session_stop();
@@ -311,9 +365,10 @@ private:
   boost::asio::io_service::strand strand_;
   protocol::socket socket_;
   deadline_timer   timer_;
-  std::size_t      connect_count_;
-  bool             stopped_;
-  bool             timer_in_progess_;
+  limited_counter  connect_count_;
+  bool connected_;
+  bool stopped_;
+  bool timer_in_progess_;
   work_state&      work_state_;
   ma::in_place_handler_allocator<256> stop_allocator_;
   ma::in_place_handler_allocator<512> connect_allocator_;
@@ -717,11 +772,11 @@ std::string to_milliseconds_string(const optional_duration& duration)
   }
 }
 
-std::string to_bool_string(const optional_bool& no_delay)
+std::string to_string(const optional_bool& value)
 {
-  if (no_delay)
+  if (value)
   {
-    return *no_delay ? "on" : "off";
+    return *value ? "on" : "off";
   }
   else
   {
@@ -758,7 +813,7 @@ void print(const program_config& config)
             << to_milliseconds_string(managed_session_config.connect_pause)
             << std::endl
             << "TCP_NODELAY   : "
-            << to_bool_string(managed_session_config.no_delay)
+            << (to_string)(managed_session_config.no_delay)
             << std::endl
             << "Time (seconds): "
             << to_seconds_string(config.test_duration)

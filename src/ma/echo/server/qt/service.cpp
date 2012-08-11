@@ -78,9 +78,7 @@ public:
 
   ~executor_service()
   {
-    session_manager_io_service().stop();
-    session_io_service().stop();
-    threads_.join_all();
+    stop_threads();
   }
 
   template <typename Handler>
@@ -106,6 +104,13 @@ public:
       threads_.create_thread(boost::bind(func,
           boost::ref(session_manager_io_service()), wrapped_handler));
     }
+  }
+
+  void stop_threads()
+  {
+    session_manager_io_service().stop();
+    session_io_service().stop();
+    threads_.join_all();
   }
 
 private:
@@ -167,13 +172,19 @@ public:
     session_manager_->async_stop(handler);
   }
 
+  session_manager_stats stats() const
+  {
+    return session_manager_->stats();
+  }
+
 private:
   session_manager_ptr session_manager_;
 }; // class Service::servant
 
 Service::Service(QObject* parent)
   : QObject(parent)
-  , currentState_(ServiceState::Stopped)
+  , state_(ServiceState::Stopped)
+  , stats_()
   , servant_()
   , servantSignal_()
 {
@@ -202,7 +213,7 @@ Service::~Service()
 void Service::asyncStart(const execution_config& the_execution_config,
     const session_manager_config& the_session_manager_config)
 {
-  if (ServiceState::Stopped != currentState_)
+  if (ServiceState::Stopped != state_)
   {
     forwardSignal_->emitStartCompleted(server_error::invalid_state);
     return;
@@ -218,13 +229,25 @@ void Service::asyncStart(const execution_config& the_execution_config,
       boost::bind(&ServiceServantSignal::emitSessionManagerStartCompleted,
           servantSignal_, _1));
 
-  currentState_ = ServiceState::Starting;
+  state_ = ServiceState::Starting;
+}
+
+session_manager_stats Service::stats() const
+{
+  if (servant_)
+  {
+    return servant_->stats();
+  }
+  else
+  {
+    return stats_;
+  }
 }
 
 void Service::onSessionManagerStartCompleted(
     const boost::system::error_code& error)
 {
-  if (ServiceState::Starting != currentState_)
+  if (ServiceState::Starting != state_)
   {
     return;
   }
@@ -232,7 +255,7 @@ void Service::onSessionManagerStartCompleted(
   if (error)
   {
     destroyServant();
-    currentState_ = ServiceState::Stopped;
+    state_ = ServiceState::Stopped;
   }
   else
   {
@@ -240,7 +263,7 @@ void Service::onSessionManagerStartCompleted(
         boost::bind(&ServiceServantSignal::emitSessionManagerWaitCompleted,
             servantSignal_, _1));
 
-    currentState_ = ServiceState::Working;
+    state_ = ServiceState::Working;
   }
 
   emit startCompleted(error);
@@ -248,18 +271,17 @@ void Service::onSessionManagerStartCompleted(
 
 void Service::asyncStop()
 {
-  if ((ServiceState::Stopped == currentState_)
-      || (ServiceState::Stopping == currentState_))
+  if ((ServiceState::Stopped == state_) || (ServiceState::Stopping == state_))
   {
     forwardSignal_->emitStopCompleted(server_error::invalid_state);
     return;
   }
 
-  if (ServiceState::Starting == currentState_)
+  if (ServiceState::Starting == state_)
   {
     forwardSignal_->emitStartCompleted(server_error::operation_aborted);
   }
-  else if (ServiceState::Working == currentState_)
+  else if (ServiceState::Working == state_)
   {
     forwardSignal_->emitWorkCompleted(server_error::operation_aborted);
   }
@@ -268,19 +290,19 @@ void Service::asyncStop()
       boost::bind(&ServiceServantSignal::emitSessionManagerStopCompleted,
           servantSignal_, _1));
 
-  currentState_ = ServiceState::Stopping;
+  state_ = ServiceState::Stopping;
 }
 
 void Service::onSessionManagerStopCompleted(
     const boost::system::error_code& error)
 {
-  if (ServiceState::Stopping != currentState_)
+  if (ServiceState::Stopping != state_)
   {
     return;
   }
 
   destroyServant();
-  currentState_ = ServiceState::Stopped;
+  state_ = ServiceState::Stopped;
   emit stopCompleted(error);
 }
 
@@ -288,26 +310,26 @@ void Service::terminate()
 {
   destroyServant();
 
-  if (ServiceState::Starting == currentState_)
+  if (ServiceState::Starting == state_)
   {
     forwardSignal_->emitStartCompleted(server_error::operation_aborted);
   }
-  else if (ServiceState::Working == currentState_)
+  else if (ServiceState::Working == state_)
   {
     forwardSignal_->emitWorkCompleted(server_error::operation_aborted);
   }
-  else if (ServiceState::Stopping == currentState_)
+  else if (ServiceState::Stopping == state_)
   {
     forwardSignal_->emitStopCompleted(server_error::operation_aborted);
   }
 
-  currentState_ = ServiceState::Stopped;
+  state_ = ServiceState::Stopped;
 }
 
 void Service::onSessionManagerWaitCompleted(
     const boost::system::error_code& error)
 {
-  if (ServiceState::Working == currentState_)
+  if (ServiceState::Working == state_)
   {
     emit workCompleted(error);
   }
@@ -315,7 +337,7 @@ void Service::onSessionManagerWaitCompleted(
 
 void Service::onWorkThreadExceptionHappened()
 {
-  if (ServiceState::Stopped != currentState_)
+  if (ServiceState::Stopped != state_)
   {
     emit exceptionHappened();
   }
@@ -326,6 +348,7 @@ void Service::createServant(const execution_config& the_execution_config,
 {
   servant_.reset(new servant(
       the_execution_config, the_session_manager_config));
+  stats_ = servant_->stats();
 
   servantSignal_ = boost::make_shared<ServiceServantSignal>();
 
@@ -357,6 +380,8 @@ void Service::destroyServant()
     servantSignal_->disconnect();
     servantSignal_.reset();
   }
+  servant_->stop_threads();
+  stats_ = servant_->stats();
   servant_.reset();
 }
 

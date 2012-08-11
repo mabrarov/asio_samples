@@ -1,0 +1,95 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{6C3D89E5-52A6-43AF-87BF-7A5488AF226D}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Source Files\ma">
+      <UniqueIdentifier>{0ABFE734-B1F5-40EC-8F7D-B365EF3BE7C4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{1CA6965B-E561-4E3C-87E1-777ECD2FD626}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Header Files\ma">
+      <UniqueIdentifier>{5E7158BC-89D5-43C9-A5F5-13CAA61862E3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ma\tutorial2">
+      <UniqueIdentifier>{5B16E4D2-CEC2-4DF6-969D-A31B4EB2BC08}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ma\tutorial2">
+      <UniqueIdentifier>{ABAA2BFD-13C6-4147-B1D3-1A9410256A7C}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\src\async_basics2\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\ma\console_controller.cpp">
+      <Filter>Source Files\ma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\ma\tutorial2\async_implementation.cpp">
+      <Filter>Source Files\ma\tutorial2</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\include\ma\bind_asio_handler.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\console_controller.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\handler_alloc_helpers.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\handler_invoke_helpers.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\handler_storage.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\handler_storage_service.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\config.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\type_traits.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\context_alloc_handler.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\context_wrapped_handler.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\custom_alloc_handler.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\handler_allocator.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\strand_wrapped_handler.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\tutorial2\do_something_handler_fwd.hpp">
+      <Filter>Header Files\ma\tutorial2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\tutorial2\do_something_handler.hpp">
+      <Filter>Header Files\ma\tutorial2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\tutorial2\async_interface.hpp">
+      <Filter>Header Files\ma\tutorial2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\tutorial2\async_implementation.hpp">
+      <Filter>Header Files\ma\tutorial2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\shared_ptr_factory.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\steady_deadline_timer.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

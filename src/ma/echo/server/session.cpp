@@ -782,13 +782,13 @@ void session::continue_stop()
   if (!pending_operations_)
   {
     BOOST_ASSERT_MSG(read_state::stopped  == read_state_,
-      "invalid read state");
+        "invalid read state");
 
     BOOST_ASSERT_MSG(write_state::stopped == write_state_,
-      "invalid write state");
+        "invalid write state");
 
     BOOST_ASSERT_MSG(timer_state::stopped == timer_state_,
-      "invalid timer state");
+        "invalid timer state");
 
     // Internal general stop completed
     intern_state_ = intern_state::stopped;
@@ -803,7 +803,7 @@ void session::continue_stop()
 
 void session::start_passive_shutdown()
 {
-  start_shutdown(server_error::passive_shutdown);
+  start_shutdown(server_error::out_of_work);
 }
 
 void session::start_active_shutdown()

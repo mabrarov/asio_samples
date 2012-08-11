@@ -69,6 +69,11 @@
     <Filter Include="Source Files\ma\echo\server\qt">
       <UniqueIdentifier>{f4e9ac4f-1b15-46b3-8b80-c5cb0b641c2e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Generated Files\Test">
+      <UniqueIdentifier>{8c080d1a-9975-4837-a30a-a2e061aa0811}</UniqueIdentifier>
+      <Extensions>cpp;moc</Extensions>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src\ma\echo\server\qt\mainform.cpp">
@@ -86,20 +91,8 @@
     <ClCompile Include="..\..\..\src\qt_echo_server\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_mainform.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_mainform.cpp">
-      <Filter>Generated Files\Release</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\src\ma\echo\server\qt\custommetatypes.cpp">
       <Filter>Source Files\ma\echo\server\qt</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug\moc_service.cpp">
-      <Filter>Generated Files\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release\moc_service.cpp">
-      <Filter>Generated Files\Release</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\ma\echo\server\qt\service.cpp">
       <Filter>Source Files\ma\echo\server\qt</Filter>
@@ -110,11 +103,35 @@
     <ClCompile Include="GeneratedFiles\Release\moc_serviceservantsignal.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
+    <ClCompile Include="GeneratedFiles\Test\moc_serviceservantsignal.cpp">
+      <Filter>Generated Files\Test</Filter>
+    </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\moc_serviceforwardsignal.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Release\moc_serviceforwardsignal.cpp">
       <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Test\moc_serviceforwardsignal.cpp">
+      <Filter>Generated Files\Test</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_service.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_service.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Test\moc_service.cpp">
+      <Filter>Generated Files\Test</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Debug\moc_mainform.cpp">
+      <Filter>Generated Files\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Release\moc_mainform.cpp">
+      <Filter>Generated Files\Release</Filter>
+    </ClCompile>
+    <ClCompile Include="GeneratedFiles\Test\moc_mainform.cpp">
+      <Filter>Generated Files\Test</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -239,6 +256,15 @@
     </ClInclude>
     <ClInclude Include="..\..\..\include\ma\sp_intrusive_list.hpp">
       <Filter>Header Files\ma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\limited_int.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\echo\server\session_manager_stats.hpp">
+      <Filter>Header Files\ma\echo\server</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\echo\server\session_manager_stats_fwd.hpp">
+      <Filter>Header Files\ma\echo\server</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

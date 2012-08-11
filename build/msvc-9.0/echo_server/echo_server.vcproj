@@ -392,6 +392,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\..\include\ma\limited_int.hpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\..\include\ma\shared_ptr_factory.hpp"
 					>
 				</File>
@@ -451,6 +455,14 @@
 						</File>
 						<File
 							RelativePath="..\..\..\include\ma\echo\server\session_manager_fwd.hpp"
+							>
+						</File>
+						<File
+							RelativePath="..\..\..\include\ma\echo\server\session_manager_stats.hpp"
+							>
+						</File>
+						<File
+							RelativePath="..\..\..\include\ma\echo\server\session_manager_stats_fwd.hpp"
 							>
 						</File>
 					</Filter>

@@ -33,8 +33,7 @@ enum error_t
   operation_aborted  = 200,
   inactivity_timeout = 300,
   no_memory          = 400,
-  passive_shutdown   = 500,
-  out_of_work        = 600
+  out_of_work        = 500
 }; // enum error_t
 
 inline boost::system::error_code make_error_code(error_t e)
