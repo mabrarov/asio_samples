@@ -205,8 +205,8 @@ private:
 
   public:
     stats_collector()
-      : stats_()
-      , mutex_()
+      : mutex_()
+      , stats_()
     {
     }
 
