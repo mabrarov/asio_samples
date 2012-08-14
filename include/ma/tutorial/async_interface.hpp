@@ -33,12 +33,12 @@ public:
   typedef ma::handler_storage<boost::system::error_code>
       do_something_handler_storage_type;
 
-  virtual async_interface_ptr get_shared_async_interface() = 0;
+  virtual async_interface_ptr shared_async_interface() = 0;
 
-  virtual boost::asio::io_service::strand& get_strand() = 0;
+  virtual boost::asio::io_service::strand& strand() = 0;
 
   virtual do_something_handler_storage_type&
-  get_do_something_handler_storage() = 0;
+  do_something_handler_storage() = 0;
 
   virtual boost::optional<boost::system::error_code>
   start_do_something() = 0;

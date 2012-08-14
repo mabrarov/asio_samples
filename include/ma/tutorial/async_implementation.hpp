@@ -40,9 +40,9 @@ public:
   static async_implementation_ptr create(boost::asio::io_service& io_service,
       const std::string& name);
 
-  async_interface_ptr get_shared_async_interface();
-  boost::asio::io_service::strand& get_strand();
-  do_something_handler_storage_type& get_do_something_handler_storage();
+  async_interface_ptr shared_async_interface();
+  boost::asio::io_service::strand& strand();
+  do_something_handler_storage_type& do_something_handler_storage();
   boost::optional<boost::system::error_code> start_do_something();
 
 protected:

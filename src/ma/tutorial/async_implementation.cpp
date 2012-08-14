@@ -94,18 +94,18 @@ async_implementation::async_implementation(boost::asio::io_service& io_service,
 {
 }
 
-async_interface_ptr async_implementation::get_shared_async_interface()
+async_interface_ptr async_implementation::shared_async_interface()
 {
   return shared_from_this();
 }
 
-boost::asio::io_service::strand& async_implementation::get_strand()
+boost::asio::io_service::strand& async_implementation::strand()
 {
   return strand_;
 }
 
 async_interface::do_something_handler_storage_type&
-async_implementation::get_do_something_handler_storage()
+async_implementation::do_something_handler_storage()
 {
   return do_something_handler_;
 }

@@ -33,7 +33,7 @@ namespace {
 typedef ma::in_place_handler_allocator<128> allocator_type;
 
 void handle_do_something(
-    const ma::tutorial::async_interface_adapter_ptr& /*active_object*/,
+    const ma::tutorial::async_interface_ptr& /*active_object*/,
     const boost::system::error_code& error,
     const boost::shared_ptr<const std::string>& name,
     const boost::shared_ptr<allocator_type>& /*allocator*/)
@@ -94,14 +94,13 @@ int main(int /*argc*/, char* /*argv*/[])
       boost::shared_ptr<allocator_type> allocator =
           boost::make_shared<allocator_type>();
 
-      ma::tutorial::async_interface_adapter_ptr active_object = 
-          ma::tutorial::async_interface_adapter::create(
-              ma::tutorial::async_implementation::create(
-                  work_io_service, *name));
+      ma::tutorial::async_interface_ptr active_object = 
+          ma::tutorial::async_implementation::create(work_io_service, *name);
 
-      active_object->async_do_something(ma::make_custom_alloc_handler(
-          *allocator, boost::bind(&handle_do_something, active_object, _1,
-              name, allocator)));
+      ma::tutorial::async_interface_adapter::async_do_something(active_object,
+          ma::make_custom_alloc_handler(*allocator,
+              boost::bind(&handle_do_something, active_object,
+                  _1, name, allocator)));
     }
 
     work_guard = boost::none;
