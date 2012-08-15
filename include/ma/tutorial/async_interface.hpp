@@ -142,7 +142,7 @@ private:
         const Arg&);
 
     template <typename AsyncInterfacePtr>
-    forward_handler_binder(function_type function, 
+    forward_handler_binder(function_type function,
         AsyncInterfacePtr&& async_interface)
       : function_(function)
       , async_interface_(std::forward<AsyncInterfacePtr>(async_interface))
