@@ -442,10 +442,6 @@
 						RelativePath="..\..\..\include\ma\tutorial\async_interface.hpp"
 						>
 					</File>
-					<File
-						RelativePath="..\..\..\include\ma\tutorial\async_interface_adapter.hpp"
-						>
-					</File>
 				</Filter>
 			</Filter>
 		</Filter>

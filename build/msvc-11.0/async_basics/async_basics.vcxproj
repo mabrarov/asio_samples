@@ -104,7 +104,7 @@
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
-      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
@@ -234,7 +234,6 @@
     <ClInclude Include="..\..\..\include\ma\strand_wrapped_handler.hpp" />
     <ClInclude Include="..\..\..\include\ma\tutorial\async_implementation.hpp" />
     <ClInclude Include="..\..\..\include\ma\tutorial\async_interface.hpp" />
-    <ClInclude Include="..\..\..\include\ma\tutorial\async_interface_adapter.hpp" />
     <ClInclude Include="..\..\..\include\ma\type_traits.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -82,9 +82,6 @@
     <ClInclude Include="..\..\..\include\ma\tutorial\async_interface.hpp">
       <Filter>Header Files\ma\tutorial</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\ma\tutorial\async_interface_adapter.hpp">
-      <Filter>Header Files\ma\tutorial</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\include\ma\tutorial\async_implementation.hpp">
       <Filter>Header Files\ma\tutorial</Filter>
     </ClInclude>

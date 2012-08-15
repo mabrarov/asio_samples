@@ -30,7 +30,6 @@ HEADERS  += ../../../include/ma/handler_storage_service.hpp \
             ../../../include/ma/shared_ptr_factory.hpp \
             ../../../include/ma/steady_deadline_timer.hpp \
             ../../../include/ma/tutorial/async_interface.hpp \
-            ../../../include/ma/tutorial/async_interface_adapter.hpp \
             ../../../include/ma/tutorial/async_implementation.hpp
 
 SOURCES  += ../../../src/ma/console_controller.cpp \

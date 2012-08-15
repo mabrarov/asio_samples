@@ -40,11 +40,6 @@ public:
   static async_implementation_ptr create(boost::asio::io_service& io_service,
       const std::string& name);
 
-  async_interface_ptr shared_async_interface();
-  boost::asio::io_service::strand& strand();
-  do_something_handler_storage_type& do_something_handler_storage();
-  boost::optional<boost::system::error_code> start_do_something();
-
 protected:
   async_implementation(boost::asio::io_service& io_service,
       const std::string& name);
@@ -52,6 +47,11 @@ protected:
   ~async_implementation()
   {
   }
+
+  async_interface_ptr shared_async_interface();
+  boost::asio::io_service::strand& strand();
+  do_something_handler_storage_type& do_something_handler_storage();
+  boost::optional<boost::system::error_code> start_do_something();
 
 private:
   void complete_do_something(const boost::system::error_code& error);
