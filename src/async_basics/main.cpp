@@ -25,14 +25,15 @@
 #include <ma/handler_allocator.hpp>
 #include <ma/console_controller.hpp>
 #include <ma/custom_alloc_handler.hpp>
-#include <ma/tutorial/async_derived.hpp>
+#include <ma/tutorial/async_interface.hpp>
+#include <ma/tutorial/async_implementation.hpp>
 
 namespace {
 
 typedef ma::in_place_handler_allocator<128> allocator_type;
-typedef boost::shared_ptr<ma::tutorial::async_base> async_base_ptr;
 
-void handle_do_something(const async_base_ptr& /*async_base*/,
+void handle_do_something(
+    const ma::tutorial::async_interface_ptr& /*active_object*/,
     const boost::system::error_code& error,
     const boost::shared_ptr<const std::string>& name,
     const boost::shared_ptr<allocator_type>& /*allocator*/)
@@ -93,12 +94,13 @@ int main(int /*argc*/, char* /*argv*/[])
       boost::shared_ptr<allocator_type> allocator =
           boost::make_shared<allocator_type>();
 
-      async_base_ptr active_object =
-          ma::tutorial::async_derived::create(work_io_service, *name);
+      ma::tutorial::async_interface_ptr active_object = 
+          ma::tutorial::async_implementation::create(work_io_service, *name);
 
-      active_object->async_do_something(ma::make_custom_alloc_handler(
-          *allocator, boost::bind(&handle_do_something, active_object, _1,
-              name, allocator)));
+      ma::tutorial::async_interface::async_do_something(active_object,
+          ma::make_custom_alloc_handler(*allocator,
+              boost::bind(&handle_do_something, active_object,
+                  _1, name, allocator)));
     }
 
     work_guard = boost::none;

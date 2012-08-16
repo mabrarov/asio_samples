@@ -98,7 +98,6 @@ public:
     if (max == value_)
     {
       overflowed_ = true;
-      value_ = max;
       return *this;
     }
 

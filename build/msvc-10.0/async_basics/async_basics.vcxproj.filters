@@ -29,7 +29,7 @@
     <ClCompile Include="..\..\..\src\ma\console_controller.cpp">
       <Filter>Source Files\ma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\ma\tutorial\async_derived.cpp">
+    <ClCompile Include="..\..\..\src\ma\tutorial\async_implementation.cpp">
       <Filter>Source Files\ma\tutorial</Filter>
     </ClCompile>
   </ItemGroup>
@@ -45,12 +45,6 @@
     </ClInclude>
     <ClInclude Include="..\..\..\include\ma\handler_invoke_helpers.hpp">
       <Filter>Header Files\ma</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\ma\tutorial\async_base.hpp">
-      <Filter>Header Files\ma\tutorial</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\ma\tutorial\async_derived.hpp">
-      <Filter>Header Files\ma\tutorial</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\ma\handler_storage.hpp">
       <Filter>Header Files\ma</Filter>
@@ -84,6 +78,12 @@
     </ClInclude>
     <ClInclude Include="..\..\..\include\ma\steady_deadline_timer.hpp">
       <Filter>Header Files\ma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\tutorial\async_interface.hpp">
+      <Filter>Header Files\ma\tutorial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\tutorial\async_implementation.hpp">
+      <Filter>Header Files\ma\tutorial</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
