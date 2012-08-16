@@ -44,31 +44,31 @@ public:
 #if defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
   template <typename Handler>
-  static void async_do_something(const async_interface_ptr& async_interface,
-      Handler&& handler)
+  void async_do_something(Handler&& handler)
   {
     typedef typename remove_cv_reference<Handler>::type handler_type;
     typedef void (*func_type)(const async_interface_ptr& async_interface,
         const handler_type&);
 
     func_type func = &this_type::start_do_something<handler_type>;
+    async_interface_ptr async_interface = shared_async_interface();
 
     async_interface->strand().post(ma::make_explicit_context_alloc_handler(
-        std::forward<Handler>(handler),
-        forward_handler_binder<handler_type>(func, async_interface)));
+        std::forward<Handler>(handler), forward_handler_binder<handler_type>(
+            func, async_interface)));
   }
 
 #else // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
   template <typename Handler>
-  static void async_do_something(const async_interface_ptr& async_interface,
-      Handler&& handler)
+  void async_do_something(Handler&& handler)
   {
     typedef typename remove_cv_reference<Handler>::type handler_type;
     typedef void (*func_type)(const async_interface_ptr& async_interface,
         const handler_type&);
 
     func_type func = &this_type::start_do_something<handler_type>;
+    async_interface_ptr async_interface = shared_async_interface();
 
     async_interface->strand().post(ma::make_explicit_context_alloc_handler(
         std::forward<Handler>(handler),
@@ -80,14 +80,14 @@ public:
 #else  // defined(MA_HAS_RVALUE_REFS)
 
   template <typename Handler>
-  static void async_do_something(const async_interface_ptr& async_interface,
-      const Handler& handler)
+  void async_do_something(const Handler& handler)
   {
     typedef Handler handler_type;
     typedef void (*func_type)(const async_interface_ptr& async_interface,
         const handler_type&);
 
     func_type func = &this_type::start_do_something<handler_type>;
+    async_interface_ptr async_interface = shared_async_interface();
 
     async_interface->strand().post(ma::make_explicit_context_alloc_handler(
         handler, boost::bind(func, async_interface, _1)));
