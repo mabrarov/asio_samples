@@ -52,8 +52,13 @@ public:
 
   this_type& operator+=(const this_type& other)
   {
+    if (overflowed_)
+    {
+      return *this;
+    }
+
     const value_type max = (this_type::max)();
-    if (overflowed_ || other.overflowed_)
+    if (other.overflowed_)
     {
       overflowed_ = true;
       value_ = max;
@@ -74,6 +79,11 @@ public:
 
   this_type& operator+=(const value_type& other)
   {
+    if (overflowed_)
+    {
+      return *this;
+    }
+
     const value_type max = (this_type::max)();
     const value_type addable = max - value_;
     if (addable < other)
