@@ -203,7 +203,7 @@ void async_connect(Socket& socket,
 
 #if (_WIN32_WINNT < 0x0501)
 #error The build environment does not support necessary Windows SDK header.\
-  Value of _WIN32_WINNT macro must be >= 0x0501.
+    Value of _WIN32_WINNT macro must be >= 0x0501.
 #endif
 
   if (!socket.is_open())

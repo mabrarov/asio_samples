@@ -57,9 +57,9 @@ public:
   {    
   }
 
-  std::size_t active;
-  std::size_t max_active;
-  std::size_t recycled;
+  std::size_t     active;
+  std::size_t     max_active;
+  std::size_t     recycled;
   limited_counter total_accepted;
   limited_counter active_shutdowned;
   limited_counter out_of_work;
