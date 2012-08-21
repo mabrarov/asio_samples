@@ -11,12 +11,14 @@
 #endif
 
 #include <cstdlib>
+#include <vector>
 #include <string>
 #include <iostream>
 #include <exception>
 #include <boost/ref.hpp>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
+#include <boost/optional.hpp>
 #include <boost/function.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
@@ -29,6 +31,8 @@
 #include <ma/handler_allocator.hpp>
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/console_controller.hpp>
+#include <ma/echo/server/sioios_session_factory.hpp>
+#include <ma/echo/server/poios_session_factory.hpp>
 #include <ma/echo/server/session_manager.hpp>
 #include "config.hpp"
 
@@ -58,10 +62,10 @@ struct session_manager_wrapper : private boost::noncopyable
   ma::in_place_handler_allocator<128> stop_allocator;
 
   session_manager_wrapper(boost::asio::io_service& io_service,
-      boost::asio::io_service& session_io_service,
+      ma::echo::server::session_factory& session_factory,
       const ma::echo::server::session_manager_config& config)
     : session_manager(ma::echo::server::session_manager::create(io_service,
-          session_io_service, config))
+          session_factory, config))
     , state(state_type::ready)
     , stopped_by_user(false)
   {
@@ -198,16 +202,44 @@ void start_session_manager_stop(const wrapped_session_manager_ptr&);
 int run_server(const echo_server::execution_config& exec_config,
     const ma::echo::server::session_manager_config& session_manager_config)
 {
-  // Before session_manager_io_service
-  boost::asio::io_service session_ios(exec_config.session_thread_count);
+  typedef boost::shared_ptr<boost::asio::io_service> io_service_ptr;
+  typedef std::vector<io_service_ptr> io_service_vector;
+  typedef boost::shared_ptr<ma::echo::server::session_factory>
+      session_factory_ptr;
 
-  // ... for the right destruction order
+  // Before session_manager_io_service for the right destruction order
+  io_service_vector session_ios;
+  // After session_ios for the right destruction order
+  session_factory_ptr session_factory;  
+  if (exec_config.ios_per_work_thread)
+  {
+    for (std::size_t i = 0; i != exec_config.session_thread_count; ++i)
+    {
+      io_service_ptr session_io_service = 
+          boost::make_shared<boost::asio::io_service>(1);
+      session_ios.push_back(session_io_service);
+    }
+    session_factory = 
+        boost::make_shared<ma::echo::server::poios_session_factory>(
+            session_ios, session_manager_config.recycled_session_count);
+  }
+  else
+  {
+    io_service_ptr session_io_service = 
+        boost::make_shared<boost::asio::io_service>(
+            exec_config.session_thread_count);
+    session_ios.push_back(session_io_service);
+    session_factory = 
+        boost::make_shared<ma::echo::server::sioios_session_factory>(
+            *session_io_service, session_manager_config.recycled_session_count);
+  }
+  
   boost::asio::io_service session_manager_ios(
       exec_config.session_manager_thread_count);
 
   wrapped_session_manager_ptr session_manager(
       boost::make_shared<session_manager_wrapper>(
-          boost::ref(session_manager_ios), boost::ref(session_ios),
+          boost::ref(session_manager_ios), boost::ref(*session_factory),
           session_manager_config));
 
   std::cout << "Server is starting...\n";
@@ -229,18 +261,37 @@ int run_server(const echo_server::execution_config& exec_config,
   exception_handler work_exception_handler(
       boost::bind(handle_work_exception, session_manager));
 
-  // Create work for sessions' io_service to prevent threads' stop
-  boost::asio::io_service::work session_work(session_ios);
+  // Create work for sessions' io_service to prevent threads' stop  
+  typedef std::vector<boost::asio::io_service::work> io_service_work_vector;
+  io_service_work_vector session_work;
+  for (io_service_vector::const_iterator i = session_ios.begin(), 
+      end = session_ios.end(); i != end; ++i)
+  {
+    session_work.push_back(boost::asio::io_service::work(**i));
+  }
 
   // Create work for session_manager's io_service to prevent threads' stop
   boost::asio::io_service::work session_manager_work(session_manager_ios);
 
   // Create work threads for session operations
   boost::thread_group work_threads;
-  for (std::size_t i = 0; i != exec_config.session_thread_count; ++i)
+  if (exec_config.ios_per_work_thread)
   {
-    work_threads.create_thread(boost::bind(run_io_service,
-        boost::ref(session_ios), work_exception_handler));
+    for (io_service_vector::const_iterator i = session_ios.begin(), 
+        end = session_ios.end(); i != end; ++i)
+    {
+      work_threads.create_thread(boost::bind(run_io_service,
+          boost::ref(**i), work_exception_handler));
+    }
+  }
+  else
+  {
+    boost::asio::io_service& session_io_service = *session_ios.front();
+    for (std::size_t i = 0; i != exec_config.session_thread_count; ++i)
+    {
+      work_threads.create_thread(boost::bind(run_io_service,
+          boost::ref(session_io_service), work_exception_handler));
+    }
   }
 
   // Create work threads for session manager operations
@@ -284,7 +335,11 @@ int run_server(const echo_server::execution_config& exec_config,
 
   // Shutdown execution queues...
   session_manager_ios.stop();
-  session_ios.stop();
+  for (io_service_vector::const_iterator i = session_ios.begin(), 
+      end = session_ios.end(); i != end; ++i)
+  {
+    (*i)->stop();
+  }
 
   std::cout << "Server work was terminated." \
       " Waiting until all of the work threads will stop...\n";
