@@ -125,10 +125,10 @@
     <ClInclude Include="..\..\..\include\ma\echo\server\session_factory_fwd.hpp">
       <Filter>Header Files\ma\echo\server</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\ma\echo\server\sioios_session_factory.hpp">
+    <ClInclude Include="..\..\..\include\ma\echo\server\pooled_session_factory.hpp">
       <Filter>Header Files\ma\echo\server</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\ma\echo\server\poios_session_factory.hpp">
+    <ClInclude Include="..\..\..\include\ma\echo\server\simple_session_factory.hpp">
       <Filter>Header Files\ma\echo\server</Filter>
     </ClInclude>
   </ItemGroup>
@@ -151,10 +151,10 @@
     <ClCompile Include="..\..\..\src\echo_server\config.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\ma\echo\server\sioios_session_factory.cpp">
+    <ClCompile Include="..\..\..\src\ma\echo\server\simple_session_factory.cpp">
       <Filter>Source Files\ma\echo\server</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\ma\echo\server\poios_session_factory.cpp">
+    <ClCompile Include="..\..\..\src\ma\echo\server\pooled_session_factory.cpp">
       <Filter>Source Files\ma\echo\server</Filter>
     </ClCompile>
   </ItemGroup>

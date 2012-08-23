@@ -9,13 +9,13 @@
 #include <boost/ref.hpp>
 #include <boost/make_shared.hpp>
 #include <ma/echo/server/error.hpp>
-#include <ma/echo/server/sioios_session_factory.hpp>
+#include <ma/echo/server/simple_session_factory.hpp>
 
 namespace ma {
 namespace echo {
 namespace server {
 
-session_ptr sioios_session_factory::create(const session_config& config, 
+session_ptr simple_session_factory::create(const session_config& config, 
     boost::system::error_code& error)
 {
   if (!recycled_.empty())
@@ -40,7 +40,7 @@ session_ptr sioios_session_factory::create(const session_config& config,
   }
 }
 
-void sioios_session_factory::release(const session_ptr& session)
+void simple_session_factory::release(const session_ptr& session)
 {
   if (max_recycled_ > recycled_.size())
   {

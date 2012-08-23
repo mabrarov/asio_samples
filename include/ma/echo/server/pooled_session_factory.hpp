@@ -5,8 +5,8 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef MA_ECHO_SERVER_POIOS_SESSION_FACTORY_HPP
-#define MA_ECHO_SERVER_POIOS_SESSION_FACTORY_HPP
+#ifndef MA_ECHO_SERVER_POOLED_SESSION_FACTORY_HPP
+#define MA_ECHO_SERVER_POOLED_SESSION_FACTORY_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1020)
 #pragma once
@@ -24,21 +24,21 @@ namespace ma {
 namespace echo {
 namespace server {
 
-class poios_session_factory 
+class pooled_session_factory 
   : private boost::noncopyable
   , public session_factory
 {
 private:
-  typedef poios_session_factory this_type;
+  typedef pooled_session_factory this_type;
 
 public:
   typedef std::vector<boost::shared_ptr<boost::asio::io_service> > 
       io_service_vector;
 
-  poios_session_factory(const io_service_vector& io_services, 
+  pooled_session_factory(const io_service_vector& io_services, 
       std::size_t max_recycled);
 
-  ~poios_session_factory()
+  ~pooled_session_factory()
   {
   }
 
@@ -93,10 +93,10 @@ private:
 
   io_service_pool pool_;
   io_service_pool::const_iterator current_;
-}; // class poios_session_factory
+}; // class pooled_session_factory
 
 } // namespace server
 } // namespace echo
 } // namespace ma
 
-#endif // MA_ECHO_SERVER_POIOS_SESSION_FACTORY_HPP
+#endif // MA_ECHO_SERVER_POOLED_SESSION_FACTORY_HPP

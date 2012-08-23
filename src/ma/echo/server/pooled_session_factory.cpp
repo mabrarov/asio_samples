@@ -9,13 +9,13 @@
 #include <boost/ref.hpp>
 #include <boost/make_shared.hpp>
 #include <ma/echo/server/error.hpp>
-#include <ma/echo/server/poios_session_factory.hpp>
+#include <ma/echo/server/pooled_session_factory.hpp>
 
 namespace ma {
 namespace echo {
 namespace server {
 
-poios_session_factory::poios_session_factory(
+pooled_session_factory::pooled_session_factory(
     const io_service_vector& io_services, std::size_t max_recycled)
   : pool_()
   , current_()
@@ -29,7 +29,7 @@ poios_session_factory::poios_session_factory(
   current_ = pool_.begin();
 }
 
-session_ptr poios_session_factory::create(const session_config& config, 
+session_ptr pooled_session_factory::create(const session_config& config, 
     boost::system::error_code& error)
 {
   session_wrapper_ptr session;
@@ -64,7 +64,7 @@ session_ptr poios_session_factory::create(const session_config& config,
   return session;
 }
 
-void poios_session_factory::release(const session_ptr& session)
+void pooled_session_factory::release(const session_ptr& session)
 {
   session_wrapper_ptr wrapped_session = 
       boost::static_pointer_cast<session_wrapper>(session);

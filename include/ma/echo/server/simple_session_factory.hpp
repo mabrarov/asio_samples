@@ -23,22 +23,22 @@ namespace ma {
 namespace echo {
 namespace server {
 
-class sioios_session_factory 
+class simple_session_factory 
   : private boost::noncopyable
   , public session_factory
 {
 private:
-  typedef sioios_session_factory this_type;
+  typedef simple_session_factory this_type;
 
 public:
-  sioios_session_factory(boost::asio::io_service& io_service, 
+  simple_session_factory(boost::asio::io_service& io_service, 
       std::size_t max_recycled)
     : max_recycled_(max_recycled)
     , io_service_(io_service)
   {
   }
 
-  ~sioios_session_factory()
+  ~simple_session_factory()
   {
   }
 
@@ -71,7 +71,7 @@ private:
   const std::size_t        max_recycled_;
   boost::asio::io_service& io_service_;
   session_list             recycled_;
-}; // class sioios_session_factory
+}; // class simple_session_factory
 
 } // namespace server
 } // namespace echo
