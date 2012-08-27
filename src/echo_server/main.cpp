@@ -202,7 +202,7 @@ void start_session_manager_stop(const wrapped_session_manager_ptr&);
 typedef boost::shared_ptr<boost::asio::io_service> io_service_ptr;
 typedef std::vector<io_service_ptr>                io_service_vector;
 
-io_service_vector create_io_services(
+io_service_vector create_session_io_services(
     const echo_server::execution_config& exec_config)
 {
   io_service_vector io_services;
@@ -305,7 +305,8 @@ int run_server(const echo_server::execution_config& exec_config,
     const ma::echo::server::session_manager_config& session_manager_config)
 {
   // Before session_manager_io_service for the right destruction order
-  io_service_vector session_io_services = create_io_services(exec_config);
+  io_service_vector session_io_services = 
+      create_session_io_services(exec_config);
   // After session_ios for the right destruction order
   session_factory_ptr session_factory = create_session_factory(exec_config, 
       session_manager_config, session_io_services);
