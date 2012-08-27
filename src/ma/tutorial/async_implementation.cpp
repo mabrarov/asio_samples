@@ -94,11 +94,6 @@ async_implementation::async_implementation(boost::asio::io_service& io_service,
 {
 }
 
-async_interface_ptr async_implementation::shared_async_interface()
-{
-  return shared_from_this();
-}
-
 boost::asio::io_service::strand& async_implementation::strand()
 {
   return strand_;

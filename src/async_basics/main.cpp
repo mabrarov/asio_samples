@@ -97,9 +97,10 @@ int main(int /*argc*/, char* /*argv*/[])
       ma::tutorial::async_interface_ptr active_object =
           ma::tutorial::async_implementation::create(work_io_service, *name);
 
-      active_object->async_do_something(ma::make_custom_alloc_handler(
-          *allocator, boost::bind(&handle_do_something, active_object, _1,
-              name, allocator)));
+      ma::tutorial::async_interface::async_do_something(active_object, 
+          ma::make_custom_alloc_handler(*allocator, 
+              boost::bind(&handle_do_something, active_object, 
+                  _1, name, allocator)));
     }
 
     work_guard = boost::none;
