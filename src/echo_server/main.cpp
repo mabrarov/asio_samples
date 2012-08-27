@@ -42,6 +42,13 @@ struct  session_manager_wrapper;
 typedef boost::shared_ptr<session_manager_wrapper> wrapped_session_manager_ptr;
 typedef boost::function<void (void)> exception_handler;
 
+typedef boost::shared_ptr<boost::asio::io_service> io_service_ptr;
+typedef std::vector<io_service_ptr>                io_service_vector;
+typedef boost::shared_ptr<ma::echo::server::session_factory>
+    session_factory_ptr;
+typedef boost::shared_ptr<boost::asio::io_service::work> io_service_work_ptr;
+typedef std::vector<io_service_work_ptr> io_service_work_vector;
+
 struct session_manager_wrapper : private boost::noncopyable
 {
   typedef boost::mutex mutex_type;
@@ -180,6 +187,21 @@ void print_stats(const ma::echo::server::session_manager_stats& stats)
             << std::endl;
 }
 
+io_service_vector create_session_io_services(
+    const echo_server::execution_config&);
+session_factory_ptr create_session_factory(
+    const echo_server::execution_config&,
+    const ma::echo::server::session_manager_config&,
+    const io_service_vector&);
+
+void create_work_threads(boost::thread_group&,
+    const echo_server::execution_config&, const io_service_vector&,
+    const exception_handler&);
+void create_work_threads(boost::thread_group&, std::size_t count, 
+    boost::asio::io_service&, const exception_handler&);
+io_service_work_vector create_works(const io_service_vector&);
+void stop(const io_service_vector&);
+
 int run_server(const execution_config&,
     const ma::echo::server::session_manager_config&);
 
@@ -198,9 +220,6 @@ void handle_session_manager_stop(const wrapped_session_manager_ptr&,
 void start_session_manager_start(const wrapped_session_manager_ptr&);
 void start_session_manager_wait(const wrapped_session_manager_ptr&);
 void start_session_manager_stop(const wrapped_session_manager_ptr&);
-
-typedef boost::shared_ptr<boost::asio::io_service> io_service_ptr;
-typedef std::vector<io_service_ptr>                io_service_vector;
 
 io_service_vector create_session_io_services(
     const echo_server::execution_config& exec_config)
@@ -222,9 +241,6 @@ io_service_vector create_session_io_services(
   return io_services;
 }
 
-typedef boost::shared_ptr<ma::echo::server::session_factory>
-    session_factory_ptr;
-
 session_factory_ptr create_session_factory(
     const echo_server::execution_config& exec_config,
     const ma::echo::server::session_manager_config& session_manager_config,
@@ -238,7 +254,8 @@ session_factory_ptr create_session_factory(
   else
   {
     return boost::make_shared<ma::echo::server::simple_session_factory>(
-        *io_services.front(), session_manager_config.recycled_session_count);
+        boost::ref(*io_services.front()),
+        session_manager_config.recycled_session_count);
   }
 }
 
@@ -285,9 +302,6 @@ void stop(const io_service_vector& io_services)
     (*i)->stop();
   }
 }
-
-typedef boost::shared_ptr<boost::asio::io_service::work> io_service_work_ptr;
-typedef std::vector<io_service_work_ptr> io_service_work_vector;
 
 io_service_work_vector create_works(const io_service_vector& io_services)
 {

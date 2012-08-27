@@ -426,6 +426,10 @@
 							>
 						</File>
 						<File
+							RelativePath="..\..\..\include\ma\echo\server\pooled_session_factory.hpp"
+							>
+						</File>
+						<File
 							RelativePath=".\..\..\..\include\ma\echo\server\session.hpp"
 							>
 						</File>
@@ -435,6 +439,14 @@
 						</File>
 						<File
 							RelativePath="..\..\..\include\ma\echo\server\session_config_fwd.hpp"
+							>
+						</File>
+						<File
+							RelativePath="..\..\..\include\ma\echo\server\session_factory.hpp"
+							>
+						</File>
+						<File
+							RelativePath="..\..\..\include\ma\echo\server\session_factory_fwd.hpp"
 							>
 						</File>
 						<File
@@ -463,6 +475,10 @@
 						</File>
 						<File
 							RelativePath="..\..\..\include\ma\echo\server\session_manager_stats_fwd.hpp"
+							>
+						</File>
+						<File
+							RelativePath="..\..\..\include\ma\echo\server\simple_session_factory.hpp"
 							>
 						</File>
 					</Filter>
@@ -500,11 +516,19 @@
 							>
 						</File>
 						<File
+							RelativePath="..\..\..\src\ma\echo\server\pooled_session_factory.cpp"
+							>
+						</File>
+						<File
 							RelativePath="..\..\..\src\ma\echo\server\session.cpp"
 							>
 						</File>
 						<File
 							RelativePath="..\..\..\src\ma\echo\server\session_manager.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\..\..\src\ma\echo\server\simple_session_factory.cpp"
 							>
 						</File>
 					</Filter>
