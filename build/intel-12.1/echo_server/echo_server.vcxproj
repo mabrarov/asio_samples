@@ -209,14 +209,18 @@
     <ClInclude Include="..\..\..\include\ma\custom_alloc_handler.hpp" />
     <ClInclude Include="..\..\..\include\ma\cyclic_buffer.hpp" />
     <ClInclude Include="..\..\..\include\ma\echo\server\error.hpp" />
+    <ClInclude Include="..\..\..\include\ma\echo\server\pooled_session_factory.hpp" />
     <ClInclude Include="..\..\..\include\ma\echo\server\session_config.hpp" />
     <ClInclude Include="..\..\..\include\ma\echo\server\session_config_fwd.hpp" />
+    <ClInclude Include="..\..\..\include\ma\echo\server\session_factory.hpp" />
+    <ClInclude Include="..\..\..\include\ma\echo\server\session_factory_fwd.hpp" />
     <ClInclude Include="..\..\..\include\ma\echo\server\session_fwd.hpp" />
     <ClInclude Include="..\..\..\include\ma\echo\server\session_manager_config.hpp" />
     <ClInclude Include="..\..\..\include\ma\echo\server\session_manager_config_fwd.hpp" />
     <ClInclude Include="..\..\..\include\ma\echo\server\session_manager_fwd.hpp" />
     <ClInclude Include="..\..\..\include\ma\echo\server\session_manager_stats.hpp" />
     <ClInclude Include="..\..\..\include\ma\echo\server\session_manager_stats_fwd.hpp" />
+    <ClInclude Include="..\..\..\include\ma\echo\server\simple_session_factory.hpp" />
     <ClInclude Include="..\..\..\include\ma\handler_alloc_helpers.hpp" />
     <ClInclude Include="..\..\..\include\ma\handler_allocator.hpp" />
     <ClInclude Include="..\..\..\include\ma\handler_invoke_helpers.hpp" />
@@ -238,8 +242,10 @@
     <ClCompile Include="..\..\..\src\echo_server\config.cpp" />
     <ClCompile Include="..\..\..\src\ma\console_controller.cpp" />
     <ClCompile Include="..\..\..\src\ma\echo\server\error.cpp" />
+    <ClCompile Include="..\..\..\src\ma\echo\server\pooled_session_factory.cpp" />
     <ClCompile Include="..\..\..\src\ma\echo\server\session.cpp" />
     <ClCompile Include="..\..\..\src\ma\echo\server\session_manager.cpp" />
+    <ClCompile Include="..\..\..\src\ma\echo\server\simple_session_factory.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
