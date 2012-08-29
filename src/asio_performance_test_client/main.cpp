@@ -43,42 +43,32 @@ namespace {
 class work_state : private boost::noncopyable
 {
 public:
-  explicit work_state(std::size_t session_count)
-    : session_count_(session_count)
+  explicit work_state(std::size_t outstanding)
+    : outstanding_(outstanding)
   {
   }
 
-  void notify_session_stop()
+  void dec_outstanding()
   {
     boost::mutex::scoped_lock lock(mutex_);
-    --session_count_;
-    if (!session_count_)
+    --outstanding_;
+    if (!outstanding_)
     {
       condition_.notify_all();
     }
   }
 
-  void wait_for_all_session_stop(
-      const boost::posix_time::time_duration& timeout)
+  void wait(const boost::posix_time::time_duration& timeout)
   {
     boost::unique_lock<boost::mutex> lock(mutex_);
-    if (session_count_)
+    if (outstanding_)
     {
       condition_.timed_wait(lock, timeout);
     }
   }
 
-  void wait_for_all_session_stop()
-  {
-    boost::unique_lock<boost::mutex> lock(mutex_);
-    if (session_count_)
-    {
-      condition_.wait(lock);
-    }
-  }
-
 private:
-  std::size_t session_count_;
+  std::size_t outstanding_;
   boost::mutex mutex_;
   boost::condition_variable condition_;
 }; // struct work_state
@@ -403,7 +393,7 @@ private:
     close_socket();
     connected_ = false;
     stopped_   = true;
-    work_state_.notify_session_stop();
+    work_state_.dec_outstanding();
   }
 
   void start_write_some()
@@ -603,14 +593,9 @@ public:
         boost::bind(&this_type::do_stop, this)));
   }
 
-  void wait_until_done(const boost::posix_time::time_duration& timeout)
+  void wait(const boost::posix_time::time_duration& timeout)
   {
-    work_state_.wait_for_all_session_stop(timeout);
-  }
-
-  void wait_until_done()
-  {
-    work_state_.wait_for_all_session_stop();
+    work_state_.wait(timeout);
   }
 
 private:
@@ -1105,7 +1090,7 @@ io_service_work_vector create_works(const io_service_vector& io_services)
   return works;
 }
 
-void create_session_work_threads(boost::thread_group& threads, 
+void create_session_threads(boost::thread_group& threads, 
     const program_config& config, const io_service_vector& io_services)
 {
   if (config.ios_per_work_thread)
@@ -1169,13 +1154,15 @@ int main(int argc, char* argv[])
     client c(client_io_service, session_io_services, 
         config.program_client_config);
         
-    boost::thread_group work_threads;
-    io_service_work_vector work_guards = create_works(session_io_services);
-    work_guards.push_back(boost::make_shared<boost::asio::io_service::work>(
-        boost::ref(client_io_service)));
-    create_session_work_threads(work_threads, config, session_io_services);
-    work_threads.create_thread(
-          boost::bind(&boost::asio::io_service::run, &client_io_service));
+    boost::thread_group session_threads;
+    io_service_work_vector session_work_guards = 
+        create_works(session_io_services);
+    create_session_threads(session_threads, config, session_io_services);
+
+    boost::optional<boost::asio::io_service::work> client_work_guard(
+        boost::in_place(boost::ref(client_io_service)));
+    boost::thread client_thread(
+        boost::bind(&boost::asio::io_service::run, &client_io_service));
 
 #if defined(MA_HAS_BOOST_TIMER)
     boost::timer::cpu_timer timer;
@@ -1183,12 +1170,14 @@ int main(int argc, char* argv[])
 
     c.async_start(resolver.resolve(
         client::protocol::resolver::query(config.host, config.port)));
-    c.wait_until_done(config.test_duration);
+    c.wait(config.test_duration);
     c.async_stop();
-    c.wait_until_done();
+    
+    client_work_guard = boost::none;
+    client_thread.join();
 
-    work_guards.clear();
-    work_threads.join_all();
+    session_work_guards.clear();
+    session_threads.join_all();
 
 #if defined(MA_HAS_BOOST_TIMER)
     timer.stop();
