@@ -257,7 +257,7 @@ private:
 
   private:
     mutex_type mutex_;
-    session_manager_stats stats_;    
+    session_manager_stats stats_;
   }; // class stats_collector
 
   struct  session_wrapper;
@@ -516,7 +516,7 @@ private:
   static void dispatch_handle_session_wait(const session_manager_weak_ptr&,
       const session_wrapper_ptr&, const boost::system::error_code&);
   static void dispatch_handle_session_stop(const session_manager_weak_ptr&,
-      const session_wrapper_ptr&, const boost::system::error_code&);  
+      const session_wrapper_ptr&, const boost::system::error_code&);
 
   static void open(protocol_type::acceptor& acceptor,
       const protocol_type::endpoint& endpoint, int backlog,

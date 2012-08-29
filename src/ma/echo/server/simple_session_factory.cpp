@@ -15,7 +15,7 @@ namespace ma {
 namespace echo {
 namespace server {
 
-session_ptr simple_session_factory::create(const session_config& config, 
+session_ptr simple_session_factory::create(const session_config& config,
     boost::system::error_code& error)
 {
   if (!recycled_.empty())

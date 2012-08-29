@@ -23,7 +23,7 @@ namespace ma {
 namespace echo {
 namespace server {
 
-class simple_session_factory 
+class simple_session_factory
   : private boost::noncopyable
   , public session_factory
 {
@@ -31,7 +31,7 @@ private:
   typedef simple_session_factory this_type;
 
 public:
-  simple_session_factory(boost::asio::io_service& io_service, 
+  simple_session_factory(boost::asio::io_service& io_service,
       std::size_t max_recycled)
     : max_recycled_(max_recycled)
     , io_service_(io_service)
@@ -49,11 +49,11 @@ private:
   struct  session_wrapper;
   typedef boost::shared_ptr<session_wrapper> session_wrapper_ptr;
 
-  struct session_wrapper 
+  struct session_wrapper
     : public session
     , public sp_intrusive_list<session_wrapper>::base_hook
   {
-    session_wrapper(boost::asio::io_service& io_service, 
+    session_wrapper(boost::asio::io_service& io_service,
         const session_config& config)
       : session(io_service, config)
     {
@@ -67,7 +67,7 @@ private:
   }; // struct session_wrapper
 
   typedef sp_intrusive_list<session_wrapper> session_list;
-  
+
   const std::size_t        max_recycled_;
   boost::asio::io_service& io_service_;
   session_list             recycled_;

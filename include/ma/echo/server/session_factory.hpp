@@ -27,7 +27,7 @@ private:
   typedef session_factory this_type;
 
 public:
-  virtual session_ptr create(const session_config&, 
+  virtual session_ptr create(const session_config&,
       boost::system::error_code&) = 0;
   virtual void release(const session_ptr&) = 0;
 

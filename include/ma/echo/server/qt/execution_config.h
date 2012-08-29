@@ -24,9 +24,11 @@ namespace qt {
 struct execution_config
 {
 public:
-  execution_config(std::size_t the_session_manager_thread_count,
+  execution_config(bool the_ios_per_work_thread, 
+      std::size_t the_session_manager_thread_count,
       std::size_t the_session_thread_count)
-    : session_manager_thread_count(the_session_manager_thread_count)
+    : ios_per_work_thread(the_ios_per_work_thread)
+    , session_manager_thread_count(the_session_manager_thread_count)
     , session_thread_count(the_session_thread_count)
   {
     BOOST_ASSERT_MSG(the_session_manager_thread_count > 0,
@@ -36,6 +38,7 @@ public:
         "session_thread_count must be > 0");
   }
 
+  bool        ios_per_work_thread;
   std::size_t session_manager_thread_count;
   std::size_t session_thread_count;
 }; // struct execution_config

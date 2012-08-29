@@ -41,6 +41,10 @@ HEADERS  += ../../../include/ma/bind_asio_handler.hpp \
             ../../../include/ma/echo/server/session_manager_stats.hpp \
             ../../../include/ma/echo/server/session_manager_stats_fwd.hpp \
             ../../../include/ma/echo/server/session_manager_fwd.hpp \
+            ../../../include/ma/echo/server/pooled_session_factory.hpp \
+            ../../../include/ma/echo/server/session_factory.hpp \
+            ../../../include/ma/echo/server/session_factory_fwd.hpp \
+            ../../../include/ma/echo/server/simple_session_factory.hpp \
             ../../../include/ma/echo/server/qt/custommetatypes.h \
             ../../../include/ma/echo/server/qt/execution_config.h \
             ../../../include/ma/echo/server/qt/execution_config_fwd.h \
@@ -59,6 +63,8 @@ SOURCES  += ../../../src/qt_echo_server/main.cpp \
             ../../../src/ma/echo/server/error.cpp \
             ../../../src/ma/echo/server/session.cpp \
             ../../../src/ma/echo/server/session_manager.cpp \
+            ../../../src/ma/echo/server/pooled_session_factory.cpp \
+            ../../../src/ma/echo/server/simple_session_factory.cpp \
             ../../../src/ma/echo/server/qt/custommetatypes.cpp \
             ../../../src/ma/echo/server/qt/service.cpp \
             ../../../src/ma/echo/server/qt/mainform.cpp

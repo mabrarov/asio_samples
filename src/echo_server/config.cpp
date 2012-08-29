@@ -30,7 +30,7 @@ const char* max_transfer_size_option_name       = "max_transfer";
 const char* socket_recv_buffer_size_option_name = "sock_recv_buffer";
 const char* socket_send_buffer_size_option_name = "sock_send_buffer";
 const char* socket_no_delay_option_name         = "sock_no_delay";
-const char* ios_per_work_thread_option_name     = "ios_per_work_thread";
+const char* demux_option_name                   = "demux_per_work_thread";
 const std::string default_system_value          = "system default";
 
 template <typename Value>
@@ -46,7 +46,7 @@ void validate_option(const std::string& option_name, const Value& option_value,
 }
 
 template <typename Value>
-std::string to_string(const boost::optional<Value>& value, 
+std::string to_string(const boost::optional<Value>& value,
     const std::string& default_text)
 {
   if (value)
@@ -72,7 +72,7 @@ std::string to_string(bool value)
 }
 
 template <>
-std::string to_string<bool>(const boost::optional<bool>& value, 
+std::string to_string<bool>(const boost::optional<bool>& value,
     const std::string& default_text)
 {
   if (value)
@@ -206,10 +206,10 @@ boost::program_options::options_description build_cmd_options_description(
       "set TCP_NODELAY option of session's socket"
     )
     (
-      ios_per_work_thread_option_name,
+      demux_option_name,
       boost::program_options::value<bool>()->default_value(
           default_ios_per_work_thread),
-      "set io_service-per-work-thread mode on"
+      "set demultiplexer-per-work-thread mode on"
     );
 
   return description;
@@ -247,55 +247,55 @@ void print_config(std::ostream& stream, std::size_t cpu_count,
   }
 
   stream << "Number of found CPU(s)                : "
-         << cpu_count 
+         << cpu_count
          << std::endl
          << "Number of session manager's threads   : "
-         << exec_config.session_manager_thread_count 
+         << exec_config.session_manager_thread_count
          << std::endl
          << "Number of sessions' threads           : "
-         << exec_config.session_thread_count 
+         << exec_config.session_thread_count
          << std::endl
          << "Total number of work threads          : "
          << exec_config.session_thread_count
-                + exec_config.session_manager_thread_count 
+                + exec_config.session_manager_thread_count
          << std::endl
-         << "io_service-per-work-thread mode       : "
-         << to_string(exec_config.ios_per_work_thread) 
+         << "Demultiplexer-per-work-thread mode    : "
+         << to_string(exec_config.ios_per_work_thread)
          << std::endl
          << "Server listen port                    : "
-         << session_manager_config.accepting_endpoint.port() 
+         << session_manager_config.accepting_endpoint.port()
          << std::endl
          << "Server stop timeout (seconds)         : "
-         << exec_config.stop_timeout.total_seconds() 
+         << exec_config.stop_timeout.total_seconds()
          << std::endl
          << "Maximum number of active sessions     : "
-         << session_manager_config.max_session_count 
+         << session_manager_config.max_session_count
          << std::endl
          << "Maximum number of recycled sessions   : "
-         << session_manager_config.recycled_session_count 
+         << session_manager_config.recycled_session_count
          << std::endl
          << "TCP listen backlog size               : "
-         << session_manager_config.listen_backlog 
+         << session_manager_config.listen_backlog
          << std::endl
          << "Size of session's buffer (bytes)      : "
-         << session_config.buffer_size 
+         << session_config.buffer_size
          << std::endl
          << "Session's max size of single transfer (bytes)  : "
-         << session_config.max_transfer_size 
+         << session_config.max_transfer_size
          << std::endl
          << "Session's inactivity timeout (seconds)         : "
-         << to_string(session_inactivity_timeout_sec, "none") 
+         << to_string(session_inactivity_timeout_sec, "none")
          << std::endl
          << "Size of session's socket receive buffer (bytes): "
-         << to_string(session_config.socket_recv_buffer_size, 
+         << to_string(session_config.socket_recv_buffer_size,
                 default_system_value)
          << std::endl
          << "Size of session's socket send buffer (bytes)   : "
-         << to_string(session_config.socket_send_buffer_size, 
-                default_system_value) 
+         << to_string(session_config.socket_send_buffer_size,
+                default_system_value)
          << std::endl
          << "Session's socket Nagle algorithm is            : "
-         << to_string(session_config.no_delay, default_system_value) 
+         << to_string(session_config.no_delay, default_system_value)
          << std::endl;
 }
 
@@ -329,10 +329,10 @@ execution_config build_execution_config(
 
   validate_option<long>(stop_timeout_option_name, stop_timeout_sec, 0);
 
-  bool ios_per_work_thread = 
-      options_values[ios_per_work_thread_option_name].as<bool>();
+  bool ios_per_work_thread =
+      options_values[demux_option_name].as<bool>();
 
-  return execution_config(ios_per_work_thread, session_manager_thread_count, 
+  return execution_config(ios_per_work_thread, session_manager_thread_count,
       session_thread_count, boost::posix_time::seconds(stop_timeout_sec));
 }
 

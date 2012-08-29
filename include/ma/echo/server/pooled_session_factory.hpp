@@ -24,7 +24,7 @@ namespace ma {
 namespace echo {
 namespace server {
 
-class pooled_session_factory 
+class pooled_session_factory
   : private boost::noncopyable
   , public session_factory
 {
@@ -32,10 +32,10 @@ private:
   typedef pooled_session_factory this_type;
 
 public:
-  typedef std::vector<boost::shared_ptr<boost::asio::io_service> > 
+  typedef std::vector<boost::shared_ptr<boost::asio::io_service> >
       io_service_vector;
 
-  pooled_session_factory(const io_service_vector& io_services, 
+  pooled_session_factory(const io_service_vector& io_services,
       std::size_t max_recycled);
 
   ~pooled_session_factory()
@@ -53,13 +53,13 @@ private:
   struct  session_wrapper;
   typedef boost::shared_ptr<session_wrapper> session_wrapper_ptr;
 
-  struct session_wrapper 
+  struct session_wrapper
     : public session
     , public sp_intrusive_list<session_wrapper>::base_hook
   {
     typedef io_service_pool::const_iterator pool_link;
 
-    session_wrapper(boost::asio::io_service& io_service, 
+    session_wrapper(boost::asio::io_service& io_service,
         const session_config& config, const pool_link& the_back_link)
       : session(io_service, config)
       , back_link(the_back_link)
@@ -79,7 +79,7 @@ private:
 
   struct io_service_pool_item
   {
-    io_service_pool_item(boost::asio::io_service& the_io_service, 
+    io_service_pool_item(boost::asio::io_service& the_io_service,
         std::size_t the_max_recycled)
       : max_recycled(the_max_recycled)
       , io_service(the_io_service)

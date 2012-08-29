@@ -29,7 +29,7 @@ pooled_session_factory::pooled_session_factory(
   current_ = pool_.begin();
 }
 
-session_ptr pooled_session_factory::create(const session_config& config, 
+session_ptr pooled_session_factory::create(const session_config& config,
     boost::system::error_code& error)
 {
   session_wrapper_ptr session;
@@ -66,7 +66,7 @@ session_ptr pooled_session_factory::create(const session_config& config,
 
 void pooled_session_factory::release(const session_ptr& session)
 {
-  session_wrapper_ptr wrapped_session = 
+  session_wrapper_ptr wrapped_session =
       boost::static_pointer_cast<session_wrapper>(session);
   io_service_pool_item& pool_item = **(wrapped_session->back_link);
   if (pool_item.max_recycled > pool_item.recycled.size())

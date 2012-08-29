@@ -194,11 +194,12 @@ session_factory_ptr create_session_factory(
     const ma::echo::server::session_manager_config&,
     const io_service_vector&);
 
-void create_work_threads(boost::thread_group&,
+void create_session_work_threads(boost::thread_group&,
     const echo_server::execution_config&, const io_service_vector&,
     const exception_handler&);
-void create_work_threads(boost::thread_group&, std::size_t count, 
-    boost::asio::io_service&, const exception_handler&);
+void create_session_manager_work_threads(boost::thread_group&,
+    const echo_server::execution_config&, boost::asio::io_service&,
+    const exception_handler&);
 io_service_work_vector create_works(const io_service_vector&);
 void stop(const io_service_vector&);
 
@@ -259,7 +260,7 @@ session_factory_ptr create_session_factory(
   }
 }
 
-void create_work_threads(boost::thread_group& work_threads,
+void create_session_work_threads(boost::thread_group& work_threads,
     const echo_server::execution_config& exec_config,
     const io_service_vector& io_services,
     const exception_handler& work_exception_handler)
@@ -283,11 +284,12 @@ void create_work_threads(boost::thread_group& work_threads,
   }
 }
 
-void create_work_threads(boost::thread_group& work_threads,
-    std::size_t count, boost::asio::io_service& io_service,
+void create_session_manager_work_threads(boost::thread_group& work_threads,
+    const echo_server::execution_config& exec_config,
+    boost::asio::io_service& io_service,
     const exception_handler& work_exception_handler)
 {
-  for (std::size_t i = 0; count; ++i)
+  for (std::size_t i = 0; i != exec_config.session_manager_thread_count; ++i)
   {
     work_threads.create_thread(boost::bind(run_io_service,
         boost::ref(io_service), work_exception_handler));
@@ -296,7 +298,7 @@ void create_work_threads(boost::thread_group& work_threads,
 
 void stop(const io_service_vector& io_services)
 {
-  for (io_service_vector::const_iterator i = io_services.begin(), 
+  for (io_service_vector::const_iterator i = io_services.begin(),
       end = io_services.end(); i != end; ++i)
   {
     (*i)->stop();
@@ -306,7 +308,7 @@ void stop(const io_service_vector& io_services)
 io_service_work_vector create_works(const io_service_vector& io_services)
 {
   io_service_work_vector works;
-  for (io_service_vector::const_iterator i = io_services.begin(), 
+  for (io_service_vector::const_iterator i = io_services.begin(),
       end = io_services.end(); i != end; ++i)
   {
     works.push_back(
@@ -319,12 +321,12 @@ int run_server(const echo_server::execution_config& exec_config,
     const ma::echo::server::session_manager_config& session_manager_config)
 {
   // Before session_manager_io_service for the right destruction order
-  io_service_vector session_io_services = 
+  io_service_vector session_io_services =
       create_session_io_services(exec_config);
   // After session_ios for the right destruction order
-  session_factory_ptr session_factory = create_session_factory(exec_config, 
+  session_factory_ptr session_factory = create_session_factory(exec_config,
       session_manager_config, session_io_services);
-    
+
   boost::asio::io_service session_manager_io_service(
       exec_config.session_manager_thread_count);
 
@@ -357,15 +359,15 @@ int run_server(const echo_server::execution_config& exec_config,
   // Create work for session_manager's io_service to prevent threads' stop
   boost::asio::io_service::work session_manager_work(
       session_manager_io_service);
-  
+
   boost::thread_group work_threads;
   // Create work threads for session operations
-  create_work_threads(work_threads, exec_config, 
-      session_io_services, work_exception_handler);  
+  create_session_work_threads(work_threads, exec_config,
+      session_io_services, work_exception_handler);
   // Create work threads for session manager operations
-  create_work_threads(work_threads, exec_config.session_manager_thread_count, 
+  create_session_manager_work_threads(work_threads, exec_config,
       session_manager_io_service, work_exception_handler);
-  
+
   int exit_code = EXIT_SUCCESS;
 
   // Wait until server starts stopping or stops
@@ -401,7 +403,7 @@ int run_server(const echo_server::execution_config& exec_config,
   // Shutdown execution queues...
   session_manager_io_service.stop();
   stop(session_io_services);
-  
+
   std::cout << "Server work was terminated." \
       " Waiting until all of the work threads will stop...\n";
 

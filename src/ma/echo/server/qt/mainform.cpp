@@ -34,6 +34,8 @@ namespace qt {
 namespace {
 
 const int statsTimerIntervalMillis = 1000;
+const int singleDemuxModelIndex    = 0;
+const int poolOfDemuxModelIndex    = 1;
 
 QString format(std::size_t value)
 {
@@ -64,6 +66,15 @@ std::size_t calcSessionThreadCount(std::size_t hardwareConcurrency)
     return hardwareConcurrency;
   }
   return 2;
+}
+
+int getDefaultSessionThreadModelIndex()
+{
+#if defined(WIN32)
+  return singleDemuxModelIndex;
+#else
+  return poolOfDemuxModelIndex;
+#endif
 }
 
 boost::optional<int> readOptionalValue(const QCheckBox& checkBox,
@@ -193,6 +204,8 @@ MainForm::MainForm(Service& service, QWidget* parent, Qt::WFlags flags)
       calcSessionManagerThreadCount(hardwareConcurrency)));
   ui_.sessionThreadsSpinBox->setValue(boost::numeric_cast<int>(
       calcSessionThreadCount(hardwareConcurrency)));
+  ui_.sessionThreadModelComboBox->setCurrentIndex(
+      getDefaultSessionThreadModelIndex());
   ui_.listenBacklogSpinBox->setMaximum(std::numeric_limits<int>::max());
 
   updateWidgetsStates(true);
@@ -360,6 +373,7 @@ execution_config MainForm::buildExecutionConfig() const
   std::size_t sessionManagerThreadCount;
   std::size_t sessionThreadCount;
   QWidget*    currentWidget = 0;
+  bool        ios_per_work_thread;
   try
   {
     currentWidget = ui_.sessionManagerThreadsSpinBox;
@@ -369,6 +383,9 @@ execution_config MainForm::buildExecutionConfig() const
     currentWidget = ui_.sessionThreadsSpinBox;
     sessionThreadCount = boost::numeric_cast<std::size_t>(
         ui_.sessionThreadsSpinBox->value());
+
+    int sessionThreadModel = ui_.sessionThreadModelComboBox->currentIndex();
+    ios_per_work_thread = poolOfDemuxModelIndex == sessionThreadModel;
   }
   catch (const boost::numeric::bad_numeric_cast&)
   {
@@ -376,7 +393,8 @@ execution_config MainForm::buildExecutionConfig() const
       currentWidget, tr("Invalid value.")));
   }
 
-  return execution_config(sessionManagerThreadCount, sessionThreadCount);
+  return execution_config(ios_per_work_thread,
+      sessionManagerThreadCount, sessionThreadCount);
 }
 
 session_config MainForm::buildSessionConfig() const

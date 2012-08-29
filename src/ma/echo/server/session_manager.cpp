@@ -208,7 +208,7 @@ void session_manager::stats_collector::notify_session_stop(
     ++stats_.timed_out;
     return;
   }
-    
+
   lock_guard_type lock_guard(mutex_);
   ++stats_.error_stopped;
 }
@@ -962,7 +962,7 @@ session_manager::session_wrapper_ptr session_manager::create_session(
   class session_guard : private boost::noncopyable
   {
   public:
-    explicit session_guard(session_factory& factory, 
+    explicit session_guard(session_factory& factory,
         const session_ptr& session)
       : factory_(factory)
       , session_(session)
@@ -1010,7 +1010,7 @@ session_manager::session_wrapper_ptr session_manager::create_session(
 
   try
   {
-    session_wrapper_ptr wrapped_session = 
+    session_wrapper_ptr wrapped_session =
         boost::make_shared<session_wrapper>(session);
     error = boost::system::error_code();
 
@@ -1025,7 +1025,7 @@ session_manager::session_wrapper_ptr session_manager::create_session(
 }
 
 void session_manager::release_session(const session_wrapper_ptr& session)
-{  
+{
   session_factory_.release(session->session);
   session->session.reset();
   recycled_sessions_.push_front(session);
@@ -1037,7 +1037,7 @@ void session_manager::add_to_active(const session_wrapper_ptr& session)
   // Collect statistics
   stats_collector_.set_active_session_count(active_sessions_.size());
 }
-  
+
 void session_manager::add_to_recycled(const session_wrapper_ptr& session)
 {
   // Put the session to "recycle bin"

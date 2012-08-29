@@ -43,6 +43,11 @@ HEADERS  += ../../../include/ma/handler_storage_service.hpp \
             ../../../include/ma/echo/server/error.hpp \
             ../../../include/ma/echo/server/session.hpp \
             ../../../include/ma/echo/server/session_manager.hpp \
+            ../../../include/ma/echo/server/session_manager_fwd.hpp \
+            ../../../include/ma/echo/server/pooled_session_factory.hpp \
+            ../../../include/ma/echo/server/session_factory.hpp \
+            ../../../include/ma/echo/server/session_factory_fwd.hpp \
+            ../../../include/ma/echo/server/simple_session_factory.hpp \
             ../../../src/echo_server/config.hpp
 
 SOURCES  += ../../../src/ma/console_controller.cpp \
@@ -50,7 +55,10 @@ SOURCES  += ../../../src/ma/console_controller.cpp \
             ../../../src/echo_server/config.cpp \
             ../../../src/ma/echo/server/error.cpp \
             ../../../src/ma/echo/server/session.cpp \
-            ../../../src/ma/echo/server/session_manager.cpp
+            ../../../src/ma/echo/server/session_manager.cpp \
+            ../../../src/ma/echo/server/pooled_session_factory.cpp \
+            ../../../src/ma/echo/server/simple_session_factory.cpp
+
 
 INCLUDEPATH += $${BOOST_INCLUDE} \
                ../../../include
