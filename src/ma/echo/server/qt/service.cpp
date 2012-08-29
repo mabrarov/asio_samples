@@ -270,8 +270,8 @@ public:
   servant(const execution_config& the_execution_config,
       const session_manager_config& the_session_manager_config)
     : pipeline(the_execution_config, the_session_manager_config)
-    , session_manager_(session_manager::create(session_manager_io_service(),
-          session_factory(), the_session_manager_config))
+    , session_manager_(session_manager::create(session_manager_io_service_,
+          *session_factory_, the_session_manager_config))
   {
   }
 
