@@ -254,9 +254,9 @@ private:
     }
   }
 
-  const io_service_work_vector  session_work_;
-  boost::asio::io_service::work session_manager_work_;
-  boost::thread_group           threads_;
+  const io_service_work_vector session_work_;
+  const boost::asio::io_service::work session_manager_work_;
+  boost::thread_group threads_;
 }; // class pipeline
 
 } // anonymous namespace

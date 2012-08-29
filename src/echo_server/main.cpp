@@ -43,7 +43,7 @@ typedef boost::shared_ptr<session_manager_wrapper> wrapped_session_manager_ptr;
 typedef boost::function<void (void)> exception_handler;
 
 typedef boost::shared_ptr<boost::asio::io_service> io_service_ptr;
-typedef std::vector<io_service_ptr>                io_service_vector;
+typedef std::vector<io_service_ptr> io_service_vector;
 typedef boost::shared_ptr<ma::echo::server::session_factory>
     session_factory_ptr;
 typedef boost::shared_ptr<boost::asio::io_service::work> io_service_work_ptr;
@@ -235,9 +235,8 @@ io_service_vector create_session_io_services(
   }
   else
   {
-    io_service_ptr io_service = boost::make_shared<boost::asio::io_service>(
-        exec_config.session_thread_count);
-    io_services.push_back(io_service);
+    io_services.push_back(boost::make_shared<boost::asio::io_service>(
+        exec_config.session_thread_count));
   }
   return io_services;
 }
@@ -321,16 +320,16 @@ int run_server(const echo_server::execution_config& exec_config,
     const ma::echo::server::session_manager_config& session_manager_config)
 {
   // Before session_manager_io_service for the right destruction order
-  io_service_vector session_io_services =
+  const io_service_vector session_io_services =
       create_session_io_services(exec_config);
   // After session_ios for the right destruction order
-  session_factory_ptr session_factory = create_session_factory(exec_config,
-      session_manager_config, session_io_services);
+  const session_factory_ptr session_factory = create_session_factory(
+      exec_config, session_manager_config, session_io_services);
 
   boost::asio::io_service session_manager_io_service(
       exec_config.session_manager_thread_count);
 
-  wrapped_session_manager_ptr session_manager(
+  const wrapped_session_manager_ptr session_manager(
       boost::make_shared<session_manager_wrapper>(
           boost::ref(session_manager_io_service), boost::ref(*session_factory),
           session_manager_config));
@@ -351,13 +350,14 @@ int run_server(const echo_server::execution_config& exec_config,
   std::cout << "Press Ctrl+C (Ctrl+Break) to exit.\n";
 
   // Exception handler for automatic server aborting
-  exception_handler work_exception_handler(
+  const exception_handler work_exception_handler(
       boost::bind(handle_work_exception, session_manager));
 
   // Create work for sessions' io_services to prevent threads' stop
-  io_service_work_vector session_work = create_works(session_io_services);
+  const io_service_work_vector session_work = 
+      create_works(session_io_services);
   // Create work for session_manager's io_service to prevent threads' stop
-  boost::asio::io_service::work session_manager_work(
+  const boost::asio::io_service::work session_manager_work(
       session_manager_io_service);
 
   boost::thread_group work_threads;
