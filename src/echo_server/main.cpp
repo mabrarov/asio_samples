@@ -194,10 +194,10 @@ session_factory_ptr create_session_factory(
     const ma::echo::server::session_manager_config&,
     const io_service_vector&);
 
-void create_session_work_threads(boost::thread_group&,
+void create_session_threads(boost::thread_group&,
     const echo_server::execution_config&, const io_service_vector&,
     const exception_handler&);
-void create_session_manager_work_threads(boost::thread_group&,
+void create_session_manager_threads(boost::thread_group&,
     const echo_server::execution_config&, boost::asio::io_service&,
     const exception_handler&);
 io_service_work_vector create_works(const io_service_vector&);
@@ -259,7 +259,7 @@ session_factory_ptr create_session_factory(
   }
 }
 
-void create_session_work_threads(boost::thread_group& work_threads,
+void create_session_threads(boost::thread_group& threads,
     const echo_server::execution_config& exec_config,
     const io_service_vector& io_services,
     const exception_handler& work_exception_handler)
@@ -269,7 +269,7 @@ void create_session_work_threads(boost::thread_group& work_threads,
     for (io_service_vector::const_iterator i = io_services.begin(),
         end = io_services.end(); i != end; ++i)
     {
-      work_threads.create_thread(boost::bind(run_io_service,
+      threads.create_thread(boost::bind(run_io_service,
           boost::ref(**i), work_exception_handler));
     }
   }
@@ -277,20 +277,20 @@ void create_session_work_threads(boost::thread_group& work_threads,
   {
     for (std::size_t i = 0; i != exec_config.session_thread_count; ++i)
     {
-      work_threads.create_thread(boost::bind(run_io_service,
+      threads.create_thread(boost::bind(run_io_service,
           boost::ref(*io_services.front()), work_exception_handler));
     }
   }
 }
 
-void create_session_manager_work_threads(boost::thread_group& work_threads,
+void create_session_manager_threads(boost::thread_group& threads,
     const echo_server::execution_config& exec_config,
     boost::asio::io_service& io_service,
     const exception_handler& work_exception_handler)
 {
   for (std::size_t i = 0; i != exec_config.session_manager_thread_count; ++i)
   {
-    work_threads.create_thread(boost::bind(run_io_service,
+    threads.create_thread(boost::bind(run_io_service,
         boost::ref(io_service), work_exception_handler));
   }
 }
@@ -362,10 +362,10 @@ int run_server(const echo_server::execution_config& exec_config,
 
   boost::thread_group work_threads;
   // Create work threads for session operations
-  create_session_work_threads(work_threads, exec_config,
+  create_session_threads(work_threads, exec_config,
       session_io_services, work_exception_handler);
   // Create work threads for session manager operations
-  create_session_manager_work_threads(work_threads, exec_config,
+  create_session_manager_threads(work_threads, exec_config,
       session_manager_io_service, work_exception_handler);
 
   int exit_code = EXIT_SUCCESS;
