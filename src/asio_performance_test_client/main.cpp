@@ -43,33 +43,32 @@ namespace {
 class work_state : private boost::noncopyable
 {
 public:
-  explicit work_state(std::size_t session_count)
-    : session_count_(session_count)
+  explicit work_state(std::size_t outstanding)
+    : outstanding_(outstanding)
   {
   }
 
-  void notify_session_stop()
+  void dec_outstanding()
   {
     boost::mutex::scoped_lock lock(mutex_);
-    --session_count_;
-    if (!session_count_)
+    --outstanding_;
+    if (!outstanding_)
     {
       condition_.notify_all();
     }
   }
 
-  void wait_for_all_session_stop(
-      const boost::posix_time::time_duration& timeout)
+  void wait(const boost::posix_time::time_duration& timeout)
   {
     boost::unique_lock<boost::mutex> lock(mutex_);
-    if (session_count_)
+    if (outstanding_)
     {
       condition_.timed_wait(lock, timeout);
     }
   }
 
 private:
-  std::size_t session_count_;
+  std::size_t outstanding_;
   boost::mutex mutex_;
   boost::condition_variable condition_;
 }; // struct work_state
@@ -394,7 +393,7 @@ private:
     close_socket();
     connected_ = false;
     stopped_   = true;
-    work_state_.notify_session_stop();
+    work_state_.dec_outstanding();
   }
 
   void start_write_some()
@@ -511,10 +510,10 @@ typedef ma::steady_deadline_timer      deadline_timer;
 typedef deadline_timer::duration_type  duration_type;
 typedef boost::optional<duration_type> optional_duration;
 
-struct client_config
+struct session_manager_config
 {
 public:
-  client_config(std::size_t the_session_count,
+  session_manager_config(std::size_t the_session_count,
       std::size_t the_block_size,
       const optional_duration the_block_pause,
       const session_config& the_managed_session_config)
@@ -529,37 +528,54 @@ public:
   std::size_t       block_size;
   optional_duration block_pause;
   session_config    managed_session_config;
-}; // struct client_config
+}; // struct session_manager_config
 
-class client : private boost::noncopyable
+typedef boost::shared_ptr<boost::asio::io_service> io_service_ptr;
+typedef std::vector<io_service_ptr> io_service_vector;
+typedef boost::shared_ptr<boost::asio::io_service::work> io_service_work_ptr;
+typedef std::vector<io_service_work_ptr> io_service_work_vector;
+
+class session_manager : private boost::noncopyable
 {
 private:
-  typedef client this_type;
+  typedef session_manager this_type;
 
 public:
   typedef session::protocol protocol;
 
-  client(boost::asio::io_service& io_service, const client_config& config)
+  session_manager(boost::asio::io_service& session_manager_io_service,
+      const io_service_vector& session_io_services,
+      const session_manager_config& config)
     : block_size_(config.block_size)
     , block_pause_(config.block_pause)
-    , io_service_(io_service)
-    , strand_(io_service)
-    , timer_(io_service)
+    , io_service_(session_manager_io_service)
+    , strand_(session_manager_io_service)
+    , timer_(session_manager_io_service)
     , sessions_()
     , stopped_(false)
     , timer_in_progess_(false)
     , stats_()
     , work_state_(config.session_count)
   {
-    for (std::size_t i = 0; i < config.session_count; ++i)
+    typedef io_service_vector::const_iterator iterator;
+
+    const iterator sbegin = session_io_services.begin();
+    const iterator send   = session_io_services.end();
+    for (std::size_t i = 0; i != config.session_count;)
     {
-      sessions_.push_back(boost::make_shared<session>(boost::ref(io_service_),
-          config.managed_session_config, boost::ref(work_state_)));
+      for (iterator j = sbegin; (j != send) && (i != config.session_count);
+          ++j, ++i)
+      {
+        sessions_.push_back(boost::make_shared<session>(boost::ref(**j),
+            config.managed_session_config, boost::ref(work_state_)));
+      }
     }
   }
 
-  ~client()
+  ~session_manager()
   {
+    BOOST_ASSERT_MSG(!timer_in_progess_, "Invalid timer state");
+
     std::for_each(sessions_.begin(), sessions_.end(),
         boost::bind(&this_type::register_stats, this, _1));
     stats_.print();
@@ -577,9 +593,9 @@ public:
         boost::bind(&this_type::do_stop, this)));
   }
 
-  void wait_until_done(const boost::posix_time::time_duration& timeout)
+  void wait(const boost::posix_time::time_duration& timeout)
   {
-    work_state_.wait_for_all_session_stop(timeout);
+    work_state_.wait(timeout);
   }
 
 private:
@@ -624,7 +640,7 @@ private:
       const protocol::resolver::iterator& endpoint_iterator,
       std::size_t offset)
   {
-    BOOST_ASSERT_MSG(!timer_in_progess_, "invalid timer state");
+    BOOST_ASSERT_MSG(!timer_in_progess_, "Invalid timer state");
 
     timer_.expires_from_now(*block_pause_);
     timer_.async_wait(MA_STRAND_WRAP(strand_,
@@ -701,7 +717,7 @@ private:
   ma::in_place_handler_allocator<256> start_allocator_;
   ma::in_place_handler_allocator<256> stop_allocator_;
   ma::in_place_handler_allocator<512> timer_allocator_;
-}; // class client
+}; // class session_manager
 
 optional_duration to_optional_duration(long milliseconds)
 {
@@ -714,32 +730,36 @@ optional_duration to_optional_duration(long milliseconds)
   return duration;
 }
 
-struct program_config
+struct client_config
 {
 public:
-  program_config(const std::string& the_host,
+  client_config(bool the_ios_per_work_thread,
+      const std::string& the_host,
       const std::string& the_port,
       std::size_t the_thread_count,
       const boost::posix_time::time_duration& the_test_duration,
-      const client_config& the_program_client_config)
-    : host(the_host)
+      const session_manager_config& the_session_manager_config)
+    : ios_per_work_thread(the_ios_per_work_thread)
+    , host(the_host)
     , port(the_port)
     , thread_count(the_thread_count)
     , test_duration(the_test_duration)
-    , program_client_config(the_program_client_config)
+    , client_session_manager_config(the_session_manager_config)
   {
   }
 
+  bool        ios_per_work_thread;
   std::string host;
   std::string port;
   std::size_t thread_count;
   boost::posix_time::time_duration test_duration;
-  client_config program_client_config;
-}; // struct program_config
+  session_manager_config client_session_manager_config;
+}; // struct client_config
 
 const char* help_option_name                    = "help";
 const char* host_option_name                    = "host";
 const char* port_option_name                    = "port";
+const char* demux_option_name                   = "demux_per_work_thread";
 const char* threads_option_name                 = "threads";
 const char* sessions_option_name                = "sessions";
 const char* block_size_option_name              = "block_size";
@@ -764,6 +784,12 @@ std::size_t calc_thread_count(std::size_t hardware_concurrency)
 boost::program_options::options_description build_cmd_options_description(
     std::size_t hardware_concurrency)
 {
+#if defined(WIN32)
+  bool default_ios_per_work_thread = false;
+#else
+  bool default_ios_per_work_thread = true;
+#endif
+
   boost::program_options::options_description description("Allowed options");
 
   description.add_options()
@@ -780,6 +806,12 @@ boost::program_options::options_description build_cmd_options_description(
       port_option_name,
       boost::program_options::value<std::string>(),
       "set the remote peer's port"
+    )
+    (
+      demux_option_name,
+      boost::program_options::value<bool>()->default_value(
+          default_ios_per_work_thread),
+      "set demultiplexer-per-work-thread mode on"
     )
     (
       threads_option_name,
@@ -872,7 +904,7 @@ optional_int build_optional_int(
   return options_values[option_name].as<int>();
 }
 
-program_config build_program_config(
+client_config build_client_config(
     const boost::program_options::variables_map& options_values)
 {
   const std::string host = options_values[host_option_name].as<std::string>();
@@ -907,11 +939,15 @@ program_config build_program_config(
   session_config client_session_config(buffer_size, max_connect_attempts,
       socket_recv_buffer_size, socket_send_buffer_size, no_delay);
 
-  client_config program_client_config(session_count, block_size,
-      to_optional_duration(block_pause_millis), client_session_config);
+  session_manager_config client_session_manager_config(session_count,
+      block_size, to_optional_duration(block_pause_millis),
+      client_session_config);
 
-  return program_config(host, port, thread_count,
-      boost::posix_time::seconds(time_seconds), program_client_config);
+  bool ios_per_work_thread =
+      options_values[demux_option_name].as<bool>();
+
+  return client_config(ios_per_work_thread, host, port, thread_count,
+      boost::posix_time::seconds(time_seconds), client_session_manager_config);
 }
 
 std::string to_seconds_string(const boost::posix_time::time_duration& duration)
@@ -959,11 +995,16 @@ std::string to_string(const optional_int& value)
   }
 }
 
+std::string to_string(bool value)
+{
+  return value ? "on" : "off";
+}
+
 std::string to_string(const optional_bool& value)
 {
   if (value)
   {
-    return *value ? "on" : "off";
+    return to_string(*value);
   }
   else
   {
@@ -971,12 +1012,12 @@ std::string to_string(const optional_bool& value)
   }
 }
 
-void print(const program_config& config)
+void print(const client_config& config)
 {
-  const client_config&  program_client_config =
-      config.program_client_config;
+  const session_manager_config& client_session_manager_config =
+      config.client_session_manager_config;
   const session_config& managed_session_config =
-      program_client_config.managed_session_config;
+      client_session_manager_config.managed_session_config;
 
   std::cout << "Host      : "
             << config.host
@@ -988,15 +1029,19 @@ void print(const program_config& config)
             << config.thread_count
             << std::endl
             << "Sessions  : "
-            << program_client_config.session_count
+            << client_session_manager_config.session_count
             << std::endl
             << "Block size: "
-            << program_client_config.block_size
+            << client_session_manager_config.block_size
             << std::endl
-            << "Block pause (milliseconds)   : "
-            << to_milliseconds_string(program_client_config.block_pause)
+            << "Block pause (milliseconds)        : "
+            << to_milliseconds_string(
+                  client_session_manager_config.block_pause)
             << std::endl
-            << "Session's buffer size (bytes): "
+            << "Demultiplexer-per-work-thread mode: "
+            << (to_string)(config.ios_per_work_thread)
+            << std::endl
+            << "Session's buffer size (bytes)     : "
             << managed_session_config.buffer_size
             << std::endl
             << "Maximum number of connect attempts per session : "
@@ -1014,6 +1059,59 @@ void print(const program_config& config)
             << "Time (seconds): "
             << to_seconds_string(config.test_duration)
             << std::endl;
+}
+
+io_service_vector create_session_io_services(const client_config& config)
+{
+  io_service_vector io_services;
+  if (config.ios_per_work_thread)
+  {
+    for (std::size_t i = 0; i != config.thread_count; ++i)
+    {
+      io_services.push_back(boost::make_shared<boost::asio::io_service>(1));
+    }
+  }
+  else
+  {
+    io_services.push_back(
+        boost::make_shared<boost::asio::io_service>(config.thread_count));
+  }
+  return io_services;
+}
+
+io_service_work_vector create_works(const io_service_vector& io_services)
+{
+  io_service_work_vector works;
+  for (io_service_vector::const_iterator i = io_services.begin(),
+      end = io_services.end(); i != end; ++i)
+  {
+    works.push_back(
+        boost::make_shared<boost::asio::io_service::work>(boost::ref(**i)));
+  }
+  return works;
+}
+
+void create_session_threads(boost::thread_group& threads,
+    const client_config& config, const io_service_vector& io_services)
+{
+  if (config.ios_per_work_thread)
+  {
+    for (io_service_vector::const_iterator i = io_services.begin(),
+        end = io_services.end(); i != end; ++i)
+    {
+      threads.create_thread(
+          boost::bind(&boost::asio::io_service::run, i->get()));
+    }
+  }
+  else
+  {
+    boost::asio::io_service& io_service = *io_services.front();
+    for (std::size_t i = 0; i != config.thread_count; ++i)
+    {
+      threads.create_thread(
+          boost::bind(&boost::asio::io_service::run, &io_service));
+    }
+  }
 }
 
 } // anonymous namespace
@@ -1046,33 +1144,41 @@ int main(int argc, char* argv[])
       return EXIT_FAILURE;
     }
 
-    const program_config config = build_program_config(cmd_options);
+    const client_config config = build_client_config(cmd_options);
     print(config);
 
-    boost::asio::io_service io_service(config.thread_count);
-    client::protocol::resolver resolver(io_service);
-    client c(io_service, config.program_client_config);
+    const io_service_vector session_io_services =
+        create_session_io_services(config);
 
-    boost::thread_group work_threads;
-    boost::optional<boost::asio::io_service::work> work_guard(
-        boost::in_place(boost::ref(io_service)));
-    for (std::size_t i = 0; i != config.thread_count; ++i)
-    {
-      work_threads.create_thread(
-          boost::bind(&boost::asio::io_service::run, &io_service));
-    }
+    boost::asio::io_service session_manager_io_service(1);
+    session_manager::protocol::resolver resolver(session_manager_io_service);
+    session_manager client_session_manager(session_manager_io_service,
+        session_io_services, config.client_session_manager_config);
+
+    boost::thread_group session_threads;
+    io_service_work_vector session_work_guards =
+        create_works(session_io_services);
+    create_session_threads(session_threads, config, session_io_services);
+
+    boost::optional<boost::asio::io_service::work> session_manager_work_guard(
+        boost::in_place(boost::ref(session_manager_io_service)));
+    boost::thread session_manager_thread(boost::bind(
+        &boost::asio::io_service::run, &session_manager_io_service));
 
 #if defined(MA_HAS_BOOST_TIMER)
     boost::timer::cpu_timer timer;
 #endif // defined(MA_HAS_BOOST_TIMER)
 
-    c.async_start(resolver.resolve(
-        client::protocol::resolver::query(config.host, config.port)));
-    c.wait_until_done(config.test_duration);
-    c.async_stop();
+    client_session_manager.async_start(resolver.resolve(
+        session_manager::protocol::resolver::query(config.host, config.port)));
+    client_session_manager.wait(config.test_duration);
+    client_session_manager.async_stop();
 
-    work_guard = boost::none;
-    work_threads.join_all();
+    session_manager_work_guard = boost::none;
+    session_manager_thread.join();
+
+    session_work_guards.clear();
+    session_threads.join_all();
 
 #if defined(MA_HAS_BOOST_TIMER)
     timer.stop();
@@ -1085,7 +1191,7 @@ int main(int argc, char* argv[])
   {
     std::cerr << "Error reading options: " << e.what() << std::endl;
   }
-  catch (std::exception& e)
+  catch (const std::exception& e)
   {
     std::cerr << "Exception: " << e.what() << "\n";
   }

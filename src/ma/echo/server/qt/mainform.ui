@@ -83,6 +83,27 @@
          </property>
         </widget>
        </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="sessionThreadModelLabel">
+         <property name="text">
+          <string>Session threading model</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QComboBox" name="sessionThreadModelComboBox">
+         <item>
+          <property name="text">
+           <string>Single demultiplexer</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Demultiplexer per work thread</string>
+          </property>
+         </item>
+        </widget>
+       </item>
       </layout>
      </widget>
      <widget class="QWidget" name="sessionManagementTab">
@@ -667,20 +688,7 @@
   <tabstop>configTabWidget</tabstop>
   <tabstop>sessionManagerThreadsSpinBox</tabstop>
   <tabstop>sessionThreadsSpinBox</tabstop>
-  <tabstop>stateTabWidget</tabstop>
-  <tabstop>activeSessionsEdit</tabstop>
-  <tabstop>maxActiveSessionsEdit</tabstop>
-  <tabstop>recycledSessionsEdit</tabstop>
-  <tabstop>totalAcceptedSessionsEdit</tabstop>
-  <tabstop>activeShutdownedSessionsEdit</tabstop>
-  <tabstop>outOfWorkSessionsEdit</tabstop>
-  <tabstop>timedOutSessionsEdit</tabstop>
-  <tabstop>errorStoppedSessionsEdit</tabstop>
-  <tabstop>pushButton</tabstop>
-  <tabstop>startButton</tabstop>
-  <tabstop>stopButton</tabstop>
-  <tabstop>terminateButton</tabstop>
-  <tabstop>exitButton</tabstop>
+  <tabstop>sessionThreadModelComboBox</tabstop>
   <tabstop>maxSessionCountSpinBox</tabstop>
   <tabstop>recycledSessionCountSpinBox</tabstop>
   <tabstop>listenBacklogSpinBox</tabstop>
@@ -695,7 +703,21 @@
   <tabstop>sockSendBufferSizeCheckBox</tabstop>
   <tabstop>sockSendBufferSizeSpinBox</tabstop>
   <tabstop>tcpNoDelayComboBox</tabstop>
+  <tabstop>stateTabWidget</tabstop>
+  <tabstop>activeSessionsEdit</tabstop>
+  <tabstop>maxActiveSessionsEdit</tabstop>
+  <tabstop>recycledSessionsEdit</tabstop>
+  <tabstop>totalAcceptedSessionsEdit</tabstop>
+  <tabstop>activeShutdownedSessionsEdit</tabstop>
+  <tabstop>outOfWorkSessionsEdit</tabstop>
+  <tabstop>timedOutSessionsEdit</tabstop>
+  <tabstop>errorStoppedSessionsEdit</tabstop>
   <tabstop>logTextEdit</tabstop>
+  <tabstop>pushButton</tabstop>
+  <tabstop>startButton</tabstop>
+  <tabstop>stopButton</tabstop>
+  <tabstop>terminateButton</tabstop>
+  <tabstop>exitButton</tabstop>
  </tabstops>
  <resources/>
  <connections>

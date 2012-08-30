@@ -133,6 +133,12 @@
     <ClCompile Include="GeneratedFiles\Test\moc_mainform.cpp">
       <Filter>Generated Files\Test</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\src\ma\echo\server\pooled_session_factory.cpp">
+      <Filter>Source Files\ma\echo\server</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\ma\echo\server\simple_session_factory.cpp">
+      <Filter>Source Files\ma\echo\server</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\..\..\include\ma\echo\server\qt\mainform.h">
@@ -264,6 +270,18 @@
       <Filter>Header Files\ma\echo\server</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\ma\echo\server\session_manager_stats_fwd.hpp">
+      <Filter>Header Files\ma\echo\server</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\echo\server\pooled_session_factory.hpp">
+      <Filter>Header Files\ma\echo\server</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\echo\server\session_factory.hpp">
+      <Filter>Header Files\ma\echo\server</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\echo\server\session_factory_fwd.hpp">
+      <Filter>Header Files\ma\echo\server</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\echo\server\simple_session_factory.hpp">
       <Filter>Header Files\ma\echo\server</Filter>
     </ClInclude>
   </ItemGroup>

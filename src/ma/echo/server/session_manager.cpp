@@ -17,6 +17,7 @@
 #include <ma/strand_wrapped_handler.hpp>
 #include <ma/echo/server/error.hpp>
 #include <ma/echo/server/session.hpp>
+#include <ma/echo/server/session_factory.hpp>
 #include <ma/echo/server/session_manager.hpp>
 
 namespace ma {
@@ -207,17 +208,9 @@ void session_manager::stats_collector::notify_session_stop(
     ++stats_.timed_out;
     return;
   }
-    
+
   lock_guard_type lock_guard(mutex_);
   ++stats_.error_stopped;
-}
-
-session_manager::session_wrapper::session_wrapper(
-    boost::asio::io_service& io_service, const session_config& config)
-  : session(server::session::create(io_service, config))
-  , state(state_type::ready)
-  , pending_operations(0)
-{
 }
 
 void session_manager::session_wrapper::reset()
@@ -229,16 +222,16 @@ void session_manager::session_wrapper::reset()
 
 session_manager_ptr session_manager::create(
     boost::asio::io_service& io_service,
-    boost::asio::io_service& session_io_service,
+    session_factory& managed_session_factory,
     const session_manager_config& config)
 {
   typedef shared_ptr_factory_helper<this_type> helper;
   return boost::make_shared<helper>(boost::ref(io_service),
-      boost::ref(session_io_service), config);
+      boost::ref(managed_session_factory), config);
 }
 
 session_manager::session_manager(boost::asio::io_service& io_service,
-    boost::asio::io_service& session_io_service,
+    session_factory& managed_session_factory,
     const session_manager_config& config)
   : accepting_endpoint_(config.accepting_endpoint)
   , listen_backlog_(config.listen_backlog)
@@ -250,7 +243,7 @@ session_manager::session_manager(boost::asio::io_service& io_service,
   , accept_state_(accept_state::ready)
   , pending_operations_(0)
   , io_service_(io_service)
-  , session_io_service_(session_io_service)
+  , session_factory_(managed_session_factory)
   , strand_(io_service)
   , acceptor_(io_service)
   , stats_collector_()
@@ -966,20 +959,63 @@ void session_manager::recycle(const session_wrapper_ptr& session)
 session_manager::session_wrapper_ptr session_manager::create_session(
     boost::system::error_code& error)
 {
+  class session_guard : private boost::noncopyable
+  {
+  public:
+    explicit session_guard(session_factory& factory,
+        const session_ptr& session)
+      : factory_(factory)
+      , session_(session)
+    {
+    }
+
+    ~session_guard()
+    {
+      if (session_)
+      {
+        factory_.release(session_);
+      }
+    }
+
+    void release()
+    {
+      session_.reset();
+    }
+
+  private:
+    session_factory& factory_;
+    session_ptr      session_;
+  }; // class session_guard
+
+  session_ptr session = session_factory_.create(
+      managed_session_config_, error);
+  if (error)
+  {
+    return session_wrapper_ptr();
+  }
+
+  session_guard session_release_guard(session_factory_, session);
+
   if (!recycled_sessions_.empty())
   {
-    session_wrapper_ptr session = recycled_sessions_.front();
-    remove_from_recycled(session);
+    session_wrapper_ptr wrapped_session = recycled_sessions_.front();
+    remove_from_recycled(wrapped_session);
+
+    wrapped_session->session = session;
     error = boost::system::error_code();
-    return session;
+
+    session_release_guard.release();
+    return wrapped_session;
   }
 
   try
   {
-    session_wrapper_ptr session = boost::make_shared<session_wrapper>(
-        boost::ref(session_io_service_), managed_session_config_);
+    session_wrapper_ptr wrapped_session =
+        boost::make_shared<session_wrapper>(session);
     error = boost::system::error_code();
-    return session;
+
+    session_release_guard.release();
+    return wrapped_session;
   }
   catch (const std::bad_alloc&)
   {
@@ -988,17 +1024,24 @@ session_manager::session_wrapper_ptr session_manager::create_session(
   }
 }
 
+void session_manager::release_session(const session_wrapper_ptr& session)
+{
+  session_factory_.release(session->session);
+  session->session.reset();
+  recycled_sessions_.push_front(session);
+}
+
 void session_manager::add_to_active(const session_wrapper_ptr& session)
 {
   active_sessions_.push_front(session);
   // Collect statistics
   stats_collector_.set_active_session_count(active_sessions_.size());
 }
-  
+
 void session_manager::add_to_recycled(const session_wrapper_ptr& session)
 {
   // Put the session to "recycle bin"
-  recycled_sessions_.push_front(session);
+  release_session(session);
   // Collect statistics
   stats_collector_.set_recycled_session_count(recycled_sessions_.size());
 }

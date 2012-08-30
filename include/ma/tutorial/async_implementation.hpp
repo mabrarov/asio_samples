@@ -48,7 +48,6 @@ protected:
   {
   }
 
-  async_interface_ptr shared_async_interface();
   boost::asio::io_service::strand& strand();
   do_something_handler_storage_type& do_something_handler_storage();
   boost::optional<boost::system::error_code> start_do_something();

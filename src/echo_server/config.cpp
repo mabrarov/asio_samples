@@ -8,6 +8,7 @@
 #include <string>
 #include <limits>
 #include <boost/optional.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/throw_exception.hpp>
 #include "config.hpp"
 
@@ -29,6 +30,7 @@ const char* max_transfer_size_option_name       = "max_transfer";
 const char* socket_recv_buffer_size_option_name = "sock_recv_buffer";
 const char* socket_send_buffer_size_option_name = "sock_send_buffer";
 const char* socket_no_delay_option_name         = "sock_no_delay";
+const char* demux_option_name                   = "demux_per_work_thread";
 const std::string default_system_value          = "system default";
 
 template <typename Value>
@@ -44,37 +46,42 @@ void validate_option(const std::string& option_name, const Value& option_value,
 }
 
 template <typename Value>
-void print_optional(std::ostream& stream, const boost::optional<Value>& value,
+std::string to_string(const boost::optional<Value>& value,
     const std::string& default_text)
 {
   if (value)
   {
-    stream << *value;
+    return boost::lexical_cast<std::string>(*value);
   }
   else
   {
-    stream << default_text;
+    return default_text;
+  }
+}
+
+std::string to_string(bool value)
+{
+  if (value)
+  {
+    return "on";
+  }
+  else
+  {
+    return "off";
   }
 }
 
 template <>
-void print_optional<bool>(std::ostream& stream,
-    const boost::optional<bool>& value, const std::string& default_text)
+std::string to_string<bool>(const boost::optional<bool>& value,
+    const std::string& default_text)
 {
   if (value)
   {
-    if (*value)
-    {
-      stream << "on";
-    }
-    else
-    {
-      stream << "off";
-    }
+    return to_string(*value);
   }
   else
   {
-    stream << default_text;
+    return default_text;
   }
 }
 
@@ -117,6 +124,12 @@ boost::program_options::options_description build_cmd_options_description(
       calc_session_manager_thread_count(hardware_concurrency);
   std::size_t session_thread_count =
       calc_session_thread_count(hardware_concurrency);
+
+#if defined(WIN32)
+  bool default_ios_per_work_thread = false;
+#else
+  bool default_ios_per_work_thread = true;
+#endif
 
   description.add_options()
     (
@@ -191,6 +204,12 @@ boost::program_options::options_description build_cmd_options_description(
       socket_no_delay_option_name,
       boost::program_options::value<bool>(),
       "set TCP_NODELAY option of session's socket"
+    )
+    (
+      demux_option_name,
+      boost::program_options::value<bool>()->default_value(
+          default_ios_per_work_thread),
+      "set demultiplexer-per-work-thread mode on"
     );
 
   return description;
@@ -220,28 +239,6 @@ void print_config(std::ostream& stream, std::size_t cpu_count,
   const ma::echo::server::session_config& session_config =
       session_manager_config.managed_session_config;
 
-  stream << "Number of found CPU(s)                : "
-         << cpu_count << std::endl
-         << "Number of session manager's threads   : "
-         << exec_config.session_manager_thread_count << std::endl
-         << "Number of sessions' threads           : "
-         << exec_config.session_thread_count << std::endl
-         << "Total number of work threads          : "
-         << exec_config.session_thread_count
-                + exec_config.session_manager_thread_count << std::endl
-         << "Server listen port                    : "
-         << session_manager_config.accepting_endpoint.port() << std::endl
-         << "Server stop timeout (seconds)         : "
-         << exec_config.stop_timeout.total_seconds() << std::endl
-         << "Maximum number of active sessions     : "
-         << session_manager_config.max_session_count << std::endl
-         << "Maximum number of recycled sessions   : "
-         << session_manager_config.recycled_session_count << std::endl
-         << "TCP listen backlog size               : "
-         << session_manager_config.listen_backlog << std::endl
-         << "Size of session's buffer (bytes)      : "
-         << session_config.buffer_size << std::endl;
-
   boost::optional<long> session_inactivity_timeout_sec;
   if (ma::echo::server::session_config::optional_time_duration timeout =
       session_config.inactivity_timeout)
@@ -249,26 +246,57 @@ void print_config(std::ostream& stream, std::size_t cpu_count,
     session_inactivity_timeout_sec = timeout->total_seconds();
   }
 
-  stream << "Session's max size of single transfer (bytes)  : "
-         << session_config.max_transfer_size << std::endl;
-
-  stream << "Session's inactivity timeout (seconds)         : ";
-  print_optional(stream, session_inactivity_timeout_sec, "none");
-  stream << std::endl;
-
-  stream << "Size of session's socket receive buffer (bytes): ";
-  print_optional(stream, session_config.socket_recv_buffer_size,
-      default_system_value);
-  stream << std::endl;
-
-  stream << "Size of session's socket send buffer (bytes)   : ";
-  print_optional(stream, session_config.socket_send_buffer_size,
-      default_system_value);
-  stream << std::endl;
-
-  stream << "Session's socket Nagle algorithm is            : ";
-  print_optional(stream, session_config.no_delay, default_system_value);
-  stream << std::endl;
+  stream << "Number of found CPU(s)                : "
+         << cpu_count
+         << std::endl
+         << "Number of session manager's threads   : "
+         << exec_config.session_manager_thread_count
+         << std::endl
+         << "Number of sessions' threads           : "
+         << exec_config.session_thread_count
+         << std::endl
+         << "Total number of work threads          : "
+         << exec_config.session_thread_count
+                + exec_config.session_manager_thread_count
+         << std::endl
+         << "Demultiplexer-per-work-thread mode    : "
+         << to_string(exec_config.ios_per_work_thread)
+         << std::endl
+         << "Server listen port                    : "
+         << session_manager_config.accepting_endpoint.port()
+         << std::endl
+         << "Server stop timeout (seconds)         : "
+         << exec_config.stop_timeout.total_seconds()
+         << std::endl
+         << "Maximum number of active sessions     : "
+         << session_manager_config.max_session_count
+         << std::endl
+         << "Maximum number of recycled sessions   : "
+         << session_manager_config.recycled_session_count
+         << std::endl
+         << "TCP listen backlog size               : "
+         << session_manager_config.listen_backlog
+         << std::endl
+         << "Size of session's buffer (bytes)      : "
+         << session_config.buffer_size
+         << std::endl
+         << "Session's max size of single transfer (bytes)  : "
+         << session_config.max_transfer_size
+         << std::endl
+         << "Session's inactivity timeout (seconds)         : "
+         << to_string(session_inactivity_timeout_sec, "none")
+         << std::endl
+         << "Size of session's socket receive buffer (bytes): "
+         << to_string(session_config.socket_recv_buffer_size,
+                default_system_value)
+         << std::endl
+         << "Size of session's socket send buffer (bytes)   : "
+         << to_string(session_config.socket_send_buffer_size,
+                default_system_value)
+         << std::endl
+         << "Session's socket Nagle algorithm is            : "
+         << to_string(session_config.no_delay, default_system_value)
+         << std::endl;
 }
 
 bool is_help_mode(const boost::program_options::variables_map& options_values)
@@ -301,8 +329,11 @@ execution_config build_execution_config(
 
   validate_option<long>(stop_timeout_option_name, stop_timeout_sec, 0);
 
-  return execution_config(session_manager_thread_count, session_thread_count,
-      boost::posix_time::seconds(stop_timeout_sec));
+  bool ios_per_work_thread =
+      options_values[demux_option_name].as<bool>();
+
+  return execution_config(ios_per_work_thread, session_manager_thread_count,
+      session_thread_count, boost::posix_time::seconds(stop_timeout_sec));
 }
 
 ma::echo::server::session_config build_session_config(

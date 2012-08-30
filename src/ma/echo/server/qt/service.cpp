@@ -9,6 +9,7 @@ TRANSLATOR ma::echo::server::qt::Service
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#include <vector>
 #include <boost/ref.hpp>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
@@ -18,6 +19,8 @@ TRANSLATOR ma::echo::server::qt::Service
 #include <boost/thread/thread.hpp>
 #include <boost/utility/base_from_member.hpp>
 #include <ma/echo/server/error.hpp>
+#include <ma/echo/server/simple_session_factory.hpp>
+#include <ma/echo/server/pooled_session_factory.hpp>
 #include <ma/echo/server/session_manager.hpp>
 #include <ma/echo/server/qt/execution_config.h>
 #include <ma/echo/server/qt/signal_connect_error.h>
@@ -32,18 +35,112 @@ namespace qt {
 
 namespace {
 
-class io_service_chain
-  : private boost::noncopyable
-  , public boost::base_from_member<boost::asio::io_service>
-{
-private:
-  typedef boost::base_from_member<boost::asio::io_service>
-      session_io_service_base;
+typedef boost::shared_ptr<boost::asio::io_service> io_service_ptr;
+typedef std::vector<io_service_ptr>                io_service_vector;
+typedef boost::shared_ptr<ma::echo::server::session_factory>
+    session_factory_ptr;
+typedef boost::shared_ptr<boost::asio::io_service::work> io_service_work_ptr;
+typedef std::vector<io_service_work_ptr> io_service_work_vector;
 
+class pipeline_base_0 : private boost::noncopyable
+{
 public:
-  explicit io_service_chain(const execution_config& config)
-    : session_io_service_base(config.session_thread_count)
-    , session_manager_io_service_(config.session_manager_thread_count)
+  explicit pipeline_base_0(const execution_config& config)
+    : ios_per_work_thread_(config.ios_per_work_thread)
+    , session_manager_thread_count_(config.session_manager_thread_count)
+    , session_thread_count_(config.session_thread_count)
+    , session_io_services_(create_session_io_services(config))
+  {
+  }
+
+  io_service_vector session_io_services() const
+  {
+    return session_io_services_;
+  }
+
+protected:
+  ~pipeline_base_0()
+  {
+  }
+
+  const bool ios_per_work_thread_;
+  const std::size_t session_manager_thread_count_;
+  const std::size_t session_thread_count_;
+  const io_service_vector session_io_services_;
+
+private:
+  static io_service_vector create_session_io_services(
+      const execution_config& exec_config)
+  {
+    io_service_vector io_services;
+    if (exec_config.ios_per_work_thread)
+    {
+      for (std::size_t i = 0; i != exec_config.session_thread_count; ++i)
+      {
+        io_services.push_back(boost::make_shared<boost::asio::io_service>(1));
+      }
+    }
+    else
+    {
+      io_service_ptr io_service = boost::make_shared<boost::asio::io_service>(
+          exec_config.session_thread_count);
+      io_services.push_back(io_service);
+    }
+    return io_services;
+  }
+}; // pipeline_base_0
+
+class pipeline_base_1 : public pipeline_base_0
+{
+public:
+  pipeline_base_1(const execution_config& exec_config,
+      const ma::echo::server::session_manager_config& session_manager_config)
+    : pipeline_base_0(exec_config)
+    , session_factory_(create_session_factory(exec_config,
+          session_manager_config, session_io_services_))
+  {
+  }
+
+  ma::echo::server::session_factory& session_factory() const
+  {
+    return *session_factory_;
+  }
+
+protected:
+  ~pipeline_base_1()
+  {
+  }
+
+  const session_factory_ptr session_factory_;
+
+private:
+  static session_factory_ptr create_session_factory(
+      const execution_config& exec_config,
+      const ma::echo::server::session_manager_config& session_manager_config,
+      const io_service_vector& session_io_services)
+  {
+    if (exec_config.ios_per_work_thread)
+    {
+      return boost::make_shared<ma::echo::server::pooled_session_factory>(
+          session_io_services, session_manager_config.recycled_session_count);
+    }
+    else
+    {
+      boost::asio::io_service& io_service = *session_io_services.front();
+      return boost::make_shared<ma::echo::server::simple_session_factory>(
+          boost::ref(io_service),
+          session_manager_config.recycled_session_count);
+    }
+  }
+}; // class pipeline_base_1
+
+class pipeline_base_2 : public pipeline_base_1
+{
+public:
+  explicit pipeline_base_2(const execution_config& exec_config,
+      const ma::echo::server::session_manager_config& session_manager_config)
+    : pipeline_base_1(exec_config, session_manager_config)
+    , session_manager_io_service_(exec_config.session_manager_thread_count)
   {
   }
 
@@ -52,31 +149,30 @@ public:
     return session_manager_io_service_;
   }
 
-  boost::asio::io_service& session_io_service()
+protected:
+  ~pipeline_base_2()
   {
-    return session_io_service_base::member;
   }
 
-private:
   boost::asio::io_service session_manager_io_service_;
-}; // class io_service_chain
+}; // class pipeline_base_2
 
-class executor_service : public io_service_chain
+class pipeline : public pipeline_base_2
 {
 private:
-  typedef executor_service this_type;
+  typedef pipeline this_type;
 
 public:
-  explicit executor_service(const execution_config& config)
-    : io_service_chain(config)
-    , session_work_(session_io_service())
-    , session_manager_work_(session_manager_io_service())
+  explicit pipeline(const execution_config& exec_config,
+      const ma::echo::server::session_manager_config& session_manager_config)
+    : pipeline_base_2(exec_config, session_manager_config)
+    , session_work_(create_works(session_io_services_))
+    , session_manager_work_(session_manager_io_service_)
     , threads_()
-    , execution_config_(config)
   {
   }
 
-  ~executor_service()
+  ~pipeline()
   {
     stop_threads();
   }
@@ -85,31 +181,42 @@ public:
   void create_threads(const Handler& handler)
   {
     typedef boost::tuple<Handler> wrapped_handler_type;
-    typedef void (*thread_func_type)(
-        boost::asio::io_service&, wrapped_handler_type);
+    typedef void (*thread_func_type)(boost::asio::io_service&,
+        wrapped_handler_type);
 
-    boost::tuple<Handler> wrapped_handler = boost::make_tuple(handler);
+    wrapped_handler_type wrapped_handler = boost::make_tuple(handler);
     thread_func_type func = &this_type::thread_func<Handler>;
 
-    for (std::size_t i = 0;
-        i != execution_config_.session_thread_count; ++i)
+    if (ios_per_work_thread_)
     {
-      threads_.create_thread(boost::bind(func,
-          boost::ref(session_io_service()), wrapped_handler));
+      for (io_service_vector::const_iterator i = session_io_services_.begin(),
+          end = session_io_services_.end(); i != end; ++i)
+      {
+        threads_.create_thread(
+            boost::bind(func, boost::ref(**i), wrapped_handler));
+      }
+    }
+    else
+    {
+      boost::asio::io_service& io_service = *session_io_services_.front();
+      for (std::size_t i = 0; i != session_thread_count_; ++i)
+      {
+        threads_.create_thread(
+            boost::bind(func, boost::ref(io_service), wrapped_handler));
+      }
     }
 
-    for (std::size_t i = 0;
-        i != execution_config_.session_manager_thread_count; ++i)
+    for (std::size_t i = 0; i != session_manager_thread_count_; ++i)
     {
       threads_.create_thread(boost::bind(func,
-          boost::ref(session_manager_io_service()), wrapped_handler));
+          boost::ref(session_manager_io_service_), wrapped_handler));
     }
   }
 
   void stop_threads()
   {
-    session_manager_io_service().stop();
-    session_io_service().stop();
+    session_manager_io_service_.stop();
+    stop(session_io_services_);
     threads_.join_all();
   }
 
@@ -128,15 +235,36 @@ private:
     }
   }
 
-  boost::asio::io_service::work session_work_;
-  boost::asio::io_service::work session_manager_work_;
-  boost::thread_group           threads_;
-  const execution_config        execution_config_;
-}; // class executor_service
+  static io_service_work_vector create_works(
+      const io_service_vector& io_services)
+  {
+    io_service_work_vector works;
+    for (io_service_vector::const_iterator i = io_services.begin(),
+        end = io_services.end(); i != end; ++i)
+    {
+      works.push_back(
+          boost::make_shared<boost::asio::io_service::work>(boost::ref(**i)));
+    }
+    return works;
+  }
+
+  static void stop(const io_service_vector& io_services)
+  {
+    for (io_service_vector::const_iterator i = io_services.begin(),
+        end = io_services.end(); i != end; ++i)
+    {
+      (*i)->stop();
+    }
+  }
+
+  const io_service_work_vector session_work_;
+  const boost::asio::io_service::work session_manager_work_;
+  boost::thread_group threads_;
+}; // class pipeline
 
 } // anonymous namespace
 
-class Service::servant : public executor_service
+class Service::servant : public pipeline
 {
 private:
   typedef servant this_type;
@@ -144,9 +272,9 @@ private:
 public:
   servant(const execution_config& the_execution_config,
       const session_manager_config& the_session_manager_config)
-    : executor_service(the_execution_config)
-    , session_manager_(session_manager::create(session_manager_io_service(),
-          session_io_service(), the_session_manager_config))
+    : pipeline(the_execution_config, the_session_manager_config)
+    , session_manager_(session_manager::create(session_manager_io_service_,
+          *session_factory_, the_session_manager_config))
   {
   }
 

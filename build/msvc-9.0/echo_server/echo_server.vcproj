@@ -45,7 +45,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/MP"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\include;..\..\..\..\boost_1_50_0"
+				AdditionalIncludeDirectories="..\..\..\include;..\..\..\..\boost_1_51_0"
 				AdditionalUsingDirectories=""
 				PreprocessorDefinitions="WIN32;WIN32_LEAN_AND_MEAN;WINVER=0x0500;_WIN32_WINNT=0x0500;_WIN32_WINDOWS=0x0500;_WIN32_IE=0x0600;_DEBUG;_CONSOLE"
 				BasicRuntimeChecks="3"
@@ -67,7 +67,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\..\..\..\boost_1_50_0\lib\x86"
+				AdditionalLibraryDirectories="..\..\..\..\boost_1_51_0\lib\x86"
 				GenerateManifest="false"
 				GenerateDebugInformation="true"
 				GenerateMapFile="false"
@@ -124,7 +124,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/MP"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\include;..\..\..\..\boost_1_50_0"
+				AdditionalIncludeDirectories="..\..\..\include;..\..\..\..\boost_1_51_0"
 				PreprocessorDefinitions="WIN32;WIN32_LEAN_AND_MEAN;WINVER=0x0501;_WIN32_WINNT=0x0501;_WIN32_WINDOWS=0x0501;_WIN32_IE=0x0600;_DEBUG;_CONSOLE"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="0"
@@ -143,7 +143,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\..\..\..\boost_1_50_0\lib\amd64"
+				AdditionalLibraryDirectories="..\..\..\..\boost_1_51_0\lib\amd64"
 				GenerateManifest="false"
 				GenerateDebugInformation="true"
 				GenerateMapFile="false"
@@ -202,7 +202,7 @@
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="..\..\..\include;..\..\..\..\boost_1_50_0"
+				AdditionalIncludeDirectories="..\..\..\include;..\..\..\..\boost_1_51_0"
 				PreprocessorDefinitions="NDEBUG;WIN32;WIN32_LEAN_AND_MEAN;WINVER=0x0500;_WIN32_WINNT=0x0500;_WIN32_WINDOWS=0x0500;_WIN32_IE=0x0600;_CONSOLE"
 				RuntimeLibrary="0"
 				BufferSecurityCheck="false"
@@ -222,7 +222,7 @@
 				Name="VCLinkerTool"
 				AdditionalOptions=""
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\..\..\..\boost_1_50_0\lib\x86"
+				AdditionalLibraryDirectories="..\..\..\..\boost_1_51_0\lib\x86"
 				GenerateManifest="false"
 				SubSystem="1"
 				TargetMachine="1"
@@ -279,7 +279,7 @@
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
-				AdditionalIncludeDirectories="..\..\..\include;..\..\..\..\boost_1_50_0"
+				AdditionalIncludeDirectories="..\..\..\include;..\..\..\..\boost_1_51_0"
 				PreprocessorDefinitions="NDEBUG;WIN32;WIN32_LEAN_AND_MEAN;WINVER=0x0501;_WIN32_WINNT=0x0501;_WIN32_WINDOWS=0x0501;_WIN32_IE=0x0600;_CONSOLE"
 				RuntimeLibrary="0"
 				BufferSecurityCheck="false"
@@ -299,7 +299,7 @@
 				Name="VCLinkerTool"
 				AdditionalOptions=""
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\..\..\..\boost_1_50_0\lib\amd64"
+				AdditionalLibraryDirectories="..\..\..\..\boost_1_51_0\lib\amd64"
 				GenerateManifest="false"
 				SubSystem="1"
 				TargetMachine="17"
@@ -426,6 +426,10 @@
 							>
 						</File>
 						<File
+							RelativePath="..\..\..\include\ma\echo\server\pooled_session_factory.hpp"
+							>
+						</File>
+						<File
 							RelativePath=".\..\..\..\include\ma\echo\server\session.hpp"
 							>
 						</File>
@@ -435,6 +439,14 @@
 						</File>
 						<File
 							RelativePath="..\..\..\include\ma\echo\server\session_config_fwd.hpp"
+							>
+						</File>
+						<File
+							RelativePath="..\..\..\include\ma\echo\server\session_factory.hpp"
+							>
+						</File>
+						<File
+							RelativePath="..\..\..\include\ma\echo\server\session_factory_fwd.hpp"
 							>
 						</File>
 						<File
@@ -463,6 +475,10 @@
 						</File>
 						<File
 							RelativePath="..\..\..\include\ma\echo\server\session_manager_stats_fwd.hpp"
+							>
+						</File>
+						<File
+							RelativePath="..\..\..\include\ma\echo\server\simple_session_factory.hpp"
 							>
 						</File>
 					</Filter>
@@ -500,11 +516,19 @@
 							>
 						</File>
 						<File
+							RelativePath="..\..\..\src\ma\echo\server\pooled_session_factory.cpp"
+							>
+						</File>
+						<File
 							RelativePath="..\..\..\src\ma\echo\server\session.cpp"
 							>
 						</File>
 						<File
 							RelativePath="..\..\..\src\ma\echo\server\session_manager.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\..\..\src\ma\echo\server\simple_session_factory.cpp"
 							>
 						</File>
 					</Filter>

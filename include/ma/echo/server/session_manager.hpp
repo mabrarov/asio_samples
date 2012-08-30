@@ -26,6 +26,7 @@
 #include <ma/context_alloc_handler.hpp>
 #include <ma/sp_intrusive_list.hpp>
 #include <ma/echo/server/session_fwd.hpp>
+#include <ma/echo/server/session_factory_fwd.hpp>
 #include <ma/echo/server/session_config.hpp>
 #include <ma/echo/server/session_manager_config.hpp>
 #include <ma/echo/server/session_manager_stats.hpp>
@@ -53,7 +54,7 @@ public:
 
   // Note that session_io_service has to outlive io_service
   static session_manager_ptr create(boost::asio::io_service& io_service,
-      boost::asio::io_service& session_io_service,
+      session_factory& managed_session_factory,
       const session_manager_config& config);
 
   void reset(bool free_recycled_sessions = true);
@@ -189,7 +190,7 @@ public:
 protected:
   // Note that session_io_service has to outlive io_service
   session_manager(boost::asio::io_service& io_service,
-      boost::asio::io_service& session_io_service,
+      session_factory& managed_session_factory,
       const session_manager_config& config);
 
   ~session_manager()
@@ -256,7 +257,7 @@ private:
 
   private:
     mutex_type mutex_;
-    session_manager_stats stats_;    
+    session_manager_stats stats_;
   }; // class stats_collector
 
   struct  session_wrapper;
@@ -278,8 +279,12 @@ private:
     in_place_handler_allocator<144> start_wait_allocator;
     in_place_handler_allocator<144> stop_allocator;
 
-    session_wrapper(boost::asio::io_service& io_service,
-        const session_config& config);
+    session_wrapper(const session_ptr& the_session)
+      : session(the_session)
+      , state(state_type::ready)
+      , pending_operations(0)
+    {
+    }
 
 #if !defined(NDEBUG)
     ~session_wrapper()
@@ -496,6 +501,7 @@ private:
 
   void recycle(const session_wrapper_ptr&);
   session_wrapper_ptr create_session(boost::system::error_code& error);
+  void release_session(const session_wrapper_ptr&);
 
   void add_to_active(const session_wrapper_ptr& session);
   void add_to_recycled(const session_wrapper_ptr& session);
@@ -528,7 +534,7 @@ private:
   std::size_t           pending_operations_;
 
   boost::asio::io_service&        io_service_;
-  boost::asio::io_service&        session_io_service_;
+  session_factory&                session_factory_;
   boost::asio::io_service::strand strand_;
   protocol_type::acceptor         acceptor_;
   session_list                    active_sessions_;
