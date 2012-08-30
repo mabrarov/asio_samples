@@ -46,7 +46,9 @@ class pipeline_base_0 : private boost::noncopyable
 {
 public:
   explicit pipeline_base_0(const execution_config& config)
-    : execution_config_(config)
+    : ios_per_work_thread_(config.ios_per_work_thread)
+    , session_manager_thread_count_(config.session_manager_thread_count)
+    , session_thread_count_(config.session_thread_count)
     , session_io_services_(create_session_io_services(config))
   {
   }
@@ -61,7 +63,9 @@ protected:
   {
   }
 
-  const execution_config  execution_config_;
+  const bool ios_per_work_thread_;
+  const std::size_t session_manager_thread_count_;
+  const std::size_t session_thread_count_;
   const io_service_vector session_io_services_;
 
 private:
@@ -183,7 +187,7 @@ public:
     wrapped_handler_type wrapped_handler = boost::make_tuple(handler);
     thread_func_type func = &this_type::thread_func<Handler>;
 
-    if (execution_config_.ios_per_work_thread)
+    if (ios_per_work_thread_)
     {
       for (io_service_vector::const_iterator i = session_io_services_.begin(),
           end = session_io_services_.end(); i != end; ++i)
@@ -195,15 +199,14 @@ public:
     else
     {
       boost::asio::io_service& io_service = *session_io_services_.front();
-      for (std::size_t i = 0; i != execution_config_.session_thread_count; ++i)
+      for (std::size_t i = 0; i != session_thread_count_; ++i)
       {
         threads_.create_thread(
             boost::bind(func, boost::ref(io_service), wrapped_handler));
       }
     }
 
-    for (std::size_t i = 0;
-        i != execution_config_.session_manager_thread_count; ++i)
+    for (std::size_t i = 0; i != session_manager_thread_count_; ++i)
     {
       threads_.create_thread(boost::bind(func,
           boost::ref(session_manager_io_service_), wrapped_handler));
