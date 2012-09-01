@@ -36,7 +36,8 @@ public:
   ~console_controller();
 
 private:
-  typedef boost::recursive_mutex mutex_type;
+  typedef boost::recursive_mutex        mutex_type;
+  typedef boost::lock_guard<mutex_type> lock_guard_type;
 
 #if defined(WIN32)
   static BOOL WINAPI console_ctrl_proc(DWORD ctrl_type);

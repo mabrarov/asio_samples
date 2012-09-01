@@ -20,14 +20,15 @@ console_controller::ctrl_function_type console_controller::ctrl_function_;
 
 console_controller::console_controller(const ctrl_function_type& crl_function)
 {
-  mutex_type::scoped_lock lock(ctrl_mutex_);
-  if (ctrl_function_)
   {
-    boost::throw_exception(std::logic_error(
-        "console_controller must be the only"));
+    lock_guard_type lock(ctrl_mutex_);
+    if (ctrl_function_)
+    {
+      boost::throw_exception(std::logic_error(
+          "console_controller must be the only"));
+    }
+    ctrl_function_ = crl_function;
   }
-  ctrl_function_ = crl_function;
-  lock.unlock();
 
 #if defined(WIN32)
   ::SetConsoleCtrlHandler(console_ctrl_proc, TRUE);
@@ -46,7 +47,7 @@ console_controller::~console_controller()
   ::SetConsoleCtrlHandler(console_ctrl_proc, FALSE);
 #endif
 
-  mutex_type::scoped_lock lock(ctrl_mutex_);
+  lock_guard_type lock(ctrl_mutex_);
   ctrl_function_.clear();
 }
 
@@ -54,7 +55,7 @@ console_controller::~console_controller()
 
 BOOL WINAPI console_controller::console_ctrl_proc(DWORD ctrl_type)
 {
-  mutex_type::scoped_lock lock(ctrl_mutex_);
+  lock_guard_type lock(ctrl_mutex_);
   switch (ctrl_type)
   {
   case CTRL_C_EVENT:
@@ -72,7 +73,7 @@ BOOL WINAPI console_controller::console_ctrl_proc(DWORD ctrl_type)
 
 void console_controller::console_ctrl_proc(int signal_num)
 {
-  mutex_type::scoped_lock lock(ctrl_mutex_);
+  lock_guard_type lock(ctrl_mutex_);
   if (!ctrl_function_.empty())
   {
     ctrl_function_();
