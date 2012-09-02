@@ -1,0 +1,410 @@
+--- boost/asio/detail/impl/winsock_init.ipp	Тё џэт 15 17:46:25 2012
++++ boost/asio/detail/impl/winsock_init.ipp	бс ря№ 21 14:36:33 2012
+@@ -23,6 +23,7 @@
+ #include <boost/asio/detail/winsock_init.hpp>
+ #include <boost/asio/detail/throw_error.hpp>
+ #include <boost/asio/error.hpp>
++#include <boost/detail/interlocked.hpp>
+ 
+ #include <boost/asio/detail/push_options.hpp>
+ 
+@@ -33,17 +34,17 @@
+ void winsock_init_base::startup(data& d,
+     unsigned char major, unsigned char minor)
+ {
+-  if (::InterlockedIncrement(&d.init_count_) == 1)
++  if (BOOST_INTERLOCKED_INCREMENT(&d.init_count_) == 1)
+   {
+     WSADATA wsa_data;
+     long result = ::WSAStartup(MAKEWORD(major, minor), &wsa_data);
+-    ::InterlockedExchange(&d.result_, result);
++    BOOST_INTERLOCKED_EXCHANGE(&d.result_, result);
+   }
+ }
+ 
+ void winsock_init_base::cleanup(data& d)
+ {
+-  if (::InterlockedDecrement(&d.init_count_) == 0)
++  if (BOOST_INTERLOCKED_DECREMENT(&d.init_count_) == 0)
+   {
+     ::WSACleanup();
+   }
+@@ -51,7 +52,7 @@
+ 
+ void winsock_init_base::throw_on_error(data& d)
+ {
+-  long result = ::InterlockedExchangeAdd(&d.result_, 0);
++  long result = BOOST_INTERLOCKED_EXCHANGE_ADD(&d.result_, 0);
+   if (result != 0)
+   {
+     boost::system::error_code ec(result,
+
+--- boost/asio/detail/win_fenced_block.hpp	Тё џэт 15 17:46:25 2012
++++ boost/asio/detail/win_fenced_block.hpp	бс ря№ 21 14:26:28 2012
+@@ -20,6 +20,7 @@
+ #if defined(BOOST_WINDOWS) && !defined(UNDER_CE)
+ 
+ #include <boost/asio/detail/socket_types.hpp>
++#include <boost/detail/interlocked.hpp>
+ 
+ #include <boost/asio/detail/push_options.hpp>
+ 
+@@ -44,7 +45,7 @@
+   {
+ #if defined(__BORLANDC__)
+     LONG barrier = 0;
+-    ::InterlockedExchange(&barrier, 1);
++    BOOST_INTERLOCKED_EXCHANGE(&barrier, 1);
+ #elif defined(BOOST_MSVC) && ((BOOST_MSVC < 1400) || !defined(MemoryBarrier))
+ # if defined(_M_IX86)
+ #  pragma warning(push)
+@@ -63,7 +64,7 @@
+   {
+ #if defined(__BORLANDC__)
+     LONG barrier = 0;
+-    ::InterlockedExchange(&barrier, 1);
++    BOOST_INTERLOCKED_EXCHANGE(&barrier, 1);
+ #elif defined(BOOST_MSVC) && ((BOOST_MSVC < 1400) || !defined(MemoryBarrier))
+ # if defined(_M_IX86)
+ #  pragma warning(push)
+
+--- boost/asio/detail/impl/win_iocp_io_service.hpp	Тё џэт 15 17:46:25 2012
++++ boost/asio/detail/impl/win_iocp_io_service.hpp	бс ря№ 21 14:32:50 2012
+@@ -23,6 +23,7 @@
+ #include <boost/asio/detail/fenced_block.hpp>
+ #include <boost/asio/detail/handler_alloc_helpers.hpp>
+ #include <boost/asio/detail/handler_invoke_helpers.hpp>
++#include <boost/detail/interlocked.hpp>
+ 
+ #include <boost/asio/detail/push_options.hpp>
+ 
+@@ -90,7 +91,7 @@
+     typename timer_queue<Time_Traits>::per_timer_data& timer, wait_op* op)
+ {
+   // If the service has been shut down we silently discard the timer.
+-  if (::InterlockedExchangeAdd(&shutdown_, 0) != 0)
++  if (BOOST_INTERLOCKED_EXCHANGE_ADD(&shutdown_, 0) != 0)
+   {
+     post_immediate_completion(op);
+     return;
+@@ -110,7 +111,7 @@
+     std::size_t max_cancelled)
+ {
+   // If the service has been shut down we silently ignore the cancellation.
+-  if (::InterlockedExchangeAdd(&shutdown_, 0) != 0)
++  if (BOOST_INTERLOCKED_EXCHANGE_ADD(&shutdown_, 0) != 0)
+     return 0;
+ 
+   mutex::scoped_lock lock(dispatch_mutex_);
+
+--- boost/asio/detail/win_iocp_io_service.hpp	Тё џэт 15 17:46:25 2012
++++ boost/asio/detail/win_iocp_io_service.hpp	бс ря№ 21 14:29:55 2012
+@@ -33,6 +33,7 @@
+ #include <boost/asio/detail/wait_op.hpp>
+ #include <boost/asio/detail/win_iocp_io_service_fwd.hpp>
+ #include <boost/asio/detail/win_iocp_operation.hpp>
++#include <boost/detail/interlocked.hpp>
+ 
+ #include <boost/asio/detail/push_options.hpp>
+ 
+@@ -82,25 +83,25 @@
+   // Determine whether the io_service is stopped.
+   bool stopped() const
+   {
+-    return ::InterlockedExchangeAdd(&stopped_, 0) != 0;
++    return BOOST_INTERLOCKED_EXCHANGE_ADD(&stopped_, 0) != 0;
+   }
+ 
+   // Reset in preparation for a subsequent run invocation.
+   void reset()
+   {
+-    ::InterlockedExchange(&stopped_, 0);
++    BOOST_INTERLOCKED_EXCHANGE(&stopped_, 0);
+   }
+ 
+   // Notify that some work has started.
+   void work_started()
+   {
+-    ::InterlockedIncrement(&outstanding_work_);
++    BOOST_INTERLOCKED_INCREMENT(&outstanding_work_);
+   }
+ 
+   // Notify that some work has finished.
+   void work_finished()
+   {
+-    if (::InterlockedDecrement(&outstanding_work_) == 0)
++    if (BOOST_INTERLOCKED_DECREMENT(&outstanding_work_) == 0)
+       stop();
+   }
+ 
+--- boost/asio/detail/impl/win_iocp_io_service.ipp	Тё џэт 15 17:46:25 2012
++++ boost/asio/detail/impl/win_iocp_io_service.ipp	бс ря№ 21 14:38:47 2012
+@@ -26,6 +26,7 @@
+ #include <boost/asio/detail/handler_invoke_helpers.hpp>
+ #include <boost/asio/detail/throw_error.hpp>
+ #include <boost/asio/detail/win_iocp_io_service.hpp>
++#include <boost/detail/interlocked.hpp>
+ 
+ #include <boost/asio/detail/push_options.hpp>
+ 
+@@ -47,12 +48,12 @@
+ {
+   void operator()()
+   {
+-    while (::InterlockedExchangeAdd(&io_service_->shutdown_, 0) == 0)
++    while (BOOST_INTERLOCKED_EXCHANGE_ADD(&io_service_->shutdown_, 0) == 0)
+     {
+       if (::WaitForSingleObject(io_service_->waitable_timer_.handle,
+             INFINITE) == WAIT_OBJECT_0)
+       {
+-        ::InterlockedExchange(&io_service_->dispatch_required_, 1);
++        BOOST_INTERLOCKED_EXCHANGE(&io_service_->dispatch_required_, 1);
+         ::PostQueuedCompletionStatus(io_service_->iocp_.handle,
+             0, wake_for_dispatch, 0);
+       }
+@@ -86,7 +87,7 @@
+ 
+ void win_iocp_io_service::shutdown_service()
+ {
+-  ::InterlockedExchange(&shutdown_, 1);
++  BOOST_INTERLOCKED_EXCHANGE(&shutdown_, 1);
+ 
+   if (timer_thread_.get())
+   {
+@@ -95,7 +96,7 @@
+     ::SetWaitableTimer(waitable_timer_.handle, &timeout, 1, 0, 0, FALSE);
+   }
+ 
+-  while (::InterlockedExchangeAdd(&outstanding_work_, 0) > 0)
++  while (BOOST_INTERLOCKED_EXCHANGE_ADD(&outstanding_work_, 0) > 0)
+   {
+     op_queue<win_iocp_operation> ops;
+     timer_queues_.get_all_timers(ops);
+@@ -105,7 +106,7 @@
+       while (win_iocp_operation* op = ops.front())
+       {
+         ops.pop();
+-        ::InterlockedDecrement(&outstanding_work_);
++        BOOST_INTERLOCKED_DECREMENT(&outstanding_work_);
+         op->destroy();
+       }
+     }
+@@ -118,7 +119,7 @@
+           &completion_key, &overlapped, gqcs_timeout);
+       if (overlapped)
+       {
+-        ::InterlockedDecrement(&outstanding_work_);
++        BOOST_INTERLOCKED_DECREMENT(&outstanding_work_);
+         static_cast<win_iocp_operation*>(overlapped)->destroy();
+       }
+     }
+@@ -146,9 +147,9 @@
+ 
+ size_t win_iocp_io_service::run(boost::system::error_code& ec)
+ {
+-  if (::InterlockedExchangeAdd(&outstanding_work_, 0) == 0)
++  if (BOOST_INTERLOCKED_EXCHANGE_ADD(&outstanding_work_, 0) == 0)
+   {
+-    InterlockedExchange(&stopped_, 1);
++    BOOST_INTERLOCKED_EXCHANGE(&stopped_, 1);
+     ec = boost::system::error_code();
+     return 0;
+   }
+@@ -164,9 +165,9 @@
+ 
+ size_t win_iocp_io_service::run_one(boost::system::error_code& ec)
+ {
+-  if (::InterlockedExchangeAdd(&outstanding_work_, 0) == 0)
++  if (BOOST_INTERLOCKED_EXCHANGE_ADD(&outstanding_work_, 0) == 0)
+   {
+-    InterlockedExchange(&stopped_, 1);
++    BOOST_INTERLOCKED_EXCHANGE(&stopped_, 1);
+     ec = boost::system::error_code();
+     return 0;
+   }
+@@ -178,9 +179,9 @@
+ 
+ size_t win_iocp_io_service::poll(boost::system::error_code& ec)
+ {
+-  if (::InterlockedExchangeAdd(&outstanding_work_, 0) == 0)
++  if (BOOST_INTERLOCKED_EXCHANGE_ADD(&outstanding_work_, 0) == 0)
+   {
+-    InterlockedExchange(&stopped_, 1);
++    BOOST_INTERLOCKED_EXCHANGE(&stopped_, 1);
+     ec = boost::system::error_code();
+     return 0;
+   }
+@@ -196,9 +197,9 @@
+ 
+ size_t win_iocp_io_service::poll_one(boost::system::error_code& ec)
+ {
+-  if (::InterlockedExchangeAdd(&outstanding_work_, 0) == 0)
++  if (BOOST_INTERLOCKED_EXCHANGE_ADD(&outstanding_work_, 0) == 0)
+   {
+-    InterlockedExchange(&stopped_, 1);
++    BOOST_INTERLOCKED_EXCHANGE(&stopped_, 1);
+     ec = boost::system::error_code();
+     return 0;
+   }
+@@ -210,7 +211,7 @@
+ 
+ void win_iocp_io_service::stop()
+ {
+-  if (::InterlockedExchange(&stopped_, 1) == 0)
++  if (BOOST_INTERLOCKED_EXCHANGE(&stopped_, 1) == 0)
+   {
+     if (!::PostQueuedCompletionStatus(iocp_.handle, 0, 0, 0))
+     {
+@@ -234,7 +235,7 @@
+     // Out of resources. Put on completed queue instead.
+     mutex::scoped_lock lock(dispatch_mutex_);
+     completed_ops_.push(op);
+-    ::InterlockedExchange(&dispatch_required_, 1);
++    BOOST_INTERLOCKED_EXCHANGE(&dispatch_required_, 1);
+   }
+ }
+ 
+@@ -256,7 +257,7 @@
+       mutex::scoped_lock lock(dispatch_mutex_);
+       completed_ops_.push(op);
+       completed_ops_.push(ops);
+-      ::InterlockedExchange(&dispatch_required_, 1);
++      BOOST_INTERLOCKED_EXCHANGE(&dispatch_required_, 1);
+     }
+   }
+ }
+@@ -267,14 +268,14 @@
+   while (win_iocp_operation* op = ops.front())
+   {
+     ops.pop();
+-    ::InterlockedDecrement(&outstanding_work_);
++    BOOST_INTERLOCKED_DECREMENT(&outstanding_work_);
+     op->destroy();
+   }
+ }
+ 
+ void win_iocp_io_service::on_pending(win_iocp_operation* op)
+ {
+-  if (::InterlockedCompareExchange(&op->ready_, 1, 0) == 1)
++  if (BOOST_INTERLOCKED_COMPARE_EXCHANGE(&op->ready_, 1, 0) == 1)
+   {
+     // Enqueue the operation on the I/O completion port.
+     if (!::PostQueuedCompletionStatus(iocp_.handle,
+@@ -283,7 +284,7 @@
+       // Out of resources. Put on completed queue instead.
+       mutex::scoped_lock lock(dispatch_mutex_);
+       completed_ops_.push(op);
+-      ::InterlockedExchange(&dispatch_required_, 1);
++      BOOST_INTERLOCKED_EXCHANGE(&dispatch_required_, 1);
+     }
+   }
+ }
+@@ -307,7 +308,7 @@
+     // Out of resources. Put on completed queue instead.
+     mutex::scoped_lock lock(dispatch_mutex_);
+     completed_ops_.push(op);
+-    ::InterlockedExchange(&dispatch_required_, 1);
++    BOOST_INTERLOCKED_EXCHANGE(&dispatch_required_, 1);
+   }
+ }
+ 
+@@ -329,7 +330,7 @@
+     // Out of resources. Put on completed queue instead.
+     mutex::scoped_lock lock(dispatch_mutex_);
+     completed_ops_.push(op);
+-    ::InterlockedExchange(&dispatch_required_, 1);
++    BOOST_INTERLOCKED_EXCHANGE(&dispatch_required_, 1);
+   }
+ }
+ 
+@@ -338,7 +339,7 @@
+   for (;;)
+   {
+     // Try to acquire responsibility for dispatching timers and completed ops.
+-    if (::InterlockedCompareExchange(&dispatch_required_, 0, 1) == 1)
++    if (BOOST_INTERLOCKED_COMPARE_EXCHANGE(&dispatch_required_, 0, 1) == 1)
+     {
+       mutex::scoped_lock lock(dispatch_mutex_);
+ 
+@@ -387,7 +388,7 @@
+       // if the initiating function (e.g. a call to WSARecv) has not yet
+       // returned. This is because the initiating function still wants access
+       // to the operation's OVERLAPPED structure.
+-      if (::InterlockedCompareExchange(&op->ready_, 1, 0) == 1)
++      if (BOOST_INTERLOCKED_COMPARE_EXCHANGE(&op->ready_, 1, 0) == 1)
+       {
+         // Ensure the count of outstanding work is decremented on block exit.
+         work_finished_on_block_exit on_exit = { this };
+@@ -423,7 +424,7 @@
+     {
+       // The stopped_ flag is always checked to ensure that any leftover
+       // interrupts from a previous run invocation are ignored.
+-      if (::InterlockedExchangeAdd(&stopped_, 0) != 0)
++      if (BOOST_INTERLOCKED_EXCHANGE_ADD(&stopped_, 0) != 0)
+       {
+         // Wake up next thread that is blocked on GetQueuedCompletionStatus.
+         if (!::PostQueuedCompletionStatus(iocp_.handle, 0, 0, 0))
+
+--- boost/asio/detail/impl/win_iocp_socket_service_base.ipp	Тё џэт 15 17:46:25 2012
++++ boost/asio/detail/impl/win_iocp_socket_service_base.ipp	бс ря№ 21 14:40:09 2012
+@@ -20,6 +20,7 @@
+ #if defined(BOOST_ASIO_HAS_IOCP)
+ 
+ #include <boost/asio/detail/win_iocp_socket_service_base.hpp>
++#include <boost/detail/interlocked.hpp>
+ 
+ #include <boost/asio/detail/push_options.hpp>
+ 
+@@ -626,24 +627,13 @@
+ void* win_iocp_socket_service_base::interlocked_compare_exchange_pointer(
+     void** dest, void* exch, void* cmp)
+ {
+-#if defined(_M_IX86)
+-  return reinterpret_cast<void*>(InterlockedCompareExchange(
+-        reinterpret_cast<PLONG>(dest), reinterpret_cast<LONG>(exch),
+-        reinterpret_cast<LONG>(cmp)));
+-#else
+-  return InterlockedCompareExchangePointer(dest, exch, cmp);
+-#endif
++  return BOOST_INTERLOCKED_COMPARE_EXCHANGE_POINTER(dest, exch, cmp);
+ }
+ 
+ void* win_iocp_socket_service_base::interlocked_exchange_pointer(
+     void** dest, void* val)
+ {
+-#if defined(_M_IX86)
+-  return reinterpret_cast<void*>(InterlockedExchange(
+-        reinterpret_cast<PLONG>(dest), reinterpret_cast<LONG>(val)));
+-#else
+-  return InterlockedExchangePointer(dest, val);
+-#endif
++  return BOOST_INTERLOCKED_EXCHANGE_POINTER(dest, val);
+ }
+ 
+ } // namespace detail
+
+--- boost/asio/detail/win_thread.hpp	Тё џэт 15 17:46:25 2012
++++ boost/asio/detail/win_thread.hpp	бс ря№ 21 14:29:53 2012
+@@ -21,6 +21,7 @@
+ 
+ #include <boost/asio/detail/noncopyable.hpp>
+ #include <boost/asio/detail/socket_types.hpp>
++#include <boost/detail/interlocked.hpp>
+ 
+ #include <boost/asio/detail/push_options.hpp>
+ 
+@@ -42,12 +43,12 @@
+ public:
+   static bool terminate_threads()
+   {
+-    return ::InterlockedExchangeAdd(&terminate_threads_, 0) != 0;
++    return BOOST_INTERLOCKED_EXCHANGE_ADD(&terminate_threads_, 0) != 0;
+   }
+ 
+   static void set_terminate_threads(bool b)
+   {
+-    ::InterlockedExchange(&terminate_threads_, b ? 1 : 0);
++    BOOST_INTERLOCKED_EXCHANGE(&terminate_threads_, b ? 1 : 0);
+   }
+ 
+ private:
