@@ -374,7 +374,7 @@ void session_manager::complete_extern_wait(
 void session_manager::continue_work()
 {
   BOOST_ASSERT_MSG(intern_state::work == intern_state_,
-      "invalid internal state");
+      "Invalid internal state");
 
   if (is_out_of_work())
   {
@@ -441,7 +441,7 @@ void session_manager::handle_accept(const session_wrapper_ptr& session,
     const boost::system::error_code& error)
 {
   BOOST_ASSERT_MSG(accept_state::in_progress == accept_state_,
-      "invalid accept state");
+      "Invalid accept state");
 
   // Split handler based on current internal state
   // that might change during accept operation
@@ -456,7 +456,7 @@ void session_manager::handle_accept(const session_wrapper_ptr& session,
     break;
 
   default:
-    BOOST_ASSERT_MSG(false, "invalid internal state");
+    BOOST_ASSERT_MSG(false, "Invalid internal state");
     break;
   }
 }
@@ -465,10 +465,10 @@ void session_manager::handle_accept_at_work(const session_wrapper_ptr& session,
     const boost::system::error_code& error)
 {
   BOOST_ASSERT_MSG(intern_state::work == intern_state_,
-      "invalid internal state");
+      "Invalid internal state");
 
   BOOST_ASSERT_MSG(accept_state::in_progress == accept_state_,
-      "invalid accept state");
+      "Invalid accept state");
 
   // Unregister pending operation
   --pending_operations_;
@@ -504,10 +504,10 @@ void session_manager::handle_accept_at_stop(const session_wrapper_ptr& session,
     const boost::system::error_code& error)
 {
   BOOST_ASSERT_MSG(intern_state::stop == intern_state_,
-      "invalid internal state");
+      "Invalid internal state");
 
   BOOST_ASSERT_MSG(accept_state::in_progress == accept_state_,
-      "invalid accept state");
+      "Invalid accept state");
 
   --pending_operations_;
   accept_state_ = accept_state::stopped;
@@ -545,7 +545,7 @@ void session_manager::handle_session_start(const session_wrapper_ptr& session,
     break;
 
   default:
-    BOOST_ASSERT_MSG(false, "invalid internal state");
+    BOOST_ASSERT_MSG(false, "Invalid internal state");
     break;
   }
 }
@@ -554,7 +554,7 @@ void session_manager::handle_session_start_at_work(
     const session_wrapper_ptr& session, const boost::system::error_code& error)
 {
   BOOST_ASSERT_MSG(intern_state::work == intern_state_,
-      "invalid internal state");
+      "Invalid internal state");
 
   --pending_operations_;
   session->handle_operation_completion();
@@ -591,7 +591,7 @@ void session_manager::handle_session_start_at_stop(
     const session_wrapper_ptr& session, const boost::system::error_code& error)
 {
   BOOST_ASSERT_MSG(intern_state::stop == intern_state_,
-      "invalid internal state");
+      "Invalid internal state");
 
   --pending_operations_;
   session->handle_operation_completion();
@@ -639,7 +639,7 @@ void session_manager::handle_session_wait(const session_wrapper_ptr& session,
     break;
 
   default:
-    BOOST_ASSERT_MSG(false, "invalid internal state");
+    BOOST_ASSERT_MSG(false, "Invalid internal state");
     break;
   }
 }
@@ -649,7 +649,7 @@ void session_manager::handle_session_wait_at_work(
     const boost::system::error_code& error)
 {
   BOOST_ASSERT_MSG(intern_state::work == intern_state_,
-      "invalid internal state");
+      "Invalid internal state");
 
   --pending_operations_;
   session->handle_operation_completion();
@@ -676,7 +676,7 @@ void session_manager::handle_session_wait_at_stop(
     const boost::system::error_code& error)
 {
   BOOST_ASSERT_MSG(intern_state::stop == intern_state_,
-      "invalid internal state");
+      "Invalid internal state");
 
   --pending_operations_;
   session->handle_operation_completion();
@@ -714,7 +714,7 @@ void session_manager::handle_session_stop(const session_wrapper_ptr& session,
     break;
 
   default:
-    BOOST_ASSERT_MSG(false, "invalid internal state");
+    BOOST_ASSERT_MSG(false, "Invalid internal state");
     break;
   }
 }
@@ -723,7 +723,7 @@ void session_manager::handle_session_stop_at_work(
     const session_wrapper_ptr& session, const boost::system::error_code& error)
 {
   BOOST_ASSERT_MSG(intern_state::work == intern_state_,
-      "invalid internal state");
+      "Invalid internal state");
 
   --pending_operations_;
   session->handle_operation_completion();
@@ -754,7 +754,7 @@ void session_manager::handle_session_stop_at_stop(
     const session_wrapper_ptr& session, const boost::system::error_code& error)
 {
   BOOST_ASSERT_MSG(intern_state::stop == intern_state_,
-      "invalid internal state");
+      "Invalid internal state");
 
   --pending_operations_;
   session->handle_operation_completion();
@@ -825,15 +825,15 @@ void session_manager::start_stop(const boost::system::error_code& error)
 void session_manager::continue_stop()
 {
   BOOST_ASSERT_MSG(intern_state::stop == intern_state_,
-      "invalid internal state");
+      "Invalid internal state");
 
   if (!pending_operations_)
   {
     BOOST_ASSERT_MSG(accept_state::stopped  == accept_state_,
-        "invalid accept state");
+        "Invalid accept state");
 
     BOOST_ASSERT_MSG(active_sessions_.empty(),
-        "there are still some active sessions");
+        "There are still some active sessions");
 
     // Internal stop completed
     intern_state_ = intern_state::stopped;
@@ -944,7 +944,7 @@ void session_manager::start_session_wait(const session_wrapper_ptr& session)
 
 void session_manager::recycle(const session_wrapper_ptr& session)
 {
-  BOOST_ASSERT_MSG(session, "session must be not null");
+  BOOST_ASSERT_MSG(session, "Session must be not null");
 
   bool is_recyclable = !session->has_pending_operations();
   bool has_recycle_space = recycled_sessions_.size() < recycled_session_count_;

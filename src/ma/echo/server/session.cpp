@@ -275,7 +275,7 @@ void session::handle_read(const boost::system::error_code& error,
     std::size_t bytes_transferred)
 {
   BOOST_ASSERT_MSG(read_state::in_progress == read_state_,
-      "invalid read state");
+      "Invalid read state");
 
   // Split handler based on current internal state
   // that might change during read operation
@@ -294,7 +294,7 @@ void session::handle_read(const boost::system::error_code& error,
     break;
 
   default:
-    BOOST_ASSERT_MSG(false, "invalid internal state");
+    BOOST_ASSERT_MSG(false, "Invalid internal state");
     break;
   }
 }
@@ -303,10 +303,10 @@ void session::handle_read_at_work(const boost::system::error_code& error,
     std::size_t bytes_transferred)
 {
   BOOST_ASSERT_MSG(intern_state::work == intern_state_,
-      "invalid internal state");
+      "Invalid internal state");
 
   BOOST_ASSERT_MSG(read_state::in_progress == read_state_,
-      "invalid read state");
+      "Invalid read state");
 
   // Register operation completion and switch to the right state
   --pending_operations_;
@@ -345,10 +345,10 @@ void session::handle_read_at_shutdown(const boost::system::error_code& error,
     std::size_t bytes_transferred)
 {
   BOOST_ASSERT_MSG(intern_state::shutdown == intern_state_,
-      "invalid internal state");
+      "Invalid internal state");
 
   BOOST_ASSERT_MSG(read_state::in_progress == read_state_,
-      "invalid read state");
+      "Invalid read state");
 
   // Register operation completion and switch to the right state
   --pending_operations_;
@@ -384,10 +384,10 @@ void session::handle_read_at_stop(const boost::system::error_code& /*error*/,
     std::size_t /*bytes_transferred*/)
 {
   BOOST_ASSERT_MSG(intern_state::stop == intern_state_,
-      "invalid internal state");
+      "Invalid internal state");
 
   BOOST_ASSERT_MSG(read_state::in_progress == read_state_,
-      "invalid read state");
+      "Invalid read state");
 
   --pending_operations_;
   read_state_ = read_state::stopped;
@@ -398,7 +398,7 @@ void session::handle_write(const boost::system::error_code& error,
     std::size_t bytes_transferred)
 {
   BOOST_ASSERT_MSG(write_state::in_progress == write_state_,
-      "invalid write state");
+      "Invalid write state");
 
   // Split handler based on current internal state
   // that might change during write operation
@@ -417,7 +417,7 @@ void session::handle_write(const boost::system::error_code& error,
     break;
 
   default:
-    BOOST_ASSERT_MSG(false, "invalid internal state");
+    BOOST_ASSERT_MSG(false, "Invalid internal state");
     break;
   }
 }
@@ -426,10 +426,10 @@ void session::handle_write_at_work(const boost::system::error_code& error,
     std::size_t bytes_transferred)
 {
   BOOST_ASSERT_MSG(intern_state::work == intern_state_,
-      "invalid internal state");
+      "Invalid internal state");
 
   BOOST_ASSERT_MSG(write_state::in_progress == write_state_,
-      "invalid write state");
+      "Invalid write state");
 
   --pending_operations_;
   write_state_ = write_state::wait;
@@ -459,10 +459,10 @@ void session::handle_write_at_shutdown(const boost::system::error_code& error,
     std::size_t bytes_transferred)
 {
   BOOST_ASSERT_MSG(intern_state::shutdown == intern_state_,
-      "invalid internal state");
+      "Invalid internal state");
 
   BOOST_ASSERT_MSG(write_state::in_progress == write_state_,
-      "invalid write state");
+      "Invalid write state");
 
   --pending_operations_;
   write_state_ = write_state::wait;
@@ -492,10 +492,10 @@ void session::handle_write_at_stop(const boost::system::error_code& /*error*/,
     std::size_t /*bytes_transferred*/)
 {
   BOOST_ASSERT_MSG(intern_state::stop == intern_state_,
-      "invalid internal state");
+      "Invalid internal state");
 
   BOOST_ASSERT_MSG(write_state::in_progress == write_state_,
-      "invalid write state");
+      "Invalid write state");
 
   --pending_operations_;
   write_state_ = write_state::stopped;
@@ -505,7 +505,7 @@ void session::handle_write_at_stop(const boost::system::error_code& /*error*/,
 void session::handle_timer(const boost::system::error_code& error)
 {
   BOOST_ASSERT_MSG(timer_state::in_progress == timer_state_,
-      "invalid timer state");
+      "Invalid timer state");
 
   // Split handler based on current internal state
   // that might change during timer wait operation
@@ -521,7 +521,7 @@ void session::handle_timer(const boost::system::error_code& error)
     break;
 
   default:
-    BOOST_ASSERT_MSG(false, "invalid internal state");
+    BOOST_ASSERT_MSG(false, "Invalid internal state");
     break;
   }
 }
@@ -530,10 +530,10 @@ void session::handle_timer_at_work(const boost::system::error_code& error)
 {
   BOOST_ASSERT_MSG((intern_state::work == intern_state_)
       || (intern_state::shutdown == intern_state_),
-      "invalid internal state");
+      "Invalid internal state");
 
   BOOST_ASSERT_MSG(timer_state::in_progress == timer_state_,
-      "invalid timer state");
+      "Invalid timer state");
 
   --pending_operations_;
   timer_state_ = timer_state::ready;
@@ -564,10 +564,10 @@ void session::handle_timer_at_work(const boost::system::error_code& error)
 void session::handle_timer_at_stop(const boost::system::error_code& /*error*/)
 {
   BOOST_ASSERT_MSG(intern_state::stop == intern_state_,
-      "invalid internal state");
+      "Invalid internal state");
 
   BOOST_ASSERT_MSG(timer_state::in_progress == timer_state_,
-      "invalid timer state");
+      "Invalid timer state");
 
   --pending_operations_;
   timer_state_ = timer_state::stopped;
@@ -577,13 +577,13 @@ void session::handle_timer_at_stop(const boost::system::error_code& /*error*/)
 void session::continue_work()
 {
   BOOST_ASSERT_MSG(intern_state::work == intern_state_,
-      "invalid internal state");
+      "Invalid internal state");
 
   BOOST_ASSERT_MSG(write_state::stopped != write_state_,
-      "invalid write state");
+      "Invalid write state");
 
   BOOST_ASSERT_MSG(timer_state::stopped != timer_state_,
-      "invalid timer state");
+      "Invalid timer state");
 
   // Check for active shutdown start
   if (read_state::stopped == read_state_)
@@ -621,7 +621,7 @@ void session::continue_work()
 void session::continue_timer_wait()
 {
   BOOST_ASSERT_MSG(intern_state::stopped != intern_state_,
-      "invalid internal state");
+      "Invalid internal state");
 
   if (inactivity_timeout_)
   {
@@ -654,7 +654,7 @@ void session::continue_timer_wait()
 void session::continue_shutdown()
 {
   BOOST_ASSERT_MSG(intern_state::shutdown == intern_state_,
-      "invalid internal state");
+      "Invalid internal state");
 
   // Split control flow based on current state of read activity to simplify
   switch (read_state_)
@@ -672,7 +672,7 @@ void session::continue_shutdown()
     break;
 
   default:
-    BOOST_ASSERT_MSG(false, "invalid read state");
+    BOOST_ASSERT_MSG(false, "Invalid read state");
     break;
   }
 }
@@ -680,10 +680,10 @@ void session::continue_shutdown()
 void session::continue_shutdown_at_read_wait()
 {
   BOOST_ASSERT_MSG(intern_state::shutdown == intern_state_,
-      "invalid internal state");
+      "Invalid internal state");
 
   BOOST_ASSERT_MSG(read_state::wait == read_state_,
-      "invalid read state");
+      "Invalid read state");
 
   if (write_state::wait == write_state_)
   {
@@ -725,10 +725,10 @@ void session::continue_shutdown_at_read_wait()
 void session::continue_shutdown_at_read_in_progress()
 {
   BOOST_ASSERT_MSG(intern_state::shutdown == intern_state_,
-      "invalid internal state");
+      "Invalid internal state");
 
   BOOST_ASSERT_MSG(read_state::in_progress == read_state_,
-      "invalid read state");
+      "Invalid read state");
 
   if (write_state::wait == write_state_)
   {
@@ -749,10 +749,10 @@ void session::continue_shutdown_at_read_in_progress()
 void session::continue_shutdown_at_read_stopped()
 {
   BOOST_ASSERT_MSG(intern_state::shutdown == intern_state_,
-      "invalid internal state");
+      "Invalid internal state");
 
   BOOST_ASSERT_MSG(read_state::stopped == read_state_,
-      "invalid read state");
+      "Invalid read state");
 
   if (write_state::wait == write_state_)
   {
@@ -777,18 +777,18 @@ void session::continue_shutdown_at_read_stopped()
 void session::continue_stop()
 {
   BOOST_ASSERT_MSG(intern_state::stop == intern_state_,
-      "invalid internal state");
+      "Invalid internal state");
 
   if (!pending_operations_)
   {
     BOOST_ASSERT_MSG(read_state::stopped  == read_state_,
-        "invalid read state");
+        "Invalid read state");
 
     BOOST_ASSERT_MSG(write_state::stopped == write_state_,
-        "invalid write state");
+        "Invalid write state");
 
     BOOST_ASSERT_MSG(timer_state::stopped == timer_state_,
-        "invalid timer state");
+        "Invalid timer state");
 
     // Internal general stop completed
     intern_state_ = intern_state::stopped;
@@ -814,7 +814,7 @@ void session::start_active_shutdown()
 void session::start_shutdown(const boost::system::error_code& error)
 {
   BOOST_ASSERT_MSG(intern_state::work == intern_state_,
-      "invalid internal state");
+      "Invalid internal state");
 
   // Siwtch general internal SM
   intern_state_ = intern_state::shutdown;
@@ -832,7 +832,7 @@ void session::start_stop(boost::system::error_code error)
 {
   BOOST_ASSERT_MSG((intern_state::work == intern_state_)
       || (intern_state::shutdown == intern_state_),
-      "invalid internal state");
+      "Invalid internal state");
 
   // Siwtch general internal SM
   intern_state_ = intern_state::stop;
@@ -925,7 +925,7 @@ void session::start_socket_write(
 void session::start_timer_wait()
 {
   BOOST_ASSERT_MSG(timer_state::ready == timer_state_,
-      "invalid timer state");
+      "Invalid timer state");
 
 #if defined(MA_HAS_RVALUE_REFS) \
     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)

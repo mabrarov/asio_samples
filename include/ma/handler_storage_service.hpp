@@ -102,7 +102,8 @@ public:
   {
     base_hook& value_hook = get_hook(value);
 
-    BOOST_ASSERT(!value_hook.prev_ && !value_hook.next_);
+    BOOST_ASSERT_MSG(!value_hook.prev_ && !value_hook.next_, 
+        "The value to push has to be not linked");
 
     value_hook.next_ = front_;
     if (value_hook.next_)
@@ -133,13 +134,14 @@ public:
     }
     value_hook.prev_ = value_hook.next_ = 0;
 
-    BOOST_ASSERT(!value_hook.prev_ && !value_hook.next_);
+    BOOST_ASSERT_MSG(!value_hook.prev_ && !value_hook.next_,
+        "The erased value has to be unlinked");
   }
 
   /// Never throws
   void pop_front()
   {
-    BOOST_ASSERT(front_);
+    BOOST_ASSERT_MSG(front_, "The container is empty");
 
     base_hook& value_hook = get_hook(*front_);
     front_ = value_hook.next_;
@@ -150,7 +152,8 @@ public:
     }
     value_hook.next_ = value_hook.prev_ = 0;
 
-    BOOST_ASSERT(!value_hook.prev_ && !value_hook.next_);
+    BOOST_ASSERT_MSG(!value_hook.prev_ && !value_hook.next_, 
+        "The popped value has to be unlinked");
   }
 
 private:
@@ -437,7 +440,7 @@ private:
 #if !defined(NDEBUG)
     ~impl_base()
     {
-      BOOST_ASSERT(!handler_);
+      BOOST_ASSERT_MSG(!handler_, "The stored handler was not destroyed");
     }
 #endif
 

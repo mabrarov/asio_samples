@@ -69,25 +69,26 @@ public:
   /// Never throws
   static shared_pointer prev(const shared_pointer& value)
   {
-    BOOST_ASSERT(value);
+    BOOST_ASSERT_MSG(value, "The value can no not be null ptr");
     return get_hook(*value).prev_.lock();
   }
 
   /// Never throws
   static shared_pointer next(const shared_pointer& value)
   {
-    BOOST_ASSERT(value);
+    BOOST_ASSERT_MSG(value, "The value can no not be null ptr");
     return get_hook(*value).next_;
   }
 
   /// Never throws
   void push_front(const shared_pointer& value)
   {
-    BOOST_ASSERT(value);
+    BOOST_ASSERT_MSG(value, "The value can no not be null ptr");
 
     base_hook& value_hook = get_hook(*value);
 
-    BOOST_ASSERT(!value_hook.prev_.lock() && !value_hook.next_);
+    BOOST_ASSERT_MSG(!value_hook.prev_.lock() && !value_hook.next_, 
+        "The value to push has to be not linked");
 
     value_hook.next_ = front_;
     if (front_)
@@ -102,7 +103,7 @@ public:
   /// Never throws
   void erase(const shared_pointer& value)
   {
-    BOOST_ASSERT(value);
+    BOOST_ASSERT_MSG(value, "The value can no not be null ptr");
 
     base_hook& value_hook = get_hook(*value);
     if (value == front_)
@@ -124,7 +125,8 @@ public:
     value_hook.next_.reset();
     --size_;
 
-    BOOST_ASSERT(!value_hook.prev_.lock() && !value_hook.next_);
+    BOOST_ASSERT_MSG(!value_hook.prev_.lock() && !value_hook.next_,
+        "The erased value has to be unlinked");
   }
 
   /// Never throws

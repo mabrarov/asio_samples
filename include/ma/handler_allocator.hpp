@@ -36,7 +36,7 @@ public:
   /// For debug purposes (ability to check destruction order, etc).
   ~in_place_handler_allocator()
   {
-    BOOST_ASSERT_MSG(!in_use_, "invalid internal state");
+    BOOST_ASSERT_MSG(!in_use_, "Allocator is still used");
   }
 
   /// Try to allocate memory from internal memory block if it is free and is
@@ -57,7 +57,7 @@ public:
   {
     if (storage_.address() == pointer)
     {
-      BOOST_ASSERT_MSG(in_use_, "invalid internal state");
+      BOOST_ASSERT_MSG(in_use_, "Allocator wasn't marked as used");
 
       in_use_ = false;
       return;
@@ -111,7 +111,7 @@ public:
   /// For debug purposes (ability to check destruction order, etc).
   ~in_heap_handler_allocator()
   {
-    BOOST_ASSERT_MSG(!in_use_, "invalid internal state");
+    BOOST_ASSERT_MSG(!in_use_, "Allocator is still used");
   }
 
   /// Try to allocate memory from internal memory block if it is free and is
@@ -134,7 +134,7 @@ public:
     {
       if (retrieve_aligned_address() == pointer)
       {
-        BOOST_ASSERT_MSG(in_use_, "invalid internal state");
+        BOOST_ASSERT_MSG(in_use_, "Allocator wasn't marked as used");
 
         in_use_ = false;
         return;
