@@ -1,0 +1,26 @@
+--- boost/asio/detail/impl/socket_ops.ipp	Ïí èþë 23 15:03:31 2012
++++ boost/asio/detail/impl/socket_ops.ipp	Âñ ñåí  2 15:55:52 2012
+@@ -2782,9 +2782,9 @@
+         return ec = boost::asio::error::no_buffer_space;
+       }
+ #if BOOST_WORKAROUND(BOOST_MSVC, >= 1400) && !defined(UNDER_CE)
+-      sprintf_s(serv, servlen, "%u", ntohs(port));
++      sprintf_s(serv, servlen, "%u", static_cast<unsigned>(ntohs(port)));
+ #else
+-      sprintf(serv, "%u", ntohs(port));
++      sprintf(serv, "%u", static_cast<unsigned>(ntohs(port)));
+ #endif
+     }
+     else
+@@ -2807,9 +2807,9 @@
+           return ec = boost::asio::error::no_buffer_space;
+         }
+ #if BOOST_WORKAROUND(BOOST_MSVC, >= 1400) && !defined(UNDER_CE)
+-        sprintf_s(serv, servlen, "%u", ntohs(port));
++        sprintf_s(serv, servlen, "%u", static_cast<unsigned>(ntohs(port)));
+ #else
+-        sprintf(serv, "%u", ntohs(port));
++        sprintf(serv, "%u", static_cast<unsigned>(ntohs(port)));
+ #endif
+       }
+ #if defined(BOOST_HAS_THREADS) && defined(BOOST_HAS_PTHREADS) \
