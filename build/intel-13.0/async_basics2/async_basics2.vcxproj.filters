@@ -2,35 +2,35 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <UniqueIdentifier>{6C3D89E5-52A6-43AF-87BF-7A5488AF226D}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
     <Filter Include="Source Files\ma">
-      <UniqueIdentifier>{c2c92d66-6f36-4281-b3df-94e1c28819a0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\ma\tutorial">
-      <UniqueIdentifier>{908e4b2a-1229-42b5-bad3-bae166d28a11}</UniqueIdentifier>
+      <UniqueIdentifier>{0ABFE734-B1F5-40EC-8F7D-B365EF3BE7C4}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <UniqueIdentifier>{1CA6965B-E561-4E3C-87E1-777ECD2FD626}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
     <Filter Include="Header Files\ma">
-      <UniqueIdentifier>{dae03df1-9ca7-49fb-95f0-b7fa0b7f1984}</UniqueIdentifier>
+      <UniqueIdentifier>{5E7158BC-89D5-43C9-A5F5-13CAA61862E3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\ma\tutorial">
-      <UniqueIdentifier>{d7c9f177-5d0f-4d73-9e7b-16b3d30fc162}</UniqueIdentifier>
+    <Filter Include="Header Files\ma\tutorial2">
+      <UniqueIdentifier>{5B16E4D2-CEC2-4DF6-969D-A31B4EB2BC08}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ma\tutorial2">
+      <UniqueIdentifier>{ABAA2BFD-13C6-4147-B1D3-1A9410256A7C}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\src\async_basics\main.cpp">
+    <ClCompile Include="..\..\..\src\async_basics2\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\ma\console_controller.cpp">
       <Filter>Source Files\ma</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\ma\tutorial\async_implementation.cpp">
-      <Filter>Source Files\ma\tutorial</Filter>
+    <ClCompile Include="..\..\..\src\ma\tutorial2\async_implementation.cpp">
+      <Filter>Source Files\ma\tutorial2</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -73,20 +73,23 @@
     <ClInclude Include="..\..\..\include\ma\strand_wrapped_handler.hpp">
       <Filter>Header Files\ma</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\tutorial2\do_something_handler_fwd.hpp">
+      <Filter>Header Files\ma\tutorial2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\tutorial2\do_something_handler.hpp">
+      <Filter>Header Files\ma\tutorial2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\tutorial2\async_interface.hpp">
+      <Filter>Header Files\ma\tutorial2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\tutorial2\async_implementation.hpp">
+      <Filter>Header Files\ma\tutorial2</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\include\ma\shared_ptr_factory.hpp">
       <Filter>Header Files\ma</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\ma\steady_deadline_timer.hpp">
       <Filter>Header Files\ma</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\ma\tutorial\async_implementation.hpp">
-      <Filter>Header Files\ma\tutorial</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\ma\tutorial\async_interface.hpp">
-      <Filter>Header Files\ma\tutorial</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\ma\tutorial\async_interface_adapter.hpp">
-      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
