@@ -23,7 +23,7 @@ pooled_session_factory::pooled_session_factory(
   for (io_service_vector::const_iterator i = io_services.begin(),
       end = io_services.end(); i != end; ++i)
   {
-    pool_.push_back(boost::make_shared<io_service_pool_item>(
+    pool_.push_back(boost::make_shared<pool_item>(
         boost::ref(**i), max_recycled));
   }
   current_ = pool_.begin();
@@ -32,15 +32,49 @@ pooled_session_factory::pooled_session_factory(
 session_ptr pooled_session_factory::create(const session_config& config,
     boost::system::error_code& error)
 {
-  session_wrapper_ptr session;
+  // Select appropriate item of pool
+  pool_item& selected_pool_item = **current_;
 
-  io_service_pool_item& pool_item = **current_;
-  if (pool_item.recycled.empty())
+  // Create new session by means of selected pool item
+  session_wrapper_ptr session = 
+      selected_pool_item.create(current_, config, error);
+
+  // Prepare for the next call
+  if (!error)
+  {
+    ++current_;
+    if (current_ == pool_.end())
+    {
+      current_ = pool_.begin();
+    }
+  }
+
+  return session;
+}
+
+void pooled_session_factory::release(const session_ptr& session)
+{
+  // Find session's pool item
+  session_wrapper_ptr wrapped_session =
+      boost::static_pointer_cast<session_wrapper>(session);
+  pool_item& session_pool_item = **(wrapped_session->back_link);
+  // Release session by means of its pool item
+  session_pool_item.release(wrapped_session);
+}
+
+pooled_session_factory::session_wrapper_ptr
+pooled_session_factory::pool_item::create(const pool_link& back_link, 
+    const session_config& config, boost::system::error_code& error)
+{
+  session_wrapper_ptr session;
+  
+  if (recycled_.empty())
   {
     try
     {
       session = boost::make_shared<session_wrapper>(
-          boost::ref(pool_item.io_service), config, current_);
+          boost::ref(io_service_), config, back_link);
+      ++size_;
       error = boost::system::error_code();
     }
     catch (const std::bad_alloc&)
@@ -50,28 +84,21 @@ session_ptr pooled_session_factory::create(const session_config& config,
   }
   else
   {
-    session = pool_item.recycled.front();
-    pool_item.recycled.erase(session);
+    session = recycled_.front();
+    recycled_.erase(session);
+    ++size_;
     error = boost::system::error_code();
-  }
-
-  ++current_;
-  if (current_ == pool_.end())
-  {
-    current_ = pool_.begin();
   }
 
   return session;
 }
 
-void pooled_session_factory::release(const session_ptr& session)
+void pooled_session_factory::pool_item::release(
+    const session_wrapper_ptr& session)
 {
-  session_wrapper_ptr wrapped_session =
-      boost::static_pointer_cast<session_wrapper>(session);
-  io_service_pool_item& pool_item = **(wrapped_session->back_link);
-  if (pool_item.max_recycled > pool_item.recycled.size())
+  if (max_recycled_ > recycled_.size())
   {
-    pool_item.recycled.push_front(wrapped_session);
+    recycled_.push_front(session);
   }
 }
 
