@@ -102,8 +102,13 @@ private:
     session_list             recycled_;
   }; // class pool_item
 
+  static bool less_loaded_pool(const pool_item_ptr& left, 
+      const pool_item_ptr& right)
+  {
+    return left->size() < right->size();
+  }
+
   pool pool_;
-  pool::const_iterator current_;
 }; // class pooled_session_factory
 
 } // namespace server

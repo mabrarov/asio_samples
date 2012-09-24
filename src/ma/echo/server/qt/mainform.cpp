@@ -155,6 +155,8 @@ MainForm::MainForm(Service& service, QWidget* parent, Qt::WFlags flags)
   optionsWidgets_.push_back(
       boost::make_tuple(0, ui_.sessionThreadsSpinBox));
   optionsWidgets_.push_back(
+      boost::make_tuple(0, ui_.sessionThreadModelComboBox));
+  optionsWidgets_.push_back(
       boost::make_tuple(1, ui_.maxSessionCountSpinBox));
   optionsWidgets_.push_back(
       boost::make_tuple(1, ui_.recycledSessionCountSpinBox));

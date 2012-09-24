@@ -6,7 +6,9 @@
 //
 
 #include <new>
+#include <algorithm>
 #include <boost/ref.hpp>
+#include <boost/bind.hpp>
 #include <boost/make_shared.hpp>
 #include <ma/echo/server/error.hpp>
 #include <ma/echo/server/pooled_session_factory.hpp>
@@ -18,7 +20,6 @@ namespace server {
 pooled_session_factory::pooled_session_factory(
     const io_service_vector& io_services, std::size_t max_recycled)
   : pool_()
-  , current_()
 {
   for (io_service_vector::const_iterator i = io_services.begin(),
       end = io_services.end(); i != end; ++i)
@@ -26,28 +27,19 @@ pooled_session_factory::pooled_session_factory(
     pool_.push_back(boost::make_shared<pool_item>(
         boost::ref(**i), max_recycled));
   }
-  current_ = pool_.begin();
 }
 
 session_ptr pooled_session_factory::create(const session_config& config,
     boost::system::error_code& error)
 {
   // Select appropriate item of pool
-  pool_item& selected_pool_item = **current_;
+  const pool::const_iterator selected_pool_item = 
+      std::min_element(pool_.begin(), pool_.end(),
+          boost::bind(this_type::less_loaded_pool, _1, _2));
 
   // Create new session by means of selected pool item
   session_wrapper_ptr session = 
-      selected_pool_item.create(current_, config, error);
-
-  // Prepare for the next call
-  if (!error)
-  {
-    ++current_;
-    if (current_ == pool_.end())
-    {
-      current_ = pool_.begin();
-    }
-  }
+      (*selected_pool_item)->create(selected_pool_item, config, error);
 
   return session;
 }
