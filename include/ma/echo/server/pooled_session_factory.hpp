@@ -90,7 +90,7 @@ private:
         const session_config&, boost::system::error_code&);
     void release(const session_wrapper_ptr&);
 
-    std::size_t size() const 
+    std::size_t size() const
     {
       return size_;
     }
@@ -102,7 +102,7 @@ private:
     session_list             recycled_;
   }; // class pool_item
 
-  static bool less_loaded_pool(const pool_item_ptr& left, 
+  static bool less_loaded_pool(const pool_item_ptr& left,
       const pool_item_ptr& right)
   {
     return left->size() < right->size();

@@ -33,21 +33,18 @@ session_ptr pooled_session_factory::create(const session_config& config,
     boost::system::error_code& error)
 {
   // Select appropriate item of pool
-  const pool::const_iterator selected_pool_item = 
+  const pool::const_iterator selected_pool_item =
       std::min_element(pool_.begin(), pool_.end(),
           boost::bind(this_type::less_loaded_pool, _1, _2));
 
   // Create new session by means of selected pool item
-  session_wrapper_ptr session = 
-      (*selected_pool_item)->create(selected_pool_item, config, error);
-
-  return session;
+  return (*selected_pool_item)->create(selected_pool_item, config, error);
 }
 
 void pooled_session_factory::release(const session_ptr& session)
 {
   // Find session's pool item
-  session_wrapper_ptr wrapped_session =
+  const session_wrapper_ptr wrapped_session =
       boost::static_pointer_cast<session_wrapper>(session);
   pool_item& session_pool_item = **(wrapped_session->back_link);
   // Release session by means of its pool item
@@ -55,11 +52,11 @@ void pooled_session_factory::release(const session_ptr& session)
 }
 
 pooled_session_factory::session_wrapper_ptr
-pooled_session_factory::pool_item::create(const pool_link& back_link, 
+pooled_session_factory::pool_item::create(const pool_link& back_link,
     const session_config& config, boost::system::error_code& error)
 {
   session_wrapper_ptr session;
-  
+
   if (recycled_.empty())
   {
     try
