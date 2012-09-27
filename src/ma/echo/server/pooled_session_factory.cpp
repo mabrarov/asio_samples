@@ -19,14 +19,8 @@ namespace server {
 
 pooled_session_factory::pooled_session_factory(
     const io_service_vector& io_services, std::size_t max_recycled)
-  : pool_()
+  : pool_(create_pool(io_services, max_recycled))
 {
-  for (io_service_vector::const_iterator i = io_services.begin(),
-      end = io_services.end(); i != end; ++i)
-  {
-    pool_.push_back(boost::make_shared<pool_item>(
-        boost::ref(**i), max_recycled));
-  }
 }
 
 session_ptr pooled_session_factory::create(const session_config& config,
@@ -89,6 +83,19 @@ void pooled_session_factory::pool_item::release(
   {
     recycled_.push_front(session);
   }
+}
+
+pooled_session_factory::pool pooled_session_factory::create_pool(
+    const io_service_vector& io_services, std::size_t max_recycled)
+{
+  pool result;
+  for (io_service_vector::const_iterator i = io_services.begin(),
+      end = io_services.end(); i != end; ++i)
+  {
+    result.push_back(boost::make_shared<pool_item>(
+        boost::ref(**i), max_recycled));
+  }
+  return result;
 }
 
 } // namespace server

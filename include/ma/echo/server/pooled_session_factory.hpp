@@ -102,13 +102,16 @@ private:
     session_list             recycled_;
   }; // class pool_item
 
+  static pool create_pool(const io_service_vector& io_services, 
+      std::size_t max_recycled);
+
   static bool less_loaded_pool(const pool_item_ptr& left,
       const pool_item_ptr& right)
   {
     return left->size() < right->size();
   }
 
-  pool pool_;
+  const pool pool_;
 }; // class pooled_session_factory
 
 } // namespace server
