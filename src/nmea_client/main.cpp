@@ -175,12 +175,12 @@ int main(int argc, char* argv[])
 
     // Start session (not actually, because there are no work threads yet)
     the_session->async_start(ma::make_custom_alloc_handler(the_allocator,
-        boost::bind(&handle_start, the_session, boost::ref(the_allocator),
+        boost::bind(handle_start, the_session, boost::ref(the_allocator),
             the_frame_buffer, _1)));
 
     // Setup console controller
     ma::console_controller console_controller(
-        boost::bind(&handle_console_close, the_session));
+        boost::bind(handle_console_close, the_session));
 
     std::cout << "Press Ctrl+C (Ctrl+Break) to exit...\n";
 
@@ -206,7 +206,7 @@ int main(int argc, char* argv[])
 void handle_console_close(const session_ptr& session)
 {
   std::cout << "User console close detected. Begin stop the session...\n";
-  session->async_stop(boost::bind(&handle_stop, _1));
+  session->async_stop(boost::bind(handle_stop, _1));
 }
 
 void handle_start(const session_ptr& the_session,
@@ -224,7 +224,7 @@ void handle_start(const session_ptr& the_session,
   std::cout << "Session started successfully. Begin read...\n";
 
   the_session->async_read_some(frame_buffer->begin(), frame_buffer->end(),
-      ma::make_custom_alloc_handler(the_allocator, boost::bind(&handle_read,
+      ma::make_custom_alloc_handler(the_allocator, boost::bind(handle_read,
           the_session, boost::ref(the_allocator), frame_buffer, _1, _2)));
 }
 
@@ -262,7 +262,7 @@ void handle_read(const session_ptr& the_session,
         " But it\'s a serial port so begin read operation again...\n";
 
     the_session->async_read_some(frame_buffer->begin(), frame_buffer->end(),
-        ma::make_custom_alloc_handler(the_allocator, boost::bind(&handle_read,
+        ma::make_custom_alloc_handler(the_allocator, boost::bind(handle_read,
             the_session, boost::ref(the_allocator), frame_buffer, _1, _2)));
     return;
   }
@@ -271,18 +271,18 @@ void handle_read(const session_ptr& the_session,
   {
     std::cout << "Read unsuccessful. Begin the session stop...\n";
     the_session->async_stop(ma::make_custom_alloc_handler(the_allocator,
-        boost::bind(&handle_stop, _1)));
+        boost::bind(handle_stop, _1)));
     return;
   }
 
   the_session->async_read_some(frame_buffer->begin(), frame_buffer->end(),
-      ma::make_custom_alloc_handler(the_allocator, boost::bind(&handle_read,
+      ma::make_custom_alloc_handler(the_allocator, boost::bind(handle_read,
           the_session, boost::ref(the_allocator), frame_buffer, _1, _2)));
 
   // Only for test of cyclic_read_session::async_write_some
   //frame_ptr frame = *(frame_buffer->begin());
   //the_session->async_write_some(boost::asio::buffer(*frame),
-  //    boost::bind(&handle_write, the_session, frame, _1, _2));
+  //    boost::bind(handle_write, the_session, frame, _1, _2));
 }
 
 void print_frames(const frame_buffer_type& frames, std::size_t size)

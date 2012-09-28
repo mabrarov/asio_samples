@@ -266,8 +266,8 @@ private:
     timer_.expires_from_now(*connect_pause_);
     timer_.async_wait(MA_STRAND_WRAP(strand_,
         ma::make_custom_alloc_handler(timer_allocator_,
-            boost::bind(&this_type::handle_timer, this,
-                _1, initial_endpoint_iterator))));
+            boost::bind(&this_type::handle_timer, this, _1,
+                initial_endpoint_iterator))));
     timer_in_progess_ = true;
   }
 
@@ -511,8 +511,8 @@ private:
     timer_.expires_from_now(*block_pause_);
     timer_.async_wait(MA_STRAND_WRAP(strand_,
         ma::make_custom_alloc_handler(timer_allocator_,
-            boost::bind(&this_type::handle_timer, this,
-                _1, endpoint_iterator, offset))));
+            boost::bind(&this_type::handle_timer, this, _1, endpoint_iterator,
+                offset))));
     timer_in_progess_ = true;
   }
 
@@ -764,8 +764,8 @@ client_config build_client_config(
   session_config client_session_config(
       to_optional_duration(connect_pause_millis), no_delay);
 
-  session_manager_config client_session_manager_config(session_count, 
-      block_size, to_optional_duration(block_pause_millis), 
+  session_manager_config client_session_manager_config(session_count,
+      block_size, to_optional_duration(block_pause_millis),
       client_session_config);
 
   bool ios_per_work_thread =

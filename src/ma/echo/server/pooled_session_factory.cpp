@@ -8,7 +8,6 @@
 #include <new>
 #include <algorithm>
 #include <boost/ref.hpp>
-#include <boost/bind.hpp>
 #include <boost/make_shared.hpp>
 #include <ma/echo/server/error.hpp>
 #include <ma/echo/server/pooled_session_factory.hpp>
@@ -28,8 +27,7 @@ session_ptr pooled_session_factory::create(const session_config& config,
 {
   // Select appropriate item of pool
   const pool::const_iterator selected_pool_item =
-      std::min_element(pool_.begin(), pool_.end(),
-          boost::bind(this_type::less_loaded_pool, _1, _2));
+      std::min_element(pool_.begin(), pool_.end(), this_type::less_loaded_pool);
 
   // Create new session by means of selected pool item
   return (*selected_pool_item)->create(selected_pool_item, config, error);
