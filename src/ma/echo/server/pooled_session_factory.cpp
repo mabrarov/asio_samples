@@ -77,6 +77,7 @@ pooled_session_factory::pool_item::create(const pool_link& back_link,
 void pooled_session_factory::pool_item::release(
     const session_wrapper_ptr& session)
 {
+  --size_;
   if (max_recycled_ > recycled_.size())
   {
     recycled_.push_front(session);

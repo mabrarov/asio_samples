@@ -279,7 +279,7 @@ private:
     in_place_handler_allocator<144> start_wait_allocator;
     in_place_handler_allocator<144> stop_allocator;
 
-    session_wrapper(const session_ptr& the_session)
+    explicit session_wrapper(const session_ptr& the_session)
       : session(the_session)
       , state(state_type::ready)
       , pending_operations(0)
@@ -292,7 +292,14 @@ private:
     }
 #endif
 
-    void reset();
+    void reset(const session_ptr& the_session)
+    {
+      session = the_session;
+      state = state_type::ready;
+      pending_operations = 0;
+    }
+
+    session_ptr release();
 
     bool has_pending_operations() const
     {
@@ -501,7 +508,6 @@ private:
 
   void recycle(const session_wrapper_ptr&);
   session_wrapper_ptr create_session(boost::system::error_code& error);
-  void release_session(const session_wrapper_ptr&);
 
   void add_to_active(const session_wrapper_ptr& session);
   void add_to_recycled(const session_wrapper_ptr& session);

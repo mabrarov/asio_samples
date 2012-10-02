@@ -213,11 +213,19 @@ void session_manager::stats_collector::notify_session_stop(
   ++stats_.error_stopped;
 }
 
-void session_manager::session_wrapper::reset()
+session_ptr session_manager::session_wrapper::release()
 {
-  session->reset();
-  state = state_type::ready;
-  pending_operations = 0;
+  if (session)
+  {
+    session->reset();
+  }
+#if defined(MA_HAS_RVALUE_REFS)
+  return std::move(session);
+#else
+  session_ptr tmp;
+  tmp.swap(session);
+  return tmp;
+#endif
 }
 
 session_manager_ptr session_manager::create(
@@ -946,12 +954,15 @@ void session_manager::recycle(const session_wrapper_ptr& session)
 {
   BOOST_ASSERT_MSG(session, "Session must be not null");
 
-  bool is_recyclable = !session->has_pending_operations();
-  bool has_recycle_space = recycled_sessions_.size() < recycled_session_count_;
-
-  if (is_recyclable && has_recycle_space)
+  if (session->has_pending_operations())
   {
-    session->reset();
+    return;
+  }
+
+  session_factory_.release(session->release());
+
+  if (recycled_sessions_.size() < recycled_session_count_)
+  {
     add_to_recycled(session);
   }
 }
@@ -1001,7 +1012,7 @@ session_manager::session_wrapper_ptr session_manager::create_session(
     session_wrapper_ptr wrapped_session = recycled_sessions_.front();
     remove_from_recycled(wrapped_session);
 
-    wrapped_session->session = session;
+    wrapped_session->reset(session);
     error = boost::system::error_code();
 
     session_release_guard.release();
@@ -1024,13 +1035,6 @@ session_manager::session_wrapper_ptr session_manager::create_session(
   }
 }
 
-void session_manager::release_session(const session_wrapper_ptr& session)
-{
-  session_factory_.release(session->session);
-  session->session.reset();
-  recycled_sessions_.push_front(session);
-}
-
 void session_manager::add_to_active(const session_wrapper_ptr& session)
 {
   active_sessions_.push_front(session);
@@ -1040,8 +1044,7 @@ void session_manager::add_to_active(const session_wrapper_ptr& session)
 
 void session_manager::add_to_recycled(const session_wrapper_ptr& session)
 {
-  // Put the session to "recycle bin"
-  release_session(session);
+  recycled_sessions_.push_front(session);
   // Collect statistics
   stats_collector_.set_recycled_session_count(recycled_sessions_.size());
 }
