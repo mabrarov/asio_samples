@@ -61,7 +61,7 @@ public:
   }
 
   /// Never throws
-  shared_pointer front() const
+  const shared_pointer& front() const
   {
     return front_;
   }
@@ -74,7 +74,7 @@ public:
   }
 
   /// Never throws
-  static shared_pointer next(const shared_pointer& value)
+  static const shared_pointer& next(const shared_pointer& value)
   {
     BOOST_ASSERT_MSG(value, "The value can no not be null ptr");
     return get_hook(*value).next_;

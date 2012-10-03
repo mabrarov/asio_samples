@@ -223,10 +223,10 @@ private:
     : public sp_intrusive_list<session_wrapper_base>::base_hook
   {
   }; // class session_wrapper_base
-  typedef sp_intrusive_list<session_wrapper_base> session_list;
 
   class session_wrapper;
   typedef boost::shared_ptr<session_wrapper> session_wrapper_ptr;
+  typedef sp_intrusive_list<session_wrapper_base> session_list;
 
 #if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 

@@ -46,70 +46,21 @@ public:
   void release(const session_ptr&);
 
 private:
-  class   pool_item;
+  class session_wrapper_base
+    : public sp_intrusive_list<session_wrapper_base>::base_hook
+  {
+  }; // class session_wrapper_base
+  typedef sp_intrusive_list<session_wrapper_base> session_list;
+  class session_wrapper;
+  typedef boost::shared_ptr<session_wrapper> session_wrapper_ptr;
+
+  class pool_item;
   typedef boost::shared_ptr<pool_item> pool_item_ptr;
   typedef std::vector<pool_item_ptr>   pool;
   typedef pool::const_iterator         pool_link;
 
-  struct  session_wrapper;
-  typedef boost::shared_ptr<session_wrapper> session_wrapper_ptr;
-
-  struct session_wrapper
-    : public session
-    , public sp_intrusive_list<session_wrapper>::base_hook
-  {
-    session_wrapper(boost::asio::io_service& io_service,
-        const session_config& config, const pool_link& the_back_link)
-      : session(io_service, config)
-      , back_link(the_back_link)
-    {
-    }
-
-#if !defined(NDEBUG)
-    ~session_wrapper()
-    {
-    }
-#endif
-
-    pool_link back_link;
-  }; // struct session_wrapper
-
-  typedef sp_intrusive_list<session_wrapper> session_list;
-
-  class pool_item
-  {
-  public:
-    pool_item(boost::asio::io_service& io_service, std::size_t max_recycled)
-      : max_recycled_(max_recycled)
-      , io_service_(io_service)
-      , size_(0)
-    {
-    }
-
-    session_wrapper_ptr create(const pool_link& back_link,
-        const session_config&, boost::system::error_code&);
-    void release(const session_wrapper_ptr&);
-
-    std::size_t size() const
-    {
-      return size_;
-    }
-
-  private:
-    const std::size_t        max_recycled_;
-    boost::asio::io_service& io_service_;
-    std::size_t              size_;
-    session_list             recycled_;
-  }; // class pool_item
-
-  static pool create_pool(const io_service_vector& io_services, 
+  static pool create_pool(const io_service_vector& io_services,
       std::size_t max_recycled);
-
-  static bool less_loaded_pool(const pool_item_ptr& left,
-      const pool_item_ptr& right)
-  {
-    return left->size() < right->size();
-  }
 
   const pool pool_;
 }; // class pooled_session_factory

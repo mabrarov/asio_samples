@@ -46,27 +46,13 @@ public:
   void release(const session_ptr&);
 
 private:
-  struct  session_wrapper;
-  typedef boost::shared_ptr<session_wrapper> session_wrapper_ptr;
-
-  struct session_wrapper
-    : public session
-    , public sp_intrusive_list<session_wrapper>::base_hook
+  class session_wrapper_base
+    : public sp_intrusive_list<session_wrapper_base>::base_hook
   {
-    session_wrapper(boost::asio::io_service& io_service,
-        const session_config& config)
-      : session(io_service, config)
-    {
-    }
-
-#if !defined(NDEBUG)
-    ~session_wrapper()
-    {
-    }
-#endif
-  }; // struct session_wrapper
-
-  typedef sp_intrusive_list<session_wrapper> session_list;
+  }; // class session_wrapper_base
+  typedef sp_intrusive_list<session_wrapper_base> session_list;
+  class session_wrapper;
+  typedef boost::shared_ptr<session_wrapper> session_wrapper_ptr;
 
   const std::size_t        max_recycled_;
   boost::asio::io_service& io_service_;
