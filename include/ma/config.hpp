@@ -31,7 +31,7 @@
  * some of the asio-samples explicitly define and use binders with (explicit or
  * implicit - see MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) move constructor.
  */
-#if defined(__GNUC__) && (__GNUC__ == 4) && (__GNUC_MINOR__ >= 6)
+#if defined(__GNUC__) && (__GNUC__ >= 4) && (__GNUC_MINOR__ >= 6)
 
 /// Turns off explicit definition of move constructor (and copy constructor).
 #undef MA_USE_EXPLICIT_MOVE_CONSTRUCTOR

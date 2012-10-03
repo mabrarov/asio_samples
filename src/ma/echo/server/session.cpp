@@ -1025,6 +1025,28 @@ boost::system::error_code session::apply_socket_options()
   return boost::system::error_code();
 }
 
+#if defined (MA_HAS_STEADY_DEADLINE_TIMER)
+
+session::optional_duration session::to_optional_duration(
+    const session_config::optional_time_duration& duration)
+{
+  if (duration)
+  {
+    return to_steady_deadline_timer_duration(duration.get());
+  }
+  return optional_duration();
+}
+
+#else // defined (MA_HAS_STEADY_DEADLINE_TIMER)
+
+session::optional_duration session::to_optional_duration(
+  const session_config::optional_time_duration& duration)
+{
+  return duration;
+}
+
+#endif // defined (MA_HAS_STEADY_DEADLINE_TIMER)
+
 } // namespace server
 } // namespace echo
 } // namespace ma

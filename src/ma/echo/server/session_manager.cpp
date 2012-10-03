@@ -214,7 +214,7 @@ void session_manager::stats_collector::set_recycled_session_count(
   stats_.recycled = count;
 }
 
-void session_manager::stats_collector::notify_session_accept(
+void session_manager::stats_collector::session_accepted(
     const boost::system::error_code& error)
 {
   if (!error)
@@ -224,7 +224,7 @@ void session_manager::stats_collector::notify_session_accept(
   }
 }
 
-void session_manager::stats_collector::notify_session_stop(
+void session_manager::stats_collector::session_stopped(
     const boost::system::error_code& error)
 {
   if (server_error::operation_aborted == error)
@@ -268,25 +268,24 @@ class session_manager::session_wrapper : public session_wrapper_base
 private:
   typedef session_wrapper this_type;
 
-public:
-  typedef protocol_type::endpoint endpoint_type;
-
   struct state_type
   {
     enum value_t {ready, start, work, stop, stopped};
   };
 
-  endpoint_type       remote_endpoint;
-  session_ptr         session;
-  state_type::value_t state;
-  std::size_t         pending_operations;
-  in_place_handler_allocator<144> start_wait_allocator;
-  in_place_handler_allocator<144> stop_allocator;
+  typedef in_place_handler_allocator<144> start_wait_allocator_type;
 
-  explicit session_wrapper(const session_ptr& the_session)
-    : session(the_session)
-    , state(state_type::ready)
-    , pending_operations(0)
+public:
+  typedef protocol_type::endpoint         endpoint_type;
+  typedef protocol_type::socket           socket_type;
+  typedef start_wait_allocator_type       start_allocator_type;
+  typedef start_wait_allocator_type       wait_allocator_type;
+  typedef in_place_handler_allocator<144> stop_allocator_type;
+
+  explicit session_wrapper(const session_ptr& session)
+    : session_(session)
+    , state_(state_type::ready)
+    , pending_operations_(0)
   {
   }
 
@@ -296,79 +295,172 @@ public:
   }
 #endif
 
-  void reset(const session_ptr& the_session)
+  void reset(const session_ptr& session)
   {
-    session = the_session;
-    state = state_type::ready;
-    pending_operations = 0;
+    session_ = session;
+    state_ = state_type::ready;
+    pending_operations_ = 0;
   }
 
   session_ptr release()
   {
-    if (session)
+    if (session_)
     {
-      session->reset();
+      session_->reset();
     }
 #if defined(MA_HAS_RVALUE_REFS)
-    return std::move(session);
+    return std::move(session_);
 #else
     session_ptr tmp;
-    tmp.swap(session);
+    tmp.swap(session_);
     return tmp;
 #endif
   }
 
+  socket_type& socket()
+  {
+    return session_->socket();
+  }
+
+  endpoint_type& remote_endpoint()
+  {
+    return remote_endpoint_;
+  }
+
+  const endpoint_type& remote_endpoint() const
+  {
+    return remote_endpoint_;
+  }
+
+  start_allocator_type& start_allocator()
+  {
+    return start_wait_allocator_;
+  }
+
+  wait_allocator_type& wait_allocator()
+  {
+    return start_wait_allocator_;
+  }
+
+  stop_allocator_type& stop_allocator()
+  {
+    return stop_allocator_;
+  }
+
   bool has_pending_operations() const
   {
-    return 0 != pending_operations;
+    return 0 != pending_operations_;
   }
 
-  bool is_starting() const
+  bool starting() const
   {
-    return state_type::start == state;
+    return state_type::start == state_;
   }
 
-  bool is_stopping() const
+  bool stopping() const
   {
-    return state_type::stop == state;
+    return state_type::stop == state_;
   }
 
-  bool is_working() const
+  bool working() const
   {
-    return state_type::work == state;
+    return state_type::work == state_;
   }
 
-  void handle_operation_completion()
+  void operation_completed()
   {
-    --pending_operations;
+    --pending_operations_;
   }
 
-  void mark_as_stopped()
+  void mark_stopped()
   {
-    state = state_type::stopped;
+    state_ = state_type::stopped;
   }
 
-  void mark_as_working()
+  void mark_working()
   {
-    state = state_type::work;
+    state_ = state_type::work;
+  }  
+
+#if defined(MA_HAS_RVALUE_REFS)
+
+  template <typename Handler>
+  void async_start(Handler&& handler)
+  {
+    session_->async_start(make_custom_alloc_handler(
+        start_wait_allocator_, std::forward<Handler>(handler)));
+    start_started();
   }
 
+  template <typename Handler>
+  void async_stop(Handler&& handler)
+  {
+    session_->async_stop(make_custom_alloc_handler(
+        stop_allocator_, std::forward<Handler>(handler)));
+    stop_started();
+  }
+
+  template <typename Handler>
+  void async_wait(Handler&& handler)
+  {
+    session_->async_wait(make_custom_alloc_handler(
+        start_wait_allocator_, std::forward<Handler>(handler)));
+    wait_started();
+  }
+
+#else // defined(MA_HAS_RVALUE_REFS)
+
+  template <typename Handler>
+  void async_start(const Handler& handler)
+  {
+    session_->async_start(make_custom_alloc_handler(
+        start_wait_allocator_, handler));
+    start_started();
+  }
+
+  template <typename Handler>
+  void async_stop(const Handler& handler)
+  {
+    session_->async_stop(make_custom_alloc_handler(
+        stop_allocator_, handler));
+    stop_started();
+  }
+
+  template <typename Handler>
+  void async_wait(const Handler& handler)
+  {
+    session_->async_wait(make_custom_alloc_handler(
+        start_wait_allocator_, handler));
+    wait_started();
+  }
+
+#endif // defined(MA_HAS_RVALUE_REFS)
+
+private:
   void start_started()
   {
-    state = state_type::start;
-    ++pending_operations;
+    state_ = state_type::start;
+    ++pending_operations_;
   }
 
   void stop_started()
   {
-    state = state_type::stop;
-    ++pending_operations;
+    state_ = state_type::stop;
+    ++pending_operations_;
   }
 
   void wait_started()
   {
-    ++pending_operations;
+    ++pending_operations_;
   }
+
+  endpoint_type       remote_endpoint_;
+  session_ptr         session_;
+  state_type::value_t state_;
+  std::size_t         pending_operations_;
+
+  start_wait_allocator_type start_wait_allocator_;
+  stop_allocator_type       stop_allocator_;
 }; // class session_manager::session_wrapper
 
 session_manager_ptr session_manager::create(
@@ -429,7 +521,7 @@ session_manager_stats session_manager::stats()
 
 boost::system::error_code session_manager::do_start_extern_start()
 {
-  // Check exetrnal state consistency
+  // Check external state consistency
   if (extern_state::ready != extern_state_)
   {
     return server_error::invalid_state;
@@ -452,7 +544,7 @@ boost::system::error_code session_manager::do_start_extern_start()
 boost::optional<boost::system::error_code>
 session_manager::do_start_extern_stop()
 {
-  // Check exetrnal state consistency
+  // Check external state consistency
   if ((extern_state::stopped == extern_state_)
       || (extern_state::stop == extern_state_))
   {
@@ -483,7 +575,7 @@ session_manager::do_start_extern_stop()
 boost::optional<boost::system::error_code>
 session_manager::do_start_extern_wait()
 {
-  // Check exetrnal state consistency
+  // Check external state consistency
   if ((extern_state::work != extern_state_)
       || extern_wait_handler_.has_target())
   {
@@ -527,7 +619,7 @@ void session_manager::continue_work()
   BOOST_ASSERT_MSG(intern_state::work == intern_state_,
       "Invalid internal state");
 
-  if (is_out_of_work())
+  if (out_of_work())
   {
     start_stop(server_error::out_of_work);
     return;
@@ -555,7 +647,7 @@ void session_manager::continue_work()
     if (boost::system::error_code error = open_acceptor())
     {
       accept_state_ = accept_state::stopped;
-      if (is_out_of_work())
+      if (out_of_work())
       {
         start_stop(server_error::out_of_work);
       }
@@ -568,17 +660,13 @@ void session_manager::continue_work()
   session_wrapper_ptr session = create_session(error);
   if (error)
   {
-    if (session)
-    {
-      recycle(session);
-    }
     if (!active_sessions_.empty())
     {
       // Try later
       return;
     }
     accept_state_ = accept_state::stopped;
-    if (is_out_of_work())
+    if (out_of_work())
     {
       start_stop(server_error::out_of_work);
     }
@@ -626,7 +714,7 @@ void session_manager::handle_accept_at_work(const session_wrapper_ptr& session,
   accept_state_ = accept_state::ready;
 
   // Collect statistics
-  stats_collector_.notify_session_accept(error);
+  stats_collector_.session_accepted(error);
 
   // Handle result
   if (error)
@@ -640,7 +728,7 @@ void session_manager::handle_accept_at_work(const session_wrapper_ptr& session,
   if (active_sessions_.size() >= max_session_count_)
   {
     // Session was successfully accepted but has to be immediately stopped
-    stats_collector_.notify_session_stop(server_error::operation_aborted);
+    stats_collector_.session_stopped(server_error::operation_aborted);
     recycle(session);
     continue_work();
     return;
@@ -664,7 +752,7 @@ void session_manager::handle_accept_at_stop(const session_wrapper_ptr& session,
   accept_state_ = accept_state::stopped;
 
   // Collect statistics
-  stats_collector_.notify_session_accept(error);
+  stats_collector_.session_accepted(error);
 
   // Handle result
   if (error)
@@ -675,7 +763,7 @@ void session_manager::handle_accept_at_stop(const session_wrapper_ptr& session,
   }
 
   // Session was successfully accepted but has to be immediately stopped
-  stats_collector_.notify_session_stop(server_error::operation_aborted);
+  stats_collector_.session_stopped(server_error::operation_aborted);
   recycle(session);
   continue_stop();
 }
@@ -708,12 +796,12 @@ void session_manager::handle_session_start_at_work(
       "Invalid internal state");
 
   --pending_operations_;
-  session->handle_operation_completion();
+  session->operation_completed();
 
-  if (!session->is_starting())
+  if (!session->starting())
   {
     // Collect statistics
-    stats_collector_.notify_session_stop(server_error::operation_aborted);
+    stats_collector_.session_stopped(server_error::operation_aborted);
     // Handler is called too late
     recycle(session);
     continue_work();
@@ -723,9 +811,9 @@ void session_manager::handle_session_start_at_work(
   if (error)
   {
     // Collect statistics
-    stats_collector_.notify_session_stop(error);
+    stats_collector_.session_stopped(error);
     // Failed to start accepted session
-    session->mark_as_stopped();
+    session->mark_stopped();
     remove_from_active(session);
     recycle(session);
     continue_work();
@@ -733,7 +821,7 @@ void session_manager::handle_session_start_at_work(
   }
 
   // Accepted session started successfully
-  session->mark_as_working();
+  session->mark_working();
   start_session_wait(session);
   continue_work();
 }
@@ -745,12 +833,12 @@ void session_manager::handle_session_start_at_stop(
       "Invalid internal state");
 
   --pending_operations_;
-  session->handle_operation_completion();
+  session->operation_completed();
 
-  if (!session->is_starting())
+  if (!session->starting())
   {
     // Collect statistics
-    stats_collector_.notify_session_stop(server_error::operation_aborted);
+    stats_collector_.session_stopped(server_error::operation_aborted);
     // Handler is called too late
     recycle(session);
     continue_stop();
@@ -760,9 +848,9 @@ void session_manager::handle_session_start_at_stop(
   if (error)
   {
     // Collect statistics
-    stats_collector_.notify_session_stop(error);
+    stats_collector_.session_stopped(error);
     // Failed to start accepted session
-    session->mark_as_stopped();
+    session->mark_stopped();
     remove_from_active(session);
     recycle(session);
     continue_stop();
@@ -803,12 +891,12 @@ void session_manager::handle_session_wait_at_work(
       "Invalid internal state");
 
   --pending_operations_;
-  session->handle_operation_completion();
+  session->operation_completed();
 
-  if (!session->is_working())
+  if (!session->working())
   {
     // Collect statistics
-    stats_collector_.notify_session_stop(server_error::operation_aborted);
+    stats_collector_.session_stopped(server_error::operation_aborted);
     // Handler is called too late
     recycle(session);
     continue_work();
@@ -816,7 +904,7 @@ void session_manager::handle_session_wait_at_work(
   }
 
   // Collect statistics
-  stats_collector_.notify_session_stop(error);
+  stats_collector_.session_stopped(error);
   // Session run out of work - stop it
   start_session_stop(session);
   continue_work();
@@ -830,12 +918,12 @@ void session_manager::handle_session_wait_at_stop(
       "Invalid internal state");
 
   --pending_operations_;
-  session->handle_operation_completion();
+  session->operation_completed();
 
-  if (!session->is_working())
+  if (!session->working())
   {
     // Collect statistics
-    stats_collector_.notify_session_stop(server_error::operation_aborted);
+    stats_collector_.session_stopped(server_error::operation_aborted);
     // Handler is called too late
     recycle(session);
     continue_stop();
@@ -843,7 +931,7 @@ void session_manager::handle_session_wait_at_stop(
   }
 
   // Collect statistics
-  stats_collector_.notify_session_stop(error);
+  stats_collector_.session_stopped(error);
   // Session run out of work - stop it
   start_session_stop(session);
   continue_stop();
@@ -877,9 +965,9 @@ void session_manager::handle_session_stop_at_work(
       "Invalid internal state");
 
   --pending_operations_;
-  session->handle_operation_completion();
+  session->operation_completed();
 
-  if (!session->is_stopping())
+  if (!session->stopping())
   {
     // Handler is called too late
     recycle(session);
@@ -895,7 +983,7 @@ void session_manager::handle_session_stop_at_work(
   (void) error;
 
   // Session has stopped successfully
-  session->mark_as_stopped();
+  session->mark_stopped();
   remove_from_active(session);
   recycle(session);
   continue_work();
@@ -908,9 +996,9 @@ void session_manager::handle_session_stop_at_stop(
       "Invalid internal state");
 
   --pending_operations_;
-  session->handle_operation_completion();
+  session->operation_completed();
 
-  if (!session->is_stopping())
+  if (!session->stopping())
   {
     // Handler is called too late
     recycle(session);
@@ -925,13 +1013,13 @@ void session_manager::handle_session_stop_at_stop(
   // Prevent warning at release build
   (void) error;
 
-  session->mark_as_stopped();
+  session->mark_stopped();
   remove_from_active(session);
   recycle(session);
   continue_stop();
 }
 
-bool session_manager::is_out_of_work() const
+bool session_manager::out_of_work() const
 {
   return active_sessions_.empty() && (accept_state::stopped == accept_state_);
 }
@@ -952,7 +1040,7 @@ void session_manager::start_stop(const boost::system::error_code& error)
       boost::static_pointer_cast<session_wrapper>(active_sessions_.front());
   while (session)
   {
-    if (!session->is_stopping())
+    if (!session->stopping())
     {
       start_session_stop(session);
     }
@@ -1004,17 +1092,17 @@ void session_manager::start_accept_session(const session_wrapper_ptr& session)
 {
 #if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
-  acceptor_.async_accept(session->session->socket(), session->remote_endpoint,
+  acceptor_.async_accept(session->socket(), session->remote_endpoint(),
       MA_STRAND_WRAP(strand_, make_custom_alloc_handler(accept_allocator_,
           accept_handler_binder(&this_type::handle_accept, shared_from_this(),
               session))));
 
 #else
 
-  acceptor_.async_accept(session->session->socket(), session->remote_endpoint,
+  acceptor_.async_accept(session->socket(), session->remote_endpoint(),
       MA_STRAND_WRAP(strand_, make_custom_alloc_handler(accept_allocator_,
           boost::bind(&this_type::handle_accept, shared_from_this(),
-          session, _1))));
+              session, _1))));
 
 #endif
 
@@ -1027,21 +1115,16 @@ void session_manager::start_session_start(const session_wrapper_ptr& session)
   // Asynchronously start wrapped session
 #if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
-  session->session->async_start(
-      make_custom_alloc_handler(session->start_wait_allocator,
-          session_dispatch_binder(&this_type::dispatch_handle_session_start,
-              shared_from_this(), session)));
+  session->async_start(session_dispatch_binder(
+      &this_type::dispatch_handle_session_start, shared_from_this(), session));
 
 #else
 
-  session->session->async_start(
-      make_custom_alloc_handler(session->start_wait_allocator,
-          boost::bind(&this_type::dispatch_handle_session_start,
-              session_manager_weak_ptr(shared_from_this()), session, _1)));
+  session->async_start(boost::bind(&this_type::dispatch_handle_session_start, 
+      session_manager_weak_ptr(shared_from_this()), session, _1));
 
 #endif
 
-  session->start_started();
   ++pending_operations_;
 }
 
@@ -1050,21 +1133,16 @@ void session_manager::start_session_stop(const session_wrapper_ptr& session)
   // Asynchronously stop wrapped session
 #if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
-  session->session->async_stop(
-      make_custom_alloc_handler(session->stop_allocator,
-          session_dispatch_binder(&this_type::dispatch_handle_session_stop,
-              shared_from_this(), session)));
+  session->async_stop(session_dispatch_binder(
+      &this_type::dispatch_handle_session_stop, shared_from_this(), session));
 
 #else
 
-  session->session->async_stop(
-      make_custom_alloc_handler(session->stop_allocator,
-          boost::bind(&this_type::dispatch_handle_session_stop,
-              session_manager_weak_ptr(shared_from_this()), session, _1)));
+  session->async_stop(boost::bind(&this_type::dispatch_handle_session_stop, 
+      session_manager_weak_ptr(shared_from_this()), session, _1));
 
 #endif
 
-  session->stop_started();
   ++pending_operations_;
 }
 
@@ -1073,21 +1151,16 @@ void session_manager::start_session_wait(const session_wrapper_ptr& session)
   // Asynchronously wait on wrapped session
 #if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
-  session->session->async_wait(
-      make_custom_alloc_handler(session->start_wait_allocator,
-          session_dispatch_binder(&this_type::dispatch_handle_session_wait,
-              shared_from_this(), session)));
+  session->async_wait(session_dispatch_binder(
+      &this_type::dispatch_handle_session_wait, shared_from_this(), session));
 
 #else
 
-  session->session->async_wait(
-      make_custom_alloc_handler(session->start_wait_allocator,
-          boost::bind(&this_type::dispatch_handle_session_wait,
-              session_manager_weak_ptr(shared_from_this()), session, _1)));
+  session->async_wait(boost::bind(&this_type::dispatch_handle_session_wait,
+      session_manager_weak_ptr(shared_from_this()), session, _1));
 
 #endif
 
-  session->wait_started();
   ++pending_operations_;
 }
 
@@ -1231,14 +1304,14 @@ void session_manager::dispatch_handle_session_start(
 #if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
     this_ptr->strand_.dispatch(make_custom_alloc_handler(
-        session->start_wait_allocator, session_handler_binder(
+        session->start_allocator(), session_handler_binder(
             &session_manager::handle_session_start, this_ptr, session,
                 error)));
 
 #else
 
     this_ptr->strand_.dispatch(make_custom_alloc_handler(
-        session->start_wait_allocator, boost::bind(
+        session->start_allocator(), boost::bind(
             &session_manager::handle_session_start, this_ptr, session,
                 error)));
 
@@ -1257,13 +1330,13 @@ void session_manager::dispatch_handle_session_wait(
 #if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
     this_ptr->strand_.dispatch(make_custom_alloc_handler(
-        session->start_wait_allocator, session_handler_binder(
+        session->wait_allocator(), session_handler_binder(
             &session_manager::handle_session_wait, this_ptr, session, error)));
 
 #else
 
     this_ptr->strand_.dispatch(make_custom_alloc_handler(
-        session->start_wait_allocator, boost::bind(
+        session->wait_allocator(), boost::bind(
             &session_manager::handle_session_wait, this_ptr, session, error)));
 
 #endif
@@ -1281,13 +1354,13 @@ void session_manager::dispatch_handle_session_stop(
 #if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
     this_ptr->strand_.dispatch(make_custom_alloc_handler(
-        session->stop_allocator, session_handler_binder(
+        session->stop_allocator(), session_handler_binder(
             &session_manager::handle_session_stop, this_ptr, session, error)));
 
 #else
 
     this_ptr->strand_.dispatch(make_custom_alloc_handler(
-        session->stop_allocator, boost::bind(
+        session->stop_allocator(), boost::bind(
             &session_manager::handle_session_stop, this_ptr, session, error)));
 
 #endif

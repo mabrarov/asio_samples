@@ -38,9 +38,11 @@ public:
   pooled_session_factory(const io_service_vector& io_services,
       std::size_t max_recycled);
 
+#if !defined(NDEBUG)
   ~pooled_session_factory()
   {
   }
+#endif
 
   session_ptr create(const session_config&, boost::system::error_code&);
   void release(const session_ptr&);

@@ -38,9 +38,11 @@ public:
   {
   }
 
+#if !defined(NDEBUG)
   ~simple_session_factory()
   {
   }
+#endif
 
   session_ptr create(const session_config&, boost::system::error_code&);
   void release(const session_ptr&);

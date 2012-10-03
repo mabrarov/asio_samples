@@ -304,29 +304,7 @@ private:
       extern_wait_handler_.store(handler);
     }
   }
-
-#if defined (MA_HAS_STEADY_DEADLINE_TIMER)
-
-  static optional_duration to_optional_duration(
-      const session_config::optional_time_duration& duration)
-  {
-    if (duration)
-    {
-      return to_steady_deadline_timer_duration(duration.get());
-    }
-    return optional_duration();
-  }
-
-#else
-
-  static optional_duration to_optional_duration(
-      const session_config::optional_time_duration& duration)
-  {
-    return duration;
-  }
-
-#endif
-
+  
   boost::system::error_code                  do_start_extern_start();
   boost::optional<boost::system::error_code> do_start_extern_stop();
   boost::optional<boost::system::error_code> do_start_extern_wait();
@@ -367,6 +345,9 @@ private:
   boost::system::error_code shutdown_socket();
   boost::system::error_code close_socket();
   boost::system::error_code apply_socket_options();
+
+  static optional_duration to_optional_duration(
+      const session_config::optional_time_duration& duration);
 
   const std::size_t                   max_transfer_size_;
   const session_config::optional_int  socket_recv_buffer_size_;

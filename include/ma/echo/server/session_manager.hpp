@@ -210,8 +210,8 @@ private:
     session_manager_stats stats();
     void set_active_session_count(std::size_t);
     void set_recycled_session_count(std::size_t);
-    void notify_session_accept(const boost::system::error_code&);
-    void notify_session_stop(const boost::system::error_code&);
+    void session_accepted(const boost::system::error_code&);
+    void session_stopped(const boost::system::error_code&);
     void reset();
 
   private:
@@ -368,7 +368,7 @@ private:
   void handle_session_stop_at_stop(const session_wrapper_ptr&,
       const boost::system::error_code&);
 
-  bool is_out_of_work() const;
+  bool out_of_work() const;
   void start_stop(const boost::system::error_code&);
   void continue_stop();
 
