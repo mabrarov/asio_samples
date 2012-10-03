@@ -205,159 +205,30 @@ private:
     typedef boost::lock_guard<mutex_type> lock_guard_type;
 
   public:
-    stats_collector()
-      : mutex_()
-      , stats_()
-    {
-    }
+    stats_collector();
 
-    session_manager_stats stats()
-    {
-      lock_guard_type lock_guard(mutex_);
-      return stats_;
-    }
-
-    void set_active_session_count(std::size_t active_count)
-    {
-      lock_guard_type lock_guard(mutex_);
-      stats_.active = active_count;
-      if (stats_.max_active < active_count)
-      {
-        stats_.max_active = active_count;
-      }
-    }
-
-    void set_recycled_session_count(std::size_t recycled_count)
-    {
-      lock_guard_type lock_guard(mutex_);
-      stats_.recycled = recycled_count;
-    }
-
-    void notify_session_accept(const boost::system::error_code& error)
-    {
-      if (!error)
-      {
-        lock_guard_type lock_guard(mutex_);
-        ++stats_.total_accepted;
-      }
-    }
-
-    void notify_session_stop(const boost::system::error_code& error);
-
-    void reset()
-    {
-      lock_guard_type lock_guard(mutex_);
-      stats_.active = stats_.max_active = stats_.recycled = 0;
-      stats_.total_accepted    = 0;
-      stats_.active_shutdowned = 0;
-      stats_.out_of_work       = 0;
-      stats_.timed_out         = 0;
-      stats_.error_stopped     = 0;
-    }
+    session_manager_stats stats();
+    void set_active_session_count(std::size_t);
+    void set_recycled_session_count(std::size_t);
+    void notify_session_accept(const boost::system::error_code&);
+    void notify_session_stop(const boost::system::error_code&);
+    void reset();
 
   private:
     mutex_type mutex_;
     session_manager_stats stats_;
   }; // class stats_collector
 
-  struct  session_wrapper;
+  class session_wrapper_base 
+    : public sp_intrusive_list<session_wrapper_base>::base_hook
+  {
+  }; // class session_wrapper_base
+  typedef sp_intrusive_list<session_wrapper_base> session_list;
+
+  class session_wrapper;
   typedef boost::shared_ptr<session_wrapper> session_wrapper_ptr;
 
-  struct session_wrapper : public sp_intrusive_list<session_wrapper>::base_hook
-  {
-    typedef protocol_type::endpoint endpoint_type;
-
-    struct state_type
-    {
-      enum value_t {ready, start, work, stop, stopped};
-    };
-
-    endpoint_type       remote_endpoint;
-    session_ptr         session;
-    state_type::value_t state;
-    std::size_t         pending_operations;
-    in_place_handler_allocator<144> start_wait_allocator;
-    in_place_handler_allocator<144> stop_allocator;
-
-    explicit session_wrapper(const session_ptr& the_session)
-      : session(the_session)
-      , state(state_type::ready)
-      , pending_operations(0)
-    {
-    }
-
-#if !defined(NDEBUG)
-    ~session_wrapper()
-    {
-    }
-#endif
-
-    void reset(const session_ptr& the_session)
-    {
-      session = the_session;
-      state = state_type::ready;
-      pending_operations = 0;
-    }
-
-    session_ptr release();
-
-    bool has_pending_operations() const
-    {
-      return 0 != pending_operations;
-    }
-
-    bool is_starting() const
-    {
-      return state_type::start == state;
-    }
-
-    bool is_stopping() const
-    {
-      return state_type::stop == state;
-    }
-
-    bool is_working() const
-    {
-      return state_type::work == state;
-    }
-
-    void handle_operation_completion()
-    {
-      --pending_operations;
-    }
-
-    void mark_as_stopped()
-    {
-      state = state_type::stopped;
-    }
-
-    void mark_as_working()
-    {
-      state = state_type::work;
-    }
-
-    void start_started()
-    {
-      state = state_type::start;
-      ++pending_operations;
-    }
-
-    void stop_started()
-    {
-      state = state_type::stop;
-      ++pending_operations;
-    }
-
-    void wait_started()
-    {
-      ++pending_operations;
-    }
-  }; // struct session_wrapper
-
-  typedef sp_intrusive_list<session_wrapper> session_list;
-
-#if defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
   // Home-grown binders to support move semantic
   class accept_handler_binder;
@@ -547,6 +418,7 @@ private:
   session_list                    recycled_sessions_;
   boost::system::error_code       extern_wait_error_;
   stats_collector                 stats_collector_;
+
   handler_storage<boost::system::error_code> extern_wait_handler_;
   handler_storage<boost::system::error_code> extern_stop_handler_;
 

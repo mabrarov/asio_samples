@@ -24,8 +24,7 @@ namespace ma {
 namespace echo {
 namespace server {
 
-#if defined(MA_HAS_RVALUE_REFS) \
-  && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
 // Home-grown binders to support move semantic
 class session_manager::accept_handler_binder
@@ -185,6 +184,46 @@ private:
 #endif // defined(MA_HAS_RVALUE_REFS)
        //     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
+session_manager::stats_collector::stats_collector()
+  : mutex_()
+  , stats_()
+{
+}
+
+session_manager_stats session_manager::stats_collector::stats()
+{
+  lock_guard_type lock_guard(mutex_);
+  return stats_;
+}
+
+void session_manager::stats_collector::set_active_session_count(
+    std::size_t count)
+{
+  lock_guard_type lock_guard(mutex_);
+  stats_.active = count;
+  if (stats_.max_active < count)
+  {
+    stats_.max_active = count;
+  }
+}
+
+void session_manager::stats_collector::set_recycled_session_count(
+    std::size_t count)
+{
+  lock_guard_type lock_guard(mutex_);
+  stats_.recycled = count;
+}
+
+void session_manager::stats_collector::notify_session_accept(
+    const boost::system::error_code& error)
+{
+  if (!error)
+  {
+    lock_guard_type lock_guard(mutex_);
+    ++stats_.total_accepted;
+  }
+}
+
 void session_manager::stats_collector::notify_session_stop(
     const boost::system::error_code& error)
 {
@@ -213,20 +252,124 @@ void session_manager::stats_collector::notify_session_stop(
   ++stats_.error_stopped;
 }
 
-session_ptr session_manager::session_wrapper::release()
+void session_manager::stats_collector::reset()
 {
-  if (session)
-  {
-    session->reset();
-  }
-#if defined(MA_HAS_RVALUE_REFS)
-  return std::move(session);
-#else
-  session_ptr tmp;
-  tmp.swap(session);
-  return tmp;
-#endif
+  lock_guard_type lock_guard(mutex_);
+  stats_.active = stats_.max_active = stats_.recycled = 0;
+  stats_.total_accepted    = 0;
+  stats_.active_shutdowned = 0;
+  stats_.out_of_work       = 0;
+  stats_.timed_out         = 0;
+  stats_.error_stopped     = 0;
 }
+
+class session_manager::session_wrapper : public session_wrapper_base
+{
+private:
+  typedef session_wrapper this_type;
+
+public:
+  typedef protocol_type::endpoint endpoint_type;
+
+  struct state_type
+  {
+    enum value_t {ready, start, work, stop, stopped};
+  };
+
+  endpoint_type       remote_endpoint;
+  session_ptr         session;
+  state_type::value_t state;
+  std::size_t         pending_operations;
+  in_place_handler_allocator<144> start_wait_allocator;
+  in_place_handler_allocator<144> stop_allocator;
+
+  explicit session_wrapper(const session_ptr& the_session)
+    : session(the_session)
+    , state(state_type::ready)
+    , pending_operations(0)
+  {
+  }
+
+#if !defined(NDEBUG)
+  ~session_wrapper()
+  {
+  }
+#endif
+
+  void reset(const session_ptr& the_session)
+  {
+    session = the_session;
+    state = state_type::ready;
+    pending_operations = 0;
+  }
+
+  session_ptr release()
+  {
+    if (session)
+    {
+      session->reset();
+    }
+#if defined(MA_HAS_RVALUE_REFS)
+    return std::move(session);
+#else
+    session_ptr tmp;
+    tmp.swap(session);
+    return tmp;
+#endif
+  }
+
+  bool has_pending_operations() const
+  {
+    return 0 != pending_operations;
+  }
+
+  bool is_starting() const
+  {
+    return state_type::start == state;
+  }
+
+  bool is_stopping() const
+  {
+    return state_type::stop == state;
+  }
+
+  bool is_working() const
+  {
+    return state_type::work == state;
+  }
+
+  void handle_operation_completion()
+  {
+    --pending_operations;
+  }
+
+  void mark_as_stopped()
+  {
+    state = state_type::stopped;
+  }
+
+  void mark_as_working()
+  {
+    state = state_type::work;
+  }
+
+  void start_started()
+  {
+    state = state_type::start;
+    ++pending_operations;
+  }
+
+  void stop_started()
+  {
+    state = state_type::stop;
+    ++pending_operations;
+  }
+
+  void wait_started()
+  {
+    ++pending_operations;
+  }
+}; // class session_manager::session_wrapper
 
 session_manager_ptr session_manager::create(
     boost::asio::io_service& io_service,
@@ -805,14 +948,16 @@ void session_manager::start_stop(const boost::system::error_code& error)
   }
 
   // Stop all active sessions
-  session_wrapper_ptr session = active_sessions_.front();
+  session_wrapper_ptr session = 
+      boost::static_pointer_cast<session_wrapper>(active_sessions_.front());
   while (session)
   {
     if (!session->is_stopping())
     {
       start_session_stop(session);
     }
-    session = session_list::next(session);
+    session = boost::static_pointer_cast<session_wrapper>(
+        session_list::next(session));
   }
 
   // Switch all internal SMs to the right states
@@ -857,8 +1002,7 @@ void session_manager::continue_stop()
 
 void session_manager::start_accept_session(const session_wrapper_ptr& session)
 {
-#if defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
   acceptor_.async_accept(session->session->socket(), session->remote_endpoint,
       MA_STRAND_WRAP(strand_, make_custom_alloc_handler(accept_allocator_,
@@ -881,8 +1025,7 @@ void session_manager::start_accept_session(const session_wrapper_ptr& session)
 void session_manager::start_session_start(const session_wrapper_ptr& session)
 {
   // Asynchronously start wrapped session
-#if defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
   session->session->async_start(
       make_custom_alloc_handler(session->start_wait_allocator,
@@ -905,8 +1048,7 @@ void session_manager::start_session_start(const session_wrapper_ptr& session)
 void session_manager::start_session_stop(const session_wrapper_ptr& session)
 {
   // Asynchronously stop wrapped session
-#if defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
   session->session->async_stop(
       make_custom_alloc_handler(session->stop_allocator,
@@ -929,8 +1071,7 @@ void session_manager::start_session_stop(const session_wrapper_ptr& session)
 void session_manager::start_session_wait(const session_wrapper_ptr& session)
 {
   // Asynchronously wait on wrapped session
-#if defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
   session->session->async_wait(
       make_custom_alloc_handler(session->start_wait_allocator,
@@ -1009,7 +1150,8 @@ session_manager::session_wrapper_ptr session_manager::create_session(
 
   if (!recycled_sessions_.empty())
   {
-    session_wrapper_ptr wrapped_session = recycled_sessions_.front();
+    session_wrapper_ptr wrapped_session = 
+        boost::static_pointer_cast<session_wrapper>(recycled_sessions_.front());
     remove_from_recycled(wrapped_session);
 
     wrapped_session->reset(session);
@@ -1086,8 +1228,7 @@ void session_manager::dispatch_handle_session_start(
   if (session_manager_ptr this_ptr = this_weak_ptr.lock())
   {
     // Forward completion
-#if defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
     this_ptr->strand_.dispatch(make_custom_alloc_handler(
         session->start_wait_allocator, session_handler_binder(
@@ -1113,8 +1254,7 @@ void session_manager::dispatch_handle_session_wait(
   if (session_manager_ptr this_ptr = this_weak_ptr.lock())
   {
     // Forward completion
-#if defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
     this_ptr->strand_.dispatch(make_custom_alloc_handler(
         session->start_wait_allocator, session_handler_binder(
@@ -1138,8 +1278,7 @@ void session_manager::dispatch_handle_session_stop(
   if (session_manager_ptr this_ptr = this_weak_ptr.lock())
   {
     // Forward completion
-#if defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
     this_ptr->strand_.dispatch(make_custom_alloc_handler(
         session->stop_allocator, session_handler_binder(

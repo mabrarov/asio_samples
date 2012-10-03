@@ -21,8 +21,7 @@ namespace server {
 
 namespace {
 
-#if defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
 // Home-grown binders to support move semantic
 class io_handler_binder
@@ -881,8 +880,7 @@ void session::start_stop(boost::system::error_code error)
 void session::start_socket_read(
     const cyclic_buffer::mutable_buffers_type& buffers)
 {
-#if defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
   socket_.async_read_some(buffers, MA_STRAND_WRAP(strand_,
       make_custom_alloc_handler(read_allocator_, io_handler_binder(
@@ -903,8 +901,7 @@ void session::start_socket_read(
 void session::start_socket_write(
     const cyclic_buffer::const_buffers_type& buffers)
 {
-#if defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
   socket_.async_write_some(buffers, MA_STRAND_WRAP(strand_,
       make_custom_alloc_handler(write_allocator_, io_handler_binder(
@@ -927,8 +924,7 @@ void session::start_timer_wait()
   BOOST_ASSERT_MSG(timer_state::ready == timer_state_,
       "Invalid timer state");
 
-#if defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
   timer_.async_wait(MA_STRAND_WRAP(strand_,
       make_custom_alloc_handler(timer_allocator_, timer_handler_binder(
