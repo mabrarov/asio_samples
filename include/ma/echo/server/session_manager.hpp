@@ -219,7 +219,7 @@ private:
     session_manager_stats stats_;
   }; // class stats_collector
 
-  class session_wrapper_base 
+  class session_wrapper_base
     : public sp_intrusive_list<session_wrapper_base>::base_hook
   {
   }; // class session_wrapper_base
@@ -380,10 +380,10 @@ private:
   void recycle(const session_wrapper_ptr&);
   session_wrapper_ptr create_session(boost::system::error_code& error);
 
-  void add_to_active(const session_wrapper_ptr& session);
-  void add_to_recycled(const session_wrapper_ptr& session);
-  void remove_from_active(const session_wrapper_ptr& session);
-  void remove_from_recycled(const session_wrapper_ptr& session);
+  void add_to_active(const session_wrapper_ptr&);
+  void add_to_recycled(const session_wrapper_ptr&);
+  void remove_from_active(const session_wrapper_ptr&);
+  void remove_from_recycled(const session_wrapper_ptr&);
 
   boost::system::error_code open_acceptor();
   boost::system::error_code close_acceptor();

@@ -24,6 +24,44 @@ namespace ma {
 namespace echo {
 namespace server {
 
+namespace {
+
+class session_release_guard : private boost::noncopyable
+{
+public:
+  explicit session_release_guard(session_factory& factory,
+      const session_ptr& session)
+    : factory_(factory)
+    , session_(session)
+  {
+  }
+
+  ~session_release_guard()
+  {
+    if (session_)
+    {
+      factory_.release(session_);
+    }
+  }
+
+  session_ptr release()
+  {
+#if defined(MA_HAS_RVALUE_REFS)
+    return std::move(session_);
+#else
+    session_ptr tmp;
+    tmp.swap(session_);
+    return tmp;
+#endif
+  }
+
+private:
+  session_factory& factory_;
+  session_ptr      session_;
+}; // class session_release_guard
+
+} // anonymous namespace
+
 #if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
 // Home-grown binders to support move semantic
@@ -295,19 +333,15 @@ public:
   }
 #endif
 
-  void reset(const session_ptr& session)
+  void attach(const session_ptr& session)
   {
     session_ = session;
     state_ = state_type::ready;
     pending_operations_ = 0;
   }
 
-  session_ptr release()
+  session_ptr detach()
   {
-    if (session_)
-    {
-      session_->reset();
-    }
 #if defined(MA_HAS_RVALUE_REFS)
     return std::move(session_);
 #else
@@ -380,7 +414,7 @@ public:
   void mark_working()
   {
     state_ = state_type::work;
-  }  
+  }
 
 #if defined(MA_HAS_RVALUE_REFS)
 
@@ -1036,7 +1070,7 @@ void session_manager::start_stop(const boost::system::error_code& error)
   }
 
   // Stop all active sessions
-  session_wrapper_ptr session = 
+  session_wrapper_ptr session =
       boost::static_pointer_cast<session_wrapper>(active_sessions_.front());
   while (session)
   {
@@ -1120,7 +1154,7 @@ void session_manager::start_session_start(const session_wrapper_ptr& session)
 
 #else
 
-  session->async_start(boost::bind(&this_type::dispatch_handle_session_start, 
+  session->async_start(boost::bind(&this_type::dispatch_handle_session_start,
       session_manager_weak_ptr(shared_from_this()), session, _1));
 
 #endif
@@ -1138,7 +1172,7 @@ void session_manager::start_session_stop(const session_wrapper_ptr& session)
 
 #else
 
-  session->async_stop(boost::bind(&this_type::dispatch_handle_session_stop, 
+  session->async_stop(boost::bind(&this_type::dispatch_handle_session_stop,
       session_manager_weak_ptr(shared_from_this()), session, _1));
 
 #endif
@@ -1173,8 +1207,16 @@ void session_manager::recycle(const session_wrapper_ptr& session)
     return;
   }
 
-  session_factory_.release(session->release());
+  // Detach session from wrapper
+  session_ptr detached_session = session->detach();
+  session_release_guard session_guard(session_factory_, detached_session);
+  // Reset internal state of session
+  detached_session->reset();
+  // Return session to its factory
+  session_factory_.release(detached_session);
+  session_guard.release();
 
+  // Cache session wrapper if can
   if (recycled_sessions_.size() < recycled_session_count_)
   {
     add_to_recycled(session);
@@ -1184,64 +1226,35 @@ void session_manager::recycle(const session_wrapper_ptr& session)
 session_manager::session_wrapper_ptr session_manager::create_session(
     boost::system::error_code& error)
 {
-  class session_guard : private boost::noncopyable
-  {
-  public:
-    explicit session_guard(session_factory& factory,
-        const session_ptr& session)
-      : factory_(factory)
-      , session_(session)
-    {
-    }
-
-    ~session_guard()
-    {
-      if (session_)
-      {
-        factory_.release(session_);
-      }
-    }
-
-    void release()
-    {
-      session_.reset();
-    }
-
-  private:
-    session_factory& factory_;
-    session_ptr      session_;
-  }; // class session_guard
-
-  session_ptr session = session_factory_.create(
-      managed_session_config_, error);
+  session_ptr session = session_factory_.create(managed_session_config_, error);
   if (error)
   {
     return session_wrapper_ptr();
   }
 
-  session_guard session_release_guard(session_factory_, session);
+  session_release_guard session_guard(session_factory_, session);
 
   if (!recycled_sessions_.empty())
   {
-    session_wrapper_ptr wrapped_session = 
+    session_wrapper_ptr wrapper =
         boost::static_pointer_cast<session_wrapper>(recycled_sessions_.front());
-    remove_from_recycled(wrapped_session);
+    remove_from_recycled(wrapper);
 
-    wrapped_session->reset(session);
+    wrapper->attach(session);
     error = boost::system::error_code();
 
-    session_release_guard.release();
-    return wrapped_session;
+    session_guard.release();
+    return wrapper;
   }
 
   try
   {
-    session_wrapper_ptr wrapped_session =
+    session_wrapper_ptr wrapper =
         boost::make_shared<session_wrapper>(session);
     error = boost::system::error_code();
 
-    session_release_guard.release();
-    return wrapped_session;
+    session_guard.release();
+    return wrapper;
   }
   catch (const std::bad_alloc&)
   {

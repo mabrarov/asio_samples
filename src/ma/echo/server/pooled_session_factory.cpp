@@ -69,7 +69,7 @@ public:
   {
     if (!recycled_.empty())
     {
-      session_wrapper_ptr session = 
+      session_wrapper_ptr session =
           boost::static_pointer_cast<session_wrapper>(recycled_.front());
       recycled_.erase(session);
       ++size_;

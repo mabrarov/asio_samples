@@ -48,7 +48,7 @@ session_ptr simple_session_factory::create(const session_config& config,
 {
   if (!recycled_.empty())
   {
-    session_wrapper_ptr session = 
+    session_wrapper_ptr session =
         boost::static_pointer_cast<session_wrapper>(recycled_.front());
     recycled_.erase(session);
     error = boost::system::error_code();
