@@ -32,27 +32,24 @@ private:
 
 public:
   simple_session_factory(boost::asio::io_service& io_service,
-      std::size_t max_recycled)
-    : max_recycled_(max_recycled)
-    , io_service_(io_service)
-  {
-  }
+      std::size_t max_recycled);
 
 #if !defined(NDEBUG)
-  ~simple_session_factory()
-  {
-  }
+  ~simple_session_factory();
 #endif
 
-  session_ptr create(const session_config&, boost::system::error_code&);
-  void release(const session_ptr&);
+  session_ptr create(const session_config& config,
+      boost::system::error_code& error);
+  void release(const session_ptr& session);
 
 private:
   class session_wrapper_base
     : public sp_intrusive_list<session_wrapper_base>::base_hook
   {
   }; // class session_wrapper_base
+
   typedef sp_intrusive_list<session_wrapper_base> session_list;
+
   class session_wrapper;
   typedef boost::shared_ptr<session_wrapper> session_wrapper_ptr;
 
@@ -60,6 +57,19 @@ private:
   boost::asio::io_service& io_service_;
   session_list             recycled_;
 }; // class simple_session_factory
+
+inline simple_session_factory::simple_session_factory(
+    boost::asio::io_service& io_service, std::size_t max_recycled)
+  : max_recycled_(max_recycled)
+  , io_service_(io_service)
+{
+}
+
+#if !defined(NDEBUG)
+inline simple_session_factory::~simple_session_factory()
+{
+}
+#endif
 
 } // namespace server
 } // namespace echo

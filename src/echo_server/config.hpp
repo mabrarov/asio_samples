@@ -31,21 +31,11 @@ struct execution_config
 public:
   typedef boost::posix_time::time_duration time_duration_type;
 
-  execution_config(bool the_ios_per_work_thread,
-      std::size_t the_session_manager_thread_count,
-      std::size_t the_session_thread_count,
-      const time_duration_type& the_stop_timeout)
-    : ios_per_work_thread(the_ios_per_work_thread)
-    , session_manager_thread_count(the_session_manager_thread_count)
-    , session_thread_count(the_session_thread_count)
-    , stop_timeout(the_stop_timeout)
-  {
-    BOOST_ASSERT_MSG(the_session_manager_thread_count > 0,
-        "session_manager_thread_count must be > 0");
-
-    BOOST_ASSERT_MSG(the_session_thread_count > 0,
-        "session_thread_count must be > 0");
-  }
+  execution_config(
+      bool ios_per_work_thread,
+      std::size_t session_manager_thread_count,
+      std::size_t session_thread_count,
+      const time_duration_type& stop_timeout);
 
   bool               ios_per_work_thread;
   std::size_t        session_manager_thread_count;
@@ -88,6 +78,23 @@ ma::echo::server::session_config build_session_config(
 ma::echo::server::session_manager_config build_session_manager_config(
     const boost::program_options::variables_map& options_values,
     const ma::echo::server::session_config& session_config);
+
+inline execution_config::execution_config(
+    bool the_ios_per_work_thread,
+    std::size_t the_session_manager_thread_count,
+    std::size_t the_session_thread_count,
+    const time_duration_type& the_stop_timeout)
+  : ios_per_work_thread(the_ios_per_work_thread)
+  , session_manager_thread_count(the_session_manager_thread_count)
+  , session_thread_count(the_session_thread_count)
+  , stop_timeout(the_stop_timeout)
+{
+  BOOST_ASSERT_MSG(the_session_manager_thread_count > 0,
+      "session_manager_thread_count must be > 0");
+
+  BOOST_ASSERT_MSG(the_session_thread_count > 0,
+      "session_thread_count must be > 0");
+}
 
 } // namespace echo_server
 

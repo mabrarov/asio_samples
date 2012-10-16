@@ -41,8 +41,38 @@ public:
   typedef boost::shared_ptr<Value> shared_pointer;
 
   /// Required hook for items of the list.
-  class base_hook : private boost::noncopyable
+  class base_hook
   {
+  private:
+    typedef base_hook this_type;
+
+  public:
+    base_hook()
+    {
+    }
+
+    base_hook(const this_type& other)      
+    {
+    }
+
+    this_type& operator=(const this_type& other)      
+    {
+      return this;
+    }
+
+#if defined(MA_HAS_RVALUE_REFS)
+
+    base_hook(this_type&& other)      
+    {
+    }
+
+    this_type& operator=(this_type&& other)      
+    {
+      return this;
+    }
+
+#endif // defined(MA_HAS_RVALUE_REFS)
+
   private:
     friend class sp_intrusive_list<value_type>;
     weak_pointer   prev_;

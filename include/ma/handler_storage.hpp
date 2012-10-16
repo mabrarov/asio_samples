@@ -89,31 +89,14 @@ public:
   typedef typename service_type::implementation_type implementation_type;
   typedef typename remove_cv_reference<Arg>::type arg_type;
 
-  explicit handler_storage(boost::asio::io_service& io_service)
-    : service_(boost::asio::use_service<service_type>(io_service))
-  {
-    service_.construct(impl_);
-  }
+  explicit handler_storage(boost::asio::io_service& io_service);
+  ~handler_storage();
 
 #if defined(MA_HAS_RVALUE_REFS)
+  handler_storage(this_type&& other);
+#endif
 
-  handler_storage(this_type&& other)
-    : service_(other.service_)
-  {
-    service_.move_construct(impl_, other.impl_);
-  }
-
-#endif // defined(MA_HAS_RVALUE_REFS)
-
-  ~handler_storage()
-  {
-    service_.destroy(impl_);
-  }
-
-  boost::asio::io_service& get_io_service()
-  {
-    return service_.get_io_service();
-  }
+  boost::asio::io_service& get_io_service();
 
   /// Get pointer to the stored handler.
   /**
@@ -121,16 +104,10 @@ public:
    * should be used. See usage example at "nmea_client" project.
    * If storage doesn't contain any handler then returns null pointer.
    */
-  void* target()
-  {
-    return service_.target(impl_);
-  }
+  void* target();
 
   /// Get pointer to the stored handler. Const version.
-  const void* target() const
-  {
-    return service_.target(impl_);
-  }
+  const void* target() const;
 
   /// Check if handler storage is empty (doesn't contain any handler).
   /**
@@ -138,22 +115,13 @@ public:
    * at PVS-Studio site 8) - it's not an advertisement but really interesting
    * reading.
    */
-  bool empty() const
-  {
-    return service_.empty(impl_);
-  }
+  bool empty() const;
 
   /// Check if handler storage contains handler.
-  bool has_target() const
-  {
-    return service_.has_target(impl_);
-  }
+  bool has_target() const;
 
   /// Clear stored handler if it exists.
-  void clear()
-  {
-    service_.clear(impl_);
-  }
+  void clear();
 
 #if defined(MA_HAS_RVALUE_REFS)
 
@@ -165,12 +133,7 @@ public:
    * (called right after "store").
    */
   template <typename Handler>
-  void store(Handler&& handler)
-  {
-    typedef typename remove_cv_reference<Handler>::type handler_type;
-    service_.store<handler_type, arg_type>(
-        impl_, std::forward<Handler>(handler));
-  }
+  void store(Handler&& handler);
 
 #else // defined(MA_HAS_RVALUE_REFS)
 
@@ -182,11 +145,7 @@ public:
    * (called right after "store").
    */
   template <typename Handler>
-  void store(const Handler& handler)
-  {
-    typedef Handler handler_type;
-    service_.store<handler_type, arg_type>(impl_, handler);
-  }
+  void store(const Handler& handler);
 
 #endif // defined(MA_HAS_RVALUE_REFS)
 
@@ -198,15 +157,100 @@ public:
    * Really, "store" means "try to store, if can't (io_service's destructor is
    * already called) then do nothing".
    */
-  void post(const arg_type& arg)
-  {
-    service_.post<arg_type>(impl_, arg);
-  }
+  void post(const arg_type& arg);
 
 private:
   service_type& service_;
   implementation_type impl_;
 }; // class handler_storage
+
+template <typename Arg>
+handler_storage<Arg>::handler_storage(
+    boost::asio::io_service& io_service)
+  : service_(boost::asio::use_service<service_type>(io_service))
+{
+  service_.construct(impl_);
+}
+
+template <typename Arg>
+handler_storage<Arg>::~handler_storage()
+{
+  service_.destroy(impl_);
+}
+
+#if defined(MA_HAS_RVALUE_REFS)
+
+template <typename Arg>
+handler_storage<Arg>::handler_storage(this_type&& other)
+  : service_(other.service_)
+{
+  service_.move_construct(impl_, other.impl_);
+}
+
+#endif // defined(MA_HAS_RVALUE_REFS)
+
+template <typename Arg>
+boost::asio::io_service& handler_storage<Arg>::get_io_service()
+{
+  return service_.get_io_service();
+}
+
+template <typename Arg>
+void* handler_storage<Arg>::target()
+{
+  return service_.target(impl_);
+}
+
+template <typename Arg>
+const void* handler_storage<Arg>::target() const
+{
+  return service_.target(impl_);
+}
+
+template <typename Arg>
+bool handler_storage<Arg>::empty() const
+{
+  return service_.empty(impl_);
+}
+
+template <typename Arg>
+bool handler_storage<Arg>::has_target() const
+{
+  return service_.has_target(impl_);
+}
+
+template <typename Arg>
+void handler_storage<Arg>::clear()
+{
+  service_.clear(impl_);
+}
+
+#if defined(MA_HAS_RVALUE_REFS)
+
+template <typename Arg> template<typename Handler>
+void handler_storage<Arg>::store(Handler&& handler)
+{
+  typedef typename remove_cv_reference<Handler>::type handler_type;
+  service_.store<handler_type, arg_type>(
+      impl_, std::forward<Handler>(handler));
+}
+
+#else // defined(MA_HAS_RVALUE_REFS)
+
+template <typename Arg> template<typename Handler>
+void handler_storage<Arg>::store(const Handler& handler)
+{
+  typedef Handler handler_type;
+  service_.store<handler_type, arg_type>(impl_, handler);
+}
+
+#endif // defined(MA_HAS_RVALUE_REFS)
+
+template <typename Arg>
+void handler_storage<Arg>::post(const arg_type& arg)
+{
+  service_.post<arg_type>(impl_, arg);
+}
 
 } // namespace ma
 
