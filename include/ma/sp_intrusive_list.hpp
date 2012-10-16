@@ -55,24 +55,6 @@ public:
     {
     }
 
-    this_type& operator=(const this_type& other)      
-    {
-      return this;
-    }
-
-#if defined(MA_HAS_RVALUE_REFS)
-
-    base_hook(this_type&& other)      
-    {
-    }
-
-    this_type& operator=(this_type&& other)      
-    {
-      return this;
-    }
-
-#endif // defined(MA_HAS_RVALUE_REFS)
-
   private:
     friend class sp_intrusive_list<value_type>;
     weak_pointer   prev_;

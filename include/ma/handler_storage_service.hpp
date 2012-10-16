@@ -57,14 +57,6 @@ public:
   public:
     base_hook();
     base_hook(const this_type&);
-    this_type& operator=(const this_type&);
-
-#if defined(MA_HAS_RVALUE_REFS)
-
-    base_hook(this_type&&);
-    this_type& operator=(this_type&&);
-
-#endif // defined(MA_HAS_RVALUE_REFS)
 
   private:
     friend class intrusive_list<value_type>;
@@ -136,104 +128,11 @@ class handler_storage_service
 {
 private:
   // Base class to hold up handlers.
-  class handler_base
-    : public detail::intrusive_list<handler_base>::base_hook
-  {
-  private:
-    typedef handler_base this_type;
-
-  public:
-    typedef void (*destroy_func_type)(this_type*);
-    typedef void* (*target_func_type)(this_type*);
-
-    handler_base(destroy_func_type, target_func_type);
-    void destroy();
-    void* target();
-
-  protected:
-    ~handler_base();
-
-  private:
-    destroy_func_type destroy_func_;
-    target_func_type  target_func_;
-  }; // class handler_base
-
-  typedef detail::intrusive_list<handler_base> handler_base_list;
-
-  // Base class to hold up handlers with specified call signature.
-  template <typename Arg>
-  class postable_handler_base : public handler_base
-  {
-  private:
-    typedef postable_handler_base<Arg> this_type;
-
-  public:
-    typedef void (*post_func_type)(this_type*, const Arg&);
-
-    postable_handler_base(destroy_func_type, target_func_type, post_func_type);      
-    void post(const Arg&);
-
-  protected:
-    ~postable_handler_base();
-
-  private:
-    post_func_type post_func_;
-  }; // class postable_handler_base
-
-#if defined(_MSC_VER)
-#pragma warning(push)
-#pragma warning(disable: 4512)
-#endif // #if defined(_MSC_VER)
-
-  // Wrapper class to hold up handlers with specified call signature.
-  template <typename Handler, typename Arg>
-  class handler_wrapper : public postable_handler_base<Arg>
-  {
-  private:
-    typedef handler_wrapper<Handler, Arg> this_type;
-    typedef postable_handler_base<Arg>    base_type;
-
-  public:
-
-#if defined(MA_HAS_RVALUE_REFS)
-
-    template <typename H>
-    handler_wrapper(boost::asio::io_service&, H&&);
-
-#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
-
-    handler_wrapper(this_type&&);
-    handler_wrapper(const this_type&);
-
-#endif // defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
-
-#else // defined(MA_HAS_RVALUE_REFS)
-
-    handler_wrapper(boost::asio::io_service&, const Handler&);
-
-#endif // defined(MA_HAS_RVALUE_REFS)
-
-#if !defined(NDEBUG)
-    ~handler_wrapper();
-#endif
-
-    static void do_post(base_type*, const Arg&);
-    static void do_destroy(handler_base*);
-    static void* do_target(handler_base*);
-
-  private:
-    boost::asio::io_service& io_service_;
-    boost::asio::io_service::work work_;
-    Handler handler_;
-  }; // class handler_wrapper
-
-#if defined(_MSC_VER)
-#pragma warning(pop)
-#endif // #if defined(_MSC_VER)
+  class handler_base;
 
   // Base class for implementation that helps to hide
   // public inheritance from detail::intrusive_list::base_hook
-  class impl_base 
+  class impl_base
     : public detail::intrusive_list<impl_base>::base_hook
     , private boost::noncopyable
   {
@@ -249,8 +148,6 @@ private:
     // Pointer to the stored handler otherwise null pointer.
     handler_base* handler_;
   }; // class impl_base
-
-  typedef detail::intrusive_list<impl_base> impl_base_list;
 
 public:
   class implementation_type : private impl_base
@@ -282,8 +179,17 @@ protected:
   virtual ~handler_storage_service();
 
 private:
-  typedef boost::mutex mutex_type;
-  typedef boost::lock_guard<mutex_type> lock_guard;
+  // Base class to hold up handlers with specified call signature.
+  template <typename Arg>
+  class postable_handler_base;
+
+  // Wrapper class to hold up handlers with specified call signature.
+  template <typename Handler, typename Arg>
+  class handler_wrapper;
+
+  typedef boost::mutex                      mutex_type;
+  typedef boost::lock_guard<mutex_type>     lock_guard;
+  typedef detail::intrusive_list<impl_base> impl_base_list;
 
   virtual void shutdown_service();
 
@@ -312,41 +218,20 @@ intrusive_list<Value>::base_hook::base_hook(const this_type& other)
 }
 
 template<typename Value>
-typename intrusive_list<Value>::base_hook::this_type& 
-intrusive_list<Value>::base_hook::operator=(const this_type& other)
-{
-}
-
-#if defined(MA_HAS_RVALUE_REFS)
-
-template<typename Value>
-intrusive_list<Value>::base_hook::base_hook(this_type&& other)
-{
-}
-
-template<typename Value>
-typename intrusive_list<Value>::base_hook::this_type& 
-intrusive_list<Value>::base_hook::operator=(this_type&& other)
-{
-}
-
-#endif // defined(MA_HAS_RVALUE_REFS)
-
-template<typename Value>
 intrusive_list<Value>::intrusive_list()
   : front_(0)
 {
 }
 
 template<typename Value>
-typename intrusive_list<Value>::pointer 
+typename intrusive_list<Value>::pointer
 intrusive_list<Value>::front() const
 {
   return front_;
 }
 
 template<typename Value>
-typename intrusive_list<Value>::pointer 
+typename intrusive_list<Value>::pointer
 intrusive_list<Value>::prev(reference value)
 {
   return get_hook(value).prev_;
@@ -364,7 +249,7 @@ void intrusive_list<Value>::push_front(reference value)
 {
   base_hook& value_hook = get_hook(value);
 
-  BOOST_ASSERT_MSG(!value_hook.prev_ && !value_hook.next_, 
+  BOOST_ASSERT_MSG(!value_hook.prev_ && !value_hook.next_,
       "The value to push has to be not linked");
 
   value_hook.next_ = front_;
@@ -414,7 +299,7 @@ void intrusive_list<Value>::pop_front()
   }
   value_hook.next_ = value_hook.prev_ = 0;
 
-  BOOST_ASSERT_MSG(!value_hook.prev_ && !value_hook.next_, 
+  BOOST_ASSERT_MSG(!value_hook.prev_ && !value_hook.next_,
       "The popped value has to be unlinked");
 }
 
@@ -446,6 +331,98 @@ inline bad_handler_call::bad_handler_call()
 {
 }
 
+class handler_storage_service::handler_base
+  : public detail::intrusive_list<handler_base>::base_hook
+{
+private:
+  typedef handler_base this_type;
+
+public:
+  typedef void (*destroy_func_type)(this_type*);
+  typedef void* (*target_func_type)(this_type*);
+
+  handler_base(destroy_func_type, target_func_type);
+  void destroy();
+  void* target();
+
+protected:
+  ~handler_base();
+
+private:
+  destroy_func_type destroy_func_;
+  target_func_type  target_func_;
+}; // class handler_storage_service::handler_base
+
+template <typename Arg>
+class handler_storage_service::postable_handler_base : public handler_base
+{
+private:
+  typedef postable_handler_base<Arg> this_type;
+
+public:
+  typedef void (*post_func_type)(this_type*, const Arg&);
+
+  postable_handler_base(destroy_func_type, target_func_type, post_func_type);
+  void post(const Arg&);
+
+protected:
+  ~postable_handler_base();
+
+private:
+  post_func_type post_func_;
+}; // class handler_storage_service::postable_handler_base
+
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable: 4512)
+#endif // #if defined(_MSC_VER)
+
+template <typename Handler, typename Arg>
+class handler_storage_service::handler_wrapper
+  : public postable_handler_base<Arg>
+{
+private:
+  typedef handler_wrapper<Handler, Arg> this_type;
+  typedef postable_handler_base<Arg>    base_type;
+
+public:
+
+#if defined(MA_HAS_RVALUE_REFS)
+
+  template <typename H>
+  handler_wrapper(boost::asio::io_service&, H&&);
+
+#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
+
+  handler_wrapper(this_type&&);
+  handler_wrapper(const this_type&);
+
+#endif // defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
+
+#else // defined(MA_HAS_RVALUE_REFS)
+
+  handler_wrapper(boost::asio::io_service&, const Handler&);
+
+#endif // defined(MA_HAS_RVALUE_REFS)
+
+#if !defined(NDEBUG)
+  ~handler_wrapper();
+#endif
+
+  static void do_post(base_type*, const Arg&);
+  static void do_destroy(handler_base*);
+  static void* do_target(handler_base*);
+
+private:
+  boost::asio::io_service& io_service_;
+  boost::asio::io_service::work work_;
+  Handler handler_;
+}; // class handler_storage_service::handler_wrapper
+
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif // #if defined(_MSC_VER)
+
 inline handler_storage_service::handler_base::handler_base(
     destroy_func_type destroy_func, target_func_type target_func)
   : destroy_func_(destroy_func)
@@ -469,7 +446,7 @@ inline handler_storage_service::handler_base::~handler_base()
 
 template <typename Arg>
 handler_storage_service::postable_handler_base<Arg>::postable_handler_base(
-    destroy_func_type destroy_func, target_func_type target_func, 
+    destroy_func_type destroy_func, target_func_type target_func,
     post_func_type post_func)
   : handler_base(destroy_func, target_func)
   , post_func_(post_func)
@@ -763,12 +740,12 @@ inline handler_storage_service::~handler_storage_service()
 inline void handler_storage_service::shutdown_service()
 {
   // Restrict usage of service.
-  shutdown_done_ = true;    
+  shutdown_done_ = true;
   // Take ownership of all still active handlers.
-  handler_base_list stored_handlers;
+  detail::intrusive_list<handler_base> stored_handlers;
   {
     lock_guard impl_list_lock(impl_list_mutex_);
-    for (impl_base* impl = impl_list_.front(); impl; 
+    for (impl_base* impl = impl_list_.front(); impl;
         impl = impl_list_.next(*impl))
     {
       if (handler_base* handler = impl->handler_)
