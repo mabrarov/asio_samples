@@ -49,20 +49,7 @@ public:
   typedef Value& reference;
 
   /// Required hook for items of the list.
-  class base_hook
-  {
-  private:
-    typedef base_hook this_type;
-
-  public:
-    base_hook();
-    base_hook(const this_type&);
-
-  private:
-    friend class intrusive_list<value_type>;
-    pointer prev_;
-    pointer next_;
-  }; // class base_hook
+  class base_hook;
 
   /// Never throws
   intrusive_list();
@@ -90,6 +77,22 @@ private:
 
   pointer front_;
 }; // class intrusive_list
+
+template<typename Value>
+class intrusive_list<Value>::base_hook
+{
+private:
+  typedef base_hook this_type;
+
+public:
+  base_hook();
+  base_hook(const this_type&);
+
+private:
+  friend class intrusive_list<Value>;
+  pointer prev_;
+  pointer next_;
+}; // class intrusive_list::base_hook
 
 // Special derived service id type to keep classes header-file only.
 // Copied from boost/asio/io_service.hpp.

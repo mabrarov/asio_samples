@@ -145,48 +145,7 @@ private:
   class session_handler_binder;
 
   template <typename Arg>
-  class forward_handler_binder
-  {
-  private:
-    typedef forward_handler_binder this_type;
-
-  public:
-    typedef void result_type;
-
-    typedef void (session_manager::*func_type)(const Arg&);
-
-    template <typename SessionManagerPtr>
-    forward_handler_binder(func_type func, SessionManagerPtr&& session_manager)
-      : func_(func)
-      , session_manager_(std::forward<SessionManagerPtr>(session_manager))
-    {
-    }
-
-#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
-
-    forward_handler_binder(this_type&& other)
-      : func_(other.func_)
-      , session_manager_(std::move(other.session_manager_))
-    {
-    }
-
-    forward_handler_binder(const this_type& other)
-      : func_(other.func_)
-      , session_manager_(other.session_manager_)
-    {
-    }
-
-#endif
-
-    void operator()(const Arg& arg)
-    {
-      ((*session_manager_).*func_)(arg);
-    }
-
-  private:
-    func_type func_;
-    session_manager_ptr session_manager_;
-  }; // class forward_handler_binder
+  class forward_handler_binder;
 
 #endif // defined(MA_HAS_RVALUE_REFS)
        //     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
@@ -311,6 +270,33 @@ private:
 #if defined(MA_HAS_RVALUE_REFS)
 
 #if defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+
+template <typename Arg>
+class session_manager::forward_handler_binder
+{
+private:
+  typedef forward_handler_binder this_type;
+
+public:
+  typedef void result_type;
+  typedef void (session_manager::*func_type)(const Arg&);
+
+  template <typename SessionManagerPtr>
+  forward_handler_binder(func_type func, SessionManagerPtr&& session_manager);
+
+#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
+
+  forward_handler_binder(this_type&&);
+  forward_handler_binder(const this_type&);
+
+#endif // defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
+
+  void operator()(const Arg& arg);
+
+private:
+  func_type func_;
+  session_manager_ptr session_manager_;
+}; // class session_manager::forward_handler_binder
 
 template <typename Handler>
 void session_manager::async_start(Handler&& handler)
@@ -472,6 +458,45 @@ void session_manager::start_extern_wait(const Handler& handler)
     extern_wait_handler_.store(handler);
   }
 }
+
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+
+template <typename Arg> template <typename SessionManagerPtr>
+session_manager::forward_handler_binder<Arg>::forward_handler_binder(
+    func_type func, SessionManagerPtr&& session_manager)
+  : func_(func)
+  , session_manager_(std::forward<SessionManagerPtr>(session_manager))
+{
+}
+
+#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
+
+template <typename Arg>
+session_manager::forward_handler_binder<Arg>::forward_handler_binder(
+    this_type&& other)
+  : func_(other.func_)
+  , session_manager_(std::move(other.session_manager_))
+{
+}
+
+template <typename Arg>
+session_manager::forward_handler_binder<Arg>::forward_handler_binder(
+    const this_type& other)
+  : func_(other.func_)
+  , session_manager_(other.session_manager_)
+{
+}
+
+#endif // defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
+
+template <typename Arg>
+void session_manager::forward_handler_binder<Arg>::operator()(const Arg& arg)
+{
+  ((*session_manager_).*func_)(arg);
+}
+
+#endif // defined(MA_HAS_RVALUE_REFS)
+       //     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
 } // namespace server
 } // namespace echo
