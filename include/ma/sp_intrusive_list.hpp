@@ -144,7 +144,7 @@ void sp_intrusive_list<Value>::push_front(const shared_pointer& value)
 
   base_hook& value_hook = get_hook(*value);
 
-  BOOST_ASSERT_MSG(!value_hook.prev_.lock() && !value_hook.next_, 
+  BOOST_ASSERT_MSG(!value_hook.prev_.lock() && !value_hook.next_,
       "The value to push has to be not linked");
 
   value_hook.next_ = front_;
@@ -186,7 +186,7 @@ void sp_intrusive_list<Value>::erase(const shared_pointer& value)
       "The erased value has to be unlinked");
 }
 
-template <typename Value>  
+template <typename Value>
 void sp_intrusive_list<Value>::clear()
 {
   // We don't want to have recusrive calls of wrapped_session's destructor
@@ -203,19 +203,19 @@ void sp_intrusive_list<Value>::clear()
   size_ = 0;
 }
 
-template <typename Value>  
+template <typename Value>
 std::size_t sp_intrusive_list<Value>::size() const
 {
   return size_;
 }
 
-template <typename Value>  
+template <typename Value>
 bool sp_intrusive_list<Value>::empty() const
 {
   return 0 == size_;
 }
 
-template <typename Value>  
+template <typename Value>
 typename sp_intrusive_list<Value>::base_hook&
 sp_intrusive_list<Value>::get_hook(reference value)
 {

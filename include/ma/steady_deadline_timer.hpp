@@ -37,9 +37,9 @@ struct steady_time_traits
 
   static bool less_than(const time_type&, const time_type&);
   static time_type add(const time_type&, const duration_type&);
-  static duration_type subtract(const time_type&, const time_type&);  
+  static duration_type subtract(const time_type&, const time_type&);
 
-  static time_type now();  
+  static time_type now();
   static boost::posix_time::time_duration to_posix_duration(
       const duration_type&);
 }; // struct steady_time_traits
