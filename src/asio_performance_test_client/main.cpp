@@ -71,7 +71,7 @@ private:
   std::size_t outstanding_;
   boost::mutex mutex_;
   boost::condition_variable condition_;
-}; // struct work_state
+}; // class work_state
 
 typedef ma::limited_int<boost::uintmax_t> limited_counter;
 

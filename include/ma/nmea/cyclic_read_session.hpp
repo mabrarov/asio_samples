@@ -426,7 +426,8 @@ cyclic_read_session::extern_read_handler_base::copy(
 
 #if defined(MA_HAS_RVALUE_REFS)
 
-template <typename Handler, typename Iterator> template <typename H, typename I>
+template <typename Handler, typename Iterator>
+template <typename H, typename I>
 cyclic_read_session::wrapped_extern_read_handler<Handler, Iterator>
     ::wrapped_extern_read_handler(H&& handler, I&& begin, I&& end)
   : extern_read_handler_base(&this_type::do_copy)

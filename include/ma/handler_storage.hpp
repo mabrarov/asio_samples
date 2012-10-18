@@ -227,7 +227,8 @@ void handler_storage<Arg>::clear()
 
 #if defined(MA_HAS_RVALUE_REFS)
 
-template <typename Arg> template<typename Handler>
+template <typename Arg>
+template<typename Handler>
 void handler_storage<Arg>::store(Handler&& handler)
 {
   typedef typename remove_cv_reference<Handler>::type handler_type;
@@ -237,7 +238,8 @@ void handler_storage<Arg>::store(Handler&& handler)
 
 #else // defined(MA_HAS_RVALUE_REFS)
 
-template <typename Arg> template<typename Handler>
+template <typename Arg>
+template<typename Handler>
 void handler_storage<Arg>::store(const Handler& handler)
 {
   typedef Handler handler_type;

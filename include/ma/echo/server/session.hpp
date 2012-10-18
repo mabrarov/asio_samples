@@ -418,7 +418,8 @@ void session::start_extern_wait(const Handler& handler)
 
 #if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
-template <typename Arg> template <typename SessionPtr>
+template <typename Arg>
+template <typename SessionPtr>
 session::forward_handler_binder<Arg>::forward_handler_binder(
     func_type func, SessionPtr&& session)
   : func_(func)

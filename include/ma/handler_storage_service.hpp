@@ -469,7 +469,8 @@ handler_storage_service::postable_handler_base<Arg>::~postable_handler_base()
 
 #if defined(MA_HAS_RVALUE_REFS)
 
-template <typename Handler, typename Arg> template <typename H>
+template <typename Handler, typename Arg>
+template <typename H>
 handler_storage_service::handler_wrapper<Handler, Arg>::handler_wrapper(
     boost::asio::io_service& io_service, H&& handler)
   : base_type(&this_type::do_destroy, &this_type::do_target,
@@ -506,7 +507,7 @@ handler_storage_service::handler_wrapper<Handler, Arg>::handler_wrapper(
 
 #else // defined(MA_HAS_RVALUE_REFS)
 
-template <typename Handler, typename Arg> template <typename H>
+template <typename Handler, typename Arg>
 handler_storage_service::handler_wrapper<Handler, Arg>::handler_wrapper(
     boost::asio::io_service& io_service,const Handler& handler)
   : base_type(&this_type::do_destroy, &this_type::do_target,
