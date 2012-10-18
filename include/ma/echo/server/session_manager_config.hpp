@@ -27,19 +27,12 @@ struct session_manager_config
 public:
   typedef boost::asio::ip::tcp::endpoint endpoint_type;
 
-  session_manager_config(const endpoint_type& the_accepting_endpoint,
-      std::size_t the_max_session_count,
-      std::size_t the_recycled_session_count, int the_listen_backlog,
-      const session_config& the_managed_session_config)
-    : listen_backlog(the_listen_backlog)
-    , max_session_count(the_max_session_count)
-    , recycled_session_count(the_recycled_session_count)
-    , accepting_endpoint(the_accepting_endpoint)
-    , managed_session_config(the_managed_session_config)
-  {
-    BOOST_ASSERT_MSG(the_max_session_count > 0,
-        "max_session_count must be > 0");
-  }
+  session_manager_config(
+      const endpoint_type& accepting_endpoint,
+      std::size_t max_session_count,
+      std::size_t recycled_session_count,
+      int listen_backlog,
+      const session_config& managed_session_config);
 
   int            listen_backlog;
   std::size_t    max_session_count;
@@ -47,6 +40,22 @@ public:
   endpoint_type  accepting_endpoint;
   session_config managed_session_config;
 }; // struct session_manager_config
+
+inline session_manager_config::session_manager_config(
+    const endpoint_type& the_accepting_endpoint,
+    std::size_t the_max_session_count,
+    std::size_t the_recycled_session_count,
+    int the_listen_backlog,
+    const session_config& the_managed_session_config)
+  : listen_backlog(the_listen_backlog)
+  , max_session_count(the_max_session_count)
+  , recycled_session_count(the_recycled_session_count)
+  , accepting_endpoint(the_accepting_endpoint)
+  , managed_session_config(the_managed_session_config)
+{
+  BOOST_ASSERT_MSG(the_max_session_count > 0,
+      "max_session_count must be > 0");
+}
 
 } // namespace server
 } // namespace echo

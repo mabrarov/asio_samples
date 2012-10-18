@@ -56,45 +56,22 @@ private:
     typedef Buffer            value_type;
     typedef const value_type* const_iterator;
 
-    buffers_2()
-      : buffers_count_(0)
-    {
-    }
-
-    explicit buffers_2(const value_type& buffer1)
-      : buffers_count_(1)
-    {
-      buffers_[0] = buffer1;
-    }
-
-    buffers_2(const value_type& buffer1, const value_type& buffer2)
-      : buffers_count_(2)
-    {
-      buffers_[0] = buffer1;
-      buffers_[1] = buffer2;
-    }
+    buffers_2();
+    explicit buffers_2(const value_type& buffer1);
+    buffers_2(const value_type& buffer1, const value_type& buffer2);
 
     /// Asio requirement.
-    const_iterator begin() const
-    {
-      return boost::addressof(buffers_[0]);
-    }
+    const_iterator begin() const;
 
     /// Asio requirement.
-    const_iterator end() const
-    {
-      return boost::addressof(buffers_[0]) + buffers_count_;
-    }
+    const_iterator end() const;
 
     /// Small but useful optimization.
-    bool empty() const
-    {
-      return !buffers_count_;
-    }
+    bool empty() const;
 
   private:
     boost::array<value_type, 2> buffers_;
-    unsigned short buffers_count_;
+    std::size_t buffers_count_;
   }; // class buffers_2
 
 public:
@@ -103,22 +80,10 @@ public:
   /// Mutable buffer sequence.
   typedef buffers_2<boost::asio::mutable_buffer> mutable_buffers_type;
 
-  explicit cyclic_buffer(std::size_t size)
-    : data_(new char[size])
-    , size_(size)
-    , nonfilled_start_(0)
-    , nonfilled_size_(size)
-    , filled_start_(0)
-    , filled_size_(0)
-  {
-  }
+  explicit cyclic_buffer(std::size_t size);
 
   /// Return buffer to the state as was right after construction.
-  void reset()
-  {
-    nonfilled_size_  = size_;
-    nonfilled_start_ = filled_start_ = filled_size_ = 0;
-  }
+  void reset();
 
   /// Reduce filled sequence by marking first size bytes of filled sequence as
   /// nonfilled sequence.
@@ -128,25 +93,7 @@ public:
    * reduces by size bytes. Start of filled sequence moves up (circular) by
    * size bytes.
    */
-  void commit(std::size_t size)
-  {
-    if (size > filled_size_)
-    {
-      boost::throw_exception(std::length_error(
-          "filled sequence size is too small to consume given size"));
-    }
-    filled_size_    -= size;
-    nonfilled_size_ += size;
-    std::size_t d = size_ - filled_start_;
-    if (size < d)
-    {
-      filled_start_ += size;
-    }
-    else
-    {
-      filled_start_ = size - d;
-    }
-  }
+  void commit(std::size_t size);
 
   /// Reduce nonfilled sequence by marking first size bytes of
   /// nonfilled sequence as filled sequence.
@@ -156,102 +103,21 @@ public:
    * reduces by size bytes. Start of nonfilled sequence moves up (circular) by
    * size bytes.
    */
-  void consume(std::size_t size)
-  {
-    if (size > nonfilled_size_)
-    {
-      boost::throw_exception(std::length_error(
-          "nonfilled sequence size is too small to consume given size"));
-    }
-    filled_size_    += size;
-    nonfilled_size_ -= size;
-    std::size_t d = size_ - nonfilled_start_;
-    if (size < d)
-    {
-      nonfilled_start_ += size;
-    }
-    else
-    {
-      nonfilled_start_ = size - d;
-    }
-  }
+  void consume(std::size_t size);
 
   /// Return constant buffer sequence representing filled sequence.
-  const_buffers_type data() const
-  {
-    if (!filled_size_)
-    {
-      return const_buffers_type();
-    }
-    std::size_t d = size_ - filled_start_;
-    if (filled_size_ > d)
-    {
-      return const_buffers_type(
-          boost::asio::const_buffer(data_.get() + filled_start_, d),
-          boost::asio::const_buffer(data_.get(), filled_size_ - d));
-    }
-    return const_buffers_type(boost::asio::const_buffer(
-        data_.get() + filled_start_, filled_size_));
-  }
+  const_buffers_type data() const;
 
   /// Return mutable buffer sequence representing nonfilled sequence.
-  mutable_buffers_type prepared() const
-  {
-    if (!nonfilled_size_)
-    {
-      return mutable_buffers_type();
-    }
-    std::size_t d = size_ - nonfilled_start_;
-    if (nonfilled_size_ > d)
-    {
-      return mutable_buffers_type(
-          boost::asio::mutable_buffer(data_.get() + nonfilled_start_, d),
-          boost::asio::mutable_buffer(data_.get(), nonfilled_size_ - d));
-    }
-    return mutable_buffers_type(boost::asio::mutable_buffer(
-        data_.get() + nonfilled_start_, nonfilled_size_));
-  }
+  mutable_buffers_type prepared() const;
 
   /// Return constant buffer sequence representing filled sequence.
   /// The size of returned buffer sequence is not greater than max_size.
-  const_buffers_type data(std::size_t max_size) const
-  {
-    if (!filled_size_)
-    {
-      return const_buffers_type();
-    }
-    std::size_t buffers_size = (std::min<std::size_t>)(filled_size_, max_size);
-    std::size_t d = size_ - filled_start_;
-    if (buffers_size > d)
-    {
-      return const_buffers_type(
-          boost::asio::const_buffer(data_.get() + filled_start_, d),
-          boost::asio::const_buffer(data_.get(), buffers_size - d));
-    }
-    return const_buffers_type(boost::asio::const_buffer(
-        data_.get() + filled_start_, buffers_size));
-  }
+  const_buffers_type data(std::size_t max_size) const;
 
   /// Return mutable buffer sequence representing nonfilled sequence.
   /// The size of returned buffer sequence is not greater than max_size.
-  mutable_buffers_type prepared(std::size_t max_size) const
-  {
-    if (!nonfilled_size_)
-    {
-      return mutable_buffers_type();
-    }
-    std::size_t buffers_size =
-        (std::min<std::size_t>)(nonfilled_size_, max_size);
-    std::size_t d = size_ - nonfilled_start_;
-    if (buffers_size > d)
-    {
-      return mutable_buffers_type(
-          boost::asio::mutable_buffer(data_.get() + nonfilled_start_, d),
-          boost::asio::mutable_buffer(data_.get(), buffers_size - d));
-    }
-    return mutable_buffers_type(boost::asio::mutable_buffer(
-        data_.get() + nonfilled_start_, buffers_size));
-  }
+  mutable_buffers_type prepared(std::size_t max_size) const;
 
 private:
   boost::scoped_array<char> data_;
@@ -261,6 +127,177 @@ private:
   std::size_t filled_start_;
   std::size_t filled_size_;
 }; // class cyclic_buffer
+
+template <typename Buffer>
+cyclic_buffer::buffers_2<Buffer>::buffers_2()
+  : buffers_count_(0)
+{
+}
+
+template <typename Buffer>
+cyclic_buffer::buffers_2<Buffer>::buffers_2(const value_type& buffer1)
+  : buffers_count_(1)
+{
+  buffers_[0] = buffer1;
+}
+
+template <typename Buffer>
+cyclic_buffer::buffers_2<Buffer>::buffers_2(
+    const value_type& buffer1, const value_type& buffer2)
+  : buffers_count_(2)
+{
+  buffers_[0] = buffer1;
+  buffers_[1] = buffer2;
+}
+
+template <typename Buffer>
+typename cyclic_buffer::buffers_2<Buffer>::const_iterator
+cyclic_buffer::buffers_2<Buffer>::begin() const
+{
+  return boost::addressof(buffers_[0]);
+}
+
+template <typename Buffer>
+typename cyclic_buffer::buffers_2<Buffer>::const_iterator
+cyclic_buffer::buffers_2<Buffer>::end() const
+{
+  return boost::addressof(buffers_[0]) + buffers_count_;
+}
+
+template <typename Buffer>
+bool cyclic_buffer::buffers_2<Buffer>::empty() const
+{
+  return !buffers_count_;
+}
+
+inline cyclic_buffer::cyclic_buffer(std::size_t size)
+  : data_(new char[size])
+  , size_(size)
+  , nonfilled_start_(0)
+  , nonfilled_size_(size)
+  , filled_start_(0)
+  , filled_size_(0)
+{
+}
+
+inline void cyclic_buffer::reset()
+{
+  nonfilled_size_  = size_;
+  nonfilled_start_ = filled_start_ = filled_size_ = 0;
+}
+
+inline void cyclic_buffer::commit(std::size_t size)
+{
+  if (size > filled_size_)
+  {
+    boost::throw_exception(std::length_error(
+        "filled sequence size is too small to consume given size"));
+  }
+  filled_size_    -= size;
+  nonfilled_size_ += size;
+  std::size_t d = size_ - filled_start_;
+  if (size < d)
+  {
+    filled_start_ += size;
+  }
+  else
+  {
+    filled_start_ = size - d;
+  }
+}
+
+inline void cyclic_buffer::consume(std::size_t size)
+{
+  if (size > nonfilled_size_)
+  {
+    boost::throw_exception(std::length_error(
+        "nonfilled sequence size is too small to consume given size"));
+  }
+  filled_size_    += size;
+  nonfilled_size_ -= size;
+  std::size_t d = size_ - nonfilled_start_;
+  if (size < d)
+  {
+    nonfilled_start_ += size;
+  }
+  else
+  {
+    nonfilled_start_ = size - d;
+  }
+}
+
+inline cyclic_buffer::const_buffers_type cyclic_buffer::data() const
+{
+  if (!filled_size_)
+  {
+    return const_buffers_type();
+  }
+  std::size_t d = size_ - filled_start_;
+  if (filled_size_ > d)
+  {
+    return const_buffers_type(
+        boost::asio::const_buffer(data_.get() + filled_start_, d),
+        boost::asio::const_buffer(data_.get(), filled_size_ - d));
+  }
+  return const_buffers_type(boost::asio::const_buffer(
+      data_.get() + filled_start_, filled_size_));
+}
+
+inline cyclic_buffer::mutable_buffers_type cyclic_buffer::prepared() const
+{
+  if (!nonfilled_size_)
+  {
+    return mutable_buffers_type();
+  }
+  std::size_t d = size_ - nonfilled_start_;
+  if (nonfilled_size_ > d)
+  {
+    return mutable_buffers_type(
+        boost::asio::mutable_buffer(data_.get() + nonfilled_start_, d),
+        boost::asio::mutable_buffer(data_.get(), nonfilled_size_ - d));
+  }
+  return mutable_buffers_type(boost::asio::mutable_buffer(
+      data_.get() + nonfilled_start_, nonfilled_size_));
+}
+
+inline cyclic_buffer::const_buffers_type
+cyclic_buffer::data(std::size_t max_size) const
+{
+  if (!filled_size_)
+  {
+    return const_buffers_type();
+  }
+  std::size_t buffers_size = (std::min<std::size_t>)(filled_size_, max_size);
+  std::size_t d = size_ - filled_start_;
+  if (buffers_size > d)
+  {
+    return const_buffers_type(
+        boost::asio::const_buffer(data_.get() + filled_start_, d),
+        boost::asio::const_buffer(data_.get(), buffers_size - d));
+  }
+  return const_buffers_type(boost::asio::const_buffer(
+      data_.get() + filled_start_, buffers_size));
+}
+
+inline cyclic_buffer::mutable_buffers_type
+cyclic_buffer::prepared(std::size_t max_size) const
+{
+  if (!nonfilled_size_)
+  {
+    return mutable_buffers_type();
+  }
+  std::size_t buffers_size =
+      (std::min<std::size_t>)(nonfilled_size_, max_size);
+  std::size_t d = size_ - nonfilled_start_;
+  if (buffers_size > d)
+  {
+    return mutable_buffers_type(
+        boost::asio::mutable_buffer(data_.get() + nonfilled_start_, d),
+        boost::asio::mutable_buffer(data_.get(), buffers_size - d));
+  }
+  return mutable_buffers_type(boost::asio::mutable_buffer(
+      data_.get() + nonfilled_start_, buffers_size));
+}
 
 } // namespace ma
 

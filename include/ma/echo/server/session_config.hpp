@@ -30,30 +30,14 @@ public:
   typedef boost::posix_time::time_duration time_duration;
   typedef boost::optional<time_duration>   optional_time_duration;
 
-  explicit session_config(std::size_t the_buffer_size,
-      std::size_t the_max_transfer_size,
-      const optional_int& the_socket_recv_buffer_size = optional_int(),
-      const optional_int& the_socket_send_buffer_size = optional_int(),
-      const optional_bool& the_no_delay = optional_bool(),
-      const optional_time_duration& the_inactivity_timeout =
-          optional_time_duration())
-    : no_delay(the_no_delay)
-    , socket_recv_buffer_size(the_socket_recv_buffer_size)
-    , socket_send_buffer_size(the_socket_send_buffer_size)
-    , buffer_size(the_buffer_size)
-    , max_transfer_size(the_max_transfer_size)
-    , inactivity_timeout(the_inactivity_timeout)
-  {
-    BOOST_ASSERT_MSG(the_buffer_size > 0, "buffer_size must be > 0");
-
-    BOOST_ASSERT_MSG(
-        !the_socket_recv_buffer_size || (*the_socket_recv_buffer_size) >= 0,
-        "Defined socket_recv_buffer_size must be >= 0");
-
-    BOOST_ASSERT_MSG(
-        !the_socket_send_buffer_size || (*the_socket_send_buffer_size) >= 0,
-        "Defined socket_send_buffer_size must be >= 0");
-  }
+  explicit session_config(
+      std::size_t buffer_size,
+      std::size_t max_transfer_size,
+      const optional_int& socket_recv_buffer_size = optional_int(),
+      const optional_int& socket_send_buffer_size = optional_int(),
+      const optional_bool& no_delay = optional_bool(),
+      const optional_time_duration& inactivity_timeout =
+          optional_time_duration());
 
   optional_bool no_delay;
   optional_int  socket_recv_buffer_size;
@@ -62,6 +46,31 @@ public:
   std::size_t   max_transfer_size;
   optional_time_duration inactivity_timeout;
 }; // struct session_config
+
+inline session_config::session_config(
+    std::size_t the_buffer_size,
+    std::size_t the_max_transfer_size,
+    const optional_int& the_socket_recv_buffer_size,
+    const optional_int& the_socket_send_buffer_size,
+    const optional_bool& the_no_delay,
+    const optional_time_duration& the_inactivity_timeout)
+  : no_delay(the_no_delay)
+  , socket_recv_buffer_size(the_socket_recv_buffer_size)
+  , socket_send_buffer_size(the_socket_send_buffer_size)
+  , buffer_size(the_buffer_size)
+  , max_transfer_size(the_max_transfer_size)
+  , inactivity_timeout(the_inactivity_timeout)
+{
+  BOOST_ASSERT_MSG(the_buffer_size > 0, "buffer_size must be > 0");
+
+  BOOST_ASSERT_MSG(
+      !the_socket_recv_buffer_size || (*the_socket_recv_buffer_size) >= 0,
+      "Defined socket_recv_buffer_size must be >= 0");
+
+  BOOST_ASSERT_MSG(
+      !the_socket_send_buffer_size || (*the_socket_send_buffer_size) >= 0,
+      "Defined socket_send_buffer_size must be >= 0");
+}
 
 } // namespace server
 } // namespace echo

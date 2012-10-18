@@ -39,20 +39,21 @@ public:
       std::size_t max_recycled);
 
 #if !defined(NDEBUG)
-  ~pooled_session_factory()
-  {
-  }
+  ~pooled_session_factory();
 #endif
 
-  session_ptr create(const session_config&, boost::system::error_code&);
-  void release(const session_ptr&);
+  session_ptr create(const session_config& config,
+      boost::system::error_code& error);
+  void release(const session_ptr& session);
 
 private:
   class session_wrapper_base
     : public sp_intrusive_list<session_wrapper_base>::base_hook
   {
   }; // class session_wrapper_base
+
   typedef sp_intrusive_list<session_wrapper_base> session_list;
+
   class session_wrapper;
   typedef boost::shared_ptr<session_wrapper> session_wrapper_ptr;
 
@@ -66,6 +67,12 @@ private:
 
   const pool pool_;
 }; // class pooled_session_factory
+
+#if !defined(NDEBUG)
+inline pooled_session_factory::~pooled_session_factory()
+{
+}
+#endif
 
 } // namespace server
 } // namespace echo
