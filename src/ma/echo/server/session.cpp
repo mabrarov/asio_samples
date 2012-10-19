@@ -176,7 +176,7 @@ boost::system::error_code session::do_start_extern_start()
   // Check external state consistency
   if (extern_state::ready != extern_state_)
   {
-    return server_error::invalid_state;
+    return server::error::invalid_state;
   }
 
   // Set up configured socket options
@@ -201,18 +201,18 @@ boost::system::error_code session::do_start_extern_start()
   return boost::system::error_code();
 }
 
-boost::optional<boost::system::error_code> session::do_start_extern_stop()
+session::optional_error_code session::do_start_extern_stop()
 {
   // Check exetrnal state consistency
   if ((extern_state::stopped == extern_state_)
       || (extern_state::stop == extern_state_))
   {
-    return boost::system::error_code(server_error::invalid_state);
+    return boost::system::error_code(server::error::invalid_state);
   }
 
   // Switch external SM
   extern_state_ = extern_state::stop;
-  complete_extern_wait(server_error::operation_aborted);
+  complete_extern_wait(server::error::operation_aborted);
 
   if (intern_state::work == intern_state_)
   {
@@ -228,16 +228,16 @@ boost::optional<boost::system::error_code> session::do_start_extern_stop()
   }
 
   // Park stop handler for the late call
-  return boost::optional<boost::system::error_code>();
+  return optional_error_code();
 }
 
-boost::optional<boost::system::error_code> session::do_start_extern_wait()
+session::optional_error_code session::do_start_extern_wait()
 {
   // Check exetrnal state consistency
   if ((extern_state::work != extern_state_)
       || extern_wait_handler_.has_target())
   {
-    return boost::system::error_code(server_error::invalid_state);
+    return boost::system::error_code(server::error::invalid_state);
   }
 
   if (intern_state::work != intern_state_)
@@ -247,7 +247,7 @@ boost::optional<boost::system::error_code> session::do_start_extern_wait()
   }
 
   // Park wait handler for the late call
-  return boost::optional<boost::system::error_code>();
+  return optional_error_code();
 }
 
 void session::complete_extern_stop(const boost::system::error_code& error)
@@ -557,7 +557,7 @@ void session::handle_timer_at_work(const boost::system::error_code& error)
 
   // Start session stop due to client inactivity timeout
   timer_state_ = timer_state::stopped;
-  start_stop(server_error::inactivity_timeout);
+  start_stop(server::error::inactivity_timeout);
 }
 
 void session::handle_timer_at_stop(const boost::system::error_code& /*error*/)
@@ -802,12 +802,12 @@ void session::continue_stop()
 
 void session::start_passive_shutdown()
 {
-  start_shutdown(server_error::out_of_work);
+  start_shutdown(server::error::out_of_work);
 }
 
 void session::start_active_shutdown()
 {
-  start_shutdown(server_error::operation_aborted);
+  start_shutdown(server::error::operation_aborted);
 }
 
 void session::start_shutdown(const boost::system::error_code& error)

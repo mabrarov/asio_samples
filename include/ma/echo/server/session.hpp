@@ -132,6 +132,7 @@ private:
     enum value_t {ready, in_progress, stopped};
   };
 
+  typedef boost::optional<boost::system::error_code> optional_error_code;
   typedef steady_deadline_timer          deadline_timer;
   typedef deadline_timer::duration_type  duration_type;
   typedef boost::optional<duration_type> optional_duration;
@@ -145,9 +146,9 @@ private:
   template <typename Handler>
   void start_extern_wait(const Handler&);
 
-  boost::system::error_code                  do_start_extern_start();
-  boost::optional<boost::system::error_code> do_start_extern_stop();
-  boost::optional<boost::system::error_code> do_start_extern_wait();
+  boost::system::error_code do_start_extern_start();
+  optional_error_code do_start_extern_stop();
+  optional_error_code do_start_extern_wait();
   void complete_extern_stop(const boost::system::error_code&);
   void complete_extern_wait(const boost::system::error_code&);
 
@@ -391,8 +392,7 @@ void session::start_extern_start(const Handler& handler)
 template <typename Handler>
 void session::start_extern_stop(const Handler& handler)
 {
-  if (boost::optional<boost::system::error_code> result =
-      do_start_extern_stop())
+  if (optional_error_code result = do_start_extern_stop())
   {
     io_service_.post(detail::bind_handler(handler, *result));
   }
@@ -405,8 +405,7 @@ void session::start_extern_stop(const Handler& handler)
 template <typename Handler>
 void session::start_extern_wait(const Handler& handler)
 {
-  if (boost::optional<boost::system::error_code> result =
-      do_start_extern_wait())
+  if (optional_error_code result = do_start_extern_wait())
   {
     io_service_.post(detail::bind_handler(handler, *result));
   }

@@ -276,12 +276,12 @@ void MainForm::on_statsTimer_timeout()
 void MainForm::on_service_startCompleted(
     const boost::system::error_code& error)
 {
-  if (server_error::invalid_state == error)
+  if (server::error::invalid_state == error)
   {
     writeLog(tr("Echo service start completed" \
         " with error due to invalid state for start operation."));
   }
-  else if (server_error::operation_aborted == error)
+  else if (server::error::operation_aborted == error)
   {
     writeLog(tr("Echo service start was canceled."));
   }
@@ -302,12 +302,12 @@ void MainForm::on_service_startCompleted(
 
 void MainForm::on_service_stopCompleted(const boost::system::error_code& error)
 {
-  if (server_error::invalid_state == error)
+  if (server::error::invalid_state == error)
   {
     writeLog(tr("Echo service stop completed" \
         " with error due to invalid state for stop operation."));
   }
-  else if (server_error::operation_aborted == error)
+  else if (server::error::operation_aborted == error)
   {
     writeLog(tr("Echo service stop was canceled."));
   }
@@ -328,12 +328,12 @@ void MainForm::on_service_stopCompleted(const boost::system::error_code& error)
 
 void MainForm::on_service_workCompleted(const boost::system::error_code& error)
 {
-  if (server_error::invalid_state == error)
+  if (server::error::invalid_state == error)
   {
     writeLog(tr("Echo service work completed" \
         " with error due to invalid state."));
   }
-  else if (server_error::operation_aborted == error)
+  else if (server::error::operation_aborted == error)
   {
     writeLog(tr("Echo service work was canceled."));
   }

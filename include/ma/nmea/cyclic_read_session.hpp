@@ -109,8 +109,8 @@ private:
     enum value_t {ready, work, stop, stopped};
   }; // struct extern_state
 
+  typedef boost::optional<boost::system::error_code> optional_error_code;
   typedef boost::circular_buffer<frame_ptr> frame_buffer_type;
-
   typedef boost::tuple<boost::system::error_code, std::size_t>
       read_result_type;
 
@@ -141,9 +141,9 @@ private:
   template <typename ConstBufferSequence, typename Handler>
   void start_extern_write_some(const ConstBufferSequence&, const Handler&);
 
-  boost::system::error_code                  do_start_extern_start();
-  boost::optional<boost::system::error_code> do_start_extern_stop();
-  boost::optional<boost::system::error_code> do_start_extern_read_some();
+  boost::system::error_code do_start_extern_start();
+  optional_error_code do_start_extern_stop();
+  optional_error_code do_start_extern_read_some();
 
   bool may_complete_stop() const;
   void complete_stop();
@@ -502,8 +502,7 @@ void cyclic_read_session::start_extern_start(const Handler& handler)
 template <typename Handler>
 void cyclic_read_session::start_extern_stop(const Handler& handler)
 {
-  if (boost::optional<boost::system::error_code> result =
-      do_start_extern_stop())
+  if (optional_error_code result = do_start_extern_stop())
   {
     io_service_.post(detail::bind_handler(handler, *result));
   }
@@ -517,8 +516,7 @@ template <typename Handler, typename Iterator>
 void cyclic_read_session::start_extern_read_some(
     const Iterator& begin, const Iterator& end, const Handler& handler)
 {
-  if (boost::optional<boost::system::error_code> read_result =
-      do_start_extern_read_some())
+  if (optional_error_code read_result = do_start_extern_read_some())
   {
     // Complete read operation "in place" if error
     if (*read_result)

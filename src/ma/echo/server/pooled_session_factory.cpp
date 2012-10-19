@@ -87,7 +87,7 @@ public:
     }
     catch (const std::bad_alloc&)
     {
-      error = server_error::no_memory;
+      error = server::error::no_memory;
       return session_wrapper_ptr();
     }
   }
