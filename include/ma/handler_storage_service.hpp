@@ -87,6 +87,7 @@ private:
 public:
   base_hook();
   base_hook(const this_type&);
+  base_hook& operator=(const this_type&);
 
 private:
   friend class intrusive_list<Value>;
@@ -214,10 +215,17 @@ intrusive_list<Value>::base_hook::base_hook()
 }
 
 template<typename Value>
-intrusive_list<Value>::base_hook::base_hook(const this_type& other)
+intrusive_list<Value>::base_hook::base_hook(const this_type&)
   : prev_(0)
   , next_(0)
 {
+}
+
+template<typename Value>
+typename intrusive_list<Value>::base_hook& 
+intrusive_list<Value>::base_hook::operator=(const this_type&)
+{
+  return *this;
 }
 
 template<typename Value>
@@ -375,11 +383,6 @@ private:
   post_func_type post_func_;
 }; // class handler_storage_service::postable_handler_base
 
-#if defined(_MSC_VER)
-#pragma warning(push)
-#pragma warning(disable: 4512)
-#endif // #if defined(_MSC_VER)
-
 template <typename Handler, typename Arg>
 class handler_storage_service::handler_wrapper
   : public postable_handler_base<Arg>
@@ -417,14 +420,10 @@ public:
   static void* do_target(handler_base*);
 
 private:
-  boost::asio::io_service& io_service_;
+  boost::asio::io_service* io_service_;
   boost::asio::io_service::work work_;
   Handler handler_;
 }; // class handler_storage_service::handler_wrapper
-
-#if defined(_MSC_VER)
-#pragma warning(pop)
-#endif // #if defined(_MSC_VER)
 
 inline handler_storage_service::handler_base::handler_base(
     destroy_func_type destroy_func, target_func_type target_func)
@@ -475,7 +474,7 @@ handler_storage_service::handler_wrapper<Handler, Arg>::handler_wrapper(
     boost::asio::io_service& io_service, H&& handler)
   : base_type(&this_type::do_destroy, &this_type::do_target,
         &this_type::do_post)
-  , io_service_(io_service)
+  , io_service_(&io_service)
   , work_(io_service)
   , handler_(std::forward<H>(handler))
 {
@@ -509,10 +508,10 @@ handler_storage_service::handler_wrapper<Handler, Arg>::handler_wrapper(
 
 template <typename Handler, typename Arg>
 handler_storage_service::handler_wrapper<Handler, Arg>::handler_wrapper(
-    boost::asio::io_service& io_service,const Handler& handler)
+    boost::asio::io_service& io_service, const Handler& handler)
   : base_type(&this_type::do_destroy, &this_type::do_target,
         &this_type::do_post)
-  , io_service_(io_service)
+  , io_service_(&io_service)
   , work_(io_service)
   , handler_(handler)
 {
@@ -551,7 +550,7 @@ void handler_storage_service::handler_wrapper<Handler, Arg>::do_post(
   // Make copies of other data placed at wrapper object
   // These copies will be used after the wrapper object destruction
   // and deallocation of its memory
-  boost::asio::io_service& io_service(this_ptr->io_service_);
+  boost::asio::io_service& io_service(*this_ptr->io_service_);
   boost::asio::io_service::work work(this_ptr->work_);
   (void) work;
   // Destroy wrapper object and deallocate its memory

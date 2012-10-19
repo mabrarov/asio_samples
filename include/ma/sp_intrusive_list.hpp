@@ -85,6 +85,7 @@ private:
 public:
   base_hook();
   base_hook(const this_type&);
+  base_hook& operator=(const this_type&);
 
 private:
   friend class sp_intrusive_list<Value>;
@@ -98,8 +99,15 @@ sp_intrusive_list<Value>::base_hook::base_hook()
 }
 
 template <typename Value>
-sp_intrusive_list<Value>::base_hook::base_hook(const this_type& other)
+sp_intrusive_list<Value>::base_hook::base_hook(const this_type&)
 {
+}
+
+template <typename Value>
+typename sp_intrusive_list<Value>::base_hook&
+sp_intrusive_list<Value>::base_hook::operator=(const this_type&)
+{
+  return *this;
 }
 
 template <typename Value>
