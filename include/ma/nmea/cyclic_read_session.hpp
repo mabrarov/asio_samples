@@ -573,7 +573,7 @@ void cyclic_read_session::start_extern_write_some(
 {
   if ((extern_state::work != extern_state_) || port_write_in_progress_)
   {
-    boost::system::error_code error(session_error::invalid_state);
+    boost::system::error_code error(nmea::error::invalid_state);
     io_service_.post(detail::bind_handler(handler, error, 0));
     return;
   }
