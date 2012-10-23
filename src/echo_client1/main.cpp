@@ -36,9 +36,38 @@
 
 #include <utility>
 
+#endif
+
 namespace {
 
-class test_handler
+class test_handler_base
+{
+private:
+  typedef test_handler_base this_type;
+
+public:
+  test_handler_base()
+  {
+  }
+
+  virtual int get_value() const = 0;
+
+protected:
+  ~test_handler_base()
+  {
+  }
+
+  test_handler_base(const this_type&)
+  {
+  }
+
+  this_type& operator=(const this_type&)
+  {
+    return *this;
+  }
+}; // class test_handler_base
+
+class test_handler : public test_handler_base
 {
 public:
   explicit test_handler(int value)
@@ -51,9 +80,26 @@ public:
     std::cout << value_ << val << std::endl;
   }
 
+  int get_value() const
+  {
+    return value_;
+  }
+
 private:
   int value_;
 }; // class test_handler
+
+void test_handler_storage_target(boost::asio::io_service& io_service)
+{
+  typedef ma::handler_storage<int, test_handler_base> handler_storage_type;
+
+  handler_storage_type handler(io_service);
+  handler.store(test_handler(4));
+
+  std::cout << handler.target()->get_value() <<std::endl;
+}
+
+#if defined(MA_HAS_RVALUE_REFS)
 
 void test_handler_storage_move_constructor(boost::asio::io_service& io_service)
 {
@@ -71,6 +117,8 @@ void test_handler_storage_move_constructor(boost::asio::io_service& io_service)
   worker_thread.join();
   io_service.reset();
 }
+
+#endif // defined(MA_HAS_RVALUE_REFS)
 
 class sp_list_test : public ma::sp_intrusive_list<sp_list_test>::base_hook
 {
@@ -121,8 +169,6 @@ void test_shared_ptr_factory()
 
 } // anonymous namespace
 
-#endif // defined(MA_HAS_RVALUE_REFS)
-
 #if defined(WIN32)
 int _tmain(int argc, _TCHAR* argv[])
 #else
@@ -153,6 +199,8 @@ int main(int argc, char* argv[])
     std::size_t cpu_count = boost::thread::hardware_concurrency();
     std::size_t session_thread_count = cpu_count > 1 ? cpu_count : 2;
     boost::asio::io_service io_service(session_thread_count);
+
+    test_handler_storage_target(io_service);
 
     //todo
     return EXIT_SUCCESS;

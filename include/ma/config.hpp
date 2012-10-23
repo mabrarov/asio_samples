@@ -104,4 +104,6 @@
 
 #endif // BOOST_VERSION >= 104800
 
+#define MA_TYPE_ERASURE_USE_VURTUAL
+
 #endif // MA_CONFIG_HPP

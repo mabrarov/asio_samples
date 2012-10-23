@@ -287,9 +287,8 @@ void cyclic_read_session::handle_read_tail(
   frame_buffer_.push_back(new_frame);
 
   // If there is waiting read operation - complete it
-  if (extern_read_handler_.has_target())
+  if (extern_read_handler_base* handler = extern_read_handler_.target())
   {
-    extern_read_handler_base* handler = get_extern_read_handler();
     read_result_type copy_result = handler->copy(frame_buffer_);
     frame_buffer_.erase_begin(copy_result.get<1>());
     extern_read_handler_.post(copy_result);
