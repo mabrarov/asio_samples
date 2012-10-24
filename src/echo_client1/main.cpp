@@ -91,12 +91,21 @@ private:
 
 void test_handler_storage_target(boost::asio::io_service& io_service)
 {
-  typedef ma::handler_storage<int, test_handler_base> handler_storage_type;
+  {
+    typedef ma::handler_storage<int, test_handler_base> handler_storage_type;  
 
-  handler_storage_type handler(io_service);
-  handler.store(test_handler(4));
+    handler_storage_type handler(io_service);
+    handler.store(test_handler(4));
+    std::cout << handler.target()->get_value() << std::endl;
+  }
 
-  std::cout << handler.target()->get_value() <<std::endl;
+  {
+    typedef ma::handler_storage<int> handler_storage_type;  
+
+    handler_storage_type handler(io_service);
+    handler.store(test_handler(4));
+    std::cout << handler.target() << std::endl;
+  }  
 }
 
 #if defined(MA_HAS_RVALUE_REFS)
