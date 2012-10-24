@@ -108,7 +108,7 @@ void test_handler_storage_target(boost::asio::io_service& io_service)
   }
 }
 
-class no_arg_handler 
+class no_arg_handler
 {
 public:
   explicit no_arg_handler(int value)
@@ -230,12 +230,14 @@ void test_handler_storage_arg(boost::asio::io_service& io_service)
     ma::handler_storage<int, test_handler_base> handler4(io_service);
     handler4.store(test_handler(4));
 
-    later_handler::storage_holder_ptr storage_holder1 = 
-        boost::make_shared<later_handler::storage_holder>(boost::ref(io_service));
+    later_handler::storage_holder_ptr storage_holder1 =
+        boost::make_shared<later_handler::storage_holder>(
+            boost::ref(io_service));
 
-    later_handler::storage_holder_ptr storage_holder2 = 
-        boost::make_shared<later_handler::storage_holder>(boost::ref(io_service));
-    
+    later_handler::storage_holder_ptr storage_holder2 =
+        boost::make_shared<later_handler::storage_holder>(
+            boost::ref(io_service));
+
     storage_holder1->handler_storage().store(later_handler(5, storage_holder1));
     storage_holder2->handler_storage().store(later_handler(6, storage_holder2));
   }
