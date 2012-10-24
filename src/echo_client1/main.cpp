@@ -108,6 +108,139 @@ void test_handler_storage_target(boost::asio::io_service& io_service)
   }
 }
 
+class no_arg_handler 
+{
+public:
+  explicit no_arg_handler(int value)
+    : value_(value)
+  {
+  }
+
+  void operator()()
+  {
+    std::cout << value_ << std::endl;
+  }
+
+private:
+  int value_;
+}; // class no_arg_handler
+
+class no_arg_handler_with_target : public test_handler_base
+{
+public:
+  explicit no_arg_handler_with_target(int value)
+    : value_(value)
+  {
+  }
+
+  void operator()()
+  {
+    std::cout << value_ << std::endl;
+  }
+
+  int get_value() const
+  {
+    return value_;
+  }
+
+private:
+  int value_;
+}; // class no_arg_handler_with_target
+
+class later_handler : public test_handler_base
+{
+public:
+  class storage_holder;
+  typedef boost::shared_ptr<storage_holder> storage_holder_ptr;
+
+  explicit later_handler(int value, const storage_holder_ptr& storage_holder)
+    : value_(value)
+    , storage_holder_(storage_holder)
+  {
+  }
+
+  void operator()(int val)
+  {
+    std::cout << value_ << val << std::endl;
+  }
+
+  int get_value() const
+  {
+    return value_;
+  }
+
+private:
+  int value_;
+  storage_holder_ptr storage_holder_;
+}; // class later_handler
+
+class later_handler::storage_holder : private boost::noncopyable
+{
+public:
+  typedef ma::handler_storage<int> handler_storage_type;
+
+  explicit storage_holder(boost::asio::io_service& io_service)
+    : handler_storage_(io_service)
+  {
+  }
+
+  handler_storage_type& handler_storage()
+  {
+    return handler_storage_;
+  }
+
+private:
+  handler_storage_type handler_storage_;
+}; // class later_handler::storage_holder
+
+void test_handler_storage_arg(boost::asio::io_service& io_service)
+{
+  {
+    typedef ma::handler_storage<void> handler_storage_type;
+
+    handler_storage_type handler(io_service);
+    handler.store(no_arg_handler(4));
+
+    std::cout << handler.target() << std::endl;
+    handler.post();
+  }
+
+  {
+    typedef ma::handler_storage<void, test_handler_base> handler_storage_type;
+
+    handler_storage_type handler(io_service);
+    handler.store(no_arg_handler_with_target(4));
+
+    std::cout << handler.target()->get_value() << std::endl;
+    handler.post();
+  }
+
+  {
+    boost::asio::io_service io_service;
+
+    ma::handler_storage<void, test_handler_base> handler1(io_service);
+    handler1.store(no_arg_handler_with_target(1));
+
+    ma::handler_storage<void> handler2(io_service);
+    handler2.store(no_arg_handler(2));
+
+    ma::handler_storage<int> handler3(io_service);
+    handler3.store(test_handler(3));
+
+    ma::handler_storage<int, test_handler_base> handler4(io_service);
+    handler4.store(test_handler(4));
+
+    later_handler::storage_holder_ptr storage_holder1 = 
+        boost::make_shared<later_handler::storage_holder>(boost::ref(io_service));
+
+    later_handler::storage_holder_ptr storage_holder2 = 
+        boost::make_shared<later_handler::storage_holder>(boost::ref(io_service));
+    
+    storage_holder1->handler_storage().store(later_handler(5, storage_holder1));
+    storage_holder2->handler_storage().store(later_handler(6, storage_holder2));
+  }
+}
+
 #if defined(MA_HAS_RVALUE_REFS)
 
 void test_handler_storage_move_constructor(boost::asio::io_service& io_service)
@@ -209,7 +342,10 @@ int main(int argc, char* argv[])
     std::size_t session_thread_count = cpu_count > 1 ? cpu_count : 2;
     boost::asio::io_service io_service(session_thread_count);
 
-    test_handler_storage_target(io_service);
+    //test_handler_storage_target(io_service);
+    test_handler_storage_arg(io_service);
+
+    io_service.run();
 
     //todo
     return EXIT_SUCCESS;
