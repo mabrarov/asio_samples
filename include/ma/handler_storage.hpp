@@ -197,14 +197,14 @@ boost::asio::io_service& handler_storage<Arg, Target>::get_io_service()
 }
 
 template <typename Arg, typename Target>
-typename handler_storage<Arg, Target>::target_type* 
+typename handler_storage<Arg, Target>::target_type*
 handler_storage<Arg, Target>::target()
 {
   return service_.target<arg_type, target_type>(impl_);
 }
 
 template <typename Arg, typename Target>
-typename const handler_storage<Arg, Target>::target_type*
+const typename handler_storage<Arg, Target>::target_type*
 handler_storage<Arg, Target>::target() const
 {
   return service_.target<arg_type, target_type>(impl_);

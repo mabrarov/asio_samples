@@ -173,7 +173,7 @@ private:
   boost::asio::io_service::strand strand_;
   boost::asio::serial_port        serial_port_;
 
-  ma::handler_storage<read_result_type, extern_read_handler_base> 
+  ma::handler_storage<read_result_type, extern_read_handler_base>
       extern_read_handler_;
   ma::handler_storage<boost::system::error_code> extern_stop_handler_;
 

@@ -92,7 +92,7 @@ private:
 void test_handler_storage_target(boost::asio::io_service& io_service)
 {
   {
-    typedef ma::handler_storage<int, test_handler_base> handler_storage_type;  
+    typedef ma::handler_storage<int, test_handler_base> handler_storage_type;
 
     handler_storage_type handler(io_service);
     handler.store(test_handler(4));
@@ -100,12 +100,12 @@ void test_handler_storage_target(boost::asio::io_service& io_service)
   }
 
   {
-    typedef ma::handler_storage<int> handler_storage_type;  
+    typedef ma::handler_storage<int> handler_storage_type;
 
     handler_storage_type handler(io_service);
     handler.store(test_handler(4));
     std::cout << handler.target() << std::endl;
-  }  
+  }
 }
 
 #if defined(MA_HAS_RVALUE_REFS)
@@ -131,7 +131,7 @@ void test_handler_storage_move_constructor(boost::asio::io_service& io_service)
 
 class sp_list_test : public ma::sp_intrusive_list<sp_list_test>::base_hook
 {
-public: 
+public:
   explicit sp_list_test(std::size_t num)
     : num_(num)
   {

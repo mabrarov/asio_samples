@@ -224,7 +224,7 @@ intrusive_list<Value>::base_hook::base_hook(const this_type&)
 }
 
 template<typename Value>
-typename intrusive_list<Value>::base_hook& 
+typename intrusive_list<Value>::base_hook&
 intrusive_list<Value>::base_hook::operator=(const this_type&)
 {
   return *this;
@@ -370,7 +370,7 @@ public:
 protected:
   ~handler_base();
   handler_base(const this_type&);
-  
+
 private:
   this_type& operator=(const this_type&);
 
@@ -428,6 +428,7 @@ private:
   typedef typed_handler_base<Arg, Target> base_type;
 
 public:
+  typedef typename base_type::target_type target_type;
 
 #if defined(MA_HAS_RVALUE_REFS)
 
@@ -515,7 +516,7 @@ handler_storage_service::typed_handler_base<Arg, Target>::typed_handler_base()
 
 template <typename Arg, typename Target>
 handler_storage_service::typed_handler_base<Arg, Target>::typed_handler_base(
-    destroy_func_type destroy_func, post_func_type post_func, 
+    destroy_func_type destroy_func, post_func_type post_func,
     target_func_type target_func)
   : base_type(destroy_func)
   , post_func_(post_func)
@@ -605,7 +606,7 @@ handler_storage_service::handler_wrapper<Handler, Arg, Target>::handler_wrapper(
 #if defined(MA_TYPE_ERASURE_USE_VURTUAL)
   : base_type()
 #else
-  : base_type(&this_type::do_destroy, &this_type::do_post, 
+  : base_type(&this_type::do_destroy, &this_type::do_post,
         &this_type::do_target)
 #endif
   , io_service_(&io_service)
