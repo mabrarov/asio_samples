@@ -104,4 +104,7 @@
 
 #endif // BOOST_VERSION >= 104800
 
+// Don't use vurtual functions for type erasure
+#undef MA_TYPE_ERASURE_USE_VURTUAL
+
 #endif // MA_CONFIG_HPP

@@ -82,7 +82,7 @@ boost::system::error_code cyclic_read_session::do_start_extern_start()
 {
   if (extern_state::ready != extern_state_)
   {
-    return session_error::invalid_state;
+    return nmea::error::invalid_state;
   }
 
   extern_state_ = extern_state::work;
@@ -97,14 +97,13 @@ boost::system::error_code cyclic_read_session::do_start_extern_start()
   return boost::system::error_code();
 }
 
-boost::optional<boost::system::error_code>
+cyclic_read_session::optional_error_code
 cyclic_read_session::do_start_extern_stop()
 {
   if ((extern_state::stopped == extern_state_)
       || (extern_state::stop == extern_state_))
   {
-    return boost::optional<boost::system::error_code>(
-        session_error::invalid_state);
+    return boost::system::error_code(nmea::error::invalid_state);
   }
 
   // Start shutdown
@@ -113,7 +112,8 @@ cyclic_read_session::do_start_extern_stop()
   // Do shutdown - abort outer operations
   if (extern_read_handler_.has_target())
   {
-    extern_read_handler_.post(read_result_type(session_error::operation_aborted, 0));
+    extern_read_handler_.post(
+        read_result_type(nmea::error::operation_aborted, 0));
   }
 
   // Do shutdown - abort inner operations
@@ -127,17 +127,16 @@ cyclic_read_session::do_start_extern_stop()
     return stop_error_;
   }
 
-  return boost::optional<boost::system::error_code>();
+  return optional_error_code();
 }
 
-boost::optional<boost::system::error_code>
+cyclic_read_session::optional_error_code
 cyclic_read_session::do_start_extern_read_some()
 {
   if ((extern_state::work != extern_state_)
       || (extern_read_handler_.has_target()))
   {
-    return boost::optional<boost::system::error_code>(
-        session_error::invalid_state);
+    return boost::system::error_code(nmea::error::invalid_state);
   }
 
   if (!frame_buffer_.empty())
@@ -159,7 +158,7 @@ cyclic_read_session::do_start_extern_read_some()
   {
     read_until_head();
   }
-  return boost::optional<boost::system::error_code>();
+  return optional_error_code();
 }
 
 bool cyclic_read_session::may_complete_stop() const
@@ -288,9 +287,8 @@ void cyclic_read_session::handle_read_tail(
   frame_buffer_.push_back(new_frame);
 
   // If there is waiting read operation - complete it
-  if (extern_read_handler_.has_target())
+  if (extern_read_handler_base* handler = extern_read_handler_.target())
   {
-    extern_read_handler_base* handler = get_extern_read_handler();
     read_result_type copy_result = handler->copy(frame_buffer_);
     frame_buffer_.erase_begin(copy_result.get<1>());
     extern_read_handler_.post(copy_result);

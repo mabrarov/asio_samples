@@ -343,7 +343,7 @@ void Service::asyncStart(const execution_config& the_execution_config,
 {
   if (ServiceState::Stopped != state_)
   {
-    forwardSignal_->emitStartCompleted(server_error::invalid_state);
+    forwardSignal_->emitStartCompleted(server::error::invalid_state);
     return;
   }
 
@@ -401,17 +401,17 @@ void Service::asyncStop()
 {
   if ((ServiceState::Stopped == state_) || (ServiceState::Stopping == state_))
   {
-    forwardSignal_->emitStopCompleted(server_error::invalid_state);
+    forwardSignal_->emitStopCompleted(server::error::invalid_state);
     return;
   }
 
   if (ServiceState::Starting == state_)
   {
-    forwardSignal_->emitStartCompleted(server_error::operation_aborted);
+    forwardSignal_->emitStartCompleted(server::error::operation_aborted);
   }
   else if (ServiceState::Working == state_)
   {
-    forwardSignal_->emitWorkCompleted(server_error::operation_aborted);
+    forwardSignal_->emitWorkCompleted(server::error::operation_aborted);
   }
 
   servant_->stop_session_manager(
@@ -440,15 +440,15 @@ void Service::terminate()
 
   if (ServiceState::Starting == state_)
   {
-    forwardSignal_->emitStartCompleted(server_error::operation_aborted);
+    forwardSignal_->emitStartCompleted(server::error::operation_aborted);
   }
   else if (ServiceState::Working == state_)
   {
-    forwardSignal_->emitWorkCompleted(server_error::operation_aborted);
+    forwardSignal_->emitWorkCompleted(server::error::operation_aborted);
   }
   else if (ServiceState::Stopping == state_)
   {
-    forwardSignal_->emitStopCompleted(server_error::operation_aborted);
+    forwardSignal_->emitStopCompleted(server::error::operation_aborted);
   }
 
   state_ = ServiceState::Stopped;

@@ -109,8 +109,8 @@ private:
     enum value_t {ready, work, stop, stopped};
   }; // struct extern_state
 
+  typedef boost::optional<boost::system::error_code> optional_error_code;
   typedef boost::circular_buffer<frame_ptr> frame_buffer_type;
-
   typedef boost::tuple<boost::system::error_code, std::size_t>
       read_result_type;
 
@@ -118,7 +118,22 @@ private:
   static read_result_type copy_buffer(const frame_buffer_type& buffer,
       const Iterator& begin, const Iterator& end);
 
-  class extern_read_handler_base;
+  class extern_read_handler_base
+  {
+  private:
+    typedef extern_read_handler_base this_type;
+
+  public:
+    typedef read_result_type (*copy_func_type)(
+        extern_read_handler_base*, const frame_buffer_type&);
+
+    explicit extern_read_handler_base(copy_func_type copy_func);
+
+    read_result_type copy(const frame_buffer_type& buffer);
+
+  private:
+    copy_func_type copy_func_;
+  }; // class extern_read_handler_base
 
   template <typename Handler, typename Iterator>
   class wrapped_extern_read_handler;
@@ -132,18 +147,12 @@ private:
   template <typename Handler, typename Iterator>
   void start_extern_read_some(const Iterator&, const Iterator&, const Handler&);
 
-  template <typename Handler, typename Iterator>
-  void park_extern_read_handler(
-      const Iterator&, const Iterator&, const Handler&);
-
-  extern_read_handler_base* get_extern_read_handler();
-
   template <typename ConstBufferSequence, typename Handler>
   void start_extern_write_some(const ConstBufferSequence&, const Handler&);
 
-  boost::system::error_code                  do_start_extern_start();
-  boost::optional<boost::system::error_code> do_start_extern_stop();
-  boost::optional<boost::system::error_code> do_start_extern_read_some();
+  boost::system::error_code do_start_extern_start();
+  optional_error_code do_start_extern_stop();
+  optional_error_code do_start_extern_read_some();
 
   bool may_complete_stop() const;
   void complete_stop();
@@ -164,13 +173,13 @@ private:
   boost::asio::io_service::strand strand_;
   boost::asio::serial_port        serial_port_;
 
-  ma::handler_storage<read_result_type>          extern_read_handler_;
+  ma::handler_storage<read_result_type, extern_read_handler_base>
+      extern_read_handler_;
   ma::handler_storage<boost::system::error_code> extern_stop_handler_;
 
   frame_buffer_type         frame_buffer_;
   boost::system::error_code read_error_;
   boost::system::error_code stop_error_;
-  std::ptrdiff_t            extern_read_handler_base_shift_;
 
   bool port_write_in_progress_;
   bool port_read_in_progress_;
@@ -183,23 +192,6 @@ private:
   in_place_handler_allocator<256> write_allocator_;
   in_place_handler_allocator<256> read_allocator_;
 }; // class cyclic_read_session
-
-class cyclic_read_session::extern_read_handler_base
-{
-private:
-  typedef extern_read_handler_base this_type;
-
-public:
-  typedef read_result_type (*copy_func_type)(
-      extern_read_handler_base*, const frame_buffer_type&);
-
-  explicit extern_read_handler_base(copy_func_type copy_func);
-
-  read_result_type copy(const frame_buffer_type& buffer);
-
-private:
-  copy_func_type copy_func_;
-}; // class cyclic_read_session::extern_read_handler_base
 
 template <typename Handler, typename Iterator>
 class cyclic_read_session::wrapped_extern_read_handler
@@ -502,8 +494,7 @@ void cyclic_read_session::start_extern_start(const Handler& handler)
 template <typename Handler>
 void cyclic_read_session::start_extern_stop(const Handler& handler)
 {
-  if (boost::optional<boost::system::error_code> result =
-      do_start_extern_stop())
+  if (optional_error_code result = do_start_extern_stop())
   {
     io_service_.post(detail::bind_handler(handler, *result));
   }
@@ -517,8 +508,7 @@ template <typename Handler, typename Iterator>
 void cyclic_read_session::start_extern_read_some(
     const Iterator& begin, const Iterator& end, const Handler& handler)
 {
-  if (boost::optional<boost::system::error_code> read_result =
-      do_start_extern_read_some())
+  if (optional_error_code read_result = do_start_extern_read_some())
   {
     // Complete read operation "in place" if error
     if (*read_result)
@@ -537,36 +527,9 @@ void cyclic_read_session::start_extern_read_some(
   }
   else
   {
-    park_extern_read_handler(begin, end, handler);
+    typedef wrapped_extern_read_handler<Handler, Iterator> wrapped_handler_type;
+    extern_read_handler_.store(wrapped_handler_type(handler, begin, end));
   }
-}
-
-template <typename Handler, typename Iterator>
-void cyclic_read_session::park_extern_read_handler(
-    const Iterator& begin, const Iterator& end, const Handler& handler)
-{
-  typedef wrapped_extern_read_handler<Handler, Iterator>
-      wrapped_handler_type;
-
-  wrapped_handler_type wrapped_handler(handler, begin, end);
-
-  wrapped_handler_type* wrapped_handler_ptr =
-      boost::addressof(wrapped_handler);
-  extern_read_handler_base* base_handler_ptr =
-      static_cast<extern_read_handler_base*>(wrapped_handler_ptr);
-  extern_read_handler_base_shift_ =
-      reinterpret_cast<char*>(base_handler_ptr)
-      - reinterpret_cast<char*>(wrapped_handler_ptr);
-
-  extern_read_handler_.store(wrapped_handler);
-}
-
-inline cyclic_read_session::extern_read_handler_base*
-cyclic_read_session::get_extern_read_handler()
-{
-  return reinterpret_cast<extern_read_handler_base*>(
-      reinterpret_cast<char*>(extern_read_handler_.target())
-          + extern_read_handler_base_shift_);
 }
 
 template <typename ConstBufferSequence, typename Handler>
@@ -575,7 +538,7 @@ void cyclic_read_session::start_extern_write_some(
 {
   if ((extern_state::work != extern_state_) || port_write_in_progress_)
   {
-    boost::system::error_code error(session_error::invalid_state);
+    boost::system::error_code error(nmea::error::invalid_state);
     io_service_.post(detail::bind_handler(handler, error, 0));
     return;
   }

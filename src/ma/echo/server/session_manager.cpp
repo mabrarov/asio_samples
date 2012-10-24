@@ -265,21 +265,21 @@ void session_manager::stats_collector::session_accepted(
 void session_manager::stats_collector::session_stopped(
     const boost::system::error_code& error)
 {
-  if (server_error::operation_aborted == error)
+  if (server::error::operation_aborted == error)
   {
     lock_guard_type lock_guard(mutex_);
     ++stats_.active_shutdowned;
     return;
   }
 
-  if (server_error::out_of_work == error)
+  if (server::error::out_of_work == error)
   {
     lock_guard_type lock_guard(mutex_);
     ++stats_.out_of_work;
     return;
   }
 
-  if (server_error::inactivity_timeout == error)
+  if (server::error::inactivity_timeout == error)
   {
     lock_guard_type lock_guard(mutex_);
     ++stats_.timed_out;
@@ -558,7 +558,7 @@ boost::system::error_code session_manager::do_start_extern_start()
   // Check external state consistency
   if (extern_state::ready != extern_state_)
   {
-    return server_error::invalid_state;
+    return server::error::invalid_state;
   }
 
   // Internal states have right values already
@@ -575,23 +575,22 @@ boost::system::error_code session_manager::do_start_extern_start()
   return boost::system::error_code();
 }
 
-boost::optional<boost::system::error_code>
-session_manager::do_start_extern_stop()
+session_manager::optional_error_code session_manager::do_start_extern_stop()
 {
   // Check external state consistency
   if ((extern_state::stopped == extern_state_)
       || (extern_state::stop == extern_state_))
   {
-    return boost::system::error_code(server_error::invalid_state);
+    return boost::system::error_code(server::error::invalid_state);
   }
 
   // Switch external SM
   extern_state_ = extern_state::stop;
-  complete_extern_wait(server_error::operation_aborted);
+  complete_extern_wait(server::error::operation_aborted);
 
   if (intern_state::work == intern_state_)
   {
-    start_stop(server_error::operation_aborted);
+    start_stop(server::error::operation_aborted);
   }
 
   // intern_state_ can be changed by start_stop
@@ -603,17 +602,16 @@ session_manager::do_start_extern_stop()
   }
 
   // Park stop handler for the late call
-  return boost::optional<boost::system::error_code>();
+  return optional_error_code();
 }
 
-boost::optional<boost::system::error_code>
-session_manager::do_start_extern_wait()
+session_manager::optional_error_code session_manager::do_start_extern_wait()
 {
   // Check external state consistency
   if ((extern_state::work != extern_state_)
       || extern_wait_handler_.has_target())
   {
-    return boost::system::error_code(server_error::invalid_state);
+    return boost::system::error_code(server::error::invalid_state);
   }
 
   if (intern_state::work != intern_state_)
@@ -622,7 +620,7 @@ session_manager::do_start_extern_wait()
   }
 
   // Park wait handler for the late call
-  return boost::optional<boost::system::error_code>();
+  return optional_error_code();
 }
 
 void session_manager::complete_extern_stop(
@@ -655,7 +653,7 @@ void session_manager::continue_work()
 
   if (out_of_work())
   {
-    start_stop(server_error::out_of_work);
+    start_stop(server::error::out_of_work);
     return;
   }
 
@@ -683,7 +681,7 @@ void session_manager::continue_work()
       accept_state_ = accept_state::stopped;
       if (out_of_work())
       {
-        start_stop(server_error::out_of_work);
+        start_stop(server::error::out_of_work);
       }
       return;
     }
@@ -702,7 +700,7 @@ void session_manager::continue_work()
     accept_state_ = accept_state::stopped;
     if (out_of_work())
     {
-      start_stop(server_error::out_of_work);
+      start_stop(server::error::out_of_work);
     }
     return;
   }
@@ -762,7 +760,7 @@ void session_manager::handle_accept_at_work(const session_wrapper_ptr& session,
   if (active_sessions_.size() >= max_session_count_)
   {
     // Session was successfully accepted but has to be immediately stopped
-    stats_collector_.session_stopped(server_error::operation_aborted);
+    stats_collector_.session_stopped(server::error::operation_aborted);
     recycle(session);
     continue_work();
     return;
@@ -797,7 +795,7 @@ void session_manager::handle_accept_at_stop(const session_wrapper_ptr& session,
   }
 
   // Session was successfully accepted but has to be immediately stopped
-  stats_collector_.session_stopped(server_error::operation_aborted);
+  stats_collector_.session_stopped(server::error::operation_aborted);
   recycle(session);
   continue_stop();
 }
@@ -835,7 +833,7 @@ void session_manager::handle_session_start_at_work(
   if (!session->starting())
   {
     // Collect statistics
-    stats_collector_.session_stopped(server_error::operation_aborted);
+    stats_collector_.session_stopped(server::error::operation_aborted);
     // Handler is called too late
     recycle(session);
     continue_work();
@@ -872,7 +870,7 @@ void session_manager::handle_session_start_at_stop(
   if (!session->starting())
   {
     // Collect statistics
-    stats_collector_.session_stopped(server_error::operation_aborted);
+    stats_collector_.session_stopped(server::error::operation_aborted);
     // Handler is called too late
     recycle(session);
     continue_stop();
@@ -930,7 +928,7 @@ void session_manager::handle_session_wait_at_work(
   if (!session->working())
   {
     // Collect statistics
-    stats_collector_.session_stopped(server_error::operation_aborted);
+    stats_collector_.session_stopped(server::error::operation_aborted);
     // Handler is called too late
     recycle(session);
     continue_work();
@@ -957,7 +955,7 @@ void session_manager::handle_session_wait_at_stop(
   if (!session->working())
   {
     // Collect statistics
-    stats_collector_.session_stopped(server_error::operation_aborted);
+    stats_collector_.session_stopped(server::error::operation_aborted);
     // Handler is called too late
     recycle(session);
     continue_stop();
@@ -1258,7 +1256,7 @@ session_manager::session_wrapper_ptr session_manager::create_session(
   }
   catch (const std::bad_alloc&)
   {
-    error = server_error::no_memory;
+    error = server::error::no_memory;
     return session_wrapper_ptr();
   }
 }

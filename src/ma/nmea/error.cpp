@@ -12,39 +12,39 @@ namespace nmea {
 
 namespace {
 
-class session_error_category_impl : public boost::system::error_category
+class error_category_impl : public boost::system::error_category
 {
 public:
-  session_error_category_impl()
+  error_category_impl()
   {
   }
 
   virtual const char* name() const
   {
-    return "ma::nmea::session";
+    return "ma.nmea";
   }
 
   virtual std::string message(int ev) const
   {
     switch (ev)
     {
-    case session_error::invalid_state:
-      return "Invalid state.";
-    case session_error::operation_aborted:
-      return "Operation aborted.";
+    case error::invalid_state:
+      return "Invalid state";
+    case error::operation_aborted:
+      return "Operation aborted";
     default:
-      return "Unknown ma::echo::server error.";
+      return "ma.nmea error";
     }
   }
 
-}; // class session_error_category_impl
+}; // class error_category_impl
 
 } // anonymous namespace
 
-const boost::system::error_category& session_error_category()
+const boost::system::error_category& error::category()
 {
-  static const session_error_category_impl error_category_const;
-  return error_category_const;
+  static const error_category_impl instance;
+  return instance;
 }
 
 } // namespace nmea

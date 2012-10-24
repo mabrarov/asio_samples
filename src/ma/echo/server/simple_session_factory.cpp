@@ -63,7 +63,7 @@ session_ptr simple_session_factory::create(const session_config& config,
   }
   catch (const std::bad_alloc&)
   {
-    error = server_error::no_memory;
+    error = server::error::no_memory;
     return session_ptr();
   }
 }

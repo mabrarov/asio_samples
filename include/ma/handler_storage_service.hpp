@@ -87,6 +87,7 @@ private:
 public:
   base_hook();
   base_hook(const this_type&);
+  base_hook& operator=(const this_type&);
 
 private:
   friend class intrusive_list<Value>;
@@ -168,13 +169,18 @@ public:
   /// Can throw if destructor of user supplied handler can throw
   static void clear(implementation_type& impl);
 
-  template <typename Handler, typename Arg>
+  template <typename Handler, typename Arg, typename Target>
   void store(implementation_type& impl, Handler handler);
 
-  template <typename Arg>
+  template <typename Arg, typename Target>
   static void post(implementation_type& impl, const Arg& arg);
 
-  static void* target(const implementation_type& impl);
+  template <typename Target>
+  static void post(implementation_type& impl);
+
+  template <typename Arg, typename Target>
+  static Target* target(const implementation_type& impl);
+
   static bool empty(const implementation_type& impl);
   static bool has_target(const implementation_type& impl);
 
@@ -183,12 +189,18 @@ protected:
 
 private:
   // Base class to hold up handlers with specified call signature.
-  template <typename Arg>
-  class postable_handler_base;
+  template <typename Arg, typename Target>
+  class typed_handler_base;
+
+  template <typename Target>
+  class typed_handler_base<void, Target>;
 
   // Wrapper class to hold up handlers with specified call signature.
-  template <typename Handler, typename Arg>
+  template <typename Handler, typename Arg, typename Target>
   class handler_wrapper;
+
+  template <typename Handler, typename Target>
+  class handler_wrapper<Handler, void, Target>;
 
   typedef boost::mutex                      mutex_type;
   typedef boost::lock_guard<mutex_type>     lock_guard;
@@ -214,10 +226,17 @@ intrusive_list<Value>::base_hook::base_hook()
 }
 
 template<typename Value>
-intrusive_list<Value>::base_hook::base_hook(const this_type& other)
+intrusive_list<Value>::base_hook::base_hook(const this_type&)
   : prev_(0)
   , next_(0)
 {
+}
+
+template<typename Value>
+typename intrusive_list<Value>::base_hook&
+intrusive_list<Value>::base_hook::operator=(const this_type&)
+{
+  return *this;
 }
 
 template<typename Value>
@@ -339,56 +358,127 @@ class handler_storage_service::handler_base
 {
 private:
   typedef handler_base this_type;
+  typedef detail::intrusive_list<handler_base>::base_hook base_type;
 
 public:
-  typedef void (*destroy_func_type)(this_type*);
-  typedef void* (*target_func_type)(this_type*);
 
-  handler_base(destroy_func_type, target_func_type);
+#if defined(MA_TYPE_ERASURE_USE_VURTUAL)
+
+  handler_base();
+  virtual void destroy() = 0;
+
+#else
+
+  typedef void (*destroy_func_type)(this_type*);
+
+  handler_base(destroy_func_type);
   void destroy();
-  void* target();
+
+#endif // defined(MA_TYPE_ERASURE_USE_VURTUAL)
 
 protected:
   ~handler_base();
+  handler_base(const this_type&);
 
 private:
+  this_type& operator=(const this_type&);
+
+#if !defined(MA_TYPE_ERASURE_USE_VURTUAL)
   destroy_func_type destroy_func_;
-  target_func_type  target_func_;
+#endif
 }; // class handler_storage_service::handler_base
 
-template <typename Arg>
-class handler_storage_service::postable_handler_base : public handler_base
+template <typename Arg, typename Target>
+class handler_storage_service::typed_handler_base : public handler_base
 {
 private:
-  typedef postable_handler_base<Arg> this_type;
+  typedef typed_handler_base<Arg, Target> this_type;
+  typedef handler_base base_type;
 
 public:
-  typedef void (*post_func_type)(this_type*, const Arg&);
+  typedef Target target_type;
 
-  postable_handler_base(destroy_func_type, target_func_type, post_func_type);
+#if defined(MA_TYPE_ERASURE_USE_VURTUAL)
+
+  typed_handler_base();
+  virtual void post(const Arg&) = 0;
+  virtual target_type* target() = 0;
+
+#else
+
+  typedef void (*post_func_type)(this_type*, const Arg&);
+  typedef target_type* (*target_func_type)(this_type*);
+
+  typed_handler_base(destroy_func_type, post_func_type, target_func_type);
   void post(const Arg&);
+  target_type* target();
+
+#endif // defined(MA_TYPE_ERASURE_USE_VURTUAL)
 
 protected:
-  ~postable_handler_base();
+  ~typed_handler_base();
+  typed_handler_base(const this_type&);
 
 private:
-  post_func_type post_func_;
-}; // class handler_storage_service::postable_handler_base
+  this_type& operator=(const this_type&);
 
-#if defined(_MSC_VER)
-#pragma warning(push)
-#pragma warning(disable: 4512)
-#endif // #if defined(_MSC_VER)
+#if !defined(MA_TYPE_ERASURE_USE_VURTUAL)
+  post_func_type   post_func_;
+  target_func_type target_func_;
+#endif
+}; // class handler_storage_service::typed_handler_base
 
-template <typename Handler, typename Arg>
-class handler_storage_service::handler_wrapper
-  : public postable_handler_base<Arg>
+template <typename Target>
+class handler_storage_service::typed_handler_base<void, Target>
+  : public handler_base
 {
 private:
-  typedef handler_wrapper<Handler, Arg> this_type;
-  typedef postable_handler_base<Arg>    base_type;
+  typedef typed_handler_base<void, Target> this_type;
+  typedef handler_base base_type;
 
 public:
+  typedef Target target_type;
+
+#if defined(MA_TYPE_ERASURE_USE_VURTUAL)
+
+  typed_handler_base();
+  virtual void post() = 0;
+  virtual target_type* target() = 0;
+
+#else
+
+  typedef void (*post_func_type)(this_type*);
+  typedef target_type* (*target_func_type)(this_type*);
+
+  typed_handler_base(destroy_func_type, post_func_type, target_func_type);
+  void post();
+  target_type* target();
+
+#endif // defined(MA_TYPE_ERASURE_USE_VURTUAL)
+
+protected:
+  ~typed_handler_base();
+  typed_handler_base(const this_type&);
+
+private:
+  this_type& operator=(const this_type&);
+
+#if !defined(MA_TYPE_ERASURE_USE_VURTUAL)
+  post_func_type   post_func_;
+  target_func_type target_func_;
+#endif
+}; // class handler_storage_service::typed_handler_base
+
+template <typename Handler, typename Arg, typename Target>
+class handler_storage_service::handler_wrapper
+  : public typed_handler_base<Arg, Target>
+{
+private:
+  typedef handler_wrapper<Handler, Arg, Target> this_type;
+  typedef typed_handler_base<Arg, Target> base_type;
+
+public:
+  typedef typename base_type::target_type target_type;
 
 #if defined(MA_HAS_RVALUE_REFS)
 
@@ -408,28 +498,90 @@ public:
 
 #endif // defined(MA_HAS_RVALUE_REFS)
 
+#if defined(MA_TYPE_ERASURE_USE_VURTUAL)
+  void destroy();
+  void post(const Arg&);
+  target_type* target();
+#endif
+
 #if !defined(NDEBUG)
   ~handler_wrapper();
 #endif
 
-  static void do_post(base_type*, const Arg&);
-  static void do_destroy(handler_base*);
-  static void* do_target(handler_base*);
-
 private:
-  boost::asio::io_service& io_service_;
+  this_type& operator=(const this_type&);
+
+  static void do_destroy(handler_base*);
+  static void do_post(base_type*, const Arg&);
+  static target_type* do_target(base_type*);
+
+  boost::asio::io_service* io_service_;
   boost::asio::io_service::work work_;
   Handler handler_;
 }; // class handler_storage_service::handler_wrapper
 
-#if defined(_MSC_VER)
-#pragma warning(pop)
-#endif // #if defined(_MSC_VER)
+template <typename Handler, typename Target>
+class handler_storage_service::handler_wrapper<Handler, void, Target>
+  : public typed_handler_base<void, Target>
+{
+private:
+  typedef handler_wrapper<Handler, void, Target> this_type;
+  typedef typed_handler_base<void, Target> base_type;
+
+public:
+  typedef typename base_type::target_type target_type;
+
+#if defined(MA_HAS_RVALUE_REFS)
+
+  template <typename H>
+  handler_wrapper(boost::asio::io_service&, H&&);
+
+#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
+
+  handler_wrapper(this_type&&);
+  handler_wrapper(const this_type&);
+
+#endif // defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
+
+#else // defined(MA_HAS_RVALUE_REFS)
+
+  handler_wrapper(boost::asio::io_service&, const Handler&);
+
+#endif // defined(MA_HAS_RVALUE_REFS)
+
+#if defined(MA_TYPE_ERASURE_USE_VURTUAL)
+  void destroy();
+  void post();
+  target_type* target();
+#endif
+
+#if !defined(NDEBUG)
+  ~handler_wrapper();
+#endif
+
+private:
+  this_type& operator=(const this_type&);
+
+  static void do_destroy(handler_base*);
+  static void do_post(base_type*);
+  static target_type* do_target(base_type*);
+
+  boost::asio::io_service* io_service_;
+  boost::asio::io_service::work work_;
+  Handler handler_;
+}; // class handler_storage_service::handler_wrapper
+
+#if defined(MA_TYPE_ERASURE_USE_VURTUAL)
+
+inline handler_storage_service::handler_base::handler_base()
+{
+}
+
+#else
 
 inline handler_storage_service::handler_base::handler_base(
-    destroy_func_type destroy_func, target_func_type target_func)
+    destroy_func_type destroy_func)
   : destroy_func_(destroy_func)
-  , target_func_(target_func)
 {
 }
 
@@ -438,44 +590,137 @@ inline void handler_storage_service::handler_base::destroy()
   destroy_func_(this);
 }
 
-inline void* handler_storage_service::handler_base::target()
-{
-  return target_func_(this);
-}
+#endif // defined(MA_TYPE_ERASURE_USE_VURTUAL)
 
 inline handler_storage_service::handler_base::~handler_base()
 {
 }
 
-template <typename Arg>
-handler_storage_service::postable_handler_base<Arg>::postable_handler_base(
-    destroy_func_type destroy_func, target_func_type target_func,
-    post_func_type post_func)
-  : handler_base(destroy_func, target_func)
-  , post_func_(post_func)
+inline handler_storage_service::handler_base::handler_base(
+    const this_type& other)
+  : base_type(other)
+#if !defined(MA_TYPE_ERASURE_USE_VURTUAL)
+  , destroy_func_(other.destroy_func_)
+#endif
 {
 }
 
-template <typename Arg>
-void handler_storage_service::postable_handler_base<Arg>::post(const Arg& arg)
+#if defined(MA_TYPE_ERASURE_USE_VURTUAL)
+
+template <typename Arg, typename Target>
+handler_storage_service::typed_handler_base<Arg, Target>::typed_handler_base()
+  : base_type()
+{
+}
+
+#else // defined(MA_TYPE_ERASURE_USE_VURTUAL)
+
+template <typename Arg, typename Target>
+handler_storage_service::typed_handler_base<Arg, Target>::typed_handler_base(
+    destroy_func_type destroy_func, post_func_type post_func,
+    target_func_type target_func)
+  : base_type(destroy_func)
+  , post_func_(post_func)
+  , target_func_(target_func)
+{
+}
+
+template <typename Arg, typename Target>
+void handler_storage_service::typed_handler_base<Arg, Target>::post(
+    const Arg& arg)
 {
   post_func_(this, arg);
 }
 
-template <typename Arg>
-handler_storage_service::postable_handler_base<Arg>::~postable_handler_base()
+template <typename Arg, typename Target>
+typename handler_storage_service::typed_handler_base<Arg, Target>::target_type*
+handler_storage_service::typed_handler_base<Arg, Target>::target()
+{
+  return target_func_(this);
+}
+
+#endif // defined(MA_TYPE_ERASURE_USE_VURTUAL)
+
+template <typename Arg, typename Target>
+handler_storage_service::typed_handler_base<Arg, Target>::~typed_handler_base()
+{
+}
+
+template <typename Arg, typename Target>
+handler_storage_service::typed_handler_base<Arg, Target>::typed_handler_base(
+    const this_type& other)
+  : base_type(other)
+#if !defined(MA_TYPE_ERASURE_USE_VURTUAL)
+  , post_func_(other.post_func_)
+  , target_func_(other.target_func_)
+#endif
+{
+}
+
+#if defined(MA_TYPE_ERASURE_USE_VURTUAL)
+
+template <typename Target>
+handler_storage_service::typed_handler_base<void, Target>::typed_handler_base()
+  : base_type()
+{
+}
+
+#else // defined(MA_TYPE_ERASURE_USE_VURTUAL)
+
+template <typename Target>
+handler_storage_service::typed_handler_base<void, Target>::typed_handler_base(
+    destroy_func_type destroy_func, post_func_type post_func,
+    target_func_type target_func)
+  : base_type(destroy_func)
+  , post_func_(post_func)
+  , target_func_(target_func)
+{
+}
+
+template <typename Target>
+void handler_storage_service::typed_handler_base<void, Target>::post()
+{
+  post_func_(this);
+}
+
+template <typename Target>
+typename handler_storage_service::typed_handler_base<void, Target>::target_type*
+handler_storage_service::typed_handler_base<void, Target>::target()
+{
+  return target_func_(this);
+}
+
+#endif // defined(MA_TYPE_ERASURE_USE_VURTUAL)
+
+template <typename Target>
+handler_storage_service::typed_handler_base<void, Target>::~typed_handler_base()
+{
+}
+
+template <typename Target>
+handler_storage_service::typed_handler_base<void, Target>::typed_handler_base(
+    const this_type& other)
+  : base_type(other)
+#if !defined(MA_TYPE_ERASURE_USE_VURTUAL)
+  , post_func_(other.post_func_)
+  , target_func_(other.target_func_)
+#endif
 {
 }
 
 #if defined(MA_HAS_RVALUE_REFS)
 
-template <typename Handler, typename Arg>
+template <typename Handler, typename Arg, typename Target>
 template <typename H>
-handler_storage_service::handler_wrapper<Handler, Arg>::handler_wrapper(
+handler_storage_service::handler_wrapper<Handler, Arg, Target>::handler_wrapper(
     boost::asio::io_service& io_service, H&& handler)
-  : base_type(&this_type::do_destroy, &this_type::do_target,
-        &this_type::do_post)
-  , io_service_(io_service)
+#if defined(MA_TYPE_ERASURE_USE_VURTUAL)
+  : base_type()
+#else
+  : base_type(&this_type::do_destroy, &this_type::do_post,
+        &this_type::do_target)
+#endif
+  , io_service_(&io_service)
   , work_(io_service)
   , handler_(std::forward<H>(handler))
 {
@@ -483,8 +728,8 @@ handler_storage_service::handler_wrapper<Handler, Arg>::handler_wrapper(
 
 #if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
-template <typename Handler, typename Arg>
-handler_storage_service::handler_wrapper<Handler, Arg>::handler_wrapper(
+template <typename Handler, typename Arg, typename Target>
+handler_storage_service::handler_wrapper<Handler, Arg, Target>::handler_wrapper(
     this_type&& other)
   : base_type(std::move(other))
   , io_service_(other.io_service_)
@@ -493,8 +738,8 @@ handler_storage_service::handler_wrapper<Handler, Arg>::handler_wrapper(
 {
 }
 
-template <typename Handler, typename Arg>
-handler_storage_service::handler_wrapper<Handler, Arg>::handler_wrapper(
+template <typename Handler, typename Arg, typename Target>
+handler_storage_service::handler_wrapper<Handler, Arg, Target>::handler_wrapper(
     const this_type& other)
   : base_type(other)
   , io_service_(other.io_service_)
@@ -507,12 +752,16 @@ handler_storage_service::handler_wrapper<Handler, Arg>::handler_wrapper(
 
 #else // defined(MA_HAS_RVALUE_REFS)
 
-template <typename Handler, typename Arg>
-handler_storage_service::handler_wrapper<Handler, Arg>::handler_wrapper(
-    boost::asio::io_service& io_service,const Handler& handler)
-  : base_type(&this_type::do_destroy, &this_type::do_target,
-        &this_type::do_post)
-  , io_service_(io_service)
+template <typename Handler, typename Arg, typename Target>
+handler_storage_service::handler_wrapper<Handler, Arg, Target>::handler_wrapper(
+    boost::asio::io_service& io_service, const Handler& handler)
+#if defined(MA_TYPE_ERASURE_USE_VURTUAL)
+  : base_type()
+#else
+  : base_type(&this_type::do_destroy, &this_type::do_post,
+        &this_type::do_target)
+#endif
+  , io_service_(&io_service)
   , work_(io_service)
   , handler_(handler)
 {
@@ -522,51 +771,41 @@ handler_storage_service::handler_wrapper<Handler, Arg>::handler_wrapper(
 
 #if !defined(NDEBUG)
 
-template <typename Handler, typename Arg>
-handler_storage_service::handler_wrapper<Handler, Arg>::~handler_wrapper()
+template <typename Handler, typename Arg, typename Target>
+handler_storage_service::handler_wrapper<Handler, Arg, Target>::
+    ~handler_wrapper()
 {
 }
 
 #endif // !defined(NDEBUG)
 
-template <typename Handler, typename Arg>
-void handler_storage_service::handler_wrapper<Handler, Arg>::do_post(
-    base_type* base, const Arg& arg)
+#if defined(MA_TYPE_ERASURE_USE_VURTUAL)
+
+template <typename Handler, typename Arg, typename Target>
+void handler_storage_service::handler_wrapper<Handler, Arg, Target>::destroy()
 {
-  this_type* this_ptr = static_cast<this_type*>(base);
-  // Take ownership of the wrapper object
-  // The deallocation of wrapper object will be done
-  // throw the handler stored in wrapper
-  typedef detail::handler_alloc_traits<Handler, this_type> alloc_traits;
-  detail::handler_ptr<alloc_traits> ptr(this_ptr->handler_, this_ptr);
-  // Make a local copy of handler stored at wrapper object
-  // This local copy will be used for wrapper's memory deallocation later
-#if defined(MA_HAS_RVALUE_REFS)
-  Handler handler(std::move(this_ptr->handler_));
-#else
-  Handler handler(this_ptr->handler_);
-#endif
-  // Change the handler which will be used for wrapper's memory deallocation
-  ptr.set_alloc_context(handler);
-  // Make copies of other data placed at wrapper object
-  // These copies will be used after the wrapper object destruction
-  // and deallocation of its memory
-  boost::asio::io_service& io_service(this_ptr->io_service_);
-  boost::asio::io_service::work work(this_ptr->work_);
-  (void) work;
-  // Destroy wrapper object and deallocate its memory
-  // through the local copy of handler
-  ptr.reset();
-  // Post the copy of handler's local copy to io_service
-#if defined(MA_HAS_RVALUE_REFS)
-  io_service.post(detail::bind_handler(std::move(handler), arg));
-#else
-  io_service.post(detail::bind_handler(handler, arg));
-#endif
+  do_destroy(this);
 }
 
-template <typename Handler, typename Arg>
-void handler_storage_service::handler_wrapper<Handler, Arg>::do_destroy(
+template <typename Handler, typename Arg, typename Target>
+void handler_storage_service::handler_wrapper<Handler, Arg, Target>::post(
+    const Arg& arg)
+{
+  do_post(this, arg);
+}
+
+template <typename Handler, typename Arg, typename Target>
+typename handler_storage_service::handler_wrapper<Handler, Arg, Target>::
+    target_type*
+handler_storage_service::handler_wrapper<Handler, Arg, Target>::target()
+{
+  return do_target(this);
+}
+
+#endif // defined(MA_TYPE_ERASURE_USE_VURTUAL)
+
+template <typename Handler, typename Arg, typename Target>
+void handler_storage_service::handler_wrapper<Handler, Arg, Target>::do_destroy(
     handler_base* base)
 {
   this_type* this_ptr = static_cast<this_type*>(base);
@@ -590,12 +829,216 @@ void handler_storage_service::handler_wrapper<Handler, Arg>::do_destroy(
   ptr.reset();
 }
 
-template <typename Handler, typename Arg>
-void* handler_storage_service::handler_wrapper<Handler, Arg>::do_target(
-    handler_base* base)
+template <typename Handler, typename Arg, typename Target>
+void handler_storage_service::handler_wrapper<Handler, Arg, Target>::do_post(
+    base_type* base, const Arg& arg)
 {
   this_type* this_ptr = static_cast<this_type*>(base);
-  return boost::addressof(this_ptr->handler_);
+  // Take ownership of the wrapper object
+  // The deallocation of wrapper object will be done
+  // throw the handler stored in wrapper
+  typedef detail::handler_alloc_traits<Handler, this_type> alloc_traits;
+  detail::handler_ptr<alloc_traits> ptr(this_ptr->handler_, this_ptr);
+  // Make a local copy of handler stored at wrapper object
+  // This local copy will be used for wrapper's memory deallocation later
+#if defined(MA_HAS_RVALUE_REFS)
+  Handler handler(std::move(this_ptr->handler_));
+#else
+  Handler handler(this_ptr->handler_);
+#endif
+  // Change the handler which will be used for wrapper's memory deallocation
+  ptr.set_alloc_context(handler);
+  // Make copies of other data placed at wrapper object
+  // These copies will be used after the wrapper object destruction
+  // and deallocation of its memory
+  boost::asio::io_service& io_service(*this_ptr->io_service_);
+  boost::asio::io_service::work work(this_ptr->work_);
+  (void) work;
+  // Destroy wrapper object and deallocate its memory
+  // through the local copy of handler
+  ptr.reset();
+  // Post the copy of handler's local copy to io_service
+#if defined(MA_HAS_RVALUE_REFS)
+  io_service.post(detail::bind_handler(std::move(handler), arg));
+#else
+  io_service.post(detail::bind_handler(handler, arg));
+#endif
+}
+
+template <typename Handler, typename Arg, typename Target>
+typename handler_storage_service::handler_wrapper<Handler, Arg, Target>
+    ::target_type*
+handler_storage_service::handler_wrapper<Handler, Arg, Target>::do_target(
+    base_type* base)
+{
+  this_type* this_ptr = static_cast<this_type*>(base);
+  return static_cast<target_type*>(boost::addressof(this_ptr->handler_));
+}
+
+#if defined(MA_HAS_RVALUE_REFS)
+
+template <typename Handler, typename Target>
+template <typename H>
+handler_storage_service::handler_wrapper<Handler, void, Target>::
+    handler_wrapper(boost::asio::io_service& io_service, H&& handler)
+#if defined(MA_TYPE_ERASURE_USE_VURTUAL)
+  : base_type()
+#else
+  : base_type(&this_type::do_destroy, &this_type::do_post,
+        &this_type::do_target)
+#endif
+  , io_service_(&io_service)
+  , work_(io_service)
+  , handler_(std::forward<H>(handler))
+{
+}
+
+#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
+
+template <typename Handler, typename Target>
+handler_storage_service::handler_wrapper<Handler, void, Target>::
+    handler_wrapper(this_type&& other)
+  : base_type(std::move(other))
+  , io_service_(other.io_service_)
+  , work_(std::move(other.work_))
+  , handler_(std::move(other.handler_))
+{
+}
+
+template <typename Handler, typename Target>
+handler_storage_service::handler_wrapper<Handler, void, Target>::
+    handler_wrapper(const this_type& other)
+  : base_type(other)
+  , io_service_(other.io_service_)
+  , work_(other.work_)
+  , handler_(other.handler_)
+{
+}
+
+#endif // defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
+
+#else // defined(MA_HAS_RVALUE_REFS)
+
+template <typename Handler, typename Target>
+handler_storage_service::handler_wrapper<Handler, void, Target>::
+    handler_wrapper(boost::asio::io_service& io_service, const Handler& handler)
+#if defined(MA_TYPE_ERASURE_USE_VURTUAL)
+  : base_type()
+#else
+  : base_type(&this_type::do_destroy, &this_type::do_post,
+        &this_type::do_target)
+#endif
+  , io_service_(&io_service)
+  , work_(io_service)
+  , handler_(handler)
+{
+}
+
+#endif // defined(MA_HAS_RVALUE_REFS)
+
+#if !defined(NDEBUG)
+
+template <typename Handler, typename Target>
+handler_storage_service::handler_wrapper<Handler, void, Target>::
+    ~handler_wrapper()
+{
+}
+
+#endif // !defined(NDEBUG)
+
+#if defined(MA_TYPE_ERASURE_USE_VURTUAL)
+
+template <typename Handler, typename Target>
+void handler_storage_service::handler_wrapper<Handler, void, Target>::destroy()
+{
+  do_destroy(this);
+}
+
+template <typename Handler, typename Target>
+void handler_storage_service::handler_wrapper<Handler, void, Target>::post()
+{
+  do_post(this);
+}
+
+template <typename Handler, typename Target>
+typename handler_storage_service::handler_wrapper<Handler, void, Target>::
+    target_type*
+handler_storage_service::handler_wrapper<Handler, void, Target>::target()
+{
+  return do_target(this);
+}
+
+#endif // defined(MA_TYPE_ERASURE_USE_VURTUAL)
+
+template <typename Handler, typename Target>
+void handler_storage_service::handler_wrapper<Handler, void, Target>::
+    do_destroy(handler_base* base)
+{
+  this_type* this_ptr = static_cast<this_type*>(base);
+  // Take ownership of the wrapper object
+  // The deallocation of wrapper object will be done
+  // throw the handler stored in wrapper
+  typedef detail::handler_alloc_traits<Handler, this_type> alloc_traits;
+  detail::handler_ptr<alloc_traits> ptr(this_ptr->handler_, this_ptr);
+  // Make a local copy of handler stored at wrapper object
+  // This local copy will be used for wrapper's memory deallocation later
+#if defined(MA_HAS_RVALUE_REFS)
+  Handler handler(std::move(this_ptr->handler_));
+#else
+  Handler handler(this_ptr->handler_);
+#endif
+  // Change the handler which will be used
+  // for wrapper's memory deallocation
+  ptr.set_alloc_context(handler);
+  // Destroy wrapper object and deallocate its memory
+  // throw the local copy of handler
+  ptr.reset();
+}
+
+template <typename Handler, typename Target>
+void handler_storage_service::handler_wrapper<Handler, void, Target>::do_post(
+    base_type* base)
+{
+  this_type* this_ptr = static_cast<this_type*>(base);
+  // Take ownership of the wrapper object
+  // The deallocation of wrapper object will be done
+  // throw the handler stored in wrapper
+  typedef detail::handler_alloc_traits<Handler, this_type> alloc_traits;
+  detail::handler_ptr<alloc_traits> ptr(this_ptr->handler_, this_ptr);
+  // Make a local copy of handler stored at wrapper object
+  // This local copy will be used for wrapper's memory deallocation later
+#if defined(MA_HAS_RVALUE_REFS)
+  Handler handler(std::move(this_ptr->handler_));
+#else
+  Handler handler(this_ptr->handler_);
+#endif
+  // Change the handler which will be used for wrapper's memory deallocation
+  ptr.set_alloc_context(handler);
+  // Make copies of other data placed at wrapper object
+  // These copies will be used after the wrapper object destruction
+  // and deallocation of its memory
+  boost::asio::io_service& io_service(*this_ptr->io_service_);
+  boost::asio::io_service::work work(this_ptr->work_);
+  (void) work;
+  // Destroy wrapper object and deallocate its memory
+  // through the local copy of handler
+  ptr.reset();
+  // Post the copy of handler's local copy to io_service
+#if defined(MA_HAS_RVALUE_REFS)
+  io_service.post(handler);
+#else
+  io_service.post(handler);
+#endif
+}
+
+template <typename Handler, typename Target>
+typename handler_storage_service::handler_wrapper<Handler, void, Target>
+    ::target_type*
+handler_storage_service::handler_wrapper<Handler, void, Target>::do_target(
+    base_type* base)
+{
+  this_type* this_ptr = static_cast<this_type*>(base);
+  return static_cast<target_type*>(boost::addressof(this_ptr->handler_));
 }
 
 inline handler_storage_service::impl_base::impl_base()
@@ -669,14 +1112,15 @@ inline void handler_storage_service::clear(implementation_type& impl)
   }
 }
 
-template <typename Handler, typename Arg>
+template <typename Handler, typename Arg, typename Target>
 void handler_storage_service::store(implementation_type& impl, Handler handler)
 {
   // If service is (was) in shutdown state then it can't store handler.
   if (!shutdown_done_)
   {
-    typedef typename remove_cv_reference<Arg>::type arg_type;
-    typedef handler_wrapper<Handler, arg_type> value_type;
+    typedef typename remove_cv_reference<Arg>::type           arg_type;
+    typedef typename remove_cv_reference<Target>::type        target_type;
+    typedef handler_wrapper<Handler, arg_type, target_type>   value_type;
     typedef detail::handler_alloc_traits<Handler, value_type> alloc_traits;
     // Allocate raw memory for storing the handler
     detail::raw_handler_ptr<alloc_traits> raw_ptr(handler);
@@ -702,12 +1146,13 @@ void handler_storage_service::store(implementation_type& impl, Handler handler)
   }
 }
 
-template <typename Arg>
+template <typename Arg, typename Target>
 void handler_storage_service::post(implementation_type& impl, const Arg& arg)
 {
-  typedef typename remove_cv_reference<Arg>::type arg_type;
-  typedef postable_handler_base<arg_type> postable_base;
-  if (postable_base* handler = static_cast<postable_base*>(impl.handler_))
+  typedef typename remove_cv_reference<Arg>::type    arg_type;
+  typedef typename remove_cv_reference<Target>::type target_type;
+  typedef typed_handler_base<arg_type, target_type>  handler_type;
+  if (handler_type* handler = static_cast<handler_type*>(impl.handler_))
   {
     impl.handler_ = 0;
     handler->post(arg);
@@ -718,11 +1163,32 @@ void handler_storage_service::post(implementation_type& impl, const Arg& arg)
   }
 }
 
-inline void* handler_storage_service::target(const implementation_type& impl)
+template <typename Target>
+void handler_storage_service::post(implementation_type& impl)
 {
-  if (impl.handler_)
+  typedef void arg_type;
+  typedef typename remove_cv_reference<Target>::type target_type;
+  typedef typed_handler_base<arg_type, target_type>  handler_type;
+  if (handler_type* handler = static_cast<handler_type*>(impl.handler_))
   {
-    return impl.handler_->target();
+    impl.handler_ = 0;
+    handler->post();
+  }
+  else
+  {
+    boost::throw_exception(bad_handler_call());
+  }
+}
+
+template <typename Arg, typename Target>
+Target* handler_storage_service::target(const implementation_type& impl)
+{
+  typedef typename remove_cv_reference<Arg>::type    arg_type;
+  typedef typename remove_cv_reference<Target>::type target_type;
+  typedef typed_handler_base<arg_type, target_type>  handler_type;
+  if (handler_type* handler = static_cast<handler_type*>(impl.handler_))
+  {
+    return handler->target();
   }
   return 0;
 }
