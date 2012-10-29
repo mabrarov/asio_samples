@@ -28,35 +28,48 @@ public:
   virtual void handle_do_something_completion(
       const boost::system::error_code&) = 0;
 
-  virtual void* allocate(std::size_t size)
-  {
-    return ::operator new(size);
-  }
-
-  virtual void deallocate(void* pointer)
-  {
-    ::operator delete(pointer);
-  }
+  // Default implementations for member functions that
+  // are often implemented in the same way.
+  virtual void* allocate(std::size_t);
+  virtual void deallocate(void*);
 
 protected:
-  do_something_handler()
-  {
-  }
 
-  do_something_handler(const this_type&)
-  {
-  }
-
-  this_type& operator=(const this_type&)
-  {
-    return *this;
-  }
-
-  ~do_something_handler()
-  {
-  }
+  // No-op member functions
+  do_something_handler();
+  do_something_handler(const this_type&);
+  this_type& operator=(const this_type&);
+  ~do_something_handler();
 
 }; // class do_something_handler
+
+inline void* do_something_handler::allocate(std::size_t size)
+{
+  return ::operator new(size);
+}
+
+inline void do_something_handler::deallocate(void* pointer)
+{
+  ::operator delete(pointer);
+}
+
+inline do_something_handler::do_something_handler()
+{
+}
+
+inline do_something_handler::do_something_handler(const this_type&)
+{
+}
+
+inline do_something_handler::this_type& do_something_handler::operator=(
+    const this_type&)
+{
+  return *this;
+}
+
+inline do_something_handler::~do_something_handler()
+{
+}
 
 } // namespace tutorial2
 } // namespace ma

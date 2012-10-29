@@ -50,10 +50,10 @@ protected:
 
   boost::asio::io_service::strand& strand();
   do_something_handler_storage_type& do_something_handler_storage();
-  boost::optional<boost::system::error_code> start_do_something();
+  optional_do_something_result start_do_something();
 
 private:
-  void complete_do_something(const boost::system::error_code& error);
+  void complete_do_something(const do_something_result& completion_result);
   bool has_do_something_handler() const;
   void handle_timer(const boost::system::error_code& error);
 

@@ -80,6 +80,11 @@ public:
     std::cout << value_ << val << std::endl;
   }
 
+  void operator()(void)
+  {
+    std::cout << value_ << std::endl;
+  }
+
   int get_value() const
   {
     return value_;

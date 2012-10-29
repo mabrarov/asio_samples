@@ -104,13 +104,12 @@ async_implementation::do_something_handler_storage()
   return do_something_handler_;
 }
 
-boost::optional<boost::system::error_code>
+async_interface::optional_do_something_result
 async_implementation::start_do_something()
 {
   if (has_do_something_handler())
   {
-    return boost::system::error_code(
-        boost::asio::error::operation_not_supported);
+    return do_something_result(boost::asio::error::operation_not_supported);
   }
 
   counter_ = 10000;
@@ -139,13 +138,13 @@ async_implementation::start_do_something()
 
 #endif
 
-  return boost::optional<boost::system::error_code>();
+  return optional_do_something_result();
 }
 
 void async_implementation::complete_do_something(
-    const boost::system::error_code& error)
+    const do_something_result& completion_result)
 {
-  do_something_handler_.post(error);
+  do_something_handler_.post(completion_result);
 }
 
 bool async_implementation::has_do_something_handler() const

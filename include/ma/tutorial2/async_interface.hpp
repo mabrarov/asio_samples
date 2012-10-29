@@ -30,24 +30,31 @@ public:
   virtual void async_do_something(const do_something_handler_ptr&) = 0;
 
 protected:
-  async_interface()
-  {
-  }
 
-  async_interface(const this_type&)
-  {
-  }
-
-  this_type& operator=(const this_type&)
-  {
-    return *this;
-  }
-
-  ~async_interface()
-  {
-  }
+  // No-op member functions
+  async_interface();
+  async_interface(const this_type&);
+  this_type& operator=(const this_type&);
+  ~async_interface();
 
 }; // class async_interface
+
+inline async_interface::async_interface()
+{
+}
+
+inline async_interface::async_interface(const this_type&)
+{
+}
+
+inline async_interface::this_type& async_interface::operator=(const this_type&)
+{
+  return *this;
+}
+
+inline async_interface::~async_interface()
+{
+}
 
 } // namespace tutorial
 } // namespace ma
