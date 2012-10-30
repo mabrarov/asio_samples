@@ -103,6 +103,7 @@
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <Cpp0xSupport>true</Cpp0xSupport>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>..\..\..\..\boost_1_51_0\lib\x86\intel-13.0;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -130,6 +131,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Cpp0xSupport>true</Cpp0xSupport>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>..\..\..\..\boost_1_51_0\lib\amd64\intel-13.0;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -158,6 +160,7 @@
       <DebugInformationFormat>
       </DebugInformationFormat>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <Cpp0xSupport>true</Cpp0xSupport>
     </ClCompile>
     <Link>
       <AdditionalOptions>%(AdditionalOptions)</AdditionalOptions>
@@ -184,6 +187,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <DebugInformationFormat>
       </DebugInformationFormat>
+      <Cpp0xSupport>true</Cpp0xSupport>
     </ClCompile>
     <Link>
       <AdditionalOptions>%(AdditionalOptions)</AdditionalOptions>

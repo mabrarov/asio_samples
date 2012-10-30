@@ -192,6 +192,7 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <Cpp0xSupport>true</Cpp0xSupport>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -208,6 +209,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;WIN32;WIN32_LEAN_AND_MEAN;WINVER=0x0501;_WIN32_WINNT=0x0501;_WIN32_WINDOWS=0x0501;_WIN32_IE=0x0600;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\..\..\..\boost_1_51_0;..\..\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <Cpp0xSupport>true</Cpp0xSupport>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -229,6 +231,7 @@
       <DebugInformationFormat>
       </DebugInformationFormat>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <Cpp0xSupport>true</Cpp0xSupport>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -250,6 +253,7 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <Cpp0xSupport>true</Cpp0xSupport>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -272,6 +276,7 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <Cpp0xSupport>true</Cpp0xSupport>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -295,6 +300,7 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <DebugInformationFormat>
       </DebugInformationFormat>
+      <Cpp0xSupport>true</Cpp0xSupport>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -317,6 +323,7 @@
       <DebugInformationFormat>
       </DebugInformationFormat>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <Cpp0xSupport>true</Cpp0xSupport>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -338,6 +345,7 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <Cpp0xSupport>true</Cpp0xSupport>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

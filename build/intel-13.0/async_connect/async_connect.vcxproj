@@ -146,6 +146,7 @@
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <Cpp0xSupport>true</Cpp0xSupport>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>..\..\..\..\boost_1_51_0\lib\x86\intel-13.0;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -177,6 +178,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <Cpp0xSupport>true</Cpp0xSupport>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>..\..\..\..\boost_1_51_0\lib\amd64\intel-13.0;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -207,6 +209,7 @@
       <DebugInformationFormat>
       </DebugInformationFormat>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <Cpp0xSupport>true</Cpp0xSupport>
     </ClCompile>
     <Link>
       <AdditionalOptions>%(AdditionalOptions)</AdditionalOptions>
@@ -232,6 +235,7 @@
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <Cpp0xSupport>true</Cpp0xSupport>
     </ClCompile>
     <Link>
       <AdditionalOptions>%(AdditionalOptions)</AdditionalOptions>
@@ -261,6 +265,7 @@
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>
       </DebugInformationFormat>
+      <Cpp0xSupport>true</Cpp0xSupport>
     </ClCompile>
     <Link>
       <AdditionalOptions>%(AdditionalOptions)</AdditionalOptions>
@@ -291,6 +296,7 @@
       <DebugInformationFormat>
       </DebugInformationFormat>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <Cpp0xSupport>true</Cpp0xSupport>
     </ClCompile>
     <Link>
       <AdditionalOptions>%(AdditionalOptions)</AdditionalOptions>

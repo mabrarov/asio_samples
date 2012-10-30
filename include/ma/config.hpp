@@ -19,7 +19,9 @@
 /**
  * Listed options mostly provide aditional optimizations.
  */
-#if defined(BOOST_HAS_RVALUE_REFS)
+
+// Check the level of r-value references support.
+#if (BOOST_VERSION >= 104000) && !defined(BOOST_NO_RVALUE_REFERENCES)
 
 /// Turns on move semantic support.
 #define MA_HAS_RVALUE_REFS
@@ -38,22 +40,22 @@
 /// Turns off usage of home-grown binders with move semantic support.
 #undef MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR
 
-#else
+#else // defined(__GNUC__) && (__GNUC__ >= 4) && (__GNUC_MINOR__ >= 6)
 
 /// Turns on explicit definition of move constructor (and copy constructor).
 #define MA_USE_EXPLICIT_MOVE_CONSTRUCTOR
 /// Turns on usage of home-grown binders with move semantic support.
 #define MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR
 
-#endif
+#endif // defined(__GNUC__) && (__GNUC__ >= 4) && (__GNUC_MINOR__ >= 6)
 
-#else // defined(BOOST_HAS_RVALUE_REFS)
+#else  // (BOOST_VERSION >= 104000) && !defined(BOOST_NO_RVALUE_REFERENCES)
 
 #undef  MA_HAS_RVALUE_REFS
 #undef  MA_USE_EXPLICIT_MOVE_CONSTRUCTOR
 #define MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR
 
-#endif // defined(BOOST_HAS_RVALUE_REFS)
+#endif // (BOOST_VERSION >= 104000) && !defined(BOOST_NO_RVALUE_REFERENCES)
 
 /// Defines does asio::io_service::strand::wrap produce "heavy" functor.
 /**
@@ -77,6 +79,7 @@
  */
 #define MA_BOOST_ASIO_HEAVY_STRAND_WRAPPED_HANDLER
 
+// Check Boost.Chrono library availability
 #if BOOST_VERSION >= 104700
 
 // BOOST_DATE_TIME_POSIX_TIME_STD_CONFIG implies Boost.Thread to be rebuilt 
@@ -86,19 +89,20 @@
 /// Turns on usage of Boost.Chrono at ma::steady_deadline_timer implementation.
 #define MA_HAS_BOOST_CHRONO
 
-#else
+#else  // BOOST_VERSION >= 104700
 
 /// ma::steady_deadline_timer equals to boost::asio::deadline_timer
 #undef MA_HAS_BOOST_CHRONO
 
 #endif // BOOST_VERSION >= 104700
 
+// Check Boost.Timer library availability
 #if BOOST_VERSION >= 104800
 
 /// Turns on usage of Boost.Timer.
 #define MA_HAS_BOOST_TIMER
 
-#else
+#else  // BOOST_VERSION >= 104800
 
 #undef MA_HAS_BOOST_TIMER
 
@@ -107,21 +111,17 @@
 // Don't use vurtual functions for type erasure
 #undef MA_TYPE_ERASURE_USE_VURTUAL
 
-#if defined(__GNUC__) && (__GNUC__ >= 4) && (__GNUC_MINOR__ >= 6)
+// Check C++11 lambdas availability
+#if (BOOST_VERSION >= 104000) && !defined(BOOST_NO_LAMBDAS)
 
-/// Turns on usage of C++11 lambdas with g++ >=4.6
+/// Turns on usage of C++11 lambdas
 #define MA_HAS_LAMBDA
 
-#elif defined(_MSC_VER) && (_MSC_VER >= 1600)
+#else  // defined(BOOST_NO_LAMBDAS)
 
-/// Turns on usage of C++11 lambdas with Visual C++ >=10
-#define MA_HAS_LAMBDA
-
-#else
-
-/// Turns off usage of C++11 lambdas with unknown compilers
+/// Turns off usage of C++11 lambdas
 #undef MA_HAS_LAMBDA
 
-#endif
+#endif // defined(BOOST_NO_LAMBDAS)
 
 #endif // MA_CONFIG_HPP

@@ -180,6 +180,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
+      <Cpp0xSupport>true</Cpp0xSupport>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>..\..\..\..\boost_1_51_0\lib\x86\intel-13.0;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -206,6 +207,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
+      <Cpp0xSupport>true</Cpp0xSupport>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>..\..\..\..\boost_1_51_0\lib\amd64\intel-13.0;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -234,6 +236,7 @@
       </DebugInformationFormat>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
+      <Cpp0xSupport>true</Cpp0xSupport>
     </ClCompile>
     <Link>
       <AdditionalOptions>%(AdditionalOptions)</AdditionalOptions>
@@ -259,6 +262,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
+      <Cpp0xSupport>true</Cpp0xSupport>
     </ClCompile>
     <Link>
       <AdditionalOptions>%(AdditionalOptions)</AdditionalOptions>
@@ -285,6 +289,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
+      <Cpp0xSupport>true</Cpp0xSupport>
     </ClCompile>
     <Link>
       <AdditionalOptions>%(AdditionalOptions)</AdditionalOptions>
@@ -315,6 +320,7 @@
       <DebugInformationFormat>
       </DebugInformationFormat>
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
+      <Cpp0xSupport>true</Cpp0xSupport>
     </ClCompile>
     <Link>
       <AdditionalOptions>%(AdditionalOptions)</AdditionalOptions>
@@ -345,6 +351,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
+      <Cpp0xSupport>true</Cpp0xSupport>
     </ClCompile>
     <Link>
       <AdditionalOptions>%(AdditionalOptions)</AdditionalOptions>
@@ -375,6 +382,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
+      <Cpp0xSupport>true</Cpp0xSupport>
     </ClCompile>
     <Link>
       <AdditionalOptions>%(AdditionalOptions)</AdditionalOptions>
