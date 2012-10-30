@@ -107,4 +107,21 @@
 // Don't use vurtual functions for type erasure
 #undef MA_TYPE_ERASURE_USE_VURTUAL
 
+#if defined(__GNUC__) && (__GNUC__ >= 4) && (__GNUC_MINOR__ >= 6)
+
+/// Turns on usage of C++11 lambdas with g++ >=4.6
+#define MA_HAS_LAMBDA
+
+#elif defined(_MSC_VER) && (_MSC_VER >= 1600)
+
+/// Turns on usage of C++11 lambdas with Visual C++ >=10
+#define MA_HAS_LAMBDA
+
+#else
+
+/// Turns off usage of C++11 lambdas with unknown compilers
+#undef MA_HAS_LAMBDA
+
+#endif
+
 #endif // MA_CONFIG_HPP
