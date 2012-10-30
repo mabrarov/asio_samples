@@ -267,7 +267,7 @@ void session::async_start(Handler&& handler)
     shared_this->io_service_.post(detail::bind_handler(handler, result));
   }));
 
-#else // defined(MA_HAS_LAMBDA) && !defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+#else  // defined(MA_HAS_LAMBDA) && !defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
 
   typedef void (this_type::*func_type)(const handler_type&);
   func_type func = &this_type::start_extern_start<handler_type>;
@@ -278,7 +278,7 @@ void session::async_start(Handler&& handler)
       std::forward<Handler>(handler),
       forward_handler_binder<handler_type>(func, shared_from_this())));
 
-#else // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#else  // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
   strand_.post(make_explicit_context_alloc_handler(
       std::forward<Handler>(handler),
@@ -312,7 +312,7 @@ void session::async_stop(Handler&& handler)
     }
   }));
 
-#else // defined(MA_HAS_LAMBDA) && !defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+#else  // defined(MA_HAS_LAMBDA) && !defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
 
   typedef void (this_type::*func_type)(const handler_type&);
   func_type func = &this_type::start_extern_stop<handler_type>;
@@ -323,7 +323,7 @@ void session::async_stop(Handler&& handler)
       std::forward<Handler>(handler),
       forward_handler_binder<handler_type>(func, shared_from_this())));
 
-#else // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#else  // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
   strand_.post(make_explicit_context_alloc_handler(
       std::forward<Handler>(handler),
@@ -357,7 +357,7 @@ void session::async_wait(Handler&& handler)
     }
   }));
 
-#else // defined(MA_HAS_LAMBDA) && !defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+#else  // defined(MA_HAS_LAMBDA) && !defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
 
   typedef void (this_type::*func_type)(const handler_type&);
   func_type func = &this_type::start_extern_wait<handler_type>;
@@ -368,7 +368,7 @@ void session::async_wait(Handler&& handler)
       std::forward<Handler>(handler),
       forward_handler_binder<handler_type>(func, shared_from_this())));
 
-#else // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#else  // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
   strand_.post(make_explicit_context_alloc_handler(
       std::forward<Handler>(handler),
@@ -379,7 +379,7 @@ void session::async_wait(Handler&& handler)
 #endif // defined(MA_HAS_LAMBDA) && !defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
 }
 
-#else // defined(MA_HAS_RVALUE_REFS)
+#else  // defined(MA_HAS_RVALUE_REFS)
 
 template <typename Handler>
 void session::async_start(const Handler& handler)

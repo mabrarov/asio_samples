@@ -40,7 +40,25 @@
 /// Turns off usage of home-grown binders with move semantic support.
 #undef MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR
 
-#else // defined(__GNUC__) && (__GNUC__ >= 4) && (__GNUC_MINOR__ >= 6)
+#elif defined(__clang__)
+
+#if __has_feature(cxx_implicit_moves)
+
+/// Turns off explicit definition of move constructor (and copy constructor).
+#undef MA_USE_EXPLICIT_MOVE_CONSTRUCTOR
+/// Turns off usage of home-grown binders with move semantic support.
+#undef MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR
+
+#else // __has_feature(cxx_implicit_moves)
+
+/// Turns on explicit definition of move constructor (and copy constructor).
+#define MA_USE_EXPLICIT_MOVE_CONSTRUCTOR
+/// Turns on usage of home-grown binders with move semantic support.
+#define MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR
+
+#endif // __has_feature(cxx_implicit_moves)
+
+#else
 
 /// Turns on explicit definition of move constructor (and copy constructor).
 #define MA_USE_EXPLICIT_MOVE_CONSTRUCTOR
@@ -82,8 +100,8 @@
 // Check Boost.Chrono library availability
 #if BOOST_VERSION >= 104700
 
-// BOOST_DATE_TIME_POSIX_TIME_STD_CONFIG implies Boost.Thread to be rebuilt 
-// i.e. custom (user) configuration of Boost C++ Libraries must be defined. 
+// BOOST_DATE_TIME_POSIX_TIME_STD_CONFIG implies Boost.Thread to be rebuilt
+// i.e. custom (user) configuration of Boost C++ Libraries must be defined.
 // Add #define BOOST_DATE_TIME_POSIX_TIME_STD_CONFIG to <boost/user/config.hpp>
 // and rebuild Boost (or all Boost libs using Boost.DateTime).
 /// Turns on usage of Boost.Chrono at ma::steady_deadline_timer implementation.

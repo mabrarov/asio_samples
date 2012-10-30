@@ -98,15 +98,5 @@ exists($${BOOST_INCLUDE}/boost/chrono.hpp) {
                -lrt
 }
 
-win32:DEFINES += WIN32_LEAN_AND_MEAN \
-                 _UNICODE \
-                 UNICODE \
-                 WINVER=0x0500 \
-                 _WIN32_WINNT=0x0500 \
-                 _WIN32_WINDOWS=0x0410 \
-                 _WIN32_IE=0x0600
-
-linux-g++ | linux-g++-64 {
-  QMAKE_CXXFLAGS += -std=c++0x \
-                    -Wstrict-aliasing
-}
+win32:DEFINES += WINVER=0x0500 \
+                 _WIN32_WINNT=0x0500

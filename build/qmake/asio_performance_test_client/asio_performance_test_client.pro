@@ -46,13 +46,5 @@ exists($${BOOST_INCLUDE}/boost/timer/timer.hpp) {
   unix:LIBS += $${BOOST_LIB}/libboost_timer.a
 }
 
-win32:DEFINES += WIN32_LEAN_AND_MEAN \
-                 _UNICODE \
-                 UNICODE \
-                 WINVER=0x0501 \
+win32:DEFINES += WINVER=0x0501 \
                  _WIN32_WINNT=0x0501
-
-linux-g++ | linux-g++-64 {
-  QMAKE_CXXFLAGS += -std=c++0x \
-                    -Wstrict-aliasing
-}

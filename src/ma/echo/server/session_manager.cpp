@@ -1122,7 +1122,20 @@ void session_manager::continue_stop()
 
 void session_manager::start_accept_session(const session_wrapper_ptr& session)
 {
-#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#if defined(MA_HAS_RVALUE_REFS) \
+    && defined(MA_HAS_LAMBDA) && !defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+
+  session_manager_ptr shared_this = shared_from_this();
+
+  acceptor_.async_accept(session->socket(), session->remote_endpoint(),
+      MA_STRAND_WRAP(strand_, make_custom_alloc_handler(accept_allocator_,
+          [shared_this, session](const boost::system::error_code& error)
+  {
+    shared_this->handle_accept(session, error);
+  })));
+
+#elif defined(MA_HAS_RVALUE_REFS) \
+    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
   acceptor_.async_accept(session->socket(), session->remote_endpoint(),
       MA_STRAND_WRAP(strand_, make_custom_alloc_handler(accept_allocator_,
@@ -1145,7 +1158,27 @@ void session_manager::start_accept_session(const session_wrapper_ptr& session)
 void session_manager::start_session_start(const session_wrapper_ptr& session)
 {
   // Asynchronously start wrapped session
-#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+
+#if defined(MA_HAS_RVALUE_REFS) \
+    && defined(MA_HAS_LAMBDA) && !defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+
+  session_manager_weak_ptr weak_this = shared_from_this();
+
+  session->async_start(
+      [weak_this, session](const boost::system::error_code& error)
+  {
+    if (session_manager_ptr this_ptr = weak_this.lock())
+    {
+      this_ptr->strand_.dispatch(make_custom_alloc_handler(
+          session->start_allocator(), [this_ptr, session, error]()
+      {
+        this_ptr->handle_session_start(session, error);
+      }));
+    }
+  });
+
+#elif defined(MA_HAS_RVALUE_REFS) \
+    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
   session->async_start(session_dispatch_binder(
       &this_type::dispatch_handle_session_start, shared_from_this(), session));
@@ -1163,7 +1196,27 @@ void session_manager::start_session_start(const session_wrapper_ptr& session)
 void session_manager::start_session_stop(const session_wrapper_ptr& session)
 {
   // Asynchronously stop wrapped session
-#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+
+#if defined(MA_HAS_RVALUE_REFS) \
+    && defined(MA_HAS_LAMBDA) && !defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+
+  session_manager_weak_ptr weak_this = shared_from_this();
+
+  session->async_stop(
+      [weak_this, session](const boost::system::error_code& error)
+  {
+    if (session_manager_ptr this_ptr = weak_this.lock())
+    {
+      this_ptr->strand_.dispatch(make_custom_alloc_handler(
+          session->stop_allocator(), [this_ptr, session, error]()
+      {
+        this_ptr->handle_session_stop(session, error);
+      }));
+    }
+  });
+
+#elif defined(MA_HAS_RVALUE_REFS) \
+    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
   session->async_stop(session_dispatch_binder(
       &this_type::dispatch_handle_session_stop, shared_from_this(), session));
@@ -1181,7 +1234,27 @@ void session_manager::start_session_stop(const session_wrapper_ptr& session)
 void session_manager::start_session_wait(const session_wrapper_ptr& session)
 {
   // Asynchronously wait on wrapped session
-#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+
+#if defined(MA_HAS_RVALUE_REFS) \
+    && defined(MA_HAS_LAMBDA) && !defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+
+  session_manager_weak_ptr weak_this = shared_from_this();
+
+  session->async_wait(
+      [weak_this, session](const boost::system::error_code& error)
+  {
+    if (session_manager_ptr this_ptr = weak_this.lock())
+    {
+      this_ptr->strand_.dispatch(make_custom_alloc_handler(
+          session->wait_allocator(), [this_ptr, session, error]()
+      {
+        this_ptr->handle_session_wait(session, error);
+      }));
+    }
+  });
+
+#elif defined(MA_HAS_RVALUE_REFS) \
+    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
   session->async_wait(session_dispatch_binder(
       &this_type::dispatch_handle_session_wait, shared_from_this(), session));
@@ -1303,6 +1376,9 @@ boost::system::error_code session_manager::close_acceptor()
   return error;
 }
 
+#if !(defined(MA_HAS_RVALUE_REFS) \
+    && defined(MA_HAS_LAMBDA) && !defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR))
+
 void session_manager::dispatch_handle_session_start(
     const session_manager_weak_ptr& this_weak_ptr,
     const session_wrapper_ptr& session,
@@ -1377,6 +1453,10 @@ void session_manager::dispatch_handle_session_stop(
 #endif
   }
 }
+
+#endif // !(defined(MA_HAS_RVALUE_REFS)
+       //     && defined(MA_HAS_LAMBDA)
+      //      && !defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR))
 
 void session_manager::open(protocol_type::acceptor& acceptor,
     const protocol_type::endpoint& endpoint, int backlog,

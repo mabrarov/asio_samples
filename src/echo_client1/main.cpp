@@ -349,12 +349,15 @@ int main(int argc, char* argv[])
     std::size_t session_thread_count = cpu_count > 1 ? cpu_count : 2;
     boost::asio::io_service io_service(session_thread_count);
 
-    //test_handler_storage_target(io_service);
+    test_handler_storage_target(io_service);
     test_handler_storage_arg(io_service);
 
 #if defined(MA_HAS_RVALUE_REFS)
     test_handler_storage_move_constructor(io_service);
 #endif
+
+    test_sp_intrusive_list();
+    test_shared_ptr_factory();
 
     io_service.run();
 
