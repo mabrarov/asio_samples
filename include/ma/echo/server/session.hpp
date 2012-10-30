@@ -55,8 +55,6 @@ public:
 
 #if defined(MA_HAS_RVALUE_REFS)
 
-#if defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
-
   template <typename Handler>
   void async_start(Handler&& handler);
 
@@ -65,19 +63,6 @@ public:
 
   template <typename Handler>
   void async_wait(Handler&& handler);
-
-#else // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
-
-  template <typename Handler>
-  void async_start(Handler&& handler);
-
-  template <typename Handler>
-  void async_stop(Handler&& handler);
-
-  template <typename Handler>
-  void async_wait(Handler&& handler);
-
-#endif // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
 #else // defined(MA_HAS_RVALUE_REFS)
 
@@ -256,87 +241,76 @@ private:
   session_ptr session_;
 }; // class session::forward_handler_binder
 
-template <typename Handler>
-void session::async_start(Handler&& handler)
-{
-  typedef typename remove_cv_reference<Handler>::type handler_type;
-  typedef void (this_type::*func_type)(const handler_type&);
-
-  func_type func = &this_type::start_extern_start<handler_type>;
-
-  strand_.post(make_explicit_context_alloc_handler(
-      std::forward<Handler>(handler),
-      forward_handler_binder<handler_type>(func, shared_from_this())));
-}
-
-template <typename Handler>
-void session::async_stop(Handler&& handler)
-{
-  typedef typename remove_cv_reference<Handler>::type handler_type;
-  typedef void (this_type::*func_type)(const handler_type&);
-
-  func_type func = &this_type::start_extern_stop<handler_type>;
-
-  strand_.post(make_explicit_context_alloc_handler(
-      std::forward<Handler>(handler),
-      forward_handler_binder<handler_type>(func, shared_from_this())));
-}
-
-template <typename Handler>
-void session::async_wait(Handler&& handler)
-{
-  typedef typename remove_cv_reference<Handler>::type handler_type;
-  typedef void (this_type::*func_type)(const handler_type&);
-
-  func_type func = &this_type::start_extern_wait<handler_type>;
-
-  strand_.post(make_explicit_context_alloc_handler(
-      std::forward<Handler>(handler),
-      forward_handler_binder<handler_type>(func, shared_from_this())));
-}
-
-#else // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
-
-template <typename Handler>
-void session::async_start(Handler&& handler)
-{
-  typedef typename remove_cv_reference<Handler>::type handler_type;
-  typedef void (this_type::*func_type)(const handler_type&);
-
-  func_type func = &this_type::start_extern_start<handler_type>;
-
-  strand_.post(make_explicit_context_alloc_handler(
-      std::forward<Handler>(handler),
-      boost::bind(func, shared_from_this(), _1)));
-}
-
-template <typename Handler>
-void session::async_stop(Handler&& handler)
-{
-  typedef typename remove_cv_reference<Handler>::type handler_type;
-  typedef void (this_type::*func_type)(const handler_type&);
-
-  func_type func = &this_type::start_extern_stop<handler_type>;
-
-  strand_.post(make_explicit_context_alloc_handler(
-      std::forward<Handler>(handler),
-      boost::bind(func, shared_from_this(), _1)));
-}
-
-template <typename Handler>
-void session::async_wait(Handler&& handler)
-{
-  typedef typename remove_cv_reference<Handler>::type handler_type;
-  typedef void (this_type::*func_type)(const handler_type&);
-
-  func_type func = &this_type::start_extern_wait<handler_type>;
-
-  strand_.post(make_explicit_context_alloc_handler(
-      std::forward<Handler>(handler),
-      boost::bind(func, shared_from_this(), _1)));
-}
-
 #endif // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+
+template <typename Handler>
+void session::async_start(Handler&& handler)
+{
+  typedef typename remove_cv_reference<Handler>::type handler_type;
+  typedef void (this_type::*func_type)(const handler_type&);
+
+  func_type func = &this_type::start_extern_start<handler_type>;
+
+#if defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+
+  strand_.post(make_explicit_context_alloc_handler(
+      std::forward<Handler>(handler),
+      forward_handler_binder<handler_type>(func, shared_from_this())));
+
+#else
+
+  strand_.post(make_explicit_context_alloc_handler(
+      std::forward<Handler>(handler),
+      boost::bind(func, shared_from_this(), _1)));
+
+#endif
+}
+
+template <typename Handler>
+void session::async_stop(Handler&& handler)
+{
+  typedef typename remove_cv_reference<Handler>::type handler_type;
+  typedef void (this_type::*func_type)(const handler_type&);
+
+  func_type func = &this_type::start_extern_stop<handler_type>;
+
+#if defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+
+  strand_.post(make_explicit_context_alloc_handler(
+      std::forward<Handler>(handler),
+      forward_handler_binder<handler_type>(func, shared_from_this())));
+
+#else
+
+  strand_.post(make_explicit_context_alloc_handler(
+      std::forward<Handler>(handler),
+      boost::bind(func, shared_from_this(), _1)));
+
+#endif
+}
+
+template <typename Handler>
+void session::async_wait(Handler&& handler)
+{
+  typedef typename remove_cv_reference<Handler>::type handler_type;
+  typedef void (this_type::*func_type)(const handler_type&);
+
+  func_type func = &this_type::start_extern_wait<handler_type>;
+
+#if defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+
+  strand_.post(make_explicit_context_alloc_handler(
+      std::forward<Handler>(handler),
+      forward_handler_binder<handler_type>(func, shared_from_this())));
+
+#else
+
+  strand_.post(make_explicit_context_alloc_handler(
+      std::forward<Handler>(handler),
+      boost::bind(func, shared_from_this(), _1)));
+
+#endif
+}
 
 #else // defined(MA_HAS_RVALUE_REFS)
 
