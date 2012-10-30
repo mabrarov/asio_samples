@@ -352,6 +352,10 @@ int main(int argc, char* argv[])
     //test_handler_storage_target(io_service);
     test_handler_storage_arg(io_service);
 
+#if defined(MA_HAS_RVALUE_REFS)
+    test_handler_storage_move_constructor(io_service);
+#endif
+
     io_service.run();
 
     //todo

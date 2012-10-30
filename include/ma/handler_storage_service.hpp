@@ -515,7 +515,6 @@ private:
   static void do_post(base_type*, const Arg&);
   static target_type* do_target(base_type*);
 
-  boost::asio::io_service* io_service_;
   boost::asio::io_service::work work_;
   Handler handler_;
 }; // class handler_storage_service::handler_wrapper
@@ -566,7 +565,6 @@ private:
   static void do_post(base_type*);
   static target_type* do_target(base_type*);
 
-  boost::asio::io_service* io_service_;
   boost::asio::io_service::work work_;
   Handler handler_;
 }; // class handler_storage_service::handler_wrapper
@@ -720,7 +718,6 @@ handler_storage_service::handler_wrapper<Handler, Arg, Target>::handler_wrapper(
   : base_type(&this_type::do_destroy, &this_type::do_post,
         &this_type::do_target)
 #endif
-  , io_service_(&io_service)
   , work_(io_service)
   , handler_(std::forward<H>(handler))
 {
@@ -732,7 +729,6 @@ template <typename Handler, typename Arg, typename Target>
 handler_storage_service::handler_wrapper<Handler, Arg, Target>::handler_wrapper(
     this_type&& other)
   : base_type(std::move(other))
-  , io_service_(other.io_service_)
   , work_(std::move(other.work_))
   , handler_(std::move(other.handler_))
 {
@@ -742,7 +738,6 @@ template <typename Handler, typename Arg, typename Target>
 handler_storage_service::handler_wrapper<Handler, Arg, Target>::handler_wrapper(
     const this_type& other)
   : base_type(other)
-  , io_service_(other.io_service_)
   , work_(other.work_)
   , handler_(other.handler_)
 {
@@ -761,7 +756,6 @@ handler_storage_service::handler_wrapper<Handler, Arg, Target>::handler_wrapper(
   : base_type(&this_type::do_destroy, &this_type::do_post,
         &this_type::do_target)
 #endif
-  , io_service_(&io_service)
   , work_(io_service)
   , handler_(handler)
 {
@@ -851,13 +845,12 @@ void handler_storage_service::handler_wrapper<Handler, Arg, Target>::do_post(
   // Make copies of other data placed at wrapper object
   // These copies will be used after the wrapper object destruction
   // and deallocation of its memory
-  boost::asio::io_service& io_service(*this_ptr->io_service_);
   boost::asio::io_service::work work(this_ptr->work_);
-  (void) work;
   // Destroy wrapper object and deallocate its memory
   // through the local copy of handler
   ptr.reset();
   // Post the copy of handler's local copy to io_service
+  boost::asio::io_service& io_service = work.get_io_service();
 #if defined(MA_HAS_RVALUE_REFS)
   io_service.post(detail::bind_handler(std::move(handler), arg));
 #else
@@ -887,7 +880,6 @@ handler_storage_service::handler_wrapper<Handler, void, Target>::
   : base_type(&this_type::do_destroy, &this_type::do_post,
         &this_type::do_target)
 #endif
-  , io_service_(&io_service)
   , work_(io_service)
   , handler_(std::forward<H>(handler))
 {
@@ -899,7 +891,6 @@ template <typename Handler, typename Target>
 handler_storage_service::handler_wrapper<Handler, void, Target>::
     handler_wrapper(this_type&& other)
   : base_type(std::move(other))
-  , io_service_(other.io_service_)
   , work_(std::move(other.work_))
   , handler_(std::move(other.handler_))
 {
@@ -909,7 +900,6 @@ template <typename Handler, typename Target>
 handler_storage_service::handler_wrapper<Handler, void, Target>::
     handler_wrapper(const this_type& other)
   : base_type(other)
-  , io_service_(other.io_service_)
   , work_(other.work_)
   , handler_(other.handler_)
 {
@@ -928,7 +918,6 @@ handler_storage_service::handler_wrapper<Handler, void, Target>::
   : base_type(&this_type::do_destroy, &this_type::do_post,
         &this_type::do_target)
 #endif
-  , io_service_(&io_service)
   , work_(io_service)
   , handler_(handler)
 {
@@ -1017,13 +1006,12 @@ void handler_storage_service::handler_wrapper<Handler, void, Target>::do_post(
   // Make copies of other data placed at wrapper object
   // These copies will be used after the wrapper object destruction
   // and deallocation of its memory
-  boost::asio::io_service& io_service(*this_ptr->io_service_);
   boost::asio::io_service::work work(this_ptr->work_);
-  (void) work;
   // Destroy wrapper object and deallocate its memory
   // through the local copy of handler
   ptr.reset();
   // Post the copy of handler's local copy to io_service
+  boost::asio::io_service& io_service = work.get_io_service();
 #if defined(MA_HAS_RVALUE_REFS)
   io_service.post(handler);
 #else
