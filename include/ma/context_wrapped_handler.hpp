@@ -84,7 +84,7 @@ public:
   {
   }
 
-#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
+#if defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
   context_wrapped_handler(this_type&& other)
     : context_(std::move(other.context_))
@@ -280,7 +280,7 @@ public:
   {
   }
 
-#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
+#if defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
   explicit_context_wrapped_handler(this_type&& other)
     : context_(std::move(other.context_))

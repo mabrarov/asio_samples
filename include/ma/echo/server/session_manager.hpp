@@ -122,7 +122,9 @@ private:
   typedef boost::shared_ptr<session_wrapper> session_wrapper_ptr;
   typedef sp_intrusive_list<session_wrapper_base> session_list;
 
-#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#if defined(MA_HAS_RVALUE_REFS) \
+    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR) \
+    && !(defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
 
   // Home-grown binders to support move semantic
   class accept_handler_binder;
@@ -132,8 +134,7 @@ private:
   template <typename Arg>
   class forward_handler_binder;
 
-#endif // defined(MA_HAS_RVALUE_REFS)
-       //     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#endif
 
   struct extern_state
   {
@@ -153,7 +154,7 @@ private:
   typedef boost::optional<boost::system::error_code> optional_error_code;
 
 #if !(defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_HAS_LAMBDA) && !defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR))
+    && defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
 
   template <typename Handler>
   void start_extern_start(const Handler&);
@@ -166,7 +167,7 @@ private:
 
 #endif // !(defined(MA_HAS_RVALUE_REFS)
        //     && defined(MA_HAS_LAMBDA)
-       //     && !defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR))
+       //     && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
 
   boost::system::error_code do_start_extern_start();
   optional_error_code do_start_extern_stop();
@@ -225,7 +226,7 @@ private:
   boost::system::error_code close_acceptor();
 
 #if !(defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_HAS_LAMBDA) && !defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR))
+    && defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
 
   static void dispatch_handle_session_start(const session_manager_weak_ptr&,
       const session_wrapper_ptr&, const boost::system::error_code&);
@@ -268,7 +269,8 @@ private:
 
 #if defined(MA_HAS_RVALUE_REFS)
 
-#if defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#if defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR) \
+    && !(defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
 
 template <typename Arg>
 class session_manager::forward_handler_binder
@@ -283,12 +285,12 @@ public:
   template <typename SessionManagerPtr>
   forward_handler_binder(func_type func, SessionManagerPtr&& session_manager);
 
-#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
+#if defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
   forward_handler_binder(this_type&&);
   forward_handler_binder(const this_type&);
 
-#endif // defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
+#endif // defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
   void operator()(const Arg& arg);
 
@@ -297,14 +299,16 @@ private:
   session_manager_ptr session_manager_;
 }; // class session_manager::forward_handler_binder
 
-#endif // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#endif // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR) 
+       //     && !(defined(MA_HAS_LAMBDA) 
+       //         && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
 
 template <typename Handler>
 void session_manager::async_start(Handler&& handler)
 {
   typedef typename remove_cv_reference<Handler>::type handler_type;
 
-#if defined(MA_HAS_LAMBDA) && !defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+#if defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
 
   session_manager_ptr shared_this = shared_from_this();
 
@@ -316,7 +320,7 @@ void session_manager::async_start(Handler&& handler)
     shared_this->io_service_.post(detail::bind_handler(handler, error));
   }));
 
-#else  // defined(MA_HAS_LAMBDA) && !defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+#else  // defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
 
   typedef void (this_type::*func_type)(const handler_type&);
   func_type func = &this_type::start_extern_start<handler_type>;
@@ -335,7 +339,7 @@ void session_manager::async_start(Handler&& handler)
 
 #endif // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
-#endif // defined(MA_HAS_LAMBDA) && !defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+#endif // defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
 }
 
 template <typename Handler>
@@ -343,7 +347,7 @@ void session_manager::async_stop(Handler&& handler)
 {
   typedef typename remove_cv_reference<Handler>::type handler_type;
 
-#if defined(MA_HAS_LAMBDA) && !defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+#if defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
 
   session_manager_ptr shared_this = shared_from_this();
 
@@ -361,7 +365,7 @@ void session_manager::async_stop(Handler&& handler)
     }
   }));
 
-#else  // defined(MA_HAS_LAMBDA) && !defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+#else  // defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
 
   typedef void (this_type::*func_type)(const handler_type&);
   func_type func = &this_type::start_extern_stop<handler_type>;
@@ -380,7 +384,7 @@ void session_manager::async_stop(Handler&& handler)
 
 #endif // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
-#endif // defined(MA_HAS_LAMBDA) && !defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+#endif // defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
 }
 
 template <typename Handler>
@@ -388,7 +392,7 @@ void session_manager::async_wait(Handler&& handler)
 {
   typedef typename remove_cv_reference<Handler>::type handler_type;
 
-#if defined(MA_HAS_LAMBDA) && !defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+#if defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
 
   session_manager_ptr shared_this = shared_from_this();
 
@@ -406,7 +410,7 @@ void session_manager::async_wait(Handler&& handler)
     }
   }));
 
-#else  // defined(MA_HAS_LAMBDA) && !defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+#else  // defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
 
   typedef void (this_type::*func_type)(const handler_type&);
   func_type func = &this_type::start_extern_wait<handler_type>;
@@ -425,7 +429,7 @@ void session_manager::async_wait(Handler&& handler)
 
 #endif // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
-#endif // defined(MA_HAS_LAMBDA) && !defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+#endif // defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
 }
 
 #else  // defined(MA_HAS_RVALUE_REFS)
@@ -473,7 +477,7 @@ inline session_manager::~session_manager()
 }
 
 #if !(defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_HAS_LAMBDA) && !defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR))
+    && defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
 
 template <typename Handler>
 void session_manager::start_extern_start(const Handler& handler)
@@ -510,9 +514,11 @@ void session_manager::start_extern_wait(const Handler& handler)
 
 #endif // !(defined(MA_HAS_RVALUE_REFS)
        //     && defined(MA_HAS_LAMBDA)
-       //     && !defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR))
+       //     && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
 
-#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#if defined(MA_HAS_RVALUE_REFS) \
+    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR) \
+    && !(defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
 
 template <typename Arg>
 template <typename SessionManagerPtr>
@@ -523,7 +529,7 @@ session_manager::forward_handler_binder<Arg>::forward_handler_binder(
 {
 }
 
-#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
+#if defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
 template <typename Arg>
 session_manager::forward_handler_binder<Arg>::forward_handler_binder(
@@ -541,7 +547,7 @@ session_manager::forward_handler_binder<Arg>::forward_handler_binder(
 {
 }
 
-#endif // defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
+#endif // defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
 template <typename Arg>
 void session_manager::forward_handler_binder<Arg>::operator()(const Arg& arg)
@@ -551,6 +557,8 @@ void session_manager::forward_handler_binder<Arg>::operator()(const Arg& arg)
 
 #endif // defined(MA_HAS_RVALUE_REFS)
        //     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+       //     && !(defined(MA_HAS_LAMBDA) 
+       //         && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
 
 } // namespace server
 } // namespace echo

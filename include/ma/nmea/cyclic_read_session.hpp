@@ -207,12 +207,12 @@ public:
   template <typename H, typename I>
   wrapped_extern_read_handler(H&& handler, I&& begin, I&& end);
 
-#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
+#if defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
   wrapped_extern_read_handler(this_type&&);
   wrapped_extern_read_handler(const this_type&);
 
-#endif // defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+#endif // defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
 
 #else // defined(MA_HAS_RVALUE_REFS)
 
@@ -429,7 +429,7 @@ cyclic_read_session::wrapped_extern_read_handler<Handler, Iterator>
 {
 }
 
-#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
+#if defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
 template <typename Handler, typename Iterator>
 cyclic_read_session::wrapped_extern_read_handler<Handler, Iterator>
@@ -451,7 +451,7 @@ cyclic_read_session::wrapped_extern_read_handler<Handler, Iterator>
 {
 }
 
-#endif // defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+#endif // defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
 
 #else // defined(MA_HAS_RVALUE_REFS)
 

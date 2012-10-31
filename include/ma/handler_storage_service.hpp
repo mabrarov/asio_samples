@@ -485,12 +485,12 @@ public:
   template <typename H>
   handler_wrapper(boost::asio::io_service&, H&&);
 
-#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
+#if defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
   handler_wrapper(this_type&&);
   handler_wrapper(const this_type&);
 
-#endif // defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
+#endif // defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
 #else // defined(MA_HAS_RVALUE_REFS)
 
@@ -535,12 +535,12 @@ public:
   template <typename H>
   handler_wrapper(boost::asio::io_service&, H&&);
 
-#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
+#if defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
   handler_wrapper(this_type&&);
   handler_wrapper(const this_type&);
 
-#endif // defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
+#endif // defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
 #else // defined(MA_HAS_RVALUE_REFS)
 
@@ -723,7 +723,7 @@ handler_storage_service::handler_wrapper<Handler, Arg, Target>::handler_wrapper(
 {
 }
 
-#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
+#if defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
 template <typename Handler, typename Arg, typename Target>
 handler_storage_service::handler_wrapper<Handler, Arg, Target>::handler_wrapper(
@@ -743,7 +743,7 @@ handler_storage_service::handler_wrapper<Handler, Arg, Target>::handler_wrapper(
 {
 }
 
-#endif // defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
+#endif // defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
 #else // defined(MA_HAS_RVALUE_REFS)
 
@@ -885,7 +885,7 @@ handler_storage_service::handler_wrapper<Handler, void, Target>::
 {
 }
 
-#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
+#if defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
 template <typename Handler, typename Target>
 handler_storage_service::handler_wrapper<Handler, void, Target>::
@@ -905,7 +905,7 @@ handler_storage_service::handler_wrapper<Handler, void, Target>::
 {
 }
 
-#endif // defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
+#endif // defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
 #else // defined(MA_HAS_RVALUE_REFS)
 

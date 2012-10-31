@@ -62,7 +62,9 @@ private:
 
 } // anonymous namespace
 
-#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#if defined(MA_HAS_RVALUE_REFS) \
+    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR) \
+    && !(defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
 
 // Home-grown binders to support move semantic
 class session_manager::accept_handler_binder
@@ -86,7 +88,7 @@ public:
   {
   }
 
-#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
+#if defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
   accept_handler_binder(this_type&& other)
     : func_(other.func_)
@@ -136,7 +138,7 @@ public:
   {
   }
 
-#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
+#if defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
   session_dispatch_binder(this_type&& other)
     : func_(other.func_)
@@ -187,7 +189,7 @@ public:
   {
   }
 
-#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
+#if defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
   session_handler_binder(this_type&& other)
     : func_(other.func_)
@@ -221,6 +223,8 @@ private:
 
 #endif // defined(MA_HAS_RVALUE_REFS)
        //     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+       //     && !(defined(MA_HAS_LAMBDA) 
+       //         && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
 
 session_manager::stats_collector::stats_collector()
   : mutex_()
@@ -1123,7 +1127,7 @@ void session_manager::continue_stop()
 void session_manager::start_accept_session(const session_wrapper_ptr& session)
 {
 #if defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_HAS_LAMBDA) && !defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+    && defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
 
   session_manager_ptr shared_this = shared_from_this();
 
@@ -1160,7 +1164,7 @@ void session_manager::start_session_start(const session_wrapper_ptr& session)
   // Asynchronously start wrapped session
 
 #if defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_HAS_LAMBDA) && !defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+    && defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
 
   session_manager_weak_ptr weak_this = shared_from_this();
 
@@ -1198,7 +1202,7 @@ void session_manager::start_session_stop(const session_wrapper_ptr& session)
   // Asynchronously stop wrapped session
 
 #if defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_HAS_LAMBDA) && !defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+    && defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
 
   session_manager_weak_ptr weak_this = shared_from_this();
 
@@ -1236,7 +1240,7 @@ void session_manager::start_session_wait(const session_wrapper_ptr& session)
   // Asynchronously wait on wrapped session
 
 #if defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_HAS_LAMBDA) && !defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+    && defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
 
   session_manager_weak_ptr weak_this = shared_from_this();
 
@@ -1377,7 +1381,7 @@ boost::system::error_code session_manager::close_acceptor()
 }
 
 #if !(defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_HAS_LAMBDA) && !defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR))
+    && defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
 
 void session_manager::dispatch_handle_session_start(
     const session_manager_weak_ptr& this_weak_ptr,
@@ -1456,7 +1460,7 @@ void session_manager::dispatch_handle_session_stop(
 
 #endif // !(defined(MA_HAS_RVALUE_REFS)
        //     && defined(MA_HAS_LAMBDA)
-      //      && !defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR))
+      //      && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
 
 void session_manager::open(protocol_type::acceptor& acceptor,
     const protocol_type::endpoint& endpoint, int backlog,

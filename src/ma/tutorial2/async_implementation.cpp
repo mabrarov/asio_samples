@@ -53,7 +53,7 @@ public:
   {
   }
 
-#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
+#if defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
   forward_binder(this_type&& other)
     : async_implementation_(std::move(other.async_implementation_))
@@ -69,7 +69,7 @@ public:
   {
   }
 
-#endif // defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+#endif // defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
 
 #else // defined(MA_HAS_RVALUE_REFS)
 
@@ -120,7 +120,7 @@ public:
   {
   }
 
-#if defined(MA_HAS_RVALUE_REFS) && defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
 
   do_something_handler_adapter(this_type&& other)
     : do_something_handler_(std::move(other.do_something_handler_))
@@ -133,7 +133,7 @@ public:
   }
 
 #endif // defined(MA_HAS_RVALUE_REFS)
-       //     && defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+       //     && defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
 
   void operator()(const boost::system::error_code& error)
   {
@@ -170,7 +170,7 @@ public:
   {
   }
 
-#if defined(MA_HAS_RVALUE_REFS) && defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
 
   do_something_handler_binder(this_type&& other)
     : do_something_handler_(std::move(other.do_something_handler_))
@@ -185,7 +185,7 @@ public:
   }
 
 #endif // defined(MA_HAS_RVALUE_REFS)
-       //     && defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+       //     && defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
 
   void operator()()
   {
@@ -229,7 +229,7 @@ public:
   {
   }
 
-#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
+#if defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
   timer_handler_binder(this_type&& other)
     : func_(other.func_)
@@ -243,7 +243,7 @@ public:
   {
   }
 
-#endif // defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+#endif // defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
 
   void operator()(const boost::system::error_code& error)
   {

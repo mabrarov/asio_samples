@@ -108,12 +108,12 @@ public:
   template <typename AsyncInterfacePtr>
   forward_handler_binder(function_type, AsyncInterfacePtr&&);
 
-#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
+#if defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
   forward_handler_binder(this_type&&);
   forward_handler_binder(const this_type&);
 
-#endif // defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+#endif // defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
 
   void operator()(const Arg&);
 
@@ -225,7 +225,7 @@ async_interface::forward_handler_binder<Arg>::forward_handler_binder(
 {
 }
 
-#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
+#if defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
 template <typename Arg>
 async_interface::forward_handler_binder<Arg>::forward_handler_binder(
@@ -243,7 +243,7 @@ async_interface::forward_handler_binder<Arg>::forward_handler_binder(
 {
 }
 
-#endif // defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR)
+#endif // defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
 
 template <typename Arg>
 void async_interface::forward_handler_binder<Arg>::operator()(const Arg& arg)

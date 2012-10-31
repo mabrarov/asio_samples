@@ -21,7 +21,9 @@ namespace server {
 
 namespace {
 
-#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#if defined(MA_HAS_RVALUE_REFS) \
+    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR) \
+    && !(defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
 
 // Home-grown binders to support move semantic
 class io_handler_binder
@@ -42,7 +44,7 @@ public:
   {
   }
 
-#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
+#if defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
   io_handler_binder(this_type&& other)
     : func_(other.func_)
@@ -86,7 +88,7 @@ public:
   {
   }
 
-#if defined(MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
+#if defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
   timer_handler_binder(this_type&& other)
     : func_(other.func_)
@@ -114,6 +116,9 @@ private:
 
 #endif // defined(MA_HAS_RVALUE_REFS)
        //     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+       //     && !(defined(MA_HAS_LAMBDA) 
+       //         && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
+
 
 } // anonymous namespace
 
@@ -880,7 +885,20 @@ void session::start_stop(boost::system::error_code error)
 void session::start_socket_read(
     const cyclic_buffer::mutable_buffers_type& buffers)
 {
-#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#if defined(MA_HAS_RVALUE_REFS) \
+    && defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
+
+  session_ptr shared_this = shared_from_this();
+
+  socket_.async_read_some(buffers, MA_STRAND_WRAP(strand_,
+      make_custom_alloc_handler(read_allocator_, [shared_this](
+      const boost::system::error_code& error, std::size_t bytes_transferred)
+  {
+    shared_this->handle_read(error, bytes_transferred);
+  })));
+
+#elif defined(MA_HAS_RVALUE_REFS) \
+    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
   socket_.async_read_some(buffers, MA_STRAND_WRAP(strand_,
       make_custom_alloc_handler(read_allocator_, io_handler_binder(
@@ -901,7 +919,20 @@ void session::start_socket_read(
 void session::start_socket_write(
     const cyclic_buffer::const_buffers_type& buffers)
 {
-#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#if defined(MA_HAS_RVALUE_REFS) \
+    && defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
+
+  session_ptr shared_this = shared_from_this();
+
+  socket_.async_write_some(buffers, MA_STRAND_WRAP(strand_,
+      make_custom_alloc_handler(write_allocator_, [shared_this](
+      const boost::system::error_code& error, std::size_t bytes_transferred)
+  {
+    shared_this->handle_write(error, bytes_transferred);
+  })));
+
+#elif defined(MA_HAS_RVALUE_REFS) \
+    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
   socket_.async_write_some(buffers, MA_STRAND_WRAP(strand_,
       make_custom_alloc_handler(write_allocator_, io_handler_binder(
@@ -924,7 +955,20 @@ void session::start_timer_wait()
   BOOST_ASSERT_MSG(timer_state::ready == timer_state_,
       "Invalid timer state");
 
-#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#if defined(MA_HAS_RVALUE_REFS) \
+    && defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
+
+  session_ptr shared_this = shared_from_this();
+
+  timer_.async_wait(MA_STRAND_WRAP(strand_,
+      make_custom_alloc_handler(timer_allocator_, [shared_this](
+      const boost::system::error_code& error)
+  {
+    shared_this->handle_timer(error);
+  })));
+
+#elif defined(MA_HAS_RVALUE_REFS) \
+    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
   timer_.async_wait(MA_STRAND_WRAP(strand_,
       make_custom_alloc_handler(timer_allocator_, timer_handler_binder(

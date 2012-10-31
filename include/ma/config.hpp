@@ -31,12 +31,12 @@
 /**
  * If functors created by means of boost::bind have no move constructor then
  * some of the asio-samples explicitly define and use binders with (explicit or
- * implicit - see MA_USE_EXPLICIT_MOVE_CONSTRUCTOR) move constructor.
+ * implicit - see MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) move constructor.
  */
 #if defined(__GNUC__) && (__GNUC__ >= 4) && (__GNUC_MINOR__ >= 6)
 
 /// Turns off explicit definition of move constructor (and copy constructor).
-#undef MA_USE_EXPLICIT_MOVE_CONSTRUCTOR
+#undef MA_NO_IMPLICIT_MOVE_CONSTRUCTOR
 /// Turns off usage of home-grown binders with move semantic support.
 #undef MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR
 
@@ -45,14 +45,14 @@
 #if __has_feature(cxx_implicit_moves)
 
 /// Turns off explicit definition of move constructor (and copy constructor).
-#undef MA_USE_EXPLICIT_MOVE_CONSTRUCTOR
+#undef MA_NO_IMPLICIT_MOVE_CONSTRUCTOR
 /// Turns off usage of home-grown binders with move semantic support.
 #undef MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR
 
 #else // __has_feature(cxx_implicit_moves)
 
 /// Turns on explicit definition of move constructor (and copy constructor).
-#define MA_USE_EXPLICIT_MOVE_CONSTRUCTOR
+#define MA_NO_IMPLICIT_MOVE_CONSTRUCTOR
 /// Turns on usage of home-grown binders with move semantic support.
 #define MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR
 
@@ -61,7 +61,7 @@
 #else
 
 /// Turns on explicit definition of move constructor (and copy constructor).
-#define MA_USE_EXPLICIT_MOVE_CONSTRUCTOR
+#define MA_NO_IMPLICIT_MOVE_CONSTRUCTOR
 /// Turns on usage of home-grown binders with move semantic support.
 #define MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR
 
@@ -70,7 +70,7 @@
 #else  // (BOOST_VERSION >= 104000) && !defined(BOOST_NO_RVALUE_REFERENCES)
 
 #undef  MA_HAS_RVALUE_REFS
-#undef  MA_USE_EXPLICIT_MOVE_CONSTRUCTOR
+#undef  MA_NO_IMPLICIT_MOVE_CONSTRUCTOR
 #define MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR
 
 #endif // (BOOST_VERSION >= 104000) && !defined(BOOST_NO_RVALUE_REFERENCES)
