@@ -372,5 +372,9 @@ int main(int argc, char* argv[])
   {
     std::cerr << "Unexpected exception: " << e.what() << std::endl;
   }
+  catch (...)
+  {
+    std::cerr << "Unknown exception" << std::endl;
+  }
   return EXIT_FAILURE;
 }

@@ -8,10 +8,11 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include <algorithm>
-#include <iostream>
 #include <vector>
 #include <string>
+#include <iostream>
+#include <algorithm>
+#include <exception>
 #include <boost/assert.hpp>
 #include <boost/ref.hpp>
 #include <boost/asio.hpp>
@@ -317,7 +318,7 @@ private:
 
     connected_ = true;
 
-    if (boost::system::error_code error = apply_socket_options())
+    if (apply_socket_options())
     {
       stop();
       return;
@@ -1194,6 +1195,10 @@ int main(int argc, char* argv[])
   catch (const std::exception& e)
   {
     std::cerr << "Exception: " << e.what() << "\n";
+  }
+  catch (...)
+  {
+    std::cerr << "Unknown exception" << std::endl;
   }
   return EXIT_FAILURE;
 }

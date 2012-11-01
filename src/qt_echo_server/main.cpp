@@ -5,6 +5,8 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#include <iostream>
+#include <exception>
 #include <QtGui/QApplication>
 #include <ma/echo/server/qt/service.h>
 #include <ma/echo/server/qt/custommetatypes.h>
@@ -12,13 +14,24 @@
 
 int main(int argc, char* argv[])
 {
-  QApplication application(argc, argv);
+  try
+  {
+    QApplication application(argc, argv);
 
-  using namespace ma::echo::server::qt;
-  registerCustomMetaTypes();
-  Service echoService;
-  MainForm mainForm(echoService);
-  mainForm.show();
+    using namespace ma::echo::server::qt;
+    registerCustomMetaTypes();
+    Service echoService;
+    MainForm mainForm(echoService);
+    mainForm.show();
 
-  return application.exec();
+    return application.exec();
+  }
+  catch (const std::exception& e)
+  {
+    std::cerr << "Unexpected error: " << e.what() << std::endl;
+  }
+  catch (...)
+  {
+    std::cerr << "Unknown exception" << std::endl;
+  }
 }

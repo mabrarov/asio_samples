@@ -685,7 +685,7 @@ void session_manager::continue_work()
       accept_state_ = accept_state::stopped;
       if (out_of_work())
       {
-        start_stop(server::error::out_of_work);
+        start_stop(error);
       }
       return;
     }
@@ -704,7 +704,7 @@ void session_manager::continue_work()
     accept_state_ = accept_state::stopped;
     if (out_of_work())
     {
-      start_stop(server::error::out_of_work);
+      start_stop(error);
     }
     return;
   }
