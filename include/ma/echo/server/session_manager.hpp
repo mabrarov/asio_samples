@@ -300,8 +300,8 @@ private:
   session_manager_ptr session_manager_;
 }; // class session_manager::forward_handler_binder
 
-#endif // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR) 
-       //     && !(defined(MA_HAS_LAMBDA) 
+#endif // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+       //     && !(defined(MA_HAS_LAMBDA)
        //         && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
 
 template <typename Handler>
@@ -558,7 +558,7 @@ void session_manager::forward_handler_binder<Arg>::operator()(const Arg& arg)
 
 #endif // defined(MA_HAS_RVALUE_REFS)
        //     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
-       //     && !(defined(MA_HAS_LAMBDA) 
+       //     && !(defined(MA_HAS_LAMBDA)
        //         && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
 
 } // namespace server

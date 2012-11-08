@@ -116,7 +116,7 @@ private:
 
 #endif // defined(MA_HAS_RVALUE_REFS)
        //     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
-       //     && !(defined(MA_HAS_LAMBDA) 
+       //     && !(defined(MA_HAS_LAMBDA)
        //         && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
 
 
@@ -359,7 +359,7 @@ void session::handle_timer(const boost::system::error_code& error)
 }
 
 #endif // !(defined(MA_HAS_RVALUE_REFS)
-       //     && defined(MA_HAS_LAMBDA) 
+       //     && defined(MA_HAS_LAMBDA)
        //     && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
 
 void session::handle_read_at_work(const boost::system::error_code& error,

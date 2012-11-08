@@ -223,7 +223,7 @@ private:
 
 #endif // defined(MA_HAS_RVALUE_REFS)
        //     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
-       //     && !(defined(MA_HAS_LAMBDA) 
+       //     && !(defined(MA_HAS_LAMBDA)
        //         && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
 
 session_manager::stats_collector::stats_collector()

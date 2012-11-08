@@ -152,7 +152,7 @@ cyclic_read_session::do_start_extern_read_some()
     return error;
   }
 
-  // If can't immediately complete then do_start_extern_start waiting for completion
+  // If can't immediately complete then start waiting for completion.
   // Start message constructing
   if (!port_read_in_progress_)
   {

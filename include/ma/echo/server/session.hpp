@@ -140,7 +140,7 @@ private:
   void handle_timer(const boost::system::error_code&);
 
 #endif // !(defined(MA_HAS_RVALUE_REFS)
-       //     && defined(MA_HAS_LAMBDA) 
+       //     && defined(MA_HAS_LAMBDA)
        //     && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
 
   boost::system::error_code do_start_extern_start();
@@ -251,8 +251,8 @@ private:
   session_ptr session_;
 }; // class session::forward_handler_binder
 
-#endif // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR) 
-       //     && !(defined(MA_HAS_LAMBDA) 
+#endif // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+       //     && !(defined(MA_HAS_LAMBDA)
        //         && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
 
 template <typename Handler>
@@ -265,7 +265,7 @@ void session::async_start(Handler&& handler)
   session_ptr shared_this = shared_from_this();
 
   strand_.post(make_explicit_context_alloc_handler(
-      std::forward<Handler>(handler), 
+      std::forward<Handler>(handler),
       [shared_this](const handler_type& handler)
   {
     boost::system::error_code result = shared_this->do_start_extern_start();
@@ -304,7 +304,7 @@ void session::async_stop(Handler&& handler)
   session_ptr shared_this = shared_from_this();
 
   strand_.post(make_explicit_context_alloc_handler(
-      std::forward<Handler>(handler), 
+      std::forward<Handler>(handler),
       [shared_this](const handler_type& handler)
   {
     if (optional_error_code result = shared_this->do_start_extern_stop())
@@ -349,7 +349,7 @@ void session::async_wait(Handler&& handler)
   session_ptr shared_this = shared_from_this();
 
   strand_.post(make_explicit_context_alloc_handler(
-      std::forward<Handler>(handler), 
+      std::forward<Handler>(handler),
       [shared_this](const handler_type& handler)
   {
     if (optional_error_code result = shared_this->do_start_extern_wait())
@@ -465,7 +465,7 @@ void session::start_extern_wait(const Handler& handler)
 }
 
 #endif // !(defined(MA_HAS_RVALUE_REFS)
-       //     && defined(MA_HAS_LAMBDA) 
+       //     && defined(MA_HAS_LAMBDA)
        //     && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
 
 #if defined(MA_HAS_RVALUE_REFS) \
@@ -509,7 +509,7 @@ void session::forward_handler_binder<Arg>::operator()(const Arg& arg)
 
 #endif // defined(MA_HAS_RVALUE_REFS)
        //     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
-       //     && !(defined(MA_HAS_LAMBDA) 
+       //     && !(defined(MA_HAS_LAMBDA)
        //         && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
 
 } // namespace server
