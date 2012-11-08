@@ -712,6 +712,9 @@ void session_manager::continue_work()
   start_accept_session(session);
 }
 
+#if !(defined(MA_HAS_RVALUE_REFS) \
+    && defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
+
 void session_manager::handle_accept(const session_wrapper_ptr& session,
     const boost::system::error_code& error)
 {
@@ -735,6 +738,73 @@ void session_manager::handle_accept(const session_wrapper_ptr& session,
     break;
   }
 }
+
+void session_manager::handle_session_start(const session_wrapper_ptr& session,
+    const boost::system::error_code& error)
+{
+  // Split handler based on current internal state
+  // that might change during session start
+  switch (intern_state_)
+  {
+  case intern_state::work:
+    handle_session_start_at_work(session, error);
+    break;
+
+  case intern_state::stop:
+    handle_session_start_at_stop(session, error);
+    break;
+
+  default:
+    BOOST_ASSERT_MSG(false, "Invalid internal state");
+    break;
+  }
+}
+
+void session_manager::handle_session_wait(const session_wrapper_ptr& session,
+    const boost::system::error_code& error)
+{
+  // Split handler based on current internal state
+  // that might change during session wait
+  switch (intern_state_)
+  {
+  case intern_state::work:
+    handle_session_wait_at_work(session, error);
+    break;
+
+  case intern_state::stop:
+    handle_session_wait_at_stop(session, error);
+    break;
+
+  default:
+    BOOST_ASSERT_MSG(false, "Invalid internal state");
+    break;
+  }
+}
+
+void session_manager::handle_session_stop(const session_wrapper_ptr& session,
+    const boost::system::error_code& error)
+{
+  // Split handler based on current internal state
+  // that might change during session stop
+  switch (intern_state_)
+  {
+  case intern_state::work:
+    handle_session_stop_at_work(session, error);
+    break;
+
+  case intern_state::stop:
+    handle_session_stop_at_stop(session, error);
+    break;
+
+  default:
+    BOOST_ASSERT_MSG(false, "Invalid internal state");
+    break;
+  }
+}
+
+#endif // !(defined(MA_HAS_RVALUE_REFS)
+       //     && defined(MA_HAS_LAMBDA)
+       //     && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
 
 void session_manager::handle_accept_at_work(const session_wrapper_ptr& session,
     const boost::system::error_code& error)
@@ -802,27 +872,6 @@ void session_manager::handle_accept_at_stop(const session_wrapper_ptr& session,
   stats_collector_.session_stopped(server::error::operation_aborted);
   recycle(session);
   continue_stop();
-}
-
-void session_manager::handle_session_start(const session_wrapper_ptr& session,
-    const boost::system::error_code& error)
-{
-  // Split handler based on current internal state
-  // that might change during session start
-  switch (intern_state_)
-  {
-  case intern_state::work:
-    handle_session_start_at_work(session, error);
-    break;
-
-  case intern_state::stop:
-    handle_session_start_at_stop(session, error);
-    break;
-
-  default:
-    BOOST_ASSERT_MSG(false, "Invalid internal state");
-    break;
-  }
 }
 
 void session_manager::handle_session_start_at_work(
@@ -898,27 +947,6 @@ void session_manager::handle_session_start_at_stop(
   continue_stop();
 }
 
-void session_manager::handle_session_wait(const session_wrapper_ptr& session,
-    const boost::system::error_code& error)
-{
-  // Split handler based on current internal state
-  // that might change during session wait
-  switch (intern_state_)
-  {
-  case intern_state::work:
-    handle_session_wait_at_work(session, error);
-    break;
-
-  case intern_state::stop:
-    handle_session_wait_at_stop(session, error);
-    break;
-
-  default:
-    BOOST_ASSERT_MSG(false, "Invalid internal state");
-    break;
-  }
-}
-
 void session_manager::handle_session_wait_at_work(
     const session_wrapper_ptr& session,
     const boost::system::error_code& error)
@@ -971,27 +999,6 @@ void session_manager::handle_session_wait_at_stop(
   // Session run out of work - stop it
   start_session_stop(session);
   continue_stop();
-}
-
-void session_manager::handle_session_stop(const session_wrapper_ptr& session,
-    const boost::system::error_code& error)
-{
-  // Split handler based on current internal state
-  // that might change during session stop
-  switch (intern_state_)
-  {
-  case intern_state::work:
-    handle_session_stop_at_work(session, error);
-    break;
-
-  case intern_state::stop:
-    handle_session_stop_at_stop(session, error);
-    break;
-
-  default:
-    BOOST_ASSERT_MSG(false, "Invalid internal state");
-    break;
-  }
 }
 
 void session_manager::handle_session_stop_at_work(
@@ -1135,7 +1142,25 @@ void session_manager::start_accept_session(const session_wrapper_ptr& session)
       MA_STRAND_WRAP(strand_, make_custom_alloc_handler(accept_allocator_,
           [shared_this, session](const boost::system::error_code& error)
   {
-    shared_this->handle_accept(session, error);
+    BOOST_ASSERT_MSG(accept_state::in_progress == shared_this->accept_state_,
+        "Invalid accept state");
+
+    // Split handler based on current internal state
+    // that might change during accept operation
+    switch (shared_this->intern_state_)
+    {
+    case intern_state::work:
+      shared_this->handle_accept_at_work(session, error);
+      break;
+
+    case intern_state::stop:
+      shared_this->handle_accept_at_stop(session, error);
+      break;
+
+    default:
+      BOOST_ASSERT_MSG(false, "Invalid internal state");
+      break;
+    }
   })));
 
 #elif defined(MA_HAS_RVALUE_REFS) \
@@ -1176,7 +1201,22 @@ void session_manager::start_session_start(const session_wrapper_ptr& session)
       this_ptr->strand_.dispatch(make_custom_alloc_handler(
           session->start_allocator(), [this_ptr, session, error]()
       {
-        this_ptr->handle_session_start(session, error);
+        // Split handler based on current internal state
+        // that might change during session start
+        switch (this_ptr->intern_state_)
+        {
+        case intern_state::work:
+          this_ptr->handle_session_start_at_work(session, error);
+          break;
+
+        case intern_state::stop:
+          this_ptr->handle_session_start_at_stop(session, error);
+          break;
+
+        default:
+          BOOST_ASSERT_MSG(false, "Invalid internal state");
+          break;
+        }
       }));
     }
   });
@@ -1214,7 +1254,22 @@ void session_manager::start_session_stop(const session_wrapper_ptr& session)
       this_ptr->strand_.dispatch(make_custom_alloc_handler(
           session->stop_allocator(), [this_ptr, session, error]()
       {
-        this_ptr->handle_session_stop(session, error);
+        // Split handler based on current internal state
+        // that might change during session stop
+        switch (this_ptr->intern_state_)
+        {
+        case intern_state::work:
+          this_ptr->handle_session_stop_at_work(session, error);
+          break;
+
+        case intern_state::stop:
+          this_ptr->handle_session_stop_at_stop(session, error);
+          break;
+
+        default:
+          BOOST_ASSERT_MSG(false, "Invalid internal state");
+          break;
+        }
       }));
     }
   });
@@ -1252,7 +1307,22 @@ void session_manager::start_session_wait(const session_wrapper_ptr& session)
       this_ptr->strand_.dispatch(make_custom_alloc_handler(
           session->wait_allocator(), [this_ptr, session, error]()
       {
-        this_ptr->handle_session_wait(session, error);
+        // Split handler based on current internal state
+        // that might change during session wait
+        switch (this_ptr->intern_state_)
+        {
+        case intern_state::work:
+          this_ptr->handle_session_wait_at_work(session, error);
+          break;
+
+        case intern_state::stop:
+          this_ptr->handle_session_wait_at_stop(session, error);
+          break;
+
+        default:
+          BOOST_ASSERT_MSG(false, "Invalid internal state");
+          break;
+        }
       }));
     }
   });

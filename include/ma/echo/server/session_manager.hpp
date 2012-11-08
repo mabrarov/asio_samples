@@ -165,6 +165,15 @@ private:
   template <typename Handler>
   void start_extern_wait(const Handler&);
 
+  void handle_accept(const session_wrapper_ptr&,
+      const boost::system::error_code&);
+  void handle_session_start(const session_wrapper_ptr&,
+      const boost::system::error_code&);
+  void handle_session_wait(const session_wrapper_ptr&,
+      const boost::system::error_code&);
+  void handle_session_stop(const session_wrapper_ptr&,
+      const boost::system::error_code&);
+
 #endif // !(defined(MA_HAS_RVALUE_REFS)
        //     && defined(MA_HAS_LAMBDA)
        //     && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
@@ -177,29 +186,21 @@ private:
 
   void continue_work();
 
-  void handle_accept(const session_wrapper_ptr&,
-      const boost::system::error_code&);
   void handle_accept_at_work(const session_wrapper_ptr&,
       const boost::system::error_code&);
   void handle_accept_at_stop(const session_wrapper_ptr&,
       const boost::system::error_code&);
 
-  void handle_session_start(const session_wrapper_ptr&,
-      const boost::system::error_code&);
   void handle_session_start_at_work(const session_wrapper_ptr&,
       const boost::system::error_code&);
   void handle_session_start_at_stop(const session_wrapper_ptr&,
       const boost::system::error_code&);
 
-  void handle_session_wait(const session_wrapper_ptr&,
-      const boost::system::error_code&);
   void handle_session_wait_at_work(const session_wrapper_ptr&,
       const boost::system::error_code&);
   void handle_session_wait_at_stop(const session_wrapper_ptr&,
       const boost::system::error_code&);
 
-  void handle_session_stop(const session_wrapper_ptr&,
-      const boost::system::error_code&);
   void handle_session_stop_at_work(const session_wrapper_ptr&,
       const boost::system::error_code&);
   void handle_session_stop_at_stop(const session_wrapper_ptr&,

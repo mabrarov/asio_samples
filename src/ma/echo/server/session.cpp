@@ -275,6 +275,9 @@ void session::complete_extern_wait(const boost::system::error_code& error)
   }
 }
 
+#if !(defined(MA_HAS_RVALUE_REFS) \
+    && defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
+
 void session::handle_read(const boost::system::error_code& error,
     std::size_t bytes_transferred)
 {
@@ -302,6 +305,62 @@ void session::handle_read(const boost::system::error_code& error,
     break;
   }
 }
+
+void session::handle_write(const boost::system::error_code& error,
+    std::size_t bytes_transferred)
+{
+  BOOST_ASSERT_MSG(write_state::in_progress == write_state_,
+      "Invalid write state");
+
+  // Split handler based on current internal state
+  // that might change during write operation
+  switch (intern_state_)
+  {
+  case intern_state::work:
+    handle_write_at_work(error, bytes_transferred);
+    break;
+
+  case intern_state::shutdown:
+    handle_write_at_shutdown(error, bytes_transferred);
+    break;
+
+  case intern_state::stop:
+    handle_write_at_stop(error, bytes_transferred);
+    break;
+
+  default:
+    BOOST_ASSERT_MSG(false, "Invalid internal state");
+    break;
+  }
+}
+
+void session::handle_timer(const boost::system::error_code& error)
+{
+  BOOST_ASSERT_MSG(timer_state::in_progress == timer_state_,
+      "Invalid timer state");
+
+  // Split handler based on current internal state
+  // that might change during timer wait operation
+  switch (intern_state_)
+  {
+  case intern_state::work:
+  case intern_state::shutdown:
+    handle_timer_at_work(error);
+    break;
+
+  case intern_state::stop:
+    handle_timer_at_stop(error);
+    break;
+
+  default:
+    BOOST_ASSERT_MSG(false, "Invalid internal state");
+    break;
+  }
+}
+
+#endif // !(defined(MA_HAS_RVALUE_REFS)
+       //     && defined(MA_HAS_LAMBDA) 
+       //     && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
 
 void session::handle_read_at_work(const boost::system::error_code& error,
     std::size_t bytes_transferred)
@@ -398,34 +457,6 @@ void session::handle_read_at_stop(const boost::system::error_code& /*error*/,
   continue_stop();
 }
 
-void session::handle_write(const boost::system::error_code& error,
-    std::size_t bytes_transferred)
-{
-  BOOST_ASSERT_MSG(write_state::in_progress == write_state_,
-      "Invalid write state");
-
-  // Split handler based on current internal state
-  // that might change during write operation
-  switch (intern_state_)
-  {
-  case intern_state::work:
-    handle_write_at_work(error, bytes_transferred);
-    break;
-
-  case intern_state::shutdown:
-    handle_write_at_shutdown(error, bytes_transferred);
-    break;
-
-  case intern_state::stop:
-    handle_write_at_stop(error, bytes_transferred);
-    break;
-
-  default:
-    BOOST_ASSERT_MSG(false, "Invalid internal state");
-    break;
-  }
-}
-
 void session::handle_write_at_work(const boost::system::error_code& error,
     std::size_t bytes_transferred)
 {
@@ -504,30 +535,6 @@ void session::handle_write_at_stop(const boost::system::error_code& /*error*/,
   --pending_operations_;
   write_state_ = write_state::stopped;
   continue_stop();
-}
-
-void session::handle_timer(const boost::system::error_code& error)
-{
-  BOOST_ASSERT_MSG(timer_state::in_progress == timer_state_,
-      "Invalid timer state");
-
-  // Split handler based on current internal state
-  // that might change during timer wait operation
-  switch (intern_state_)
-  {
-  case intern_state::work:
-  case intern_state::shutdown:
-    handle_timer_at_work(error);
-    break;
-
-  case intern_state::stop:
-    handle_timer_at_stop(error);
-    break;
-
-  default:
-    BOOST_ASSERT_MSG(false, "Invalid internal state");
-    break;
-  }
 }
 
 void session::handle_timer_at_work(const boost::system::error_code& error)
@@ -894,7 +901,29 @@ void session::start_socket_read(
       make_custom_alloc_handler(read_allocator_, [shared_this](
       const boost::system::error_code& error, std::size_t bytes_transferred)
   {
-    shared_this->handle_read(error, bytes_transferred);
+    BOOST_ASSERT_MSG(read_state::in_progress == shared_this->read_state_,
+        "Invalid read state");
+
+    // Split handler based on current internal state
+    // that might change during read operation
+    switch (shared_this->intern_state_)
+    {
+    case intern_state::work:
+      shared_this->handle_read_at_work(error, bytes_transferred);
+      break;
+
+    case intern_state::shutdown:
+      shared_this->handle_read_at_shutdown(error, bytes_transferred);
+      break;
+
+    case intern_state::stop:
+      shared_this->handle_read_at_stop(error, bytes_transferred);
+      break;
+
+    default:
+      BOOST_ASSERT_MSG(false, "Invalid internal state");
+      break;
+    }
   })));
 
 #elif defined(MA_HAS_RVALUE_REFS) \
@@ -928,7 +957,29 @@ void session::start_socket_write(
       make_custom_alloc_handler(write_allocator_, [shared_this](
       const boost::system::error_code& error, std::size_t bytes_transferred)
   {
-    shared_this->handle_write(error, bytes_transferred);
+    BOOST_ASSERT_MSG(write_state::in_progress == shared_this->write_state_,
+        "Invalid write state");
+
+    // Split handler based on current internal state
+    // that might change during write operation
+    switch (shared_this->intern_state_)
+    {
+    case intern_state::work:
+      shared_this->handle_write_at_work(error, bytes_transferred);
+      break;
+
+    case intern_state::shutdown:
+      shared_this->handle_write_at_shutdown(error, bytes_transferred);
+      break;
+
+    case intern_state::stop:
+      shared_this->handle_write_at_stop(error, bytes_transferred);
+      break;
+
+    default:
+      BOOST_ASSERT_MSG(false, "Invalid internal state");
+      break;
+    }
   })));
 
 #elif defined(MA_HAS_RVALUE_REFS) \
@@ -964,7 +1015,26 @@ void session::start_timer_wait()
       make_custom_alloc_handler(timer_allocator_, [shared_this](
       const boost::system::error_code& error)
   {
-    shared_this->handle_timer(error);
+    BOOST_ASSERT_MSG(timer_state::in_progress == shared_this->timer_state_,
+        "Invalid timer state");
+
+    // Split handler based on current internal state
+    // that might change during timer wait operation
+    switch (shared_this->intern_state_)
+    {
+    case intern_state::work:
+    case intern_state::shutdown:
+      shared_this->handle_timer_at_work(error);
+      break;
+
+    case intern_state::stop:
+      shared_this->handle_timer_at_stop(error);
+      break;
+
+    default:
+      BOOST_ASSERT_MSG(false, "Invalid internal state");
+      break;
+    }
   })));
 
 #elif defined(MA_HAS_RVALUE_REFS) \

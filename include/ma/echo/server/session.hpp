@@ -135,6 +135,10 @@ private:
   template <typename Handler>
   void start_extern_wait(const Handler&);
 
+  void handle_read(const boost::system::error_code&, std::size_t);
+  void handle_write(const boost::system::error_code&, std::size_t);
+  void handle_timer(const boost::system::error_code&);
+
 #endif // !(defined(MA_HAS_RVALUE_REFS)
        //     && defined(MA_HAS_LAMBDA) 
        //     && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
@@ -145,17 +149,14 @@ private:
   void complete_extern_stop(const boost::system::error_code&);
   void complete_extern_wait(const boost::system::error_code&);
 
-  void handle_read(const boost::system::error_code&, std::size_t);
   void handle_read_at_work(const boost::system::error_code&, std::size_t);
   void handle_read_at_shutdown(const boost::system::error_code&, std::size_t);
   void handle_read_at_stop(const boost::system::error_code&, std::size_t);
 
-  void handle_write(const boost::system::error_code&, std::size_t);
   void handle_write_at_work(const boost::system::error_code&, std::size_t);
   void handle_write_at_shutdown(const boost::system::error_code&, std::size_t);
   void handle_write_at_stop(const boost::system::error_code&, std::size_t);
 
-  void handle_timer(const boost::system::error_code&);
   void handle_timer_at_work(const boost::system::error_code&);
   void handle_timer_at_stop(const boost::system::error_code&);
 
