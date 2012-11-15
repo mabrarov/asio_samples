@@ -211,7 +211,9 @@ public:
       threads_.create_thread(boost::bind(func,
           boost::ref(session_manager_io_service_), wrapped_handler));
     }
-  }
+  }  
+
+private:
 
   void stop_threads()
   {
@@ -220,7 +222,6 @@ public:
     threads_.join_all();
   }
 
-private:
   template <typename Handler>
   static void thread_func(boost::asio::io_service& io_service,
       boost::tuple<Handler> handler)
@@ -508,7 +509,6 @@ void Service::destroyServant()
     servantSignal_->disconnect();
     servantSignal_.reset();
   }
-  servant_->stop_threads();
   stats_ = servant_->stats();
   servant_.reset();
 }

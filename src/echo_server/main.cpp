@@ -37,6 +37,77 @@
 
 namespace echo_server {
 
+void print_stats(const ma::echo::server::session_manager_stats&);
+
+int run_server(const execution_config&,
+    const ma::echo::server::session_manager_config&);
+
+} // namespace echo_server
+
+#if defined(WIN32)
+int _tmain(int argc, _TCHAR* argv[])
+#else
+int main(int argc, char* argv[])
+#endif
+{
+  try
+  {
+    using namespace echo_server;
+
+    const std::size_t cpu_count = boost::thread::hardware_concurrency();
+
+    const boost::program_options::options_description
+        cmd_options_description = build_cmd_options_description(cpu_count);
+
+    // Parse user defined command line options
+    const boost::program_options::variables_map cmd_options =
+        parse_cmd_line(cmd_options_description, argc, argv);
+
+    // Check work mode
+    if (is_help_mode(cmd_options))
+    {
+      std::cout << cmd_options_description;
+      return EXIT_SUCCESS;
+    }
+
+    // Check required options
+    if (!is_required_specified(cmd_options))
+    {
+      std::cout << "Required options not specified" << std::endl
+                << cmd_options_description;
+      return EXIT_FAILURE;
+    }
+
+    // Parse configuration
+    const execution_config exec_config = build_execution_config(cmd_options);
+    const ma::echo::server::session_config session_config =
+        build_session_config(cmd_options);
+    const ma::echo::server::session_manager_config session_manager_config =
+        build_session_manager_config(cmd_options, session_config);
+
+    // Show server configuration
+    print_config(std::cout, cpu_count, exec_config, session_manager_config);
+
+    // Do the work
+    return run_server(exec_config, session_manager_config);
+  }
+  catch (const boost::program_options::error& e)
+  {
+    std::cerr << "Error reading options: " << e.what() << std::endl;
+  }
+  catch (const std::exception& e)
+  {
+    std::cerr << "Unexpected exception: " << e.what() << std::endl;
+  }
+  catch (...)
+  {
+    std::cerr << "Unknown exception" << std::endl;
+  }
+  return EXIT_FAILURE;
+}
+
+namespace {
+
 struct  session_manager_wrapper;
 typedef boost::shared_ptr<session_manager_wrapper> wrapped_session_manager_ptr;
 typedef boost::function<void (void)> exception_handler;
@@ -114,7 +185,7 @@ struct session_manager_wrapper : private boost::noncopyable
   }
 
   bool wait_for_state_change(unique_lock& lock,
-      const execution_config::time_duration_type& timeout)
+      const echo_server::execution_config::time_duration_type& timeout)
   {
     return state_changed.timed_wait(lock, timeout);
   }
@@ -158,36 +229,9 @@ std::string to_string(const ma::limited_int<Integer>& limited_value)
   }
 }
 
-void print_stats(const ma::echo::server::session_manager_stats& stats)
-{
-  std::cout << "Active sessions           : "
-            << boost::lexical_cast<std::string>(stats.active)
-            << std::endl
-            << "Maximum of active sessions: "
-            << boost::lexical_cast<std::string>(stats.max_active)
-            << std::endl
-            << "Recycled sessions         : "
-            << boost::lexical_cast<std::string>(stats.recycled)
-            << std::endl
-            << "Total accepeted sessions  : "
-            << to_string(stats.total_accepted)
-            << std::endl
-            << "Active shutdowned sessions: "
-            << to_string(stats.active_shutdowned)
-            << std::endl
-            << "Out of work sessions      : "
-            << to_string(stats.out_of_work)
-            << std::endl
-            << "Timed out sessions        : "
-            << to_string(stats.timed_out)
-            << std::endl
-            << "Error stopped sessions    : "
-            << to_string(stats.error_stopped)
-            << std::endl;
-}
-
 io_service_vector create_session_io_services(
     const echo_server::execution_config&);
+
 session_factory_ptr create_session_factory(
     const echo_server::execution_config&,
     const ma::echo::server::session_manager_config&,
@@ -196,29 +240,34 @@ session_factory_ptr create_session_factory(
 void create_session_threads(boost::thread_group&,
     const echo_server::execution_config&, const io_service_vector&,
     const exception_handler&);
+
 void create_session_manager_threads(boost::thread_group&,
     const echo_server::execution_config&, boost::asio::io_service&,
     const exception_handler&);
-io_service_work_vector create_works(const io_service_vector&);
-void stop(const io_service_vector&);
 
-int run_server(const execution_config&,
-    const ma::echo::server::session_manager_config&);
+io_service_work_vector create_works(const io_service_vector&);
+
+void stop(const io_service_vector&);
 
 void run_io_service(boost::asio::io_service&, exception_handler);
 
 void handle_work_exception(const wrapped_session_manager_ptr&);
+
 void handle_program_exit(const wrapped_session_manager_ptr&);
 
 void handle_session_manager_start(const wrapped_session_manager_ptr&,
     const boost::system::error_code&);
+
 void handle_session_manager_wait(const wrapped_session_manager_ptr&,
     const boost::system::error_code&);
+
 void handle_session_manager_stop(const wrapped_session_manager_ptr&,
     const boost::system::error_code&);
 
 void start_session_manager_start(const wrapped_session_manager_ptr&);
+
 void start_session_manager_wait(const wrapped_session_manager_ptr&);
+
 void start_session_manager_stop(const wrapped_session_manager_ptr&);
 
 io_service_vector create_session_io_services(
@@ -313,105 +362,6 @@ io_service_work_vector create_works(const io_service_vector& io_services)
         boost::make_shared<boost::asio::io_service::work>(boost::ref(**i)));
   }
   return works;
-}
-
-int run_server(const echo_server::execution_config& exec_config,
-    const ma::echo::server::session_manager_config& session_manager_config)
-{
-  // Before session_manager_io_service for the right destruction order
-  const io_service_vector session_io_services =
-      create_session_io_services(exec_config);
-  // After session_ios for the right destruction order
-  const session_factory_ptr session_factory = create_session_factory(
-      exec_config, session_manager_config, session_io_services);
-
-  boost::asio::io_service session_manager_io_service(
-      exec_config.session_manager_thread_count);
-
-  const wrapped_session_manager_ptr session_manager(
-      boost::make_shared<session_manager_wrapper>(
-          boost::ref(session_manager_io_service), boost::ref(*session_factory),
-          session_manager_config));
-
-  std::cout << "Server is starting...\n";
-
-  // Start the server
-  session_manager_wrapper::unique_lock session_manager_lock(
-      session_manager->mutex);
-  start_session_manager_start(session_manager);
-  session_manager->mark_as_starting();
-  session_manager_lock.unlock();
-
-  // Setup console controller
-  ma::console_controller console_controller(
-      boost::bind(handle_program_exit, session_manager));
-
-  std::cout << "Press Ctrl+C (Ctrl+Break) to exit.\n";
-
-  // Exception handler for automatic server aborting
-  const exception_handler work_exception_handler(
-      boost::bind(handle_work_exception, session_manager));
-
-  // Create work for sessions' io_services to prevent threads' stop
-  const io_service_work_vector session_work = 
-      create_works(session_io_services);
-  // Create work for session_manager's io_service to prevent threads' stop
-  const boost::asio::io_service::work session_manager_work(
-      session_manager_io_service);
-
-  boost::thread_group work_threads;
-  // Create work threads for session operations
-  create_session_threads(work_threads, exec_config,
-      session_io_services, work_exception_handler);
-  // Create work threads for session manager operations
-  create_session_manager_threads(work_threads, exec_config,
-      session_manager_io_service, work_exception_handler);
-
-  int exit_code = EXIT_SUCCESS;
-
-  // Wait until server starts stopping or stops
-  session_manager_lock.lock();
-  while (!session_manager->is_stopping() && !session_manager->is_stopped())
-  {
-    session_manager->wait_for_state_change(session_manager_lock);
-  }
-
-  // Server is not working
-  if (!session_manager->is_stopped())
-  {
-    // Wait until server stops with timeout
-    if (!session_manager->wait_for_state_change(session_manager_lock,
-        exec_config.stop_timeout))
-    {
-      // Timeout of server stop has expired - terminate server
-      std::cout << "Server stop timeout expiration." \
-            " Terminating server work...\n";
-      exit_code = EXIT_FAILURE;
-    }
-    session_manager->mark_as_stopped();
-  }
-
-  // Check the reason of server stop and signal it by exit code
-  if ((EXIT_SUCCESS == exit_code) && !session_manager->stopped_by_user)
-  {
-    exit_code = EXIT_FAILURE;
-  }
-
-  session_manager_lock.unlock();
-
-  // Shutdown execution queues...
-  session_manager_io_service.stop();
-  stop(session_io_services);
-
-  std::cout << "Server work was terminated." \
-      " Waiting until all of the work threads will stop...\n";
-
-  // ...and wait until all workers stop.
-  work_threads.join_all();
-  std::cout << "Work threads have stopped. Process will close.\n";
-
-  print_stats(session_manager->stats());
-  return exit_code;
 }
 
 void run_io_service(boost::asio::io_service& io_service,
@@ -547,66 +497,133 @@ void start_session_manager_stop(
       boost::bind(handle_session_manager_stop, session_manager, _1)));
 }
 
-} // namespace echo_server
+} // anonymous namespace
 
-#if defined(WIN32)
-int _tmain(int argc, _TCHAR* argv[])
-#else
-int main(int argc, char* argv[])
-#endif
+void echo_server::print_stats(
+    const ma::echo::server::session_manager_stats& stats)
 {
-  try
+  std::cout << "Active sessions           : "
+            << boost::lexical_cast<std::string>(stats.active)
+            << std::endl
+            << "Maximum of active sessions: "
+            << boost::lexical_cast<std::string>(stats.max_active)
+            << std::endl
+            << "Recycled sessions         : "
+            << boost::lexical_cast<std::string>(stats.recycled)
+            << std::endl
+            << "Total accepeted sessions  : "
+            << to_string(stats.total_accepted)
+            << std::endl
+            << "Active shutdowned sessions: "
+            << to_string(stats.active_shutdowned)
+            << std::endl
+            << "Out of work sessions      : "
+            << to_string(stats.out_of_work)
+            << std::endl
+            << "Timed out sessions        : "
+            << to_string(stats.timed_out)
+            << std::endl
+            << "Error stopped sessions    : "
+            << to_string(stats.error_stopped)
+            << std::endl;
+}
+
+int echo_server::run_server(const echo_server::execution_config& exec_config,
+    const ma::echo::server::session_manager_config& session_manager_config)
+{
+  // Before session_manager_io_service for the right destruction order
+  const io_service_vector session_io_services =
+      create_session_io_services(exec_config);
+  // After session_ios for the right destruction order
+  const session_factory_ptr session_factory = create_session_factory(
+      exec_config, session_manager_config, session_io_services);
+
+  boost::asio::io_service session_manager_io_service(
+      exec_config.session_manager_thread_count);
+
+  const wrapped_session_manager_ptr session_manager(
+      boost::make_shared<session_manager_wrapper>(
+          boost::ref(session_manager_io_service),
+          boost::ref(*session_factory),
+          session_manager_config));
+
+  std::cout << "Server is starting...\n";
+
+  // Start the server
+  session_manager_wrapper::unique_lock session_manager_lock(
+      session_manager->mutex);
+  start_session_manager_start(session_manager);
+  session_manager->mark_as_starting();
+  session_manager_lock.unlock();
+
+  // Setup console controller
+  ma::console_controller console_controller(
+      boost::bind(handle_program_exit, session_manager));
+
+  std::cout << "Press Ctrl+C (Ctrl+Break) to exit.\n";
+
+  // Exception handler for automatic server aborting
+  const exception_handler work_exception_handler(
+      boost::bind(handle_work_exception, session_manager));
+
+  // Create work for sessions' io_services to prevent threads' stop
+  const io_service_work_vector session_work = 
+      create_works(session_io_services);
+  // Create work for session_manager's io_service to prevent threads' stop
+  const boost::asio::io_service::work session_manager_work(
+      session_manager_io_service);
+
+  boost::thread_group work_threads;
+  // Create work threads for session operations
+  create_session_threads(work_threads, exec_config,
+      session_io_services, work_exception_handler);
+  // Create work threads for session manager operations
+  create_session_manager_threads(work_threads, exec_config,
+      session_manager_io_service, work_exception_handler);
+
+  int exit_code = EXIT_SUCCESS;
+
+  // Wait until server starts stopping or stops
+  session_manager_lock.lock();
+  while (!session_manager->is_stopping() && !session_manager->is_stopped())
   {
-    using namespace echo_server;
+    session_manager->wait_for_state_change(session_manager_lock);
+  }
 
-    const std::size_t cpu_count = boost::thread::hardware_concurrency();
-
-    const boost::program_options::options_description
-        cmd_options_description = build_cmd_options_description(cpu_count);
-
-    // Parse user defined command line options
-    const boost::program_options::variables_map cmd_options =
-        parse_cmd_line(cmd_options_description, argc, argv);
-
-    // Check work mode
-    if (is_help_mode(cmd_options))
+  // Server is not working
+  if (!session_manager->is_stopped())
+  {
+    // Wait until server stops with timeout
+    if (!session_manager->wait_for_state_change(session_manager_lock,
+        exec_config.stop_timeout))
     {
-      std::cout << cmd_options_description;
-      return EXIT_SUCCESS;
+      // Timeout of server stop has expired - terminate server
+      std::cout << "Server stop timeout expiration." \
+            " Terminating server work...\n";
+      exit_code = EXIT_FAILURE;
     }
-
-    // Check required options
-    if (!is_required_specified(cmd_options))
-    {
-      std::cout << "Required options not specified" << std::endl
-                << cmd_options_description;
-      return EXIT_FAILURE;
-    }
-
-    // Parse configuration
-    const execution_config exec_config = build_execution_config(cmd_options);
-    const ma::echo::server::session_config session_config =
-        build_session_config(cmd_options);
-    const ma::echo::server::session_manager_config session_manager_config =
-        build_session_manager_config(cmd_options, session_config);
-
-    // Show server configuration
-    print_config(std::cout, cpu_count, exec_config, session_manager_config);
-
-    // Do the work
-    return run_server(exec_config, session_manager_config);
+    session_manager->mark_as_stopped();
   }
-  catch (const boost::program_options::error& e)
+
+  // Check the reason of server stop and signal it by exit code
+  if ((EXIT_SUCCESS == exit_code) && !session_manager->stopped_by_user)
   {
-    std::cerr << "Error reading options: " << e.what() << std::endl;
+    exit_code = EXIT_FAILURE;
   }
-  catch (const std::exception& e)
-  {
-    std::cerr << "Unexpected exception: " << e.what() << std::endl;
-  }
-  catch (...)
-  {
-    std::cerr << "Unknown exception" << std::endl;
-  }
-  return EXIT_FAILURE;
+
+  session_manager_lock.unlock();
+
+  // Shutdown execution queues...
+  session_manager_io_service.stop();
+  stop(session_io_services);
+
+  std::cout << "Server work was terminated." \
+      " Waiting until all of the work threads will stop...\n";
+
+  // ...and wait until all workers stop.
+  work_threads.join_all();
+  std::cout << "Work threads have stopped. Process will close.\n";
+
+  print_stats(session_manager->stats());
+  return exit_code;
 }
