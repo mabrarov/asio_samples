@@ -126,8 +126,8 @@
 
 #endif // BOOST_VERSION >= 104800
 
-// Don't use vurtual functions for type erasure
-#undef MA_TYPE_ERASURE_USE_VURTUAL
+// Use vurtual member functions for type erasure
+#define MA_TYPE_ERASURE_USE_VURTUAL
 
 // Check C++11 lambdas availability
 #if (BOOST_VERSION >= 104000) && !defined(BOOST_NO_LAMBDAS)
