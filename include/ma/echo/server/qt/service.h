@@ -59,7 +59,7 @@ private slots:
   void onServantStopCompleted(const boost::system::error_code&);
 
 private:
-  class servant;
+  class server;
 
   Q_DISABLE_COPY(Service)
 
@@ -69,7 +69,7 @@ private:
   ServiceState::State   state_;
   ServiceForwardSignal* forwardSignal_;
   session_manager_stats stats_;
-  boost::scoped_ptr<servant> servant_;
+  boost::scoped_ptr<server> server_;
   boost::shared_ptr<ServiceServantSignal> servantSignal_;
 }; // class Service
 

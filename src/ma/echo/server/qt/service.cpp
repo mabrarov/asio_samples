@@ -43,10 +43,10 @@ typedef boost::shared_ptr<ma::echo::server::session_factory>
 typedef boost::shared_ptr<boost::asio::io_service::work> io_service_work_ptr;
 typedef std::vector<io_service_work_ptr> io_service_work_vector;
 
-class pipeline_base_0 : private boost::noncopyable
+class server_base_0 : private boost::noncopyable
 {
 public:
-  explicit pipeline_base_0(const execution_config& config)
+  explicit server_base_0(const execution_config& config)
     : ios_per_work_thread_(config.ios_per_work_thread)
     , session_manager_thread_count_(config.session_manager_thread_count)
     , session_thread_count_(config.session_thread_count)
@@ -60,7 +60,7 @@ public:
   }
 
 protected:
-  ~pipeline_base_0()
+  ~server_base_0()
   {
   }
 
@@ -89,14 +89,14 @@ private:
     }
     return io_services;
   }
-}; // pipeline_base_0
+}; // class server_base_0
 
-class pipeline_base_1 : public pipeline_base_0
+class server_base_1 : public server_base_0
 {
 public:
-  pipeline_base_1(const execution_config& exec_config,
+  server_base_1(const execution_config& exec_config,
       const ma::echo::server::session_manager_config& session_manager_config)
-    : pipeline_base_0(exec_config)
+    : server_base_0(exec_config)
     , session_factory_(create_session_factory(exec_config,
           session_manager_config, session_io_services_))
   {
@@ -108,7 +108,7 @@ public:
   }
 
 protected:
-  ~pipeline_base_1()
+  ~server_base_1()
   {
   }
 
@@ -133,14 +133,14 @@ private:
           session_manager_config.recycled_session_count);
     }
   }
-}; // class pipeline_base_1
+}; // class server_base_1
 
-class pipeline_base_2 : public pipeline_base_1
+class server_base_2 : public server_base_1
 {
 public:
-  explicit pipeline_base_2(const execution_config& exec_config,
+  explicit server_base_2(const execution_config& exec_config,
       const ma::echo::server::session_manager_config& session_manager_config)
-    : pipeline_base_1(exec_config, session_manager_config)
+    : server_base_1(exec_config, session_manager_config)
     , session_manager_io_service_(exec_config.session_manager_thread_count)
   {
   }
@@ -151,24 +151,24 @@ public:
   }
 
 protected:
-  ~pipeline_base_2()
+  ~server_base_2()
   {
   }
 
   boost::asio::io_service session_manager_io_service_;
-}; // class pipeline_base_2
+}; // class server_base_2
 
-class pipeline : public pipeline_base_2
+class server_base_3 : public server_base_2
 {
 private:
-  typedef pipeline this_type;
+  typedef server_base_3 this_type;
 
 public:
   template <typename Handler>
-  pipeline(const execution_config& exec_config,
+  server_base_3(const execution_config& exec_config,
       const ma::echo::server::session_manager_config& session_manager_config,
       const Handler& exception_handler)
-    : pipeline_base_2(exec_config, session_manager_config)
+    : server_base_2(exec_config, session_manager_config)
     , session_work_(create_works(session_io_services_))
     , session_manager_work_(session_manager_io_service_)
     , threads_()
@@ -176,13 +176,12 @@ public:
     create_threads(exception_handler);
   }
 
-  ~pipeline()
+  ~server_base_3()
   {
     stop_threads();
   }
 
 private:
-
   template <typename Handler>
   void create_threads(const Handler& handler)
   {
@@ -265,28 +264,28 @@ private:
   const io_service_work_vector session_work_;
   const boost::asio::io_service::work session_manager_work_;
   boost::thread_group threads_;
-}; // class pipeline
+}; // class server_base_3
 
 } // anonymous namespace
 
-class Service::servant : public pipeline
+class Service::server : public server_base_3
 {
 private:
-  typedef servant this_type;
+  typedef server this_type;
 
 public:
   template <typename Handler>
-  servant(const execution_config& the_execution_config,
+  server(const execution_config& the_execution_config,
       const session_manager_config& the_session_manager_config,
       const Handler& exception_handler)
-    : pipeline(the_execution_config, the_session_manager_config,
+    : server_base_3(the_execution_config, the_session_manager_config,
           exception_handler)
     , session_manager_(session_manager::create(session_manager_io_service_,
           *session_factory_, the_session_manager_config))
   {
   }
 
-  ~servant()
+  ~server()
   {
   }
 
@@ -315,13 +314,13 @@ public:
 
 private:
   session_manager_ptr session_manager_;
-}; // class Service::servant
+}; // class Service::server
 
 Service::Service(QObject* parent)
   : QObject(parent)
   , state_(ServiceState::Stopped)
   , stats_()
-  , servant_()
+  , server_()
   , servantSignal_()
 {
   forwardSignal_ = new ServiceForwardSignal(this);
@@ -348,9 +347,9 @@ Service::~Service()
 
 session_manager_stats Service::stats() const
 {
-  if (servant_)
+  if (server_)
   {
-    return servant_->stats();
+    return server_->stats();
   }
   else
   {
@@ -363,12 +362,12 @@ void Service::asyncStart(const execution_config& the_execution_config,
 {
   if (ServiceState::Stopped != state_)
   {
-    forwardSignal_->emitStartCompleted(server::error::invalid_state);
+    forwardSignal_->emitStartCompleted(echo::server::error::invalid_state);
     return;
   }
 
   createServant(the_execution_config, the_session_manager_config);
-  servant_->async_start(boost::bind(&ServiceServantSignal::emitStartCompleted,
+  server_->async_start(boost::bind(&ServiceServantSignal::emitStartCompleted,
       servantSignal_, _1));
   state_ = ServiceState::Starting;
 }
@@ -387,7 +386,7 @@ void Service::onServantStartCompleted(const boost::system::error_code& error)
   }
   else
   {
-    servant_->async_wait(boost::bind(&ServiceServantSignal::emitWaitCompleted,
+    server_->async_wait(boost::bind(&ServiceServantSignal::emitWaitCompleted,
         servantSignal_, _1));
     state_ = ServiceState::Working;
   }
@@ -399,26 +398,26 @@ void Service::asyncStop()
 {
   if ((ServiceState::Stopped == state_) || (ServiceState::Stopping == state_))
   {
-    forwardSignal_->emitStopCompleted(server::error::invalid_state);
+    forwardSignal_->emitStopCompleted(echo::server::error::invalid_state);
     return;
   }
 
   switch (state_)
   {
   case ServiceState::Starting:
-    forwardSignal_->emitStartCompleted(server::error::operation_aborted);
+    forwardSignal_->emitStartCompleted(echo::server::error::operation_aborted);
     break;
 
   case ServiceState::Working:
-    forwardSignal_->emitWorkCompleted(server::error::operation_aborted);
+    forwardSignal_->emitWorkCompleted(echo::server::error::operation_aborted);
     break;
 
   default:
-    BOOST_ASSERT_MSG(false, "unsupported state of Service");
+    BOOST_ASSERT_MSG(false, "unsupported ServiceState");
     break;
   }
 
-  servant_->async_stop(boost::bind(&ServiceServantSignal::emitStopCompleted,
+  server_->async_stop(boost::bind(&ServiceServantSignal::emitStopCompleted,
       servantSignal_, _1));
   state_ = ServiceState::Stopping;
 }
@@ -442,15 +441,15 @@ void Service::terminate()
   switch (state_)
   {
   case ServiceState::Starting:
-    forwardSignal_->emitStartCompleted(server::error::operation_aborted);
+    forwardSignal_->emitStartCompleted(echo::server::error::operation_aborted);
     break;
 
   case ServiceState::Working:
-    forwardSignal_->emitWorkCompleted(server::error::operation_aborted);
+    forwardSignal_->emitWorkCompleted(echo::server::error::operation_aborted);
     break;
 
   case ServiceState::Stopping:
-    forwardSignal_->emitStopCompleted(server::error::operation_aborted);
+    forwardSignal_->emitStopCompleted(echo::server::error::operation_aborted);
     break;
 
   case ServiceState::Stopped:
@@ -458,7 +457,7 @@ void Service::terminate()
     break;
 
   default:
-    BOOST_ASSERT_MSG(false, "unsupported state of Service");
+    BOOST_ASSERT_MSG(false, "unsupported ServiceState");
     break;
   }
 
@@ -506,12 +505,12 @@ void Service::createServant(const execution_config& the_execution_config,
       SLOT(onServantStopCompleted(const boost::system::error_code&)),
       Qt::QueuedConnection));
 
-  servant_.reset(new servant(
+  server_.reset(new server(
       the_execution_config, the_session_manager_config,
       boost::bind(&ServiceServantSignal::emitWorkThreadExceptionHappened,
           servantSignal_)));
 
-  stats_ = servant_->stats();
+  stats_ = server_->stats();
 }
 
 void Service::destroyServant()
@@ -521,8 +520,8 @@ void Service::destroyServant()
     servantSignal_->disconnect();
     servantSignal_.reset();
   }
-  stats_ = servant_->stats();
-  servant_.reset();
+  stats_ = server_->stats();
+  server_.reset();
 }
 
 } // namespace qt
