@@ -41,9 +41,9 @@ public:
 
 signals:
   void workThreadExceptionHappened();
-  void sessionManagerStartCompleted(const boost::system::error_code&);
-  void sessionManagerWaitCompleted(const boost::system::error_code&);
-  void sessionManagerStopCompleted(const boost::system::error_code&);
+  void startCompleted(const boost::system::error_code&);
+  void waitCompleted(const boost::system::error_code&);
+  void stopCompleted(const boost::system::error_code&);
 
 public:
   void emitWorkThreadExceptionHappened()
@@ -52,22 +52,22 @@ public:
     emit workThreadExceptionHappened();
   }
 
-  void emitSessionManagerStartCompleted(const boost::system::error_code& error)
+  void emitStartCompleted(const boost::system::error_code& error)
   {
     lock_guard lock(mutex_);
-    emit sessionManagerStartCompleted(error);
+    emit startCompleted(error);
   }
 
-  void emitSessionManagerWaitCompleted(const boost::system::error_code& error)
+  void emitWaitCompleted(const boost::system::error_code& error)
   {
     lock_guard lock(mutex_);
-    emit sessionManagerWaitCompleted(error);
+    emit waitCompleted(error);
   }
 
-  void emitSessionManagerStopCompleted(const boost::system::error_code& error)
+  void emitStopCompleted(const boost::system::error_code& error)
   {
     lock_guard lock(mutex_);
-    emit sessionManagerStopCompleted(error);
+    emit stopCompleted(error);
   }
 
   void disconnect()

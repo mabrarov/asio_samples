@@ -37,14 +37,10 @@ public:
   explicit Service(QObject* parent = 0);
   ~Service();
 
-  void asyncStart(const execution_config&, const session_manager_config&);
-
-  ServiceState::State state() const
-  {
-    return state_;
-  }
-
+  ServiceState::State state() const;
   session_manager_stats stats() const;
+
+  void asyncStart(const execution_config&, const session_manager_config&);
 
 public slots:
   void asyncStop();
@@ -57,10 +53,10 @@ signals:
   void workCompleted(const boost::system::error_code&);
 
 private slots:
-  void onWorkThreadExceptionHappened();
-  void onSessionManagerStartCompleted(const boost::system::error_code&);
-  void onSessionManagerWaitCompleted(const boost::system::error_code&);
-  void onSessionManagerStopCompleted(const boost::system::error_code&);
+  void onServantWorkThreadExceptionHappened();
+  void onServantStartCompleted(const boost::system::error_code&);
+  void onServantWaitCompleted(const boost::system::error_code&);
+  void onServantStopCompleted(const boost::system::error_code&);
 
 private:
   class servant;
@@ -81,5 +77,11 @@ private:
 } // namespace server
 } // namespace echo
 } // namespace ma
+
+inline ma::echo::server::qt::ServiceState::State 
+ma::echo::server::qt::Service::state() const
+{
+  return state_;
+}
 
 #endif // MA_ECHO_SERVER_QT_SERVICE_H

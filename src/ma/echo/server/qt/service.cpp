@@ -13,6 +13,7 @@ TRANSLATOR ma::echo::server::qt::Service
 #include <boost/ref.hpp>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
+#include <boost/assert.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/tuple/tuple.hpp>
@@ -163,19 +164,24 @@ private:
   typedef pipeline this_type;
 
 public:
-  explicit pipeline(const execution_config& exec_config,
-      const ma::echo::server::session_manager_config& session_manager_config)
+  template <typename Handler>
+  pipeline(const execution_config& exec_config,
+      const ma::echo::server::session_manager_config& session_manager_config,
+      const Handler& exception_handler)
     : pipeline_base_2(exec_config, session_manager_config)
     , session_work_(create_works(session_io_services_))
     , session_manager_work_(session_manager_io_service_)
     , threads_()
   {
+    create_threads(exception_handler);
   }
 
   ~pipeline()
   {
     stop_threads();
   }
+
+private:
 
   template <typename Handler>
   void create_threads(const Handler& handler)
@@ -211,9 +217,7 @@ public:
       threads_.create_thread(boost::bind(func,
           boost::ref(session_manager_io_service_), wrapped_handler));
     }
-  }  
-
-private:
+  }
 
   void stop_threads()
   {
@@ -271,9 +275,12 @@ private:
   typedef servant this_type;
 
 public:
+  template <typename Handler>
   servant(const execution_config& the_execution_config,
-      const session_manager_config& the_session_manager_config)
-    : pipeline(the_execution_config, the_session_manager_config)
+      const session_manager_config& the_session_manager_config,
+      const Handler& exception_handler)
+    : pipeline(the_execution_config, the_session_manager_config,
+          exception_handler)
     , session_manager_(session_manager::create(session_manager_io_service_,
           *session_factory_, the_session_manager_config))
   {
@@ -284,19 +291,19 @@ public:
   }
 
   template <typename Handler>
-  void start_session_manager(const Handler& handler)
+  void async_start(const Handler& handler)
   {
     session_manager_->async_start(handler);
   }
 
   template <typename Handler>
-  void wait_session_manager(const Handler& handler)
+  void async_wait(const Handler& handler)
   {
     session_manager_->async_wait(handler);
   }
 
   template <typename Handler>
-  void stop_session_manager(const Handler& handler)
+  void async_stop(const Handler& handler)
   {
     session_manager_->async_stop(handler);
   }
@@ -339,28 +346,6 @@ Service::~Service()
 {
 }
 
-void Service::asyncStart(const execution_config& the_execution_config,
-    const session_manager_config& the_session_manager_config)
-{
-  if (ServiceState::Stopped != state_)
-  {
-    forwardSignal_->emitStartCompleted(server::error::invalid_state);
-    return;
-  }
-
-  createServant(the_execution_config, the_session_manager_config);
-
-  servant_->create_threads(
-      boost::bind(&ServiceServantSignal::emitWorkThreadExceptionHappened,
-          servantSignal_));
-
-  servant_->start_session_manager(
-      boost::bind(&ServiceServantSignal::emitSessionManagerStartCompleted,
-          servantSignal_, _1));
-
-  state_ = ServiceState::Starting;
-}
-
 session_manager_stats Service::stats() const
 {
   if (servant_)
@@ -373,8 +358,22 @@ session_manager_stats Service::stats() const
   }
 }
 
-void Service::onSessionManagerStartCompleted(
-    const boost::system::error_code& error)
+void Service::asyncStart(const execution_config& the_execution_config,
+    const session_manager_config& the_session_manager_config)
+{
+  if (ServiceState::Stopped != state_)
+  {
+    forwardSignal_->emitStartCompleted(server::error::invalid_state);
+    return;
+  }
+
+  createServant(the_execution_config, the_session_manager_config);
+  servant_->async_start(boost::bind(&ServiceServantSignal::emitStartCompleted,
+      servantSignal_, _1));
+  state_ = ServiceState::Starting;
+}
+
+void Service::onServantStartCompleted(const boost::system::error_code& error)
 {
   if (ServiceState::Starting != state_)
   {
@@ -388,10 +387,8 @@ void Service::onSessionManagerStartCompleted(
   }
   else
   {
-    servant_->wait_session_manager(
-        boost::bind(&ServiceServantSignal::emitSessionManagerWaitCompleted,
-            servantSignal_, _1));
-
+    servant_->async_wait(boost::bind(&ServiceServantSignal::emitWaitCompleted,
+        servantSignal_, _1));
     state_ = ServiceState::Working;
   }
 
@@ -406,24 +403,27 @@ void Service::asyncStop()
     return;
   }
 
-  if (ServiceState::Starting == state_)
+  switch (state_)
   {
+  case ServiceState::Starting:
     forwardSignal_->emitStartCompleted(server::error::operation_aborted);
-  }
-  else if (ServiceState::Working == state_)
-  {
+    break;
+
+  case ServiceState::Working:
     forwardSignal_->emitWorkCompleted(server::error::operation_aborted);
+    break;
+
+  default:
+    BOOST_ASSERT_MSG(false, "unsupported state of Service");
+    break;
   }
 
-  servant_->stop_session_manager(
-      boost::bind(&ServiceServantSignal::emitSessionManagerStopCompleted,
-          servantSignal_, _1));
-
+  servant_->async_stop(boost::bind(&ServiceServantSignal::emitStopCompleted,
+      servantSignal_, _1));
   state_ = ServiceState::Stopping;
 }
 
-void Service::onSessionManagerStopCompleted(
-    const boost::system::error_code& error)
+void Service::onServantStopCompleted(const boost::system::error_code& error)
 {
   if (ServiceState::Stopping != state_)
   {
@@ -439,24 +439,33 @@ void Service::terminate()
 {
   destroyServant();
 
-  if (ServiceState::Starting == state_)
+  switch (state_)
   {
+  case ServiceState::Starting:
     forwardSignal_->emitStartCompleted(server::error::operation_aborted);
-  }
-  else if (ServiceState::Working == state_)
-  {
+    break;
+
+  case ServiceState::Working:
     forwardSignal_->emitWorkCompleted(server::error::operation_aborted);
-  }
-  else if (ServiceState::Stopping == state_)
-  {
+    break;
+
+  case ServiceState::Stopping:
     forwardSignal_->emitStopCompleted(server::error::operation_aborted);
+    break;
+
+  case ServiceState::Stopped:
+    // Do nothing
+    break;
+
+  default:
+    BOOST_ASSERT_MSG(false, "unsupported state of Service");
+    break;
   }
 
   state_ = ServiceState::Stopped;
 }
 
-void Service::onSessionManagerWaitCompleted(
-    const boost::system::error_code& error)
+void Service::onServantWaitCompleted(const boost::system::error_code& error)
 {
   if (ServiceState::Working == state_)
   {
@@ -464,7 +473,7 @@ void Service::onSessionManagerWaitCompleted(
   }
 }
 
-void Service::onWorkThreadExceptionHappened()
+void Service::onServantWorkThreadExceptionHappened()
 {
   if (ServiceState::Stopped != state_)
   {
@@ -475,31 +484,34 @@ void Service::onWorkThreadExceptionHappened()
 void Service::createServant(const execution_config& the_execution_config,
     const session_manager_config& the_session_manager_config)
 {
-  servant_.reset(new servant(
-      the_execution_config, the_session_manager_config));
-  stats_ = servant_->stats();
-
   servantSignal_ = boost::make_shared<ServiceServantSignal>();
 
   checkConnect(QObject::connect(servantSignal_.get(),
       SIGNAL(workThreadExceptionHappened()),
-      SLOT(onWorkThreadExceptionHappened()),
+      SLOT(onServantWorkThreadExceptionHappened()),
       Qt::QueuedConnection));
 
   checkConnect(QObject::connect(servantSignal_.get(),
-      SIGNAL(sessionManagerStartCompleted(const boost::system::error_code&)),
-      SLOT(onSessionManagerStartCompleted(const boost::system::error_code&)),
+      SIGNAL(startCompleted(const boost::system::error_code&)),
+      SLOT(onServantStartCompleted(const boost::system::error_code&)),
       Qt::QueuedConnection));
 
   checkConnect(QObject::connect(servantSignal_.get(),
-      SIGNAL(sessionManagerWaitCompleted(const boost::system::error_code&)),
-      SLOT(onSessionManagerWaitCompleted(const boost::system::error_code&)),
+      SIGNAL(waitCompleted(const boost::system::error_code&)),
+      SLOT(onServantWaitCompleted(const boost::system::error_code&)),
       Qt::QueuedConnection));
 
   checkConnect(QObject::connect(servantSignal_.get(),
-      SIGNAL(sessionManagerStopCompleted(const boost::system::error_code&)),
-      SLOT(onSessionManagerStopCompleted(const boost::system::error_code&)),
+      SIGNAL(stopCompleted(const boost::system::error_code&)),
+      SLOT(onServantStopCompleted(const boost::system::error_code&)),
       Qt::QueuedConnection));
+
+  servant_.reset(new servant(
+      the_execution_config, the_session_manager_config,
+      boost::bind(&ServiceServantSignal::emitWorkThreadExceptionHappened,
+          servantSignal_)));
+
+  stats_ = servant_->stats();
 }
 
 void Service::destroyServant()
