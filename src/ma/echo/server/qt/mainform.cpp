@@ -240,7 +240,7 @@ void MainForm::on_startButton_clicked()
   if (serviceConfig)
   {
     service_.asyncStart(serviceConfig->get<0>(), serviceConfig->get<1>());
-    writeLog(tr("Starting echo service..."));
+    writeLog(tr("Starting echo service."));
 
     startStatsTimer();
     showStats(service_.stats());
@@ -251,7 +251,7 @@ void MainForm::on_startButton_clicked()
 void MainForm::on_stopButton_clicked()
 {
   service_.asyncStop();
-  writeLog(tr("Stopping echo service..."));
+  writeLog(tr("Stopping echo service."));
 
   showStats(service_.stats());
   updateWidgetsStates();
@@ -259,7 +259,7 @@ void MainForm::on_stopButton_clicked()
 
 void MainForm::on_terminateButton_clicked()
 {
-  writeLog(tr("Terminating echo service..."));
+  writeLog(tr("Terminating echo service."));
   service_.terminate();
   writeLog(tr("Echo service terminated."));
 
@@ -350,7 +350,7 @@ void MainForm::on_service_workCompleted(const boost::system::error_code& error)
   {
     service_.asyncStop();
     writeLog(tr("Stopping echo service" \
-        " (because of its work was completed)..."));
+        " (because of its work was completed)."));
   }
 
   showStats(service_.stats());
@@ -361,7 +361,7 @@ void MainForm::on_service_workCompleted(const boost::system::error_code& error)
 void MainForm::on_service_exceptionHappened()
 {
   writeLog(tr("Unexpected error during echo service work." \
-      " Terminating echo service..."));
+      " Terminating echo service."));
   service_.terminate();
   writeLog(tr("Echo service terminated."));
 

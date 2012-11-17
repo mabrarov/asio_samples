@@ -64,9 +64,10 @@ void print_config(std::ostream& stream, std::size_t cpu_count,
     const execution_config& the_execution_config,
     const ma::echo::server::session_manager_config& session_manager_config);
 
-bool is_help_mode(const boost::program_options::variables_map& options_values);
+bool help_requested(
+    const boost::program_options::variables_map& options_values);
 
-bool is_required_specified(
+bool required_options_specified(
     const boost::program_options::variables_map& options_values);
 
 execution_config build_execution_config(

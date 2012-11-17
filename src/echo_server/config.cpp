@@ -299,12 +299,12 @@ void print_config(std::ostream& stream, std::size_t cpu_count,
          << std::endl;
 }
 
-bool is_help_mode(const boost::program_options::variables_map& options_values)
+bool help_requested(const boost::program_options::variables_map& options_values)
 {
   return 0 != options_values.count(help_option_name);
 }
 
-bool is_required_specified(
+bool required_options_specified(
     const boost::program_options::variables_map& options_values)
 {
   return 0 != options_values.count(port_option_name);
