@@ -21,8 +21,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)\$(ConfigurationName)\x86\$(ProjectName)"
-			IntermediateDirectory="$(ConfigurationName)\x86\$(ProjectName)"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)\$(PlatformName)\$(ProjectName)\"
+			IntermediateDirectory="$(ConfigurationName)\$(PlatformName)\"
 			ConfigurationType="1"
 			CharacterSet="1"
 			>
@@ -100,8 +100,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|x64"
-			OutputDirectory="$(SolutionDir)\$(ConfigurationName)\x64\$(ProjectName)"
-			IntermediateDirectory="$(ConfigurationName)\x64\$(ProjectName)"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)\$(PlatformName)\$(ProjectName)\"
+			IntermediateDirectory="$(ConfigurationName)\$(PlatformName)\"
 			ConfigurationType="1"
 			CharacterSet="1"
 			>
@@ -180,8 +180,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)\$(ConfigurationName)\x86\$(ProjectName)"
-			IntermediateDirectory="$(ConfigurationName)\x86\$(ProjectName)"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)\$(PlatformName)\$(ProjectName)\"
+			IntermediateDirectory="$(ConfigurationName)\$(PlatformName)\"
 			ConfigurationType="1"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
@@ -257,8 +257,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|x64"
-			OutputDirectory="$(SolutionDir)\$(ConfigurationName)\x64\$(ProjectName)"
-			IntermediateDirectory="$(ConfigurationName)\x64\$(ProjectName)"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)\$(PlatformName)\$(ProjectName)\"
+			IntermediateDirectory="$(ConfigurationName)\$(PlatformName)\"
 			ConfigurationType="1"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
@@ -366,7 +366,7 @@
 						<File
 							RelativePath="..\..\..\src\ma\echo\client1\session.cpp"
 							>
-						</File>						
+						</File>
 					</Filter>
 				</Filter>
 			</Filter>
@@ -446,15 +446,15 @@
 							>
 						</File>
 						<File
+							RelativePath="..\..\..\include\ma\echo\client1\session_fwd.hpp"
+							>
+						</File>
+						<File
 							RelativePath="..\..\..\include\ma\echo\client1\session_options.hpp"
 							>
 						</File>
 						<File
 							RelativePath="..\..\..\include\ma\echo\client1\session_options_fwd.hpp"
-							>
-						</File>
-						<File
-							RelativePath="..\..\..\include\ma\echo\client1\session_fwd.hpp"
 							>
 						</File>
 					</Filter>
