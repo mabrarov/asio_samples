@@ -389,7 +389,7 @@ public:
   }
 
 private:
-  ma::echo::server::session_manager_ptr session_manager_;
+  const ma::echo::server::session_manager_ptr session_manager_;
 }; // class server
 
 struct server_state : private boost::noncopyable
