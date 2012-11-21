@@ -162,13 +162,14 @@ private:
 
   void continue_work();
   void continue_timer_wait();
-  void continue_shutdown();
-  void continue_shutdown_at_read_wait();
-  void continue_shutdown_at_read_in_progress();
-  void continue_shutdown_at_read_stopped();
+  void continue_shutdown(bool need_timer_restart);
+  void continue_shutdown_at_read_wait(bool need_timer_restart);
+  void continue_shutdown_at_read_in_progress(bool need_timer_restart);
+  void continue_shutdown_at_read_stopped(bool need_timer_restart);
   void continue_stop();
 
-  void start_shutdown(const boost::system::error_code&);
+  void start_shutdown(const boost::system::error_code& error,
+      bool need_timer_restart);
   void start_stop(boost::system::error_code);
 
   void start_socket_read(const cyclic_buffer::mutable_buffers_type&);

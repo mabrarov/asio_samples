@@ -533,7 +533,7 @@
        <item row="5" column="0">
         <widget class="QLabel" name="outOfWorkSessionsLabel">
          <property name="text">
-          <string>Out of work sessions</string>
+          <string>Passive shutdowned sessions</string>
          </property>
         </widget>
        </item>

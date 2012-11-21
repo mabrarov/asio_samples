@@ -221,7 +221,7 @@ session::optional_error_code session::do_start_extern_stop()
 
   if (intern_state::work == intern_state_)
   {
-    start_shutdown(server::error::operation_aborted);
+    start_shutdown(server::error::operation_aborted, false);
   }
 
   // intern_state_ can be changed by start_active_shutdown
@@ -400,10 +400,10 @@ void session::handle_read_at_work(const boost::system::error_code& error,
   if (boost::asio::error::eof == error)
   {
     read_state_ = read_state::stopped;
-    start_shutdown(error);
+    start_shutdown(error, true);
     return;
   }
-  
+
   continue_work();
 }
 
@@ -444,7 +444,7 @@ void session::handle_read_at_shutdown(const boost::system::error_code& error,
     read_state_ = read_state::stopped;
   }
 
-  continue_shutdown();
+  continue_shutdown(true);
 }
 
 void session::handle_read_at_stop(const boost::system::error_code& /*error*/,
@@ -524,7 +524,7 @@ void session::handle_write_at_shutdown(const boost::system::error_code& error,
 
   // Handle written data
   buffer_.commit(bytes_transferred);
-  continue_shutdown();
+  continue_shutdown(true);
 }
 
 void session::handle_write_at_stop(const boost::system::error_code& /*error*/,
@@ -659,7 +659,7 @@ void session::continue_timer_wait()
   }
 }
 
-void session::continue_shutdown()
+void session::continue_shutdown(bool need_timer_restart)
 {
   BOOST_ASSERT_MSG(intern_state::shutdown == intern_state_,
       "Invalid internal state");
@@ -668,15 +668,15 @@ void session::continue_shutdown()
   switch (read_state_)
   {
   case read_state::wait:
-    continue_shutdown_at_read_wait();
+    continue_shutdown_at_read_wait(need_timer_restart);
     break;
 
   case read_state::in_progress:
-    continue_shutdown_at_read_in_progress();
+    continue_shutdown_at_read_in_progress(need_timer_restart);
     break;
 
   case read_state::stopped:
-    continue_shutdown_at_read_stopped();
+    continue_shutdown_at_read_stopped(need_timer_restart);
     break;
 
   default:
@@ -685,7 +685,7 @@ void session::continue_shutdown()
   }
 }
 
-void session::continue_shutdown_at_read_wait()
+void session::continue_shutdown_at_read_wait(bool need_timer_restart)
 {
   BOOST_ASSERT_MSG(intern_state::shutdown == intern_state_,
       "Invalid internal state");
@@ -726,11 +726,14 @@ void session::continue_shutdown_at_read_wait()
     }
   }
 
-  // Turn on timer if need
-  continue_timer_wait();
+  if (need_timer_restart)
+  {
+    // Turn on timer if need
+    continue_timer_wait();
+  }
 }
 
-void session::continue_shutdown_at_read_in_progress()
+void session::continue_shutdown_at_read_in_progress(bool need_timer_restart)
 {
   BOOST_ASSERT_MSG(intern_state::shutdown == intern_state_,
       "Invalid internal state");
@@ -750,11 +753,14 @@ void session::continue_shutdown_at_read_in_progress()
     write_state_ = write_state::stopped;
   }
 
-  // Turn on timer if need
-  continue_timer_wait();
+  if (need_timer_restart)
+  {
+    // Turn on timer if need
+    continue_timer_wait();
+  }
 }
 
-void session::continue_shutdown_at_read_stopped()
+void session::continue_shutdown_at_read_stopped(bool need_timer_restart)
 {
   BOOST_ASSERT_MSG(intern_state::shutdown == intern_state_,
       "Invalid internal state");
@@ -772,7 +778,7 @@ void session::continue_shutdown_at_read_stopped()
       // We have enough resources to begin socket write
       start_socket_write(write_buffers);
     }
-    else 
+    else
     {
       // We can shutdown outgoing part of TCP stream
       shutdown_socket();
@@ -789,8 +795,11 @@ void session::continue_shutdown_at_read_stopped()
     return;
   }
 
-  // Turn on timer if need
-  continue_timer_wait();
+  if (need_timer_restart)
+  {
+    // Turn on timer if need
+    continue_timer_wait();
+  }
 }
 
 void session::continue_stop()
@@ -820,7 +829,8 @@ void session::continue_stop()
   }
 }
 
-void session::start_shutdown(const boost::system::error_code& error)
+void session::start_shutdown(const boost::system::error_code& error,
+    bool need_timer_restart)
 {
   BOOST_ASSERT_MSG(intern_state::work == intern_state_,
       "Invalid internal state");
@@ -834,7 +844,7 @@ void session::start_shutdown(const boost::system::error_code& error)
     complete_extern_wait(error);
   }
 
-  continue_shutdown();
+  continue_shutdown(need_timer_restart);
 }
 
 void session::start_stop(boost::system::error_code error)
