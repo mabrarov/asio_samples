@@ -221,7 +221,7 @@ session::optional_error_code session::do_start_extern_stop()
 
   if (intern_state::work == intern_state_)
   {
-    start_active_shutdown();
+    start_shutdown(server::error::operation_aborted);
   }
 
   // intern_state_ can be changed by start_active_shutdown
@@ -393,14 +393,17 @@ void session::handle_read_at_work(const boost::system::error_code& error,
     return;
   }
 
+  // Handle read data
+  buffer_.consume(bytes_transferred);
+
   // If EOF is recieved then read activity (SM) is stopped
   if (boost::asio::error::eof == error)
   {
     read_state_ = read_state::stopped;
+    start_shutdown(error);
+    return;
   }
-
-  // Handle read data
-  buffer_.consume(bytes_transferred);
+  
   continue_work();
 }
 
@@ -432,14 +435,15 @@ void session::handle_read_at_shutdown(const boost::system::error_code& error,
     return;
   }
 
+  // Handle read data
+  buffer_.consume(bytes_transferred);
+
   // If EOF is recieved then read activity is stopped
   if (boost::asio::error::eof == error)
   {
     read_state_ = read_state::stopped;
   }
 
-  // Handle read data
-  buffer_.consume(bytes_transferred);
   continue_shutdown();
 }
 
@@ -595,13 +599,6 @@ void session::continue_work()
 
   BOOST_ASSERT_MSG(timer_state::stopped != timer_state_,
       "Invalid timer state");
-
-  // Check for active shutdown start
-  if (read_state::stopped == read_state_)
-  {
-    start_passive_shutdown();
-    return;
-  }
 
   if (read_state::wait == read_state_)
   {
@@ -767,10 +764,21 @@ void session::continue_shutdown_at_read_stopped()
 
   if (write_state::wait == write_state_)
   {
-    // We can shutdown outgoing part of TCP stream
-    shutdown_socket();
-    // Shutdown error has be ignored because read activity is already stopped
-    write_state_ = write_state::stopped;
+    // Write last read data
+    cyclic_buffer::const_buffers_type write_buffers(
+        buffer_.data(max_transfer_size_));
+    if (!write_buffers.empty())
+    {
+      // We have enough resources to begin socket write
+      start_socket_write(write_buffers);
+    }
+    else 
+    {
+      // We can shutdown outgoing part of TCP stream
+      shutdown_socket();
+      // Shutdown error has be ignored because read activity is already stopped
+      write_state_ = write_state::stopped;
+    }
   }
 
   if (write_state::stopped == write_state_)
@@ -810,16 +818,6 @@ void session::continue_stop()
       complete_extern_stop(boost::system::error_code());
     }
   }
-}
-
-void session::start_passive_shutdown()
-{
-  start_shutdown(server::error::out_of_work);
-}
-
-void session::start_active_shutdown()
-{
-  start_shutdown(server::error::operation_aborted);
 }
 
 void session::start_shutdown(const boost::system::error_code& error)

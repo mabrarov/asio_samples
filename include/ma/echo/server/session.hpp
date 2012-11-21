@@ -168,8 +168,6 @@ private:
   void continue_shutdown_at_read_stopped();
   void continue_stop();
 
-  void start_passive_shutdown();
-  void start_active_shutdown();
   void start_shutdown(const boost::system::error_code&);
   void start_stop(boost::system::error_code);
 

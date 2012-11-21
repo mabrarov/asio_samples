@@ -87,7 +87,8 @@ public:
     }
     catch (const std::bad_alloc&)
     {
-      error = server::error::no_memory;
+      error = boost::system::errc::make_error_code(
+          boost::system::errc::not_enough_memory);
       return session_wrapper_ptr();
     }
   }

@@ -206,7 +206,6 @@ private:
   void handle_session_stop_at_stop(const session_wrapper_ptr&,
       const boost::system::error_code&);
 
-  bool out_of_work() const;
   void start_stop(const boost::system::error_code&);
   void continue_stop();
 
@@ -259,6 +258,7 @@ private:
   protocol_type::acceptor         acceptor_;
   session_list                    active_sessions_;
   session_list                    recycled_sessions_;
+  boost::system::error_code       accept_error_;
   boost::system::error_code       extern_wait_error_;
   stats_collector                 stats_collector_;
 

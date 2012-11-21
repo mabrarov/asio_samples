@@ -276,7 +276,7 @@ void session_manager::stats_collector::session_stopped(
     return;
   }
 
-  if (server::error::out_of_work == error)
+  if (boost::asio::error::eof == error)
   {
     lock_guard_type lock_guard(mutex_);
     ++stats_.out_of_work;
@@ -655,9 +655,9 @@ void session_manager::continue_work()
   BOOST_ASSERT_MSG(intern_state::work == intern_state_,
       "Invalid internal state");
 
-  if (out_of_work())
+  if (active_sessions_.empty() && (accept_state::stopped == accept_state_))
   {
-    start_stop(server::error::out_of_work);
+    start_stop(accept_error_);
     return;
   }
 
@@ -680,21 +680,21 @@ void session_manager::continue_work()
   // Prepare (open) acceptor
   if (!acceptor_.is_open())
   {
-    if (boost::system::error_code error = open_acceptor())
+    accept_error_ = open_acceptor();
+    if (accept_error_)
     {
       accept_state_ = accept_state::stopped;
-      if (out_of_work())
+      if (active_sessions_.empty())
       {
-        start_stop(error);
+        start_stop(accept_error_);
       }
       return;
     }
   }
 
-  // Get new, ready to start session
-  boost::system::error_code error;
-  session_wrapper_ptr session = create_session(error);
-  if (error)
+  // Get new, ready to start session  
+  session_wrapper_ptr session = create_session(accept_error_);
+  if (accept_error_)
   {
     if (!active_sessions_.empty())
     {
@@ -702,9 +702,9 @@ void session_manager::continue_work()
       return;
     }
     accept_state_ = accept_state::stopped;
-    if (out_of_work())
+    if (active_sessions_.empty())
     {
-      start_stop(error);
+      start_stop(accept_error_);
     }
     return;
   }
@@ -826,6 +826,7 @@ void session_manager::handle_accept_at_work(const session_wrapper_ptr& session,
   if (error)
   {
     accept_state_ = accept_state::stopped;
+    accept_error_ = error;
     recycle(session);
     continue_work();
     return;
@@ -1060,11 +1061,6 @@ void session_manager::handle_session_stop_at_stop(
   remove_from_active(session);
   recycle(session);
   continue_stop();
-}
-
-bool session_manager::out_of_work() const
-{
-  return active_sessions_.empty() && (accept_state::stopped == accept_state_);
 }
 
 void session_manager::start_stop(const boost::system::error_code& error)
@@ -1403,7 +1399,8 @@ session_manager::session_wrapper_ptr session_manager::create_session(
   }
   catch (const std::bad_alloc&)
   {
-    error = server::error::no_memory;
+    error = boost::system::errc::make_error_code(
+        boost::system::errc::not_enough_memory);
     return session_wrapper_ptr();
   }
 }

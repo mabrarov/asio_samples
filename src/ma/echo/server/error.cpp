@@ -34,11 +34,7 @@ public:
     case error::operation_aborted:
       return "Operation aborted";
     case error::inactivity_timeout:
-      return "Inactivity timeout";
-    case error::no_memory:
-      return "No memory";
-    case error::out_of_work:
-      return "Run out of work";
+      return "Inactivity timeout";    
     default:
       return "ma.echo.server error";
     }
