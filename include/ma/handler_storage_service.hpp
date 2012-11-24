@@ -131,8 +131,8 @@ class handler_storage_service
   : public detail::service_base<handler_storage_service>
 {
 private:
-  // Base class to hold up handlers.
-  class handler_base;
+  // Base class to hold up any value.
+  class stored_value_base;
 
   // Base class for implementation that helps to hide
   // public inheritance from detail::intrusive_list::base_hook
@@ -150,7 +150,7 @@ private:
   private:
     friend class handler_storage_service;
     // Pointer to the stored handler otherwise null pointer.
-    handler_base* handler_;
+    stored_value_base* handler_;
   }; // class impl_base
 
 public:
@@ -353,32 +353,32 @@ inline bad_handler_call::bad_handler_call()
 {
 }
 
-class handler_storage_service::handler_base
-  : public detail::intrusive_list<handler_base>::base_hook
+class handler_storage_service::stored_value_base
+  : public detail::intrusive_list<stored_value_base>::base_hook
 {
 private:
-  typedef handler_base this_type;
-  typedef detail::intrusive_list<handler_base>::base_hook base_type;
+  typedef stored_value_base this_type;
+  typedef detail::intrusive_list<stored_value_base>::base_hook base_type;
 
 public:
 
 #if defined(MA_TYPE_ERASURE_USE_VURTUAL)
 
-  handler_base();
+  stored_value_base();
   virtual void destroy() = 0;
 
 #else
 
   typedef void (*destroy_func_type)(this_type*);
 
-  handler_base(destroy_func_type);
+  stored_value_base(destroy_func_type);
   void destroy();
 
 #endif // defined(MA_TYPE_ERASURE_USE_VURTUAL)
 
 protected:
-  ~handler_base();
-  handler_base(const this_type&);
+  ~stored_value_base();
+  stored_value_base(const this_type&);
 
 private:
   this_type& operator=(const this_type&);
@@ -386,14 +386,14 @@ private:
 #if !defined(MA_TYPE_ERASURE_USE_VURTUAL)
   destroy_func_type destroy_func_;
 #endif
-}; // class handler_storage_service::handler_base
+}; // class handler_storage_service::stored_value_base
 
 template <typename Arg, typename Target>
-class handler_storage_service::typed_handler_base : public handler_base
+class handler_storage_service::typed_handler_base : public stored_value_base
 {
 private:
   typedef typed_handler_base<Arg, Target> this_type;
-  typedef handler_base base_type;
+  typedef stored_value_base base_type;
 
 public:
   typedef Target target_type;
@@ -430,11 +430,11 @@ private:
 
 template <typename Target>
 class handler_storage_service::typed_handler_base<void, Target>
-  : public handler_base
+  : public stored_value_base
 {
 private:
   typedef typed_handler_base<void, Target> this_type;
-  typedef handler_base base_type;
+  typedef stored_value_base base_type;
 
 public:
   typedef Target target_type;
@@ -511,7 +511,7 @@ public:
 private:
   this_type& operator=(const this_type&);
 
-  static void do_destroy(handler_base*);
+  static void do_destroy(stored_value_base*);
   static void do_post(base_type*, const Arg&);
   static target_type* do_target(base_type*);
 
@@ -561,7 +561,7 @@ public:
 private:
   this_type& operator=(const this_type&);
 
-  static void do_destroy(handler_base*);
+  static void do_destroy(stored_value_base*);
   static void do_post(base_type*);
   static target_type* do_target(base_type*);
 
@@ -571,30 +571,30 @@ private:
 
 #if defined(MA_TYPE_ERASURE_USE_VURTUAL)
 
-inline handler_storage_service::handler_base::handler_base()
+inline handler_storage_service::stored_value_base::stored_value_base()
 {
 }
 
 #else
 
-inline handler_storage_service::handler_base::handler_base(
+inline handler_storage_service::stored_value_base::stored_value_base(
     destroy_func_type destroy_func)
   : destroy_func_(destroy_func)
 {
 }
 
-inline void handler_storage_service::handler_base::destroy()
+inline void handler_storage_service::stored_value_base::destroy()
 {
   destroy_func_(this);
 }
 
 #endif // defined(MA_TYPE_ERASURE_USE_VURTUAL)
 
-inline handler_storage_service::handler_base::~handler_base()
+inline handler_storage_service::stored_value_base::~stored_value_base()
 {
 }
 
-inline handler_storage_service::handler_base::handler_base(
+inline handler_storage_service::stored_value_base::stored_value_base(
     const this_type& other)
   : base_type(other)
 #if !defined(MA_TYPE_ERASURE_USE_VURTUAL)
@@ -800,7 +800,7 @@ handler_storage_service::handler_wrapper<Handler, Arg, Target>::target()
 
 template <typename Handler, typename Arg, typename Target>
 void handler_storage_service::handler_wrapper<Handler, Arg, Target>::do_destroy(
-    handler_base* base)
+    stored_value_base* base)
 {
   this_type* this_ptr = static_cast<this_type*>(base);
   // Take ownership of the wrapper object
@@ -961,7 +961,7 @@ handler_storage_service::handler_wrapper<Handler, void, Target>::target()
 
 template <typename Handler, typename Target>
 void handler_storage_service::handler_wrapper<Handler, void, Target>::
-    do_destroy(handler_base* base)
+    do_destroy(stored_value_base* base)
 {
   this_type* this_ptr = static_cast<this_type*>(base);
   // Take ownership of the wrapper object
@@ -1093,7 +1093,7 @@ inline void handler_storage_service::destroy(implementation_type& impl)
 inline void handler_storage_service::clear(implementation_type& impl)
 {
   // Destroy stored handler if it exists.
-  if (handler_base* handler = impl.handler_)
+  if (stored_value_base* handler = impl.handler_)
   {
     impl.handler_ = 0;
     handler->destroy();
@@ -1122,7 +1122,7 @@ void handler_storage_service::store(implementation_type& impl, Handler handler)
         boost::ref(this->get_io_service()), handler);
 #endif
     // Copy current handler
-    handler_base* old_handler = impl.handler_;
+    stored_value_base* old_handler = impl.handler_;
     // Move ownership of already created wrapped handler
     // (and allocated memory) to the impl
     impl.handler_ = ptr.release();
@@ -1200,13 +1200,13 @@ inline void handler_storage_service::shutdown_service()
   // Restrict usage of service.
   shutdown_done_ = true;
   // Take ownership of all still active handlers.
-  detail::intrusive_list<handler_base> stored_handlers;
+  detail::intrusive_list<stored_value_base> stored_handlers;
   {
     lock_guard impl_list_lock(impl_list_mutex_);
     for (impl_base* impl = impl_list_.front(); impl;
         impl = impl_list_.next(*impl))
     {
-      if (handler_base* handler = impl->handler_)
+      if (stored_value_base* handler = impl->handler_)
       {
         stored_handlers.push_front(*handler);
         impl->handler_ = 0;
@@ -1214,9 +1214,9 @@ inline void handler_storage_service::shutdown_service()
     }
   }
   // Destroy all handlers
-  for (handler_base* handler = stored_handlers.front(); handler; )
+  for (stored_value_base* handler = stored_handlers.front(); handler; )
   {
-    handler_base* next_handler = stored_handlers.next(*handler);
+    stored_value_base* next_handler = stored_handlers.next(*handler);
     handler->destroy();
     handler = next_handler;
   }
