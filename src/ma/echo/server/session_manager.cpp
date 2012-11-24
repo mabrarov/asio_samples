@@ -518,6 +518,7 @@ session_manager::session_manager(boost::asio::io_service& io_service,
   , listen_backlog_(config.listen_backlog)
   , max_session_count_(config.max_session_count)
   , recycled_session_count_(config.recycled_session_count)
+  , max_stopping_sessions_(config.max_stopping_sessions)
   , managed_session_config_(config.managed_session_config)
   , extern_state_(extern_state::ready)
   , intern_state_(intern_state::work)
@@ -527,7 +528,6 @@ session_manager::session_manager(boost::asio::io_service& io_service,
   , session_factory_(managed_session_factory)
   , strand_(io_service)
   , acceptor_(io_service)
-  , stats_collector_()
   , extern_wait_handler_(io_service)
   , extern_stop_handler_(io_service)
 {
@@ -692,7 +692,7 @@ void session_manager::continue_work()
     }
   }
 
-  // Get new, ready to start session  
+  // Get new, ready to start session
   session_wrapper_ptr session = create_session(accept_error_);
   if (accept_error_)
   {
@@ -1074,19 +1074,6 @@ void session_manager::start_stop(const boost::system::error_code& error)
     close_acceptor();
   }
 
-  // Stop all active sessions
-  session_wrapper_ptr session =
-      boost::static_pointer_cast<session_wrapper>(active_sessions_.front());
-  while (session)
-  {
-    if (!session->stopping())
-    {
-      start_session_stop(session);
-    }
-    session = boost::static_pointer_cast<session_wrapper>(
-        session_list::next(session));
-  }
-
   // Switch all internal SMs to the right states
   if (accept_state::ready == accept_state_)
   {
@@ -1097,6 +1084,15 @@ void session_manager::start_stop(const boost::system::error_code& error)
   if (extern_state::work == extern_state_)
   {
     complete_extern_wait(error);
+  }
+
+  // Stop active sessions (not more than max_stopping_sessions_)
+  stopping_sessions_end_ = start_active_session_stop(
+      boost::static_pointer_cast<session_wrapper>(active_sessions_.front()),
+      max_stopping_sessions_);
+  if (stopping_sessions_end_)
+  {
+    schedule_active_session_stop();
   }
 
   continue_stop();
@@ -1126,6 +1122,79 @@ void session_manager::continue_stop()
     }
   }
 }
+
+session_manager::session_wrapper_ptr session_manager::start_active_session_stop(
+    session_wrapper_ptr begin, std::size_t max_count)
+{
+  while (max_count && begin)
+  {
+    if (!begin->stopping())
+    {
+      start_session_stop(begin);
+    }
+    --max_count;
+    begin = boost::static_pointer_cast<session_wrapper>(
+        session_list::next(begin));
+  }
+  return begin;
+}
+
+#if defined(MA_HAS_RVALUE_REFS) \
+    && defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
+
+void session_manager::schedule_active_session_stop()
+{
+  session_manager_ptr shared_this = shared_from_this();
+
+  strand_.post(ma::make_custom_alloc_handler(session_stop_allocator_,
+      [shared_this]()
+  {
+    --shared_this->pending_operations_;
+
+    shared_this->stopping_sessions_end_ =
+        shared_this->start_active_session_stop(
+            shared_this->stopping_sessions_end_,
+            shared_this->max_stopping_sessions_);
+    if (shared_this->stopping_sessions_end_)
+    {
+      shared_this->schedule_active_session_stop();
+    }
+
+    shared_this->continue_stop();
+  }));
+
+  ++pending_operations_;
+}
+
+#else // defined(MA_HAS_RVALUE_REFS)
+      //     && defined(MA_HAS_LAMBDA)
+      //     && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
+
+void session_manager::schedule_active_session_stop()
+{
+  strand_.post(ma::make_custom_alloc_handler(session_stop_allocator_,
+      boost::bind(&this_type::handle_scheduled_active_session_stop,
+          shared_from_this())));
+  ++pending_operations_;
+}
+
+void session_manager::handle_scheduled_active_session_stop()
+{
+  --pending_operations_;
+
+  stopping_sessions_end_ = start_active_session_stop(
+      stopping_sessions_end_, max_stopping_sessions_);
+  if (stopping_sessions_end_)
+  {
+    schedule_active_session_stop();
+  }
+
+  continue_stop();
+}
+
+#endif // defined(MA_HAS_RVALUE_REFS)
+       //     && defined(MA_HAS_LAMBDA)
+       //     && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
 
 void session_manager::start_accept_session(const session_wrapper_ptr& session)
 {
@@ -1421,6 +1490,11 @@ void session_manager::add_to_recycled(const session_wrapper_ptr& session)
 
 void session_manager::remove_from_active(const session_wrapper_ptr& session)
 {
+  if (session == stopping_sessions_end_)
+  {
+    stopping_sessions_end_ = boost::static_pointer_cast<session_wrapper>(
+        session_list::next(session));
+  }
   active_sessions_.erase(session);
   // Collect statistics
   stats_collector_.set_active_session_count(active_sessions_.size());

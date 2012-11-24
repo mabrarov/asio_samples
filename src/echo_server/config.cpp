@@ -390,13 +390,16 @@ ma::echo::server::session_manager_config build_session_manager_config(
   std::size_t recycled_sessions =
       options_values[recycled_sessions_option_name].as<std::size_t>();
 
+  //todo: read from CMD
+  std::size_t max_stopping_sessions = 1000;
+
   int listen_backlog = options_values[listen_backlog_option_name].as<int>();
 
   using boost::asio::ip::tcp;
 
   return ma::echo::server::session_manager_config(
-      tcp::endpoint(tcp::v4(), port), max_sessions, recycled_sessions,
-      listen_backlog, session_config);
+      tcp::endpoint(tcp::v4(), port), max_sessions, recycled_sessions, 
+      max_stopping_sessions, listen_backlog, session_config);
 }
 
 } // namespace echo_server

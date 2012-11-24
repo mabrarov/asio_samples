@@ -438,6 +438,7 @@ session_manager_config MainForm::buildSessionManagerConfig() const
   unsigned short port;
   std::size_t    maxSessions;
   std::size_t    recycledSessions;
+  std::size_t    maxStoppingSessions;
   int            listenBacklog;
   QWidget*       currentWidget = 0;
   try
@@ -452,6 +453,9 @@ session_manager_config MainForm::buildSessionManagerConfig() const
     currentWidget = ui_.recycledSessionCountSpinBox;
     recycledSessions = boost::numeric_cast<std::size_t>(
         ui_.recycledSessionCountSpinBox->value());
+
+    //todo: read from UI
+    maxStoppingSessions = 1000;
 
     currentWidget = ui_.listenBacklogSpinBox;
     listenBacklog = ui_.listenBacklogSpinBox->value();
@@ -476,7 +480,8 @@ session_manager_config MainForm::buildSessionManagerConfig() const
 
   return session_manager_config(
       boost::asio::ip::tcp::endpoint(listenAddress, port),
-      maxSessions, recycledSessions, listenBacklog, buildSessionConfig());
+      maxSessions, recycledSessions, maxStoppingSessions, listenBacklog, 
+      buildSessionConfig());
 }
 
 MainForm::ServiceConfig MainForm::buildServiceConfig() const

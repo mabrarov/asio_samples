@@ -31,12 +31,14 @@ public:
       const endpoint_type& accepting_endpoint,
       std::size_t max_session_count,
       std::size_t recycled_session_count,
+      std::size_t max_stopping_sessions,
       int listen_backlog,
       const session_config& managed_session_config);
 
   int            listen_backlog;
   std::size_t    max_session_count;
   std::size_t    recycled_session_count;
+  std::size_t    max_stopping_sessions;
   endpoint_type  accepting_endpoint;
   session_config managed_session_config;
 }; // struct session_manager_config
@@ -45,11 +47,13 @@ inline session_manager_config::session_manager_config(
     const endpoint_type& the_accepting_endpoint,
     std::size_t the_max_session_count,
     std::size_t the_recycled_session_count,
+    std::size_t the_max_stopping_sessions,
     int the_listen_backlog,
     const session_config& the_managed_session_config)
   : listen_backlog(the_listen_backlog)
   , max_session_count(the_max_session_count)
   , recycled_session_count(the_recycled_session_count)
+  , max_stopping_sessions(the_max_stopping_sessions)
   , accepting_endpoint(the_accepting_endpoint)
   , managed_session_config(the_managed_session_config)
 {

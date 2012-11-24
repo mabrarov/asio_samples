@@ -144,6 +144,7 @@ public:
     , timer_(io_service)
     , connect_count_()
     , connected_(false)
+    , started_(false)
     , stopped_(false)
     , timer_in_progess_(false)
     , work_state_(work_state)
@@ -154,7 +155,8 @@ public:
   {
     BOOST_ASSERT_MSG(!connected_, "Invalid connect state");
     BOOST_ASSERT_MSG(!timer_in_progess_, "Timer wait is still in progress");
-    BOOST_ASSERT_MSG(stopped_, "Session was not stopped");
+    BOOST_ASSERT_MSG(!started_ || (started_ && stopped_),
+        "Session was not stopped");
   }
 
   void async_start(const protocol::resolver::iterator& endpoint_iterator)
@@ -182,6 +184,7 @@ private:
       return;
     }
 
+    started_ = true;
     start_connect(initial_endpoint_iterator, initial_endpoint_iterator);
   }
 
@@ -367,6 +370,7 @@ private:
   deadline_timer   timer_;
   limited_counter  connect_count_;
   bool connected_;
+  bool started_;
   bool stopped_;
   bool timer_in_progess_;
   work_state&      work_state_;
@@ -418,14 +422,13 @@ public:
     , io_service_(session_manager_io_service)
     , strand_(session_manager_io_service)
     , timer_(session_manager_io_service)
-    , sessions_()
     , stopped_(false)
     , timer_in_progess_(false)
-    , stats_()
     , work_state_(config.session_count)
   {
     typedef io_service_vector::const_iterator iterator;
 
+    sessions_.reserve(config.session_count);
     const iterator sbegin = session_io_services.begin();
     const iterator send   = session_io_services.end();
     for (std::size_t i = 0; i != config.session_count;)
@@ -437,13 +440,15 @@ public:
             config.managed_session_config, boost::ref(work_state_)));
       }
     }
+    started_sessions_end_ = sessions_.begin();
   }
 
   ~session_manager()
   {
     BOOST_ASSERT_MSG(!timer_in_progess_, "Invalid timer state");
 
-    std::for_each(sessions_.begin(), sessions_.end(),
+    std::for_each(session_vector::const_iterator(sessions_.begin()),
+        started_sessions_end_,
         boost::bind(&this_type::register_stats, this, _1));
     stats_.print();
   }
@@ -468,18 +473,19 @@ public:
 private:
   typedef std::vector<session_ptr> session_vector;
 
-  std::size_t start_block(
+  static session_vector::const_iterator start_sessions(
       const protocol::resolver::iterator& endpoint_iterator,
-      std::size_t offset, std::size_t max_block_size)
+      const session_vector::const_iterator& begin,
+      const session_vector::const_iterator& end,
+      std::size_t max_count)
   {
-    std::size_t block_size = 0;
-    for (session_vector::const_iterator i = sessions_.begin() + offset,
-        end = sessions_.end(); (i != end) && (block_size != max_block_size);
-        ++i, ++block_size)
+    session_vector::const_iterator i = begin;
+    std::size_t count = 0;
+    for (; (end != i) && (count != max_count); ++i, ++count)
     {
       (*i)->async_start(endpoint_iterator);
     }
-    return offset + block_size;
+    return i;
   }
 
   void do_start(const protocol::resolver::iterator& endpoint_iterator)
@@ -489,37 +495,38 @@ private:
       return;
     }
 
+    started_sessions_end_ = start_sessions(endpoint_iterator,
+        started_sessions_end_, sessions_.end(), block_size_);
+    if (sessions_.end() != started_sessions_end_)
+    {
+      schedule_session_start(endpoint_iterator);
+    }
+  }
+
+  void schedule_session_start(
+      const protocol::resolver::iterator& endpoint_iterator)
+  {
     if (block_pause_)
     {
-      std::size_t offset = start_block(endpoint_iterator, 0, block_size_);
-      if (offset < sessions_.size())
-      {
-        start_deferred_session_start(endpoint_iterator, offset);
-      }
+      BOOST_ASSERT_MSG(!timer_in_progess_, "Invalid timer state");
+
+      timer_.expires_from_now(*block_pause_);
+      timer_.async_wait(MA_STRAND_WRAP(strand_,
+          ma::make_custom_alloc_handler(timer_allocator_,
+              boost::bind(&this_type::handle_scheduled_session_start, this,
+                  _1, endpoint_iterator))));
+      timer_in_progess_ = true;
     }
     else
     {
-      start_block(endpoint_iterator, 0, sessions_.size());
+      strand_.post(ma::make_custom_alloc_handler(timer_allocator_,
+          boost::bind(&this_type::handle_scheduled_session_start, this,
+              boost::system::error_code(), endpoint_iterator)));
     }
   }
 
-  void start_deferred_session_start(
-      const protocol::resolver::iterator& endpoint_iterator,
-      std::size_t offset)
-  {
-    BOOST_ASSERT_MSG(!timer_in_progess_, "Invalid timer state");
-
-    timer_.expires_from_now(*block_pause_);
-    timer_.async_wait(MA_STRAND_WRAP(strand_,
-        ma::make_custom_alloc_handler(timer_allocator_,
-            boost::bind(&this_type::handle_timer, this, _1, endpoint_iterator,
-                offset))));
-    timer_in_progess_ = true;
-  }
-
-  void handle_timer(const boost::system::error_code& error,
-      const protocol::resolver::iterator& endpoint_iterator,
-      std::size_t offset)
+  void handle_scheduled_session_start(const boost::system::error_code& error,
+      const protocol::resolver::iterator& endpoint_iterator)
   {
     timer_in_progess_ = false;
 
@@ -534,10 +541,11 @@ private:
       return;
     }
 
-    offset = start_block(endpoint_iterator, offset, block_size_);
-    if (offset < sessions_.size())
+    started_sessions_end_ = start_sessions(endpoint_iterator,
+        started_sessions_end_, sessions_.end(), block_size_);
+    if (sessions_.end() != started_sessions_end_)
     {
-      start_deferred_session_start(endpoint_iterator, offset);
+      schedule_session_start(endpoint_iterator);
     }
   }
 
@@ -559,8 +567,8 @@ private:
 
     cancel_timer();
     stopped_ = true;
-    std::for_each(sessions_.begin(), sessions_.end(),
-        boost::bind(&session::async_stop, _1));
+    std::for_each(session_vector::const_iterator(sessions_.begin()),
+        started_sessions_end_, boost::bind(&session::async_stop, _1));
   }
 
   void register_stats(const session_ptr& session)
@@ -574,6 +582,7 @@ private:
   boost::asio::io_service::strand strand_;
   deadline_timer timer_;
   session_vector sessions_;
+  session_vector::const_iterator started_sessions_end_;
   bool  stopped_;
   bool  timer_in_progess_;
   stats stats_;
@@ -581,7 +590,7 @@ private:
   ma::in_place_handler_allocator<256> start_allocator_;
   ma::in_place_handler_allocator<256> stop_allocator_;
   ma::in_place_handler_allocator<512> timer_allocator_;
-}; // class client
+}; // class session_manager
 
 optional_duration to_optional_duration(long milliseconds)
 {

@@ -209,6 +209,15 @@ private:
   void start_stop(const boost::system::error_code&);
   void continue_stop();
 
+  session_wrapper_ptr start_active_session_stop(
+      session_wrapper_ptr begin, std::size_t max_count);
+  void schedule_active_session_stop();
+
+#if !(defined(MA_HAS_RVALUE_REFS) \
+    && defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
+  void handle_scheduled_active_session_stop();
+#endif
+
   void start_accept_session(const session_wrapper_ptr&);
   void start_session_start(const session_wrapper_ptr&);
   void start_session_stop(const session_wrapper_ptr&);
@@ -245,6 +254,7 @@ private:
   const int                     listen_backlog_;
   const std::size_t             max_session_count_;
   const std::size_t             recycled_session_count_;
+  const std::size_t             max_stopping_sessions_;
   const session_config          managed_session_config_;
 
   extern_state::value_t extern_state_;
@@ -258,6 +268,7 @@ private:
   protocol_type::acceptor         acceptor_;
   session_list                    active_sessions_;
   session_list                    recycled_sessions_;
+  session_wrapper_ptr             stopping_sessions_end_;
   boost::system::error_code       accept_error_;
   boost::system::error_code       extern_wait_error_;
   stats_collector                 stats_collector_;
@@ -266,6 +277,7 @@ private:
   handler_storage<boost::system::error_code> extern_stop_handler_;
 
   in_place_handler_allocator<512> accept_allocator_;
+  in_place_handler_allocator<256> session_stop_allocator_;
 }; // class session_manager
 
 #if defined(MA_HAS_RVALUE_REFS)
