@@ -55,13 +55,13 @@ namespace detail {
  */
 
 /// Traits for handler allocation.
-template <typename AllocContext, typename Object>
+template <typename AllocContext, typename Value>
 struct handler_alloc_traits
 {
   typedef AllocContext alloc_context_type;
-  typedef Object       value_type;
-  typedef Object*      pointer_type;
-  BOOST_STATIC_CONSTANT(std::size_t, value_size = sizeof(Object));
+  typedef Value        value_type;
+  typedef Value*       pointer_type;
+  BOOST_STATIC_CONSTANT(std::size_t, value_size = sizeof(Value));
 }; // struct handler_alloc_traits
 
 template <typename Alloc_Traits>
@@ -115,12 +115,11 @@ template <typename Alloc_Traits>
 class handler_ptr : private boost::noncopyable
 {
 public:
+  typedef raw_handler_ptr<Alloc_Traits>             raw_ptr_type;
   typedef typename Alloc_Traits::alloc_context_type alloc_context_type;
   typedef typename Alloc_Traits::value_type         value_type;
   typedef typename Alloc_Traits::pointer_type       pointer_type;
-
-  BOOST_STATIC_CONSTANT(std::size_t, value_size = Alloc_Traits::value_size);
-  typedef raw_handler_ptr<Alloc_Traits> raw_ptr_type;
+  BOOST_STATIC_CONSTANT(std::size_t, value_size = Alloc_Traits::value_size);  
 
   /// Take ownership of existing memory.
   handler_ptr(alloc_context_type& alloc_context, pointer_type pointer)
