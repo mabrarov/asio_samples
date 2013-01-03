@@ -5,6 +5,11 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#if defined(WIN32)
+#include <tchar.h>
+#include <windows.h>
+#endif
+
 #include <vector>
 #include <string>
 #include <iostream>
@@ -725,9 +730,15 @@ boost::program_options::options_description build_cmd_options_description(
   return description;
 }
 
+#if defined(WIN32)
+boost::program_options::variables_map parse_cmd_line(
+    const boost::program_options::options_description& options_description,
+    int argc, _TCHAR* argv[])
+#else
 boost::program_options::variables_map parse_cmd_line(
     const boost::program_options::options_description& options_description,
     int argc, char* argv[])
+#endif
 {
   boost::program_options::variables_map values;
   boost::program_options::store(boost::program_options::parse_command_line(
@@ -930,7 +941,11 @@ void create_session_threads(boost::thread_group& threads,
 
 } // anonymous namespace
 
+#if defined(WIN32)
+int _tmain(int argc, _TCHAR* argv[])
+#else
 int main(int argc, char* argv[])
+#endif
 {
   try
   {
