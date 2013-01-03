@@ -14,7 +14,7 @@
 
 #include <boost/system/error_code.hpp>
 #include <boost/thread/recursive_mutex.hpp>
-#include <QtCore/QObject>
+#include <QObject>
 #include <ma/echo/server/qt/serviceservantsignal_fwd.h>
 
 namespace ma {

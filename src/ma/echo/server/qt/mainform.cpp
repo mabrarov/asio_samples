@@ -16,10 +16,10 @@ TRANSLATOR ma::echo::server::qt::MainForm
 #include <boost/throw_exception.hpp>
 #include <boost/numeric/conversion/cast.hpp>
 #include <QtGlobal>
-#include <QtCore/QTime>
-#include <QtCore/QTimer>
-#include <QtGui/QTextCursor>
-#include <QtGui/QMessageBox>
+#include <QTime>
+#include <QTimer>
+#include <QTextCursor>
+#include <QMessageBox>
 #include <ma/echo/server/error.hpp>
 #include <ma/echo/server/session_manager_stats.hpp>
 #include <ma/echo/server/qt/service.h>
@@ -138,7 +138,7 @@ private:
 
 } // anonymous namespace
 
-MainForm::MainForm(Service& service, QWidget* parent, Qt::WFlags flags)
+MainForm::MainForm(Service& service, QWidget* parent, Qt::WindowFlags flags)
   : QWidget(parent, flags)
   , optionsWidgets_()
   , prevServiceState_(service.state())

@@ -7,7 +7,7 @@
 
 #include <iostream>
 #include <exception>
-#include <QtGui/QApplication>
+#include <QApplication>
 #include <ma/echo/server/qt/service.h>
 #include <ma/echo/server/qt/custommetatypes.h>
 #include <ma/echo/server/qt/mainform.h>

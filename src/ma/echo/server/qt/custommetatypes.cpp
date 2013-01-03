@@ -7,7 +7,7 @@
 
 #include <boost/throw_exception.hpp>
 #include <boost/system/error_code.hpp>
-#include <QtCore/QMetaType>
+#include <QMetaType>
 #include <ma/echo/server/qt/meta_type_register_error.h>
 #include <ma/echo/server/qt/custommetatypes.h>
 

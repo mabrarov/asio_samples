@@ -15,7 +15,7 @@
 #include <vector>
 #include <boost/tuple/tuple.hpp>
 #include <boost/system/error_code.hpp>
-#include <QtGui/QWidget>
+#include <QWidget>
 #include <ma/echo/server/session_config.hpp>
 #include <ma/echo/server/session_manager_config.hpp>
 #include <ma/echo/server/session_manager_stats_fwd.hpp>
@@ -38,7 +38,7 @@ class MainForm : public QWidget
   Q_OBJECT
 
 public:
-  MainForm(Service& service, QWidget* parent = 0, Qt::WFlags flags = 0);
+  MainForm(Service& service, QWidget* parent = 0, Qt::WindowFlags flags = 0);
   ~MainForm();
 
 private slots:

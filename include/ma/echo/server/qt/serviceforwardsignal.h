@@ -13,7 +13,7 @@
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
 #include <boost/system/error_code.hpp>
-#include <QtCore/QObject>
+#include <QObject>
 #include <ma/echo/server/qt/serviceforwardsignal_fwd.h>
 
 namespace ma {

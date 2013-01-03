@@ -15,7 +15,7 @@
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/system/error_code.hpp>
-#include <QtCore/QObject>
+#include <QObject>
 #include <ma/echo/server/session_manager_config_fwd.hpp>
 #include <ma/echo/server/session_manager_stats.hpp>
 #include <ma/echo/server/qt/servicestate.h>
