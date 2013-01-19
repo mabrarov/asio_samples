@@ -12,6 +12,7 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
+#include <cstddef>
 #include <boost/asio.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>

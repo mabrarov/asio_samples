@@ -11,6 +11,7 @@
 #endif
 
 #include <cstdlib>
+#include <cstddef>
 #include <vector>
 #include <string>
 #include <iostream>

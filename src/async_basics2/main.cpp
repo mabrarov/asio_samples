@@ -10,7 +10,6 @@
 #endif
 
 #include <cstdlib>
-#include <cstddef>
 #include <iostream>
 #include <exception>
 #include <boost/ref.hpp>
