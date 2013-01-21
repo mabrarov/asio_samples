@@ -135,11 +135,11 @@
 /// Turns on usage of C++11 lambdas
 #define MA_HAS_LAMBDA
 
-#else  // defined(BOOST_NO_LAMBDAS)
+#else
 
 /// Turns off usage of C++11 lambdas
 #undef MA_HAS_LAMBDA
 
-#endif // defined(BOOST_NO_LAMBDAS)
+#endif
 
 #endif // MA_CONFIG_HPP
