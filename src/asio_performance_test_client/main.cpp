@@ -223,7 +223,7 @@ public:
   void async_start(const protocol::resolver::iterator& endpoint_iterator)
   {
     strand_.post(ma::make_custom_alloc_handler(write_allocator_,
-        boost::bind(&this_type::do_start, this, 0, endpoint_iterator)));
+        boost::bind(&this_type::do_start, this, endpoint_iterator)));
   }
 
   void async_stop()
@@ -248,8 +248,7 @@ public:
   }
 
 private:
-  void do_start(std::size_t connect_attempt,
-      const protocol::resolver::iterator& initial_endpoint_iterator)
+  void do_start(const protocol::resolver::iterator& initial_endpoint_iterator)
   {
     if (stopped_)
     {
@@ -257,8 +256,7 @@ private:
     }
 
     started_ = true;
-    start_connect(connect_attempt,
-        initial_endpoint_iterator, initial_endpoint_iterator);
+    start_connect(0, initial_endpoint_iterator, initial_endpoint_iterator);
   }
 
   void do_stop()
