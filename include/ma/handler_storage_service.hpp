@@ -19,6 +19,7 @@
 #include <boost/assert.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/thread/mutex.hpp>
+#include <boost/thread/locks.hpp>
 #include <boost/throw_exception.hpp>
 #include <ma/config.hpp>
 #include <ma/type_traits.hpp>

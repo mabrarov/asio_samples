@@ -18,6 +18,7 @@
 
 #include <boost/noncopyable.hpp>
 #include <boost/function.hpp>
+#include <boost/thread/locks.hpp>
 #include <boost/thread/recursive_mutex.hpp>
 
 namespace ma {
