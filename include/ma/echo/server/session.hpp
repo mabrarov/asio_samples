@@ -184,7 +184,7 @@ private:
   static optional_duration to_optional_duration(
       const session_config::optional_time_duration& duration);
 
-  const std::size_t                   max_transfer_size_;
+  const std::size_t                   max_send_size_;
   const session_config::optional_int  socket_recv_buffer_size_;
   const session_config::optional_int  socket_send_buffer_size_;
   const session_config::optional_bool no_delay_;
