@@ -173,7 +173,7 @@ MainForm::MainForm(Service& service, QWidget* parent, Qt::WindowFlags flags)
   optionsWidgets_.push_back(
       boost::make_tuple(2, ui_.inactivityTimeoutSpinBox));
   optionsWidgets_.push_back(
-      boost::make_tuple(2, ui_.maxSendSizeSpinBox));
+      boost::make_tuple(2, ui_.maxTransferSizeSpinBox));
   optionsWidgets_.push_back(
       boost::make_tuple(2, ui_.sockRecvBufferSizeCheckBox));
   optionsWidgets_.push_back(
@@ -428,7 +428,7 @@ session_config MainForm::buildSessionConfig() const
 
   return session_config(
       boost::numeric_cast<std::size_t>(ui_.sessionBufferSizeSpinBox->value()),
-      boost::numeric_cast<std::size_t>(ui_.maxSendSizeSpinBox->value()),
+      boost::numeric_cast<std::size_t>(ui_.maxTransferSizeSpinBox->value()),
       socketRecvBufferSize, socketSendBufferSize,
       tcpNoDelay, inactivityTimeout);
 }

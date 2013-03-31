@@ -409,14 +409,14 @@
         </widget>
        </item>
        <item row="2" column="0">
-        <widget class="QLabel" name="maxSendSizeLabel">
+        <widget class="QLabel" name="maxTransferSizeLabel">
          <property name="text">
-          <string>Max size of single async send (bytes)</string>
+          <string>Max size of single async transfer (bytes)</string>
          </property>
         </widget>
        </item>
        <item row="2" column="1">
-        <widget class="QSpinBox" name="maxSendSizeSpinBox">
+        <widget class="QSpinBox" name="maxTransferSizeSpinBox">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -703,7 +703,7 @@
   <tabstop>sessionBufferSizeSpinBox</tabstop>
   <tabstop>inactivityTimeoutCheckBox</tabstop>
   <tabstop>inactivityTimeoutSpinBox</tabstop>
-  <tabstop>maxSendSizeSpinBox</tabstop>
+  <tabstop>maxTransferSizeSpinBox</tabstop>
   <tabstop>sockRecvBufferSizeCheckBox</tabstop>
   <tabstop>sockRecvBufferSizeSpinBox</tabstop>
   <tabstop>sockSendBufferSizeCheckBox</tabstop>
