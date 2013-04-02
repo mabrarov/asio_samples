@@ -13,6 +13,7 @@
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
 #include <boost/system/error_code.hpp>
+#include <boost/thread/locks.hpp>
 #include <boost/thread/recursive_mutex.hpp>
 #include <QObject>
 #include <ma/echo/server/qt/serviceservantsignal_fwd.h>
