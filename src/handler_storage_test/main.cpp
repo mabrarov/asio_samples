@@ -18,9 +18,12 @@
 #include <boost/ref.hpp>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
-#include <boost/thread.hpp>
+#include <boost/optional.hpp>
+#include <boost/thread/thread.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
+#include <boost/noncopyable.hpp>
+#include <boost/utility/in_place_factory.hpp> 
 #include <ma/config.hpp>
 #include <ma/handler_allocator.hpp>
 #include <ma/custom_alloc_handler.hpp>
@@ -264,15 +267,9 @@ void test_handler_storage_move_constructor(boost::asio::io_service& io_service)
 
   handler_storage_type handler1(io_service);
   handler1.store(test_handler(4));
-
-  boost::thread worker_thread(boost::bind(&boost::asio::io_service::run,
-      boost::ref(io_service)));
-
+  
   handler_storage_type handler2(std::move(handler1));
   handler2.post(2);
-
-  worker_thread.join();
-  io_service.reset();
 }
 
 #endif // defined(MA_HAS_RVALUE_REFS)
@@ -324,6 +321,32 @@ void test_shared_ptr_factory()
   boost::shared_ptr<B> b = boost::make_shared<B_helper>(42);
 }
 
+class io_service_pool : private boost::noncopyable
+{
+public:
+  io_service_pool(boost::asio::io_service& io_service, std::size_t size)
+    : work_guard_(boost::in_place(boost::ref(io_service)))
+  {
+    for (std::size_t i = 0; i < size; ++i)
+    {
+      threads_.create_thread(
+        boost::bind(&boost::asio::io_service::run, &io_service));
+    }
+  }
+
+  ~io_service_pool()
+  {
+    work_guard_ = boost::none;
+    threads_.join_all();
+  }
+
+private:
+  typedef boost::optional<boost::asio::io_service::work> optional_io_work;
+
+  optional_io_work    work_guard_;
+  boost::thread_group threads_;
+}; // class io_service_pool
+
 } // anonymous namespace
 
 #if defined(WIN32)
@@ -335,8 +358,10 @@ int main(int argc, char* argv[])
   try
   {
     std::size_t cpu_count = boost::thread::hardware_concurrency();
-    std::size_t session_thread_count = cpu_count > 1 ? cpu_count : 2;
-    boost::asio::io_service io_service(session_thread_count);
+    std::size_t work_thread_count = cpu_count > 1 ? cpu_count : 2;
+    boost::asio::io_service io_service(work_thread_count);
+
+    io_service_pool work_threads(io_service, work_thread_count);
 
     test_handler_storage_target(io_service);
     test_handler_storage_arg(io_service);
@@ -348,9 +373,6 @@ int main(int argc, char* argv[])
     test_sp_intrusive_list();
     test_shared_ptr_factory();
 
-    io_service.run();
-
-    //todo
     return EXIT_SUCCESS;
   }
   catch (const std::exception& e)
