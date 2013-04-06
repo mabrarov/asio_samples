@@ -95,6 +95,7 @@ private:
 
 void test_handler_storage_target(boost::asio::io_service& io_service)
 {
+  std::cout << "*** test_handler_storage_target ***" << std::endl;
   {
     typedef ma::handler_storage<int, test_handler_base> handler_storage_type;
 
@@ -211,6 +212,7 @@ private:
 
 void test_handler_storage_arg(boost::asio::io_service& io_service)
 {
+  std::cout << "*** test_handler_storage_arg ***" << std::endl;
   {
     typedef ma::handler_storage<void> handler_storage_type;
 
@@ -263,6 +265,8 @@ void test_handler_storage_arg(boost::asio::io_service& io_service)
 
 void test_handler_storage_move_constructor(boost::asio::io_service& io_service)
 {
+  std::cout << "*** test_handler_storage_move_constructor ***" << std::endl;
+
   typedef ma::handler_storage<int> handler_storage_type;
 
   handler_storage_type handler1(io_service);
@@ -292,6 +296,7 @@ private:
 
 void test_sp_intrusive_list()
 {
+  std::cout << "*** test_sp_intrusive_list ***" << std::endl;
   ma::sp_intrusive_list<sp_list_test> sp_list;
   for (std::size_t i = 0; i != 10; ++i)
   {
@@ -302,23 +307,43 @@ void test_sp_intrusive_list()
 
 class A : private boost::noncopyable
 {
+public:
+  static boost::shared_ptr<A> create()
+  {
+    typedef ma::shared_ptr_factory_helper<A> shared_ptr_helper;
+    return boost::make_shared<shared_ptr_helper>();
+  }
+
+protected:
+  ~A()
+  {
+  }
 };
 
 class B : private boost::noncopyable
 {
 public:
+  static boost::shared_ptr<B> create(int data)
+  {
+    typedef ma::shared_ptr_factory_helper<B> shared_ptr_helper;
+    return boost::make_shared<shared_ptr_helper>(data);
+  }
+
+protected:
   explicit B(int /*data*/)
+  {
+  }
+
+  ~B()
   {
   }
 };
 
 void test_shared_ptr_factory()
-{
-  typedef ma::shared_ptr_factory_helper<A> A_helper;
-  boost::shared_ptr<A> a = boost::make_shared<A_helper>();
-
-  typedef ma::shared_ptr_factory_helper<B> B_helper;
-  boost::shared_ptr<B> b = boost::make_shared<B_helper>(42);
+{  
+  std::cout << "*** test_shared_ptr_factory ***" << std::endl;
+  boost::shared_ptr<const A> a = A::create();  
+  boost::shared_ptr<B> b = B::create(42);
 }
 
 class io_service_pool : private boost::noncopyable
