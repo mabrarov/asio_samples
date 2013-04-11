@@ -5,19 +5,19 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef MA_STRAND_WRAPPED_HANDLER_HPP
-#define MA_STRAND_WRAPPED_HANDLER_HPP
+#ifndef MA_LOCKABLE_WRAPPED_HANDLER_HPP
+#define MA_LOCKABLE_WRAPPED_HANDLER_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1020)
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
 #include <cstddef>
-#include <boost/asio.hpp>
 #include <boost/utility/addressof.hpp>
+#include <boost/thread/lock_guard.hpp>
 #include <ma/config.hpp>
 #include <ma/handler_alloc_helpers.hpp>
-#include <ma/context_wrapped_handler.hpp>
+#include <ma/handler_invoke_helpers.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)
 #include <utility>
@@ -26,45 +26,19 @@
 
 namespace ma {
 
-#if defined(MA_BOOST_ASIO_HEAVY_STRAND_WRAPPED_HANDLER)
-
-/// The wrapper to use with asio::io_service::strand.
-/**
- * strand_wrapped_handler creates handler that works similar to the one created
- * by asio::io_service::strand::wrap except the guarantee given by Asio:
- * http://www.boost.org/doc/libs/1_53_0/doc/html/boost_asio/reference/io_service__strand/wrap.html
- * ...
- * that, when invoked, executes code equivalent to:
- *   strand.dispatch(boost::bind(f, a1, ... an));
- * ...
- * strand_wrapped_handler does strand.dispatch only when it is called by the
- * means of asio_handler_invoke. See MA_BOOST_ASIO_HEAVY_STRAND_WRAPPED_HANDLER
- * in ma/config.hpp for details.
- *
- * Note that strand_wrapped_handler (like the one created by
- * asio::io_service::strand::wrap) doesn't simply override-with-replacement the
- * execution strategy of the source handler (like context_wrapped_handler
- * does). strand_wrapped_handler adds strand related execution strategy before
- * the one provided by source handler.
- *
- * "Execution strategy" means handler related free function asio_handler_invoke
- * or the default one defined by Asio.
- * http://www.boost.org/doc/libs/1_53_0/doc/html/boost_asio/reference/Handler.html
- *
- * Use MA_STRAND_WRAP macros to create a strand-wrapped handler according to
- * asio-samples configuration (MA_BOOST_ASIO_HEAVY_STRAND_WRAPPED_HANDLER).
- */
+/// Wrappers that override execution strategy of the source handler 
+/// providing lock guard by means of Lockable.
 
 #if defined(_MSC_VER)
 #pragma warning(push)
 #pragma warning(disable: 4512)
 #endif // #if defined(_MSC_VER)
 
-template <typename Handler>
-class strand_wrapped_handler
+template <typename Lockable, typename Handler>
+class lockable_wrapped_handler
 {
 private:
-  typedef strand_wrapped_handler<Handler> this_type;
+  typedef lockable_wrapped_handler<Lockable, Handler> this_type;
 
 public:
   typedef void result_type;
@@ -72,26 +46,26 @@ public:
 #if defined(MA_HAS_RVALUE_REFS)
 
   template <typename H>
-  strand_wrapped_handler(boost::asio::io_service::strand& strand, H&& handler)
-    : strand_(boost::addressof(strand))
+  lockable_wrapped_handler(Lockable& lockable, H&& handler)
+    : lockable_(boost::addressof(lockable))
     , handler_(std::forward<H>(handler))
   {
   }
 
 #if defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
-  strand_wrapped_handler(this_type&& other)
-    : strand_(other.strand_)
+  lockable_wrapped_handler(this_type&& other)
+    : lockable_(other.lockable_)
     , handler_(std::move(other.handler_))
   {
 #if !defined(NDEBUG)
     // For the check of usage of asio invocation.
-    other.strand_ = 0;
+    other.lockable_ = 0;
 #endif
   }
 
-  strand_wrapped_handler(const this_type& other)
-    : strand_(other.strand_)
+  lockable_wrapped_handler(const this_type& other)
+    : lockable_(other.lockable_)
     , handler_(other.handler_)
   {
   }
@@ -100,9 +74,8 @@ public:
 
 #else // defined(MA_HAS_RVALUE_REFS)
 
-  strand_wrapped_handler(boost::asio::io_service::strand& strand,
-      const Handler& handler)
-    : strand_(boost::addressof(strand))
+  lockable_wrapped_handler(Lockable& lockable, const Handler& handler)
+    : lockable_(boost::addressof(lockable))
     , handler_(handler)
   {
   }
@@ -110,23 +83,26 @@ public:
 #endif // defined(MA_HAS_RVALUE_REFS)
 
 #if !defined(NDEBUG)
-  ~strand_wrapped_handler()
+  ~lockable_wrapped_handler()
   {
     // For the check of usage of asio invocation.
-    strand_ = 0;
+    lockable_ = 0;
   }
 #endif
 
   friend void* asio_handler_allocate(std::size_t size, this_type* context)
   {
+    // Forward to asio_handler_allocate provided by the specified allocation
+    // context.
     return ma_asio_handler_alloc_helpers::allocate(size, context->handler_);
   }
 
-  friend void asio_handler_deallocate(void* pointer, std::size_t size,
+  friend void asio_handler_deallocate(void* pointer, std::size_t size, 
       this_type* context)
   {
-    ma_asio_handler_alloc_helpers::deallocate(pointer, size,
-        context->handler_);
+    // Forward to asio_handler_deallocate provided by the specified allocation
+    // context.
+    ma_asio_handler_alloc_helpers::deallocate(pointer, size, context->handler_);
   }
 
 #if defined(MA_HAS_RVALUE_REFS)
@@ -134,9 +110,12 @@ public:
   template <typename Function>
   friend void asio_handler_invoke(Function&& function, this_type* context)
   {
-    boost::asio::io_service::strand& strand = *context->strand_;
-    strand.dispatch(make_context_wrapped_handler(context->handler_,
-        std::forward<Function>(function)));
+    // Acquire lock
+    Lockable& lockable = *context->lockable_;
+    boost::lock_guard<Lockable> lock_guard(lockable);
+    // Forward to asio_handler_invoke provided by source handler.
+    ma_asio_handler_invoke_helpers::invoke(std::forward<Function>(function),
+        context->handler_);
   }
 
 #else // defined(MA_HAS_RVALUE_REFS)
@@ -144,8 +123,11 @@ public:
   template <typename Function>
   friend void asio_handler_invoke(const Function& function, this_type* context)
   {
-    boost::asio::io_service::strand& strand = *context->strand_;
-    strand.dispatch(make_context_wrapped_handler(context->handler_, function));
+    // Acquire lock
+    Lockable& lockable = *context->lockable_;
+    boost::lock_guard<Lockable> lock_guard(lockable);
+    // Forward to asio_handler_invoke provided by source handler.
+    ma_asio_handler_invoke_helpers::invoke(function, context->handler_);
   }
 
 #endif // defined(MA_HAS_RVALUE_REFS)
@@ -227,9 +209,9 @@ public:
   }
 
 private:
-  boost::asio::io_service::strand* strand_;
+  Lockable* lockable_;
   Handler handler_;
-}; // class strand_wrapped_handler
+}; // class lockable_wrapped_handler
 
 #if defined(_MSC_VER)
 #pragma warning(pop)
@@ -237,37 +219,31 @@ private:
 
 #if defined(MA_HAS_RVALUE_REFS)
 
-template <typename Handler>
-inline strand_wrapped_handler<typename remove_cv_reference<Handler>::type>
-make_strand_wrapped_handler(boost::asio::io_service::strand& strand,
-    Handler&& handler)
+/// Helper for creation of wrapped handler.
+template <typename Lockable, typename Handler>
+inline lockable_wrapped_handler<
+    typename remove_cv_reference<Lockable>::type,
+    typename remove_cv_reference<Handler>::type>
+make_lockable_wrapped_handler(Lockable&& lockable, Handler&& handler)
 {
-  typedef typename remove_cv_reference<Handler>::type handler_type;
-  return strand_wrapped_handler<handler_type>(strand,
-      std::forward<Handler>(handler));
+  typedef typename remove_cv_reference<Lockable>::type lockable_type;
+  typedef typename remove_cv_reference<Handler>::type  handler_type;
+  return lockable_wrapped_handler<lockable_type, handler_type>(
+      std::forward<Lockable>(lockable), std::forward<Handler>(handler));
 }
 
 #else // defined(MA_HAS_RVALUE_REFS)
 
-template <typename Handler>
-inline strand_wrapped_handler<Handler>
-make_strand_wrapped_handler(boost::asio::io_service::strand& strand,
-    const Handler& handler)
+/// Helper for creation of wrapped handler.
+template <typename Lockable, typename Handler>
+inline lockable_wrapped_handler<Lockable, Handler>
+make_lockable_wrapped_handler(Lockable& lockable, const Handler& handler)
 {
-  return strand_wrapped_handler<Handler>(strand, handler);
-} // make_strand_wrapped_handler
+  return lockable_wrapped_handler<Lockable, Handler>(lockable, handler);
+}
 
 #endif // defined(MA_HAS_RVALUE_REFS)
 
-#define MA_STRAND_WRAP(strand, handler) \
-    (::ma::make_strand_wrapped_handler((strand), (handler)))
-
-#else // defined(MA_BOOST_ASIO_HEAVY_STRAND_WRAPPED_HANDLER)
-
-#define MA_STRAND_WRAP(strand, handler) ((strand).wrap(handler))
-
-#endif // defined(MA_BOOST_ASIO_HEAVY_STRAND_WRAPPED_HANDLER)
-
 } // namespace ma
 
-#endif // MA_STRAND_WRAPPED_HANDLER_HPP
+#endif // MA_LOCKABLE_WRAPPED_HANDLER_HPP
