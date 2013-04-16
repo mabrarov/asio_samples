@@ -34,7 +34,7 @@ namespace ma {
 
 namespace detail {
 
-/// Simplified double-linked intrusive list.
+/// Simplified doubly linked intrusive list.
 /**
  * Requirements:
  * if value is rvalue of type Value then expression
@@ -73,6 +73,9 @@ public:
   /// Never throws
   void pop_front();
 
+  /// Never throws
+  bool empty();
+
 private:
   static base_hook& get_hook(reference value);
 
@@ -85,7 +88,7 @@ class intrusive_list<Value>::base_hook
 private:
   typedef base_hook this_type;
 
-public:
+protected:
   base_hook();
   base_hook(const this_type&);
   base_hook& operator=(const this_type&);
@@ -95,6 +98,64 @@ private:
   pointer prev_;
   pointer next_;
 }; // class intrusive_list::base_hook
+
+/// Simplified singly linked intrusive list.
+/**
+ * Requirements:
+ * if value is rvalue of type Value then expression
+ * static_cast&lt;intrusive_slist&lt;Value&gt;::base_hook&amp;&gt;(Value)
+ * must be well formed and accessible from intrusive_slist&lt;Value&gt;.
+ */
+template<typename Value>
+class intrusive_slist : private boost::noncopyable
+{
+public:
+  typedef Value  value_type;
+  typedef Value* pointer;
+  typedef Value& reference;
+
+  /// Required hook for items of the list.
+  class base_hook;
+
+  /// Never throws
+  intrusive_slist();
+
+  /// Never throws
+  pointer front() const;
+
+  /// Never throws
+  static pointer next(reference value);
+
+  /// Never throws
+  void push_front(reference value);
+
+  /// Never throws
+  void pop_front();
+
+  /// Never throws
+  bool empty();
+
+private:
+  static base_hook& get_hook(reference value);
+
+  pointer front_;
+}; // class intrusive_slist
+
+template<typename Value>
+class intrusive_slist<Value>::base_hook
+{
+private:
+  typedef base_hook this_type;
+
+protected:
+  base_hook();
+  base_hook(const this_type&);
+  base_hook& operator=(const this_type&);
+
+private:
+  friend class intrusive_slist<Value>;
+  pointer next_;
+}; // class intrusive_slist::base_hook
 
 // Special derived service id type to keep classes header-file only.
 // Copied from boost/asio/io_service.hpp.
@@ -273,7 +334,7 @@ void intrusive_list<Value>::push_front(reference value)
   base_hook& value_hook = get_hook(value);
 
   BOOST_ASSERT_MSG(!value_hook.prev_ && !value_hook.next_,
-      "The value to push has to be not linked");
+      "The value to push has to be unlinked");
 
   value_hook.next_ = front_;
   if (value_hook.next_)
@@ -327,8 +388,89 @@ void intrusive_list<Value>::pop_front()
 }
 
 template<typename Value>
+bool intrusive_list<Value>::empty()
+{
+  return !front_;
+}
+
+template<typename Value>
 typename intrusive_list<Value>::base_hook&
 intrusive_list<Value>::get_hook(reference value)
+{
+  return static_cast<base_hook&>(value);
+}
+
+template<typename Value>
+intrusive_slist<Value>::base_hook::base_hook()
+  : next_(0)
+{
+}
+
+template<typename Value>
+intrusive_slist<Value>::base_hook::base_hook(const this_type&)
+  : next_(0)
+{
+}
+
+template<typename Value>
+typename intrusive_slist<Value>::base_hook&
+intrusive_slist<Value>::base_hook::operator=(const this_type&)
+{
+  return *this;
+}
+
+template<typename Value>
+intrusive_slist<Value>::intrusive_slist()
+  : front_(0)
+{
+}
+
+template<typename Value>
+typename intrusive_slist<Value>::pointer
+intrusive_slist<Value>::front() const
+{
+  return front_;
+}
+
+template<typename Value>
+typename intrusive_slist<Value>::pointer
+intrusive_slist<Value>::next(reference value)
+{
+  return get_hook(value).next_;
+}
+
+template<typename Value>
+void intrusive_slist<Value>::push_front(reference value)
+{
+  base_hook& value_hook = get_hook(value);
+
+  BOOST_ASSERT_MSG(!value_hook.next_, "The value to push has to be unlinked");
+
+  value_hook.next_ = front_;
+  front_ = boost::addressof(value);
+}
+
+template<typename Value>
+void intrusive_slist<Value>::pop_front()
+{
+  BOOST_ASSERT_MSG(front_, "The container is empty");
+
+  base_hook& value_hook = get_hook(*front_);
+  front_ = value_hook.next_;  
+  value_hook.next_ = 0;
+
+  BOOST_ASSERT_MSG(!value_hook.next_, "The popped value has to be unlinked");
+}
+
+template<typename Value>
+bool intrusive_slist<Value>::empty()
+{
+  return !front_;
+}
+
+template<typename Value>
+typename intrusive_slist<Value>::base_hook&
+intrusive_slist<Value>::get_hook(reference value)
 {
   return static_cast<base_hook&>(value);
 }
@@ -355,11 +497,11 @@ inline bad_handler_call::bad_handler_call()
 }
 
 class handler_storage_service::stored_base
-  : public detail::intrusive_list<stored_base>::base_hook
+  : public detail::intrusive_slist<stored_base>::base_hook
 {
 private:
   typedef stored_base this_type;
-  typedef detail::intrusive_list<stored_base>::base_hook base_type;
+  typedef detail::intrusive_slist<stored_base>::base_hook base_type;
 
 public:
 
@@ -1194,6 +1336,7 @@ inline bool handler_storage_service::has_target(const implementation_type& impl)
 
 inline handler_storage_service::~handler_storage_service()
 {
+  BOOST_ASSERT_MSG(shutdown_done_, "shutdown_service() was not called");
 }
 
 inline void handler_storage_service::shutdown_service()
@@ -1201,7 +1344,7 @@ inline void handler_storage_service::shutdown_service()
   // Restrict usage of service.
   shutdown_done_ = true;
   // Take ownership of all still active handlers.
-  detail::intrusive_list<stored_base> stored_handlers;
+  detail::intrusive_slist<stored_base> stored_handlers;
   {
     lock_guard impl_list_lock(impl_list_mutex_);
     for (impl_base* impl = impl_list_.front(); impl;

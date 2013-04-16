@@ -49,6 +49,12 @@ void run_test();
 
 } // namespace lockable_wrapper
 
+namespace handler_storage_service_destruction {
+
+void run_test();
+
+} // namespace handler_storage_service_destruction
+
 namespace handler_storage_target {
 
 void run_test();
@@ -67,6 +73,7 @@ int main(int /*argc*/, char* /*argv*/[])
   try
   {
     ma::test::lockable_wrapper::run_test();
+    ma::test::handler_storage_service_destruction::run_test();
     ma::test::handler_storage_target::run_test();
 
 //    test_handler_storage_arg(io_service);
@@ -213,6 +220,86 @@ void run_test()
 } // run_test
 
 } // namespace lockable_wrapper
+
+namespace handler_storage_service_destruction {
+
+typedef ma::handler_storage<void> handler_storage_type;
+typedef boost::shared_ptr<handler_storage_type> handler_storage_ptr;
+
+class handler
+{
+private:
+  typedef handler this_type;
+
+public:
+  handler(int num, const handler_storage_ptr& handler_storage)
+    : num_(num)
+    , handler_storage_(handler_storage)
+  {
+  }
+
+  ~handler()
+  {
+    std::cout
+        << "ma::test::handler_storage_service_destruction::handler::~handler()"
+        << std::endl << "num_: " << num_ << std::endl;
+  }
+
+  handler(const this_type& other)
+    : num_(other.num_)
+    , handler_storage_(other.handler_storage_)
+  {
+  }
+
+#if defined(MA_HAS_RVALUE_REFS)
+  handler(this_type&& other)
+    : num_(other.num_)
+    , handler_storage_(std::move(other.handler_storage_))
+  {
+    other.num_ = 0;
+  }
+#endif
+
+  void operator()()
+  {
+    std::cout
+        << "ma::test::handler_storage_service_destruction::handler::operator()"
+        << std::endl << "num_: " << num_ << std::endl;
+  }  
+  
+private:
+  int num_;
+  handler_storage_ptr handler_storage_;
+}; // class handler
+
+void run_test()
+{
+  std::cout << "*** ma::test::handler_storage_service_destruction ***" 
+      << std::endl;
+  std::size_t cpu_count = boost::thread::hardware_concurrency();
+  std::size_t work_thread_count = cpu_count > 1 ? cpu_count : 2;
+  boost::asio::io_service io_service(work_thread_count);
+ 
+  handler_storage_ptr handler_storage1(
+      boost::make_shared<handler_storage_type>(boost::ref(io_service)));
+  handler_storage1->store(handler(1, handler_storage1));
+
+  handler_storage_ptr handler_storage2(
+      boost::make_shared<handler_storage_type>(boost::ref(io_service)));
+  handler_storage2->store(handler(2, handler_storage1));
+
+  {
+    handler_storage_ptr handler_storage(
+        boost::make_shared<handler_storage_type>(boost::ref(io_service)));
+    handler_storage->store(handler(3, handler_storage));
+  }
+
+  handler_storage_ptr handler_storage3(
+      boost::make_shared<handler_storage_type>(boost::ref(io_service)));
+  handler_storage3->store(handler(4, handler_storage3));
+}
+
+} // namespace handler_storage_service_destruction
 
 namespace handler_storage_target {
 
