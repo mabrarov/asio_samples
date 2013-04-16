@@ -11,7 +11,7 @@ SUBDIRS  = asio_performance_test_client\
            async_basics \
            async_basics2 \
            async_connect \
-           echo_client1 \
+           handler_storage_test \
            echo_server \
            nmea_client \
            qt_echo_server

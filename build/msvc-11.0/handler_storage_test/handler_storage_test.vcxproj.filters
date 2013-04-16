@@ -52,19 +52,13 @@
     <ClInclude Include="..\..\..\include\ma\handler_allocator.hpp">
       <Filter>Header Files\ma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\ma\strand_wrapped_handler.hpp">
-      <Filter>Header Files\ma</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\ma\shared_ptr_factory.hpp">
-      <Filter>Header Files\ma</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\ma\sp_intrusive_list.hpp">
-      <Filter>Header Files\ma</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\include\ma\context_invoke_handler.hpp">
       <Filter>Header Files\ma</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\ma\lockable_wrapped_handler.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\strand_wrapped_handler.hpp">
       <Filter>Header Files\ma</Filter>
     </ClInclude>
   </ItemGroup>

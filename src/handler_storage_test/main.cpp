@@ -30,8 +30,6 @@
 #include <ma/handler_allocator.hpp>
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/handler_storage.hpp>
-#include <ma/sp_intrusive_list.hpp>
-#include <ma/shared_ptr_factory.hpp>
 #include <ma/lockable_wrapped_handler.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)

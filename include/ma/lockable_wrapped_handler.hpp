@@ -14,7 +14,7 @@
 
 #include <cstddef>
 #include <boost/utility/addressof.hpp>
-#include <boost/thread/lock_guard.hpp>
+#include <boost/thread/locks.hpp>
 #include <ma/config.hpp>
 #include <ma/handler_alloc_helpers.hpp>
 #include <ma/handler_invoke_helpers.hpp>
