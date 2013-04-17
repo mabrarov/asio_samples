@@ -59,6 +59,12 @@ void run_test();
 
 } // namespace handler_storage_target
 
+namespace handler_storage_arg {
+
+void run_test();
+
+} // namespace handler_storage_arg
+
 } // namespace test
 } // namespace ma
 
@@ -73,6 +79,7 @@ int main(int /*argc*/, char* /*argv*/[])
     ma::test::lockable_wrapper::run_test();
     ma::test::handler_storage_service_destruction::run_test();
     ma::test::handler_storage_target::run_test();
+    ma::test::handler_storage_arg::run_test();
 
 //    test_handler_storage_arg(io_service);
 //
@@ -362,7 +369,7 @@ void run_test()
   std::size_t cpu_count = boost::thread::hardware_concurrency();
   std::size_t work_thread_count = cpu_count > 1 ? cpu_count : 2;
   boost::asio::io_service io_service(work_thread_count);
-  io_service_pool work_threads(io_service, work_thread_count);  
+  io_service_pool work_threads(io_service, work_thread_count);
 
   {
     typedef ma::handler_storage<int, handler_base> handler_storage_type;
@@ -403,49 +410,122 @@ void run_test()
 
 } // namespace handler_storage_target
 
+namespace handler_storage_arg {
+
+class no_arg_handler
+{
+public:
+  no_arg_handler(int value, wall& w)
+    : value_(value)
+    , wall_(&w)
+  {
+  }
+
+  void operator()()
+  {
+    std::cout << value_ << std::endl;
+    wall_->dec();
+  }
+
+private:
+  int value_;
+  wall* wall_;
+}; // class no_arg_handler
+
+class test_handler_base
+{
+private:
+  typedef test_handler_base this_type;
+
+public:
+  virtual int get_value() const = 0;
+
+protected:
+  test_handler_base()
+  {
+  }
+
+  ~test_handler_base()
+  {
+  }  
+}; // class test_handler_base
+
+class no_arg_handler_with_target : public test_handler_base
+{
+public:
+  explicit no_arg_handler_with_target(int value, wall& w)
+    : value_(value)
+    , wall_(&w)
+  {
+  }
+
+  void operator()(int value)
+  {
+    std::cout << value << " : " << value_ << std::endl;
+    wall_->dec();
+  }
+
+  int get_value() const
+  {
+    return value_;
+  }
+
+private:
+  int value_;
+  wall* wall_;
+}; // class no_arg_handler_with_target
+
+void run_test()
+{
+  std::cout << "*** ma::test::handler_storage_arg ***" << std::endl;
+
+  std::size_t cpu_count = boost::thread::hardware_concurrency();
+  std::size_t work_thread_count = cpu_count > 1 ? cpu_count : 2;
+  boost::asio::io_service io_service(work_thread_count);
+  io_service_pool work_threads(io_service, work_thread_count);
+  wall done_wall;
+
+  {
+    typedef ma::handler_storage<void> handler_storage_type;
+
+    handler_storage_type handler_storage(io_service);
+    handler_storage.store(no_arg_handler(4, done_wall));
+
+    std::cout << handler_storage.target() << std::endl;
+    done_wall.inc();
+    handler_storage.post();
+  }
+
+  {
+    typedef ma::handler_storage<int, test_handler_base> handler_storage_type;
+
+    handler_storage_type handler_storage(io_service);
+    handler_storage.store(no_arg_handler_with_target(4, done_wall));
+
+    std::cout << handler_storage.target()->get_value() << std::endl;
+    done_wall.inc();
+    handler_storage.post(1);
+  }
+
+  {
+    boost::asio::io_service io_service;
+
+    ma::handler_storage<int, test_handler_base> handler_storage1(io_service);
+    handler_storage1.store(no_arg_handler_with_target(1, done_wall));
+
+    ma::handler_storage<void> handler_storage2(io_service);
+    handler_storage2.store(no_arg_handler(2, done_wall));    
+  }
+
+  done_wall.wait();
+}
+
+} // namespace handler_storage_arg
+
 } // namespace test
 } // namespace ma
 
 //namespace {
-//
-//class no_arg_handler
-//{
-//public:
-//  explicit no_arg_handler(int value)
-//    : value_(value)
-//  {
-//  }
-//
-//  void operator()()
-//  {
-//    std::cout << value_ << std::endl;
-//  }
-//
-//private:
-//  int value_;
-//}; // class no_arg_handler
-//
-//class no_arg_handler_with_target : public test_handler_base
-//{
-//public:
-//  explicit no_arg_handler_with_target(int value)
-//    : value_(value)
-//  {
-//  }
-//
-//  void operator()()
-//  {
-//    std::cout << value_ << std::endl;
-//  }
-//
-//  int get_value() const
-//  {
-//    return value_;
-//  }
-//
-//private:
-//  int value_;
-//}; // class no_arg_handler_with_target
 //
 //class later_handler : public test_handler_base
 //{
@@ -495,53 +575,7 @@ void run_test()
 //
 //void test_handler_storage_arg(boost::asio::io_service& io_service)
 //{
-//  std::cout << "*** test_handler_storage_arg ***" << std::endl;
-//  {
-//    typedef ma::handler_storage<void> handler_storage_type;
-//
-//    handler_storage_type handler(io_service);
-//    handler.store(no_arg_handler(4));
-//
-//    std::cout << handler.target() << std::endl;
-//    handler.post();
-//  }
-//
-//  {
-//    typedef ma::handler_storage<void, test_handler_base> handler_storage_type;
-//
-//    handler_storage_type handler(io_service);
-//    handler.store(no_arg_handler_with_target(4));
-//
-//    std::cout << handler.target()->get_value() << std::endl;
-//    handler.post();
-//  }
-//
-//  {
-//    boost::asio::io_service io_service;
-//
-//    ma::handler_storage<void, test_handler_base> handler1(io_service);
-//    handler1.store(no_arg_handler_with_target(1));
-//
-//    ma::handler_storage<void> handler2(io_service);
-//    handler2.store(no_arg_handler(2));
-//
-//    ma::handler_storage<int> handler3(io_service);
-//    handler3.store(test_handler(3));
-//
-//    ma::handler_storage<int, test_handler_base> handler4(io_service);
-//    handler4.store(test_handler(4));
-//
-//    later_handler::storage_holder_ptr storage_holder1 =
-//        boost::make_shared<later_handler::storage_holder>(
-//            boost::ref(io_service));
-//
-//    later_handler::storage_holder_ptr storage_holder2 =
-//        boost::make_shared<later_handler::storage_holder>(
-//            boost::ref(io_service));
-//
-//    storage_holder1->handler_storage().store(later_handler(5, storage_holder1));
-//    storage_holder2->handler_storage().store(later_handler(6, storage_holder2));
-//  }
+//  
 //}
 //
 //#if defined(MA_HAS_RVALUE_REFS)
