@@ -134,10 +134,10 @@ private:
   boost::thread_group threads_;
 }; // class io_service_pool
 
-class wall : boost::noncopyable 
+class threshold : boost::noncopyable 
 {
 private:
-  typedef wall this_type;
+  typedef threshold this_type;
   typedef boost::mutex mutex_type;
   typedef boost::unique_lock<mutex_type> lock_type;
   typedef boost::condition_variable condition_variable_type;
@@ -145,7 +145,7 @@ private:
 public:
   typedef std::size_t value_type;
 
-  explicit wall(value_type value = 0)
+  explicit threshold(value_type value = 0)
     : value_(value)
   {
   }
@@ -182,7 +182,7 @@ private:
   mutex_type mutex_;
   condition_variable_type condition_variable_;
   value_type value_;
-}; // class wall
+}; // class threshold
 
 namespace lockable_wrapper {
 
@@ -203,11 +203,11 @@ void run_test()
     data = "Test";
   }  
 
-  wall done_wall(1);  
-  io_service.post(ma::make_lockable_wrapped_handler(mutex, [&data, &done_wall]()
+  threshold done_threshold(1);  
+  io_service.post(ma::make_lockable_wrapped_handler(mutex, [&data, &done_threshold]()
   {
     data = data + data;
-    done_wall.dec();
+    done_threshold.dec();
   }));
 
   {
@@ -215,7 +215,7 @@ void run_test()
     data = "Zero";
   }
 
-  done_wall.wait();
+  done_threshold.wait();
 
   {
     boost::lock_guard<boost::mutex> lock_guard(mutex);
@@ -390,19 +390,19 @@ void run_test()
     {
       typedef ma::handler_storage<void> handler_storage2_type;
 
-      wall done_wall;
+      threshold done_threshold;
 
       handler_storage2_type handler_storage2(io_service);
-      handler_storage2.store([&done_wall]
+      handler_storage2.store([&done_threshold]
       {
           std::cout << "in lambda" << std::endl;
-          done_wall.dec();
+          done_threshold.dec();
       });
       std::cout << handler_storage2.target() << std::endl;
 
-      done_wall.inc();
+      done_threshold.inc();
       handler_storage2.post();
-      done_wall.wait();
+      done_threshold.wait();
     }
 #endif
   }  
@@ -415,21 +415,21 @@ namespace handler_storage_arg {
 class no_arg_handler
 {
 public:
-  no_arg_handler(int value, wall& w)
+  no_arg_handler(int value, threshold& w)
     : value_(value)
-    , wall_(&w)
+    , threshold_(&w)
   {
   }
 
   void operator()()
   {
     std::cout << value_ << std::endl;
-    wall_->dec();
+    threshold_->dec();
   }
 
 private:
   int value_;
-  wall* wall_;
+  threshold* threshold_;
 }; // class no_arg_handler
 
 class test_handler_base
@@ -453,16 +453,16 @@ protected:
 class no_arg_handler_with_target : public test_handler_base
 {
 public:
-  explicit no_arg_handler_with_target(int value, wall& w)
+  explicit no_arg_handler_with_target(int value, threshold& w)
     : value_(value)
-    , wall_(&w)
+    , threshold_(&w)
   {
   }
 
   void operator()(int value)
   {
     std::cout << value << " : " << value_ << std::endl;
-    wall_->dec();
+    threshold_->dec();
   }
 
   int get_value() const
@@ -472,7 +472,7 @@ public:
 
 private:
   int value_;
-  wall* wall_;
+  threshold* threshold_;
 }; // class no_arg_handler_with_target
 
 void run_test()
@@ -483,16 +483,16 @@ void run_test()
   std::size_t work_thread_count = cpu_count > 1 ? cpu_count : 2;
   boost::asio::io_service io_service(work_thread_count);
   io_service_pool work_threads(io_service, work_thread_count);
-  wall done_wall;
+  threshold done_threshold;
 
   {
     typedef ma::handler_storage<void> handler_storage_type;
 
     handler_storage_type handler_storage(io_service);
-    handler_storage.store(no_arg_handler(4, done_wall));
+    handler_storage.store(no_arg_handler(4, done_threshold));
 
     std::cout << handler_storage.target() << std::endl;
-    done_wall.inc();
+    done_threshold.inc();
     handler_storage.post();
   }
 
@@ -500,10 +500,10 @@ void run_test()
     typedef ma::handler_storage<int, test_handler_base> handler_storage_type;
 
     handler_storage_type handler_storage(io_service);
-    handler_storage.store(no_arg_handler_with_target(4, done_wall));
+    handler_storage.store(no_arg_handler_with_target(4, done_threshold));
 
     std::cout << handler_storage.target()->get_value() << std::endl;
-    done_wall.inc();
+    done_threshold.inc();
     handler_storage.post(1);
   }
 
@@ -511,13 +511,13 @@ void run_test()
     boost::asio::io_service io_service;
 
     ma::handler_storage<int, test_handler_base> handler_storage1(io_service);
-    handler_storage1.store(no_arg_handler_with_target(1, done_wall));
+    handler_storage1.store(no_arg_handler_with_target(1, done_threshold));
 
     ma::handler_storage<void> handler_storage2(io_service);
-    handler_storage2.store(no_arg_handler(2, done_wall));    
+    handler_storage2.store(no_arg_handler(2, done_threshold));    
   }
 
-  done_wall.wait();
+  done_threshold.wait();
 }
 
 } // namespace handler_storage_arg
