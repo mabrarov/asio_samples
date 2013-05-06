@@ -19,6 +19,7 @@
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
 #include <boost/optional.hpp>
+#include <boost/function.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/locks.hpp>
@@ -412,24 +413,26 @@ void run_test()
 
 namespace handler_storage_arg {
 
+typedef boost::function<void (void)> continuation;
+
 class no_arg_handler
 {
 public:
-  no_arg_handler(int value, threshold& w)
+  no_arg_handler(int value, const continuation& cont)
     : value_(value)
-    , threshold_(&w)
+    , cont_(cont)
   {
   }
 
   void operator()()
   {
     std::cout << value_ << std::endl;
-    threshold_->dec();
+    cont_();
   }
 
 private:
   int value_;
-  threshold* threshold_;
+  continuation cont_;
 }; // class no_arg_handler
 
 class test_handler_base
@@ -453,16 +456,16 @@ protected:
 class no_arg_handler_with_target : public test_handler_base
 {
 public:
-  explicit no_arg_handler_with_target(int value, threshold& w)
+  no_arg_handler_with_target(int value, const continuation& cont)
     : value_(value)
-    , threshold_(&w)
+    , cont_(cont)
   {
   }
 
   void operator()(int value)
   {
     std::cout << value << " : " << value_ << std::endl;
-    threshold_->dec();
+    cont_();
   }
 
   int get_value() const
@@ -472,7 +475,7 @@ public:
 
 private:
   int value_;
-  threshold* threshold_;
+  continuation cont_;
 }; // class no_arg_handler_with_target
 
 void run_test()
@@ -489,7 +492,8 @@ void run_test()
     typedef ma::handler_storage<void> handler_storage_type;
 
     handler_storage_type handler_storage(io_service);
-    handler_storage.store(no_arg_handler(4, done_threshold));
+    handler_storage.store(no_arg_handler(4, 
+        boost::bind(&threshold::dec, &done_threshold)));
 
     std::cout << handler_storage.target() << std::endl;
     done_threshold.inc();
@@ -500,7 +504,8 @@ void run_test()
     typedef ma::handler_storage<int, test_handler_base> handler_storage_type;
 
     handler_storage_type handler_storage(io_service);
-    handler_storage.store(no_arg_handler_with_target(4, done_threshold));
+    handler_storage.store(no_arg_handler_with_target(4, 
+        boost::bind(&threshold::dec, &done_threshold)));
 
     std::cout << handler_storage.target()->get_value() << std::endl;
     done_threshold.inc();
@@ -511,10 +516,12 @@ void run_test()
     boost::asio::io_service io_service;
 
     ma::handler_storage<int, test_handler_base> handler_storage1(io_service);
-    handler_storage1.store(no_arg_handler_with_target(1, done_threshold));
+    handler_storage1.store(no_arg_handler_with_target(1, 
+        boost::bind(&threshold::dec, &done_threshold)));
 
     ma::handler_storage<void> handler_storage2(io_service);
-    handler_storage2.store(no_arg_handler(2, done_threshold));    
+    handler_storage2.store(no_arg_handler(2, 
+        boost::bind(&threshold::dec, &done_threshold)));    
   }
 
   done_threshold.wait();
