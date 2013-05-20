@@ -110,9 +110,8 @@ public:
   template <typename Function>
   friend void asio_handler_invoke(Function&& function, this_type* context)
   {
-    // Acquire lock
-    Lockable& lockable = *context->lockable_;
-    boost::lock_guard<Lockable> lock_guard(lockable);
+    // Acquire lock    
+    boost::lock_guard<Lockable> lock_guard(*context->lockable_);
     // Forward to asio_handler_invoke provided by source handler.
     ma_asio_handler_invoke_helpers::invoke(std::forward<Function>(function),
         context->handler_);
@@ -123,9 +122,8 @@ public:
   template <typename Function>
   friend void asio_handler_invoke(const Function& function, this_type* context)
   {
-    // Acquire lock
-    Lockable& lockable = *context->lockable_;
-    boost::lock_guard<Lockable> lock_guard(lockable);
+    // Acquire lock    
+    boost::lock_guard<Lockable> lock_guard(*context->lockable_);
     // Forward to asio_handler_invoke provided by source handler.
     ma_asio_handler_invoke_helpers::invoke(function, context->handler_);
   }
@@ -222,14 +220,12 @@ private:
 /// Helper for creation of wrapped handler.
 template <typename Lockable, typename Handler>
 inline lockable_wrapped_handler<
-    typename remove_cv_reference<Lockable>::type,
-    typename remove_cv_reference<Handler>::type>
-make_lockable_wrapped_handler(Lockable&& lockable, Handler&& handler)
+    Lockable, typename remove_cv_reference<Handler>::type>
+make_lockable_wrapped_handler(Lockable& lockable, Handler&& handler)
 {
-  typedef typename remove_cv_reference<Lockable>::type lockable_type;
-  typedef typename remove_cv_reference<Handler>::type  handler_type;
-  return lockable_wrapped_handler<lockable_type, handler_type>(
-      std::forward<Lockable>(lockable), std::forward<Handler>(handler));
+  typedef typename remove_cv_reference<Handler>::type handler_type;
+  return lockable_wrapped_handler<Lockable, handler_type>(
+      lockable, std::forward<Handler>(handler));
 }
 
 #else // defined(MA_HAS_RVALUE_REFS)
