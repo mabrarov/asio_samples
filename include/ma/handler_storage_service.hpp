@@ -275,7 +275,7 @@ private:
   // Double-linked intrusive list of active implementations.
   impl_base_list impl_list_;
   // Shutdown state flag.
-  bool shutdown_done_;
+  bool shutdown_;
 }; // class handler_storage_service
 
 namespace detail {
@@ -1189,13 +1189,13 @@ inline handler_storage_service::impl_base::~impl_base()
 inline handler_storage_service::handler_storage_service(
     boost::asio::io_service& io_service)
   : detail::service_base<handler_storage_service>(io_service)
-  , shutdown_done_(false)
+  , shutdown_(false)
 {
 }
 
 inline void handler_storage_service::construct(implementation_type& impl)
 {
-  if (!shutdown_done_)
+  if (!shutdown_)
   {
     // Add implementation to the list of active implementations.
     lock_guard impl_list_lock(impl_list_mutex_);
@@ -1206,7 +1206,7 @@ inline void handler_storage_service::construct(implementation_type& impl)
 inline void handler_storage_service::move_construct(implementation_type& impl,
     implementation_type& other_impl)
 {
-  if (!shutdown_done_)
+  if (!shutdown_)
   {
     // Add implementation to the list of active implementations.
     {
@@ -1221,7 +1221,7 @@ inline void handler_storage_service::move_construct(implementation_type& impl,
 
 inline void handler_storage_service::destroy(implementation_type& impl)
 {
-  if (!shutdown_done_)
+  if (!shutdown_)
   {
     {
       // Remove implementation from the list of active implementations.
@@ -1247,7 +1247,7 @@ template <typename Handler, typename Arg, typename Target>
 void handler_storage_service::store(implementation_type& impl, Handler handler)
 {
   // If service is (was) in shutdown state then it can't store handler.
-  if (!shutdown_done_)
+  if (!shutdown_)
   {
     typedef typename remove_cv_reference<Arg>::type           arg_type;
     typedef typename remove_cv_reference<Target>::type        target_type;
@@ -1336,13 +1336,13 @@ inline bool handler_storage_service::has_target(const implementation_type& impl)
 
 inline handler_storage_service::~handler_storage_service()
 {
-  BOOST_ASSERT_MSG(shutdown_done_, "shutdown_service() was not called");
+  BOOST_ASSERT_MSG(shutdown_, "shutdown_service() was not called");
 }
 
 inline void handler_storage_service::shutdown_service()
 {
   // Restrict usage of service.
-  shutdown_done_ = true;
+  shutdown_ = true;
   // Take ownership of all still active handlers.
   detail::intrusive_slist<stored_base> stored_handlers;
   {
