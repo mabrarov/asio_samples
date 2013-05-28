@@ -26,7 +26,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/noncopyable.hpp>
-#include <boost/utility/in_place_factory.hpp> 
+#include <boost/utility/in_place_factory.hpp>
 #include <ma/config.hpp>
 #include <ma/handler_allocator.hpp>
 #include <ma/custom_alloc_handler.hpp>
@@ -116,7 +116,7 @@ public:
     for (std::size_t i = 0; i < size; ++i)
     {
       threads_.create_thread(
-        boost::bind(&boost::asio::io_service::run, &io_service));
+          boost::bind(&boost::asio::io_service::run, &io_service));
     }
   }
 
@@ -135,14 +135,14 @@ private:
   boost::thread_group threads_;
 }; // class io_service_pool
 
-class threshold : boost::noncopyable 
+class threshold : boost::noncopyable
 {
 private:
   typedef threshold this_type;
   typedef boost::mutex mutex_type;
   typedef boost::unique_lock<mutex_type> lock_type;
   typedef boost::condition_variable condition_variable_type;
-  
+
 public:
   typedef std::size_t value_type;
 
@@ -187,6 +187,27 @@ private:
 
 namespace lockable_wrapper {
 
+typedef std::string data_type;
+typedef boost::function<void (void)> continuation;
+
+void mutating_func1(data_type& d, const continuation& cont)
+{
+  d += " 1 ";
+  cont();
+}
+
+void mutating_func2(data_type& d, const continuation& cont)
+{
+  d += " 2 ";
+  cont();
+}
+
+void mutating_func3(data_type& d, const continuation& cont)
+{
+  d += " 3 ";
+  cont();
+}
+
 void run_test()
 {
   std::cout << "*** ma::test::lockable_wrapper ***" << std::endl;
@@ -195,114 +216,352 @@ void run_test()
   std::size_t work_thread_count = cpu_count > 1 ? cpu_count : 2;
   boost::asio::io_service io_service(work_thread_count);
   io_service_pool work_threads(io_service, work_thread_count);
-  
+
   boost::mutex mutex;
   std::string data;
-  
   {
     boost::lock_guard<boost::mutex> lock_guard(mutex);
-    data = "Test";
-  }  
-
-  threshold done_threshold(1);  
-  io_service.post(ma::make_lockable_wrapped_handler(mutex, [&data, &done_threshold]()
-  {
-    data = data + data;
-    done_threshold.dec();
-  }));
-
-  {
-    boost::lock_guard<boost::mutex> data_guard(mutex);
-    data = "Zero";
+    data = "0";
   }
 
+  threshold done_threshold(1);
+  {
+    boost::lock_guard<boost::mutex> data_guard(mutex);
+
+    io_service.post(ma::make_lockable_wrapped_handler(mutex, boost::bind(
+        mutating_func1, boost::ref(data), continuation(
+            boost::bind(&threshold::dec, boost::ref(done_threshold))))));
+
+    boost::this_thread::sleep(boost::posix_time::seconds(5));
+    data = "Zero";
+  }
   done_threshold.wait();
 
   {
     boost::lock_guard<boost::mutex> lock_guard(mutex);
-    std::cout << data << std::endl;
-  }  
-  
+    BOOST_ASSERT_MSG("Zero 1 " == data, "Invalid value of data");
+  }
 } // run_test
 
 } // namespace lockable_wrapper
 
 namespace handler_storage_service_destruction {
 
-typedef ma::handler_storage<void> handler_storage_type;
+typedef int arg_type;
+typedef ma::handler_storage<arg_type> handler_storage_type;
 typedef boost::shared_ptr<handler_storage_type> handler_storage_ptr;
 
-class handler
+class testable_handler_storage : public handler_storage_type
+{
+public:
+  testable_handler_storage(boost::asio::io_service& io_service,
+      std::size_t& counter)
+    : handler_storage_type(io_service)
+    , counter_(counter)
+  {
+    ++counter_;
+  }
+
+  ~testable_handler_storage()
+  {
+    --counter_;
+  }
+
+private:
+  std::size_t& counter_;
+}; // testable_handler_storage
+
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable: 4512)
+#endif // #if defined(_MSC_VER)
+
+class simple_handler
 {
 private:
-  typedef handler this_type;
+  typedef simple_handler this_type;
 
 public:
-  handler(int num, const handler_storage_ptr& handler_storage)
-    : num_(num)
-    , handler_storage_(handler_storage)
+  explicit simple_handler(std::size_t& counter)
+    : counter_(counter)
   {
+    ++counter_;
   }
 
-  ~handler()
+  ~simple_handler()
   {
-    std::cout
-        << "ma::test::handler_storage_service_destruction::handler::~handler()"
-        << std::endl << "num_: " << num_ << std::endl;
+    --counter_;
   }
 
-  handler(const this_type& other)
-    : num_(other.num_)
-    , handler_storage_(other.handler_storage_)
+  simple_handler(const this_type& other)
+    : counter_(other.counter_)
   {
+    ++counter_;
   }
 
 #if defined(MA_HAS_RVALUE_REFS)
-  handler(this_type&& other)
-    : num_(other.num_)
-    , handler_storage_(std::move(other.handler_storage_))
+  simple_handler(this_type&& other)
+    : counter_(other.counter_)
   {
-    other.num_ = 0;
+    ++counter_;
   }
 #endif
 
-  void operator()()
+  void operator()(const arg_type&)
   {
-    std::cout
-        << "ma::test::handler_storage_service_destruction::handler::operator()"
-        << std::endl << "num_: " << num_ << std::endl;
-  }  
-  
+  }
+
 private:
-  int num_;
+  std::size_t& counter_;
+}; // class simple_handler
+
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif // #if defined(_MSC_VER)
+
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable: 4512)
+#endif // #if defined(_MSC_VER)
+
+class hooked_handler
+{
+private:
+  typedef hooked_handler this_type;
+
+public:
+  hooked_handler(const handler_storage_ptr& handler_storage,
+      std::size_t& counter)
+    : handler_storage_(handler_storage)
+    , counter_(counter)
+  {
+    ++counter_;
+  }
+
+  ~hooked_handler()
+  {
+    --counter_;
+  }
+
+  hooked_handler(const this_type& other)
+    : handler_storage_(other.handler_storage_)
+    , counter_(other.counter_)
+  {
+    ++counter_;
+  }
+
+#if defined(MA_HAS_RVALUE_REFS)
+  hooked_handler(this_type&& other)
+    : handler_storage_(std::move(other.handler_storage_))
+    , counter_(other.counter_)
+  {
+    ++counter_;
+  }
+#endif
+
+  void operator()(const arg_type&)
+  {
+  }
+
+private:
   handler_storage_ptr handler_storage_;
-}; // class handler
+  std::size_t& counter_;
+}; // class hooked_handler
+
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif // #if defined(_MSC_VER)
+
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable: 4512)
+#endif // #if defined(_MSC_VER)
+
+class active_destructing_handler
+{
+private:
+  typedef active_destructing_handler this_type;
+
+public:
+  typedef boost::function<void (void)> continuation;
+
+  active_destructing_handler(const continuation& cont, std::size_t& counter)
+    : cont_(boost::make_shared<continuation_holder>(cont))
+    , counter_(counter)
+  {
+    ++counter_;
+  }
+
+  ~active_destructing_handler()
+  {
+    --counter_;
+  }
+
+  active_destructing_handler(const this_type& other)
+    : cont_(other.cont_)
+    , counter_(other.counter_)
+  {
+    ++counter_;
+  }
+
+#if defined(MA_HAS_RVALUE_REFS)
+  active_destructing_handler(this_type&& other)
+    : cont_(std::move(other.cont_))
+    , counter_(other.counter_)
+  {
+    ++counter_;
+  }
+#endif
+
+  void operator()(const arg_type&)
+  {
+  }
+
+private:
+  class continuation_holder : private boost::noncopyable
+  {
+  public:
+    explicit continuation_holder(const continuation& cont)
+      : cont_(cont)
+    {
+    }
+
+    ~continuation_holder()
+    {
+       cont_();
+    }
+  private:
+    continuation cont_;
+  }; // continuation_holder
+
+  typedef boost::shared_ptr<continuation_holder> continuation_holder_ptr;
+
+  continuation_holder_ptr cont_;
+  std::size_t& counter_;
+}; // class active_destructing_handler
+
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif // #if defined(_MSC_VER)
+
+namespace simple {
 
 void run_test()
 {
-  std::cout << "*** ma::test::handler_storage_service_destruction ***" 
-      << std::endl;
-  std::size_t cpu_count = boost::thread::hardware_concurrency();
-  std::size_t work_thread_count = cpu_count > 1 ? cpu_count : 2;
-  boost::asio::io_service io_service(work_thread_count);
- 
-  handler_storage_ptr handler_storage1(
-      boost::make_shared<handler_storage_type>(boost::ref(io_service)));
-  handler_storage1->store(handler(1, handler_storage1));
-
-  handler_storage_ptr handler_storage2(
-      boost::make_shared<handler_storage_type>(boost::ref(io_service)));
-  handler_storage2->store(handler(2, handler_storage1));
-
+  std::size_t counter = 0;
+  boost::asio::io_service io_service;
   {
-    handler_storage_ptr handler_storage(
-        boost::make_shared<handler_storage_type>(boost::ref(io_service)));
-    handler_storage->store(handler(3, handler_storage));
-  }
+    testable_handler_storage handler_storage1(io_service, counter);
+    handler_storage1.store(simple_handler(counter));
 
-  handler_storage_ptr handler_storage3(
-      boost::make_shared<handler_storage_type>(boost::ref(io_service)));
-  handler_storage3->store(handler(4, handler_storage3));
+    testable_handler_storage handler_storage2(io_service, counter);
+    handler_storage2.store(simple_handler(counter));
+  }
+  BOOST_ASSERT_MSG(0 == counter, "Not all objects were destroyed");
+}
+
+} // namespace simple
+
+void store_simple_handler(const handler_storage_ptr& storage,
+    std::size_t counter)
+{
+  storage->store(simple_handler(counter));
+}
+
+void store_hooked_handler(const handler_storage_ptr& storage,
+    const handler_storage_ptr& hooked_storage, std::size_t counter)
+{
+  storage->store(hooked_handler(hooked_storage, counter));
+}
+
+namespace cyclic_references {
+
+void run_test()
+{
+  std::size_t counter = 0;
+  {
+    boost::asio::io_service io_service;
+
+    handler_storage_ptr handler_storage1 =
+        boost::make_shared<testable_handler_storage>(
+            boost::ref(io_service), boost::ref(counter));
+    handler_storage1->store(hooked_handler(handler_storage1, counter));
+
+    handler_storage_ptr handler_storage2 =
+        boost::make_shared<testable_handler_storage>(
+            boost::ref(io_service), boost::ref(counter));
+    handler_storage2->store(active_destructing_handler(
+        boost::bind(store_hooked_handler, handler_storage2, handler_storage2,
+            boost::ref(counter)),
+        counter));
+  }
+  BOOST_ASSERT_MSG(0 == counter, "Not all objects were destroyed");
+}
+
+} // namespace cyclil_references
+
+namespace reenterable_call {
+
+void run_test()
+{
+  std::size_t counter = 0;
+  {
+    boost::asio::io_service io_service;
+
+    testable_handler_storage handler_storage1(io_service, counter);
+    handler_storage1.store(simple_handler(counter));
+
+    testable_handler_storage handler_storage2(io_service, counter);
+    handler_storage2.store(simple_handler(counter));
+
+    handler_storage_ptr handler_storage3 =
+        boost::make_shared<testable_handler_storage>(
+            boost::ref(io_service), boost::ref(counter));
+    handler_storage3->store(hooked_handler(handler_storage3, counter));
+
+    testable_handler_storage handler_storage4(io_service, counter);
+    handler_storage4.store(simple_handler(counter));
+
+    handler_storage_ptr handler_storage5 =
+        boost::make_shared<testable_handler_storage>(
+            boost::ref(io_service), boost::ref(counter));
+    handler_storage5->store(active_destructing_handler(
+        boost::bind(store_simple_handler, handler_storage5,
+            boost::ref(counter)),
+        counter));
+
+    testable_handler_storage handler_storage6(io_service, counter);
+    handler_storage6.store(simple_handler(counter));
+
+    handler_storage_ptr handler_storage7 =
+        boost::make_shared<testable_handler_storage>(
+            boost::ref(io_service), boost::ref(counter));
+    handler_storage7->store(active_destructing_handler(
+        boost::bind(store_hooked_handler, handler_storage7, handler_storage7,
+            boost::ref(counter)),
+        counter));
+
+    handler_storage_ptr handler_storage8 =
+        boost::make_shared<testable_handler_storage>(
+            boost::ref(io_service), boost::ref(counter));
+    handler_storage8->store(active_destructing_handler(
+        boost::bind(store_hooked_handler, handler_storage7, handler_storage5,
+            boost::ref(counter)),
+        counter));
+  }
+  BOOST_ASSERT_MSG(0 == counter, "Not all objects were destroyed");
+}
+
+} // namespace reenterable_call
+
+void run_test()
+{
+  std::cout << "*** ma::test::handler_storage_service_destruction ***"
+      << std::endl;
+
+  simple::run_test();
+  cyclic_references::run_test();
+  reenterable_call::run_test();
 }
 
 } // namespace handler_storage_service_destruction
@@ -377,36 +636,10 @@ void run_test()
 
     handler_storage_type handler_storage(io_service);
     handler_storage.store(handler(4));
-    std::cout << handler_storage.target()->get_value() << std::endl;
+
+    BOOST_ASSERT_MSG(4 == handler_storage.target()->get_value(),
+        "Stored value and target are different");
   }
-
-  {
-    typedef ma::handler_storage<int> handler_storage1_type;
-
-    handler_storage1_type handler_storage1(io_service);
-    handler_storage1.store(handler(4));
-    std::cout << handler_storage1.target() << std::endl;
-  
-#if defined(MA_HAS_LAMBDA)
-    {
-      typedef ma::handler_storage<void> handler_storage2_type;
-
-      threshold done_threshold;
-
-      handler_storage2_type handler_storage2(io_service);
-      handler_storage2.store([&done_threshold]
-      {
-          std::cout << "in lambda" << std::endl;
-          done_threshold.dec();
-      });
-      std::cout << handler_storage2.target() << std::endl;
-
-      done_threshold.inc();
-      handler_storage2.post();
-      done_threshold.wait();
-    }
-#endif
-  }  
 } // run_test
 
 } // namespace handler_storage_target
@@ -450,7 +683,7 @@ protected:
 
   ~test_handler_base()
   {
-  }  
+  }
 }; // class test_handler_base
 
 class no_arg_handler_with_target : public test_handler_base
@@ -492,7 +725,7 @@ void run_test()
     typedef ma::handler_storage<void> handler_storage_type;
 
     handler_storage_type handler_storage(io_service);
-    handler_storage.store(no_arg_handler(4, 
+    handler_storage.store(no_arg_handler(4,
         boost::bind(&threshold::dec, &done_threshold)));
 
     std::cout << handler_storage.target() << std::endl;
@@ -504,7 +737,7 @@ void run_test()
     typedef ma::handler_storage<int, test_handler_base> handler_storage_type;
 
     handler_storage_type handler_storage(io_service);
-    handler_storage.store(no_arg_handler_with_target(4, 
+    handler_storage.store(no_arg_handler_with_target(4,
         boost::bind(&threshold::dec, &done_threshold)));
 
     std::cout << handler_storage.target()->get_value() << std::endl;
@@ -516,12 +749,12 @@ void run_test()
     boost::asio::io_service io_service;
 
     ma::handler_storage<int, test_handler_base> handler_storage1(io_service);
-    handler_storage1.store(no_arg_handler_with_target(1, 
+    handler_storage1.store(no_arg_handler_with_target(1,
         boost::bind(&threshold::dec, &done_threshold)));
 
     ma::handler_storage<void> handler_storage2(io_service);
-    handler_storage2.store(no_arg_handler(2, 
-        boost::bind(&threshold::dec, &done_threshold)));    
+    handler_storage2.store(no_arg_handler(2,
+        boost::bind(&threshold::dec, &done_threshold)));
   }
 
   done_threshold.wait();
@@ -582,7 +815,7 @@ void run_test()
 //
 //void test_handler_storage_arg(boost::asio::io_service& io_service)
 //{
-//  
+//
 //}
 //
 //#if defined(MA_HAS_RVALUE_REFS)
@@ -595,7 +828,7 @@ void run_test()
 //
 //  handler_storage_type handler1(io_service);
 //  handler1.store(test_handler(4));
-//  
+//
 //  handler_storage_type handler2(std::move(handler1));
 //  handler2.post(2);
 //}
@@ -664,9 +897,9 @@ void run_test()
 //};
 //
 //void test_shared_ptr_factory()
-//{  
+//{
 //  std::cout << "*** test_shared_ptr_factory ***" << std::endl;
-//  boost::shared_ptr<const A> a = A::create();  
+//  boost::shared_ptr<const A> a = A::create();
 //  boost::shared_ptr<B> b = B::create(42);
 //}
 //

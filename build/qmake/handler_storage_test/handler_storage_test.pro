@@ -26,8 +26,8 @@ HEADERS  += ../../../include/ma/bind_asio_handler.hpp \
             ../../../include/ma/handler_storage.hpp \
             ../../../include/ma/handler_storage_service.hpp \
             ../../../include/ma/lockable_wrapped_handler.hpp \
-            ../../../strand_wrapped_handler.hpp \
-            ../../../type_traits.hpp
+            ../../../include/ma/strand_wrapped_handler.hpp \
+            ../../../include/ma/type_traits.hpp
 
 SOURCES  += ../../../src/handler_storage_test/main.cpp
 
