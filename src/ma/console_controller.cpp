@@ -62,6 +62,7 @@ BOOL WINAPI console_controller::console_ctrl_proc(DWORD ctrl_type)
   case CTRL_BREAK_EVENT:
   case CTRL_CLOSE_EVENT:
   case CTRL_SHUTDOWN_EVENT:
+  case CTRL_LOGOFF_EVENT:
     ctrl_function_();
     return TRUE;
   default:
