@@ -183,7 +183,7 @@ int main(int argc, char* argv[])
     ma::console_close_guard console_close_guard(
         boost::bind(handle_console_close, the_session));
 
-    std::cout << "Press Ctrl+C (Ctrl+Break) to exit...\n";
+    std::cout << "Press Ctrl+C to exit...\n";
 
     // Create work threads
     boost::thread_group work_threads;

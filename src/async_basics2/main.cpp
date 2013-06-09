@@ -105,7 +105,7 @@ int main(int /*argc*/, char* /*argv*/[])
     ma::console_close_guard console_close_guard(
         boost::bind(handle_program_exit, boost::ref(work_io_service)));
 
-    std::cout << "Press Ctrl+C (Ctrl+Break) to exit.\n";
+    std::cout << "Press Ctrl+C to exit.\n";
 
     boost::thread_group work_threads;
     boost::optional<io_service::work> work_guard(

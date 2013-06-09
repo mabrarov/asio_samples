@@ -503,7 +503,7 @@ void handle_app_exit(server_state& the_server_state, server& the_server)
         boost::ref(the_server_state), boost::ref(the_server), _1));
     switch_to_stopping(lock_guard, the_server_state, true);
     std::cout << "Server is stopping." \
-        " Press Ctrl+C (Ctrl+Break) to terminate server." << std::endl;
+        " Press Ctrl+C to terminate server." << std::endl;
     break;
   }
 }
@@ -629,7 +629,7 @@ int echo_server::run_server(const echo_server::execution_config& exec_config,
   // Lookup for app termination
   ma::console_close_guard console_close_guard(boost::bind(
       handle_app_exit, boost::ref(the_server_state), boost::ref(the_server)));
-  std::cout << "Press Ctrl+C (Ctrl+Break) to exit." << std::endl;
+  std::cout << "Press Ctrl+C to exit." << std::endl;
 
   int exit_code = EXIT_SUCCESS;
 
