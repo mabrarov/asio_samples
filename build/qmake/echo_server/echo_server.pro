@@ -36,7 +36,7 @@ HEADERS  += ../../../include/ma/echo/server/session_config_fwd.hpp \
             ../../../include/ma/detail/service_base.hpp \
             ../../../include/ma/bind_handler.hpp \
             ../../../include/ma/config.hpp \
-            ../../../include/ma/console_ctrl_handler.hpp \
+            ../../../include/ma/console_close_guard.hpp \
             ../../../include/ma/context_alloc_handler.hpp \
             ../../../include/ma/context_wrapped_handler.hpp \
             ../../../include/ma/custom_alloc_handler.hpp \
@@ -58,7 +58,7 @@ SOURCES  += ../../../src/ma/echo/server/error.cpp \
             ../../../src/ma/echo/server/session_manager.cpp \
             ../../../src/ma/echo/server/pooled_session_factory.cpp \
             ../../../src/ma/echo/server/simple_session_factory.cpp \
-            ../../../src/ma/console_ctrl_handler.cpp \
+            ../../../src/ma/console_close_guard.cpp \
             ../../../src/echo_server/config.cpp \
             ../../../src/echo_server/main.cpp
 

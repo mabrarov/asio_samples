@@ -29,7 +29,7 @@
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/nmea/frame.hpp>
 #include <ma/nmea/cyclic_read_session.hpp>
-#include <ma/console_ctrl_handler.hpp>
+#include <ma/console_close_guard.hpp>
 
 typedef std::codecvt<wchar_t, char, mbstate_t> wcodecvt_type;
 typedef ma::nmea::cyclic_read_session        session;
@@ -180,7 +180,7 @@ int main(int argc, char* argv[])
             the_frame_buffer, _1)));
 
     // Setup console controller
-    ma::console_ctrl_handler console_ctrl_handler(
+    ma::console_close_guard console_close_guard(
         boost::bind(handle_console_close, the_session));
 
     std::cout << "Press Ctrl+C (Ctrl+Break) to exit...\n";

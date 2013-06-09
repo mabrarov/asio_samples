@@ -22,7 +22,7 @@ HEADERS  += ../../../include/ma/detail/binder.hpp \
             ../../../include/ma/nmea/cyclic_read_session.hpp \
             ../../../include/ma/bind_handler.hpp \
             ../../../include/ma/config.hpp \
-            ../../../include/ma/console_ctrl_handler.hpp \
+            ../../../include/ma/console_close_guard.hpp \
             ../../../include/ma/context_alloc_handler.hpp \
             ../../../include/ma/context_wrapped_handler.hpp \
             ../../../include/ma/custom_alloc_handler.hpp \
@@ -38,7 +38,7 @@ HEADERS  += ../../../include/ma/detail/binder.hpp \
 
 SOURCES  += ../../../src/ma/nmea/error.cpp \
             ../../../src/ma/nmea/cyclic_read_session.cpp \
-            ../../../src/ma/console_ctrl_handler.cpp \
+            ../../../src/ma/console_close_guard.cpp \
             ../../../src/nmea_client/main.cpp
 
 INCLUDEPATH += $${BOOST_INCLUDE} \

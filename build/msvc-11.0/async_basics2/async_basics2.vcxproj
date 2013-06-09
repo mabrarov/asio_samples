@@ -212,13 +212,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src\async_basics2\main.cpp" />
-    <ClCompile Include="..\..\..\src\ma\console_ctrl_handler.cpp" />
+    <ClCompile Include="..\..\..\src\ma\console_close_guard.cpp" />
     <ClCompile Include="..\..\..\src\ma\tutorial2\async_implementation.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\include\ma\bind_handler.hpp" />
     <ClInclude Include="..\..\..\include\ma\config.hpp" />
-    <ClInclude Include="..\..\..\include\ma\console_ctrl_handler.hpp" />
+    <ClInclude Include="..\..\..\include\ma\console_close_guard.hpp" />
     <ClInclude Include="..\..\..\include\ma\context_alloc_handler.hpp" />
     <ClInclude Include="..\..\..\include\ma\context_wrapped_handler.hpp" />
     <ClInclude Include="..\..\..\include\ma\custom_alloc_handler.hpp" />

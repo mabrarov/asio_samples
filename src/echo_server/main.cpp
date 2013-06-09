@@ -31,7 +31,7 @@
 #include <boost/thread/condition_variable.hpp>
 #include <ma/handler_allocator.hpp>
 #include <ma/custom_alloc_handler.hpp>
-#include <ma/console_ctrl_handler.hpp>
+#include <ma/console_close_guard.hpp>
 #include <ma/echo/server/simple_session_factory.hpp>
 #include <ma/echo/server/pooled_session_factory.hpp>
 #include <ma/echo/server/session_manager.hpp>
@@ -627,7 +627,7 @@ int echo_server::run_server(const echo_server::execution_config& exec_config,
       boost::ref(the_server_state), boost::ref(the_server), _1));
 
   // Lookup for app termination
-  ma::console_ctrl_handler console_ctrl_handler(boost::bind(
+  ma::console_close_guard console_close_guard(boost::bind(
       handle_app_exit, boost::ref(the_server_state), boost::ref(the_server)));
   std::cout << "Press Ctrl+C (Ctrl+Break) to exit." << std::endl;
 

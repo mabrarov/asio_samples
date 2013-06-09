@@ -35,7 +35,7 @@
     <ClCompile Include="..\..\..\src\ma\nmea\error.cpp">
       <Filter>Source Files\ma\nmea</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\ma\console_ctrl_handler.cpp">
+    <ClCompile Include="..\..\..\src\ma\console_close_guard.cpp">
       <Filter>Source Files\ma</Filter>
     </ClCompile>
   </ItemGroup>
@@ -94,7 +94,7 @@
     <ClInclude Include="..\..\..\include\ma\shared_ptr_factory.hpp">
       <Filter>Header Files\ma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\ma\console_ctrl_handler.hpp">
+    <ClInclude Include="..\..\..\include\ma\console_close_guard.hpp">
       <Filter>Header Files\ma</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\ma\detail\binder.hpp">

@@ -21,7 +21,7 @@ HEADERS  += ../../../include/ma/detail/binder.hpp \
             ../../../include/ma/bind_asio_handler.hpp \
             ../../../include/ma/bind_handler.hpp \
             ../../../include/ma/config.hpp \
-            ../../../include/ma/console_ctrl_handler.hpp \
+            ../../../include/ma/console_close_guard.hpp \
             ../../../include/ma/context_alloc_handler.hpp \
             ../../../include/ma/context_wrapped_handler.hpp \
             ../../../include/ma/custom_alloc_handler.hpp \

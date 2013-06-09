@@ -22,7 +22,7 @@ HEADERS  += ../../../include/ma/detail/binder.hpp \
             ../../../include/ma/tutorial/async_implementation.hpp \
             ../../../include/ma/bind_handler.hpp \
             ../../../include/ma/config.hpp \
-            ../../../include/ma/console_ctrl_handler.hpp \
+            ../../../include/ma/console_close_guard.hpp \
             ../../../include/ma/context_alloc_handler.hpp \
             ../../../include/ma/context_wrapped_handler.hpp \
             ../../../include/ma/custom_alloc_handler.hpp \
@@ -37,7 +37,7 @@ HEADERS  += ../../../include/ma/detail/binder.hpp \
             ../../../include/ma/type_traits.hpp
 
 SOURCES  += ../../../src/ma/tutorial/async_implementation.cpp \
-            ../../../src/ma/console_ctrl_handler.cpp \
+            ../../../src/ma/console_close_guard.cpp \
             ../../../src/async_basics/main.cpp
 
 INCLUDEPATH += $${BOOST_INCLUDE} \

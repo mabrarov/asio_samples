@@ -20,72 +20,72 @@
 #include <boost/thread/thread.hpp>
 //#include <boost/thread/locks.hpp>
 //#include <boost/thread/mutex.hpp>
-#include <ma/console_ctrl_handler.hpp>
+#include <ma/console_close_guard.hpp>
 
 namespace {
 
-class console_ctrl_handler_base_0 : private boost::noncopyable
+class console_close_guard_base_0 : private boost::noncopyable
 {
 public:
-  console_ctrl_handler_base_0()
+  console_close_guard_base_0()
     : io_service_()
   {
   }
 
 protected:
-  ~console_ctrl_handler_base_0()
+  ~console_close_guard_base_0()
   {
   }
 
   boost::asio::io_service io_service_;
-}; // console_ctrl_handler_base_0
+}; // console_close_guard_base_0
 
-class console_ctrl_handler_base_1 : public console_ctrl_handler_base_0
+class console_close_guard_base_1 : public console_close_guard_base_0
 {
 public:
-  console_ctrl_handler_base_1()
-    : console_ctrl_handler_base_0()
+  console_close_guard_base_1()
+    : console_close_guard_base_0()
     , work_guard_(io_service_)
   {
   }
 
 protected:
-  ~console_ctrl_handler_base_1()
+  ~console_close_guard_base_1()
   {
   }
 
   boost::asio::io_service::work work_guard_;
-}; // console_ctrl_handler_base_1
+}; // console_close_guard_base_1
 
-class console_ctrl_handler_base_2 : public console_ctrl_handler_base_1
+class console_close_guard_base_2 : public console_close_guard_base_1
 {
 public:
-  console_ctrl_handler_base_2()
-    : console_ctrl_handler_base_1()
+  console_close_guard_base_2()
+    : console_close_guard_base_1()
     , work_thread_(boost::bind(&boost::asio::io_service::run, 
           boost::ref(io_service_)))
   {
   }
 
 protected:
-  ~console_ctrl_handler_base_2()
+  ~console_close_guard_base_2()
   {
     io_service_.stop();
     work_thread_.join();
   }
 
   boost::thread work_thread_;
-}; // console_ctrl_handler_base_2
+}; // console_close_guard_base_2
 
 } // anonymous namespace
 
 namespace ma {
 
-class console_ctrl_handler::implementation : private console_ctrl_handler_base_2
+class console_close_guard::implementation : private console_close_guard_base_2
 {
 public:
   implementation(const ctrl_function_type& ctrl_function)
-    : console_ctrl_handler_base_2()
+    : console_close_guard_base_2()
     , signal_set_(io_service_, SIGINT)
   {
     signal_set_.async_wait(boost::bind(&handle_signal, _1, ctrl_function));
@@ -108,15 +108,15 @@ private:
   }
 
   boost::asio::signal_set signal_set_;
-}; // class console_ctrl_handler::implementation
+}; // class console_close_guard::implementation
 
-console_ctrl_handler::console_ctrl_handler(
+console_close_guard::console_close_guard(
     const ctrl_function_type& ctrl_function)
   : implementation_(new implementation(ctrl_function))
 {
 }
 
-console_ctrl_handler::~console_ctrl_handler()
+console_close_guard::~console_close_guard()
 {
 }
 
@@ -130,7 +130,7 @@ console_ctrl_handler::~console_ctrl_handler()
 //    case CTRL_CLOSE_EVENT:
 //    case CTRL_SHUTDOWN_EVENT:
 //    case CTRL_LOGOFF_EVENT:
-//      console_ctrl_handler::get_registry()->handle_console_close();
+//      console_close_guard::get_registry()->handle_console_close();
 //      return FALSE;
 //    default:
 //      return FALSE;
@@ -138,14 +138,14 @@ console_ctrl_handler::~console_ctrl_handler()
 //  }
 //#endif
 
-//console_ctrl_handler::console_ctrl_handler(const ctrl_function_type& crl_function)
+//console_close_guard::console_close_guard(const ctrl_function_type& crl_function)
 //{
 //  {
 //    lock_guard_type lock(ctrl_mutex_);
 //    if (ctrl_function_)
 //    {
 //      boost::throw_exception(std::logic_error(
-//          "console_ctrl_handler must be the only"));
+//          "console_close_guard must be the only"));
 //    }
 //    ctrl_function_ = crl_function;
 //  }
@@ -153,7 +153,7 @@ console_ctrl_handler::~console_ctrl_handler()
 //#if defined(WIN32)
 //  ::SetConsoleCtrlHandler(console_ctrl_proc, TRUE);
 //#else
-//  if (SIG_ERR == ::signal(SIGINT, &console_ctrl_handler::console_ctrl_proc))
+//  if (SIG_ERR == ::signal(SIGINT, &console_close_guard::console_ctrl_proc))
 //  {
 //    boost::throw_exception(std::runtime_error(
 //        "failed to set signal handler for SIGQUIT"));
@@ -161,7 +161,7 @@ console_ctrl_handler::~console_ctrl_handler()
 //#endif // defined(WIN32)
 //}
 //
-//console_ctrl_handler::~console_ctrl_handler()
+//console_close_guard::~console_close_guard()
 //{
 //#if defined(WIN32)
 //  ::SetConsoleCtrlHandler(console_ctrl_proc, FALSE);

@@ -131,7 +131,7 @@
     <ClInclude Include="..\..\..\include\ma\echo\server\simple_session_factory.hpp">
       <Filter>Header Files\ma\echo\server</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\ma\console_ctrl_handler.hpp">
+    <ClInclude Include="..\..\..\include\ma\console_close_guard.hpp">
       <Filter>Header Files\ma</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\ma\windows\console_signal.hpp">
@@ -151,6 +151,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\include\ma\detail\intrusive_list.hpp">
       <Filter>Header Files\ma\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\windows\console_signal_service.hpp">
+      <Filter>Header Files\ma\windows</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -175,7 +178,7 @@
     <ClCompile Include="..\..\..\src\ma\echo\server\simple_session_factory.cpp">
       <Filter>Source Files\ma\echo\server</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\ma\console_ctrl_handler.cpp">
+    <ClCompile Include="..\..\..\src\ma\console_close_guard.cpp">
       <Filter>Source Files\ma</Filter>
     </ClCompile>
   </ItemGroup>
