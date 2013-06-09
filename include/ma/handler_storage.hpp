@@ -161,7 +161,7 @@ public:
   void post(const arg_type& arg);
 
 private:
-  service_type& service_;
+  service_type&       service_;
   implementation_type impl_;
 }; // class handler_storage
 
@@ -248,7 +248,7 @@ public:
   void post();
 
 private:
-  service_type& service_;
+  service_type&       service_;
   implementation_type impl_;
 }; // class handler_storage
 

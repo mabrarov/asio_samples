@@ -19,7 +19,7 @@
 #include <winsock2.h>
 #include <cstddef>
 #include <boost/numeric/conversion/cast.hpp>
-#include <ma/bind_asio_handler.hpp>
+#include <ma/bind_handler.hpp>
 #include <ma/handler_alloc_helpers.hpp>
 #include <ma/handler_invoke_helpers.hpp>
 #endif // defined(WIN32) && !defined(BOOST_ASIO_DISABLE_IOCP)
@@ -216,11 +216,11 @@ void async_connect(Socket& socket,
 #if defined(MA_HAS_RVALUE_REFS)
 
       socket.get_io_service().post(
-          detail::bind_handler(std::forward<Handler>(handler), error));
+          bind_handler(std::forward<Handler>(handler), error));
 
 #else // defined(MA_HAS_RVALUE_REFS)
 
-      socket.get_io_service().post(detail::bind_handler(handler, error));
+      socket.get_io_service().post(bind_handler(handler, error));
 
 #endif // defined(MA_HAS_RVALUE_REFS)
       return;
@@ -263,11 +263,11 @@ void async_connect(Socket& socket,
 #if defined(MA_HAS_RVALUE_REFS)
 
     socket.get_io_service().post(
-        detail::bind_handler(std::forward<Handler>(handler), error));
+        bind_handler(std::forward<Handler>(handler), error));
 
 #else // defined(MA_HAS_RVALUE_REFS)
 
-    socket.get_io_service().post(detail::bind_handler(handler, error));
+    socket.get_io_service().post(bind_handler(handler, error));
 
 #endif // defined(MA_HAS_RVALUE_REFS)
     return;

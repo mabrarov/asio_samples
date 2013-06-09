@@ -5,8 +5,8 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef MA_BIND_ASIO_HANDLER_HPP
-#define MA_BIND_ASIO_HANDLER_HPP
+#ifndef MA_DETAIL_BINDER_HPP
+#define MA_DETAIL_BINDER_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1020)
 #pragma once
@@ -47,14 +47,14 @@ namespace detail {
  * The functors created by means of listed binders meet the requirements of
  * Asio handler.
  *
- * Usage of free functions called bind_handler can help in construction of
+ * Usage of free functions called ma::bind_handler can help in construction of
  * functors.
  *
  * It's a modified copy of Boost.Asio sources: asio/detail/bind_handler.hpp.
  * The reason of copy is that those sources are in private area of Boost.Asio.
  *
  * Move semantic supported.
- * Move constructor is explicitly defined to support MSVC 2010.
+ * Move constructor is explicitly defined to support MSVC 2010/2012.
  */
 
 #if defined(_MSC_VER)
@@ -166,32 +166,6 @@ private:
 #pragma warning(pop)
 #endif // #if defined(_MSC_VER)
 
-#if defined(MA_HAS_RVALUE_REFS)
-
-/// Helper for creation of binded handler.
-template <typename Handler, typename Arg1>
-inline binder1<typename remove_cv_reference<Handler>::type,
-    typename remove_cv_reference<Arg1>::type>
-bind_handler(Handler&& handler, Arg1&& arg1)
-{
-  typedef typename remove_cv_reference<Handler>::type handler_type;
-  typedef typename remove_cv_reference<Arg1>::type arg1_type;
-  return binder1<handler_type, arg1_type>(
-      std::forward<Handler>(handler), std::forward<Arg1>(arg1));
-}
-
-#else // defined(MA_HAS_RVALUE_REFS)
-
-/// Helper for creation of binded handler.
-template <typename Handler, typename Arg1>
-inline binder1<Handler, Arg1>
-bind_handler(const Handler& handler, const Arg1& arg1)
-{
-  return binder1<Handler, Arg1>(handler, arg1);
-}
-
-#endif // defined(MA_HAS_RVALUE_REFS)
-
 #if defined(_MSC_VER)
 #pragma warning(push)
 #pragma warning(disable: 4512)
@@ -301,33 +275,6 @@ private:
 #if defined(_MSC_VER)
 #pragma warning(pop)
 #endif // #if defined(_MSC_VER)
-
-#if defined(MA_HAS_RVALUE_REFS)
-
-template <typename Handler, typename Arg1, typename Arg2>
-inline binder2<typename remove_cv_reference<Handler>::type,
-    typename remove_cv_reference<Arg1>::type,
-    typename remove_cv_reference<Arg2>::type>
-bind_handler(Handler&& handler, Arg1&& arg1, Arg2&& arg2)
-{
-  typedef typename remove_cv_reference<Handler>::type handler_type;
-  typedef typename remove_cv_reference<Arg1>::type arg1_type;
-  typedef typename remove_cv_reference<Arg2>::type arg2_type;
-  return binder2<handler_type, arg1_type, arg2_type>(
-      std::forward<Handler>(handler), std::forward<Arg1>(arg1),
-      std::forward<Arg2>(arg2));
-}
-
-#else // defined(MA_HAS_RVALUE_REFS)
-
-template <typename Handler, typename Arg1, typename Arg2>
-inline binder2<Handler, Arg1, Arg2>
-bind_handler(const Handler& handler, const Arg1& arg1, const Arg2& arg2)
-{
-  return binder2<Handler, Arg1, Arg2>(handler, arg1, arg2);
-}
-
-#endif // defined(MA_HAS_RVALUE_REFS)
 
 #if defined(_MSC_VER)
 #pragma warning(push)
@@ -445,36 +392,6 @@ private:
 #if defined(_MSC_VER)
 #pragma warning(pop)
 #endif // #if defined(_MSC_VER)
-
-#if defined(MA_HAS_RVALUE_REFS)
-
-template <typename Handler, typename Arg1, typename Arg2, typename Arg3>
-inline binder3<typename remove_cv_reference<Handler>::type,
-    typename remove_cv_reference<Arg1>::type,
-    typename remove_cv_reference<Arg2>::type,
-    typename remove_cv_reference<Arg3>::type>
-bind_handler(Handler&& handler, Arg1&& arg1, Arg2&& arg2, Arg3&& arg3)
-{
-  typedef typename remove_cv_reference<Handler>::type handler_type;
-  typedef typename remove_cv_reference<Arg1>::type arg1_type;
-  typedef typename remove_cv_reference<Arg2>::type arg2_type;
-  typedef typename remove_cv_reference<Arg3>::type arg3_type;
-  return binder3<handler_type, arg1_type, arg2_type, arg3_type>(
-      std::forward<Handler>(handler), std::forward<Arg1>(arg1),
-      std::forward<Arg2>(arg2), std::forward<Arg3>(arg3));
-}
-
-#else // defined(MA_HAS_RVALUE_REFS)
-
-template <typename Handler, typename Arg1, typename Arg2, typename Arg3>
-inline binder3<Handler, Arg1, Arg2, Arg3>
-bind_handler(const Handler& handler, const Arg1& arg1, const Arg2& arg2,
-    const Arg3& arg3)
-{
-  return binder3<Handler, Arg1, Arg2, Arg3>(handler, arg1, arg2, arg3);
-}
-
-#endif // defined(MA_HAS_RVALUE_REFS)
 
 #if defined(_MSC_VER)
 #pragma warning(push)
@@ -598,43 +515,6 @@ private:
 #if defined(_MSC_VER)
 #pragma warning(pop)
 #endif // #if defined(_MSC_VER)
-
-#if defined(MA_HAS_RVALUE_REFS)
-
-template <typename Handler, typename Arg1, typename Arg2, typename Arg3,
-    typename Arg4>
-inline binder4<typename remove_cv_reference<Handler>::type,
-    typename remove_cv_reference<Arg1>::type,
-    typename remove_cv_reference<Arg2>::type,
-    typename remove_cv_reference<Arg3>::type,
-    typename remove_cv_reference<Arg4>::type>
-bind_handler(Handler&& handler, Arg1&& arg1, Arg2&& arg2, Arg3&& arg3,
-    Arg4&& arg4)
-{
-  typedef typename remove_cv_reference<Handler>::type handler_type;
-  typedef typename remove_cv_reference<Arg1>::type arg1_type;
-  typedef typename remove_cv_reference<Arg2>::type arg2_type;
-  typedef typename remove_cv_reference<Arg3>::type arg3_type;
-  typedef typename remove_cv_reference<Arg4>::type arg4_type;
-  return binder4<handler_type, arg1_type, arg2_type, arg3_type, arg4_type>(
-      std::forward<Handler>(handler), std::forward<Arg1>(arg1),
-      std::forward<Arg2>(arg2), std::forward<Arg3>(arg3),
-      std::forward<Arg4>(arg4));
-}
-
-#else // defined(MA_HAS_RVALUE_REFS)
-
-template <typename Handler, typename Arg1, typename Arg2, typename Arg3,
-    typename Arg4>
-inline binder4<Handler, Arg1, Arg2, Arg3, Arg4>
-bind_handler(const Handler& handler, const Arg1& arg1, const Arg2& arg2,
-    const Arg3& arg3, const Arg4& arg4)
-{
-  return binder4<Handler, Arg1, Arg2, Arg3, Arg4>(handler, arg1, arg2, arg3,
-      arg4);
-}
-
-#endif // defined(MA_HAS_RVALUE_REFS)
 
 #if defined(_MSC_VER)
 #pragma warning(push)
@@ -766,46 +646,7 @@ private:
 #pragma warning(pop)
 #endif // #if defined(_MSC_VER)
 
-#if defined(MA_HAS_RVALUE_REFS)
-
-template <typename Handler, typename Arg1, typename Arg2, typename Arg3,
-    typename Arg4, typename Arg5>
-inline binder5<typename remove_cv_reference<Handler>::type,
-    typename remove_cv_reference<Arg1>::type,
-    typename remove_cv_reference<Arg2>::type,
-    typename remove_cv_reference<Arg3>::type,
-    typename remove_cv_reference<Arg4>::type,
-    typename remove_cv_reference<Arg5>::type>
-bind_handler(Handler&& handler, Arg1&& arg1, Arg2&& arg2, Arg3&& arg3,
-    Arg4&& arg4, Arg5&& arg5)
-{
-  typedef typename remove_cv_reference<Handler>::type handler_type;
-  typedef typename remove_cv_reference<Arg1>::type arg1_type;
-  typedef typename remove_cv_reference<Arg2>::type arg2_type;
-  typedef typename remove_cv_reference<Arg3>::type arg3_type;
-  typedef typename remove_cv_reference<Arg4>::type arg4_type;
-  typedef typename remove_cv_reference<Arg5>::type arg5_type;
-  return binder5<handler_type, arg1_type, arg2_type, arg3_type, arg4_type,
-      arg5_type>(std::forward<Handler>(handler), std::forward<Arg1>(arg1),
-      std::forward<Arg2>(arg2), std::forward<Arg3>(arg3),
-      std::forward<Arg4>(arg4), std::forward<Arg5>(arg5));
-}
-
-#else // defined(MA_HAS_RVALUE_REFS)
-
-template <typename Handler, typename Arg1, typename Arg2, typename Arg3,
-    typename Arg4, typename Arg5>
-inline binder5<Handler, Arg1, Arg2, Arg3, Arg4, Arg5>
-bind_handler(const Handler& handler, const Arg1& arg1, const Arg2& arg2,
-    const Arg3& arg3, const Arg4& arg4, const Arg5& arg5)
-{
-  return binder5<Handler, Arg1, Arg2, Arg3, Arg4, Arg5>(handler, arg1, arg2,
-      arg3, arg4, arg5);
-}
-
-#endif // defined(MA_HAS_RVALUE_REFS)
-
 } // namespace detail
 } // namespace ma
 
-#endif // MA_BIND_ASIO_HANDLER_HPP
+#endif // MA_DETAIL_BINDER_HPP

@@ -74,6 +74,9 @@
       <Extensions>cpp;moc</Extensions>
       <SourceControlFiles>False</SourceControlFiles>
     </Filter>
+    <Filter Include="Header Files\ma\detail">
+      <UniqueIdentifier>{12e30a55-35d6-428c-a20a-4212a9310f7c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src\ma\echo\server\qt\mainform.cpp">
@@ -155,9 +158,6 @@
     </CustomBuild>
     <CustomBuild Include="..\..\..\include\ma\echo\server\qt\serviceforwardsignal.h">
       <Filter>Header Files\ma\echo\server\qt</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\..\include\ma\bind_asio_handler.hpp">
-      <Filter>Header Files\ma</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\..\include\ma\config.hpp">
       <Filter>Header Files\ma</Filter>
@@ -290,5 +290,22 @@
     <ResourceCompile Include="..\..\..\src\qt_echo_server\qt_echo_server.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\include\ma\detail\binder.hpp">
+      <Filter>Header Files\ma\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\bind_handler.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\detail\handler_ptr.hpp">
+      <Filter>Header Files\ma\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\detail\service_base.hpp">
+      <Filter>Header Files\ma\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\detail\intrusive_list.hpp">
+      <Filter>Header Files\ma\detail</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

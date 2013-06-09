@@ -19,7 +19,7 @@
 #include <boost/system/error_code.hpp>
 #include <ma/config.hpp>
 #include <ma/handler_storage.hpp>
-#include <ma/bind_asio_handler.hpp>
+#include <ma/bind_handler.hpp>
 #include <ma/context_alloc_handler.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)
@@ -206,7 +206,7 @@ void async_interface::start_do_something(
       async_interface->start_do_something())
   {
     async_interface->strand().get_io_service().post(
-        ma::detail::bind_handler(handler, *result));
+        ma::bind_handler(handler, *result));
   }
   else
   {
