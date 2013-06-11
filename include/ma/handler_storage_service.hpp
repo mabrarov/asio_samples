@@ -23,101 +23,16 @@
 #include <boost/throw_exception.hpp>
 #include <ma/config.hpp>
 #include <ma/type_traits.hpp>
-#include <ma/bind_asio_handler.hpp>
-#include <ma/handler_alloc_helpers.hpp>
+#include <ma/bind_handler.hpp>
+#include <ma/detail/handler_ptr.hpp>
+#include <ma/detail/service_base.hpp>
+#include <ma/detail/intrusive_list.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)
 #include <utility>
 #endif // defined(MA_HAS_RVALUE_REFS)
 
 namespace ma {
-
-namespace detail {
-
-/// Simplified double-linked intrusive list.
-/**
- * Requirements:
- * if value is rvalue of type Value then expression
- * static_cast&lt;intrusive_list&lt;Value&gt;::base_hook&amp;&gt;(Value)
- * must be well formed and accessible from intrusive_list&lt;Value&gt;.
- */
-template<typename Value>
-class intrusive_list : private boost::noncopyable
-{
-public:
-  typedef Value  value_type;
-  typedef Value* pointer;
-  typedef Value& reference;
-
-  /// Required hook for items of the list.
-  class base_hook;
-
-  /// Never throws
-  intrusive_list();
-
-  /// Never throws
-  pointer front() const;
-
-  /// Never throws
-  static pointer prev(reference value);
-
-  /// Never throws
-  static pointer next(reference value);
-
-  /// Never throws
-  void push_front(reference value);
-
-  /// Never throws
-  void erase(reference value);
-
-  /// Never throws
-  void pop_front();
-
-private:
-  static base_hook& get_hook(reference value);
-
-  pointer front_;
-}; // class intrusive_list
-
-template<typename Value>
-class intrusive_list<Value>::base_hook
-{
-private:
-  typedef base_hook this_type;
-
-public:
-  base_hook();
-  base_hook(const this_type&);
-  base_hook& operator=(const this_type&);
-
-private:
-  friend class intrusive_list<Value>;
-  pointer prev_;
-  pointer next_;
-}; // class intrusive_list::base_hook
-
-// Special derived service id type to keep classes header-file only.
-// Copied from boost/asio/io_service.hpp.
-template <typename Type>
-class service_id : public boost::asio::io_service::id
-{
-}; // class service_id
-
-// Special service base class to keep classes header-file only.
-// Copied from boost/asio/io_service.hpp.
-template <typename Type>
-class service_base : public boost::asio::io_service::service
-{
-public:
-  static service_id<Type> id;
-
-  explicit service_base(boost::asio::io_service& io_service);
-
-protected:
-  virtual ~service_base();
-}; // class service_base
-
-} // namespace detail
 
 /// Exception thrown when handler_storage::post is used with empty
 /// handler_storage.
@@ -214,140 +129,8 @@ private:
   // Double-linked intrusive list of active implementations.
   impl_base_list impl_list_;
   // Shutdown state flag.
-  bool shutdown_done_;
+  bool shutdown_;
 }; // class handler_storage_service
-
-namespace detail {
-
-template<typename Value>
-intrusive_list<Value>::base_hook::base_hook()
-  : prev_(0)
-  , next_(0)
-{
-}
-
-template<typename Value>
-intrusive_list<Value>::base_hook::base_hook(const this_type&)
-  : prev_(0)
-  , next_(0)
-{
-}
-
-template<typename Value>
-typename intrusive_list<Value>::base_hook&
-intrusive_list<Value>::base_hook::operator=(const this_type&)
-{
-  return *this;
-}
-
-template<typename Value>
-intrusive_list<Value>::intrusive_list()
-  : front_(0)
-{
-}
-
-template<typename Value>
-typename intrusive_list<Value>::pointer
-intrusive_list<Value>::front() const
-{
-  return front_;
-}
-
-template<typename Value>
-typename intrusive_list<Value>::pointer
-intrusive_list<Value>::prev(reference value)
-{
-  return get_hook(value).prev_;
-}
-
-template<typename Value>
-typename intrusive_list<Value>::pointer
-intrusive_list<Value>::next(reference value)
-{
-  return get_hook(value).next_;
-}
-
-template<typename Value>
-void intrusive_list<Value>::push_front(reference value)
-{
-  base_hook& value_hook = get_hook(value);
-
-  BOOST_ASSERT_MSG(!value_hook.prev_ && !value_hook.next_,
-      "The value to push has to be not linked");
-
-  value_hook.next_ = front_;
-  if (value_hook.next_)
-  {
-    base_hook& front_hook = get_hook(*value_hook.next_);
-    front_hook.prev_ = boost::addressof(value);
-  }
-  front_ = boost::addressof(value);
-}
-
-template<typename Value>
-void intrusive_list<Value>::erase(reference value)
-{
-  base_hook& value_hook = get_hook(value);
-  if (front_ == boost::addressof(value))
-  {
-    front_ = value_hook.next_;
-  }
-  if (value_hook.prev_)
-  {
-    base_hook& prev_hook = get_hook(*value_hook.prev_);
-    prev_hook.next_ = value_hook.next_;
-  }
-  if (value_hook.next_)
-  {
-    base_hook& next_hook = get_hook(*value_hook.next_);
-    next_hook.prev_ = value_hook.prev_;
-  }
-  value_hook.prev_ = value_hook.next_ = 0;
-
-  BOOST_ASSERT_MSG(!value_hook.prev_ && !value_hook.next_,
-      "The erased value has to be unlinked");
-}
-
-template<typename Value>
-void intrusive_list<Value>::pop_front()
-{
-  BOOST_ASSERT_MSG(front_, "The container is empty");
-
-  base_hook& value_hook = get_hook(*front_);
-  front_ = value_hook.next_;
-  if (front_)
-  {
-    base_hook& front_hook = get_hook(*front_);
-    front_hook.prev_= 0;
-  }
-  value_hook.next_ = value_hook.prev_ = 0;
-
-  BOOST_ASSERT_MSG(!value_hook.prev_ && !value_hook.next_,
-      "The popped value has to be unlinked");
-}
-
-template<typename Value>
-typename intrusive_list<Value>::base_hook&
-intrusive_list<Value>::get_hook(reference value)
-{
-  return static_cast<base_hook&>(value);
-}
-
-template <typename Type>
-service_base<Type>::service_base(boost::asio::io_service& io_service)
-  : boost::asio::io_service::service(io_service)
-{
-}
-
-template <typename Type>
-service_base<Type>::~service_base()
-{
-}
-
-template <typename Type>
-service_id<Type> service_base<Type>::id;
-
-} // namespace detail
 
 inline bad_handler_call::bad_handler_call()
   : std::runtime_error("call to empty ma::handler_storage")
@@ -355,11 +138,11 @@ inline bad_handler_call::bad_handler_call()
 }
 
 class handler_storage_service::stored_base
-  : public detail::intrusive_list<stored_base>::base_hook
+  : public detail::intrusive_slist<stored_base>::base_hook
 {
 private:
   typedef stored_base this_type;
-  typedef detail::intrusive_list<stored_base>::base_hook base_type;
+  typedef detail::intrusive_slist<stored_base>::base_hook base_type;
 
 public:
 
@@ -853,9 +636,9 @@ void handler_storage_service::handler_wrapper<Handler, Arg, Target>::do_post(
   // Post the copy of handler's local copy to io_service
   boost::asio::io_service& io_service = work.get_io_service();
 #if defined(MA_HAS_RVALUE_REFS)
-  io_service.post(detail::bind_handler(std::move(handler), arg));
+  io_service.post(bind_handler(std::move(handler), arg));
 #else
-  io_service.post(detail::bind_handler(handler, arg));
+  io_service.post(bind_handler(handler, arg));
 #endif
 }
 
@@ -1047,13 +830,13 @@ inline handler_storage_service::impl_base::~impl_base()
 inline handler_storage_service::handler_storage_service(
     boost::asio::io_service& io_service)
   : detail::service_base<handler_storage_service>(io_service)
-  , shutdown_done_(false)
+  , shutdown_(false)
 {
 }
 
 inline void handler_storage_service::construct(implementation_type& impl)
 {
-  if (!shutdown_done_)
+  if (!shutdown_)
   {
     // Add implementation to the list of active implementations.
     lock_guard impl_list_lock(impl_list_mutex_);
@@ -1064,7 +847,7 @@ inline void handler_storage_service::construct(implementation_type& impl)
 inline void handler_storage_service::move_construct(implementation_type& impl,
     implementation_type& other_impl)
 {
-  if (!shutdown_done_)
+  if (!shutdown_)
   {
     // Add implementation to the list of active implementations.
     {
@@ -1079,7 +862,7 @@ inline void handler_storage_service::move_construct(implementation_type& impl,
 
 inline void handler_storage_service::destroy(implementation_type& impl)
 {
-  if (!shutdown_done_)
+  if (!shutdown_)
   {
     {
       // Remove implementation from the list of active implementations.
@@ -1105,7 +888,7 @@ template <typename Handler, typename Arg, typename Target>
 void handler_storage_service::store(implementation_type& impl, Handler handler)
 {
   // If service is (was) in shutdown state then it can't store handler.
-  if (!shutdown_done_)
+  if (!shutdown_)
   {
     typedef typename remove_cv_reference<Arg>::type           arg_type;
     typedef typename remove_cv_reference<Target>::type        target_type;
@@ -1194,14 +977,15 @@ inline bool handler_storage_service::has_target(const implementation_type& impl)
 
 inline handler_storage_service::~handler_storage_service()
 {
+  BOOST_ASSERT_MSG(shutdown_, "shutdown_service() was not called");
 }
 
 inline void handler_storage_service::shutdown_service()
 {
   // Restrict usage of service.
-  shutdown_done_ = true;
+  shutdown_ = true;
   // Take ownership of all still active handlers.
-  detail::intrusive_list<stored_base> stored_handlers;
+  detail::intrusive_slist<stored_base> stored_handlers;
   {
     lock_guard impl_list_lock(impl_list_mutex_);
     for (impl_base* impl = impl_list_.front(); impl;

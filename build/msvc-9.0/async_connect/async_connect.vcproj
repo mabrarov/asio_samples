@@ -360,7 +360,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\include\ma\bind_asio_handler.hpp"
+					RelativePath="..\..\..\include\ma\bind_handler.hpp"
 					>
 				</File>
 				<File
@@ -403,6 +403,14 @@
 					RelativePath="..\..\..\include\ma\type_traits.hpp"
 					>
 				</File>
+				<Filter
+					Name="detail"
+					>
+					<File
+						RelativePath="..\..\..\include\ma\detail\binder.hpp"
+						>
+					</File>
+				</Filter>
 			</Filter>
 		</Filter>
 	</Files>

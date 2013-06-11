@@ -27,11 +27,11 @@
     <Filter Include="Source Files\ma\echo\server">
       <UniqueIdentifier>{2e28fd18-54a8-453f-b0b7-559595d4e8a4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\ma\detail">
+      <UniqueIdentifier>{9f52b402-ae5c-46bb-bfc0-efd37c1c03aa}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\include\ma\console_controller.hpp">
-      <Filter>Header Files\ma</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\include\ma\cyclic_buffer.hpp">
       <Filter>Header Files\ma</Filter>
     </ClInclude>
@@ -51,9 +51,6 @@
       <Filter>Header Files\ma</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\ma\handler_storage_service.hpp">
-      <Filter>Header Files\ma</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\ma\bind_asio_handler.hpp">
       <Filter>Header Files\ma</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\ma\echo\server\session_manager_fwd.hpp">
@@ -131,11 +128,26 @@
     <ClInclude Include="..\..\..\include\ma\echo\server\simple_session_factory.hpp">
       <Filter>Header Files\ma\echo\server</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\console_close_guard.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\detail\binder.hpp">
+      <Filter>Header Files\ma\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\bind_handler.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\detail\handler_ptr.hpp">
+      <Filter>Header Files\ma\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\detail\service_base.hpp">
+      <Filter>Header Files\ma\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\detail\intrusive_list.hpp">
+      <Filter>Header Files\ma\detail</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\src\ma\console_controller.cpp">
-      <Filter>Source Files\ma</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\src\echo_server\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -156,6 +168,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\src\ma\echo\server\simple_session_factory.cpp">
       <Filter>Source Files\ma\echo\server</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\ma\console_close_guard.cpp">
+      <Filter>Source Files\ma</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -380,12 +380,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\include\ma\bind_asio_handler.hpp" />
+    <ClInclude Include="..\..\..\include\ma\bind_handler.hpp" />
     <ClInclude Include="..\..\..\include\ma\config.hpp" />
-    <ClInclude Include="..\..\..\include\ma\console_controller.hpp" />
+    <ClInclude Include="..\..\..\include\ma\console_close_guard.hpp" />
     <ClInclude Include="..\..\..\include\ma\context_alloc_handler.hpp" />
     <ClInclude Include="..\..\..\include\ma\custom_alloc_handler.hpp" />
     <ClInclude Include="..\..\..\include\ma\cyclic_buffer.hpp" />
+    <ClInclude Include="..\..\..\include\ma\detail\binder.hpp" />
+    <ClInclude Include="..\..\..\include\ma\detail\handler_ptr.hpp" />
+    <ClInclude Include="..\..\..\include\ma\detail\intrusive_list.hpp" />
+    <ClInclude Include="..\..\..\include\ma\detail\service_base.hpp" />
     <ClInclude Include="..\..\..\include\ma\echo\server\error.hpp" />
     <ClInclude Include="..\..\..\include\ma\echo\server\pooled_session_factory.hpp" />
     <ClInclude Include="..\..\..\include\ma\echo\server\session_config.hpp" />
@@ -418,7 +422,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\src\echo_server\main.cpp" />
     <ClCompile Include="..\..\..\src\echo_server\config.cpp" />
-    <ClCompile Include="..\..\..\src\ma\console_controller.cpp" />
+    <ClCompile Include="..\..\..\src\ma\console_close_guard.cpp" />
     <ClCompile Include="..\..\..\src\ma\echo\server\error.cpp" />
     <ClCompile Include="..\..\..\src\ma\echo\server\pooled_session_factory.cpp" />
     <ClCompile Include="..\..\..\src\ma\echo\server\session.cpp" />

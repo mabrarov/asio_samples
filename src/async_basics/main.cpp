@@ -23,7 +23,7 @@
 #include <boost/make_shared.hpp>
 #include <boost/utility/in_place_factory.hpp>
 #include <ma/handler_allocator.hpp>
-#include <ma/console_controller.hpp>
+#include <ma/console_close_guard.hpp>
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/tutorial/async_interface.hpp>
 #include <ma/tutorial/async_implementation.hpp>
@@ -72,9 +72,9 @@ int main(int /*argc*/, char* /*argv*/[])
     io_service work_io_service(cpu_count);
 
     // Setup console controller
-    ma::console_controller console_controller(boost::bind(handle_program_exit,
-        boost::ref(work_io_service)));
-    std::cout << "Press Ctrl+C (Ctrl+Break) to exit.\n";
+    ma::console_close_guard console_close_guard(
+        boost::bind(handle_program_exit, boost::ref(work_io_service)));
+    std::cout << "Press Ctrl+C to exit.\n";
 
     boost::thread_group work_threads;
     boost::optional<io_service::work> work_guard(

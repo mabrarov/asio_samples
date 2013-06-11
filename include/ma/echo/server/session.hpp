@@ -22,7 +22,7 @@
 #include <ma/cyclic_buffer.hpp>
 #include <ma/handler_storage.hpp>
 #include <ma/handler_allocator.hpp>
-#include <ma/bind_asio_handler.hpp>
+#include <ma/bind_handler.hpp>
 #include <ma/context_alloc_handler.hpp>
 #include <ma/echo/server/session_config.hpp>
 #include <ma/echo/server/session_fwd.hpp>
@@ -269,7 +269,7 @@ void session::async_start(Handler&& handler)
       [shared_this](const handler_type& handler)
   {
     boost::system::error_code result = shared_this->do_start_extern_start();
-    shared_this->io_service_.post(detail::bind_handler(handler, result));
+    shared_this->io_service_.post(bind_handler(handler, result));
   }));
 
 #else  // defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
@@ -309,7 +309,7 @@ void session::async_stop(Handler&& handler)
   {
     if (optional_error_code result = shared_this->do_start_extern_stop())
     {
-      shared_this->io_service_.post(detail::bind_handler(handler, *result));
+      shared_this->io_service_.post(bind_handler(handler, *result));
     }
     else
     {
@@ -354,7 +354,7 @@ void session::async_wait(Handler&& handler)
   {
     if (optional_error_code result = shared_this->do_start_extern_wait())
     {
-      shared_this->io_service_.post(detail::bind_handler(handler, *result));
+      shared_this->io_service_.post(bind_handler(handler, *result));
     }
     else
     {
@@ -435,7 +435,7 @@ template <typename Handler>
 void session::start_extern_start(const Handler& handler)
 {
   boost::system::error_code result = do_start_extern_start();
-  io_service_.post(detail::bind_handler(handler, result));
+  io_service_.post(bind_handler(handler, result));
 }
 
 template <typename Handler>
@@ -443,7 +443,7 @@ void session::start_extern_stop(const Handler& handler)
 {
   if (optional_error_code result = do_start_extern_stop())
   {
-    io_service_.post(detail::bind_handler(handler, *result));
+    io_service_.post(bind_handler(handler, *result));
   }
   else
   {
@@ -456,7 +456,7 @@ void session::start_extern_wait(const Handler& handler)
 {
   if (optional_error_code result = do_start_extern_wait())
   {
-    io_service_.post(detail::bind_handler(handler, *result));
+    io_service_.post(bind_handler(handler, *result));
   }
   else
   {

@@ -14,17 +14,18 @@ CONFIG   -= app_bundle
 # Common project configuration
 include(../config.pri)
 
-HEADERS  += ../../../include/ma/async_connect.hpp \
-            ../../../include/ma/bind_asio_handler.hpp \
+HEADERS  += ../../../include/ma/detail/binder.hpp \
+            ../../../include/ma/async_connect.hpp \
+            ../../../include/ma/bind_handler.hpp \
             ../../../include/ma/config.hpp \
             ../../../include/ma/context_wrapped_handler.hpp \
             ../../../include/ma/custom_alloc_handler.hpp \
             ../../../include/ma/handler_alloc_helpers.hpp \
             ../../../include/ma/handler_allocator.hpp \
             ../../../include/ma/handler_invoke_helpers.hpp \
+            ../../../include/ma/limited_int.hpp \
             ../../../include/ma/steady_deadline_timer.hpp \
             ../../../include/ma/strand_wrapped_handler.hpp \
-            ../../../include/ma/limited_int.hpp \
             ../../../include/ma/type_traits.hpp
 
 SOURCES  += ../../../src/async_connect/main.cpp

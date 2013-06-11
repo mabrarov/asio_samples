@@ -14,25 +14,7 @@ CONFIG   -= app_bundle
 # Common project configuration
 include(../config.pri)
 
-HEADERS  += ../../../include/ma/handler_storage_service.hpp \
-            ../../../include/ma/handler_storage.hpp \
-            ../../../include/ma/handler_invoke_helpers.hpp \
-            ../../../include/ma/bind_asio_handler.hpp \
-            ../../../include/ma/context_alloc_handler.hpp \
-            ../../../include/ma/context_wrapped_handler.hpp \
-            ../../../include/ma/custom_alloc_handler.hpp \
-            ../../../include/ma/strand_wrapped_handler.hpp \
-            ../../../include/ma/handler_allocator.hpp \
-            ../../../include/ma/handler_alloc_helpers.hpp \
-            ../../../include/ma/cyclic_buffer.hpp \
-            ../../../include/ma/console_controller.hpp \
-            ../../../include/ma/config.hpp \
-            ../../../include/ma/type_traits.hpp \
-            ../../../include/ma/shared_ptr_factory.hpp \
-            ../../../include/ma/sp_intrusive_list.hpp \
-            ../../../include/ma/steady_deadline_timer.hpp \
-            ../../../include/ma/limited_int.hpp \
-            ../../../include/ma/echo/server/session_config_fwd.hpp \
+HEADERS  += ../../../include/ma/echo/server/session_config_fwd.hpp \
             ../../../include/ma/echo/server/session_manager_config_fwd.hpp \
             ../../../include/ma/echo/server/session_manager_stats.hpp \
             ../../../include/ma/echo/server/session_manager_stats_fwd.hpp \
@@ -48,17 +30,37 @@ HEADERS  += ../../../include/ma/handler_storage_service.hpp \
             ../../../include/ma/echo/server/session_factory.hpp \
             ../../../include/ma/echo/server/session_factory_fwd.hpp \
             ../../../include/ma/echo/server/simple_session_factory.hpp \
-            ../../../src/echo_server/config.hpp
+            ../../../include/ma/detail/binder.hpp \
+            ../../../include/ma/detail/handler_ptr.hpp \
+            ../../../include/ma/detail/intrusive_list.hpp \
+            ../../../include/ma/detail/service_base.hpp \
+            ../../../include/ma/bind_handler.hpp \
+            ../../../include/ma/config.hpp \
+            ../../../include/ma/console_close_guard.hpp \
+            ../../../include/ma/context_alloc_handler.hpp \
+            ../../../include/ma/context_wrapped_handler.hpp \
+            ../../../include/ma/custom_alloc_handler.hpp \
+            ../../../include/ma/cyclic_buffer.hpp \
+            ../../../include/ma/handler_alloc_helpers.hpp \
+            ../../../include/ma/handler_allocator.hpp \
+            ../../../include/ma/handler_invoke_helpers.hpp \
+            ../../../include/ma/handler_storage.hpp \
+            ../../../include/ma/handler_storage_service.hpp \
+            ../../../include/ma/limited_int.hpp \
+            ../../../include/ma/shared_ptr_factory.hpp \
+            ../../../include/ma/sp_intrusive_list.hpp \
+            ../../../include/ma/steady_deadline_timer.hpp \
+            ../../../include/ma/strand_wrapped_handler.hpp \
+            ../../../include/ma/type_traits.hpp
 
-SOURCES  += ../../../src/ma/console_controller.cpp \
-            ../../../src/echo_server/main.cpp \
-            ../../../src/echo_server/config.cpp \
-            ../../../src/ma/echo/server/error.cpp \
+SOURCES  += ../../../src/ma/echo/server/error.cpp \
             ../../../src/ma/echo/server/session.cpp \
             ../../../src/ma/echo/server/session_manager.cpp \
             ../../../src/ma/echo/server/pooled_session_factory.cpp \
-            ../../../src/ma/echo/server/simple_session_factory.cpp
-
+            ../../../src/ma/echo/server/simple_session_factory.cpp \
+            ../../../src/ma/console_close_guard.cpp \
+            ../../../src/echo_server/config.cpp \
+            ../../../src/echo_server/main.cpp
 
 INCLUDEPATH += $${BOOST_INCLUDE} \
                ../../../include

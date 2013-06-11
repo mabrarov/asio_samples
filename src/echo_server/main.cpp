@@ -31,7 +31,7 @@
 #include <boost/thread/condition_variable.hpp>
 #include <ma/handler_allocator.hpp>
 #include <ma/custom_alloc_handler.hpp>
-#include <ma/console_controller.hpp>
+#include <ma/console_close_guard.hpp>
 #include <ma/echo/server/simple_session_factory.hpp>
 #include <ma/echo/server/pooled_session_factory.hpp>
 #include <ma/echo/server/session_manager.hpp>
@@ -503,7 +503,7 @@ void handle_app_exit(server_state& the_server_state, server& the_server)
         boost::ref(the_server_state), boost::ref(the_server), _1));
     switch_to_stopping(lock_guard, the_server_state, true);
     std::cout << "Server is stopping." \
-        " Press Ctrl+C (Ctrl+Break) to terminate server." << std::endl;
+        " Press Ctrl+C to terminate server." << std::endl;
     break;
   }
 }
@@ -627,9 +627,9 @@ int echo_server::run_server(const echo_server::execution_config& exec_config,
       boost::ref(the_server_state), boost::ref(the_server), _1));
 
   // Lookup for app termination
-  ma::console_controller console_controller(boost::bind(handle_app_exit,
-      boost::ref(the_server_state), boost::ref(the_server)));
-  std::cout << "Press Ctrl+C (Ctrl+Break) to exit." << std::endl;
+  ma::console_close_guard console_close_guard(boost::bind(
+      handle_app_exit, boost::ref(the_server_state), boost::ref(the_server)));
+  std::cout << "Press Ctrl+C to exit." << std::endl;
 
   int exit_code = EXIT_SUCCESS;
 

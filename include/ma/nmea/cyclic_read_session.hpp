@@ -27,7 +27,7 @@
 #include <boost/enable_shared_from_this.hpp>
 #include <ma/config.hpp>
 #include <ma/handler_storage.hpp>
-#include <ma/bind_asio_handler.hpp>
+#include <ma/bind_handler.hpp>
 #include <ma/handler_allocator.hpp>
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/context_alloc_handler.hpp>
@@ -489,7 +489,7 @@ template <typename Handler>
 void cyclic_read_session::start_extern_start(const Handler& handler)
 {
   boost::system::error_code error = do_start_extern_start();
-  io_service_.post(detail::bind_handler(handler, error));
+  io_service_.post(bind_handler(handler, error));
 }
 
 template <typename Handler>
@@ -497,7 +497,7 @@ void cyclic_read_session::start_extern_stop(const Handler& handler)
 {
   if (optional_error_code result = do_start_extern_stop())
   {
-    io_service_.post(detail::bind_handler(handler, *result));
+    io_service_.post(bind_handler(handler, *result));
   }
   else
   {
@@ -514,7 +514,7 @@ void cyclic_read_session::start_extern_read_some(
     // Complete read operation "in place" if error
     if (*read_result)
     {
-      io_service_.post(detail::bind_handler(handler, *read_result, 0));
+      io_service_.post(bind_handler(handler, *read_result, 0));
       return;
     }
 
@@ -523,8 +523,8 @@ void cyclic_read_session::start_extern_read_some(
     frame_buffer_.erase_begin(copy_result.get<1>());
 
     // Post the handler
-    io_service_.post(detail::bind_handler(
-        handler, copy_result.get<0>(), copy_result.get<1>()));
+    io_service_.post(bind_handler(handler, 
+        copy_result.get<0>(), copy_result.get<1>()));
   }
   else
   {
@@ -540,7 +540,7 @@ void cyclic_read_session::start_extern_write_some(
   if ((extern_state::work != extern_state_) || port_write_in_progress_)
   {
     boost::system::error_code error(nmea::error::invalid_state);
-    io_service_.post(detail::bind_handler(handler, error, 0));
+    io_service_.post(bind_handler(handler, error, 0));
     return;
   }
 
@@ -558,8 +558,8 @@ void cyclic_read_session::handle_write(const boost::system::error_code& error,
 {
   port_write_in_progress_ = false;
 
-  io_service_.post(detail::bind_handler(
-      boost::get<0>(handler), error, bytes_transferred));
+  io_service_.post(bind_handler(boost::get<0>(handler), 
+      error, bytes_transferred));
 
   if ((extern_state::stop == extern_state_) && may_complete_stop())
   {

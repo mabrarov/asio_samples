@@ -14,29 +14,33 @@ CONFIG   -= app_bundle
 # Common project configuration
 include(../config.pri)
 
-HEADERS  += ../../../include/ma/handler_storage_service.hpp \
-            ../../../include/ma/handler_storage.hpp \
-            ../../../include/ma/handler_invoke_helpers.hpp \
-            ../../../include/ma/bind_asio_handler.hpp \
+HEADERS  += ../../../include/ma/detail/binder.hpp \
+            ../../../include/ma/detail/handler_ptr.hpp \
+            ../../../include/ma/detail/intrusive_list.hpp \
+            ../../../include/ma/detail/service_base.hpp \
+            ../../../include/ma/tutorial2/async_implementation.hpp \
+            ../../../include/ma/tutorial2/async_interface.hpp \            
+            ../../../include/ma/tutorial2/do_something_handler.hpp \
+            ../../../include/ma/tutorial2/do_something_handler_fwd.hpp \            
+            ../../../include/ma/bind_handler.hpp \
+            ../../../include/ma/config.hpp \
+            ../../../include/ma/console_close_guard.hpp \
             ../../../include/ma/context_alloc_handler.hpp \
             ../../../include/ma/context_wrapped_handler.hpp \
             ../../../include/ma/custom_alloc_handler.hpp \
-            ../../../include/ma/strand_wrapped_handler.hpp \
-            ../../../include/ma/handler_allocator.hpp \
             ../../../include/ma/handler_alloc_helpers.hpp \
-            ../../../include/ma/console_controller.hpp \
-            ../../../include/ma/config.hpp \
-            ../../../include/ma/type_traits.hpp \
+            ../../../include/ma/handler_allocator.hpp \
+            ../../../include/ma/handler_invoke_helpers.hpp \
+            ../../../include/ma/handler_storage.hpp \
+            ../../../include/ma/handler_storage_service.hpp \
             ../../../include/ma/shared_ptr_factory.hpp \
             ../../../include/ma/steady_deadline_timer.hpp \
-            ../../../include/ma/tutorial2/do_something_handler_fwd.hpp \
-            ../../../include/ma/tutorial2/do_something_handler.hpp \
-            ../../../include/ma/tutorial2/async_interface.hpp \
-            ../../../include/ma/tutorial2/async_implementation.hpp
+            ../../../include/ma/strand_wrapped_handler.hpp \
+            ../../../include/ma/type_traits.hpp
 
-SOURCES  += ../../../src/ma/console_controller.cpp \
-            ../../../src/async_basics2/main.cpp \
-            ../../../src/ma/tutorial2/async_implementation.cpp
+SOURCES  += ../../../src/ma/tutorial2/async_implementation.cpp \
+            ../../../src/ma/console_close_guard.cpp \
+            ../../../src/async_basics2/main.cpp
 
 INCLUDEPATH += $${BOOST_INCLUDE} \
                ../../../include

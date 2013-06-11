@@ -195,20 +195,24 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\src\ma\console_close_guard.cpp" />
     <ClCompile Include="..\..\..\src\ma\nmea\cyclic_read_session.cpp" />
     <ClCompile Include="..\..\..\src\ma\nmea\error.cpp" />
     <ClCompile Include="..\..\..\src\nmea_client\main.cpp" />
-    <ClCompile Include="..\..\..\src\ma\console_controller.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\include\ma\bind_asio_handler.hpp" />
+    <ClInclude Include="..\..\..\include\ma\bind_handler.hpp" />
     <ClInclude Include="..\..\..\include\ma\codecvt_cast.hpp" />
     <ClInclude Include="..\..\..\include\ma\config.hpp" />
-    <ClInclude Include="..\..\..\include\ma\console_controller.hpp" />
+    <ClInclude Include="..\..\..\include\ma\console_close_guard.hpp" />
     <ClInclude Include="..\..\..\include\ma\context_alloc_handler.hpp" />
     <ClInclude Include="..\..\..\include\ma\context_wrapped_handler.hpp" />
     <ClInclude Include="..\..\..\include\ma\custom_alloc_handler.hpp" />
     <ClInclude Include="..\..\..\include\ma\cyclic_buffer.hpp" />
+    <ClInclude Include="..\..\..\include\ma\detail\binder.hpp" />
+    <ClInclude Include="..\..\..\include\ma\detail\handler_ptr.hpp" />
+    <ClInclude Include="..\..\..\include\ma\detail\intrusive_list.hpp" />
+    <ClInclude Include="..\..\..\include\ma\detail\service_base.hpp" />
     <ClInclude Include="..\..\..\include\ma\handler_allocator.hpp" />
     <ClInclude Include="..\..\..\include\ma\handler_alloc_helpers.hpp" />
     <ClInclude Include="..\..\..\include\ma\handler_invoke_helpers.hpp" />

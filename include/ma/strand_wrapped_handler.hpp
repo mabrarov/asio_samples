@@ -14,7 +14,7 @@
 
 #include <cstddef>
 #include <boost/asio.hpp>
-#include <boost/utility.hpp>
+#include <boost/utility/addressof.hpp>
 #include <ma/config.hpp>
 #include <ma/handler_alloc_helpers.hpp>
 #include <ma/context_wrapped_handler.hpp>
@@ -144,8 +144,8 @@ public:
   template <typename Function>
   friend void asio_handler_invoke(const Function& function, this_type* context)
   {
-    context->strand_->dispatch(make_context_wrapped_handler(context->handler_,
-        function));
+    boost::asio::io_service::strand& strand = *context->strand_;
+    strand.dispatch(make_context_wrapped_handler(context->handler_, function));
   }
 
 #endif // defined(MA_HAS_RVALUE_REFS)
