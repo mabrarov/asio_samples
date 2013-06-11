@@ -344,7 +344,7 @@
 				Name="ma"
 				>
 				<File
-					RelativePath="..\..\..\include\ma\bind_asio_handler.hpp"
+					RelativePath="..\..\..\include\ma\bind_handler.hpp"
 					>
 				</File>
 				<File
@@ -352,7 +352,7 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\include\ma\console_controller.hpp"
+					RelativePath="..\..\..\include\ma\console_close_guard.hpp"
 					>
 				</File>
 				<File
@@ -483,6 +483,26 @@
 						</File>
 					</Filter>
 				</Filter>
+				<Filter
+					Name="detail"
+					>
+					<File
+						RelativePath="..\..\..\include\ma\detail\binder.hpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\..\include\ma\detail\handler_ptr.hpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\..\include\ma\detail\intrusive_list.hpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\..\include\ma\detail\service_base.hpp"
+						>
+					</File>
+				</Filter>
 			</Filter>
 		</Filter>
 		<Filter
@@ -502,7 +522,7 @@
 				Name="ma"
 				>
 				<File
-					RelativePath="..\..\..\src\ma\console_controller.cpp"
+					RelativePath="..\..\..\src\ma\console_close_guard.cpp"
 					>
 				</File>
 				<Filter

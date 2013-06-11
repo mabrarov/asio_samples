@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="echo_client1"
+	Name="handler_storage_test"
 	ProjectGUID="{C41F6EDC-F8B1-4B64-9A17-D43D8696D7B1}"
-	RootNamespace="echo_client1"
+	RootNamespace="handler_storage_test"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
 	>
@@ -343,33 +343,9 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\..\..\..\src\echo_client1\main.cpp"
+				RelativePath="..\..\..\src\handler_storage_test\main.cpp"
 				>
 			</File>
-			<Filter
-				Name="ma"
-				>
-				<File
-					RelativePath="..\..\..\src\ma\console_controller.cpp"
-					>
-				</File>
-				<Filter
-					Name="echo"
-					>
-					<Filter
-						Name="client1"
-						>
-						<File
-							RelativePath="..\..\..\src\ma\echo\client1\error.cpp"
-							>
-						</File>
-						<File
-							RelativePath="..\..\..\src\ma\echo\client1\session.cpp"
-							>
-						</File>
-					</Filter>
-				</Filter>
-			</Filter>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -380,7 +356,7 @@
 				Name="ma"
 				>
 				<File
-					RelativePath="..\..\..\include\ma\bind_asio_handler.hpp"
+					RelativePath="..\..\..\include\ma\bind_handler.hpp"
 					>
 				</File>
 				<File
@@ -388,11 +364,11 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\include\ma\console_controller.hpp"
+					RelativePath="..\..\..\include\ma\context_alloc_handler.hpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\include\ma\context_alloc_handler.hpp"
+					RelativePath="..\..\..\include\ma\context_invoke_handler.hpp"
 					>
 				</File>
 				<File
@@ -424,6 +400,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\..\include\ma\lockable_wrapped_handler.hpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\..\include\ma\strand_wrapped_handler.hpp"
 					>
 				</File>
@@ -432,32 +412,24 @@
 					>
 				</File>
 				<Filter
-					Name="echo"
+					Name="detail"
 					>
-					<Filter
-						Name="client1"
+					<File
+						RelativePath="..\..\..\include\ma\detail\binder.hpp"
 						>
-						<File
-							RelativePath="..\..\..\include\ma\echo\client1\error.hpp"
-							>
-						</File>
-						<File
-							RelativePath="..\..\..\include\ma\echo\client1\session.hpp"
-							>
-						</File>
-						<File
-							RelativePath="..\..\..\include\ma\echo\client1\session_fwd.hpp"
-							>
-						</File>
-						<File
-							RelativePath="..\..\..\include\ma\echo\client1\session_options.hpp"
-							>
-						</File>
-						<File
-							RelativePath="..\..\..\include\ma\echo\client1\session_options_fwd.hpp"
-							>
-						</File>
-					</Filter>
+					</File>
+					<File
+						RelativePath="..\..\..\include\ma\detail\handler_ptr.hpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\..\include\ma\detail\intrusive_list.hpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\..\include\ma\detail\service_base.hpp"
+						>
+					</File>
 				</Filter>
 			</Filter>
 		</Filter>

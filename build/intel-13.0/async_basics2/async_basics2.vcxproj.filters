@@ -21,25 +21,22 @@
     <Filter Include="Source Files\ma\tutorial2">
       <UniqueIdentifier>{ABAA2BFD-13C6-4147-B1D3-1A9410256A7C}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\ma\detail">
+      <UniqueIdentifier>{09afbbcc-9e86-4f0c-b60c-770e4ff05217}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src\async_basics2\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\ma\console_controller.cpp">
-      <Filter>Source Files\ma</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\src\ma\tutorial2\async_implementation.cpp">
       <Filter>Source Files\ma\tutorial2</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\src\ma\console_close_guard.cpp">
+      <Filter>Source Files\ma</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\include\ma\bind_asio_handler.hpp">
-      <Filter>Header Files\ma</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\ma\console_controller.hpp">
-      <Filter>Header Files\ma</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\include\ma\handler_alloc_helpers.hpp">
       <Filter>Header Files\ma</Filter>
     </ClInclude>
@@ -89,6 +86,24 @@
       <Filter>Header Files\ma</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\include\ma\steady_deadline_timer.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\detail\binder.hpp">
+      <Filter>Header Files\ma\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\detail\handler_ptr.hpp">
+      <Filter>Header Files\ma\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\detail\intrusive_list.hpp">
+      <Filter>Header Files\ma\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\detail\service_base.hpp">
+      <Filter>Header Files\ma\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\bind_handler.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\console_close_guard.hpp">
       <Filter>Header Files\ma</Filter>
     </ClInclude>
   </ItemGroup>

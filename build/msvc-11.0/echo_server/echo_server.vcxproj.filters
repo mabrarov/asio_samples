@@ -27,9 +27,6 @@
     <Filter Include="Source Files\ma\echo\server">
       <UniqueIdentifier>{2e28fd18-54a8-453f-b0b7-559595d4e8a4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\ma\windows">
-      <UniqueIdentifier>{a6d977db-7d07-47e3-b195-cf42bf0a3815}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\ma\detail">
       <UniqueIdentifier>{9f52b402-ae5c-46bb-bfc0-efd37c1c03aa}</UniqueIdentifier>
     </Filter>
@@ -134,9 +131,6 @@
     <ClInclude Include="..\..\..\include\ma\console_close_guard.hpp">
       <Filter>Header Files\ma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\include\ma\windows\console_signal.hpp">
-      <Filter>Header Files\ma\windows</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\include\ma\detail\binder.hpp">
       <Filter>Header Files\ma\detail</Filter>
     </ClInclude>
@@ -151,9 +145,6 @@
     </ClInclude>
     <ClInclude Include="..\..\..\include\ma\detail\intrusive_list.hpp">
       <Filter>Header Files\ma\detail</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\include\ma\windows\console_signal_service.hpp">
-      <Filter>Header Files\ma\windows</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
