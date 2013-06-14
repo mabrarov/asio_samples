@@ -75,8 +75,11 @@ class console_close_guard::implementation : private console_close_guard_base_2
 public:
   implementation(const ctrl_function_type& ctrl_function)
     : console_close_guard_base_2()
-    , signal_set_(io_service_, SIGINT)
+    , signal_set_(io_service_, SIGINT, SIGTERM)
   {
+#if defined(SIGQUIT)
+    signal_set_.add(SIGQUIT);
+#endif // defined(SIGQUIT)
     signal_set_.async_wait(boost::bind(&handle_signal, _1, ctrl_function));
   }
 
