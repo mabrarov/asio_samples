@@ -27,7 +27,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{C41F6EDC-F8B1-4b64-9A17-D43D8696D7B1}</ProjectGuid>
+    <ProjectGuid>{17DD157D-BCCE-4D22-B789-150DDF273D84}</ProjectGuid>
     <RootNamespace>echo_client1</RootNamespace>
     <Keyword>Win32Proj</Keyword>
     <VCTargetsPath Condition="'$(VCTargetsPath11)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath11)</VCTargetsPath>
@@ -307,28 +307,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\src\handler_storage_test\main.cpp" />
+    <ClCompile Include="..\..\..\src\shared_ptr_factory_test\main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\include\ma\bind_handler.hpp" />
     <ClInclude Include="..\..\..\include\ma\config.hpp" />
-    <ClInclude Include="..\..\..\include\ma\context_alloc_handler.hpp" />
-    <ClInclude Include="..\..\..\include\ma\context_invoke_handler.hpp" />
-    <ClInclude Include="..\..\..\include\ma\context_wrapped_handler.hpp" />
-    <ClInclude Include="..\..\..\include\ma\custom_alloc_handler.hpp" />
-    <ClInclude Include="..\..\..\include\ma\detail\binder.hpp" />
-    <ClInclude Include="..\..\..\include\ma\detail\handler_ptr.hpp" />
-    <ClInclude Include="..\..\..\include\ma\detail\intrusive_list.hpp" />
-    <ClInclude Include="..\..\..\include\ma\detail\service_base.hpp" />
-    <ClInclude Include="..\..\..\include\ma\handler_allocator.hpp" />
-    <ClInclude Include="..\..\..\include\ma\handler_alloc_helpers.hpp" />
-    <ClInclude Include="..\..\..\include\ma\handler_invoke_helpers.hpp" />
-    <ClInclude Include="..\..\..\include\ma\handler_storage.hpp" />
-    <ClInclude Include="..\..\..\include\ma\handler_storage_service.hpp" />
-    <ClInclude Include="..\..\..\include\ma\lockable_wrapped_handler.hpp" />
     <ClInclude Include="..\..\..\include\ma\shared_ptr_factory.hpp" />
-    <ClInclude Include="..\..\..\include\ma\strand_wrapped_handler.hpp" />
-    <ClInclude Include="..\..\..\include\ma\type_traits.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

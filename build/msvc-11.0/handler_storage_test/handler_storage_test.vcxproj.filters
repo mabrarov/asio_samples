@@ -76,5 +76,8 @@
     <ClInclude Include="..\..\..\include\ma\detail\intrusive_list.hpp">
       <Filter>Header Files\ma\detail</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\shared_ptr_factory.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
