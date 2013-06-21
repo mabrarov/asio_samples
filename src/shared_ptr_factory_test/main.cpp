@@ -12,7 +12,8 @@
 
 #include <cstdlib>
 #include <iostream>
-#include <boost/assert.hpp>
+#include <type_traits>
+#include <boost/static_assert.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
@@ -81,17 +82,20 @@ protected:
 
 class B : private boost::noncopyable
 {
-public:
-   B(int i, int j)
-     : i_(i)
-     , j_(j)
-   {
-   }
+private:
+  typedef B this_type;
 
-protected:
+  B(int i, int j)
+    : i_(i)
+    , j_(j)
+  {
+  }
+
   ~B()
   {
   }
+
+  friend struct ma::shared_ptr_factory_helper<this_type>;
 
 private:
   int i_;
@@ -100,7 +104,7 @@ private:
 
 class C : public A
 {
-public:
+protected:
   C(double d, int i, int j)
     : d_(d)
     , i_(i)
@@ -108,7 +112,6 @@ public:
   {
   }
 
-protected:
   ~C()
   {
   }
@@ -121,12 +124,28 @@ private:
 
 void run_test()
 {  
-  typedef ma::shared_ptr_factory_helper<B> B_helper;
-  typedef ma::shared_ptr_factory_helper<C> C_helper;
+  {
+    BOOST_STATIC_ASSERT_MSG(!std::is_constructible<A>::value, 
+        "class A has to be not constructible");
+    boost::shared_ptr<A> a = A::create();
+  }
+  
+  {    
+    BOOST_STATIC_ASSERT_MSG(!(std::is_constructible<B, int, int>::value),
+        "class B has to be not constructible");
 
-  boost::shared_ptr<A> a = A::create();
-  boost::shared_ptr<B> b = boost::make_shared<B_helper>(4, 2);
-  boost::shared_ptr<C> c = boost::make_shared<C_helper>(1.0, 4, 2);
+    typedef ma::shared_ptr_factory_helper<B> B_helper;
+    boost::shared_ptr<B> b = boost::make_shared<B_helper>(4, 2);
+  }
+
+  {
+    BOOST_STATIC_ASSERT_MSG(
+        !(std::is_constructible<C, double, int, int>::value),
+        "class B has to be not constructible");
+
+    typedef ma::shared_ptr_factory_helper<C> C_helper;  
+    boost::shared_ptr<C> c = boost::make_shared<C_helper>(1.0, 4, 2);
+  }
 }
 
 } // namespace shared_ptr_factory
