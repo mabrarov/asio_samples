@@ -17,8 +17,7 @@ include(../config.pri)
 HEADERS  += ../../../include/ma/detail/binder.hpp \
             ../../../include/ma/detail/handler_ptr.hpp \
             ../../../include/ma/detail/intrusive_list.hpp \
-            ../../../include/ma/detail/service_base.hpp \
-            ../../../include/ma/bind_asio_handler.hpp \
+            ../../../include/ma/detail/service_base.hpp \            
             ../../../include/ma/bind_handler.hpp \
             ../../../include/ma/config.hpp \
             ../../../include/ma/console_close_guard.hpp \
