@@ -120,8 +120,12 @@ public:
   /// Never throws
   bool empty();
 
+  /// Never throws
+  template<typename OtherValue>
+  void push_front_reversed(intrusive_slist<OtherValue>& other);
+
 private:
-  static base_hook& get_hook(reference value);
+  static base_hook& get_hook(reference value);  
 
   pointer front_;
 }; // class intrusive_slist
@@ -328,6 +332,22 @@ template<typename Value>
 bool intrusive_slist<Value>::empty()
 {
   return !front_;
+}
+
+template<typename Value>
+template<typename OtherValue>
+void intrusive_slist<Value>::push_front_reversed(intrusive_slist<OtherValue>& other)
+{  
+  typedef typename intrusive_slist<OtherValue>::pointer other_pointer;
+
+  other_pointer value = other.front();
+  while (value)
+  {
+    other_pointer next = other.next(*value);
+    push_front(*value);
+    value = next;
+  }
+  other.front_ = 0;
 }
 
 template<typename Value>
