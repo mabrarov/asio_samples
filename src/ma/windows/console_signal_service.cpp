@@ -5,6 +5,7 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#include <windows.h>
 #include <ma/shared_ptr_factory.hpp>
 #include <ma/detail/sp_singleton.hpp>
 #include <ma/windows/console_signal_service.hpp>
@@ -25,7 +26,6 @@ private:
 
 public:
   static system_handler_ptr get_instance();
-
   void add_service(console_signal_service&);
   void remove_service(console_signal_service&);
 
@@ -34,17 +34,10 @@ protected:
   ~system_handler();
 
 private:
+  static system_handler_ptr get_nullable_instance();
+  static BOOL WINAPI win_console_ctrl_handler(DWORD);
+  void post_handlers();
 }; // class console_signal_service::system_handler
-
-} // namespace windows
-} // namespace ma
-
-namespace {
-
-} // anonymous namespace
-
-namespace ma {
-namespace windows {
 
 console_signal_service::owning_handler_list::~owning_handler_list()
 {
@@ -123,6 +116,46 @@ console_signal_service::system_handler::system_handler()
 }
 
 console_signal_service::system_handler::~system_handler()
+{
+  //todo
+}
+
+
+console_signal_service::system_handler_ptr 
+console_signal_service::system_handler::get_nullable_instance()
+{
+  class null_factory
+  {
+  public:
+    system_handler_ptr operator()()
+    {
+      return system_handler_ptr();
+    }
+  };
+  return detail::sp_singleton<this_type>::get_instance(null_factory());
+}
+
+BOOL WINAPI console_signal_service::system_handler::win_console_ctrl_handler(
+    DWORD ctrl_type)
+{
+  switch (ctrl_type)
+  {
+  case CTRL_C_EVENT:
+  case CTRL_BREAK_EVENT:
+  case CTRL_CLOSE_EVENT:
+  case CTRL_LOGOFF_EVENT:
+  case CTRL_SHUTDOWN_EVENT:
+    if (system_handler_ptr h = get_nullable_instance())
+    {
+      h->post_handlers();
+      return TRUE;
+    }
+  default:
+    return FALSE;
+  };
+}
+
+void console_signal_service::system_handler::post_handlers()
 {
   //todo
 }
