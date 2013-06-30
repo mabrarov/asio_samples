@@ -49,13 +49,13 @@ private:
 
 template <typename Value>
 template <typename Factory>
-sp_singleton<Value>::value_shared_ptr 
+typename sp_singleton<Value>::value_shared_ptr 
 sp_singleton<Value>::get_instance(Factory factory)
 {
   lock_guard_type lock_guard(mutex_);
   if (value_shared_ptr shared_value = weak_value_.lock())
   {
-    return v;
+    return shared_value;
   }
   value_shared_ptr shared_value = factory();
   weak_value_ = shared_value;
@@ -63,10 +63,10 @@ sp_singleton<Value>::get_instance(Factory factory)
 }
 
 template <typename Value>
-sp_singleton<Value>::mutex_type sp_singleton<Value>::mutex_;
+typename sp_singleton<Value>::mutex_type sp_singleton<Value>::mutex_;
 
 template <typename Value>
-sp_singleton<Value>::value_weak_ptr sp_singleton<Value>::weak_value_;
+typename sp_singleton<Value>::value_weak_ptr sp_singleton<Value>::weak_value_;
 
 } // namespace detail
 } // namespace ma

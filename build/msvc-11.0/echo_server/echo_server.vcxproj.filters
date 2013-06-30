@@ -33,6 +33,9 @@
     <Filter Include="Header Files\ma\windows">
       <UniqueIdentifier>{fcba45db-9ed1-4dbb-b51a-db4dfb2eadd8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\ma\windows">
+      <UniqueIdentifier>{7fef63ad-3a43-42c8-b6ef-a0575f5d7e3a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\include\ma\cyclic_buffer.hpp">
@@ -183,6 +186,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\src\ma\console_close_guard.cpp">
       <Filter>Source Files\ma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\ma\windows\console_signal_service.cpp">
+      <Filter>Source Files\ma\windows</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

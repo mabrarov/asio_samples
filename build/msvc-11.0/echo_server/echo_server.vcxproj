@@ -431,6 +431,7 @@
     <ClCompile Include="..\..\..\src\ma\echo\server\session.cpp" />
     <ClCompile Include="..\..\..\src\ma\echo\server\session_manager.cpp" />
     <ClCompile Include="..\..\..\src\ma\echo\server\simple_session_factory.cpp" />
+    <ClCompile Include="..\..\..\src\ma\windows\console_signal_service.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
