@@ -155,6 +155,9 @@
     <ClInclude Include="..\..\..\include\ma\windows\console_signal_service.hpp">
       <Filter>Header Files\ma\windows</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\detail\sp_singleton.hpp">
+      <Filter>Header Files\ma\detail</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src\echo_server\main.cpp">

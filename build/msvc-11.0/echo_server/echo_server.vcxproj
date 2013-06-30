@@ -390,6 +390,7 @@
     <ClInclude Include="..\..\..\include\ma\detail\handler_ptr.hpp" />
     <ClInclude Include="..\..\..\include\ma\detail\intrusive_list.hpp" />
     <ClInclude Include="..\..\..\include\ma\detail\service_base.hpp" />
+    <ClInclude Include="..\..\..\include\ma\detail\sp_singleton.hpp" />
     <ClInclude Include="..\..\..\include\ma\echo\server\error.hpp" />
     <ClInclude Include="..\..\..\include\ma\echo\server\pooled_session_factory.hpp" />
     <ClInclude Include="..\..\..\include\ma\echo\server\session_config.hpp" />

@@ -336,18 +336,18 @@ bool intrusive_slist<Value>::empty()
 
 template<typename Value>
 template<typename OtherValue>
-void intrusive_slist<Value>::push_front_reversed(intrusive_slist<OtherValue>& other)
-{  
+void intrusive_slist<Value>::push_front_reversed(
+    intrusive_slist<OtherValue>& other)
+{
   typedef typename intrusive_slist<OtherValue>::pointer other_pointer;
-
-  other_pointer value = other.front();
-  while (value)
+  
+  while (other_pointer value = other.front())
   {
-    other_pointer next = other.next(*value);
-    push_front(*value);
-    value = next;
+    other.pop_front();
+    push_front(*value);    
   }
-  other.front_ = 0;
+  
+  BOOST_ASSERT_MSG(other.empty(), "The pushed list has to be empty");
 }
 
 template<typename Value>

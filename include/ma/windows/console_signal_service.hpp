@@ -26,6 +26,7 @@
 #include <ma/bind_handler.hpp>
 #include <ma/detail/handler_ptr.hpp>
 #include <ma/detail/service_base.hpp>
+#include <ma/detail/sp_singleton.hpp>
 #include <ma/detail/intrusive_list.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)
@@ -35,9 +36,15 @@
 namespace ma {
 namespace windows {
 
+class console_signal_service_base 
+  : public detail::intrusive_list<console_signal_service_base>::base_hook
+{
+}; // class console_signal_service_base
+
 /// asio::io_service::service implementing console_signal.
 class console_signal_service
   : public detail::service_base<console_signal_service>
+  , private console_signal_service_base
 {
 private:  
   class handler_base : public detail::intrusive_slist<handler_base>::base_hook
@@ -50,9 +57,21 @@ private:
 
 #if defined(MA_TYPE_ERASURE_USE_VURTUAL)
 
-    handler_base();
     virtual void destroy() = 0;
     virtual void post(const boost::system::error_code&) = 0;
+
+#else
+
+    void destroy();
+    void post(const boost::system::error_code&);        
+
+#endif // defined(MA_TYPE_ERASURE_USE_VURTUAL)
+
+  protected:
+
+#if defined(MA_TYPE_ERASURE_USE_VURTUAL)
+
+    handler_base();
 
 #else
 
@@ -60,14 +79,11 @@ private:
     typedef void (*post_func_type)(this_type*, const boost::system::error_code&);
 
     handler_base(destroy_func_type, post_func_type);
-    void destroy();
-    void post(const boost::system::error_code&);        
 
 #endif // defined(MA_TYPE_ERASURE_USE_VURTUAL)
 
-  protected:
     ~handler_base();
-    handler_base(const this_type&);
+    handler_base(const this_type&);    
 
   private:
     this_type& operator=(const this_type&);
@@ -120,6 +136,9 @@ protected:
 
 private:
   class owning_handler_list;
+  class system_handler;
+
+  typedef boost::shared_ptr<system_handler> system_handler_ptr;
 
   template <typename Handler>
   class handler_wrapper;
@@ -143,6 +162,64 @@ class console_signal_service::owning_handler_list : public handler_list
 public:
   ~owning_handler_list();
 }; // class console_signal_service::owning_handler_list
+
+class console_signal_service::system_handler : private boost::noncopyable
+{
+private:
+  typedef system_handler this_type;
+
+public:
+  static system_handler_ptr get_instance();
+
+  void add_service(console_signal_service&);
+  void remove_service(console_signal_service&);
+
+private:
+  system_handler();
+  ~system_handler();
+}; // class console_signal_service::system_handler
+
+#if defined(MA_TYPE_ERASURE_USE_VURTUAL)
+
+inline console_signal_service::handler_base::handler_base()
+{
+}
+
+#else
+
+inline void console_signal_service::handler_base::destroy()
+{
+  destroy_func_();
+}
+
+inline void console_signal_service::handler_base::post(
+    const boost::system::error_code& error)
+{
+  post_func_(error);
+}
+
+inline console_signal_service::handler_base::handler_base(
+    destroy_func_type destroy_func, post_func_type post_func)
+  : destroy_func_(destroy_func)
+  , post_func_(post_func)
+{
+}
+
+#endif // defined(MA_TYPE_ERASURE_USE_VURTUAL)
+
+inline console_signal_service::handler_base::~handler_base()
+{
+}
+
+inline console_signal_service::handler_base::handler_base(
+    const this_type& other)
+  : base_type(other)
+#if !defined(MA_TYPE_ERASURE_USE_VURTUAL)
+  , destroy_func_(other.destroy_func_)
+  , post_func_(other.post_func_)
+#endif
+{
+}
 
 template <typename Handler>
 class console_signal_service::handler_wrapper : public handler_base
@@ -190,7 +267,7 @@ private:
   Handler handler_;
 }; // class console_signal_service::handler_wrapper
 
-console_signal_service::owning_handler_list::~owning_handler_list()
+inline console_signal_service::owning_handler_list::~owning_handler_list()
 {
   for (handler_base* handler = this->front(); handler; )
   {
@@ -198,6 +275,35 @@ console_signal_service::owning_handler_list::~owning_handler_list()
     handler->destroy();
     handler = next;
   }
+}
+
+inline console_signal_service::system_handler_ptr
+console_signal_service::system_handler::get_instance()
+{
+  return detail::sp_singleton<this_type>::get_instance(
+      &boost::make_shared<this_type>);
+}
+
+inline void console_signal_service::system_handler::add_service(
+    console_signal_service&)
+{
+  //todo
+}
+
+inline void console_signal_service::system_handler::remove_service(
+    console_signal_service&)
+{
+  //todo
+}
+
+inline console_signal_service::system_handler::system_handler()
+{
+  //todo
+}
+
+inline console_signal_service::system_handler::~system_handler()
+{
+  //todo
 }
 
 inline console_signal_service::console_signal_service(

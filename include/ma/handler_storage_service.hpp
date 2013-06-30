@@ -148,19 +148,28 @@ public:
 
 #if defined(MA_TYPE_ERASURE_USE_VURTUAL)
 
-  stored_base();
   virtual void destroy() = 0;
+
+#else
+
+  void destroy();
+
+#endif // defined(MA_TYPE_ERASURE_USE_VURTUAL)
+
+protected:
+
+#if defined(MA_TYPE_ERASURE_USE_VURTUAL)
+
+  stored_base();
 
 #else
 
   typedef void (*destroy_func_type)(this_type*);
 
   stored_base(destroy_func_type);
-  void destroy();
 
 #endif // defined(MA_TYPE_ERASURE_USE_VURTUAL)
 
-protected:
   ~stored_base();
   stored_base(const this_type&);
 
@@ -183,10 +192,22 @@ public:
   typedef Target target_type;
 
 #if defined(MA_TYPE_ERASURE_USE_VURTUAL)
-
-  handler_base();
+  
   virtual void post(const Arg&) = 0;
   virtual target_type* target() = 0;
+
+#else
+
+  void post(const Arg&);
+  target_type* target();
+
+#endif // defined(MA_TYPE_ERASURE_USE_VURTUAL)
+
+protected:
+
+#if defined(MA_TYPE_ERASURE_USE_VURTUAL)
+
+  handler_base();
 
 #else
 
@@ -194,12 +215,9 @@ public:
   typedef target_type* (*target_func_type)(this_type*);
 
   handler_base(destroy_func_type, post_func_type, target_func_type);
-  void post(const Arg&);
-  target_type* target();
 
 #endif // defined(MA_TYPE_ERASURE_USE_VURTUAL)
 
-protected:
   ~handler_base();
   handler_base(const this_type&);
 
@@ -225,9 +243,21 @@ public:
 
 #if defined(MA_TYPE_ERASURE_USE_VURTUAL)
 
-  handler_base();
   virtual void post() = 0;
   virtual target_type* target() = 0;
+
+#else
+  
+  void post();
+  target_type* target();
+
+#endif // defined(MA_TYPE_ERASURE_USE_VURTUAL)
+
+protected:
+
+#if defined(MA_TYPE_ERASURE_USE_VURTUAL)
+
+  handler_base();
 
 #else
 
@@ -235,12 +265,9 @@ public:
   typedef target_type* (*target_func_type)(this_type*);
 
   handler_base(destroy_func_type, post_func_type, target_func_type);
-  void post();
-  target_type* target();
 
 #endif // defined(MA_TYPE_ERASURE_USE_VURTUAL)
 
-protected:
   ~handler_base();
   handler_base(const this_type&);
 
@@ -283,9 +310,9 @@ public:
 #endif // defined(MA_HAS_RVALUE_REFS)
 
 #if defined(MA_TYPE_ERASURE_USE_VURTUAL)
-  void destroy();
-  void post(const Arg&);
-  target_type* target();
+  virtual void destroy();
+  virtual void post(const Arg&);
+  virtual target_type* target();
 #endif
 
 #if !defined(NDEBUG)
@@ -333,9 +360,9 @@ public:
 #endif // defined(MA_HAS_RVALUE_REFS)
 
 #if defined(MA_TYPE_ERASURE_USE_VURTUAL)
-  void destroy();
-  void post();
-  target_type* target();
+  virtual void destroy();
+  virtual void post();
+  virtual target_type* target();
 #endif
 
 #if !defined(NDEBUG)
@@ -361,15 +388,15 @@ inline handler_storage_service::stored_base::stored_base()
 
 #else
 
+inline void handler_storage_service::stored_base::destroy()
+{
+  destroy_func_(this);
+}
+
 inline handler_storage_service::stored_base::stored_base(
     destroy_func_type destroy_func)
   : destroy_func_(destroy_func)
 {
-}
-
-inline void handler_storage_service::stored_base::destroy()
-{
-  destroy_func_(this);
 }
 
 #endif // defined(MA_TYPE_ERASURE_USE_VURTUAL)
@@ -398,16 +425,6 @@ handler_storage_service::handler_base<Arg, Target>::handler_base()
 #else // defined(MA_TYPE_ERASURE_USE_VURTUAL)
 
 template <typename Arg, typename Target>
-handler_storage_service::handler_base<Arg, Target>::handler_base(
-    destroy_func_type destroy_func, post_func_type post_func,
-    target_func_type target_func)
-  : base_type(destroy_func)
-  , post_func_(post_func)
-  , target_func_(target_func)
-{
-}
-
-template <typename Arg, typename Target>
 void handler_storage_service::handler_base<Arg, Target>::post(
     const Arg& arg)
 {
@@ -419,6 +436,16 @@ typename handler_storage_service::handler_base<Arg, Target>::target_type*
 handler_storage_service::handler_base<Arg, Target>::target()
 {
   return target_func_(this);
+}
+
+template <typename Arg, typename Target>
+handler_storage_service::handler_base<Arg, Target>::handler_base(
+    destroy_func_type destroy_func, post_func_type post_func,
+    target_func_type target_func)
+  : base_type(destroy_func)
+  , post_func_(post_func)
+  , target_func_(target_func)
+{
 }
 
 #endif // defined(MA_TYPE_ERASURE_USE_VURTUAL)
@@ -450,16 +477,6 @@ handler_storage_service::handler_base<void, Target>::handler_base()
 #else // defined(MA_TYPE_ERASURE_USE_VURTUAL)
 
 template <typename Target>
-handler_storage_service::handler_base<void, Target>::handler_base(
-    destroy_func_type destroy_func, post_func_type post_func,
-    target_func_type target_func)
-  : base_type(destroy_func)
-  , post_func_(post_func)
-  , target_func_(target_func)
-{
-}
-
-template <typename Target>
 void handler_storage_service::handler_base<void, Target>::post()
 {
   post_func_(this);
@@ -470,6 +487,16 @@ typename handler_storage_service::handler_base<void, Target>::target_type*
 handler_storage_service::handler_base<void, Target>::target()
 {
   return target_func_(this);
+}
+
+template <typename Target>
+handler_storage_service::handler_base<void, Target>::handler_base(
+    destroy_func_type destroy_func, post_func_type post_func,
+    target_func_type target_func)
+  : base_type(destroy_func)
+  , post_func_(post_func)
+  , target_func_(target_func)
+{
 }
 
 #endif // defined(MA_TYPE_ERASURE_USE_VURTUAL)
