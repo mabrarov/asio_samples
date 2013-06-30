@@ -645,26 +645,6 @@ namespace handler_storage_arg {
 
 typedef boost::function<void (void)> continuation;
 
-class no_arg_handler
-{
-public:
-  no_arg_handler(int value, const continuation& cont)
-    : value_(value)
-    , cont_(cont)
-  {
-  }
-
-  void operator()()
-  {
-    std::cout << value_ << std::endl;
-    cont_();
-  }
-
-private:
-  int value_;
-  continuation cont_;
-}; // class no_arg_handler
-
 class test_handler_base
 {
 private:
@@ -683,10 +663,75 @@ protected:
   }
 }; // class test_handler_base
 
-class no_arg_handler_with_target : public test_handler_base
+class void_handler_without_target
 {
 public:
-  no_arg_handler_with_target(int value, const continuation& cont)
+  void_handler_without_target(int value, const continuation& cont)
+    : value_(value)
+    , cont_(cont)
+  {
+  }
+
+  void operator()()
+  {
+    std::cout << value_ << std::endl;
+    cont_();
+  }
+
+private:
+  int value_;
+  continuation cont_;
+}; // class void_handler_without_target
+
+class void_handler_with_target : public test_handler_base
+{
+public:
+  void_handler_with_target(int value, const continuation& cont)
+    : value_(value)
+    , cont_(cont)
+  {
+  }
+
+  void operator()()
+  {
+    std::cout << value_ << std::endl;
+    cont_();
+  }
+
+  int get_value() const
+  {
+    return value_;
+  }
+
+private:
+  int value_;
+  continuation cont_;
+}; // class void_handler_with_target
+
+class int_handler_without_target
+{
+public:
+  int_handler_without_target(int value, const continuation& cont)
+    : value_(value)
+    , cont_(cont)
+  {
+  }
+
+  void operator()(int value)
+  {
+    std::cout << value << " : " << value_ << std::endl;
+    cont_();
+  }
+
+private:
+  int value_;
+  continuation cont_;
+}; // class int_handler_without_target
+
+class int_handler_with_target : public test_handler_base
+{
+public:
+  int_handler_with_target(int value, const continuation& cont)
     : value_(value)
     , cont_(cont)
   {
@@ -706,7 +751,7 @@ public:
 private:
   int value_;
   continuation cont_;
-}; // class no_arg_handler_with_target
+}; // class int_handler_with_target
 
 void run_test()
 {
@@ -722,7 +767,7 @@ void run_test()
     typedef ma::handler_storage<void> handler_storage_type;
 
     handler_storage_type handler_storage(io_service);
-    handler_storage.store(no_arg_handler(4,
+    handler_storage.store(void_handler_without_target(4,
         boost::bind(&threshold::dec, &done_threshold)));
 
     std::cout << handler_storage.target() << std::endl;
@@ -731,26 +776,50 @@ void run_test()
   }
 
   {
-    typedef ma::handler_storage<int, test_handler_base> handler_storage_type;
+    typedef ma::handler_storage<int> handler_storage_type;
 
     handler_storage_type handler_storage(io_service);
-    handler_storage.store(no_arg_handler_with_target(4,
+    handler_storage.store(int_handler_without_target(4,
+        boost::bind(&threshold::dec, &done_threshold)));
+
+    std::cout << handler_storage.target() << std::endl;
+    done_threshold.inc();
+    handler_storage.post(2);
+  }
+
+  {
+    typedef ma::handler_storage<void, test_handler_base> handler_storage_type;
+
+    handler_storage_type handler_storage(io_service);
+    handler_storage.store(void_handler_with_target(4,
         boost::bind(&threshold::dec, &done_threshold)));
 
     std::cout << handler_storage.target()->get_value() << std::endl;
     done_threshold.inc();
-    handler_storage.post(1);
+    handler_storage.post();
+  }
+
+  {
+    typedef ma::handler_storage<int, test_handler_base> handler_storage_type;
+
+    handler_storage_type handler_storage(io_service);
+    handler_storage.store(int_handler_with_target(4,
+        boost::bind(&threshold::dec, &done_threshold)));
+
+    std::cout << handler_storage.target()->get_value() << std::endl;
+    done_threshold.inc();
+    handler_storage.post(2);
   }
 
   {
     boost::asio::io_service io_service;
 
     ma::handler_storage<int, test_handler_base> handler_storage1(io_service);
-    handler_storage1.store(no_arg_handler_with_target(1,
+    handler_storage1.store(int_handler_with_target(1,
         boost::bind(&threshold::dec, &done_threshold)));
 
     ma::handler_storage<void> handler_storage2(io_service);
-    handler_storage2.store(no_arg_handler(2,
+    handler_storage2.store(void_handler_without_target(2,
         boost::bind(&threshold::dec, &done_threshold)));
   }
 

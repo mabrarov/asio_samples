@@ -40,41 +40,45 @@ class console_signal_service
   : public detail::service_base<console_signal_service>
 {
 private:  
-  class stored_base : public detail::intrusive_slist<stored_base>::base_hook
+  class handler_base : public detail::intrusive_slist<handler_base>::base_hook
   {
   private:
-    typedef stored_base this_type;
-    typedef detail::intrusive_slist<stored_base>::base_hook base_type;
+    typedef handler_base this_type;
+    typedef detail::intrusive_slist<handler_base>::base_hook base_type;
 
   public:
 
 #if defined(MA_TYPE_ERASURE_USE_VURTUAL)
 
-    stored_base();
+    handler_base();
     virtual void destroy() = 0;
+    virtual void post(const boost::system::error_code&) = 0;
 
 #else
 
     typedef void (*destroy_func_type)(this_type*);
+    typedef void (*post_func_type)(this_type*, const boost::system::error_code&);
 
-    stored_base(destroy_func_type);
+    handler_base(destroy_func_type, post_func_type);
     void destroy();
+    void post(const boost::system::error_code&);        
 
 #endif // defined(MA_TYPE_ERASURE_USE_VURTUAL)
 
   protected:
-    ~stored_base();
-    stored_base(const this_type&);
+    ~handler_base();
+    handler_base(const this_type&);
 
   private:
     this_type& operator=(const this_type&);
 
 #if !defined(MA_TYPE_ERASURE_USE_VURTUAL)
     destroy_func_type destroy_func_;
+    post_func_type    post_func_;
 #endif
-  }; // class stored_base
+  }; // class handler_base
 
-  typedef detail::intrusive_slist<stored_base> handler_list;
+  typedef detail::intrusive_slist<handler_base> handler_list;
 
   // Base class for implementation that helps to hide
   // public inheritance from detail::intrusive_list::base_hook
@@ -116,7 +120,6 @@ protected:
 
 private:
   class owning_handler_list;
-  class handler_base;  
 
   template <typename Handler>
   class handler_wrapper;
@@ -140,40 +143,6 @@ class console_signal_service::owning_handler_list : public handler_list
 public:
   ~owning_handler_list();
 }; // class console_signal_service::owning_handler_list
-
-class console_signal_service::handler_base : public stored_base
-{
-private:
-  typedef handler_base this_type;
-  typedef stored_base base_type;
-
-public:
-
-#if defined(MA_TYPE_ERASURE_USE_VURTUAL)
-
-  handler_base();
-  virtual void post(const boost::system::error_code&) = 0;
-
-#else
-
-  typedef void (*post_func_type)(this_type*, const boost::system::error_code&);
-
-  handler_base(destroy_func_type, post_func_type);
-  void post(const boost::system::error_code&);
-
-#endif // defined(MA_TYPE_ERASURE_USE_VURTUAL)
-
-protected:
-  ~handler_base();
-  handler_base(const this_type&);
-
-private:
-  this_type& operator=(const this_type&);
-
-#if !defined(MA_TYPE_ERASURE_USE_VURTUAL)
-  post_func_type   post_func_;
-#endif
-}; // class console_signal_service::handler_base
 
 template <typename Handler>
 class console_signal_service::handler_wrapper : public handler_base
@@ -223,11 +192,11 @@ private:
 
 console_signal_service::owning_handler_list::~owning_handler_list()
 {
-  for (stored_base* stored = this->front(); stored; )
+  for (handler_base* handler = this->front(); handler; )
   {
-    stored_base* next = this->next(*stored);
-    stored->destroy();
-    stored = next;
+    handler_base* next = this->next(*handler);
+    handler->destroy();
+    handler = next;
   }
 }
 
@@ -269,11 +238,10 @@ inline void console_signal_service::destroy(implementation_type& impl)
   }
 
   // Cancel all waiting handlers.
-  while (stored_base* handler = handlers.front())
+  while (handler_base* handler = handlers.front())
   {
     handlers.pop_front();
-    static_cast<handler_base*>(handler)->post(
-        boost::asio::error::operation_aborted);
+    handler->post(boost::asio::error::operation_aborted);
   }  
 }
 
@@ -321,11 +289,10 @@ inline std::size_t console_signal_service::cancel(
 
   // Post all handlers to signal operation was aborted  
   std::size_t handler_count = 0;
-  while (stored_base* handler = handlers.front())
+  while (handler_base* handler = handlers.front())
   {
     handlers.pop_front();
-    static_cast<handler_base*>(handler)->post(
-        boost::asio::error::operation_aborted);
+    handler->post(boost::asio::error::operation_aborted);
     ++handler_count;
   }
   
