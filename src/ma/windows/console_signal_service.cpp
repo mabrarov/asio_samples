@@ -6,6 +6,7 @@
 //
 
 #include <ma/shared_ptr_factory.hpp>
+#include <ma/detail/sp_singleton.hpp>
 #include <ma/windows/console_signal_service.hpp>
 
 namespace ma {

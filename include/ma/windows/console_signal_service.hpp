@@ -15,18 +15,15 @@
 #include <cstddef>
 #include <boost/ref.hpp>
 #include <boost/asio.hpp>
-#include <boost/assert.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/locks.hpp>
 #include <boost/system/error_code.hpp>
-#include <boost/utility/addressof.hpp>
 #include <ma/config.hpp>
 #include <ma/type_traits.hpp>
 #include <ma/bind_handler.hpp>
 #include <ma/detail/handler_ptr.hpp>
 #include <ma/detail/service_base.hpp>
-#include <ma/detail/sp_singleton.hpp>
 #include <ma/detail/intrusive_list.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)
