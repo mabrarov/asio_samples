@@ -14,6 +14,7 @@
 #include <cstddef>
 #include <iostream>
 #include <exception>
+#include <limits>
 #include <boost/assert.hpp>
 #include <boost/ref.hpp>
 #include <boost/asio.hpp>

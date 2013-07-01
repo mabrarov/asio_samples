@@ -30,13 +30,17 @@ public:
   void remove_service(console_signal_service&);
 
 protected:
-  system_handler();
+  typedef detail::sp_singleton<this_type>::instance_guard instance_guard_type;
+
+  system_handler(const instance_guard_type&);
   ~system_handler();
 
 private:
   static system_handler_ptr get_nullable_instance();
   static BOOL WINAPI win_console_ctrl_handler(DWORD);
   void post_handlers();
+  
+  instance_guard_type singleton_instance_guard_;
 }; // class console_signal_service::system_handler
 
 console_signal_service::owning_handler_list::~owning_handler_list()
@@ -94,8 +98,30 @@ console_signal_service::system_handler_ptr
 console_signal_service::system_handler::get_instance()
 {
   typedef ma::shared_ptr_factory_helper<this_type> helper;
-  return detail::sp_singleton<this_type>::get_instance(
-      &boost::make_shared<helper>);
+  class factory
+  {
+  public:
+    system_handler_ptr operator()(
+        const instance_guard_type& singleton_instance_guard)
+    {
+      return boost::make_shared<helper>(singleton_instance_guard);
+    }
+  };
+  return detail::sp_singleton<this_type>::get_instance(factory());
+}
+
+console_signal_service::system_handler_ptr 
+console_signal_service::system_handler::get_nullable_instance()
+{
+  class null_factory
+  {
+  public:
+    system_handler_ptr operator()(const instance_guard_type&)
+    {
+      return system_handler_ptr();
+    }
+  };
+  return detail::sp_singleton<this_type>::get_instance(null_factory());
 }
 
 void console_signal_service::system_handler::add_service(
@@ -110,7 +136,9 @@ void console_signal_service::system_handler::remove_service(
   //todo
 }
 
-console_signal_service::system_handler::system_handler()
+console_signal_service::system_handler::system_handler(
+    const instance_guard_type& singleton_instance_guard)
+  : singleton_instance_guard_(singleton_instance_guard)
 {
   //todo
 }
@@ -118,21 +146,6 @@ console_signal_service::system_handler::system_handler()
 console_signal_service::system_handler::~system_handler()
 {
   //todo
-}
-
-
-console_signal_service::system_handler_ptr 
-console_signal_service::system_handler::get_nullable_instance()
-{
-  class null_factory
-  {
-  public:
-    system_handler_ptr operator()()
-    {
-      return system_handler_ptr();
-    }
-  };
-  return detail::sp_singleton<this_type>::get_instance(null_factory());
 }
 
 BOOL WINAPI console_signal_service::system_handler::win_console_ctrl_handler(
