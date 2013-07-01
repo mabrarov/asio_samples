@@ -14,6 +14,7 @@
 #include <cstddef>
 #include <iostream>
 #include <vector>
+#include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
 #include <boost/ref.hpp>
 #include <boost/bind.hpp>
@@ -23,6 +24,7 @@
 #include <boost/make_shared.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/thread/thread.hpp>
+#include <ma/limited_int.hpp>
 #include <ma/shared_ptr_factory.hpp>
 #include <ma/detail/sp_singleton.hpp>
 
@@ -206,6 +208,19 @@ void thread_func2(foo_weak_ptr weak_foo,
   threshold3.dec();
 }
 
+template <typename Integer>
+std::string to_string(const ma::limited_int<Integer>& limited_value)
+{
+  if (limited_value.overflowed())
+  {
+    return ">" + boost::lexical_cast<std::string>(limited_value.value());
+  }
+  else
+  {
+    return boost::lexical_cast<std::string>(limited_value.value());
+  }
+}
+
 void run_test()
 {
   {
@@ -233,6 +248,14 @@ void run_test()
       const foo_ptr foo = foo::get_nullable_instance();
       threshold2.dec();
       BOOST_ASSERT_MSG(foo, "Instance has to exist");
+    }
+    {
+      ma::limited_int<std::size_t> count = 0;
+      while (const foo_ptr foo = foo::get_nullable_instance())
+      {
+        ++count;
+      }
+      std::cout << to_string(count) << std::endl;
     }
     {
       threshold3.wait();
