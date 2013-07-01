@@ -14,6 +14,8 @@
 #include <cstddef>
 #include <iostream>
 #include <vector>
+#include <string>
+#include <boost/cstdint.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
 #include <boost/ref.hpp>
@@ -24,6 +26,7 @@
 #include <boost/make_shared.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/thread/thread.hpp>
+#include <boost/date_time/posix_time/ptime.hpp>
 #include <ma/limited_int.hpp>
 #include <ma/shared_ptr_factory.hpp>
 #include <ma/detail/sp_singleton.hpp>
@@ -62,7 +65,7 @@ int main(int /*argc*/, char* /*argv*/[])
   {
     ma::test::sp_singleton_construction::run_test();
     ma::test::sp_singleton_thread::run_test();
-    //ma::test::sp_singleton_construction_destruction_sync::run_test();
+    ma::test::sp_singleton_construction_destruction_sync::run_test();
     return EXIT_SUCCESS;
   }
   catch (const std::exception& e)
@@ -209,15 +212,21 @@ void thread_func2(foo_weak_ptr weak_foo,
 }
 
 template <typename Integer>
+std::string integer_to_string(Integer value)
+{
+  return boost::lexical_cast<std::string>(static_cast<boost::uintmax_t>(value));
+}
+
+template <typename Integer>
 std::string to_string(const ma::limited_int<Integer>& limited_value)
 {
   if (limited_value.overflowed())
   {
-    return ">" + boost::lexical_cast<std::string>(limited_value.value());
+    return ">" + integer_to_string(limited_value.value());
   }
   else
   {
-    return boost::lexical_cast<std::string>(limited_value.value());
+    return integer_to_string(limited_value.value());
   }
 }
 
@@ -305,6 +314,9 @@ foo::~foo()
 
 namespace sp_singleton_construction_destruction_sync {
 
+static ma::detail::threshold destroy_start_threshold;
+static ma::detail::threshold destroy_complete_threshold;
+
 class foo;
 typedef boost::shared_ptr<foo> foo_ptr;
 
@@ -314,6 +326,7 @@ private:
   typedef foo this_type;
 
 public:
+  static foo_ptr get_nullable_instance();
   static foo_ptr get_instance();
 
   int data() const;
@@ -329,18 +342,47 @@ private:
   int data_;
 }; // class foo
 
-void thread_func(foo_ptr foo)
+void thread_func()
 {
-  (void) foo->data();
+  const foo_ptr f = foo::get_instance();
+  BOOST_ASSERT_MSG(f, "Instance has to exist");
+  BOOST_ASSERT_MSG(!f->data(), "Instance has to be the first");
+  (void) f;
+}
+
+void thread_func2()
+{
+  const foo_ptr f = foo::get_instance();
+  BOOST_ASSERT_MSG(f, "Instance has to exist");
+  BOOST_ASSERT_MSG(2 == f->data(), "Instance has to be the third");
+  (void) f;
 }
 
 void run_test()
 {
   {
-    boost::thread t(boost::bind(thread_func, foo::get_instance()));    
-    const foo_ptr foo = foo::get_instance();
+    destroy_start_threshold.inc();
+    destroy_complete_threshold.inc();
+    boost::thread t(thread_func);
+    destroy_start_threshold.wait();
+    {
+      const foo_ptr f = foo::get_nullable_instance();
+      BOOST_ASSERT_MSG(!f, "Instance has to not exist");
+    }
+    destroy_complete_threshold.dec();
+    {
+      const foo_ptr f = foo::get_instance();      
+      BOOST_ASSERT_MSG(f, "Instance has to exist");
+      BOOST_ASSERT_MSG(1 == f->data(), "Instance has to be the second");
+      destroy_start_threshold.inc();
+    }
     t.join();
-  }
+  }  
+}
+
+foo_ptr foo::get_nullable_instance()
+{
+  return detail::sp_singleton<foo>::get_nullable_instance();
 }
 
 foo_ptr foo::get_instance()
@@ -371,6 +413,9 @@ foo::foo(const instance_guard_type& instance_guard, int data)
 
 foo::~foo()
 {
+  destroy_start_threshold.dec();  
+  destroy_complete_threshold.wait();
+  boost::this_thread::sleep(boost::posix_time::seconds(1));
   instance_guard_ = boost::none;
 }
 

@@ -32,6 +32,7 @@ private:
   typedef threshold this_type;
   typedef boost::mutex mutex_type;
   typedef boost::unique_lock<mutex_type> lock_type;
+  typedef boost::lock_guard<mutex_type>  lock_guard_type;
   typedef boost::condition_variable condition_variable_type;
 
 public:
@@ -41,9 +42,10 @@ public:
   void wait();
   void inc();
   void dec();
+  value_type value() const;
 
 private:
-  mutex_type mutex_;
+  mutable mutex_type mutex_;
   condition_variable_type condition_variable_;
   value_type value_;
 }; // class threshold
@@ -171,12 +173,12 @@ sp_singleton<Value>::instance_guard::~instance_guard()
   instance_threshold_->dec();
 }
 
-threshold::threshold(value_type value)
+inline threshold::threshold(value_type value)
   : value_(value)
 {
 }
 
-void threshold::wait()
+inline void threshold::wait()
 {
   lock_type lock(mutex_);
   while (value_)
@@ -185,23 +187,29 @@ void threshold::wait()
   }
 }
 
-void threshold::inc()
+inline void threshold::inc()
 {
-  lock_type lock(mutex_);
+  lock_guard_type lock_guard(mutex_);
   BOOST_ASSERT_MSG(value_ != (std::numeric_limits<value_type>::max)(),
       "Value is too large. Overflow");
   ++value_;
 }
 
-void threshold::dec()
+inline void threshold::dec()
 {
-  lock_type lock(mutex_);
+  lock_guard_type lock_guard(mutex_);
   BOOST_ASSERT_MSG(value_, "Value is too small. Underflow");
   --value_;
   if (!value_)
   {
     condition_variable_.notify_one();
   }
+}
+
+inline threshold::value_type threshold::value() const
+{
+  lock_type lock(mutex_);
+  return value_;
 }
   
 } // namespace detail

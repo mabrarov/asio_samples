@@ -81,6 +81,12 @@ private:
   boost::condition_variable condition_;
 }; // class work_state
 
+template <typename Integer>
+std::string integer_to_string(Integer value)
+{
+  return boost::lexical_cast<std::string>(static_cast<boost::uintmax_t>(value));
+}
+
 typedef ma::limited_int<boost::uintmax_t> limited_counter;
 
 template <typename Integer>
@@ -88,11 +94,11 @@ std::string to_string(const ma::limited_int<Integer>& limited_value)
 {
   if (limited_value.overflowed())
   {
-    return ">" + boost::lexical_cast<std::string>(limited_value.value());
+    return ">" + integer_to_string(limited_value.value());
   }
   else
   {
-    return boost::lexical_cast<std::string>(limited_value.value());
+    return integer_to_string(limited_value.value());
   }
 }
 
