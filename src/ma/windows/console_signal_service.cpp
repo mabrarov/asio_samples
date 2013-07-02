@@ -38,7 +38,7 @@ protected:
 private:
   static system_handler_ptr get_nullable_instance();
   static BOOL WINAPI win_console_ctrl_handler(DWORD);
-  void post_handlers();
+  void handle_system_signal();
   
   instance_guard_type singleton_instance_guard_;
 }; // class console_signal_service::system_handler
@@ -113,15 +113,7 @@ console_signal_service::system_handler::get_instance()
 console_signal_service::system_handler_ptr 
 console_signal_service::system_handler::get_nullable_instance()
 {
-  class null_factory
-  {
-  public:
-    system_handler_ptr operator()(const instance_guard_type&)
-    {
-      return system_handler_ptr();
-    }
-  };
-  return detail::sp_singleton<this_type>::get_instance(null_factory());
+  return detail::sp_singleton<this_type>::get_nullable_instance();
 }
 
 void console_signal_service::system_handler::add_service(
@@ -158,9 +150,9 @@ BOOL WINAPI console_signal_service::system_handler::win_console_ctrl_handler(
   case CTRL_CLOSE_EVENT:
   case CTRL_LOGOFF_EVENT:
   case CTRL_SHUTDOWN_EVENT:
-    if (system_handler_ptr h = get_nullable_instance())
+    if (system_handler_ptr instance = get_nullable_instance())
     {
-      h->post_handlers();
+      instance->handle_system_signal();
       return TRUE;
     }
   default:
@@ -168,7 +160,7 @@ BOOL WINAPI console_signal_service::system_handler::win_console_ctrl_handler(
   };
 }
 
-void console_signal_service::system_handler::post_handlers()
+void console_signal_service::system_handler::handle_system_signal()
 {
   //todo
 }
@@ -176,6 +168,8 @@ void console_signal_service::system_handler::post_handlers()
 console_signal_service::console_signal_service(
     boost::asio::io_service& io_service)
   : detail::service_base<console_signal_service>(io_service)  
+  , shutdown_(false)
+  , system_handler_(system_handler::get_instance())
 {
   //todo
 }

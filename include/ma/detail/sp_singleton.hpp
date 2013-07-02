@@ -29,11 +29,11 @@ namespace detail {
 class threshold : boost::noncopyable
 {
 private:
-  typedef threshold this_type;
-  typedef boost::mutex mutex_type;
+  typedef threshold                      this_type;
+  typedef boost::mutex                   mutex_type;
   typedef boost::unique_lock<mutex_type> lock_type;
   typedef boost::lock_guard<mutex_type>  lock_guard_type;
-  typedef boost::condition_variable condition_variable_type;
+  typedef boost::condition_variable      condition_variable_type;
 
 public:
   typedef std::size_t value_type;

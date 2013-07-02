@@ -152,6 +152,7 @@ private:
   impl_base_list impl_list_;
   // Shutdown state flag.
   bool shutdown_;
+  system_handler_ptr system_handler_;
 }; // class console_signal_service
 
 template <typename Handler>

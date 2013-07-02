@@ -46,11 +46,11 @@ void run_test();
 
 } // namespace sp_singleton_thread
 
-namespace sp_singleton_construction_destruction_sync {
+namespace sp_singleton_sync {
 
 void run_test();
 
-} // namespace sp_singleton_construction_destruction_sync
+} // namespace sp_singleton_sync
 
 } // namespace test
 } // namespace ma
@@ -65,7 +65,7 @@ int main(int /*argc*/, char* /*argv*/[])
   {
     ma::test::sp_singleton_construction::run_test();
     ma::test::sp_singleton_thread::run_test();
-    ma::test::sp_singleton_construction_destruction_sync::run_test();
+    ma::test::sp_singleton_sync::run_test();
     return EXIT_SUCCESS;
   }
   catch (const std::exception& e)
@@ -312,7 +312,7 @@ foo::~foo()
 
 } // namespace sp_singleton_thread
 
-namespace sp_singleton_construction_destruction_sync {
+namespace sp_singleton_sync {
 
 static ma::detail::threshold destroy_start_threshold;
 static ma::detail::threshold destroy_complete_threshold;
@@ -419,7 +419,7 @@ foo::~foo()
   instance_guard_ = boost::none;
 }
 
-} // namespace sp_singleton_construction_destruction_sync
+} // namespace sp_singleton_sync
 
 } // namespace test
 } // namespace ma
