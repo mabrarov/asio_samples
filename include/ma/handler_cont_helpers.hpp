@@ -12,6 +12,7 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
+#include <boost/version.hpp>
 #include <boost/asio.hpp>
 #include <boost/utility/addressof.hpp>
 
