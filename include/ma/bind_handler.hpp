@@ -14,8 +14,6 @@
 
 #include <cstddef>
 #include <ma/config.hpp>
-#include <ma/handler_alloc_helpers.hpp>
-#include <ma/handler_invoke_helpers.hpp>
 #include <ma/detail/binder.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)

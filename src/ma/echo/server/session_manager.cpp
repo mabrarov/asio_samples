@@ -13,7 +13,6 @@
 #include <ma/config.hpp>
 #include <ma/shared_ptr_factory.hpp>
 #include <ma/custom_alloc_handler.hpp>
-#include <ma/handler_invoke_helpers.hpp>
 #include <ma/strand_wrapped_handler.hpp>
 #include <ma/echo/server/error.hpp>
 #include <ma/echo/server/session.hpp>

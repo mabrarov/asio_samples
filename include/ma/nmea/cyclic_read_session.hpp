@@ -31,6 +31,9 @@
 #include <ma/handler_allocator.hpp>
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/context_alloc_handler.hpp>
+#include <ma/handler_alloc_helpers.hpp>
+#include <ma/handler_invoke_helpers.hpp>
+#include <ma/handler_cont_helpers.hpp>
 #include <ma/strand_wrapped_handler.hpp>
 #include <ma/nmea/frame.hpp>
 #include <ma/nmea/error.hpp>
@@ -227,21 +230,25 @@ public:
 
   friend void* asio_handler_allocate(std::size_t size, this_type* context)
   {
-    return ma_asio_handler_alloc_helpers::allocate(size, context->handler_);
+    return ma_handler_alloc_helpers::allocate(size, context->handler_);
   }
 
   friend void asio_handler_deallocate(void* pointer, std::size_t size,
       this_type* context)
   {
-    ma_asio_handler_alloc_helpers::deallocate(pointer, size,
-        context->handler_);
+    ma_handler_alloc_helpers::deallocate(pointer, size, context->handler_);
   }
 
   template <typename Function>
   friend void asio_handler_invoke(const Function& function,
       this_type* context)
   {
-    ma_asio_handler_invoke_helpers::invoke(function, context->handler_);
+    ma_handler_invoke_helpers::invoke(function, context->handler_);
+  }
+
+  friend bool asio_handler_is_continuation(this_type* context)
+  {
+    return ma_handler_cont_helpers::is_continuation(context->handler_);
   }
 
   void operator()(const read_result_type& result);

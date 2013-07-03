@@ -367,5 +367,8 @@
     <ClInclude Include="GeneratedFiles\Win32\ui_mainform.h">
       <Filter>Generated Files\Win32</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\handler_cont_helpers.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

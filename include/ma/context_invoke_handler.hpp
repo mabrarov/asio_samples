@@ -16,6 +16,7 @@
 #include <ma/config.hpp>
 #include <ma/handler_alloc_helpers.hpp>
 #include <ma/handler_invoke_helpers.hpp>
+#include <ma/handler_cont_helpers.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)
 #include <utility>
@@ -85,7 +86,7 @@ public:
   {
     // Forward to asio_handler_allocate provided by the specified allocation
     // context.
-    return ma_asio_handler_alloc_helpers::allocate(size, context->handler_);
+    return ma_handler_alloc_helpers::allocate(size, context->handler_);
   }
 
   friend void asio_handler_deallocate(void* pointer, std::size_t size, 
@@ -93,7 +94,7 @@ public:
   {
     // Forward to asio_handler_deallocate provided by the specified allocation
     // context.
-    ma_asio_handler_alloc_helpers::deallocate(pointer, size, context->handler_);
+    ma_handler_alloc_helpers::deallocate(pointer, size, context->handler_);
   }
 
 #if defined(MA_HAS_RVALUE_REFS)
@@ -102,8 +103,8 @@ public:
   friend void asio_handler_invoke(Function&& function, this_type* context)
   {
     // Forward to asio_handler_invoke provided by source handler.
-    ma_asio_handler_invoke_helpers::invoke(std::forward<Function>(function), 
-        context->context_);
+    ma_handler_invoke_helpers::invoke(
+        std::forward<Function>(function), context->context_);
   }
 
 #else // defined(MA_HAS_RVALUE_REFS)
@@ -112,10 +113,15 @@ public:
   friend void asio_handler_invoke(const Function& function, this_type* context)
   {
     // Forward to asio_handler_invoke provided by source handler.
-    ma_asio_handler_invoke_helpers::invoke(function, context->context_);
+    ma_handler_invoke_helpers::invoke(function, context->context_);
   }
 
 #endif // defined(MA_HAS_RVALUE_REFS)
+
+  friend bool asio_handler_is_continuation(this_type* context)
+  {
+    return ma_handler_cont_helpers::is_continuation(context->context_);
+  }
 
   void operator()()
   {
@@ -296,13 +302,13 @@ public:
 
   friend void* asio_handler_allocate(std::size_t size, this_type* context)
   {
-    return ma_asio_handler_alloc_helpers::allocate(size, context->handler_);
+    return ma_handler_alloc_helpers::allocate(size, context->handler_);
   }
 
   friend void asio_handler_deallocate(void* pointer, std::size_t size, 
       this_type* context)
   {
-    ma_asio_handler_alloc_helpers::deallocate(pointer, size, context->handler_);
+    ma_handler_alloc_helpers::deallocate(pointer, size, context->handler_);
   }
 
 #if defined(MA_HAS_RVALUE_REFS)
@@ -310,8 +316,8 @@ public:
   template <typename Function>
   friend void asio_handler_invoke(Function&& function, this_type* context)
   {
-    ma_asio_handler_invoke_helpers::invoke(std::forward<Function>(function),
-        context->context_);
+    ma_handler_invoke_helpers::invoke(
+        std::forward<Function>(function), context->context_);
   }
 
 #else // defined(MA_HAS_RVALUE_REFS)
@@ -319,10 +325,15 @@ public:
   template <typename Function>
   friend void asio_handler_invoke(const Function& function, this_type* context)
   {
-    ma_asio_handler_invoke_helpers::invoke(function, context->context_);
+    ma_handler_invoke_helpers::invoke(function, context->context_);
   }
 
 #endif // defined(MA_HAS_RVALUE_REFS)
+
+  friend bool asio_handler_is_continuation(this_type* context)
+  {
+    return ma_handler_cont_helpers::is_continuation(context->context_);
+  }
 
   void operator()()
   {

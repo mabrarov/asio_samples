@@ -17,6 +17,7 @@
 #include <ma/config.hpp>
 #include <ma/handler_alloc_helpers.hpp>
 #include <ma/handler_invoke_helpers.hpp>
+#include <ma/handler_cont_helpers.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)
 #include <utility>
@@ -31,11 +32,11 @@ namespace ma {
  * "Alloctaion strategy" means handler related pair of free functions:
  * asio_handler_allocate and asio_handler_deallocate or the default ones
  * defined by Asio.
- * http://www.boost.org/doc/libs/1_53_0/doc/html/boost_asio/reference/Handler.html
+ * http://www.boost.org/doc/libs/1_54_0/doc/html/boost_asio/reference/Handler.html
  *
  * "Execution strategy" means handler related free function asio_handler_invoke
  * or the default one defined by Asio.
- * http://www.boost.org/doc/libs/1_53_0/doc/html/boost_asio/reference/Handler.html
+ * http://www.boost.org/doc/libs/1_54_0/doc/html/boost_asio/reference/Handler.html
  *
  * Functors created by custom_alloc_handler:
  *
@@ -154,8 +155,8 @@ public:
   template <typename Function>
   friend void asio_handler_invoke(Function&& function, this_type* context)
   {
-    ma_asio_handler_invoke_helpers::invoke(std::forward<Function>(function),
-        context->handler_);
+    ma_handler_invoke_helpers::invoke(
+        std::forward<Function>(function), context->handler_);
   }
 
 #else // defined(MA_HAS_RVALUE_REFS)
@@ -163,10 +164,15 @@ public:
   template <typename Function>
   friend void asio_handler_invoke(const Function& function, this_type* context)
   {
-    ma_asio_handler_invoke_helpers::invoke(function, context->handler_);
+    ma_handler_invoke_helpers::invoke(function, context->handler_);
   }
 
 #endif // defined(MA_HAS_RVALUE_REFS)
+
+  friend bool asio_handler_is_continuation(this_type* context)
+  {
+    return ma_handler_cont_helpers::is_continuation(context->handler_);
+  }
 
   void operator()()
   {
