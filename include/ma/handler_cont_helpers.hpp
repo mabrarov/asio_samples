@@ -18,22 +18,24 @@
 
 namespace ma_handler_cont_helpers {
 
+#if BOOST_VERSION >= 105400
+
 template <typename Context>
 inline bool is_continuation(Context& context)
 {
-
-#if BOOST_VERSION >= 105400
-
   using namespace boost::asio;
   return asio_handler_is_continuation(boost::addressof(context));
+}
 
-#else
+#else  // BOOST_VERSION >= 105400
 
+template <typename Context>
+inline bool is_continuation(Context& /*context*/)
+{
   return false;
+}
 
 #endif // BOOST_VERSION >= 105400
-
-}
 
 } // namespace ma_handler_cont_helpers
 
