@@ -29,6 +29,7 @@ HEADERS  += ../../../include/ma/detail/binder.hpp \
             ../../../include/ma/cyclic_buffer.hpp \
             ../../../include/ma/handler_alloc_helpers.hpp \
             ../../../include/ma/handler_allocator.hpp \
+            ../../../include/ma/handler_cont_helpers.hpp \
             ../../../include/ma/handler_invoke_helpers.hpp \
             ../../../include/ma/handler_storage.hpp \
             ../../../include/ma/handler_storage_service.hpp \

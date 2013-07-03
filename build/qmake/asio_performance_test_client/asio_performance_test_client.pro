@@ -24,6 +24,7 @@ HEADERS  += ../../../include/ma/detail/binder.hpp \
             ../../../include/ma/handler_alloc_helpers.hpp \
             ../../../include/ma/handler_allocator.hpp \
             ../../../include/ma/handler_invoke_helpers.hpp \
+            ../../../include/ma/handler_cont_helpers.hpp \
             ../../../include/ma/limited_int.hpp \
             ../../../include/ma/steady_deadline_timer.hpp \
             ../../../include/ma/strand_wrapped_handler.hpp \
