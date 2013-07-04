@@ -44,6 +44,7 @@
     <ClInclude Include="..\..\..\include\ma\detail\binder.hpp" />
     <ClInclude Include="..\..\..\include\ma\handler_allocator.hpp" />
     <ClInclude Include="..\..\..\include\ma\handler_alloc_helpers.hpp" />
+    <ClInclude Include="..\..\..\include\ma\handler_cont_helpers.hpp" />
     <ClInclude Include="..\..\..\include\ma\handler_invoke_helpers.hpp" />
     <ClInclude Include="..\..\..\include\ma\limited_int.hpp" />
     <ClInclude Include="..\..\..\include\ma\steady_deadline_timer.hpp" />

@@ -388,6 +388,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\..\include\ma\handler_cont_helpers.hpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\..\include\ma\handler_invoke_helpers.hpp"
 					>
 				</File>

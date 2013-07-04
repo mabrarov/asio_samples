@@ -16,11 +16,11 @@ namespace {
 class error_category_impl : public boost::system::error_category
 {
 public:
-  error_category_impl()
+  error_category_impl() MA_ECHO_SERVER_ERROR_NOEXCEPT
   {
   }
 
-  virtual const char* name() const
+  virtual const char* name() const MA_ECHO_SERVER_ERROR_NOEXCEPT
   {
     return "ma.echo.server";
   }
@@ -34,7 +34,7 @@ public:
     case error::operation_aborted:
       return "Operation aborted";
     case error::inactivity_timeout:
-      return "Inactivity timeout";    
+      return "Inactivity timeout";
     default:
       return "ma.echo.server error";
     }
@@ -44,7 +44,8 @@ public:
 
 } // anonymous namespace
 
-const boost::system::error_category& error::category()
+const boost::system::error_category& 
+error::category() MA_ECHO_SERVER_ERROR_NOEXCEPT
 {
   static const error_category_impl instance;
   return instance;

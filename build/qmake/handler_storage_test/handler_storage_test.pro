@@ -43,6 +43,10 @@ LIBS       += -L$${BOOST_LIB}
 unix:LIBS  += $${BOOST_LIB}/libboost_system.a \
               $${BOOST_LIB}/libboost_thread.a \
               $${BOOST_LIB}/libboost_date_time.a
+exists($${BOOST_INCLUDE}/boost/chrono.hpp) {
+  unix:LIBS += $${BOOST_LIB}/libboost_chrono.a \
+               -lrt
+}
 
 win32:DEFINES += WINVER=0x0500 \
                  _WIN32_WINNT=0x0500
