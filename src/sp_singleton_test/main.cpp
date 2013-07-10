@@ -466,16 +466,15 @@ protected:
   ~foo();
 
 private:
-  static volatile std::size_t instance_count_;
+  static std::size_t instance_count_;
 
   boost::optional<instance_guard_type> instance_guard_;
   counter init_counter_;  
 }; // class foo
 
-volatile std::size_t foo::instance_count_ = 0;
-
-const std::size_t iteration_count         = 1000;
-const std::size_t work_cycle_count        = 10000;
+std::size_t foo::instance_count_   = 0;
+const std::size_t iteration_count  = 1000;
+const std::size_t work_cycle_count = 1000;
 
 typedef boost::random::mt19937 random_generator;
 typedef boost::shared_ptr<random_generator> random_generator_ptr;
