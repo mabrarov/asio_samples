@@ -76,7 +76,9 @@ private:
   sp_singleton();
   ~sp_singleton();
 
-  static static_data& get_static_data(); 
+  static static_data& get_static_data();
+
+  static static_data sd_;
 }; // class sp_singleton
 
 template <typename Value>
@@ -147,10 +149,14 @@ sp_singleton<Value>::get_instance(Factory factory)
 template <typename Value>
 typename sp_singleton<Value>::static_data&
 sp_singleton<Value>::get_static_data()
-{
-  static static_data sd;
-  return sd;
+{  
+  BOOST_ASSERT_MSG(sd_.instance_threshold, 
+      "Singleton static data wasn't initialized correctly");
+  return sd_;
 }
+
+template <typename Value>
+typename sp_singleton<Value>::static_data sp_singleton<Value>::sd_;
 
 template <typename Value>
 sp_singleton<Value>::instance_guard::instance_guard(

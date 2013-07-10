@@ -26,6 +26,8 @@
 #include <boost/make_shared.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/thread/thread.hpp>
+#include <boost/thread/barrier.hpp>
+#include <boost/random.hpp>
 #include <boost/date_time/posix_time/ptime.hpp>
 #include <ma/limited_int.hpp>
 #include <ma/shared_ptr_factory.hpp>
@@ -52,6 +54,12 @@ void run_test();
 
 } // namespace sp_singleton_sync
 
+namespace sp_singleton_sync2 {
+
+void run_test();
+
+} // namespace sp_singleton_sync2
+
 } // namespace test
 } // namespace ma
 
@@ -66,6 +74,7 @@ int main(int /*argc*/, char* /*argv*/[])
     ma::test::sp_singleton_construction::run_test();
     ma::test::sp_singleton_thread::run_test();
     ma::test::sp_singleton_sync::run_test();
+    ma::test::sp_singleton_sync2::run_test();
     return EXIT_SUCCESS;
   }
   catch (const std::exception& e)
@@ -314,8 +323,8 @@ foo::~foo()
 
 namespace sp_singleton_sync {
 
-static ma::detail::threshold destroy_start_threshold;
-static ma::detail::threshold destroy_complete_threshold;
+ma::detail::threshold destroy_start_threshold;
+ma::detail::threshold destroy_complete_threshold;
 
 class foo;
 typedef boost::shared_ptr<foo> foo_ptr;
@@ -338,9 +347,13 @@ protected:
   ~foo();
 
 private:
+  static std::size_t instance_count_;
+
   boost::optional<instance_guard_type> instance_guard_;
-  int data_;
+  int data_;  
 }; // class foo
+
+std::size_t foo::instance_count_ = 0;
 
 void thread_func()
 {
@@ -396,7 +409,7 @@ foo_ptr foo::get_instance()
       static int data = 0;
       return boost::make_shared<helper>(instance_guard, data++);
     }
-  };
+  }; // class factory
   return detail::sp_singleton<foo>::get_instance(factory());
 }
 
@@ -409,17 +422,141 @@ foo::foo(const instance_guard_type& instance_guard, int data)
   : instance_guard_(instance_guard)
   , data_(data)
 {
+  BOOST_ASSERT_MSG(!instance_count_, "Instance has to be the only");
+  ++instance_count_;
 }
 
 foo::~foo()
 {
   destroy_start_threshold.dec();  
   destroy_complete_threshold.wait();
-  boost::this_thread::sleep(boost::posix_time::seconds(1));
+  if (!data_)
+  {
+    boost::this_thread::sleep(boost::posix_time::seconds(1));
+  }
+  --instance_count_;
   instance_guard_ = boost::none;
 }
 
 } // namespace sp_singleton_sync
+
+namespace sp_singleton_sync2 {
+
+class foo;
+typedef boost::shared_ptr<foo> foo_ptr;
+
+class foo : private boost::noncopyable
+{
+private:
+  typedef foo this_type;
+
+public:
+  typedef ma::limited_int<std::size_t> data_type;
+
+  static foo_ptr get_nullable_instance();
+  static foo_ptr get_instance();
+
+  data_type data() const;
+
+protected:
+  typedef detail::sp_singleton<this_type>::instance_guard instance_guard_type;
+
+  foo(const instance_guard_type&, const data_type&);
+  ~foo();
+
+private:
+  static volatile std::size_t instance_count_;
+
+  boost::optional<instance_guard_type> instance_guard_;
+  data_type data_;  
+}; // class foo
+
+volatile std::size_t foo::instance_count_ = 0;
+
+const std::size_t iteration_count         = 1000;
+const std::size_t work_cycle_count        = 10000;
+const std::size_t additional_thread_count = 7;
+
+void work_func()
+{
+  boost::random::mt19937 rng;
+  boost::random::uniform_int_distribution<> wait_flag(0, 1);
+  for (std::size_t i = 0; i != work_cycle_count; ++i)
+  {
+    const foo_ptr f = foo::get_instance();
+    BOOST_ASSERT_MSG(f, "Instance has to exist");
+    if (wait_flag(rng))
+    {
+      boost::this_thread::sleep(boost::posix_time::milliseconds(1));
+    }
+    (void) f;
+  }
+}
+
+void thread_func(boost::barrier& work_barrier)
+{
+  work_barrier.wait();
+  work_func();
+}
+
+void run_test()
+{
+  for (std::size_t n = 0; n != iteration_count; ++n)
+  {
+    boost::barrier work_barrier(additional_thread_count);
+    boost::thread_group threads;
+    for (std::size_t i = 0; i != additional_thread_count; ++i)
+    {
+      threads.create_thread(boost::bind(thread_func, boost::ref(work_barrier)));
+    }
+    work_func();
+    threads.join_all();
+  }
+}
+
+foo_ptr foo::get_nullable_instance()
+{
+  return detail::sp_singleton<foo>::get_nullable_instance();
+}
+
+foo_ptr foo::get_instance()
+{
+  class factory
+  {
+  public:
+    foo_ptr operator()(const instance_guard_type& instance_guard)
+    {
+      typedef ma::shared_ptr_factory_helper<foo> helper;
+      static data_type data = 0;
+      data_type local_data = data;
+      ++data;
+      return boost::make_shared<helper>(instance_guard, local_data);
+    }
+  }; // class factory
+  return detail::sp_singleton<foo>::get_instance(factory());
+}
+
+foo::data_type foo::data() const
+{
+  return data_;
+}
+
+foo::foo(const instance_guard_type& instance_guard, const data_type& data)
+  : instance_guard_(instance_guard)
+  , data_(data)
+{
+  BOOST_ASSERT_MSG(!instance_count_, "Instance has to be the only");
+  ++instance_count_;
+}
+
+foo::~foo()
+{
+  BOOST_ASSERT_MSG(1 == instance_count_, "Instance has to be the only");
+  --instance_count_;
+  instance_guard_ = boost::none;
+}
+
+} // namespace sp_singleton_sync2
 
 } // namespace test
 } // namespace ma
