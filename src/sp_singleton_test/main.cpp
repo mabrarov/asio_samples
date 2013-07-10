@@ -12,6 +12,7 @@
 
 #include <cstdlib>
 #include <cstddef>
+#include <algorithm>
 #include <iostream>
 #include <vector>
 #include <string>
@@ -90,6 +91,25 @@ int main(int /*argc*/, char* /*argv*/[])
 
 namespace ma {
 namespace test {
+
+template <typename Integer>
+std::string integer_to_string(Integer value)
+{
+  return boost::lexical_cast<std::string>(static_cast<boost::uintmax_t>(value));
+}
+
+template <typename Integer>
+std::string to_string(const ma::limited_int<Integer>& limited_value)
+{
+  if (limited_value.overflowed())
+  {
+    return ">" + integer_to_string(limited_value.value());
+  }
+  else
+  {
+    return integer_to_string(limited_value.value());
+  }
+}
 
 namespace sp_singleton_construction {
 
@@ -218,25 +238,6 @@ void thread_func2(foo_weak_ptr weak_foo,
     threshold2.wait();
   }
   threshold3.dec();
-}
-
-template <typename Integer>
-std::string integer_to_string(Integer value)
-{
-  return boost::lexical_cast<std::string>(static_cast<boost::uintmax_t>(value));
-}
-
-template <typename Integer>
-std::string to_string(const ma::limited_int<Integer>& limited_value)
-{
-  if (limited_value.overflowed())
-  {
-    return ">" + integer_to_string(limited_value.value());
-  }
-  else
-  {
-    return integer_to_string(limited_value.value());
-  }
 }
 
 void run_test()
@@ -451,41 +452,42 @@ private:
   typedef foo this_type;
 
 public:
-  typedef ma::limited_int<std::size_t> data_type;
+  typedef ma::limited_int<std::size_t> counter;
 
   static foo_ptr get_nullable_instance();
   static foo_ptr get_instance();
 
-  data_type data() const;
+  counter init_count() const;
 
 protected:
   typedef detail::sp_singleton<this_type>::instance_guard instance_guard_type;
 
-  foo(const instance_guard_type&, const data_type&);
+  foo(const instance_guard_type&, const counter&);
   ~foo();
 
 private:
   static volatile std::size_t instance_count_;
 
   boost::optional<instance_guard_type> instance_guard_;
-  data_type data_;  
+  counter init_counter_;  
 }; // class foo
 
 volatile std::size_t foo::instance_count_ = 0;
 
 const std::size_t iteration_count         = 1000;
 const std::size_t work_cycle_count        = 10000;
-const std::size_t additional_thread_count = 7;
 
-void work_func()
+typedef boost::random::mt19937 random_generator;
+typedef boost::shared_ptr<random_generator> random_generator_ptr;
+
+void work_func(const random_generator_ptr& rng)
 {
-  boost::random::mt19937 rng;
   boost::random::uniform_int_distribution<> wait_flag(0, 1);
   for (std::size_t i = 0; i != work_cycle_count; ++i)
   {
     const foo_ptr f = foo::get_instance();
     BOOST_ASSERT_MSG(f, "Instance has to exist");
-    if (wait_flag(rng))
+    if (wait_flag(*rng))
     {
       boost::this_thread::sleep(boost::posix_time::milliseconds(1));
     }
@@ -493,25 +495,38 @@ void work_func()
   }
 }
 
-void thread_func(boost::barrier& work_barrier)
+void thread_func(boost::barrier& work_barrier, random_generator_ptr rng)
 {
   work_barrier.wait();
-  work_func();
+  work_func(rng);
 }
 
 void run_test()
 {
+  const unsigned thread_count = 
+      std::max<unsigned>(boost::thread::hardware_concurrency(), 16);
+
+  std::vector<random_generator_ptr> rngs;
+  for (std::size_t i = 0; i != thread_count; ++i)
+  {
+    rngs.push_back(boost::make_shared<random_generator>());
+  }
+
   for (std::size_t n = 0; n != iteration_count; ++n)
   {
-    boost::barrier work_barrier(additional_thread_count);
+    boost::barrier work_barrier(thread_count);
     boost::thread_group threads;
-    for (std::size_t i = 0; i != additional_thread_count; ++i)
+    for (std::size_t i = 0; i != thread_count - 1; ++i)
     {
-      threads.create_thread(boost::bind(thread_func, boost::ref(work_barrier)));
+      threads.create_thread(
+          boost::bind(thread_func, boost::ref(work_barrier), rngs[i]));
     }
-    work_func();
+    thread_func(work_barrier, rngs.back());
     threads.join_all();
   }
+
+  const foo_ptr f = foo::get_instance();
+  std::cout << "Init counter: " << to_string(f->init_count()) << std::endl;
 }
 
 foo_ptr foo::get_nullable_instance()
@@ -527,23 +542,22 @@ foo_ptr foo::get_instance()
     foo_ptr operator()(const instance_guard_type& instance_guard)
     {
       typedef ma::shared_ptr_factory_helper<foo> helper;
-      static data_type data = 0;
-      data_type local_data = data;
-      ++data;
-      return boost::make_shared<helper>(instance_guard, local_data);
+      static counter init_counter = 0;
+      ++init_counter;
+      return boost::make_shared<helper>(instance_guard, init_counter);
     }
   }; // class factory
   return detail::sp_singleton<foo>::get_instance(factory());
 }
 
-foo::data_type foo::data() const
+foo::counter foo::init_count() const
 {
-  return data_;
+  return init_counter_;
 }
 
-foo::foo(const instance_guard_type& instance_guard, const data_type& data)
+foo::foo(const instance_guard_type& instance_guard, const counter& init_counter)
   : instance_guard_(instance_guard)
-  , data_(data)
+  , init_counter_(init_counter)
 {
   BOOST_ASSERT_MSG(!instance_count_, "Instance has to be the only");
   ++instance_count_;

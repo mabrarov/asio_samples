@@ -21,6 +21,7 @@
 #include <boost/noncopyable.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/locks.hpp>
+#include <boost/thread/once.hpp>
 #include <boost/thread/condition_variable.hpp>
 
 namespace ma {
@@ -78,7 +79,8 @@ private:
 
   static static_data& get_static_data();
 
-  static static_data sd_;
+  static boost::once_flag static_data_init_flag_;
+  static static_data*     static_data_;
 }; // class sp_singleton
 
 template <typename Value>
@@ -149,14 +151,28 @@ sp_singleton<Value>::get_instance(Factory factory)
 template <typename Value>
 typename sp_singleton<Value>::static_data&
 sp_singleton<Value>::get_static_data()
-{  
-  BOOST_ASSERT_MSG(sd_.instance_threshold, 
+{
+  class static_data_factory
+  {
+  public:
+    void operator()()
+    {
+      static static_data d;
+      sp_singleton<Value>::static_data_ = &d;
+    }
+  }; // class static_data_factory
+  boost::call_once(static_data_init_flag_, static_data_factory());
+  BOOST_ASSERT_MSG(static_data_,
       "Singleton static data wasn't initialized correctly");
-  return sd_;
+  return *static_data_;
 }
 
 template <typename Value>
-typename sp_singleton<Value>::static_data sp_singleton<Value>::sd_;
+boost::once_flag sp_singleton<Value>::static_data_init_flag_ = BOOST_ONCE_INIT;
+
+template <typename Value>
+typename sp_singleton<Value>::static_data* 
+sp_singleton<Value>::static_data_ = 0;
 
 template <typename Value>
 sp_singleton<Value>::instance_guard::instance_guard(
