@@ -73,6 +73,7 @@ private:
   typedef boost::shared_ptr<threshold> threshold_ptr;
 
   struct static_data;
+  struct static_data_factory;
 
   sp_singleton();
   ~sp_singleton();
@@ -116,10 +117,11 @@ struct sp_singleton<Value>::static_data : private boost::noncopyable
 }; // struct sp_singleton<Value>::static_data
 
 template <typename Value>
-sp_singleton<Value>::static_data::static_data()
-  : instance_threshold(boost::make_shared<threshold>())
+struct sp_singleton<Value>::static_data_factory
 {
-}
+public:
+  void operator()();
+}; // struct sp_singleton<Value>::static_data_factory
 
 template <typename Value>
 typename sp_singleton<Value>::value_shared_ptr 
@@ -151,16 +153,7 @@ sp_singleton<Value>::get_instance(Factory factory)
 template <typename Value>
 typename sp_singleton<Value>::static_data&
 sp_singleton<Value>::get_static_data()
-{
-  class static_data_factory
-  {
-  public:
-    void operator()()
-    {
-      static static_data d;
-      sp_singleton<Value>::static_data_ = &d;
-    }
-  }; // class static_data_factory
+{  
   boost::call_once(static_data_init_flag_, static_data_factory());
   BOOST_ASSERT_MSG(static_data_,
       "Singleton static data wasn't initialized correctly");
@@ -173,6 +166,19 @@ boost::once_flag sp_singleton<Value>::static_data_init_flag_ = BOOST_ONCE_INIT;
 template <typename Value>
 typename sp_singleton<Value>::static_data* 
 sp_singleton<Value>::static_data_ = 0;
+
+template <typename Value>
+sp_singleton<Value>::static_data::static_data()
+  : instance_threshold(boost::make_shared<threshold>())
+{
+}
+
+template <typename Value>
+void sp_singleton<Value>::static_data_factory::operator()()
+{
+  static static_data d;
+  sp_singleton<Value>::static_data_ = &d;
+}
 
 template <typename Value>
 sp_singleton<Value>::instance_guard::instance_guard(

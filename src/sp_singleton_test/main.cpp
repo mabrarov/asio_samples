@@ -134,6 +134,8 @@ protected:
   ~foo();
 
 private:
+  struct factory;
+
   instance_guard_type instance_guard_;
   int data_;
 }; // class foo
@@ -156,6 +158,16 @@ void run_test()
   BOOST_ASSERT_MSG(data[0] != data[1], "Instances has to be different");
 }
 
+struct foo::factory
+{  
+  foo_ptr operator()(const instance_guard_type& instance_guard)
+  {
+    typedef ma::shared_ptr_factory_helper<foo> helper;
+    static int data = 0;
+    return boost::make_shared<helper>(instance_guard, data++);
+  }
+}; // struct factory
+
 foo_ptr foo::get_nullable_instance()
 {
   return detail::sp_singleton<foo>::get_nullable_instance();
@@ -163,16 +175,6 @@ foo_ptr foo::get_nullable_instance()
 
 foo_ptr foo::get_instance()
 {
-  class factory
-  {  
-  public:
-    foo_ptr operator()(const instance_guard_type& instance_guard)
-    {
-      typedef ma::shared_ptr_factory_helper<foo> helper;
-      static int data = 0;
-      return boost::make_shared<helper>(instance_guard, data++);
-    }
-  };
   return detail::sp_singleton<foo>::get_instance(factory());
 }
 
@@ -217,6 +219,8 @@ protected:
   ~foo();
 
 private:
+  struct factory;
+
   instance_guard_type instance_guard_;
   int data_;
 }; // class foo
@@ -285,23 +289,23 @@ void run_test()
   }
 }
 
+struct foo::factory
+{
+  foo_ptr operator()(const instance_guard_type& instance_guard)
+  {
+    typedef ma::shared_ptr_factory_helper<foo> helper;
+    static int data = 0;
+    return boost::make_shared<helper>(instance_guard, data++);
+  }
+}; // struct foo::factory
+
 foo_ptr foo::get_nullable_instance()
 {
   return detail::sp_singleton<foo>::get_nullable_instance();
 }
 
 foo_ptr foo::get_instance()
-{
-  class factory
-  {
-  public:
-    foo_ptr operator()(const instance_guard_type& instance_guard)
-    {
-      typedef ma::shared_ptr_factory_helper<foo> helper;
-      static int data = 0;
-      return boost::make_shared<helper>(instance_guard, data++);
-    }
-  };
+{  
   return detail::sp_singleton<foo>::get_instance(factory());
 }
 
@@ -348,6 +352,8 @@ protected:
   ~foo();
 
 private:
+  struct factory;
+
   static std::size_t instance_count_;
 
   boost::optional<instance_guard_type> instance_guard_;
@@ -394,6 +400,16 @@ void run_test()
   }  
 }
 
+struct foo::factory
+{
+  foo_ptr operator()(const instance_guard_type& instance_guard)
+  {
+    typedef ma::shared_ptr_factory_helper<foo> helper;
+    static int data = 0;
+    return boost::make_shared<helper>(instance_guard, data++);
+  }
+}; // struct foo::factory
+
 foo_ptr foo::get_nullable_instance()
 {
   return detail::sp_singleton<foo>::get_nullable_instance();
@@ -401,16 +417,6 @@ foo_ptr foo::get_nullable_instance()
 
 foo_ptr foo::get_instance()
 {
-  class factory
-  {
-  public:
-    foo_ptr operator()(const instance_guard_type& instance_guard)
-    {
-      typedef ma::shared_ptr_factory_helper<foo> helper;
-      static int data = 0;
-      return boost::make_shared<helper>(instance_guard, data++);
-    }
-  }; // class factory
   return detail::sp_singleton<foo>::get_instance(factory());
 }
 
@@ -466,6 +472,8 @@ protected:
   ~foo();
 
 private:
+  struct factory;
+
   static std::size_t instance_count_;
 
   boost::optional<instance_guard_type> instance_guard_;
@@ -473,8 +481,8 @@ private:
 }; // class foo
 
 std::size_t foo::instance_count_   = 0;
-const std::size_t iteration_count  = 1000;
-const std::size_t work_cycle_count = 1000;
+const std::size_t iteration_count  = 100;
+const std::size_t work_cycle_count = 100;
 
 typedef boost::random::mt19937 random_generator;
 typedef boost::shared_ptr<random_generator> random_generator_ptr;
@@ -528,24 +536,24 @@ void run_test()
   std::cout << "Init counter: " << to_string(f->init_count()) << std::endl;
 }
 
+struct foo::factory
+{
+  foo_ptr operator()(const instance_guard_type& instance_guard)
+  {
+    typedef ma::shared_ptr_factory_helper<foo> helper;
+    static counter init_counter = 0;
+    ++init_counter;
+    return boost::make_shared<helper>(instance_guard, init_counter);
+  }
+}; // struct foo::factory
+
 foo_ptr foo::get_nullable_instance()
 {
   return detail::sp_singleton<foo>::get_nullable_instance();
 }
 
 foo_ptr foo::get_instance()
-{
-  class factory
-  {
-  public:
-    foo_ptr operator()(const instance_guard_type& instance_guard)
-    {
-      typedef ma::shared_ptr_factory_helper<foo> helper;
-      static counter init_counter = 0;
-      ++init_counter;
-      return boost::make_shared<helper>(instance_guard, init_counter);
-    }
-  }; // class factory
+{  
   return detail::sp_singleton<foo>::get_instance(factory());
 }
 
