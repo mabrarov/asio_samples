@@ -36,6 +36,8 @@ namespace windows {
 class console_signal_service_base 
   : public detail::intrusive_list<console_signal_service_base>::base_hook
 {
+public:
+  virtual void handle_system_signal() = 0;
 }; // class console_signal_service_base
 
 /// asio::io_service::service implementing console_signal.
@@ -132,8 +134,8 @@ protected:
   virtual ~console_signal_service();
 
 private:
-  class owning_handler_list;
-  class system_handler;
+  class handler_list_guard;
+  class system_handler;  
 
   typedef boost::shared_ptr<system_handler> system_handler_ptr;
 
@@ -142,12 +144,12 @@ private:
 
   typedef boost::mutex                      mutex_type;
   typedef boost::lock_guard<mutex_type>     lock_guard;
-  typedef detail::intrusive_list<impl_base> impl_base_list;
+  typedef detail::intrusive_list<impl_base> impl_base_list;  
 
   virtual void shutdown_service();
-
-  // Guard for the impl_list_
-  mutex_type impl_list_mutex_;
+  virtual void handle_system_signal();
+  
+  mutex_type mutex_;
   // Double-linked intrusive list of active implementations.
   impl_base_list impl_list_;
   // Shutdown state flag.
@@ -205,6 +207,7 @@ template <typename Handler>
 void console_signal_service::async_wait(
     implementation_type& impl, Handler handler)
 {
+  lock_guard lock(mutex_);
   if (shutdown_)
   {
     get_io_service().post(
@@ -225,12 +228,149 @@ void console_signal_service::async_wait(
 #endif
 
   // Add handler to the list of waiting handlers.
-  {
-    lock_guard impl_list_lock(impl_list_mutex_);
-    handlers.push_front(*ptr.get());    
-    ptr.release();
-  }
-  
+  impl.handlers_.push_front(*ptr.get());
+  ptr.release();
+}
+
+#if defined(MA_HAS_RVALUE_REFS)
+
+template <typename Handler>
+template <typename H>
+console_signal_service::handler_wrapper<Handler>::handler_wrapper(
+    boost::asio::io_service& io_service, H&& handler)
+#if defined(MA_TYPE_ERASURE_USE_VURTUAL)
+  : base_type()
+#else
+  : base_type(&this_type::do_destroy, &this_type::do_post)
+#endif
+  , work_(io_service)
+  , handler_(std::forward<H>(handler))
+{
+}
+
+#if defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
+
+template <typename Handler>
+console_signal_service::handler_wrapper<Handler>::handler_wrapper(
+    this_type&& other)
+  : base_type(std::move(other))
+  , work_(std::move(other.work_))
+  , handler_(std::move(other.handler_))
+{
+}
+
+template <typename Handler>
+console_signal_service::handler_wrapper<Handler>::handler_wrapper(
+    const this_type& other)
+  : base_type(other)
+  , work_(other.work_)
+  , handler_(other.handler_)
+{
+}
+
+#endif // defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
+
+#else // defined(MA_HAS_RVALUE_REFS)
+
+template <typename Handler>
+console_signal_service::handler_wrapper<Handler>::handler_wrapper(
+    boost::asio::io_service& io_service, const Handler& handler)
+#if defined(MA_TYPE_ERASURE_USE_VURTUAL)
+  : base_type()
+#else
+  : base_type(&this_type::do_destroy, &this_type::do_post)
+#endif
+  , work_(io_service)
+  , handler_(handler)
+{
+}
+
+#endif // defined(MA_HAS_RVALUE_REFS)
+
+#if defined(MA_TYPE_ERASURE_USE_VURTUAL)
+
+template <typename Handler>
+void console_signal_service::handler_wrapper<Handler>::destroy()
+{
+  do_destroy(this);
+}
+
+template <typename Handler>
+void console_signal_service::handler_wrapper<Handler>::post(
+    const boost::system::error_code& error)
+{
+  do_post(this, error);
+}
+
+#endif // defined(MA_TYPE_ERASURE_USE_VURTUAL)
+
+#if !defined(NDEBUG)
+
+template <typename Handler>
+console_signal_service::handler_wrapper<Handler>::~handler_wrapper()
+{
+}
+
+#endif // !defined(NDEBUG)
+
+template <typename Handler>
+void console_signal_service::handler_wrapper<Handler>::do_destroy(
+    base_type* base)
+{
+  this_type* this_ptr = static_cast<this_type*>(base);
+  // Take ownership of the wrapper object
+  // The deallocation of wrapper object will be done
+  // throw the handler stored in wrapper
+  typedef detail::handler_alloc_traits<Handler, this_type> alloc_traits;
+  detail::handler_ptr<alloc_traits> ptr(this_ptr->handler_, this_ptr);
+  // Make a local copy of handler stored at wrapper object
+  // This local copy will be used for wrapper's memory deallocation later
+#if defined(MA_HAS_RVALUE_REFS)
+  Handler handler(std::move(this_ptr->handler_));
+#else
+  Handler handler(this_ptr->handler_);
+#endif
+  // Change the handler which will be used
+  // for wrapper's memory deallocation
+  ptr.set_alloc_context(handler);
+  // Destroy wrapper object and deallocate its memory
+  // throw the local copy of handler
+  ptr.reset();
+}
+
+template <typename Handler>
+void console_signal_service::handler_wrapper<Handler>::do_post(
+    base_type* base, const boost::system::error_code& error)
+{
+  this_type* this_ptr = static_cast<this_type*>(base);
+  // Take ownership of the wrapper object
+  // The deallocation of wrapper object will be done
+  // throw the handler stored in wrapper
+  typedef detail::handler_alloc_traits<Handler, this_type> alloc_traits;
+  detail::handler_ptr<alloc_traits> ptr(this_ptr->handler_, this_ptr);
+  // Make a local copy of handler stored at wrapper object
+  // This local copy will be used for wrapper's memory deallocation later
+#if defined(MA_HAS_RVALUE_REFS)
+  Handler handler(std::move(this_ptr->handler_));
+#else
+  Handler handler(this_ptr->handler_);
+#endif
+  // Change the handler which will be used for wrapper's memory deallocation
+  ptr.set_alloc_context(handler);
+  // Make copies of other data placed at wrapper object
+  // These copies will be used after the wrapper object destruction
+  // and deallocation of its memory
+  boost::asio::io_service::work work(this_ptr->work_);
+  // Destroy wrapper object and deallocate its memory
+  // through the local copy of handler
+  ptr.reset();
+  // Post the copy of handler's local copy to io_service
+  boost::asio::io_service& io_service = work.get_io_service();
+#if defined(MA_HAS_RVALUE_REFS)
+  io_service.post(ma::bind_handler(std::move(handler), error));
+#else
+  io_service.post(ma::bind_handler(handler, error));
+#endif
 }
 
 } // namespace windows

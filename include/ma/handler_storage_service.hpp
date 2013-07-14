@@ -824,7 +824,7 @@ void handler_storage_service::handler_wrapper<Handler, void, Target>::do_post(
   // Post the copy of handler's local copy to io_service
   boost::asio::io_service& io_service = work.get_io_service();
 #if defined(MA_HAS_RVALUE_REFS)
-  io_service.post(handler);
+  io_service.post(std::move(handler));
 #else
   io_service.post(handler);
 #endif
