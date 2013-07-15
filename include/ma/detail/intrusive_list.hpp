@@ -112,8 +112,11 @@ private:
   typedef base_hook this_type;
 
 protected:
+  /// Never throws
   base_hook();
+  /// Never throws
   base_hook(const this_type&);
+  /// Never throws
   base_hook& operator=(const this_type&);
 
 private:
@@ -203,8 +206,11 @@ private:
   typedef base_hook this_type;
 
 protected:
+  /// Never throws
   base_hook();
+  /// Never throws
   base_hook(const this_type&);
+  /// Never throws
   base_hook& operator=(const this_type&);
 
 private:

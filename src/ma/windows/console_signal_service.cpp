@@ -22,6 +22,43 @@
 namespace ma {
 namespace windows {
 
+class console_signal_service_base::system_service : private boost::noncopyable
+{
+private:
+  typedef system_service this_type;
+
+public:
+  static system_service_ptr get_instance();
+  void add_subscriber(console_signal_service_base&);
+  void remove_subscriber(console_signal_service_base&);
+
+protected:
+  typedef detail::sp_singleton<this_type>::instance_guard instance_guard_type;
+
+  system_service(const instance_guard_type&);
+  ~system_service();
+
+private:
+  struct factory;
+
+  typedef boost::mutex                  mutex_type;
+  typedef boost::lock_guard<mutex_type> lock_guard;
+  typedef detail::intrusive_list<console_signal_service_base> subscriber_list;
+
+  static system_service_ptr get_nullable_instance();
+  static BOOL WINAPI windows_ctrl_handler(DWORD);
+  void deliver_signal();
+  
+  instance_guard_type singleton_instance_guard_;
+  mutex_type          subscribers_mutex_;
+  subscriber_list     subscribers_;
+}; // class console_signal_service_base::system_service
+
+struct console_signal_service_base::system_service::factory
+{
+  system_service_ptr operator()(const instance_guard_type&);
+}; // class console_signal_service_base::system_service::factory
+
 class console_signal_service::handler_list_guard : private boost::noncopyable
 {
 public:
@@ -32,62 +69,90 @@ private:
   handler_list& handlers_;
 }; // class console_signal_service::handler_list_guard
 
-class console_signal_service::system_handler : private boost::noncopyable
-{
-private:
-  typedef system_handler this_type;
-
-public:
-  static system_handler_ptr get_instance();
-  void add_service(console_signal_service&);
-  void remove_service(console_signal_service&);
-
-protected:
-  typedef detail::sp_singleton<this_type>::instance_guard instance_guard_type;
-
-  system_handler(const instance_guard_type&);
-  ~system_handler();
-
-private:
-  struct factory;
-
-  typedef boost::mutex                  mutex_type;
-  typedef boost::lock_guard<mutex_type> lock_guard;
-  typedef detail::intrusive_list<console_signal_service_base> service_list;
-
-  static system_handler_ptr get_nullable_instance();
-  static BOOL WINAPI win_console_ctrl_handler(DWORD);
-  void handle_system_signal();
-  
-  instance_guard_type singleton_instance_guard_;
-  mutex_type   services_mutex_;
-  service_list services_;
-}; // class console_signal_service::system_handler
-
 class console_signal_service::post_adapter
 {
   //todo
 }; // class console_signal_service::post_adapter
 
-struct console_signal_service::system_handler::factory
+console_signal_service_base::system_service_ptr
+console_signal_service_base::system_service::get_instance()
 {
-  system_handler_ptr operator()(const instance_guard_type&);
-}; // class console_signal_service::system_handler::factory
-
-console_signal_service::handler_list_guard::handler_list_guard(
-    handler_list& handlers)
-  : handlers_(handlers)
-{  
+  return detail::sp_singleton<this_type>::get_instance(factory());
 }
 
-console_signal_service::handler_list_guard::~handler_list_guard()
+console_signal_service_base::system_service_ptr 
+console_signal_service_base::system_service::get_nullable_instance()
 {
-  for (handler_base* handler = handlers_.front(); handler; )
+  return detail::sp_singleton<this_type>::get_nullable_instance();
+}
+
+void console_signal_service_base::system_service::add_subscriber(
+    console_signal_service_base& subscriber)
+{
+  lock_guard services_guard(subscribers_mutex_);
+  subscribers_.push_back(subscriber);
+}
+
+void console_signal_service_base::system_service::remove_subscriber(
+    console_signal_service_base& subscriber)
+{
+  lock_guard services_guard(subscribers_mutex_);
+  subscribers_.erase(subscriber);
+}
+
+console_signal_service_base::system_service::system_service(
+    const instance_guard_type& singleton_instance_guard)
+  : singleton_instance_guard_(singleton_instance_guard)
+{
+  if (!::SetConsoleCtrlHandler(&this_type::windows_ctrl_handler, TRUE))
   {
-    handler_base* next = handlers_.next(*handler);
-    handler->destroy();
-    handler = next;
+    boost::system::error_code ec(
+        ::GetLastError(), boost::system::system_category());
+    boost::throw_exception(boost::system::system_error(ec));
   }
+}
+
+console_signal_service_base::system_service::~system_service()
+{
+  ::SetConsoleCtrlHandler(&this_type::windows_ctrl_handler, FALSE);
+}
+
+BOOL WINAPI console_signal_service_base::system_service::windows_ctrl_handler(
+    DWORD ctrl_type)
+{
+  switch (ctrl_type)
+  {
+  case CTRL_C_EVENT:
+  case CTRL_BREAK_EVENT:
+  case CTRL_CLOSE_EVENT:
+  case CTRL_LOGOFF_EVENT:
+  case CTRL_SHUTDOWN_EVENT:
+    if (system_service_ptr instance = get_nullable_instance())
+    {
+      instance->deliver_signal();
+      return TRUE;
+    }
+  default:
+    return FALSE;
+  };
+}
+
+void console_signal_service_base::system_service::deliver_signal()
+{
+  lock_guard services_guard(subscribers_mutex_);
+  for (console_signal_service_base* subscriber = subscribers_.front(); 
+      subscriber; subscriber = subscribers_.next(*subscriber))
+  {
+    subscriber->deliver_signal();
+  }
+}
+
+console_signal_service_base::system_service_ptr 
+console_signal_service_base::system_service::factory::operator()(
+    const instance_guard_type& singleton_instance_guard)
+{
+  typedef ma::shared_ptr_factory_helper<system_service> helper;  
+  return boost::make_shared<helper>(singleton_instance_guard);
 }
 
 #if defined(MA_TYPE_ERASURE_USE_VURTUAL)
@@ -131,99 +196,34 @@ console_signal_service::handler_base::handler_base(const this_type& other)
 {
 }
 
-console_signal_service::system_handler_ptr
-console_signal_service::system_handler::get_instance()
-{
-  return detail::sp_singleton<this_type>::get_instance(factory());
+console_signal_service::handler_list_guard::handler_list_guard(
+    handler_list& handlers)
+  : handlers_(handlers)
+{  
 }
 
-console_signal_service::system_handler_ptr 
-console_signal_service::system_handler::get_nullable_instance()
+console_signal_service::handler_list_guard::~handler_list_guard()
 {
-  return detail::sp_singleton<this_type>::get_nullable_instance();
-}
-
-void console_signal_service::system_handler::add_service(
-    console_signal_service& service)
-{
-  lock_guard services_guard(services_mutex_);
-  services_.push_back(service);
-}
-
-void console_signal_service::system_handler::remove_service(
-    console_signal_service& service)
-{
-  lock_guard services_guard(services_mutex_);
-  services_.erase(service);
-}
-
-console_signal_service::system_handler::system_handler(
-    const instance_guard_type& singleton_instance_guard)
-  : singleton_instance_guard_(singleton_instance_guard)
-{
-  if (!::SetConsoleCtrlHandler(&this_type::win_console_ctrl_handler, TRUE))
+  for (handler_base* handler = handlers_.front(); handler; )
   {
-    boost::system::error_code ec(
-        ::GetLastError(), boost::system::system_category());
-    boost::throw_exception(boost::system::system_error(ec));
+    handler_base* next = handlers_.next(*handler);
+    handler->destroy();
+    handler = next;
   }
-}
-
-console_signal_service::system_handler::~system_handler()
-{
-  ::SetConsoleCtrlHandler(&this_type::win_console_ctrl_handler, FALSE);
-}
-
-BOOL WINAPI console_signal_service::system_handler::win_console_ctrl_handler(
-    DWORD ctrl_type)
-{
-  switch (ctrl_type)
-  {
-  case CTRL_C_EVENT:
-  case CTRL_BREAK_EVENT:
-  case CTRL_CLOSE_EVENT:
-  case CTRL_LOGOFF_EVENT:
-  case CTRL_SHUTDOWN_EVENT:
-    if (system_handler_ptr instance = get_nullable_instance())
-    {
-      instance->handle_system_signal();
-      return TRUE;
-    }
-  default:
-    return FALSE;
-  };
-}
-
-void console_signal_service::system_handler::handle_system_signal()
-{
-  lock_guard services_guard(services_mutex_);
-  for (console_signal_service_base* service = services_.front(); service;
-      service = services_.next(*service))
-  {
-    service->handle_system_signal();
-  }
-}
-
-console_signal_service::system_handler_ptr 
-console_signal_service::system_handler::factory::operator()(
-  const instance_guard_type& singleton_instance_guard)
-{
-  typedef ma::shared_ptr_factory_helper<system_handler> helper;  
-  return boost::make_shared<helper>(singleton_instance_guard);
 }
 
 console_signal_service::console_signal_service(
     boost::asio::io_service& io_service)
   : detail::service_base<console_signal_service>(io_service)  
   , shutdown_(false)
-  , system_handler_(system_handler::get_instance())
+  , system_service_(system_service::get_instance())
 {
-  system_handler_->add_service(*this);
+  system_service_->add_subscriber(*this);
 }
 
 console_signal_service::~console_signal_service()  
 {
-  system_handler_->remove_service(*this);
+  system_service_->remove_subscriber(*this);
 }
 
 void console_signal_service::construct(implementation_type& impl)
@@ -307,7 +307,7 @@ void console_signal_service::shutdown_service()
   }
 }
 
-void console_signal_service::handle_system_signal()
+void console_signal_service::deliver_signal()
 {
   handler_list handlers;
   handler_list_guard handlers_guard(handlers);
@@ -323,8 +323,8 @@ void console_signal_service::handle_system_signal()
       }
     }
   }
-  //fixme: get_io_service().post(...)
-  // Post all handlers to signal operation was aborted
+  //fixme: get_io_service().post(...) 
+  // because internal threads have to not call user code  
   while (handler_base* handler = handlers.front())
   {
     handlers.pop_front();

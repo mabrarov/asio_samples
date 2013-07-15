@@ -36,8 +36,32 @@ namespace windows {
 class console_signal_service_base 
   : public detail::intrusive_list<console_signal_service_base>::base_hook
 {
+private:
+  typedef console_signal_service_base this_type;
+
 public:
-  virtual void handle_system_signal() = 0;
+  virtual void deliver_signal() = 0;
+
+protected:
+  class system_service;
+  typedef boost::shared_ptr<system_service> system_service_ptr;
+
+  console_signal_service_base()
+  {
+  }
+
+  console_signal_service_base(const this_type&)
+  {
+  }
+
+  ~console_signal_service_base()
+  {
+  }
+
+  this_type& operator=(const this_type&)
+  {
+    return *this;
+  }
 }; // class console_signal_service_base
 
 /// asio::io_service::service implementing console_signal.
@@ -134,11 +158,8 @@ protected:
   virtual ~console_signal_service();
 
 private:
-  class handler_list_guard;
-  class system_handler;
-  class post_adapter;
-
-  typedef boost::shared_ptr<system_handler> system_handler_ptr;
+  class handler_list_guard;  
+  class post_adapter; 
 
   template <typename Handler>
   class handler_wrapper;  
@@ -148,14 +169,14 @@ private:
   typedef detail::intrusive_list<impl_base> impl_base_list;  
 
   virtual void shutdown_service();
-  virtual void handle_system_signal();
+  virtual void deliver_signal();
   
   mutex_type mutex_;
   // Double-linked intrusive list of active implementations.
   impl_base_list impl_list_;
   // Shutdown state flag.
   bool shutdown_;
-  system_handler_ptr system_handler_;
+  system_service_ptr system_service_;
 }; // class console_signal_service
 
 template <typename Handler>
