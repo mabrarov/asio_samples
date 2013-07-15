@@ -147,7 +147,7 @@ void console_signal_service::system_handler::add_service(
     console_signal_service& service)
 {
   lock_guard services_guard(services_mutex_);
-  services_.push_front(service);
+  services_.push_back(service);
 }
 
 void console_signal_service::system_handler::remove_service(
@@ -231,7 +231,7 @@ void console_signal_service::construct(implementation_type& impl)
   lock_guard lock(mutex_);
   if (!shutdown_)
   {
-    impl_list_.push_front(impl);
+    impl_list_.push_back(impl);
   }
 }
 
@@ -302,7 +302,7 @@ void console_signal_service::shutdown_service()
     for (impl_base* impl = impl_list_.front(); impl;
         impl = impl_list_.next(*impl))
     {
-      insert_front(impl->handlers_, handlers);
+      handlers.insert_front(impl->handlers_);
     }
   }
 }
@@ -319,7 +319,7 @@ void console_signal_service::handle_system_signal()
       for (impl_base* impl = impl_list_.front(); impl;
           impl = impl_list_.next(*impl))
       {      
-        insert_front(impl->handlers_, handlers);
+        handlers.insert_front(impl->handlers_);
       }
     }
   }

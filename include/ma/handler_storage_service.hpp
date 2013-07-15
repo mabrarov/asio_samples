@@ -871,7 +871,7 @@ inline void handler_storage_service::construct(implementation_type& impl)
   // Add implementation to the list of active implementations.
   {
     lock_guard impl_list_lock(impl_list_mutex_);
-    impl_list_.push_front(impl);
+    impl_list_.push_back(impl);
   }
 }
 
@@ -886,7 +886,7 @@ inline void handler_storage_service::move_construct(implementation_type& impl,
   // Add implementation to the list of active implementations.
   {
     lock_guard impl_list_lock(impl_list_mutex_);
-    impl_list_.push_front(impl);
+    impl_list_.push_back(impl);
   }
 
   // Move ownership of the stored handler
