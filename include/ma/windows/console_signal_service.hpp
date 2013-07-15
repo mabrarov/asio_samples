@@ -135,12 +135,13 @@ protected:
 
 private:
   class handler_list_guard;
-  class system_handler;  
+  class system_handler;
+  class post_adapter;
 
   typedef boost::shared_ptr<system_handler> system_handler_ptr;
 
   template <typename Handler>
-  class handler_wrapper;
+  class handler_wrapper;  
 
   typedef boost::mutex                      mutex_type;
   typedef boost::lock_guard<mutex_type>     lock_guard;

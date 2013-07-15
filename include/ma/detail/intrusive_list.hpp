@@ -12,9 +12,12 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
+#include <algorithm>
+#include <utility>
 #include <boost/assert.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/utility/addressof.hpp>
+#include <ma/config.hpp>
 
 namespace ma {
 namespace detail {
@@ -29,6 +32,9 @@ namespace detail {
 template<typename Value>
 class intrusive_list : private boost::noncopyable
 {
+private:
+  typedef intrusive_list<Value> this_type;
+
 public:
   typedef Value  value_type;
   typedef Value* pointer;
@@ -39,6 +45,16 @@ public:
 
   /// Never throws
   intrusive_list();
+
+#if defined(MA_HAS_RVALUE_REFS)
+
+  /// Never throws
+  intrusive_list(this_type&&);
+
+  /// Never throws
+  this_type& operator=(this_type&&);
+
+#endif // defined(MA_HAS_RVALUE_REFS)
 
   /// Never throws
   pointer front() const;
@@ -60,6 +76,12 @@ public:
 
   /// Never throws
   bool empty();
+
+  /// Never throws
+  void clear();
+
+  /// Never throws
+  void swap(this_type&);
 
 private:
   static base_hook& get_hook(reference value);
@@ -94,6 +116,9 @@ private:
 template<typename Value>
 class intrusive_slist : private boost::noncopyable
 {
+private:
+  typedef intrusive_slist<Value> this_type;
+
 public:
   typedef Value  value_type;
   typedef Value* pointer;
@@ -104,6 +129,16 @@ public:
 
   /// Never throws
   intrusive_slist();
+
+#if defined(MA_HAS_RVALUE_REFS)
+
+  /// Never throws
+  intrusive_slist(this_type&&);
+
+  /// Never throws
+  this_type& operator=(this_type&&);
+
+#endif // defined(MA_HAS_RVALUE_REFS)
 
   /// Never throws
   pointer front() const;
@@ -121,8 +156,14 @@ public:
   bool empty();
 
   /// Never throws
-  template<typename OtherValue>
-  void push_front_reversed(intrusive_slist<OtherValue>& other);
+  void clear();
+
+  /// Never throws
+  void swap(this_type&);
+
+  /// Never throws
+  template<typename Src, typename Dst>
+  friend void insert_front(intrusive_slist<Src>&, intrusive_slist<Dst>&);
 
 private:
   static base_hook& get_hook(reference value);  
@@ -172,6 +213,26 @@ intrusive_list<Value>::intrusive_list()
   : front_(0)
 {
 }
+
+#if defined(MA_HAS_RVALUE_REFS)
+
+template<typename Value>
+intrusive_list<Value>::intrusive_list(this_type&& other)
+  : front_(other.front_)
+{
+  other.front_ = 0;
+}
+
+template<typename Value>
+typename intrusive_list<Value>::this_type& 
+intrusive_list<Value>::operator=(this_type&& other)
+{
+  front_ = other.front_;
+  other.front_ = 0;
+  return *this;
+}
+
+#endif // defined(MA_HAS_RVALUE_REFS)
 
 template<typename Value>
 typename intrusive_list<Value>::pointer
@@ -260,6 +321,18 @@ bool intrusive_list<Value>::empty()
 }
 
 template<typename Value>
+void intrusive_list<Value>::clear()
+{
+  front_ = 0;
+}
+
+template<typename Value>
+void intrusive_list<Value>::swap(this_type& other)
+{
+  std::swap(front_, other.front_);
+}
+
+template<typename Value>
 typename intrusive_list<Value>::base_hook&
 intrusive_list<Value>::get_hook(reference value)
 {
@@ -290,6 +363,26 @@ intrusive_slist<Value>::intrusive_slist()
   : front_(0)
 {
 }
+
+#if defined(MA_HAS_RVALUE_REFS)
+
+template<typename Value>
+intrusive_slist<Value>::intrusive_slist(this_type&& other)
+  : front_(other.front_)
+{
+  other.front_ = 0;
+}
+
+template<typename Value>
+typename intrusive_slist<Value>::this_type& 
+intrusive_slist<Value>::operator=(this_type&& other)
+{
+  front_ = other.front_;
+  other.front_ = 0;
+  return *this;
+}
+
+#endif // defined(MA_HAS_RVALUE_REFS)
 
 template<typename Value>
 typename intrusive_slist<Value>::pointer
@@ -335,19 +428,29 @@ bool intrusive_slist<Value>::empty()
 }
 
 template<typename Value>
-template<typename OtherValue>
-void intrusive_slist<Value>::push_front_reversed(
-    intrusive_slist<OtherValue>& other)
+void intrusive_slist<Value>::clear()
 {
-  typedef typename intrusive_slist<OtherValue>::pointer other_pointer;
+  front_ = 0;
+}
+
+template<typename Value>
+void intrusive_slist<Value>::swap(this_type& other)
+{
+  std::swap(front_, other.front_);
+}
+
+template<typename Src, typename Dst>
+void insert_front(intrusive_slist<Src>& src, intrusive_slist<Dst>& dst)
+{
+  typedef typename intrusive_slist<Src>::pointer src_pointer;
   
-  while (other_pointer value = other.front())
+  while (src_pointer value = src.front())
   {
-    other.pop_front();
-    push_front(*value);    
+    src.pop_front();
+    dst.push_front(*value);    
   }
   
-  BOOST_ASSERT_MSG(other.empty(), "The pushed list has to be empty");
+  BOOST_ASSERT_MSG(src.empty(), "The moved list has to be empty");
 }
 
 template<typename Value>

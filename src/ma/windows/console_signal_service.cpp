@@ -6,20 +6,30 @@
 //
 
 #include <windows.h>
+#include <boost/noncopyable.hpp>
 #include <boost/throw_exception.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/system/system_error.hpp>
+#include <ma/config.hpp>
 #include <ma/shared_ptr_factory.hpp>
 #include <ma/detail/sp_singleton.hpp>
 #include <ma/windows/console_signal_service.hpp>
 
+#if defined(MA_HAS_RVALUE_REFS)
+#include <utility>
+#endif // defined(MA_HAS_RVALUE_REFS)
+
 namespace ma {
 namespace windows {
 
-class console_signal_service::handler_list_guard : public handler_list
+class console_signal_service::handler_list_guard : private boost::noncopyable
 {
 public:
+  handler_list_guard(handler_list&);
   ~handler_list_guard();
+
+private:
+  handler_list& handlers_;
 }; // class console_signal_service::handler_list_guard
 
 class console_signal_service::system_handler : private boost::noncopyable
@@ -54,16 +64,27 @@ private:
   service_list services_;
 }; // class console_signal_service::system_handler
 
+class console_signal_service::post_adapter
+{
+  //todo
+}; // class console_signal_service::post_adapter
+
 struct console_signal_service::system_handler::factory
 {
   system_handler_ptr operator()(const instance_guard_type&);
 }; // class console_signal_service::system_handler::factory
 
+console_signal_service::handler_list_guard::handler_list_guard(
+    handler_list& handlers)
+  : handlers_(handlers)
+{  
+}
+
 console_signal_service::handler_list_guard::~handler_list_guard()
 {
-  for (handler_base* handler = this->front(); handler; )
+  for (handler_base* handler = handlers_.front(); handler; )
   {
-    handler_base* next = this->next(*handler);
+    handler_base* next = handlers_.next(*handler);
     handler->destroy();
     handler = next;
   }
@@ -123,15 +144,17 @@ console_signal_service::system_handler::get_nullable_instance()
 }
 
 void console_signal_service::system_handler::add_service(
-    console_signal_service&)
+    console_signal_service& service)
 {
-  //todo
+  lock_guard services_guard(services_mutex_);
+  services_.push_front(service);
 }
 
 void console_signal_service::system_handler::remove_service(
-    console_signal_service&)
+    console_signal_service& service)
 {
-  //todo
+  lock_guard services_guard(services_mutex_);
+  services_.erase(service);
 }
 
 console_signal_service::system_handler::system_handler(
@@ -195,12 +218,12 @@ console_signal_service::console_signal_service(
   , shutdown_(false)
   , system_handler_(system_handler::get_instance())
 {
-  //todo
+  system_handler_->add_service(*this);
 }
 
 console_signal_service::~console_signal_service()  
 {
-  //todo
+  system_handler_->remove_service(*this);
 }
 
 void console_signal_service::construct(implementation_type& impl)
@@ -213,16 +236,21 @@ void console_signal_service::construct(implementation_type& impl)
 }
 
 void console_signal_service::destroy(implementation_type& impl)
-{
-  handler_list_guard handlers;
+{  
+  handler_list handlers;
+  handler_list_guard handlers_guard(handlers);
   {
     lock_guard lock(mutex_);
     if (!shutdown_)
     {
       // Take ownership of waiting handlers
-      handlers.push_front_reversed(impl.handlers_);
+#if defined(MA_HAS_RVALUE_REFS)
+      handlers = std::move(impl.handlers_);
+#else
+      handlers.swap(impl.handlers_);
+#endif
       // Remove implementation from the list of active implementations.
-      impl_list_.erase(impl);      
+      impl_list_.erase(impl);
     }
   }
   // Cancel all waiting handlers.
@@ -236,13 +264,18 @@ void console_signal_service::destroy(implementation_type& impl)
 std::size_t console_signal_service::cancel(implementation_type& impl,
     boost::system::error_code& error)
 {
-  handler_list_guard handlers;
+  handler_list handlers;
+  handler_list_guard handlers_guard(handlers);
   {
     lock_guard lock(mutex_);
     if (!shutdown_)
     {
-      // Take ownership of waiting handlers      
-      handlers.push_front_reversed(impl.handlers_);      
+      // Take ownership of waiting handlers
+#if defined(MA_HAS_RVALUE_REFS)
+      handlers = std::move(impl.handlers_);
+#else
+      handlers.swap(impl.handlers_);
+#endif
     }
   }
   // Post all handlers to signal operation was aborted
@@ -259,7 +292,8 @@ std::size_t console_signal_service::cancel(implementation_type& impl,
 
 void console_signal_service::shutdown_service()
 {
-  handler_list_guard handlers;
+  handler_list handlers;
+  handler_list_guard handlers_guard(handlers);
   {  
     lock_guard lock(mutex_);
     // Restrict usage of service.
@@ -267,15 +301,35 @@ void console_signal_service::shutdown_service()
     // Take ownership of all still active handlers.
     for (impl_base* impl = impl_list_.front(); impl;
         impl = impl_list_.next(*impl))
-    {      
-      handlers.push_front_reversed(impl->handlers_);
+    {
+      insert_front(impl->handlers_, handlers);
     }
   }
 }
 
 void console_signal_service::handle_system_signal()
 {
-  //todo
+  handler_list handlers;
+  handler_list_guard handlers_guard(handlers);
+  {  
+    lock_guard lock(mutex_);
+    if (!shutdown_)
+    {
+      // Take ownership of all still active handlers.
+      for (impl_base* impl = impl_list_.front(); impl;
+          impl = impl_list_.next(*impl))
+      {      
+        insert_front(impl->handlers_, handlers);
+      }
+    }
+  }
+  //fixme: get_io_service().post(...)
+  // Post all handlers to signal operation was aborted
+  while (handler_base* handler = handlers.front())
+  {
+    handlers.pop_front();
+    handler->post(boost::system::error_code());
+  }
 }
 
 } // namespace windows
