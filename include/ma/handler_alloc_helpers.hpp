@@ -18,9 +18,9 @@
 
 // Calls to asio_handler_allocate and asio_handler_deallocate must be made from
 // a namespace that does not contain any overloads of these functions. The
-// ma_asio_handler_alloc_helpers namespace is defined here for that purpose.
+// ma_handler_alloc_helpers namespace is defined here for that purpose.
 // It's a modified copy of Asio sources: asio/detail/handler_alloc_helpers.hpp
-namespace ma_asio_handler_alloc_helpers {
+namespace ma_handler_alloc_helpers {
 
 template <typename Context>
 inline void* allocate(std::size_t size, Context& context)
@@ -36,6 +36,6 @@ inline void deallocate(void* pointer, std::size_t size, Context& context)
   asio_handler_deallocate(pointer, size, boost::addressof(context));
 }
 
-} // namespace ma_asio_handler_alloc_helpers
+} // namespace ma_handler_alloc_helpers
 
 #endif // MA_HANDLER_ALLOC_HELPERS_HPP

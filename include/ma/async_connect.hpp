@@ -22,6 +22,7 @@
 #include <ma/bind_handler.hpp>
 #include <ma/handler_alloc_helpers.hpp>
 #include <ma/handler_invoke_helpers.hpp>
+#include <ma/handler_cont_helpers.hpp>
 #endif // defined(WIN32) && !defined(BOOST_ASIO_DISABLE_IOCP)
 
 #include <ma/config.hpp>
@@ -90,14 +91,13 @@ public:
 
   friend void* asio_handler_allocate(std::size_t size, this_type* context)
   {
-    return ma_asio_handler_alloc_helpers::allocate(size, context->handler_);
+    return ma_handler_alloc_helpers::allocate(size, context->handler_);
   }
 
   friend void asio_handler_deallocate(void* pointer, std::size_t size,
       this_type* context)
   {
-    ma_asio_handler_alloc_helpers::deallocate(pointer, size,
-        context->handler_);
+    ma_handler_alloc_helpers::deallocate(pointer, size, context->handler_);
   }
 
 #if defined(MA_HAS_RVALUE_REFS)
@@ -105,8 +105,8 @@ public:
   template <typename Function>
   friend void asio_handler_invoke(Function&& function, this_type* context)
   {
-    ma_asio_handler_invoke_helpers::invoke(std::forward<Function>(function),
-        context->handler_);
+    ma_handler_invoke_helpers::invoke(
+        std::forward<Function>(function), context->handler_);
   }
 
 #else // defined(MA_HAS_RVALUE_REFS)
@@ -114,10 +114,15 @@ public:
   template <typename Function>
   friend void asio_handler_invoke(const Function& function, this_type* context)
   {
-    ma_asio_handler_invoke_helpers::invoke(function, context->handler_);
+    ma_handler_invoke_helpers::invoke(function, context->handler_);
   }
 
 #endif // defined(MA_HAS_RVALUE_REFS)
+
+  friend bool asio_handler_is_continuation(this_type* context)
+  {
+    return ma_handler_cont_helpers::is_continuation(context->handler_);
+  }
 
   void operator()(const boost::system::error_code& error,
       std::size_t /*bytes_transferred*/)

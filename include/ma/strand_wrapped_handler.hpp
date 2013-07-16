@@ -17,6 +17,7 @@
 #include <boost/utility/addressof.hpp>
 #include <ma/config.hpp>
 #include <ma/handler_alloc_helpers.hpp>
+#include <ma/handler_cont_helpers.hpp>
 #include <ma/context_wrapped_handler.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)
@@ -32,7 +33,7 @@ namespace ma {
 /**
  * strand_wrapped_handler creates handler that works similar to the one created
  * by asio::io_service::strand::wrap except the guarantee given by Asio:
- * http://www.boost.org/doc/libs/1_53_0/doc/html/boost_asio/reference/io_service__strand/wrap.html
+ * http://www.boost.org/doc/libs/1_54_0/doc/html/boost_asio/reference/io_service__strand/wrap.html
  * ...
  * that, when invoked, executes code equivalent to:
  *   strand.dispatch(boost::bind(f, a1, ... an));
@@ -49,7 +50,7 @@ namespace ma {
  *
  * "Execution strategy" means handler related free function asio_handler_invoke
  * or the default one defined by Asio.
- * http://www.boost.org/doc/libs/1_53_0/doc/html/boost_asio/reference/Handler.html
+ * http://www.boost.org/doc/libs/1_54_0/doc/html/boost_asio/reference/Handler.html
  *
  * Use MA_STRAND_WRAP macros to create a strand-wrapped handler according to
  * asio-samples configuration (MA_BOOST_ASIO_HEAVY_STRAND_WRAPPED_HANDLER).
@@ -119,14 +120,13 @@ public:
 
   friend void* asio_handler_allocate(std::size_t size, this_type* context)
   {
-    return ma_asio_handler_alloc_helpers::allocate(size, context->handler_);
+    return ma_handler_alloc_helpers::allocate(size, context->handler_);
   }
 
   friend void asio_handler_deallocate(void* pointer, std::size_t size,
       this_type* context)
   {
-    ma_asio_handler_alloc_helpers::deallocate(pointer, size,
-        context->handler_);
+    ma_handler_alloc_helpers::deallocate(pointer, size, context->handler_);
   }
 
 #if defined(MA_HAS_RVALUE_REFS)
@@ -149,6 +149,16 @@ public:
   }
 
 #endif // defined(MA_HAS_RVALUE_REFS)
+
+#if BOOST_VERSION >= 105400
+
+  friend bool asio_handler_is_continuation(this_type* context)
+  {
+    boost::asio::io_service::strand& strand = *context->strand_;
+    return strand.running_in_this_thread();
+  }
+
+#endif // BOOST_VERSION >= 105400
 
   void operator()()
   {

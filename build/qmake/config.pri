@@ -6,7 +6,7 @@
 #
 
 # Boost C++ Libraries headers
-BOOST_INCLUDE = ../../../../boost_1_53_0
+BOOST_INCLUDE = ../../../../boost_1_54_0
 
 # Boost C++ Libraries binaries
 win32 {

@@ -20,6 +20,8 @@ HEADERS  += ../../../include/ma/detail/binder.hpp \
             ../../../include/ma/detail/service_base.hpp \
             ../../../include/ma/nmea/cyclic_read_session_fwd.hpp \
             ../../../include/ma/nmea/cyclic_read_session.hpp \
+            ../../../include/ma/nmea/error.hpp \
+            ../../../include/ma/nmea/frame.hpp \
             ../../../include/ma/bind_handler.hpp \
             ../../../include/ma/config.hpp \
             ../../../include/ma/console_close_guard.hpp \
@@ -29,6 +31,7 @@ HEADERS  += ../../../include/ma/detail/binder.hpp \
             ../../../include/ma/cyclic_buffer.hpp \
             ../../../include/ma/handler_alloc_helpers.hpp \
             ../../../include/ma/handler_allocator.hpp \
+            ../../../include/ma/handler_cont_helpers.hpp \
             ../../../include/ma/handler_invoke_helpers.hpp \
             ../../../include/ma/handler_storage.hpp \
             ../../../include/ma/handler_storage_service.hpp \
@@ -48,6 +51,10 @@ LIBS       += -L$${BOOST_LIB}
 unix:LIBS  += $${BOOST_LIB}/libboost_system.a \
               $${BOOST_LIB}/libboost_thread.a \
               $${BOOST_LIB}/libboost_date_time.a
+exists($${BOOST_INCLUDE}/boost/chrono.hpp) {
+  unix:LIBS += $${BOOST_LIB}/libboost_chrono.a \
+               -lrt
+}
 
 win32:DEFINES += WINVER=0x0500 \
                  _WIN32_WINNT=0x0500
