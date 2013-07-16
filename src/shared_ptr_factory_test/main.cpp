@@ -12,7 +12,6 @@
 
 #include <cstdlib>
 #include <iostream>
-#include <type_traits>
 #include <boost/static_assert.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
