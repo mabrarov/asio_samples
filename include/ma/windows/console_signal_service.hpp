@@ -12,6 +12,12 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
+#include <boost/config.hpp>
+
+#if defined(BOOST_WINDOWS)
+
+#define MA_HAS_WINDOWS_CONSOLE_SIGNAL 1
+
 #include <cstddef>
 #include <boost/ref.hpp>
 #include <boost/asio.hpp>
@@ -397,5 +403,11 @@ void console_signal_service::handler_wrapper<Handler>::do_post(
 
 } // namespace windows
 } // namespace ma
+
+#else  // defined(BOOST_WINDOWS)
+
+#undef MA_HAS_WINDOWS_CONSOLE_SIGNAL
+
+#endif // defined(BOOST_WINDOWS)
 
 #endif // MA_WINDOWS_CONSOLE_SIGNAL_SERVICE_HPP

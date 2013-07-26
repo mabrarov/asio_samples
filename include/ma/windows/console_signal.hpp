@@ -12,10 +12,14 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
+#include <ma/windows/console_signal_service.hpp>
+
+#if defined(MA_HAS_WINDOWS_CONSOLE_SIGNAL)
+
 #include <boost/asio.hpp>
 #include <boost/noncopyable.hpp>
 #include <ma/config.hpp>
-#include <ma/windows/console_signal_service.hpp>
+
 
 #if defined(MA_HAS_RVALUE_REFS)
 #include <utility>
@@ -30,8 +34,8 @@ private:
   typedef console_signal this_type;
 
 public:
-  typedef console_signal_service                     service_type;
-  typedef typename service_type::implementation_type implementation_type;
+  typedef console_signal_service            service_type;
+  typedef service_type::implementation_type implementation_type;
   
   explicit console_signal(boost::asio::io_service& io_service);
   ~console_signal();
@@ -98,5 +102,7 @@ std::size_t console_signal::cancel(boost::system::error_code& error)
 
 } // namespace windows
 } // namespace ma
+
+#endif // defined(MA_HAS_WINDOWS_CONSOLE_SIGNAL)
 
 #endif // MA_WINDOWS_CONSOLE_SIGNAL_HPP

@@ -5,6 +5,10 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#include <ma/windows/console_signal_service.hpp>
+
+#if defined(MA_HAS_WINDOWS_CONSOLE_SIGNAL)
+
 #include <windows.h>
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
@@ -15,7 +19,6 @@
 #include <ma/config.hpp>
 #include <ma/shared_ptr_factory.hpp>
 #include <ma/detail/sp_singleton.hpp>
-#include <ma/windows/console_signal_service.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)
 #include <utility>
@@ -214,6 +217,18 @@ console_signal_service::handler_base::handler_base(const this_type& other)
 {
 }
 
+console_signal_service::impl_base::impl_base()
+{
+}
+
+#if !defined(NDEBUG)
+
+console_signal_service::impl_base::~impl_base()
+{
+}
+
+#endif // !defined(NDEBUG)
+
 console_signal_service::handler_list_guard::~handler_list_guard()
 {
   for (handler_base* handler = list.front(); handler; )
@@ -278,7 +293,7 @@ void console_signal_service::construct(implementation_type& impl)
 
 void console_signal_service::destroy(implementation_type& impl)
 {  
-  handler_list_guard handlers;  
+  handler_list_guard handlers;
   {
     lock_guard lock(mutex_);
     if (!shutdown_)
@@ -369,3 +384,5 @@ void console_signal_service::deliver_signal()
 
 } // namespace windows
 } // namespace ma
+
+#endif // defined(MA_HAS_WINDOWS_CONSOLE_SIGNAL)
