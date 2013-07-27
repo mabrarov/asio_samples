@@ -30,6 +30,12 @@
     <Filter Include="Header Files\ma\detail">
       <UniqueIdentifier>{1f09bf5b-ede2-4efa-ab35-3c79a8ec75d1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\ma\windows">
+      <UniqueIdentifier>{f0679cea-3786-40f3-9e56-b89c27a349e6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ma\windows">
+      <UniqueIdentifier>{3ae2a8b0-7829-4b78-a8e4-37521ff216c5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\include\ma\cyclic_buffer.hpp">
@@ -146,6 +152,15 @@
     <ClInclude Include="..\..\..\include\ma\console_close_guard.hpp">
       <Filter>Header Files\ma</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\detail\sp_singleton.hpp">
+      <Filter>Header Files\ma\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\windows\console_signal.hpp">
+      <Filter>Header Files\ma\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\windows\console_signal_service.hpp">
+      <Filter>Header Files\ma\windows</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src\echo_server\main.cpp">
@@ -171,6 +186,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\src\ma\console_close_guard.cpp">
       <Filter>Source Files\ma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\ma\windows\console_signal_service.cpp">
+      <Filter>Source Files\ma\windows</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

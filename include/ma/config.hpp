@@ -142,4 +142,14 @@
 
 #endif
 
+#if defined(BOOST_WINDOWS)
+
+#define MA_HAS_WINDOWS_CONSOLE_SIGNAL 1
+
+#else  // defined(BOOST_WINDOWS)
+
+#undef MA_HAS_WINDOWS_CONSOLE_SIGNAL
+
+#endif // defined(BOOST_WINDOWS)
+
 #endif // MA_CONFIG_HPP

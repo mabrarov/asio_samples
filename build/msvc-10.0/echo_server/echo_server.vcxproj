@@ -383,6 +383,7 @@
     <ClInclude Include="..\..\..\include\ma\detail\handler_ptr.hpp" />
     <ClInclude Include="..\..\..\include\ma\detail\intrusive_list.hpp" />
     <ClInclude Include="..\..\..\include\ma\detail\service_base.hpp" />
+    <ClInclude Include="..\..\..\include\ma\detail\sp_singleton.hpp" />
     <ClInclude Include="..\..\..\include\ma\echo\server\error.hpp" />
     <ClInclude Include="..\..\..\include\ma\echo\server\pooled_session_factory.hpp" />
     <ClInclude Include="..\..\..\include\ma\echo\server\session_config.hpp" />
@@ -411,6 +412,8 @@
     <ClInclude Include="..\..\..\include\ma\steady_deadline_timer.hpp" />
     <ClInclude Include="..\..\..\include\ma\strand_wrapped_handler.hpp" />
     <ClInclude Include="..\..\..\include\ma\type_traits.hpp" />
+    <ClInclude Include="..\..\..\include\ma\windows\console_signal.hpp" />
+    <ClInclude Include="..\..\..\include\ma\windows\console_signal_service.hpp" />
     <ClInclude Include="..\..\..\src\echo_server\config.hpp" />
   </ItemGroup>
   <ItemGroup>
@@ -422,6 +425,7 @@
     <ClCompile Include="..\..\..\src\ma\echo\server\session.cpp" />
     <ClCompile Include="..\..\..\src\ma\echo\server\session_manager.cpp" />
     <ClCompile Include="..\..\..\src\ma\echo\server\simple_session_factory.cpp" />
+    <ClCompile Include="..\..\..\src\ma\windows\console_signal_service.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

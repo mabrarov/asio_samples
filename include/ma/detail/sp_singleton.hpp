@@ -120,7 +120,7 @@ template <typename Value>
 struct sp_singleton<Value>::static_data_factory
 {
 public:
-  void operator()();
+  void operator()() const;
 }; // struct sp_singleton<Value>::static_data_factory
 
 template <typename Value>
@@ -153,7 +153,7 @@ sp_singleton<Value>::get_instance(Factory factory)
 template <typename Value>
 typename sp_singleton<Value>::static_data&
 sp_singleton<Value>::get_static_data()
-{  
+{
   boost::call_once(static_data_init_flag_, static_data_factory());
   BOOST_ASSERT_MSG(static_data_,
       "Singleton static data wasn't initialized correctly");
@@ -174,7 +174,7 @@ sp_singleton<Value>::static_data::static_data()
 }
 
 template <typename Value>
-void sp_singleton<Value>::static_data_factory::operator()()
+void sp_singleton<Value>::static_data_factory::operator()() const
 {
   static static_data d;
   sp_singleton<Value>::static_data_ = &d;

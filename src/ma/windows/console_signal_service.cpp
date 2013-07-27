@@ -5,7 +5,7 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include <ma/windows/console_signal_service.hpp>
+#include <ma/config.hpp>
 
 #if defined(MA_HAS_WINDOWS_CONSOLE_SIGNAL)
 
@@ -19,6 +19,7 @@
 #include <ma/config.hpp>
 #include <ma/shared_ptr_factory.hpp>
 #include <ma/detail/sp_singleton.hpp>
+#include <ma/windows/console_signal_service.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)
 #include <utility>
@@ -69,7 +70,7 @@ struct console_signal_service::handler_list_guard : private boost::noncopyable
 public:
   ~handler_list_guard();
 
-  handler_list list;
+  handler_list value;
 }; // class console_signal_service::handler_list_guard
 
 class console_signal_service::post_adapter
@@ -231,9 +232,9 @@ console_signal_service::impl_base::~impl_base()
 
 console_signal_service::handler_list_guard::~handler_list_guard()
 {
-  for (handler_base* handler = list.front(); handler; )
+  for (handler_base* handler = value.front(); handler; )
   {
-    handler_base* next = list.next(*handler);
+    handler_base* next = value.next(*handler);
     handler->destroy();
     handler = next;
   }
@@ -261,9 +262,9 @@ console_signal_service::post_adapter::post_adapter(this_type&& other)
 
 void console_signal_service::post_adapter::operator()()
 {
-  while (handler_base* handler = handlers_->list.front())
+  while (handler_base* handler = handlers_->value.front())
   {
-    handlers_->list.pop_front();
+    handlers_->value.pop_front();
     handler->post(boost::system::error_code());
   }
 }
@@ -300,18 +301,18 @@ void console_signal_service::destroy(implementation_type& impl)
     {
       // Take ownership of waiting handlers
 #if defined(MA_HAS_RVALUE_REFS)
-      handlers.list = std::move(impl.handlers_);
+      handlers.value = std::move(impl.handlers_);
 #else
-      handlers.list.swap(impl.handlers_);
+      handlers.value.swap(impl.handlers_);
 #endif
       // Remove implementation from the list of active implementations.
       impl_list_.erase(impl);
     }
   }
   // Cancel all waiting handlers.
-  while (handler_base* handler = handlers.list.front())
+  while (handler_base* handler = handlers.value.front())
   {
-    handlers.list.pop_front();
+    handlers.value.pop_front();
     handler->post(boost::asio::error::operation_aborted);
   }  
 }
@@ -326,17 +327,17 @@ std::size_t console_signal_service::cancel(implementation_type& impl,
     {
       // Take ownership of waiting handlers
 #if defined(MA_HAS_RVALUE_REFS)
-      handlers.list = std::move(impl.handlers_);
+      handlers.value = std::move(impl.handlers_);
 #else
-      handlers.list.swap(impl.handlers_);
+      handlers.value.swap(impl.handlers_);
 #endif
     }
   }
   // Post all handlers to signal operation was aborted
   std::size_t handler_count = 0;
-  while (handler_base* handler = handlers.list.front())
+  while (handler_base* handler = handlers.value.front())
   {
-    handlers.list.pop_front();
+    handlers.value.pop_front();
     handler->post(boost::asio::error::operation_aborted);
     ++handler_count;
   }
@@ -355,7 +356,7 @@ void console_signal_service::shutdown_service()
     for (impl_base* impl = impl_list_.front(); impl;
         impl = impl_list_.next(*impl))
     {
-      handlers.list.insert_front(impl->handlers_);
+      handlers.value.insert_front(impl->handlers_);
     }
   }
 }
@@ -372,11 +373,11 @@ void console_signal_service::deliver_signal()
       for (impl_base* impl = impl_list_.front(); impl;
           impl = impl_list_.next(*impl))
       {      
-        handlers->list.insert_front(impl->handlers_);
+        handlers->value.insert_front(impl->handlers_);
       }
     }
   }
-  if (!handlers->list.empty())
+  if (!handlers->value.empty())
   {
     get_io_service().post(post_adapter(handlers));
   }
