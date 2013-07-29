@@ -7,7 +7,7 @@
 
 TEMPLATE  = app
 QT       -= core gui
-TARGET    = handler_storage_test
+TARGET    = windows_console_signal_test
 CONFIG   += console thread
 CONFIG   -= app_bundle
 
@@ -18,23 +18,20 @@ HEADERS  += ../../../include/ma/detail/binder.hpp \
             ../../../include/ma/detail/handler_ptr.hpp \
             ../../../include/ma/detail/intrusive_list.hpp \
             ../../../include/ma/detail/service_base.hpp \
+            ../../../include/ma/detail/sp_singleton.hpp \
+            ../../../include/ma/windows/console_signal.hpp \
+            ../../../include/ma/windows/console_signal_service.hpp \
             ../../../include/ma/bind_handler.hpp \
             ../../../include/ma/config.hpp \
-            ../../../include/ma/console_close_guard.hpp \
-            ../../../include/ma/context_alloc_handler.hpp \
-            ../../../include/ma/context_wrapped_handler.hpp \
             ../../../include/ma/custom_alloc_handler.hpp \
             ../../../include/ma/handler_alloc_helpers.hpp \
             ../../../include/ma/handler_allocator.hpp \
             ../../../include/ma/handler_cont_helpers.hpp \
             ../../../include/ma/handler_invoke_helpers.hpp \
-            ../../../include/ma/handler_storage.hpp \
-            ../../../include/ma/handler_storage_service.hpp \
-            ../../../include/ma/lockable_wrapped_handler.hpp \
-            ../../../include/ma/strand_wrapped_handler.hpp \
             ../../../include/ma/type_traits.hpp
 
-SOURCES  += ../../../src/handler_storage_test/main.cpp
+SOURCES  += ../../../src/ma/windows/console_signal_service.cpp \
+            ../../../src/windows_console_signal_test/main.cpp
 
 INCLUDEPATH += $${BOOST_INCLUDE} \
                ../../../include
