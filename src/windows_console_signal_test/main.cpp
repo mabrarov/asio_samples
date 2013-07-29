@@ -13,6 +13,14 @@
 #include <cstdlib>
 #include <exception>
 #include <iostream>
+#include <boost/ref.hpp>
+#include <boost/bind.hpp>
+#include <boost/asio.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
+#include <boost/system/error_code.hpp>
+#include <ma/config.hpp>
+#include <ma/windows/console_signal.hpp>
 
 namespace ma {
 namespace test {
@@ -50,9 +58,107 @@ namespace ma {
 namespace test {
 namespace windows_console_signal_destruction {
 
+#if defined(MA_HAS_WINDOWS_CONSOLE_SIGNAL)
+
+void handle_console_signal(const boost::system::error_code&)
+{
+  std::cout << "handle_console_signal" << std::endl;
+}
+
+typedef boost::shared_ptr<ma::windows::console_signal> console_signal_ptr;
+
+void handle_console_signal2(const console_signal_ptr&, 
+    const boost::system::error_code&)
+{
+  std::cout << "handle_console_signal2" << std::endl;
+}
+
+#endif // defined(MA_HAS_WINDOWS_CONSOLE_SIGNAL)
+
 void run_test()
 {
+#if defined(MA_HAS_WINDOWS_CONSOLE_SIGNAL)
+  {
+    boost::asio::io_service io_service;
+    ma::windows::console_signal s(io_service);
+  }
+  {
+    boost::asio::io_service io_service;
+    ma::windows::console_signal s1(io_service);
+    ma::windows::console_signal s2(io_service);
+  }
+  {
+    boost::asio::io_service io_service;
+    ma::windows::console_signal s1(io_service);
+    ma::windows::console_signal s2(io_service);
+    ma::windows::console_signal s3(io_service);
+  }
+  {
+    boost::asio::io_service io_service;
+    ma::windows::console_signal s(io_service);
+    s.async_wait(&handle_console_signal);    
+  }
+  {
+    boost::asio::io_service io_service;
+    ma::windows::console_signal s(io_service);
+    s.async_wait(&handle_console_signal);
+    s.async_wait(&handle_console_signal);    
+  }
+  {
+    boost::asio::io_service io_service;
+    ma::windows::console_signal s(io_service);
+    s.async_wait(&handle_console_signal);
+    s.async_wait(&handle_console_signal);
+    s.async_wait(&handle_console_signal);
+  }
+  {
+    boost::asio::io_service io_service;
+    ma::windows::console_signal s1(io_service);
+    ma::windows::console_signal s2(io_service);
+    s1.async_wait(&handle_console_signal);
+  }
+  {
+    boost::asio::io_service io_service;
+    ma::windows::console_signal s1(io_service);
+    ma::windows::console_signal s2(io_service);
+    s1.async_wait(&handle_console_signal);
+    s1.async_wait(&handle_console_signal);
+    s1.async_wait(&handle_console_signal);
+  }
+  {
+    boost::asio::io_service io_service;
+    ma::windows::console_signal s1(io_service);
+    ma::windows::console_signal s2(io_service);
+    s1.async_wait(&handle_console_signal);
+    s2.async_wait(&handle_console_signal);
+    s1.async_wait(&handle_console_signal);
+    s2.async_wait(&handle_console_signal);
+    s1.async_wait(&handle_console_signal);
+    s2.async_wait(&handle_console_signal);
+  }
+  {
+    boost::asio::io_service io_service;
+    {
+      console_signal_ptr s1 = 
+          boost::make_shared<ma::windows::console_signal>(
+              boost::ref(io_service));
+      console_signal_ptr s2 = 
+          boost::make_shared<ma::windows::console_signal>(
+              boost::ref(io_service));
+
+      s1->async_wait(boost::bind(handle_console_signal2, s1, _1));
+      s1->async_wait(boost::bind(handle_console_signal2, s1, _1));
+      s1->async_wait(boost::bind(handle_console_signal2, s1, _1));
+
+      s2->async_wait(boost::bind(handle_console_signal2, s2, _1));
+      s2->async_wait(boost::bind(handle_console_signal2, s2, _1));
+      s2->async_wait(boost::bind(handle_console_signal2, s2, _1));
+
+      s1->async_wait(boost::bind(handle_console_signal2, s2, _1));
+    }
+  }
   //todo
+#endif // defined(MA_HAS_WINDOWS_CONSOLE_SIGNAL)  
 }
 
 } // namespace windows_console_signal_destruction

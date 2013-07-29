@@ -142,14 +142,16 @@
 
 #endif
 
-#if defined(BOOST_WINDOWS)
+#if defined(BOOST_WINDOWS) && \
+    ((defined(WINVER) && (WINVER >= 0x0500)) \
+        || (defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x0500)))
 
 #define MA_HAS_WINDOWS_CONSOLE_SIGNAL 1
 
-#else  // defined(BOOST_WINDOWS)
+#else
 
 #undef MA_HAS_WINDOWS_CONSOLE_SIGNAL
 
-#endif // defined(BOOST_WINDOWS)
+#endif
 
 #endif // MA_CONFIG_HPP
