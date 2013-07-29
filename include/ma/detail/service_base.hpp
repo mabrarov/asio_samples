@@ -14,10 +14,6 @@
 
 #include <boost/asio.hpp>
 
-#if defined(MA_HAS_RVALUE_REFS)
-#include <utility>
-#endif // defined(MA_HAS_RVALUE_REFS)
-
 namespace ma {
 namespace detail {
 
