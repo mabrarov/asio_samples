@@ -170,9 +170,11 @@ void run_test()
 
       s1->async_wait(boost::bind(handle_console_signal2, s2, _1));
 
-      handler_allocator_ptr alloc2 = boost::make_shared<handler_allocator>();
-      s1->async_wait(ma::make_custom_alloc_handler(*alloc2,
-          boost::bind(handle_console_signal3, s1, alloc2, _1)));
+      {
+        handler_allocator_ptr alloc2 = boost::make_shared<handler_allocator>();
+        s1->async_wait(ma::make_custom_alloc_handler(*alloc2,
+            boost::bind(handle_console_signal3, s1, alloc2, _1)));
+      }
     }
   }
 #endif // defined(MA_HAS_WINDOWS_CONSOLE_SIGNAL)
