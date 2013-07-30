@@ -7,7 +7,6 @@
 
 #if defined(WIN32)
 #include <tchar.h>
-#include <windows.h>
 #endif
 
 #include <cstdlib>
@@ -35,10 +34,8 @@
 #include <ma/lockable_wrapped_handler.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)
-
 #include <utility>
-
-#endif
+#endif // defined(MA_HAS_RVALUE_REFS)
 
 namespace ma {
 namespace test {
