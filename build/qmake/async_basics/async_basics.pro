@@ -18,6 +18,9 @@ HEADERS  += ../../../include/ma/detail/binder.hpp \
             ../../../include/ma/detail/handler_ptr.hpp \
             ../../../include/ma/detail/intrusive_list.hpp \
             ../../../include/ma/detail/service_base.hpp \
+            ../../../include/ma/detail/sp_singleton.hpp \
+            ../../../include/ma/windows/console_signal.hpp \
+            ../../../include/ma/windows/console_signal_service.hpp \
             ../../../include/ma/tutorial/async_interface.hpp \
             ../../../include/ma/tutorial/async_implementation.hpp \
             ../../../include/ma/bind_handler.hpp \
@@ -38,6 +41,7 @@ HEADERS  += ../../../include/ma/detail/binder.hpp \
             ../../../include/ma/type_traits.hpp
 
 SOURCES  += ../../../src/ma/tutorial/async_implementation.cpp \
+            ../../../src/ma/windows/console_signal_service.cpp \
             ../../../src/ma/console_close_guard.cpp \
             ../../../src/async_basics/main.cpp
 

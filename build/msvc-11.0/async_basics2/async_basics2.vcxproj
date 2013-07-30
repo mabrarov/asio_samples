@@ -214,6 +214,7 @@
     <ClCompile Include="..\..\..\src\async_basics2\main.cpp" />
     <ClCompile Include="..\..\..\src\ma\console_close_guard.cpp" />
     <ClCompile Include="..\..\..\src\ma\tutorial2\async_implementation.cpp" />
+    <ClCompile Include="..\..\..\src\ma\windows\console_signal_service.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\include\ma\bind_handler.hpp" />
@@ -226,6 +227,7 @@
     <ClInclude Include="..\..\..\include\ma\detail\handler_ptr.hpp" />
     <ClInclude Include="..\..\..\include\ma\detail\intrusive_list.hpp" />
     <ClInclude Include="..\..\..\include\ma\detail\service_base.hpp" />
+    <ClInclude Include="..\..\..\include\ma\detail\sp_singleton.hpp" />
     <ClInclude Include="..\..\..\include\ma\handler_allocator.hpp" />
     <ClInclude Include="..\..\..\include\ma\handler_alloc_helpers.hpp" />
     <ClInclude Include="..\..\..\include\ma\handler_cont_helpers.hpp" />
@@ -240,6 +242,8 @@
     <ClInclude Include="..\..\..\include\ma\tutorial2\do_something_handler.hpp" />
     <ClInclude Include="..\..\..\include\ma\tutorial2\do_something_handler_fwd.hpp" />
     <ClInclude Include="..\..\..\include\ma\type_traits.hpp" />
+    <ClInclude Include="..\..\..\include\ma\windows\console_signal.hpp" />
+    <ClInclude Include="..\..\..\include\ma\windows\console_signal_service.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

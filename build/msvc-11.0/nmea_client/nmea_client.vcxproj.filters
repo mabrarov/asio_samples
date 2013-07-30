@@ -24,6 +24,12 @@
     <Filter Include="Header Files\ma\detail">
       <UniqueIdentifier>{2095eb3f-5ba4-40c3-b597-c1bbfe9cc1f4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\ma\windows">
+      <UniqueIdentifier>{22bf1e50-21d1-4430-bd4b-ee6c3fbaec39}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ma\windows">
+      <UniqueIdentifier>{0eaa8c8d-e058-41a6-83c3-191bf450cf71}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src\nmea_client\main.cpp">
@@ -37,6 +43,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\src\ma\console_close_guard.cpp">
       <Filter>Source Files\ma</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\ma\windows\console_signal_service.cpp">
+      <Filter>Source Files\ma\windows</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -114,6 +123,15 @@
     </ClInclude>
     <ClInclude Include="..\..\..\include\ma\handler_cont_helpers.hpp">
       <Filter>Header Files\ma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\detail\sp_singleton.hpp">
+      <Filter>Header Files\ma\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\windows\console_signal.hpp">
+      <Filter>Header Files\ma\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\ma\windows\console_signal_service.hpp">
+      <Filter>Header Files\ma\windows</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

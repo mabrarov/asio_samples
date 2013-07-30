@@ -15,4 +15,6 @@ SUBDIRS  = asio_performance_test_client\
            echo_server \
            nmea_client \
            qt_echo_server \
-           shared_ptr_factory_test
+           shared_ptr_factory_test \
+           windows_console_signal_test
+

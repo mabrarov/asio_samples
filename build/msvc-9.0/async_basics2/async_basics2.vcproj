@@ -361,6 +361,14 @@
 						>
 					</File>
 				</Filter>
+				<Filter
+					Name="windows"
+					>
+					<File
+						RelativePath="..\..\..\src\ma\windows\console_signal_service.cpp"
+						>
+					</File>
+				</Filter>
 			</Filter>
 		</Filter>
 		<Filter
@@ -472,6 +480,22 @@
 					</File>
 					<File
 						RelativePath="..\..\..\include\ma\detail\service_base.hpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\..\include\ma\detail\sp_singleton.hpp"
+						>
+					</File>
+				</Filter>
+				<Filter
+					Name="windows"
+					>
+					<File
+						RelativePath="..\..\..\include\ma\windows\console_signal.hpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\..\include\ma\windows\console_signal_service.hpp"
 						>
 					</File>
 				</Filter>

@@ -6,10 +6,12 @@
 //
 
 #include <csignal>
+#include <boost/config.hpp>
 #include <boost/bind.hpp>
 #include <boost/asio.hpp>
 #include <boost/thread/thread.hpp>
 #include <ma/console_close_guard.hpp>
+#include <ma/windows/console_signal.hpp>
 
 namespace {
 
@@ -75,18 +77,22 @@ class console_close_guard::implementation : private console_close_guard_base_2
 public:
   implementation(const ctrl_function_type& ctrl_function)
     : console_close_guard_base_2()
-    , signal_set_(io_service_, SIGINT, SIGTERM)
+#if defined(MA_HAS_WINDOWS_CONSOLE_SIGNAL)
+    , signals_(io_service_)
+#else
+    , signals_(io_service_, SIGINT, SIGTERM)
+#endif
   {
-#if defined(SIGQUIT)
-    signal_set_.add(SIGQUIT);
-#endif // defined(SIGQUIT)
-    signal_set_.async_wait(boost::bind(&handle_signal, _1, ctrl_function));
+#if !defined(MA_HAS_WINDOWS_CONSOLE_SIGNAL) && defined(SIGQUIT)
+    signals_.add(SIGQUIT);
+#endif
+    signals_.async_wait(boost::bind(&handle_signal, _1, ctrl_function));
   }
 
   ~implementation()
   {
     boost::system::error_code ignored;
-    signal_set_.cancel(ignored);
+    signals_.cancel(ignored);
   }  
   
 private:
@@ -99,7 +105,11 @@ private:
     }
   }
 
-  boost::asio::signal_set signal_set_;
+#if defined(MA_HAS_WINDOWS_CONSOLE_SIGNAL)
+  ma::windows::console_signal signals_;
+#else
+  boost::asio::signal_set signals_;
+#endif
 }; // class console_close_guard::implementation
 
 console_close_guard::console_close_guard(

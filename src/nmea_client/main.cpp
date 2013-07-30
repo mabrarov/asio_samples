@@ -7,7 +7,6 @@
 
 #if defined(WIN32)
 #include <tchar.h>
-#include <windows.h>
 #endif
 
 #include <cstdlib>

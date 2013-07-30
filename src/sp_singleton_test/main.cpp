@@ -7,7 +7,6 @@
 
 #if defined(WIN32)
 #include <tchar.h>
-#include <windows.h>
 #endif
 
 #include <cstdlib>
@@ -16,6 +15,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <exception>
 #include <boost/cstdint.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>

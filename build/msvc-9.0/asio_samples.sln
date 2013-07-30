@@ -14,6 +14,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "asio_performance_test_clien
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "handler_storage_test", "handler_storage_test\handler_storage_test.vcproj", "{C41F6EDC-F8B1-4B64-9A17-D43D8696D7B1}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "windows_console_signal_test", "windows_console_signal_test\windows_console_signal_test.vcproj", "{5FB1B7B1-5D9C-415A-AC9E-2566398E06F7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -78,6 +80,14 @@ Global
 		{C41F6EDC-F8B1-4B64-9A17-D43D8696D7B1}.Release|Win32.Build.0 = Release|Win32
 		{C41F6EDC-F8B1-4B64-9A17-D43D8696D7B1}.Release|x64.ActiveCfg = Release|x64
 		{C41F6EDC-F8B1-4B64-9A17-D43D8696D7B1}.Release|x64.Build.0 = Release|x64
+		{5FB1B7B1-5D9C-415A-AC9E-2566398E06F7}.Debug|Win32.ActiveCfg = Debug|Win32
+		{5FB1B7B1-5D9C-415A-AC9E-2566398E06F7}.Debug|Win32.Build.0 = Debug|Win32
+		{5FB1B7B1-5D9C-415A-AC9E-2566398E06F7}.Debug|x64.ActiveCfg = Debug|x64
+		{5FB1B7B1-5D9C-415A-AC9E-2566398E06F7}.Debug|x64.Build.0 = Debug|x64
+		{5FB1B7B1-5D9C-415A-AC9E-2566398E06F7}.Release|Win32.ActiveCfg = Release|Win32
+		{5FB1B7B1-5D9C-415A-AC9E-2566398E06F7}.Release|Win32.Build.0 = Release|Win32
+		{5FB1B7B1-5D9C-415A-AC9E-2566398E06F7}.Release|x64.ActiveCfg = Release|x64
+		{5FB1B7B1-5D9C-415A-AC9E-2566398E06F7}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -34,6 +34,9 @@ HEADERS  += ../../../include/ma/echo/server/session_config_fwd.hpp \
             ../../../include/ma/detail/handler_ptr.hpp \
             ../../../include/ma/detail/intrusive_list.hpp \
             ../../../include/ma/detail/service_base.hpp \
+            ../../../include/ma/detail/sp_singleton.hpp \
+            ../../../include/ma/windows/console_signal.hpp \
+            ../../../include/ma/windows/console_signal_service.hpp \
             ../../../include/ma/bind_handler.hpp \
             ../../../include/ma/config.hpp \
             ../../../include/ma/console_close_guard.hpp \
@@ -59,6 +62,7 @@ SOURCES  += ../../../src/ma/echo/server/error.cpp \
             ../../../src/ma/echo/server/session_manager.cpp \
             ../../../src/ma/echo/server/pooled_session_factory.cpp \
             ../../../src/ma/echo/server/simple_session_factory.cpp \
+            ../../../src/ma/windows/console_signal_service.cpp \
             ../../../src/ma/console_close_guard.cpp \
             ../../../src/echo_server/config.cpp \
             ../../../src/echo_server/main.cpp
