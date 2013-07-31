@@ -161,6 +161,8 @@ protected:
   virtual ~console_signal_service();
 
 private:
+  typedef std::size_t queued_signals_counter;
+
   struct handler_list_guard;
   class post_adapter; 
 
@@ -177,6 +179,7 @@ private:
   mutex_type mutex_;
   // Double-linked intrusive list of active implementations.
   impl_base_list impl_list_;
+  queued_signals_counter queued_signals_;
   // Shutdown state flag.
   bool shutdown_;
   system_service_ptr system_service_;
@@ -237,6 +240,12 @@ void console_signal_service::async_wait(
   {
     get_io_service().post(
         bind_handler(handler, boost::asio::error::operation_aborted));
+    return;
+  }
+  if (queued_signals_)
+  {
+    --queued_signals_;
+    get_io_service().post(bind_handler(handler, boost::system::error_code()));
     return;
   }
 

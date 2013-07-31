@@ -10,6 +10,7 @@
 #if defined(MA_HAS_WINDOWS_CONSOLE_SIGNAL)
 
 #include <windows.h>
+#include <limits>
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
@@ -272,6 +273,7 @@ void console_signal_service::post_adapter::operator()()
 console_signal_service::console_signal_service(
     boost::asio::io_service& io_service)
   : detail::service_base<console_signal_service>(io_service)  
+  , queued_signals_(0)
   , shutdown_(false)
   , system_service_(system_service::get_instance())
 {
@@ -365,21 +367,27 @@ void console_signal_service::deliver_signal()
 {
   post_adapter::handler_list_guard_ptr handlers =
       boost::make_shared<handler_list_guard>();
-  {  
-    lock_guard lock(mutex_);
-    if (!shutdown_)
+  lock_guard lock(mutex_);
+  if (!shutdown_)
+  {
+    // Take ownership of all still active handlers.
+    for (impl_base* impl = impl_list_.front(); impl;
+        impl = impl_list_.next(*impl))
+    {      
+      handlers->value.insert_front(impl->handlers_);
+    }
+    if (handlers->value.empty())
     {
-      // Take ownership of all still active handlers.
-      for (impl_base* impl = impl_list_.front(); impl;
-          impl = impl_list_.next(*impl))
-      {      
-        handlers->value.insert_front(impl->handlers_);
+      if ((std::numeric_limits<queued_signals_counter>::max)() 
+          != queued_signals_)
+      {
+        ++queued_signals_;
       }
     }
-  }
-  if (!handlers->value.empty())
-  {
-    get_io_service().post(post_adapter(handlers));
+    else
+    {
+      get_io_service().post(post_adapter(handlers));
+    }
   }
 }
 
