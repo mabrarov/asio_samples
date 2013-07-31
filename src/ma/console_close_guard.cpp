@@ -5,7 +5,10 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
+#if !defined(MA_HAS_WINDOWS_CONSOLE_SIGNAL)
 #include <csignal>
+#endif
+
 #include <boost/config.hpp>
 #include <boost/ref.hpp>
 #include <boost/bind.hpp>
@@ -20,7 +23,7 @@ class console_close_guard_base_0 : private boost::noncopyable
 {
 public:
   console_close_guard_base_0()
-    : io_service_()
+    : io_service_(1)
   {
   }
 
@@ -35,25 +38,10 @@ protected:
 class console_close_guard_base_1 : public console_close_guard_base_0
 {
 public:
-  console_close_guard_base_1()
+  typedef ma::console_close_guard::ctrl_function_type ctrl_function_type;
+
+  explicit console_close_guard_base_1(const ctrl_function_type& ctrl_function)
     : console_close_guard_base_0()
-    , work_guard_(io_service_)
-  {
-  }
-
-protected:
-  ~console_close_guard_base_1()
-  {
-  }
-
-  boost::asio::io_service::work work_guard_;
-}; // console_close_guard_base_1
-
-class console_close_guard_base_2 : public console_close_guard_base_1
-{
-public:
-  console_close_guard_base_2()
-    : console_close_guard_base_1()
 #if defined(MA_HAS_WINDOWS_CONSOLE_SIGNAL)
     , signal_alerter_(io_service_)
 #else
@@ -63,9 +51,15 @@ public:
 #if !defined(MA_HAS_WINDOWS_CONSOLE_SIGNAL) && defined(SIGQUIT)
     signal_alerter_.add(SIGQUIT);
 #endif
+    start_wait(signal_alerter_, ctrl_function);
   }
 
-protected:  
+protected:
+  ~console_close_guard_base_1()
+  {
+  }
+
+private:
 
 #if defined(MA_HAS_WINDOWS_CONSOLE_SIGNAL)
   typedef ma::windows::console_signal signal_alerter;
@@ -73,47 +67,6 @@ protected:
   typedef boost::asio::signal_set     signal_alerter;
 #endif
 
-  ~console_close_guard_base_2()
-  {
-  }
-
-  signal_alerter signal_alerter_;
-}; // console_close_guard_base_2
-
-class console_close_guard_base_3 : public console_close_guard_base_2
-{
-public:
-  console_close_guard_base_3()
-    : console_close_guard_base_2()
-    , work_thread_(boost::bind(&boost::asio::io_service::run, 
-          boost::ref(io_service_)))
-  {
-  }
-
-protected:
-  ~console_close_guard_base_3()
-  {
-    io_service_.stop();
-    work_thread_.join();
-  }
-
-  boost::thread work_thread_;
-}; // console_close_guard_base_3
-
-} // anonymous namespace
-
-namespace ma {
-
-class console_close_guard::implementation : private console_close_guard_base_3
-{
-public:
-  implementation(const ctrl_function_type& ctrl_function)
-    : console_close_guard_base_3()
-  {
-    start_wait(signal_alerter_, ctrl_function);
-  }
-  
-private:
   static void handle_signal(const boost::system::error_code& error,
       signal_alerter& alerter, ctrl_function_type ctrl_function)
   {
@@ -130,6 +83,32 @@ private:
     alerter.async_wait(
         boost::bind(&handle_signal, _1, boost::ref(alerter), ctrl_function));
   }
+
+  signal_alerter signal_alerter_;
+}; // console_close_guard_base_1
+
+} // anonymous namespace
+
+namespace ma {
+
+class console_close_guard::implementation : private console_close_guard_base_1
+{
+public:
+  explicit implementation(const ctrl_function_type& ctrl_function)
+    : console_close_guard_base_1(ctrl_function)
+    , work_thread_(boost::bind(&boost::asio::io_service::run, 
+          boost::ref(io_service_)))
+  {    
+  }
+
+  ~implementation()
+  {
+    io_service_.stop();
+    work_thread_.join();
+  }
+  
+private:
+  boost::thread work_thread_;
 }; // class console_close_guard::implementation
 
 console_close_guard::console_close_guard(
