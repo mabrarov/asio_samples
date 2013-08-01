@@ -2376,7 +2376,7 @@
   </ImportGroup>
   <ProjectExtensions>
     <VisualStudio>
-      <UserProperties UicDir=".\GeneratedFiles\$(PlatformName)" MocDir=".\GeneratedFiles\$(ConfigurationName)\$(PlatformName)" MocOptions="" RccDir=".\GeneratedFiles\$(PlatformName)" lupdateOnBuild="0" QtVersion_x0020_Win32="Qt 4.8.4 static" QtVersion_x0020_x64="Qt 4.8.4 amd64 static" Qt5Version_x0020_Win32="5.0.2 shared" Qt5Version_x0020_x64="5.0.2 shared x64" />
+      <UserProperties UicDir=".\GeneratedFiles\$(PlatformName)" MocDir=".\GeneratedFiles\$(ConfigurationName)\$(PlatformName)" MocOptions="" RccDir=".\GeneratedFiles\$(PlatformName)" lupdateOnBuild="0" QtVersion_x0020_Win32="Qt 4.8.4 static" QtVersion_x0020_x64="Qt 4.8.4 amd64 static" Qt5Version_x0020_Win32="5.1.0 shared" Qt5Version_x0020_x64="5.1.0 shared x64" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>

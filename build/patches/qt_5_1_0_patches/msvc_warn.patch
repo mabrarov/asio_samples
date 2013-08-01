@@ -1,0 +1,669 @@
+--- qtbase/src/corelib/tools/qhash.h	Âò èþë  2 10:10:02 2013
++++ qtbase/src/corelib/tools/qhash.h	×ò èþë  4 02:35:48 2013
+@@ -69,7 +69,18 @@
+ inline uint qHash(int key, uint seed = 0) Q_DECL_NOTHROW { return uint(key) ^ seed; }
+ inline uint qHash(ulong key, uint seed = 0) Q_DECL_NOTHROW
+ {
++
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4127)
++#endif
++
+     if (sizeof(ulong) > sizeof(uint)) {
++
++#if defined(_MSC_VER)
++#pragma warning(pop)
++#endif
++
+         return uint(((key >> (8 * sizeof(uint) - 1)) ^ key) & (~0U)) ^ seed;
+     } else {
+         return uint(key & (~0U)) ^ seed;
+@@ -78,7 +89,18 @@
+ inline uint qHash(long key, uint seed = 0) Q_DECL_NOTHROW { return qHash(ulong(key), seed); }
+ inline uint qHash(quint64 key, uint seed = 0) Q_DECL_NOTHROW
+ {
++
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4127)
++#endif
++
+     if (sizeof(quint64) > sizeof(uint)) {
++
++#if defined(_MSC_VER)
++#pragma warning(pop)
++#endif
++
+         return uint(((key >> (8 * sizeof(uint) - 1)) ^ key) & (~0U)) ^ seed;
+     } else {
+         return uint(key & (~0U)) ^ seed;
+@@ -533,7 +555,18 @@
+ Q_INLINE_TEMPLATE void QHash<Key, T>::duplicateNode(QHashData::Node *node, void *newNode)
+ {
+     Node *concreteNode = concrete(node);
++
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4127)
++#endif
++
+     if (QTypeInfo<T>::isDummy) {
++
++#if defined(_MSC_VER)
++#pragma warning(pop)
++#endif
++
+         (void) new (newNode) DummyNode(concreteNode->key, concreteNode->h, 0);
+     } else {
+         (void) new (newNode) Node(concreteNode->key, concreteNode->value, concreteNode->h, 0);
+@@ -546,7 +579,17 @@
+ {
+     Node *node;
+ 
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4127)
++#endif
++
+     if (QTypeInfo<T>::isDummy) {
++
++#if defined(_MSC_VER)
++#pragma warning(pop)
++#endif
++
+         node = reinterpret_cast<Node *>(new (d->allocateNode(alignOfDummyNode())) DummyNode(akey, ah, *anextNode));
+     } else {
+         node = new (d->allocateNode(alignOfNode())) Node(akey, avalue, ah, *anextNode);
+@@ -584,9 +627,19 @@
+ template <class Key, class T>
+ Q_OUTOFLINE_TEMPLATE void QHash<Key, T>::detach_helper()
+ {
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4127)
++#endif
++
+     QHashData *x = d->detach_helper(duplicateNode, deleteNode2,
+         QTypeInfo<T>::isDummy ? sizeof(DummyNode) : sizeof(Node),
+         QTypeInfo<T>::isDummy ? alignOfDummyNode() : alignOfNode());
++
++#if defined(_MSC_VER)
++#pragma warning(pop)
++#endif
++
+     if (!d->ref.deref())
+         freeData(d);
+     d = x;
+@@ -768,7 +821,17 @@
+         return iterator(createNode(h, akey, avalue, node));
+     }
+ 
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4127)
++#endif
++
+     if (!QTypeInfo<T>::isDummy)
++
++#if defined(_MSC_VER)
++#pragma warning(pop)
++#endif
++
+         (*node)->value = avalue;
+     return iterator(*node);
+ }
+@@ -919,7 +982,18 @@
+         do {
+             if (it2 == other.end() || !(it2.key() == akey))
+                 return false;
++
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4127)
++#endif
++
+             if (!QTypeInfo<T>::isDummy && !(it.value() == it2.value()))
++
++#if defined(_MSC_VER)
++#pragma warning(pop)
++#endif
++
+                 return false;
+             ++it;
+             ++it2;
+
+--- qtbase/src/corelib/tools/qlist.h	Âò èþë  2 10:10:02 2013
++++ qtbase/src/corelib/tools/qlist.h	×ò èþë  4 02:50:16 2013
+@@ -102,9 +102,20 @@
+         Q_INLINE_TEMPLATE T &t();
+ #else
+         Q_INLINE_TEMPLATE T &t()
++
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4127)
++#endif
++
+         { return *reinterpret_cast<T*>(QTypeInfo<T>::isLarge || QTypeInfo<T>::isStatic
+                                        ? v : this); }
++
++#if defined(_MSC_VER)
++#pragma warning(pop)
+ #endif
++
++#endif
+     };
+ 
+     union { QListData p; QListData::Data *d; };
+@@ -351,14 +362,35 @@
+ #if defined(Q_CC_BOR)
+ template <typename T>
+ Q_INLINE_TEMPLATE T &QList<T>::Node::t()
++
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4127)
++#endif
++
+ { return QTypeInfo<T>::isLarge || QTypeInfo<T>::isStatic ? *(T*)v:*(T*)this; }
++
++#if defined(_MSC_VER)
++#pragma warning(pop)
+ #endif
+ 
++#endif
++
+ template <typename T>
+ Q_INLINE_TEMPLATE void QList<T>::node_construct(Node *n, const T &t)
+ {
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4127)
++#endif
++
+     if (QTypeInfo<T>::isLarge || QTypeInfo<T>::isStatic) n->v = new T(t);
+     else if (QTypeInfo<T>::isComplex) new (n) T(t);
++
++#if defined(_MSC_VER)
++#pragma warning(pop)
++#endif
++
+ #if (defined(__GNUC__) || defined(__INTEL_COMPILER) || defined(__IBMCPP__)) && !defined(__OPTIMIZE__)
+     // This violates pointer aliasing rules, but it is known to be safe (and silent)
+     // in unoptimized GCC builds (-fno-strict-aliasing). The other compilers which
+@@ -373,15 +405,35 @@
+ template <typename T>
+ Q_INLINE_TEMPLATE void QList<T>::node_destruct(Node *n)
+ {
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4127)
++#endif
++
+     if (QTypeInfo<T>::isLarge || QTypeInfo<T>::isStatic) delete reinterpret_cast<T*>(n->v);
+     else if (QTypeInfo<T>::isComplex) reinterpret_cast<T*>(n)->~T();
++
++#if defined(_MSC_VER)
++#pragma warning(pop)
++#endif
+ }
+ 
+ template <typename T>
+ Q_INLINE_TEMPLATE void QList<T>::node_copy(Node *from, Node *to, Node *src)
+ {
+     Node *current = from;
++
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4127)
++#endif
++
+     if (QTypeInfo<T>::isLarge || QTypeInfo<T>::isStatic) {
++
++#if defined(_MSC_VER)
++#pragma warning(pop)
++#endif
++
+         QT_TRY {
+             while(current != to) {
+                 current->v = new T(*reinterpret_cast<T*>(src->v));
+@@ -394,7 +446,17 @@
+             QT_RETHROW;
+         }
+ 
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4127)
++#endif
++
+     } else if (QTypeInfo<T>::isComplex) {
++
++#if defined(_MSC_VER)
++#pragma warning(pop)
++#endif
++
+         QT_TRY {
+             while(current != to) {
+                 new (current) T(*reinterpret_cast<T*>(src));
+@@ -415,9 +477,30 @@
+ template <typename T>
+ Q_INLINE_TEMPLATE void QList<T>::node_destruct(Node *from, Node *to)
+ {
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4127)
++#endif
++
+     if (QTypeInfo<T>::isLarge || QTypeInfo<T>::isStatic)
++
++#if defined(_MSC_VER)
++#pragma warning(pop)
++#endif
++
+         while(from != to) --to, delete reinterpret_cast<T*>(to->v);
++
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4127)
++#endif
++
+     else if (QTypeInfo<T>::isComplex)
++
++#if defined(_MSC_VER)
++#pragma warning(pop)
++#endif
++
+         while (from != to) --to, reinterpret_cast<T*>(to)->~T();
+ }
+ 
+@@ -498,7 +581,17 @@
+             QT_RETHROW;
+         }
+     } else {
++
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4127)
++#endif
+         if (QTypeInfo<T>::isLarge || QTypeInfo<T>::isStatic) {
++
++#if defined(_MSC_VER)
++#pragma warning(pop)
++#endif
++
+             Node *n = reinterpret_cast<Node *>(p.append());
+             QT_TRY {
+                 node_construct(n, t);
+@@ -532,7 +625,18 @@
+             QT_RETHROW;
+         }
+     } else {
++
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4127)
++#endif
++
+         if (QTypeInfo<T>::isLarge || QTypeInfo<T>::isStatic) {
++
++#if defined(_MSC_VER)
++#pragma warning(pop)
++#endif
++
+             Node *n = reinterpret_cast<Node *>(p.prepend());
+             QT_TRY {
+                 node_construct(n, t);
+@@ -566,7 +670,18 @@
+             QT_RETHROW;
+         }
+     } else {
++
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4127)
++#endif
++
+         if (QTypeInfo<T>::isLarge || QTypeInfo<T>::isStatic) {
++
++#if defined(_MSC_VER)
++#pragma warning(pop)
++#endif
++
+             Node *n = reinterpret_cast<Node *>(p.insert(i));
+             QT_TRY {
+                 node_construct(n, t);
+
+--- qtbase/src/corelib/tools/qmap.h	Âò èþë  2 10:10:02 2013
++++ qtbase/src/corelib/tools/qmap.h	×ò èþë  4 02:52:46 2013
+@@ -263,11 +263,43 @@
+ template <class Key, class T>
+ void QMapNode<Key, T>::destroySubTree()
+ {
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4127)
++#endif
++
+     if (QTypeInfo<Key>::isComplex)
++
++#if defined(_MSC_VER)
++#pragma warning(pop)
++#endif
++
+         key.~Key();
++
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4127)
++#endif
++
+     if (QTypeInfo<T>::isComplex)
++
++#if defined(_MSC_VER)
++#pragma warning(pop)
++#endif
++
+         value.~T();
++
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4127)
++#endif
++
+     if (QTypeInfo<Key>::isComplex || QTypeInfo<T>::isComplex) {
++
++#if defined(_MSC_VER)
++#pragma warning(pop)
++#endif
++
+         if (left)
+             leftNode()->destroySubTree();
+         if (right)
+@@ -278,9 +310,30 @@
+ template <class Key, class T>
+ void QMapData<Key, T>::deleteNode(QMapNode<Key, T> *z)
+ {
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4127)
++#endif
++
+     if (QTypeInfo<Key>::isComplex)
++
++#if defined(_MSC_VER)
++#pragma warning(pop)
++#endif
++
+         z->key.~Key();
++
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4127)
++#endif
++
+     if (QTypeInfo<T>::isComplex)
++
++#if defined(_MSC_VER)
++#pragma warning(pop)
++#endif
++
+         z->value.~T();
+     freeNodeAndRebalance(z);
+ }
+
+--- qtbase/src/corelib/kernel/qobject_impl.h	Âò èþë  2 10:10:02 2013
++++ qtbase/src/corelib/kernel/qobject_impl.h	×ò èþë  4 03:12:46 2013
+@@ -104,6 +104,12 @@
+ #endif
+ 
+     // internal base class (interface) containing functions required to call a slot managed by a pointer to function.
++
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4512)
++#endif
++
+     class QSlotObjectBase {
+         QAtomicInt m_ref;
+         // don't use virtual functions here; we don't want the
+@@ -131,6 +137,11 @@
+     protected:
+         ~QSlotObjectBase() {}
+     };
++
++#if defined(_MSC_VER)
++#pragma warning(pop)
++#endif
++
+     // implementation of QSlotObjectBase for which the slot is a pointer to member function of a QObject
+     // Args and R are the List of arguments and the returntype of the signal to which the slot is connected.
+     template<typename Func, typename Args, typename R> class QSlotObject : public QSlotObjectBase
+
+--- qtbase/src/corelib/tools/qstring.h	Âò èþë  2 10:10:02 2013
++++ qtbase/src/corelib/tools/qstring.h	×ò èþë  4 02:56:17 2013
+@@ -821,7 +821,18 @@
+ 
+ inline int QString::toWCharArray(wchar_t *array) const
+ {
++
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4127)
++#endif
++
+     if (sizeof(wchar_t) == sizeof(QChar)) {
++
++#if defined(_MSC_VER)
++#pragma warning(pop)
++#endif
++
+         memcpy(array, d->data(), sizeof(QChar) * size());
+         return size();
+     }
+
+--- qtbase/src/corelib/tools/qvector.h	Âò èþë  2 10:10:02 2013
++++ qtbase/src/corelib/tools/qvector.h	×ò èþë  4 03:01:10 2013
+@@ -249,7 +249,18 @@
+ template <typename T>
+ void QVector<T>::defaultConstruct(T *from, T *to)
+ {
++
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4127)
++#endif
++
+     if (QTypeInfo<T>::isComplex) {
++
++#if defined(_MSC_VER)
++#pragma warning(pop)
++#endif
++
+         while (from != to) {
+             new (from++) T();
+         }
+@@ -265,7 +276,17 @@
+ template <typename T>
+ void QVector<T>::copyConstruct(const T *srcFrom, const T *srcTo, T *dstFrom)
+ {
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4127)
++#endif
++
+     if (QTypeInfo<T>::isComplex) {
++
++#if defined(_MSC_VER)
++#pragma warning(pop)
++#endif
++
+         while (srcFrom != srcTo)
+             new (dstFrom++) T(*srcFrom++);
+     } else {
+@@ -276,7 +297,18 @@
+ template <typename T>
+ void QVector<T>::destruct(T *from, T *to)
+ {
++
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4127)
++#endif
++
+     if (QTypeInfo<T>::isComplex) {
++
++#if defined(_MSC_VER)
++#pragma warning(pop)
++#endif
++
+         while (from != to) {
+             from++->~T();
+         }
+@@ -463,7 +495,17 @@
+                 T *srcEnd = asize > d->size ? d->end() : d->begin() + asize;
+                 T *dst = x->begin();
+ 
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4127)
++#endif
++
+                 if (QTypeInfo<T>::isStatic || (isShared && QTypeInfo<T>::isComplex)) {
++
++#if defined(_MSC_VER)
++#pragma warning(pop)
++#endif
++
+                     // we can not move the data, we need to copy construct it
+                     while (srcBegin != srcEnd) {
+                         new (dst++) T(*srcBegin++);
+@@ -508,7 +550,18 @@
+     }
+     if (d != x) {
+         if (!d->ref.deref()) {
++
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4127)
++#endif
++
+             if (QTypeInfo<T>::isStatic || !aalloc || (isShared && QTypeInfo<T>::isComplex)) {
++
++#if defined(_MSC_VER)
++#pragma warning(pop)
++#endif
++
+                 // data was copy constructed, we need to call destructors
+                 // or if !alloc we did nothing to the old 'd'.
+                 freeData(d);
+@@ -550,7 +603,18 @@
+         QArrayData::AllocationOptions opt(isTooSmall ? QArrayData::Grow : QArrayData::Default);
+         reallocData(d->size, isTooSmall ? d->size + 1 : d->alloc, opt);
+     }
++
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4127)
++#endif
++
+     if (QTypeInfo<T>::isComplex)
++
++#if defined(_MSC_VER)
++#pragma warning(pop)
++#endif
++
+         new (d->end()) T(copy);
+     else
+         *d->end() = copy;
+@@ -567,7 +631,18 @@
+             reallocData(d->size - 1, int(d->alloc));
+             return;
+         }
++
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4127)
++#endif
++
+         if (QTypeInfo<T>::isComplex)
++
++#if defined(_MSC_VER)
++#pragma warning(pop)
++#endif
++
+             (d->data() + d->size - 1)->~T();
+         --d->size;
+     }
+@@ -581,7 +656,18 @@
+         const T copy(t);
+         if (!isDetached() || d->size + n > int(d->alloc))
+             reallocData(d->size, d->size + n, QArrayData::Grow);
++
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4127)
++#endif
++
+         if (QTypeInfo<T>::isStatic) {
++
++#if defined(_MSC_VER)
++#pragma warning(pop)
++#endif
++
+             T *b = d->end();
+             T *i = d->end() + n;
+             while (i != b)
+@@ -627,11 +713,33 @@
+         detach();
+         abegin = d->begin() + itemsUntouched;
+         aend = abegin + itemsToErase;
++
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4127)
++#endif
++
+         if (QTypeInfo<T>::isStatic) {
++
++#if defined(_MSC_VER)
++#pragma warning(pop)
++#endif
++
+             iterator moveBegin = abegin + itemsToErase;
+             iterator moveEnd = d->end();
+             while (moveBegin != moveEnd) {
++
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4127)
++#endif
++
+                 if (QTypeInfo<T>::isComplex)
++
++#if defined(_MSC_VER)
++#pragma warning(pop)
++#endif
++
+                     abegin->~T();
+                 new (abegin++) T(*moveBegin++);
+             }
+@@ -693,7 +801,18 @@
+         T *i = l.d->end();
+         T *b = l.d->begin();
+         while (i != b) {
++
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4127)
++#endif
++
+             if (QTypeInfo<T>::isComplex)
++
++#if defined(_MSC_VER)
++#pragma warning(pop)
++#endif
++
+                 new (--w) T(*--i);
+             else
+                 *--w = *--i;
