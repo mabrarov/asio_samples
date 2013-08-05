@@ -54,7 +54,7 @@ private:
 
   static system_service_ptr get_nullable_instance();
   static BOOL WINAPI windows_ctrl_handler(DWORD);
-  void deliver_signal();
+  bool deliver_signal();
   
   instance_guard_type singleton_instance_guard_;
   mutex_type          subscribers_mutex_;
@@ -152,22 +152,27 @@ BOOL WINAPI console_signal_service_base::system_service::windows_ctrl_handler(
   case CTRL_SHUTDOWN_EVENT:
     if (system_service_ptr instance = get_nullable_instance())
     {
-      instance->deliver_signal();
-      return TRUE;
+      if (instance->deliver_signal())
+      {
+        return TRUE;
+      }
     }
   default:
     return FALSE;
   };
 }
 
-void console_signal_service_base::system_service::deliver_signal()
+bool console_signal_service_base::system_service::deliver_signal()
 {
+  bool handled = false;
   lock_guard services_guard(subscribers_mutex_);
   for (console_signal_service_base* subscriber = subscribers_.front(); 
       subscriber; subscriber = subscribers_.next(*subscriber))
   {
+    handled = true;
     subscriber->deliver_signal();
   }
+  return handled;
 }
 
 console_signal_service_base::system_service_ptr 
