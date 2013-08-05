@@ -169,8 +169,7 @@ bool console_signal_service_base::system_service::deliver_signal()
   for (console_signal_service_base* subscriber = subscribers_.front(); 
       subscriber; subscriber = subscribers_.next(*subscriber))
   {
-    handled = true;
-    subscriber->deliver_signal();
+    handled |= subscriber->deliver_signal();
   }
   return handled;
 }
@@ -355,7 +354,7 @@ std::size_t console_signal_service::cancel(implementation_type& impl,
 void console_signal_service::shutdown_service()
 {
   handler_list_guard handlers;
-  {  
+  {
     lock_guard lock(mutex_);
     // Restrict usage of service.
     shutdown_ = true;  
@@ -368,11 +367,15 @@ void console_signal_service::shutdown_service()
   }
 }
 
-void console_signal_service::deliver_signal()
+bool console_signal_service::deliver_signal()
 {
   post_adapter::handler_list_guard_ptr handlers =
       boost::make_shared<handler_list_guard>();
   lock_guard lock(mutex_);
+  if (impl_list_.empty())
+  {
+    return false;
+  }
   if (!shutdown_)
   {
     // Take ownership of all still active handlers.
@@ -394,6 +397,7 @@ void console_signal_service::deliver_signal()
       get_io_service().post(post_adapter(handlers));
     }
   }
+  return true;
 }
 
 } // namespace windows

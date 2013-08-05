@@ -43,7 +43,7 @@ private:
   typedef console_signal_service_base this_type;
 
 public:
-  virtual void deliver_signal() = 0;
+  virtual bool deliver_signal() = 0;
 
 protected:
   class system_service;
@@ -174,7 +174,7 @@ private:
   typedef detail::intrusive_list<impl_base> impl_base_list;  
 
   virtual void shutdown_service();
-  virtual void deliver_signal();
+  virtual bool deliver_signal();
   
   mutex_type mutex_;
   // Double-linked intrusive list of active implementations.
