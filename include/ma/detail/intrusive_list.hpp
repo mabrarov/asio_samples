@@ -129,14 +129,14 @@ private:
 /**
  * Requirements:
  * if value is rvalue of type Value then expression
- * static_cast&lt;intrusive_slist&lt;Value&gt;::base_hook&amp;&gt;(Value)
- * must be well formed and accessible from intrusive_slist&lt;Value&gt;.
+ * static_cast&lt;intrusive_forward_list&lt;Value&gt;::base_hook&amp;&gt;(Value)
+ * must be well formed and accessible from intrusive_forward_list&lt;Value&gt;.
  */
 template<typename Value>
-class intrusive_slist : private boost::noncopyable
+class intrusive_forward_list : private boost::noncopyable
 {
 private:
-  typedef intrusive_slist<Value> this_type;
+  typedef intrusive_forward_list<Value> this_type;
 
 public:
   typedef Value  value_type;
@@ -147,12 +147,12 @@ public:
   class base_hook;
 
   /// Never throws
-  intrusive_slist();
+  intrusive_forward_list();
 
 #if defined(MA_HAS_RVALUE_REFS)
 
   /// Never throws
-  intrusive_slist(this_type&&);
+  intrusive_forward_list(this_type&&);
 
   /// Never throws
   this_type& operator=(this_type&&);
@@ -197,10 +197,10 @@ private:
 
   pointer front_;
   pointer back_;
-}; // class intrusive_slist
+}; // class intrusive_forward_list
 
 template<typename Value>
-class intrusive_slist<Value>::base_hook
+class intrusive_forward_list<Value>::base_hook
 {
 private:
   typedef base_hook this_type;
@@ -214,9 +214,9 @@ protected:
   base_hook& operator=(const this_type&);
 
 private:
-  friend class intrusive_slist<Value>;
+  friend class intrusive_forward_list<Value>;
   pointer next_;
-}; // class intrusive_slist::base_hook
+}; // class intrusive_forward_list::base_hook
 
 template<typename Value>
 intrusive_list<Value>::base_hook::base_hook()
@@ -494,26 +494,26 @@ intrusive_list<Value>::get_hook(reference value)
 }
 
 template<typename Value>
-intrusive_slist<Value>::base_hook::base_hook()
+intrusive_forward_list<Value>::base_hook::base_hook()
   : next_(0)
 {
 }
 
 template<typename Value>
-intrusive_slist<Value>::base_hook::base_hook(const this_type&)
+intrusive_forward_list<Value>::base_hook::base_hook(const this_type&)
   : next_(0)
 {
 }
 
 template<typename Value>
-typename intrusive_slist<Value>::base_hook&
-intrusive_slist<Value>::base_hook::operator=(const this_type&)
+typename intrusive_forward_list<Value>::base_hook&
+intrusive_forward_list<Value>::base_hook::operator=(const this_type&)
 {
   return *this;
 }
 
 template<typename Value>
-intrusive_slist<Value>::intrusive_slist()
+intrusive_forward_list<Value>::intrusive_forward_list()
   : front_(0)
   , back_(0)
 {
@@ -522,7 +522,7 @@ intrusive_slist<Value>::intrusive_slist()
 #if defined(MA_HAS_RVALUE_REFS)
 
 template<typename Value>
-intrusive_slist<Value>::intrusive_slist(this_type&& other)
+intrusive_forward_list<Value>::intrusive_forward_list(this_type&& other)
   : front_(other.front_)
   , back_(other.back_)
 {
@@ -530,8 +530,8 @@ intrusive_slist<Value>::intrusive_slist(this_type&& other)
 }
 
 template<typename Value>
-typename intrusive_slist<Value>::this_type& 
-intrusive_slist<Value>::operator=(this_type&& other)
+typename intrusive_forward_list<Value>::this_type& 
+intrusive_forward_list<Value>::operator=(this_type&& other)
 {
   front_ = other.front_;
   back_  = other.back_;
@@ -542,28 +542,28 @@ intrusive_slist<Value>::operator=(this_type&& other)
 #endif // defined(MA_HAS_RVALUE_REFS)
 
 template<typename Value>
-typename intrusive_slist<Value>::pointer
-intrusive_slist<Value>::front() const
+typename intrusive_forward_list<Value>::pointer
+intrusive_forward_list<Value>::front() const
 {
   return front_;
 }
 
 template<typename Value>
-typename intrusive_slist<Value>::pointer
-intrusive_slist<Value>::back() const
+typename intrusive_forward_list<Value>::pointer
+intrusive_forward_list<Value>::back() const
 {
   return back_;
 }
 
 template<typename Value>
-typename intrusive_slist<Value>::pointer
-intrusive_slist<Value>::next(reference value)
+typename intrusive_forward_list<Value>::pointer
+intrusive_forward_list<Value>::next(reference value)
 {
   return get_hook(value).next_;
 }
 
 template<typename Value>
-void intrusive_slist<Value>::push_front(reference value)
+void intrusive_forward_list<Value>::push_front(reference value)
 {
   base_hook& value_hook = get_hook(value);
 
@@ -582,7 +582,7 @@ void intrusive_slist<Value>::push_front(reference value)
 }
 
 template<typename Value>
-void intrusive_slist<Value>::push_back(reference value)
+void intrusive_forward_list<Value>::push_back(reference value)
 {
   base_hook& value_hook = get_hook(value);
 
@@ -605,7 +605,7 @@ void intrusive_slist<Value>::push_back(reference value)
 }
 
 template<typename Value>
-void intrusive_slist<Value>::pop_front()
+void intrusive_forward_list<Value>::pop_front()
 {
   BOOST_ASSERT_MSG(front_, "The container is empty");
 
@@ -621,26 +621,26 @@ void intrusive_slist<Value>::pop_front()
 }
 
 template<typename Value>
-bool intrusive_slist<Value>::empty()
+bool intrusive_forward_list<Value>::empty()
 {
   return !front_;
 }
 
 template<typename Value>
-void intrusive_slist<Value>::clear()
+void intrusive_forward_list<Value>::clear()
 {
   front_ = back_ = 0;
 }
 
 template<typename Value>
-void intrusive_slist<Value>::swap(this_type& other)
+void intrusive_forward_list<Value>::swap(this_type& other)
 {
   std::swap(front_, other.front_);
   std::swap(back_, other.back_);
 }
 
 template<typename Value>
-void intrusive_slist<Value>::insert_front(this_type& other)
+void intrusive_forward_list<Value>::insert_front(this_type& other)
 {
   if (other.empty())
   {
@@ -664,7 +664,7 @@ void intrusive_slist<Value>::insert_front(this_type& other)
 }
 
 template<typename Value>
-void intrusive_slist<Value>::insert_back(this_type& other)
+void intrusive_forward_list<Value>::insert_back(this_type& other)
 {
   if (other.empty())
   {
@@ -688,8 +688,8 @@ void intrusive_slist<Value>::insert_back(this_type& other)
 }
 
 template<typename Value>
-typename intrusive_slist<Value>::base_hook&
-intrusive_slist<Value>::get_hook(reference value)
+typename intrusive_forward_list<Value>::base_hook&
+intrusive_forward_list<Value>::get_hook(reference value)
 {
   return static_cast<base_hook&>(value);
 }

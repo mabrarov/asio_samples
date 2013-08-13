@@ -138,11 +138,11 @@ inline bad_handler_call::bad_handler_call()
 }
 
 class handler_storage_service::stored_base
-  : public detail::intrusive_slist<stored_base>::base_hook
+  : public detail::intrusive_forward_list<stored_base>::base_hook
 {
 private:
   typedef stored_base this_type;
-  typedef detail::intrusive_slist<stored_base>::base_hook base_type;
+  typedef detail::intrusive_forward_list<stored_base>::base_hook base_type;
 
 public:
 
@@ -1028,7 +1028,7 @@ inline void handler_storage_service::shutdown_service()
   // Restrict usage of service.
   shutdown_ = true;
   // Take ownership of all still active handlers.
-  detail::intrusive_slist<stored_base> handlers;
+  detail::intrusive_forward_list<stored_base> handlers;
   {
     lock_guard impl_list_lock(impl_list_mutex_);
     for (impl_base* impl = impl_list_.front(); impl;

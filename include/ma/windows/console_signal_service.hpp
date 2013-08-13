@@ -73,11 +73,12 @@ class console_signal_service
   , private console_signal_service_base
 {
 private:  
-  class handler_base : public detail::intrusive_slist<handler_base>::base_hook
+  class handler_base 
+    : public detail::intrusive_forward_list<handler_base>::base_hook
   {
   private:
     typedef handler_base this_type;
-    typedef detail::intrusive_slist<handler_base>::base_hook base_type;
+    typedef detail::intrusive_forward_list<handler_base>::base_hook base_type;
 
   public:
 
@@ -120,7 +121,7 @@ private:
 #endif
   }; // class handler_base
 
-  typedef detail::intrusive_slist<handler_base> handler_list;
+  typedef detail::intrusive_forward_list<handler_base> handler_list;
 
   // Base class for implementation that helps to hide
   // public inheritance from detail::intrusive_list::base_hook
