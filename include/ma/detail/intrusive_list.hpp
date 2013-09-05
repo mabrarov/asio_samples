@@ -84,9 +84,8 @@ public:
   void pop_back();
 
   /// Never throws
-  bool empty();
-
-  /// Never throws
+  bool empty() const;
+  
   void clear();
 
   /// Never throws
@@ -178,9 +177,8 @@ public:
   void pop_front();
 
   /// Never throws
-  bool empty();
+  bool empty() const;
 
-  /// Never throws
   void clear();
 
   /// Never throws
@@ -418,7 +416,7 @@ void intrusive_list<Value>::pop_back()
 }
 
 template<typename Value>
-bool intrusive_list<Value>::empty()
+bool intrusive_list<Value>::empty() const
 {
   return !front_;
 }
@@ -621,7 +619,7 @@ void intrusive_forward_list<Value>::pop_front()
 }
 
 template<typename Value>
-bool intrusive_forward_list<Value>::empty()
+bool intrusive_forward_list<Value>::empty() const
 {
   return !front_;
 }
