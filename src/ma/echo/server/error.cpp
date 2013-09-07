@@ -16,11 +16,11 @@ namespace {
 class error_category_impl : public boost::system::error_category
 {
 public:
-  error_category_impl() MA_ECHO_SERVER_ERROR_NOEXCEPT
+  error_category_impl() BOOST_SYSTEM_NOEXCEPT
   {
   }
 
-  virtual const char* name() const MA_ECHO_SERVER_ERROR_NOEXCEPT
+  virtual const char* name() const BOOST_SYSTEM_NOEXCEPT
   {
     return "ma.echo.server";
   }
@@ -45,7 +45,7 @@ public:
 } // anonymous namespace
 
 const boost::system::error_category& 
-error::category() MA_ECHO_SERVER_ERROR_NOEXCEPT
+error::category() BOOST_SYSTEM_NOEXCEPT
 {
   static const error_category_impl instance;
   return instance;

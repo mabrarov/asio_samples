@@ -15,12 +15,6 @@
 #include <boost/system/error_code.hpp>
 #include <boost/type_traits.hpp>
 
-#if defined(BOOST_SYSTEM_NOEXCEPT)
-#define MA_ECHO_SERVER_ERROR_NOEXCEPT BOOST_SYSTEM_NOEXCEPT
-#else
-#define MA_ECHO_SERVER_ERROR_NOEXCEPT
-#endif
-
 namespace ma {
 namespace echo {
 namespace server {
@@ -30,7 +24,7 @@ namespace error {
  * See
  * http://blog.think-async.com/2010/04/system-error-support-in-c0x-part-4.html
  */
-const boost::system::error_category& category() MA_ECHO_SERVER_ERROR_NOEXCEPT;
+const boost::system::error_category& category() BOOST_SYSTEM_NOEXCEPT;
 
 enum error_t
 {
@@ -40,13 +34,13 @@ enum error_t
 }; // enum error_t
 
 inline boost::system::error_code 
-make_error_code(error_t e) MA_ECHO_SERVER_ERROR_NOEXCEPT
+make_error_code(error_t e) BOOST_SYSTEM_NOEXCEPT
 {
   return boost::system::error_code(static_cast<int>(e), category());
 }
 
 inline boost::system::error_condition 
-make_error_condition(error_t e) MA_ECHO_SERVER_ERROR_NOEXCEPT
+make_error_condition(error_t e) BOOST_SYSTEM_NOEXCEPT
 {
   return boost::system::error_condition(static_cast<int>(e), category());
 }
