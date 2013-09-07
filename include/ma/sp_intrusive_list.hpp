@@ -63,14 +63,16 @@ public:
   /// Never throws
   void erase(const shared_pointer& value);
 
-  /// Never throws
   void clear();
 
+  /// Never throws
   std::size_t size() const;
 
+  /// Never throws
   bool empty() const;
 
 private:
+  /// Never throws
   static base_hook& get_hook(reference value);
 
   std::size_t    size_;
@@ -84,8 +86,11 @@ private:
   typedef base_hook this_type;
 
 public:
+  /// Never throws
   base_hook();
+  /// Never throws
   base_hook(const this_type&);
+  /// Never throws
   base_hook& operator=(const this_type&);
 
 private:

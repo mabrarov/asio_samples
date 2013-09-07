@@ -86,6 +86,7 @@ public:
   /// Never throws
   bool empty() const;
   
+  /// Never throws
   void clear();
 
   /// Never throws
@@ -179,6 +180,7 @@ public:
   /// Never throws
   bool empty() const;
 
+  /// Never throws
   void clear();
 
   /// Never throws
