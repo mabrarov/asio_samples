@@ -18,6 +18,7 @@
 #include <boost/noncopyable.hpp>
 #include <boost/utility/addressof.hpp>
 #include <ma/config.hpp>
+#include <ma/handler_alloc_helpers.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)
 #include <utility>
@@ -63,15 +64,17 @@ public:
   {
   }
 
-  /// Steal constructor. Doesn't throw.
-  raw_handler_ptr(alloc_context_type& alloc_context, pointer_type pointer)
+  /// Steal constructor.
+  raw_handler_ptr(alloc_context_type& alloc_context, 
+      pointer_type pointer) BOOST_NOEXCEPT
     : alloc_context_(alloc_context)
     , pointer_(pointer)
   {
   }
 
   /// Destructor that automatically deallocates memory, unless it has been
-  /// stolen by a handler_ptr object.
+  /// stolen by a handler_ptr object. 
+  /// Throws if associated deallocate throws.
   ~raw_handler_ptr()
   {
     if (pointer_)
@@ -100,14 +103,16 @@ public:
   BOOST_STATIC_CONSTANT(std::size_t, value_size = Alloc_Traits::value_size);  
 
   /// Take ownership of existing memory.
-  handler_ptr(alloc_context_type& alloc_context, pointer_type pointer)
+  handler_ptr(alloc_context_type& alloc_context, 
+      pointer_type pointer) BOOST_NOEXCEPT
     : alloc_context_(boost::addressof(alloc_context))
     , pointer_(pointer)
   {
   }
 
   /// Construct object in raw memory and take ownership if construction
-  /// succeeds.
+  /// succeeds. 
+  /// Throws if contructor of value_type throws.
   handler_ptr(raw_ptr_type& raw_ptr)
     : alloc_context_(boost::addressof(raw_ptr.alloc_context_))
     , pointer_(new (raw_ptr.pointer_) value_type)
@@ -119,6 +124,7 @@ public:
 
   /// Construct object in raw memory and take ownership if construction
   /// succeeds. Forwards arg1,..., argn to the object's constructor.
+  /// Throws if contructor of value_type throws.
   template <typename Arg1>
   handler_ptr(raw_ptr_type& raw_ptr, Arg1&& a1)
     : alloc_context_(boost::addressof(raw_ptr.alloc_context_))
@@ -129,6 +135,7 @@ public:
 
   /// Construct object in raw memory and take ownership if construction
   /// succeeds. Forwards arg1,..., argn to the object's constructor.
+  /// Throws if contructor of value_type throws.
   template <typename Arg1, typename Arg2>
   handler_ptr(raw_ptr_type& raw_ptr, Arg1&& a1, Arg2&& a2)
     : alloc_context_(boost::addressof(raw_ptr.alloc_context_))
@@ -140,6 +147,7 @@ public:
 
   /// Construct object in raw memory and take ownership if construction
   /// succeeds. Forwards arg1,..., argn to the object's constructor.
+  /// Throws if contructor of value_type throws.
   template <typename Arg1, typename Arg2, typename Arg3>
   handler_ptr(raw_ptr_type& raw_ptr, Arg1&& a1, Arg2&& a2, Arg3&& a3)
     : alloc_context_(boost::addressof(raw_ptr.alloc_context_))
@@ -151,6 +159,7 @@ public:
 
   /// Construct object in raw memory and take ownership if construction
   /// succeeds. Forwards arg1,..., argn to the object's constructor.
+  /// Throws if contructor of value_type throws.
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4>
   handler_ptr(raw_ptr_type& raw_ptr, Arg1&& a1, Arg2&& a2, Arg3&& a3,
       Arg4&& a4)
@@ -164,6 +173,7 @@ public:
 
   /// Construct object in raw memory and take ownership if construction
   /// succeeds. Forwards arg1,..., argn to the object's constructor.
+  /// Throws if contructor of value_type throws.
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4,
       typename Arg5>
   handler_ptr(raw_ptr_type& raw_ptr, Arg1&& a1, Arg2&& a2, Arg3&& a3,
@@ -178,6 +188,7 @@ public:
 
   /// Construct object in raw memory and take ownership if construction
   /// succeeds. Forwards arg1,..., argn to the object's constructor.
+  /// Throws if contructor of value_type throws.
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4,
       typename Arg5, typename Arg6>
   handler_ptr(raw_ptr_type& raw_ptr, Arg1&& a1, Arg2&& a2, Arg3&& a3,
@@ -193,6 +204,7 @@ public:
 
   /// Construct object in raw memory and take ownership if construction
   /// succeeds. Forwards arg1,..., argn to the object's constructor.
+  /// Throws if contructor of value_type throws.
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4,
       typename Arg5, typename Arg6, typename Arg7>
   handler_ptr(raw_ptr_type& raw_ptr, Arg1&& a1, Arg2&& a2, Arg3&& a3,
@@ -208,6 +220,7 @@ public:
 
   /// Construct object in raw memory and take ownership if construction
   /// succeeds. Forwards arg1,..., argn to the object's constructor.
+  /// Throws if contructor of value_type throws.
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4,
       typename Arg5, typename Arg6, typename Arg7, typename Arg8>
   handler_ptr(raw_ptr_type& raw_ptr, Arg1&& a1, Arg2&& a2, Arg3&& a3,
@@ -226,6 +239,7 @@ public:
 
   /// Construct object in raw memory and take ownership if construction
   /// succeeds. Forwards arg1,..., argn to the object's constructor.
+  /// Throws if contructor of value_type throws.
   template <typename Arg1>
   handler_ptr(raw_ptr_type& raw_ptr, const Arg1& a1)
     : alloc_context_(boost::addressof(raw_ptr.alloc_context_))
@@ -236,6 +250,7 @@ public:
 
   /// Construct object in raw memory and take ownership if construction
   /// succeeds. Forwards arg1,..., argn to the object's constructor.
+  /// Throws if contructor of value_type throws.
   template <typename Arg1, typename Arg2>
   handler_ptr(raw_ptr_type& raw_ptr, const Arg1& a1, const Arg2& a2)
     : alloc_context_(boost::addressof(raw_ptr.alloc_context_))
@@ -246,6 +261,7 @@ public:
 
   /// Construct object in raw memory and take ownership if construction
   /// succeeds. Forwards arg1,..., argn to the object's constructor.
+  /// Throws if contructor of value_type throws.
   template <typename Arg1, typename Arg2, typename Arg3>
   handler_ptr(raw_ptr_type& raw_ptr, const Arg1& a1, const Arg2& a2,
       const Arg3& a3)
@@ -257,6 +273,7 @@ public:
 
   /// Construct object in raw memory and take ownership if construction
   /// succeeds. Forwards arg1,..., argn to the object's constructor.
+  /// Throws if contructor of value_type throws.
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4>
   handler_ptr(raw_ptr_type& raw_ptr, const Arg1& a1, const Arg2& a2,
       const Arg3& a3, const Arg4& a4)
@@ -268,6 +285,7 @@ public:
 
   /// Construct object in raw memory and take ownership if construction
   /// succeeds. Forwards arg1,..., argn to the object's constructor.
+  /// Throws if contructor of value_type throws.
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4,
       typename Arg5>
   handler_ptr(raw_ptr_type& raw_ptr, const Arg1& a1, const Arg2& a2,
@@ -280,6 +298,7 @@ public:
 
   /// Construct object in raw memory and take ownership if construction
   /// succeeds. Forwards arg1,..., argn to the object's constructor.
+  /// Throws if contructor of value_type throws.
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4,
       typename Arg5, typename Arg6>
   handler_ptr(raw_ptr_type& raw_ptr, const Arg1& a1, const Arg2& a2,
@@ -292,6 +311,7 @@ public:
 
   /// Construct object in raw memory and take ownership if construction
   /// succeeds. Forwards arg1,..., argn to the object's constructor.
+  /// Throws if contructor of value_type throws.
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4,
       typename Arg5, typename Arg6, typename Arg7>
   handler_ptr(raw_ptr_type& raw_ptr, const Arg1& a1, const Arg2& a2,
@@ -305,6 +325,7 @@ public:
 
   /// Construct object in raw memory and take ownership if construction
   /// succeeds. Forwards arg1,..., argn to the object's constructor.
+  /// Throws if contructor of value_type throws.
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4,
       typename Arg5, typename Arg6, typename Arg7, typename Arg8>
   handler_ptr(raw_ptr_type& raw_ptr, const Arg1& a1, const Arg2& a2,
@@ -320,25 +341,27 @@ public:
 #endif // defined(MA_HAS_RVALUE_REFS)
 
   /// Destructor automatically deallocates memory, unless it has been released.
+  /// Throws if value_type destructor throws.
+  /// Throws if associated to alloc_context_type deallocate throws.
   ~handler_ptr()
   {
     reset();
   }
 
   /// Get the memory.
-  pointer_type get() const
+  pointer_type get() const BOOST_NOEXCEPT
   {
     return pointer_;
   }
 
   /// Change allocation context used for memory deallocation. Never throws.
-  void set_alloc_context(alloc_context_type& alloc_context)
+  void set_alloc_context(alloc_context_type& alloc_context) BOOST_NOEXCEPT
   {
     alloc_context_ = boost::addressof(alloc_context);
   }
 
   /// Release ownership of the memory.
-  pointer_type release()
+  pointer_type release() BOOST_NOEXCEPT
   {
     pointer_type tmp = pointer_;
     pointer_ = 0;
@@ -346,6 +369,8 @@ public:
   }
 
   /// Explicitly destroy object and deallocate memory.
+  /// Throws if value_type destructor throws.
+  /// Throws if associated to alloc_context_type deallocate throws.
   void reset()
   {
     if (pointer_)

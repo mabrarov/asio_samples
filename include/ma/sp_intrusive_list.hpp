@@ -44,36 +44,30 @@ public:
   /// Required hook for items of the list.
   class base_hook;
 
-  /// Never throws
-  sp_intrusive_list();
+  sp_intrusive_list() BOOST_NOEXCEPT;
+
+  /// Throws if value_type destructor throws
   ~sp_intrusive_list();
 
-  /// Never throws
-  const shared_pointer& front() const;
+  const shared_pointer& front() const BOOST_NOEXCEPT;
 
-  /// Never throws
-  static shared_pointer prev(const shared_pointer& value);
+  static shared_pointer prev(const shared_pointer& value) BOOST_NOEXCEPT;
 
-  /// Never throws
-  static const shared_pointer& next(const shared_pointer& value);
+  static const shared_pointer& next(const shared_pointer& value) BOOST_NOEXCEPT;
 
-  /// Never throws
-  void push_front(const shared_pointer& value);
+  void push_front(const shared_pointer& value) BOOST_NOEXCEPT;
 
-  /// Never throws
-  void erase(const shared_pointer& value);
+  void erase(const shared_pointer& value) BOOST_NOEXCEPT;
 
+  /// Throws if value_type destructor throws
   void clear();
 
-  /// Never throws
-  std::size_t size() const;
+  std::size_t size() const BOOST_NOEXCEPT;
 
-  /// Never throws
-  bool empty() const;
+  bool empty() const BOOST_NOEXCEPT;
 
 private:
-  /// Never throws
-  static base_hook& get_hook(reference value);
+  static base_hook& get_hook(reference value) BOOST_NOEXCEPT;
 
   std::size_t    size_;
   shared_pointer front_;
@@ -86,12 +80,9 @@ private:
   typedef base_hook this_type;
 
 public:
-  /// Never throws
-  base_hook();
-  /// Never throws
-  base_hook(const this_type&);
-  /// Never throws
-  base_hook& operator=(const this_type&);
+  base_hook() BOOST_NOEXCEPT;
+  base_hook(const this_type&) BOOST_NOEXCEPT;
+  base_hook& operator=(const this_type&) BOOST_NOEXCEPT;
 
 private:
   friend class sp_intrusive_list<Value>;
@@ -100,24 +91,24 @@ private:
 }; // class sp_intrusive_list::base_hook
 
 template <typename Value>
-sp_intrusive_list<Value>::base_hook::base_hook()
+sp_intrusive_list<Value>::base_hook::base_hook() BOOST_NOEXCEPT
 {
 }
 
 template <typename Value>
-sp_intrusive_list<Value>::base_hook::base_hook(const this_type&)
+sp_intrusive_list<Value>::base_hook::base_hook(const this_type&) BOOST_NOEXCEPT
 {
 }
 
 template <typename Value>
 typename sp_intrusive_list<Value>::base_hook&
-sp_intrusive_list<Value>::base_hook::operator=(const this_type&)
+sp_intrusive_list<Value>::base_hook::operator=(const this_type&) BOOST_NOEXCEPT
 {
   return *this;
 }
 
 template <typename Value>
-sp_intrusive_list<Value>::sp_intrusive_list()
+sp_intrusive_list<Value>::sp_intrusive_list() BOOST_NOEXCEPT
   : size_(0)
 {
 }
@@ -130,14 +121,14 @@ sp_intrusive_list<Value>::~sp_intrusive_list()
 
 template <typename Value>
 const typename sp_intrusive_list<Value>::shared_pointer&
-sp_intrusive_list<Value>::front() const
+sp_intrusive_list<Value>::front() const BOOST_NOEXCEPT
 {
   return front_;
 }
 
 template <typename Value>
 typename sp_intrusive_list<Value>::shared_pointer
-sp_intrusive_list<Value>::prev(const shared_pointer& value)
+sp_intrusive_list<Value>::prev(const shared_pointer& value) BOOST_NOEXCEPT
 {
   BOOST_ASSERT_MSG(value, "The value can no not be null ptr");
   return get_hook(*value).prev_.lock();
@@ -145,14 +136,15 @@ sp_intrusive_list<Value>::prev(const shared_pointer& value)
 
 template <typename Value>
 const typename sp_intrusive_list<Value>::shared_pointer&
-sp_intrusive_list<Value>::next(const shared_pointer& value)
+sp_intrusive_list<Value>::next(const shared_pointer& value) BOOST_NOEXCEPT
 {
   BOOST_ASSERT_MSG(value, "The value can no not be null ptr");
   return get_hook(*value).next_;
 }
 
 template <typename Value>
-void sp_intrusive_list<Value>::push_front(const shared_pointer& value)
+void sp_intrusive_list<Value>::push_front(
+    const shared_pointer& value) BOOST_NOEXCEPT
 {
   BOOST_ASSERT_MSG(value, "The value can no not be null ptr");
 
@@ -172,7 +164,7 @@ void sp_intrusive_list<Value>::push_front(const shared_pointer& value)
 }
 
 template <typename Value>
-void sp_intrusive_list<Value>::erase(const shared_pointer& value)
+void sp_intrusive_list<Value>::erase(const shared_pointer& value) BOOST_NOEXCEPT
 {
   BOOST_ASSERT_MSG(value, "The value can no not be null ptr");
 
@@ -218,20 +210,20 @@ void sp_intrusive_list<Value>::clear()
 }
 
 template <typename Value>
-std::size_t sp_intrusive_list<Value>::size() const
+std::size_t sp_intrusive_list<Value>::size() const BOOST_NOEXCEPT
 {
   return size_;
 }
 
 template <typename Value>
-bool sp_intrusive_list<Value>::empty() const
+bool sp_intrusive_list<Value>::empty() const BOOST_NOEXCEPT
 {
   return 0 == size_;
 }
 
 template <typename Value>
 typename sp_intrusive_list<Value>::base_hook&
-sp_intrusive_list<Value>::get_hook(reference value)
+sp_intrusive_list<Value>::get_hook(reference value) BOOST_NOEXCEPT
 {
   return static_cast<base_hook&>(value);
 }

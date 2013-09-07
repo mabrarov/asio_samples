@@ -30,7 +30,7 @@ namespace detail {
  * must be well formed and accessible from intrusive_list&lt;Value&gt;.
  */
 template<typename Value>
-class intrusive_list : private boost::noncopyable
+class intrusive_list
 {
 private:
   typedef intrusive_list<Value> this_type;
@@ -43,63 +43,50 @@ public:
   /// Required hook for items of the list.
   class base_hook;
 
-  /// Never throws
-  intrusive_list();
+  intrusive_list() BOOST_NOEXCEPT;
+
+  intrusive_list(const this_type&) BOOST_NOEXCEPT;
+
+  this_type& operator=(const this_type&) BOOST_NOEXCEPT;
 
 #if defined(MA_HAS_RVALUE_REFS)
 
-  /// Never throws
-  intrusive_list(this_type&&);
+  intrusive_list(this_type&&) BOOST_NOEXCEPT;
 
-  /// Never throws
-  this_type& operator=(this_type&&);
+  this_type& operator=(this_type&&) BOOST_NOEXCEPT;
 
 #endif // defined(MA_HAS_RVALUE_REFS)
 
-  /// Never throws
-  pointer front() const;
+  pointer front() const BOOST_NOEXCEPT;
 
-  /// Never throws
-  pointer back() const;
+  pointer back() const BOOST_NOEXCEPT;
 
-  /// Never throws
-  static pointer prev(reference value);
+  static pointer prev(reference value) BOOST_NOEXCEPT;
 
-  /// Never throws
-  static pointer next(reference value);
+  static pointer next(reference value) BOOST_NOEXCEPT;
 
-  /// Never throws
-  void push_front(reference value);
+  void push_front(reference value) BOOST_NOEXCEPT;
 
-  /// Never throws
-  void push_back(reference value);
+  void push_back(reference value) BOOST_NOEXCEPT;
 
-  /// Never throws
-  void erase(reference value);
+  void erase(reference value) BOOST_NOEXCEPT;
 
-  /// Never throws
-  void pop_front();
+  void pop_front() BOOST_NOEXCEPT;
 
-  /// Never throws
-  void pop_back();
+  void pop_back() BOOST_NOEXCEPT;
 
-  /// Never throws
-  bool empty() const;
+  bool empty() const BOOST_NOEXCEPT;
   
-  /// Never throws
-  void clear();
+  void clear() BOOST_NOEXCEPT;
 
-  /// Never throws
-  void swap(this_type&);
+  void swap(this_type&) BOOST_NOEXCEPT;
 
-  /// Never throws
-  void insert_front(this_type&);
+  void insert_front(this_type&) BOOST_NOEXCEPT;
 
-  /// Never throws
-  void insert_back(this_type&);
+  void insert_back(this_type&) BOOST_NOEXCEPT;
 
 private:
-  static base_hook& get_hook(reference value);
+  static base_hook& get_hook(reference value) BOOST_NOEXCEPT;
 
   pointer front_;
   pointer back_;
@@ -112,12 +99,9 @@ private:
   typedef base_hook this_type;
 
 protected:
-  /// Never throws
-  base_hook();
-  /// Never throws
-  base_hook(const this_type&);
-  /// Never throws
-  base_hook& operator=(const this_type&);
+  base_hook() BOOST_NOEXCEPT;
+  base_hook(const this_type&) BOOST_NOEXCEPT;
+  base_hook& operator=(const this_type&) BOOST_NOEXCEPT;
 
 private:
   friend class intrusive_list<Value>;
@@ -133,7 +117,7 @@ private:
  * must be well formed and accessible from intrusive_forward_list&lt;Value&gt;.
  */
 template<typename Value>
-class intrusive_forward_list : private boost::noncopyable
+class intrusive_forward_list
 {
 private:
   typedef intrusive_forward_list<Value> this_type;
@@ -146,54 +130,44 @@ public:
   /// Required hook for items of the list.
   class base_hook;
 
-  /// Never throws
-  intrusive_forward_list();
+  intrusive_forward_list() BOOST_NOEXCEPT;
+
+  intrusive_forward_list(const this_type&) BOOST_NOEXCEPT;
+
+  this_type& operator=(const this_type&) BOOST_NOEXCEPT;
 
 #if defined(MA_HAS_RVALUE_REFS)
 
-  /// Never throws
-  intrusive_forward_list(this_type&&);
+  intrusive_forward_list(this_type&&) BOOST_NOEXCEPT;
 
-  /// Never throws
-  this_type& operator=(this_type&&);
+  this_type& operator=(this_type&&) BOOST_NOEXCEPT;
 
 #endif // defined(MA_HAS_RVALUE_REFS)
 
-  /// Never throws
-  pointer front() const;
+  pointer front() const BOOST_NOEXCEPT;
 
-  /// Never throws
-  pointer back() const;
+  pointer back() const BOOST_NOEXCEPT;
 
-  /// Never throws
-  static pointer next(reference value);
+  static pointer next(reference value) BOOST_NOEXCEPT;
 
-  /// Never throws
-  void push_front(reference value);
+  void push_front(reference value) BOOST_NOEXCEPT;
 
-  /// Never throws
-  void push_back(reference value);
+  void push_back(reference value) BOOST_NOEXCEPT;
 
-  /// Never throws
-  void pop_front();
+  void pop_front() BOOST_NOEXCEPT;
 
-  /// Never throws
-  bool empty() const;
+  bool empty() const BOOST_NOEXCEPT;
 
-  /// Never throws
-  void clear();
+  void clear() BOOST_NOEXCEPT;
 
-  /// Never throws
-  void swap(this_type&);
+  void swap(this_type&) BOOST_NOEXCEPT;
 
-  /// Never throws
-  void insert_front(this_type&);
+  void insert_front(this_type&) BOOST_NOEXCEPT;
 
-  /// Never throws
-  void insert_back(this_type&);
+  void insert_back(this_type&) BOOST_NOEXCEPT;
 
 private:
-  static base_hook& get_hook(reference value);  
+  static base_hook& get_hook(reference value) BOOST_NOEXCEPT;  
 
   pointer front_;
   pointer back_;
@@ -206,12 +180,9 @@ private:
   typedef base_hook this_type;
 
 protected:
-  /// Never throws
-  base_hook();
-  /// Never throws
-  base_hook(const this_type&);
-  /// Never throws
-  base_hook& operator=(const this_type&);
+  base_hook() BOOST_NOEXCEPT;
+  base_hook(const this_type&) BOOST_NOEXCEPT;
+  base_hook& operator=(const this_type&) BOOST_NOEXCEPT;
 
 private:
   friend class intrusive_forward_list<Value>;
@@ -219,14 +190,14 @@ private:
 }; // class intrusive_forward_list::base_hook
 
 template<typename Value>
-intrusive_list<Value>::base_hook::base_hook()
+intrusive_list<Value>::base_hook::base_hook() BOOST_NOEXCEPT
   : prev_(0)
   , next_(0)
 {
 }
 
 template<typename Value>
-intrusive_list<Value>::base_hook::base_hook(const this_type&)
+intrusive_list<Value>::base_hook::base_hook(const this_type&) BOOST_NOEXCEPT
   : prev_(0)
   , next_(0)
 {
@@ -234,22 +205,37 @@ intrusive_list<Value>::base_hook::base_hook(const this_type&)
 
 template<typename Value>
 typename intrusive_list<Value>::base_hook&
-intrusive_list<Value>::base_hook::operator=(const this_type&)
+intrusive_list<Value>::base_hook::operator=(const this_type&) BOOST_NOEXCEPT
 {
   return *this;
 }
 
 template<typename Value>
-intrusive_list<Value>::intrusive_list()
+intrusive_list<Value>::intrusive_list() BOOST_NOEXCEPT
   : front_(0)
   , back_(0)
 {
 }
 
+template<typename Value>
+intrusive_list<Value>::intrusive_list(const this_type& other) BOOST_NOEXCEPT
+  : front_(other.front_)
+  , back_(other.back_)
+{
+}
+
+template<typename Value>
+typename intrusive_list<Value>::this_type& intrusive_list<Value>::operator=(
+    const this_type& other) BOOST_NOEXCEPT
+{
+  front_ = other.front_;
+  back_  = other.back_;
+}
+
 #if defined(MA_HAS_RVALUE_REFS)
 
 template<typename Value>
-intrusive_list<Value>::intrusive_list(this_type&& other)
+intrusive_list<Value>::intrusive_list(this_type&& other) BOOST_NOEXCEPT
   : front_(other.front_)
   , back_(other.back_)
 {
@@ -258,7 +244,7 @@ intrusive_list<Value>::intrusive_list(this_type&& other)
 
 template<typename Value>
 typename intrusive_list<Value>::this_type& 
-intrusive_list<Value>::operator=(this_type&& other)
+intrusive_list<Value>::operator=(this_type&& other) BOOST_NOEXCEPT
 {
   front_ = other.front_;
   back_  = other.back_;
@@ -270,34 +256,34 @@ intrusive_list<Value>::operator=(this_type&& other)
 
 template<typename Value>
 typename intrusive_list<Value>::pointer
-intrusive_list<Value>::front() const
+intrusive_list<Value>::front() const BOOST_NOEXCEPT
 {
   return front_;
 }
 
 template<typename Value>
 typename intrusive_list<Value>::pointer
-intrusive_list<Value>::back() const
+intrusive_list<Value>::back() const BOOST_NOEXCEPT
 {
   return back_;
 }
 
 template<typename Value>
 typename intrusive_list<Value>::pointer
-intrusive_list<Value>::prev(reference value)
+intrusive_list<Value>::prev(reference value) BOOST_NOEXCEPT
 {
   return get_hook(value).prev_;
 }
 
 template<typename Value>
 typename intrusive_list<Value>::pointer
-intrusive_list<Value>::next(reference value)
+intrusive_list<Value>::next(reference value) BOOST_NOEXCEPT
 {
   return get_hook(value).next_;
 }
 
 template<typename Value>
-void intrusive_list<Value>::push_front(reference value)
+void intrusive_list<Value>::push_front(reference value) BOOST_NOEXCEPT
 {
   base_hook& value_hook = get_hook(value);
 
@@ -323,7 +309,7 @@ void intrusive_list<Value>::push_front(reference value)
 }
 
 template<typename Value>
-void intrusive_list<Value>::push_back(reference value)
+void intrusive_list<Value>::push_back(reference value) BOOST_NOEXCEPT
 {
   base_hook& value_hook = get_hook(value);
 
@@ -349,7 +335,7 @@ void intrusive_list<Value>::push_back(reference value)
 }
 
 template<typename Value>
-void intrusive_list<Value>::erase(reference value)
+void intrusive_list<Value>::erase(reference value) BOOST_NOEXCEPT
 {  
   base_hook& value_hook = get_hook(value);
   const pointer value_ptr = boost::addressof(value);
@@ -376,7 +362,7 @@ void intrusive_list<Value>::erase(reference value)
 }
 
 template<typename Value>
-void intrusive_list<Value>::pop_front()
+void intrusive_list<Value>::pop_front() BOOST_NOEXCEPT
 {
   BOOST_ASSERT_MSG(front_, "The container is empty");
 
@@ -397,7 +383,7 @@ void intrusive_list<Value>::pop_front()
 }
 
 template<typename Value>
-void intrusive_list<Value>::pop_back()
+void intrusive_list<Value>::pop_back() BOOST_NOEXCEPT
 {
   BOOST_ASSERT_MSG(back_, "The container is empty");
 
@@ -418,26 +404,26 @@ void intrusive_list<Value>::pop_back()
 }
 
 template<typename Value>
-bool intrusive_list<Value>::empty() const
+bool intrusive_list<Value>::empty() const BOOST_NOEXCEPT
 {
   return !front_;
 }
 
 template<typename Value>
-void intrusive_list<Value>::clear()
+void intrusive_list<Value>::clear() BOOST_NOEXCEPT
 {
   front_ = back_ = 0;
 }
 
 template<typename Value>
-void intrusive_list<Value>::swap(this_type& other)
+void intrusive_list<Value>::swap(this_type& other) BOOST_NOEXCEPT
 {
   std::swap(front_, other.front_);
   std::swap(back_, other.back_);
 }
 
 template<typename Value>
-void intrusive_list<Value>::insert_front(this_type& other)
+void intrusive_list<Value>::insert_front(this_type& other) BOOST_NOEXCEPT
 {
   if (other.empty())
   {
@@ -462,7 +448,7 @@ void intrusive_list<Value>::insert_front(this_type& other)
 }
 
 template<typename Value>
-void intrusive_list<Value>::insert_back(this_type& other)
+void intrusive_list<Value>::insert_back(this_type& other) BOOST_NOEXCEPT
 {
   if (other.empty())
   {
@@ -488,41 +474,60 @@ void intrusive_list<Value>::insert_back(this_type& other)
 
 template<typename Value>
 typename intrusive_list<Value>::base_hook&
-intrusive_list<Value>::get_hook(reference value)
+intrusive_list<Value>::get_hook(reference value) BOOST_NOEXCEPT
 {
   return static_cast<base_hook&>(value);
 }
 
 template<typename Value>
-intrusive_forward_list<Value>::base_hook::base_hook()
+intrusive_forward_list<Value>::base_hook::base_hook() BOOST_NOEXCEPT
   : next_(0)
 {
 }
 
 template<typename Value>
-intrusive_forward_list<Value>::base_hook::base_hook(const this_type&)
+intrusive_forward_list<Value>::base_hook::base_hook(
+    const this_type&) BOOST_NOEXCEPT
   : next_(0)
 {
 }
 
 template<typename Value>
 typename intrusive_forward_list<Value>::base_hook&
-intrusive_forward_list<Value>::base_hook::operator=(const this_type&)
+intrusive_forward_list<Value>::base_hook::operator=(
+    const this_type&) BOOST_NOEXCEPT
 {
   return *this;
 }
 
 template<typename Value>
-intrusive_forward_list<Value>::intrusive_forward_list()
+intrusive_forward_list<Value>::intrusive_forward_list() BOOST_NOEXCEPT
   : front_(0)
   , back_(0)
 {
 }
 
+template<typename Value>
+intrusive_forward_list<Value>::intrusive_forward_list(
+    const this_type& other) BOOST_NOEXCEPT
+  : front_(other.front_)
+  , back_(other.back_)
+{
+}
+
+template<typename Value>
+typename intrusive_forward_list<Value>::this_type& 
+intrusive_forward_list<Value>::operator=(const this_type& other) BOOST_NOEXCEPT
+{
+  front_ = other.front_;
+  back_  = other.back_;
+}
+
 #if defined(MA_HAS_RVALUE_REFS)
 
 template<typename Value>
-intrusive_forward_list<Value>::intrusive_forward_list(this_type&& other)
+intrusive_forward_list<Value>::intrusive_forward_list(
+    this_type&& other) BOOST_NOEXCEPT
   : front_(other.front_)
   , back_(other.back_)
 {
@@ -531,7 +536,7 @@ intrusive_forward_list<Value>::intrusive_forward_list(this_type&& other)
 
 template<typename Value>
 typename intrusive_forward_list<Value>::this_type& 
-intrusive_forward_list<Value>::operator=(this_type&& other)
+intrusive_forward_list<Value>::operator=(this_type&& other) BOOST_NOEXCEPT
 {
   front_ = other.front_;
   back_  = other.back_;
@@ -543,27 +548,27 @@ intrusive_forward_list<Value>::operator=(this_type&& other)
 
 template<typename Value>
 typename intrusive_forward_list<Value>::pointer
-intrusive_forward_list<Value>::front() const
+intrusive_forward_list<Value>::front() const BOOST_NOEXCEPT
 {
   return front_;
 }
 
 template<typename Value>
 typename intrusive_forward_list<Value>::pointer
-intrusive_forward_list<Value>::back() const
+intrusive_forward_list<Value>::back() const BOOST_NOEXCEPT
 {
   return back_;
 }
 
 template<typename Value>
 typename intrusive_forward_list<Value>::pointer
-intrusive_forward_list<Value>::next(reference value)
+intrusive_forward_list<Value>::next(reference value) BOOST_NOEXCEPT
 {
   return get_hook(value).next_;
 }
 
 template<typename Value>
-void intrusive_forward_list<Value>::push_front(reference value)
+void intrusive_forward_list<Value>::push_front(reference value) BOOST_NOEXCEPT
 {
   base_hook& value_hook = get_hook(value);
 
@@ -582,7 +587,7 @@ void intrusive_forward_list<Value>::push_front(reference value)
 }
 
 template<typename Value>
-void intrusive_forward_list<Value>::push_back(reference value)
+void intrusive_forward_list<Value>::push_back(reference value) BOOST_NOEXCEPT
 {
   base_hook& value_hook = get_hook(value);
 
@@ -605,7 +610,7 @@ void intrusive_forward_list<Value>::push_back(reference value)
 }
 
 template<typename Value>
-void intrusive_forward_list<Value>::pop_front()
+void intrusive_forward_list<Value>::pop_front() BOOST_NOEXCEPT
 {
   BOOST_ASSERT_MSG(front_, "The container is empty");
 
@@ -621,26 +626,27 @@ void intrusive_forward_list<Value>::pop_front()
 }
 
 template<typename Value>
-bool intrusive_forward_list<Value>::empty() const
+bool intrusive_forward_list<Value>::empty() const BOOST_NOEXCEPT
 {
   return !front_;
 }
 
 template<typename Value>
-void intrusive_forward_list<Value>::clear()
+void intrusive_forward_list<Value>::clear() BOOST_NOEXCEPT
 {
   front_ = back_ = 0;
 }
 
 template<typename Value>
-void intrusive_forward_list<Value>::swap(this_type& other)
+void intrusive_forward_list<Value>::swap(this_type& other) BOOST_NOEXCEPT
 {
   std::swap(front_, other.front_);
   std::swap(back_, other.back_);
 }
 
 template<typename Value>
-void intrusive_forward_list<Value>::insert_front(this_type& other)
+void intrusive_forward_list<Value>::insert_front(
+    this_type& other) BOOST_NOEXCEPT
 {
   if (other.empty())
   {
@@ -664,7 +670,7 @@ void intrusive_forward_list<Value>::insert_front(this_type& other)
 }
 
 template<typename Value>
-void intrusive_forward_list<Value>::insert_back(this_type& other)
+void intrusive_forward_list<Value>::insert_back(this_type& other) BOOST_NOEXCEPT
 {
   if (other.empty())
   {
@@ -689,7 +695,7 @@ void intrusive_forward_list<Value>::insert_back(this_type& other)
 
 template<typename Value>
 typename intrusive_forward_list<Value>::base_hook&
-intrusive_forward_list<Value>::get_hook(reference value)
+intrusive_forward_list<Value>::get_hook(reference value) BOOST_NOEXCEPT
 {
   return static_cast<base_hook&>(value);
 }
