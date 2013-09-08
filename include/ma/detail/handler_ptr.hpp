@@ -66,7 +66,7 @@ public:
 
   /// Steal constructor.
   raw_handler_ptr(alloc_context_type& alloc_context, 
-      pointer_type pointer) BOOST_NOEXCEPT
+      pointer_type pointer) MA_NOEXCEPT
     : alloc_context_(alloc_context)
     , pointer_(pointer)
   {
@@ -104,7 +104,7 @@ public:
 
   /// Take ownership of existing memory.
   handler_ptr(alloc_context_type& alloc_context, 
-      pointer_type pointer) BOOST_NOEXCEPT
+      pointer_type pointer) MA_NOEXCEPT
     : alloc_context_(boost::addressof(alloc_context))
     , pointer_(pointer)
   {
@@ -349,19 +349,19 @@ public:
   }
 
   /// Get the memory.
-  pointer_type get() const BOOST_NOEXCEPT
+  pointer_type get() const MA_NOEXCEPT
   {
     return pointer_;
   }
 
   /// Change allocation context used for memory deallocation. Never throws.
-  void set_alloc_context(alloc_context_type& alloc_context) BOOST_NOEXCEPT
+  void set_alloc_context(alloc_context_type& alloc_context) MA_NOEXCEPT
   {
     alloc_context_ = boost::addressof(alloc_context);
   }
 
   /// Release ownership of the memory.
-  pointer_type release() BOOST_NOEXCEPT
+  pointer_type release() MA_NOEXCEPT
   {
     pointer_type tmp = pointer_;
     pointer_ = 0;

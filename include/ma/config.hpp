@@ -154,4 +154,10 @@
 
 #endif
 
+#if defined(BOOST_NOEXCEPT)
+#define MA_NOEXCEPT BOOST_NOEXCEPT
+#else
+#define MA_NOEXCEPT
+#endif
+
 #endif // MA_CONFIG_HPP
