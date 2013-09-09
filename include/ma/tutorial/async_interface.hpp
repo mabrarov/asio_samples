@@ -45,12 +45,12 @@ public:
 #if defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
   template <typename Handler>
-  static void async_do_something(async_interface_ptr, Handler&& handler);
+  static void async_do_something(async_interface_ptr, Handler&&);
 
 #else
 
   template <typename Handler>
-  static void async_do_something(async_interface_ptr, Handler&& handler);
+  static void async_do_something(async_interface_ptr, Handler&&);
 
 #endif // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
@@ -102,8 +102,7 @@ private:
 
 public:
   typedef void result_type;
-  typedef void (*function_type)(const async_interface_ptr& async_interface,
-      const Arg&);
+  typedef void (*function_type)(const async_interface_ptr&, const Arg&);
 
   template <typename AsyncInterfacePtr>
   forward_handler_binder(function_type, AsyncInterfacePtr&&);
