@@ -25,7 +25,7 @@ namespace qt {
 
 class ServiceServantSignal : public QObject
 {
-  Q_OBJECT
+  Q_OBJECT //-V524
 
 private:
   typedef boost::recursive_mutex mutex_type;

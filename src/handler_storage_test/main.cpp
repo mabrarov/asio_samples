@@ -630,9 +630,9 @@ void run_test()
     typedef ma::handler_storage<int, handler_base> handler_storage_type;
 
     handler_storage_type handler_storage(io_service);
-    handler_storage.store(handler(4));
+    handler_storage.store(handler(4)); //-V112
 
-    BOOST_ASSERT_MSG(4 == handler_storage.target()->get_value(),
+    BOOST_ASSERT_MSG(4 == handler_storage.target()->get_value(), //-V112
         "Stored value and target are different");
   }
 } // run_test
@@ -765,7 +765,7 @@ void run_test()
     typedef ma::handler_storage<void> handler_storage_type;
 
     handler_storage_type handler_storage(io_service);
-    handler_storage.store(void_handler_without_target(4,
+    handler_storage.store(void_handler_without_target(4, //-V112
         boost::bind(&threshold::dec, &done_threshold)));
 
     std::cout << handler_storage.target() << std::endl;
@@ -777,7 +777,7 @@ void run_test()
     typedef ma::handler_storage<int> handler_storage_type;
 
     handler_storage_type handler_storage(io_service);
-    handler_storage.store(int_handler_without_target(4,
+    handler_storage.store(int_handler_without_target(4, //-V112
         boost::bind(&threshold::dec, &done_threshold)));
 
     std::cout << handler_storage.target() << std::endl;
@@ -789,7 +789,7 @@ void run_test()
     typedef ma::handler_storage<void, test_handler_base> handler_storage_type;
 
     handler_storage_type handler_storage(io_service);
-    handler_storage.store(void_handler_with_target(4,
+    handler_storage.store(void_handler_with_target(4, //-V112
         boost::bind(&threshold::dec, &done_threshold)));
 
     std::cout << handler_storage.target()->get_value() << std::endl;
@@ -801,7 +801,7 @@ void run_test()
     typedef ma::handler_storage<int, test_handler_base> handler_storage_type;
 
     handler_storage_type handler_storage(io_service);
-    handler_storage.store(int_handler_with_target(4,
+    handler_storage.store(int_handler_with_target(4, //-V112
         boost::bind(&threshold::dec, &done_threshold)));
 
     std::cout << handler_storage.target()->get_value() << std::endl;

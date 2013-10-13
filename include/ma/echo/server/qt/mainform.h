@@ -35,7 +35,7 @@ namespace qt {
 
 class MainForm : public QWidget
 {
-  Q_OBJECT
+  Q_OBJECT //-V524
 
 public:
   MainForm(Service& service, QWidget* parent = 0, Qt::WindowFlags flags = 0);

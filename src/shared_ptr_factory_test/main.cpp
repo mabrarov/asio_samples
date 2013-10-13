@@ -134,7 +134,7 @@ void run_test()
     //    "class B has to be not constructible");
 
     typedef ma::shared_ptr_factory_helper<B> B_helper;
-    boost::shared_ptr<B> b = boost::make_shared<B_helper>(4, 2);
+    boost::shared_ptr<B> b = boost::make_shared<B_helper>(4, 2); //-V112
   }
 
   {
@@ -143,7 +143,7 @@ void run_test()
     //    "class B has to be not constructible");
 
     typedef ma::shared_ptr_factory_helper<C> C_helper;  
-    boost::shared_ptr<C> c = boost::make_shared<C_helper>(1.0, 4, 2);
+    boost::shared_ptr<C> c = boost::make_shared<C_helper>(1.0, 4, 2); //-V112
   }
 }
 

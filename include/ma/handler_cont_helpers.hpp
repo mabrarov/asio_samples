@@ -24,7 +24,7 @@ template <typename Context>
 inline bool is_continuation(Context& context)
 {
   using namespace boost::asio;
-  return asio_handler_is_continuation(boost::addressof(context));
+  return asio_handler_is_continuation(boost::addressof(context)); //-V111
 }
 
 #else  // BOOST_VERSION >= 105400

@@ -42,7 +42,7 @@ template <typename Function, typename Context>
 inline void invoke(const Function& function, Context& context)
 {
   using namespace boost::asio;
-  asio_handler_invoke(function, boost::addressof(context));
+  asio_handler_invoke(function, boost::addressof(context)); //-V111
 }
 
 #endif // defined(MA_HAS_RVALUE_REFS)

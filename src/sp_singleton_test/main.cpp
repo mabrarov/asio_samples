@@ -230,7 +230,7 @@ void thread_func(foo_ptr foo)
   (void) foo->data();
 }
 
-void thread_func2(foo_weak_ptr weak_foo, 
+void thread_func2(const foo_weak_ptr& weak_foo, 
   ma::detail::threshold& threshold1,
   ma::detail::threshold& threshold2,
   ma::detail::threshold& threshold3)
@@ -370,14 +370,6 @@ void thread_func()
   (void) f;
 }
 
-void thread_func2()
-{
-  const foo_ptr f = foo::get_instance();
-  BOOST_ASSERT_MSG(f, "Instance has to exist");
-  BOOST_ASSERT_MSG(2 == f->data(), "Instance has to be the third");
-  (void) f;
-}
-
 void run_test()
 {
   {
@@ -502,7 +494,7 @@ void work_func(const random_generator_ptr& rng)
   }
 }
 
-void thread_func(boost::barrier& work_barrier, random_generator_ptr rng)
+void thread_func(boost::barrier& work_barrier, const random_generator_ptr& rng)
 {
   work_barrier.wait();
   work_func(rng);
@@ -510,7 +502,7 @@ void thread_func(boost::barrier& work_barrier, random_generator_ptr rng)
 
 void run_test()
 {
-  const unsigned thread_count = 
+  const std::size_t thread_count = 
       std::max<unsigned>(boost::thread::hardware_concurrency(), 16);
 
   std::vector<random_generator_ptr> rngs;

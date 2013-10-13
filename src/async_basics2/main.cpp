@@ -119,7 +119,7 @@ int main(int /*argc*/, char* /*argv*/[])
     boost::format name_format("active_object%03d");
     for (std::size_t i = 0; i != 20; ++i)
     {
-      std::string name = (name_format % i).str();
+      std::string name = (name_format % i).str(); //-V609
 
       ma::tutorial2::async_interface_ptr active_object =
           ma::tutorial2::async_implementation::create(work_io_service, name);

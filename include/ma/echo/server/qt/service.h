@@ -31,7 +31,7 @@ namespace qt {
 
 class Service : public QObject
 {
-  Q_OBJECT
+  Q_OBJECT //-V524
 
 public:
   explicit Service(QObject* parent = 0);

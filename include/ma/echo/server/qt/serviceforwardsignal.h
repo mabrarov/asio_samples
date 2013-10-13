@@ -23,7 +23,7 @@ namespace qt {
 
 class ServiceForwardSignal : public QObject
 {
-  Q_OBJECT
+  Q_OBJECT //-V524
 
 signals:
   void startCompleted(const boost::system::error_code&);

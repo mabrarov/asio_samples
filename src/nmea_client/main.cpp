@@ -72,7 +72,7 @@ int main(int argc, char* argv[])
     std::locale sys_locale("");
 #endif
 
-    if (2 > argc || 4 < argc)
+    if (2 > argc || 4 < argc) //-V112
     {
       print_usage();
       return EXIT_FAILURE;

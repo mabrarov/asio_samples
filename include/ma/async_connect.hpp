@@ -299,7 +299,7 @@ void async_connect(Socket& socket,
   DWORD last_error = ::WSAGetLastError();
 
   // Check if the operation completed immediately.
-  if ((TRUE != ok) && (ERROR_IO_PENDING != last_error))
+  if ((FALSE == ok) && (ERROR_IO_PENDING != last_error))
   {
     // The operation completed immediately, so a completion notification needs
     // to be posted. When complete() is called, ownership of the OVERLAPPED-

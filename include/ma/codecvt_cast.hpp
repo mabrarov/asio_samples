@@ -47,8 +47,9 @@ const std::basic_string<CharType> in(
   wstring internal_str;
 
   typename codecvt_type::state_type state(0);
-  typename wstring::size_type out_buf_size = codecvt.length(state,
-      first_external, last_external, internal_str.max_size());
+  typename wstring::size_type out_buf_size = static_cast<wstring::size_type>(
+      codecvt.length(state, first_external, last_external, 
+          internal_str.max_size()));
   
   boost::scoped_array<CharType> out_buf(new CharType[out_buf_size]);
 
@@ -90,7 +91,7 @@ const std::basic_string<Byte> out(
 
   typename wstring::size_type internal_str_size = internal_str.length();
   typename wstring::size_type out_buf_size = 
-      codecvt.max_length() * internal_str_size;
+      static_cast<wstring::size_type>(codecvt.max_length()) * internal_str_size;
   boost::scoped_array<Byte> out_buf(new Byte[out_buf_size]);
 
   const CharType* first_internal = internal_str.data();

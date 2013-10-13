@@ -246,7 +246,7 @@ void print_config(std::ostream& stream, std::size_t cpu_count,
     session_inactivity_timeout_sec = timeout->total_seconds();
   }
 
-  stream << "Number of found CPU(s)                : "
+  stream << "Number of found CPU(s)                : " //-V128
          << cpu_count
          << std::endl
          << "Number of session manager's threads   : "
@@ -391,7 +391,7 @@ ma::echo::server::session_manager_config build_session_manager_config(
       options_values[recycled_sessions_option_name].as<std::size_t>();
 
   //todo: read from CMD
-  std::size_t max_stopping_sessions = 1000;
+  std::size_t max_stopping_sessions = 100;
 
   int listen_backlog = options_values[listen_backlog_option_name].as<int>();
 

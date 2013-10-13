@@ -1171,9 +1171,10 @@ void session_manager::schedule_active_session_stop()
 
 void session_manager::schedule_active_session_stop()
 {
-  strand_.post(ma::make_custom_alloc_handler(session_stop_allocator_,
-      boost::bind(&this_type::handle_scheduled_active_session_stop,
-          shared_from_this())));
+  io_service_.post(MA_STRAND_WRAP(strand_, ma::make_custom_alloc_handler(
+      session_stop_allocator_,
+      boost::bind(&this_type::handle_scheduled_active_session_stop, 
+          shared_from_this()))));
   ++pending_operations_;
 }
 

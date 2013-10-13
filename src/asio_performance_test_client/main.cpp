@@ -530,7 +530,7 @@ struct session_manager_config
 public:
   session_manager_config(std::size_t the_session_count,
       std::size_t the_block_size,
-      const optional_duration the_block_pause,
+      const optional_duration& the_block_pause,
       const session_config& the_managed_session_config)
     : session_count(the_session_count)
     , block_size(the_block_size)

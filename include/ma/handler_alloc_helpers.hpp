@@ -26,14 +26,14 @@ template <typename Context>
 inline void* allocate(std::size_t size, Context& context)
 {
   using namespace boost::asio;
-  return asio_handler_allocate(size, boost::addressof(context));
+  return asio_handler_allocate(size, boost::addressof(context)); //-V111
 }
 
 template <typename Context>
 inline void deallocate(void* pointer, std::size_t size, Context& context)
 {
   using namespace boost::asio;
-  asio_handler_deallocate(pointer, size, boost::addressof(context));
+  asio_handler_deallocate(pointer, size, boost::addressof(context)); //-V111
 }
 
 } // namespace ma_handler_alloc_helpers

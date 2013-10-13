@@ -89,7 +89,7 @@ int main(int /*argc*/, char* /*argv*/[])
     for (std::size_t i = 0; i != 20; ++i)
     {
       boost::shared_ptr<const std::string> name =
-          boost::make_shared<std::string>((name_format % i).str());
+          boost::make_shared<std::string>((name_format % i).str()); //-V609
 
       boost::shared_ptr<allocator_type> allocator =
           boost::make_shared<allocator_type>();
