@@ -239,12 +239,30 @@ public:
     ma_handler_alloc_helpers::deallocate(pointer, size, context->handler_);
   }
 
+#if defined(MA_HAS_RVALUE_REFS)
+
   template <typename Function>
-  friend void asio_handler_invoke(const Function& function,
-      this_type* context)
+  friend void asio_handler_invoke(Function&& function, this_type* context)
+  {
+    ma_handler_invoke_helpers::invoke(
+        std::forward<Function>(function), context->handler_);
+  }
+
+#else // defined(MA_HAS_RVALUE_REFS)
+
+  template <typename Function>
+  friend void asio_handler_invoke(Function& function, this_type* context)
   {
     ma_handler_invoke_helpers::invoke(function, context->handler_);
   }
+
+  template <typename Function>
+  friend void asio_handler_invoke(const Function& function, this_type* context)
+  {
+    ma_handler_invoke_helpers::invoke(function, context->handler_);
+  }
+
+#endif // defined(MA_HAS_RVALUE_REFS)
 
   friend bool asio_handler_is_continuation(this_type* context)
   {

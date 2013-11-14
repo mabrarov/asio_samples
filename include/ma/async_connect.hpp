@@ -112,6 +112,12 @@ public:
 #else // defined(MA_HAS_RVALUE_REFS)
 
   template <typename Function>
+  friend void asio_handler_invoke(Function& function, this_type* context)
+  {
+    ma_handler_invoke_helpers::invoke(function, context->handler_);
+  }
+
+  template <typename Function>
   friend void asio_handler_invoke(const Function& function, this_type* context)
   {
     ma_handler_invoke_helpers::invoke(function, context->handler_);

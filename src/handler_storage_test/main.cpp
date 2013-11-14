@@ -80,7 +80,7 @@ int main(int /*argc*/, char* /*argv*/[])
     ma::test::handler_storage_target::run_test();
     ma::test::handler_storage_arg::run_test();
 
-//    test_handler_storage_arg(io_service);
+    //test_handler_storage_arg(io_service);
 
 //#if defined(MA_HAS_RVALUE_REFS)
 //    test_handler_storage_move_constructor(io_service);

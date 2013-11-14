@@ -149,6 +149,13 @@ public:
 #else // defined(MA_HAS_RVALUE_REFS)
 
   template <typename Function>
+  friend void asio_handler_invoke(Function& function, this_type* context)
+  {
+    // Forward to asio_handler_invoke provided by source handler.
+    ma_handler_invoke_helpers::invoke(function, context->handler_);
+  }
+
+  template <typename Function>
   friend void asio_handler_invoke(const Function& function, this_type* context)
   {
     // Forward to asio_handler_invoke provided by source handler.
@@ -261,6 +268,12 @@ public:
   }
 
 #else // defined(MA_HAS_RVALUE_REFS)
+
+  template <typename Function>
+  friend void asio_handler_invoke(Function& function, this_type* context)
+  {
+    ma_handler_invoke_helpers::invoke(function, context->handler_);
+  }
 
   template <typename Function>
   friend void asio_handler_invoke(const Function& function, this_type* context)
@@ -381,6 +394,12 @@ public:
   }
 
 #else // defined(MA_HAS_RVALUE_REFS)
+
+  template <typename Function>
+  friend void asio_handler_invoke(Function& function, this_type* context)
+  {
+    ma_handler_invoke_helpers::invoke(function, context->handler_);
+  }
 
   template <typename Function>
   friend void asio_handler_invoke(const Function& function, this_type* context)
@@ -507,6 +526,12 @@ public:
   }
 
 #else //defined(MA_HAS_RVALUE_REFS)
+
+  template <typename Function>
+  friend void asio_handler_invoke(Function& function, this_type* context)
+  {
+    ma_handler_invoke_helpers::invoke(function, context->handler_);
+  }
 
   template <typename Function>
   friend void asio_handler_invoke(const Function& function, this_type* context)
@@ -640,6 +665,12 @@ public:
   }
 
 #else // defined(MA_HAS_RVALUE_REFS)
+
+  template <typename Function>
+  friend void asio_handler_invoke(Function& function, this_type* context)
+  {
+    ma_handler_invoke_helpers::invoke(function, context->handler_);
+  }
 
   template <typename Function>
   friend void asio_handler_invoke(const Function& function, this_type* context)

@@ -75,6 +75,16 @@
 
 #endif // (BOOST_VERSION >= 104000) && !defined(BOOST_NO_RVALUE_REFERENCES)
 
+#if defined(MA_HAS_RVALUE_REFS)
+
+#define MA_RVALUE_CAST(v) (::std::move(v))
+
+#else
+
+#define MA_RVALUE_CAST(v) (v)
+
+#endif // defined(MA_HAS_RVALUE_REFS)
+
 /// Defines does asio::io_service::strand::wrap produce "heavy" functor.
 /**
  * Because of the guarantee given by Asio:

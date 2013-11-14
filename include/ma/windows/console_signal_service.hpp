@@ -254,13 +254,8 @@ void console_signal_service::async_wait(
   typedef detail::handler_alloc_traits<Handler, value_type> alloc_traits;
 
   detail::raw_handler_ptr<alloc_traits> raw_ptr(handler);
-#if defined(MA_HAS_RVALUE_REFS)
   detail::handler_ptr<alloc_traits> ptr(raw_ptr,
-      boost::ref(this->get_io_service()), std::move(handler));
-#else
-  detail::handler_ptr<alloc_traits> ptr(raw_ptr,
-      boost::ref(this->get_io_service()), handler);
-#endif
+      boost::ref(this->get_io_service()), MA_RVALUE_CAST(handler));
 
   // Add handler to the list of waiting handlers.
   impl.handlers_.push_front(*ptr.get());
@@ -360,11 +355,7 @@ void console_signal_service::handler_wrapper<Handler>::do_destroy(
   detail::handler_ptr<alloc_traits> ptr(this_ptr->handler_, this_ptr);
   // Make a local copy of handler stored at wrapper object
   // This local copy will be used for wrapper's memory deallocation later
-#if defined(MA_HAS_RVALUE_REFS)
-  Handler handler(std::move(this_ptr->handler_));
-#else
-  Handler handler(this_ptr->handler_);
-#endif
+  Handler handler(MA_RVALUE_CAST(this_ptr->handler_));
   // Change the handler which will be used
   // for wrapper's memory deallocation
   ptr.set_alloc_context(handler);
@@ -385,27 +376,19 @@ void console_signal_service::handler_wrapper<Handler>::do_post(
   detail::handler_ptr<alloc_traits> ptr(this_ptr->handler_, this_ptr);
   // Make a local copy of handler stored at wrapper object
   // This local copy will be used for wrapper's memory deallocation later
-#if defined(MA_HAS_RVALUE_REFS)
-  Handler handler(std::move(this_ptr->handler_));
-#else
-  Handler handler(this_ptr->handler_);
-#endif
+  Handler handler(MA_RVALUE_CAST(this_ptr->handler_));
   // Change the handler which will be used for wrapper's memory deallocation
   ptr.set_alloc_context(handler);
   // Make copies of other data placed at wrapper object
   // These copies will be used after the wrapper object destruction
   // and deallocation of its memory
-  boost::asio::io_service::work work(this_ptr->work_);
+  boost::asio::io_service::work work(MA_RVALUE_CAST(this_ptr->work_));
   // Destroy wrapper object and deallocate its memory
   // through the local copy of handler
   ptr.reset();
   // Post the copy of handler's local copy to io_service
   boost::asio::io_service& io_service = work.get_io_service();
-#if defined(MA_HAS_RVALUE_REFS)
-  io_service.post(ma::bind_handler(std::move(handler), error));
-#else
-  io_service.post(ma::bind_handler(handler, error));
-#endif
+  io_service.post(ma::bind_handler(MA_RVALUE_CAST(handler), error));
 }
 
 } // namespace windows

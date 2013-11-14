@@ -502,7 +502,7 @@ void thread_func(boost::barrier& work_barrier, const random_generator_ptr& rng)
 
 void run_test()
 {
-  const std::size_t thread_count = 
+  const unsigned thread_count = 
       std::max<unsigned>(boost::thread::hardware_concurrency(), 16);
 
   std::vector<random_generator_ptr> rngs;

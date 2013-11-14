@@ -1,0 +1,31 @@
+--- boost/interprocess/mem_algo/detail/mem_algo_common.hpp	Чт ноя 14 19:27:16 2013
++++ boost/interprocess/mem_algo/detail/mem_algo_common.hpp	Чт ноя 14 19:28:19 2013
+@@ -522,7 +522,7 @@
+                   (total_used_units + elem_units +
+                   ((!sizeof_element)
+                      ? elem_units
+-               : std::max(memory_algo->priv_get_total_units(elem_sizes[low_idx+1]*sizeof_element), ptr_size_units))
++               : (std::max)(memory_algo->priv_get_total_units(elem_sizes[low_idx+1]*sizeof_element), ptr_size_units))
+                   ) > received_units){
+                   //By default, the new block will use the rest of the buffer
+                   new_block->m_size = received_units - total_used_units;
+
+--- boost/archive/iterators/transform_width.hpp	Вс апр 28 20:07:27 2013
++++ boost/archive/iterators/transform_width.hpp	Чт ноя 14 19:39:38 2013
+@@ -24,6 +24,7 @@
+ // character and 8 bit bytes. Lowest common multiple is 24 => 4 6 bit characters
+ // or 3 8 bit characters
+ 
++#include <algorithm> // for std::min
+ #include <boost/config.hpp> // for BOOST_DEDUCED_TYPENAME & PTFO
+ #include <boost/serialization/pfto.hpp>
+ 
+@@ -148,7 +149,7 @@
+ 
+         // append these bits to the next output
+         // up to the size of the output
+-        unsigned int i = std::min(missing_bits, m_remaining_bits);
++        unsigned int i = (std::min)(missing_bits, m_remaining_bits);
+         // shift interesting bits to least significant position
+         base_value_type j = m_buffer_in >> (m_remaining_bits - i);
+         // and mask off the un interesting higher bits

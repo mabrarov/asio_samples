@@ -621,11 +621,7 @@ void handler_storage_service::handler_wrapper<Handler, Arg, Target>::do_destroy(
   detail::handler_ptr<alloc_traits> ptr(this_ptr->handler_, this_ptr);
   // Make a local copy of handler stored at wrapper object
   // This local copy will be used for wrapper's memory deallocation later
-#if defined(MA_HAS_RVALUE_REFS)
-  Handler handler(std::move(this_ptr->handler_));
-#else
-  Handler handler(this_ptr->handler_);
-#endif
+  Handler handler(MA_RVALUE_CAST(this_ptr->handler_));
   // Change the handler which will be used
   // for wrapper's memory deallocation
   ptr.set_alloc_context(handler);
@@ -646,27 +642,19 @@ void handler_storage_service::handler_wrapper<Handler, Arg, Target>::do_post(
   detail::handler_ptr<alloc_traits> ptr(this_ptr->handler_, this_ptr);
   // Make a local copy of handler stored at wrapper object
   // This local copy will be used for wrapper's memory deallocation later
-#if defined(MA_HAS_RVALUE_REFS)
-  Handler handler(std::move(this_ptr->handler_));
-#else
-  Handler handler(this_ptr->handler_);
-#endif
+  Handler handler(MA_RVALUE_CAST(this_ptr->handler_));
   // Change the handler which will be used for wrapper's memory deallocation
   ptr.set_alloc_context(handler);
   // Make copies of other data placed at wrapper object
   // These copies will be used after the wrapper object destruction
   // and deallocation of its memory
-  boost::asio::io_service::work work(this_ptr->work_);
+  boost::asio::io_service::work work(MA_RVALUE_CAST(this_ptr->work_));
   // Destroy wrapper object and deallocate its memory
   // through the local copy of handler
   ptr.reset();
   // Post the copy of handler's local copy to io_service
   boost::asio::io_service& io_service = work.get_io_service();
-#if defined(MA_HAS_RVALUE_REFS)
-  io_service.post(bind_handler(std::move(handler), arg));
-#else
-  io_service.post(bind_handler(handler, arg));
-#endif
+  io_service.post(bind_handler(MA_RVALUE_CAST(handler), arg));
 }
 
 template <typename Handler, typename Arg, typename Target>
@@ -782,11 +770,7 @@ void handler_storage_service::handler_wrapper<Handler, void, Target>::
   detail::handler_ptr<alloc_traits> ptr(this_ptr->handler_, this_ptr);
   // Make a local copy of handler stored at wrapper object
   // This local copy will be used for wrapper's memory deallocation later
-#if defined(MA_HAS_RVALUE_REFS)
-  Handler handler(std::move(this_ptr->handler_));
-#else
-  Handler handler(this_ptr->handler_);
-#endif
+  Handler handler(MA_RVALUE_CAST(this_ptr->handler_));
   // Change the handler which will be used
   // for wrapper's memory deallocation
   ptr.set_alloc_context(handler);
@@ -807,27 +791,19 @@ void handler_storage_service::handler_wrapper<Handler, void, Target>::do_post(
   detail::handler_ptr<alloc_traits> ptr(this_ptr->handler_, this_ptr);
   // Make a local copy of handler stored at wrapper object
   // This local copy will be used for wrapper's memory deallocation later
-#if defined(MA_HAS_RVALUE_REFS)
-  Handler handler(std::move(this_ptr->handler_));
-#else
-  Handler handler(this_ptr->handler_);
-#endif
+  Handler handler(MA_RVALUE_CAST(this_ptr->handler_));
   // Change the handler which will be used for wrapper's memory deallocation
   ptr.set_alloc_context(handler);
   // Make copies of other data placed at wrapper object
   // These copies will be used after the wrapper object destruction
   // and deallocation of its memory
-  boost::asio::io_service::work work(this_ptr->work_);
+  boost::asio::io_service::work work(MA_RVALUE_CAST(this_ptr->work_));
   // Destroy wrapper object and deallocate its memory
   // through the local copy of handler
   ptr.reset();
   // Post the copy of handler's local copy to io_service
   boost::asio::io_service& io_service = work.get_io_service();
-#if defined(MA_HAS_RVALUE_REFS)
-  io_service.post(std::move(handler));
-#else
-  io_service.post(handler);
-#endif
+  io_service.post(MA_RVALUE_CAST(handler));
 }
 
 template <typename Handler, typename Target>
@@ -939,13 +915,8 @@ void handler_storage_service::store(implementation_type& impl, Handler handler)
   detail::raw_handler_ptr<alloc_traits> raw_ptr(handler);
   // Create wrapped handler at allocated memory and
   // move ownership of allocated memory to ptr
-#if defined(MA_HAS_RVALUE_REFS)
   detail::handler_ptr<alloc_traits> ptr(raw_ptr,
-      boost::ref(this->get_io_service()), std::move(handler));
-#else
-  detail::handler_ptr<alloc_traits> ptr(raw_ptr,
-      boost::ref(this->get_io_service()), handler);
-#endif
+      boost::ref(this->get_io_service()), MA_RVALUE_CAST(handler));
   // Copy current handler
   stored_base* old_handler = impl.handler_;
   // Move ownership of already created wrapped handler

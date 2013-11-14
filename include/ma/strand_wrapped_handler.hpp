@@ -142,6 +142,13 @@ public:
 #else // defined(MA_HAS_RVALUE_REFS)
 
   template <typename Function>
+  friend void asio_handler_invoke(Function& function, this_type* context)
+  {
+    boost::asio::io_service::strand& strand = *context->strand_;
+    strand.dispatch(make_context_wrapped_handler(context->handler_, function));
+  }
+
+  template <typename Function>
   friend void asio_handler_invoke(const Function& function, this_type* context)
   {
     boost::asio::io_service::strand& strand = *context->strand_;
