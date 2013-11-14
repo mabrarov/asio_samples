@@ -240,13 +240,16 @@ void console_signal_service::async_wait(
   if (shutdown_)
   {
     get_io_service().post(
-        bind_handler(handler, boost::asio::error::operation_aborted));
+        bind_handler(MA_RVALUE_CAST(handler), 
+            boost::asio::error::operation_aborted));
     return;
   }
   if (queued_signals_)
   {
     --queued_signals_;
-    get_io_service().post(bind_handler(handler, boost::system::error_code()));
+    get_io_service().post(
+        bind_handler(MA_RVALUE_CAST(handler), 
+            boost::system::error_code()));
     return;
   }
 
