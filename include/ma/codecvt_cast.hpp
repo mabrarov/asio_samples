@@ -28,15 +28,15 @@ public:
     : std::runtime_error(0)
   {
   }
-}; // class bad_conversion  
+}; // class bad_conversion
 
 template <typename CharType, typename Byte>
 const std::basic_string<CharType> in(
-    const std::basic_string<Byte>& external_str, 
+    const std::basic_string<Byte>& external_str,
     const std::codecvt<CharType, Byte, mbstate_t>& codecvt)
 {
   typedef std::basic_string<CharType> wstring;
-  typedef std::basic_string<Byte> string;
+  typedef std::basic_string<Byte>     string;
   typedef std::codecvt<CharType, Byte, mbstate_t> codecvt_type;
 
   typename string::size_type external_str_size = external_str.length();
@@ -47,10 +47,11 @@ const std::basic_string<CharType> in(
   wstring internal_str;
 
   typename codecvt_type::state_type state(0);
-  typename wstring::size_type out_buf_size = static_cast<wstring::size_type>(
-      codecvt.length(state, first_external, last_external, 
-          internal_str.max_size()));
-  
+  typename wstring::size_type out_buf_size =
+      static_cast<typename wstring::size_type>(
+          codecvt.length(state, first_external, last_external,
+              internal_str.max_size()));
+
   boost::scoped_array<CharType> out_buf(new CharType[out_buf_size]);
 
   CharType* first_internal = out_buf.get();
@@ -70,7 +71,7 @@ const std::basic_string<CharType> in(
     internal_str.assign(reinterpret_cast<const CharType*>(first_external),
         reinterpret_cast<const CharType*>(last_external));
   }
-  else 
+  else
   {
     internal_str.assign(first_internal, last_internal);
   }
@@ -80,18 +81,19 @@ const std::basic_string<CharType> in(
 
 template <typename CharType, typename Byte>
 const std::basic_string<Byte> out(
-    const std::basic_string<CharType>& internal_str, 
+    const std::basic_string<CharType>& internal_str,
     const std::codecvt<CharType, Byte, mbstate_t>& codecvt)
 {
   typedef std::basic_string<CharType> wstring;
-  typedef std::basic_string<Byte> string;
+  typedef std::basic_string<Byte>     string;
   typedef std::codecvt<CharType, Byte, mbstate_t> codecvt_type;
 
   string external_str;
 
   typename wstring::size_type internal_str_size = internal_str.length();
-  typename wstring::size_type out_buf_size = 
-      static_cast<wstring::size_type>(codecvt.max_length()) * internal_str_size;
+  typename wstring::size_type out_buf_size =
+      static_cast<typename wstring::size_type>(codecvt.max_length()) *
+          internal_str_size;
   boost::scoped_array<Byte> out_buf(new Byte[out_buf_size]);
 
   const CharType* first_internal = internal_str.data();
@@ -109,12 +111,12 @@ const std::basic_string<Byte> out(
       first_external, last_external, next_external);
 
   if (codecvt_type::ok == r)
-  {    
+  {
     external_str.assign(first_external, next_external);
   }
   else if (codecvt_type::noconv == r)
   {
-    external_str.assign(reinterpret_cast<const Byte*>(first_internal), 
+    external_str.assign(reinterpret_cast<const Byte*>(first_internal),
         reinterpret_cast<const Byte*>(last_internal));
   }
   else
@@ -122,7 +124,7 @@ const std::basic_string<Byte> out(
     boost::throw_exception(bad_conversion());
   }
 
-  return external_str;  
+  return external_str;
 }
 
 } // namespace codecvt_cast
