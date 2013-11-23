@@ -513,7 +513,7 @@ void run_test()
 
   for (std::size_t n = 0; n != iteration_count; ++n)
   {
-    boost::barrier work_barrier(thread_count);
+    boost::barrier work_barrier(static_cast<unsigned>(thread_count));
     boost::thread_group threads;
     for (std::size_t i = 0; i != thread_count - 1; ++i)
     {
