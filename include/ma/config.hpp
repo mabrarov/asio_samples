@@ -170,4 +170,39 @@
 #define MA_NOEXCEPT
 #endif
 
+//todo: add other compiler support
+#if (BOOST_VERSION >= 105500) && defined(BOOST_MSVC) && (BOOST_MSVC >= 1700)
+#define MA_USE_CXX11_STD
+#else
+#undef  MA_USE_CXX11_STD
+#endif
+
+#if defined(MA_USE_CXX11_STD)
+
+#define MA_SHARED_PTR              ::std::shared_ptr
+#define MA_WEAK_PTR                ::std::weak_ptr
+#define MA_MAKE_SHARED             ::std::make_shared
+#define MA_ENABLE_SHARED_FROM_THIS ::std::enable_shared_from_this
+#define MA_BIND                    ::std::bind
+#define MA_PLACEHOLDER_1           ::std::placeholders::_1
+#define MA_PLACEHOLDER_2           ::std::placeholders::_2
+#define MA_REF                     ::std::ref
+#define MA_FUNCTION                ::std::function
+#define MA_ADDRESS_OF              ::std::addressof
+
+#else
+
+#define MA_SHARED_PTR              ::boost::shared_ptr
+#define MA_WEAK_PTR                ::boost::weak_ptr
+#define MA_MAKE_SHARED             ::boost::make_shared
+#define MA_ENABLE_SHARED_FROM_THIS ::boost::enable_shared_from_this
+#define MA_BIND                    ::boost::bind
+#define MA_PLACEHOLDER_1           _1
+#define MA_PLACEHOLDER_2           _2
+#define MA_REF                     ::boost::ref
+#define MA_FUNCTION                ::boost::function
+#define MA_ADDRESS_OF              ::boost::addressof
+
+#endif // defined(MA_USE_CXX11_STD)
+
 #endif // MA_CONFIG_HPP

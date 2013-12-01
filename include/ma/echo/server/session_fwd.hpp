@@ -12,14 +12,20 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
+#include <ma/config.hpp>
+
+#if defined(MA_USE_CXX11_STD)
+#include <memory>
+#else
 #include <boost/shared_ptr.hpp>
+#endif // defined(MA_USE_CXX11_STD)
 
 namespace ma {
 namespace echo {
 namespace server {
 
 class session;
-typedef boost::shared_ptr<session> session_ptr;
+typedef MA_SHARED_PTR<session> session_ptr;
 
 } // namespace server
 } // namespace echo

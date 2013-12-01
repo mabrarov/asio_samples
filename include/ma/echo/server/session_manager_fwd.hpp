@@ -12,16 +12,22 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
+#include <ma/config.hpp>
+
+#if defined(MA_USE_CXX11_STD)
+#include <memory>
+#else
 #include <boost/weak_ptr.hpp>
 #include <boost/shared_ptr.hpp>
+#endif // defined(MA_USE_CXX11_STD)
 
 namespace ma {
 namespace echo {
 namespace server {
 
 class session_manager;
-typedef boost::shared_ptr<session_manager> session_manager_ptr;
-typedef boost::weak_ptr<session_manager>   session_manager_weak_ptr;
+typedef MA_SHARED_PTR<session_manager> session_manager_ptr;
+typedef MA_WEAK_PTR<session_manager>   session_manager_weak_ptr;
 
 } // namespace server
 } // namespace echo

@@ -6,10 +6,8 @@
 //
 
 #include <new>
-#include <boost/ref.hpp>
+
 #include <boost/assert.hpp>
-#include <boost/make_shared.hpp>
-#include <boost/utility/addressof.hpp>
 #include <ma/config.hpp>
 #include <ma/shared_ptr_factory.hpp>
 #include <ma/custom_alloc_handler.hpp>
@@ -18,6 +16,15 @@
 #include <ma/echo/server/session.hpp>
 #include <ma/echo/server/session_factory.hpp>
 #include <ma/echo/server/session_manager.hpp>
+
+#if defined(MA_USE_CXX11_STD)
+#include <memory>
+#include <functional> 
+#else
+#include <boost/ref.hpp>
+#include <boost/make_shared.hpp>
+#include <boost/utility/addressof.hpp>
+#endif // defined(MA_USE_CXX11_STD)
 
 namespace ma {
 namespace echo {
@@ -506,8 +513,8 @@ session_manager_ptr session_manager::create(
     const session_manager_config& config)
 {
   typedef shared_ptr_factory_helper<this_type> helper;
-  return boost::make_shared<helper>(boost::ref(io_service),
-      boost::ref(managed_session_factory), config);
+  return MA_MAKE_SHARED<helper>(boost::ref(io_service),
+      MA_REF(managed_session_factory), config);
 }
 
 session_manager::session_manager(boost::asio::io_service& io_service,
@@ -1460,7 +1467,7 @@ session_manager::session_wrapper_ptr session_manager::create_session(
   try
   {
     session_wrapper_ptr wrapper =
-        boost::make_shared<session_wrapper>(session);
+        MA_MAKE_SHARED<session_wrapper>(session);
     error = boost::system::error_code();
 
     session_guard.release();
