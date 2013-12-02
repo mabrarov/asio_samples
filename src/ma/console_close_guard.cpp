@@ -10,12 +10,19 @@
 #endif
 
 #include <boost/config.hpp>
-#include <boost/ref.hpp>
-#include <boost/bind.hpp>
+
 #include <boost/asio.hpp>
 #include <boost/thread/thread.hpp>
+#include <ma/config.hpp>
 #include <ma/console_close_guard.hpp>
 #include <ma/windows/console_signal.hpp>
+
+#if defined(MA_USE_CXX11_STD)
+#include <functional>
+#else
+#include <boost/ref.hpp>
+#include <boost/bind.hpp>
+#endif // defined(MA_USE_CXX11_STD)
 
 namespace {
 
@@ -96,8 +103,8 @@ class console_close_guard::implementation : private console_close_guard_base_1
 public:
   explicit implementation(const ctrl_function_type& ctrl_function)
     : console_close_guard_base_1(ctrl_function)
-    , work_thread_(boost::bind(&boost::asio::io_service::run, 
-          boost::ref(io_service_)))
+    , work_thread_(MA_BIND(&boost::asio::io_service::run, 
+          MA_REF(io_service_)))
   {    
   }
 

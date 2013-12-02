@@ -14,7 +14,6 @@
 
 #include <cstddef>
 #include <stdexcept>
-#include <boost/ref.hpp>
 #include <boost/asio.hpp>
 #include <boost/assert.hpp>
 #include <boost/noncopyable.hpp>
@@ -31,6 +30,12 @@
 #if defined(MA_HAS_RVALUE_REFS)
 #include <utility>
 #endif // defined(MA_HAS_RVALUE_REFS)
+
+#if defined(MA_USE_CXX11_STD)
+#include <functional>
+#else
+#include <boost/ref.hpp>
+#endif // defined(MA_USE_CXX11_STD)
 
 namespace ma {
 
@@ -916,7 +921,7 @@ void handler_storage_service::store(implementation_type& impl, Handler handler)
   // Create wrapped handler at allocated memory and
   // move ownership of allocated memory to ptr
   detail::handler_ptr<alloc_traits> ptr(raw_ptr,
-      boost::ref(this->get_io_service()), MA_RVALUE_CAST(handler));
+      MA_REF(this->get_io_service()), MA_RVALUE_CAST(handler));
   // Copy current handler
   stored_base* old_handler = impl.handler_;
   // Move ownership of already created wrapped handler

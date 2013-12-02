@@ -12,9 +12,16 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
-#include <boost/function.hpp>
-#include <boost/scoped_ptr.hpp>
 #include <boost/noncopyable.hpp>
+#include <ma/config.hpp>
+
+#if defined(MA_USE_CXX11_STD)
+#include <memory>
+#include <functional>
+#else
+#include <boost/scoped_ptr.hpp>
+#include <boost/function.hpp>
+#endif // defined(MA_USE_CXX11_STD)
 
 namespace ma {
 
@@ -26,7 +33,7 @@ namespace ma {
 class console_close_guard : private boost::noncopyable
 {
 public:
-  typedef boost::function<void (void)> ctrl_function_type;
+  typedef MA_FUNCTION<void (void)> ctrl_function_type;
 
   console_close_guard(const ctrl_function_type& ctrl_function);
   ~console_close_guard();  
@@ -34,7 +41,13 @@ public:
 private:
   class implementation;
 
-  boost::scoped_ptr<implementation> implementation_;
+#if defined(MA_USE_CXX11_STD)
+  typedef std::unique_ptr<implementation> implementation_ptr;
+#else
+  typedef boost::scoped_ptr<implementation> implementation_ptr;
+#endif
+
+  implementation_ptr implementation_;
 }; // class console_close_guard
 
 } // namespace ma

@@ -13,12 +13,17 @@
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
 #include <boost/asio.hpp>
-#include <boost/utility/addressof.hpp>
 #include <ma/config.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)
 #include <utility>
 #endif // defined(MA_HAS_RVALUE_REFS)
+
+#if defined(MA_USE_CXX11_STD)
+#include <memory>
+#else
+#include <boost/utility/addressof.hpp>
+#endif // defined(MA_USE_CXX11_STD)
 
 // Calls to asio_handler_invoke must be made from a namespace that does not
 // contain any overloads of this function. The ma_handler_invoke_helpers
@@ -33,7 +38,7 @@ inline void invoke(Function&& function, Context& context)
 {
   using namespace boost::asio;
   asio_handler_invoke(
-      std::forward<Function>(function), boost::addressof(context));
+      std::forward<Function>(function), MA_ADDRESS_OF(context));
 }
 
 #else // defined(MA_HAS_RVALUE_REFS)
@@ -42,14 +47,14 @@ template <typename Function, typename Context>
 inline void invoke(Function& function, Context& context)
 {
   using namespace boost::asio;
-  asio_handler_invoke(function, boost::addressof(context)); //-V111
+  asio_handler_invoke(function, MA_ADDRESS_OF(context));
 }
 
 template <typename Function, typename Context>
 inline void invoke(const Function& function, Context& context)
 {
   using namespace boost::asio;
-  asio_handler_invoke(function, boost::addressof(context)); //-V111
+  asio_handler_invoke(function, MA_ADDRESS_OF(context));
 }
 
 #endif // defined(MA_HAS_RVALUE_REFS)

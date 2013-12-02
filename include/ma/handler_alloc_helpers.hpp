@@ -14,7 +14,13 @@
 
 #include <cstddef>
 #include <boost/asio.hpp>
+#include <ma/config.hpp>
+
+#if defined(MA_USE_CXX11_STD)
+#include <memory>
+#else
 #include <boost/utility/addressof.hpp>
+#endif // defined(MA_USE_CXX11_STD)
 
 // Calls to asio_handler_allocate and asio_handler_deallocate must be made from
 // a namespace that does not contain any overloads of these functions. The
@@ -26,14 +32,14 @@ template <typename Context>
 inline void* allocate(std::size_t size, Context& context)
 {
   using namespace boost::asio;
-  return asio_handler_allocate(size, boost::addressof(context)); //-V111
+  return asio_handler_allocate(size, MA_ADDRESS_OF(context));
 }
 
 template <typename Context>
 inline void deallocate(void* pointer, std::size_t size, Context& context)
 {
   using namespace boost::asio;
-  asio_handler_deallocate(pointer, size, boost::addressof(context)); //-V111
+  asio_handler_deallocate(pointer, size, MA_ADDRESS_OF(context));
 }
 
 } // namespace ma_handler_alloc_helpers

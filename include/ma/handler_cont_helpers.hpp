@@ -14,7 +14,13 @@
 
 #include <boost/version.hpp>
 #include <boost/asio.hpp>
+#include <ma/config.hpp>
+
+#if defined(MA_USE_CXX11_STD)
+#include <memory>
+#else
 #include <boost/utility/addressof.hpp>
+#endif // defined(MA_USE_CXX11_STD)
 
 namespace ma_handler_cont_helpers {
 
@@ -24,7 +30,7 @@ template <typename Context>
 inline bool is_continuation(Context& context)
 {
   using namespace boost::asio;
-  return asio_handler_is_continuation(boost::addressof(context)); //-V111
+  return asio_handler_is_continuation(MA_ADDRESS_OF(context));
 }
 
 #else  // BOOST_VERSION >= 105400

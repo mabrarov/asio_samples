@@ -6,7 +6,6 @@
 //
 
 #include <new>
-
 #include <boost/assert.hpp>
 #include <ma/config.hpp>
 #include <ma/shared_ptr_factory.hpp>

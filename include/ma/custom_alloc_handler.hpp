@@ -13,7 +13,6 @@
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
 #include <cstddef>
-#include <boost/utility/addressof.hpp>
 #include <ma/config.hpp>
 #include <ma/handler_alloc_helpers.hpp>
 #include <ma/handler_invoke_helpers.hpp>
@@ -23,6 +22,12 @@
 #include <utility>
 #include <ma/type_traits.hpp>
 #endif // defined(MA_HAS_RVALUE_REFS)
+
+#if defined(MA_USE_CXX11_STD)
+#include <memory>
+#else
+#include <boost/utility/addressof.hpp>
+#endif // defined(MA_USE_CXX11_STD)
 
 namespace ma {
 
@@ -104,7 +109,7 @@ public:
 
   template <typename H>
   custom_alloc_handler(Allocator& allocator, H&& handler)
-    : allocator_(boost::addressof(allocator))
+    : allocator_(MA_ADDRESS_OF(allocator))
     , handler_(std::forward<H>(handler))
   {
   }
@@ -132,7 +137,7 @@ public:
 #else // defined(MA_HAS_RVALUE_REFS)
 
   custom_alloc_handler(Allocator& allocator, const Handler& handler)
-    : allocator_(boost::addressof(allocator))
+    : allocator_(MA_ADDRESS_OF(allocator))
     , handler_(handler)
   {
   }
