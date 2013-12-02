@@ -13,20 +13,27 @@
 #include <cstddef>
 #include <iostream>
 #include <exception>
-#include <boost/ref.hpp>
 #include <boost/asio.hpp>
-#include <boost/bind.hpp>
 #include <boost/thread.hpp>
 #include <boost/format.hpp>
 #include <boost/optional.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/make_shared.hpp>
 #include <boost/utility/in_place_factory.hpp>
+#include <ma/config.hpp>
 #include <ma/handler_allocator.hpp>
 #include <ma/console_close_guard.hpp>
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/tutorial/async_interface.hpp>
 #include <ma/tutorial/async_implementation.hpp>
+
+#if defined(MA_USE_CXX11_STDLIB)
+#include <memory>
+#include <functional>
+#else
+#include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
+#include <boost/ref.hpp>
+#include <boost/bind.hpp>
+#endif // defined(MA_USE_CXX11_STDLIB)
 
 namespace {
 
@@ -35,8 +42,8 @@ typedef ma::in_place_handler_allocator<128> allocator_type;
 void handle_do_something(
     const ma::tutorial::async_interface_ptr& /*active_object*/,
     const boost::system::error_code& error,
-    const boost::shared_ptr<const std::string>& name,
-    const boost::shared_ptr<allocator_type>& /*allocator*/)
+    const MA_SHARED_PTR<const std::string>& name,
+    const MA_SHARED_PTR<allocator_type>& /*allocator*/)
 {
   if (error)
   {
@@ -73,34 +80,36 @@ int main(int /*argc*/, char* /*argv*/[])
 
     // Setup console controller
     ma::console_close_guard console_close_guard(
-        boost::bind(handle_program_exit, boost::ref(work_io_service)));
+        MA_BIND(handle_program_exit, MA_REF(work_io_service)));
     std::cout << "Press Ctrl+C to exit.\n";
 
     boost::thread_group work_threads;
     boost::optional<io_service::work> work_guard(
-        boost::in_place(boost::ref(work_io_service)));
+        boost::in_place(MA_REF(work_io_service)));
     for (std::size_t i = 0; i != work_thread_count; ++i)
     {
-      work_threads.create_thread(boost::bind(
-          &io_service::run, boost::ref(work_io_service)));
+      work_threads.create_thread(MA_BIND(
+          static_cast<std::size_t (boost::asio::io_service::*)(void)>(
+              &io_service::run), 
+          MA_REF(work_io_service)));
     }
 
     boost::format name_format("active_object%03d");
     for (std::size_t i = 0; i != 20; ++i)
     {
-      boost::shared_ptr<const std::string> name =
-          boost::make_shared<std::string>((name_format % i).str()); //-V609
+      MA_SHARED_PTR<const std::string> name =
+          MA_MAKE_SHARED<std::string>((name_format % i).str());
 
-      boost::shared_ptr<allocator_type> allocator =
-          boost::make_shared<allocator_type>();
+      MA_SHARED_PTR<allocator_type> allocator =
+          MA_MAKE_SHARED<allocator_type>();
 
       ma::tutorial::async_interface_ptr active_object =
           ma::tutorial::async_implementation::create(work_io_service, *name);
 
       ma::tutorial::async_interface::async_do_something(active_object,
           ma::make_custom_alloc_handler(*allocator,
-              boost::bind(handle_do_something, active_object, _1, name,
-                  allocator)));
+              MA_BIND(handle_do_something, active_object, 
+                  MA_PLACEHOLDER_1, name, allocator)));
     }
 
     work_guard = boost::none;

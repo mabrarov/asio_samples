@@ -18,7 +18,6 @@
 
 #include <boost/asio.hpp>
 #include <boost/noncopyable.hpp>
-#include <ma/config.hpp>
 #include <ma/windows/console_signal_service.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)

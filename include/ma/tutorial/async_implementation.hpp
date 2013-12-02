@@ -16,22 +16,28 @@
 #include <string>
 #include <boost/asio.hpp>
 #include <boost/format.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/enable_shared_from_this.hpp>
+#include <ma/config.hpp>
 #include <ma/handler_allocator.hpp>
 #include <ma/steady_deadline_timer.hpp>
 #include <ma/tutorial/async_interface.hpp>
+
+#if defined(MA_USE_CXX11_STDLIB)
+#include <memory>
+#else
+#include <boost/shared_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
+#endif // defined(MA_USE_CXX11_STDLIB)
 
 namespace ma {
 namespace tutorial {
 
 class async_implementation;
-typedef boost::shared_ptr<async_implementation> async_implementation_ptr;
+typedef MA_SHARED_PTR<async_implementation> async_implementation_ptr;
 
 class async_implementation
   : private boost::noncopyable
   , public async_interface
-  , public boost::enable_shared_from_this<async_implementation>
+  , public MA_ENABLE_SHARED_FROM_THIS<async_implementation>
 {
 private:
   typedef async_implementation this_type;

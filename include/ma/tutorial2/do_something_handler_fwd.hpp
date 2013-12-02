@@ -12,13 +12,19 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
+#include <ma/config.hpp>
+
+#if defined(MA_USE_CXX11_STDLIB)
+#include <memory>
+#else
 #include <boost/shared_ptr.hpp>
+#endif // defined(MA_USE_CXX11_STDLIB)
 
 namespace ma {
 namespace tutorial2 {
 
 class do_something_handler;
-typedef boost::shared_ptr<do_something_handler> do_something_handler_ptr;
+typedef MA_SHARED_PTR<do_something_handler> do_something_handler_ptr;
 
 } // namespace tutorial2
 } // namespace ma

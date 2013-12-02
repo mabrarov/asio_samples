@@ -382,7 +382,7 @@ execution_config MainForm::buildExecutionConfig() const
     sessionManagerThreadCount = boost::numeric_cast<std::size_t>(
         ui_.sessionManagerThreadsSpinBox->value());
 
-    currentWidget = ui_.sessionThreadsSpinBox; //-V519
+    currentWidget = ui_.sessionThreadsSpinBox;
     sessionThreadCount = boost::numeric_cast<std::size_t>(
         ui_.sessionThreadsSpinBox->value());
 

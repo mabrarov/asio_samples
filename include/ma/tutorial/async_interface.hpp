@@ -13,9 +13,7 @@
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
 #include <boost/asio.hpp>
-#include <boost/bind.hpp>
 #include <boost/optional.hpp>
-#include <boost/shared_ptr.hpp>
 #include <boost/system/error_code.hpp>
 #include <ma/config.hpp>
 #include <ma/handler_storage.hpp>
@@ -27,11 +25,19 @@
 #include <ma/type_traits.hpp>
 #endif // defined(MA_HAS_RVALUE_REFS)
 
+#if defined(MA_USE_CXX11_STDLIB)
+#include <memory>
+#include <functional>
+#else
+#include <boost/shared_ptr.hpp>
+#include <boost/bind.hpp>
+#endif // defined(MA_USE_CXX11_STDLIB)
+
 namespace ma {
 namespace tutorial {
 
 class async_interface;
-typedef boost::shared_ptr<async_interface> async_interface_ptr;
+typedef MA_SHARED_PTR<async_interface> async_interface_ptr;
 
 class async_interface
 {
@@ -157,7 +163,7 @@ void async_interface::async_do_something(
 
   async_interface->strand().post(ma::make_explicit_context_alloc_handler(
       std::forward<Handler>(handler),
-      boost::bind(func, std::move(async_interface), _1)));
+      MA_BIND(func, std::move(async_interface), MA_PLACEHOLDER_1)));
 }
 
 #endif // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
@@ -175,7 +181,7 @@ void async_interface::async_do_something(
   func_type func = &this_type::start_do_something<handler_type>;
 
   async_interface->strand().post(ma::make_explicit_context_alloc_handler(
-      handler, boost::bind(func, async_interface, _1)));
+      handler, MA_BIND(func, async_interface, MA_PLACEHOLDER_1)));
 }
 
 #endif // defined(MA_HAS_RVALUE_REFS)

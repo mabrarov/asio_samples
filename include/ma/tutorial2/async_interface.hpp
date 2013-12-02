@@ -12,14 +12,20 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
-#include <boost/shared_ptr.hpp>
+#include <ma/config.hpp>
 #include <ma/tutorial2/do_something_handler_fwd.hpp>
+
+#if defined(MA_USE_CXX11_STDLIB)
+#include <memory>
+#else
+#include <boost/shared_ptr.hpp>
+#endif // defined(MA_USE_CXX11_STDLIB)
 
 namespace ma {
 namespace tutorial2 {
 
 class async_interface;
-typedef boost::shared_ptr<ma::tutorial2::async_interface> async_interface_ptr;
+typedef MA_SHARED_PTR<ma::tutorial2::async_interface> async_interface_ptr;
 
 class async_interface
 {

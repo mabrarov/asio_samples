@@ -15,12 +15,12 @@
 #include <cstddef>
 #include <limits>
 #include <boost/assert.hpp>
-
 #include <boost/noncopyable.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/locks.hpp>
 #include <boost/thread/once.hpp>
 #include <boost/thread/condition_variable.hpp>
+#include <ma/config.hpp>
 
 #if defined(MA_USE_CXX11_STDLIB)
 #include <memory>

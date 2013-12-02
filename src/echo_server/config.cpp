@@ -246,7 +246,7 @@ void print_config(std::ostream& stream, std::size_t cpu_count,
     session_inactivity_timeout_sec = timeout->total_seconds();
   }
 
-  stream << "Number of found CPU(s)                : " //-V128
+  stream << "Number of found CPU(s)                : "
          << cpu_count
          << std::endl
          << "Number of session manager's threads   : "
