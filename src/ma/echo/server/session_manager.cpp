@@ -16,14 +16,14 @@
 #include <ma/echo/server/session_factory.hpp>
 #include <ma/echo/server/session_manager.hpp>
 
-#if defined(MA_USE_CXX11_STD)
+#if defined(MA_USE_CXX11_STDLIB)
 #include <memory>
 #include <functional> 
 #else
 #include <boost/ref.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/utility/addressof.hpp>
-#endif // defined(MA_USE_CXX11_STD)
+#endif // defined(MA_USE_CXX11_STDLIB)
 
 namespace ma {
 namespace echo {
@@ -512,11 +512,8 @@ session_manager_ptr session_manager::create(
     const session_manager_config& config)
 {
   typedef shared_ptr_factory_helper<this_type> helper;
-
-  using MA_REF;
-
   return MA_MAKE_SHARED<helper>(
-      ref(io_service), ref(managed_session_factory), config);
+      MA_REF(io_service), MA_REF(managed_session_factory), config);
 }
 
 session_manager::session_manager(boost::asio::io_service& io_service,

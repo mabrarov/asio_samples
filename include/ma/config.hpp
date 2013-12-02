@@ -171,13 +171,15 @@
 #endif
 
 //todo: add other compiler support
-#if (BOOST_VERSION >= 105500) && defined(BOOST_MSVC) && (BOOST_MSVC >= 1700)
-#define MA_USE_CXX11_STD
+#if (BOOST_VERSION >= 105500) && \
+    ((defined(BOOST_MSVC) && (BOOST_MSVC >= 1700)) \
+        || (defined(__GNUC__) && (__GNUC__ >= 4) && (__GNUC_MINOR__ >= 7)))
+#define MA_USE_CXX11_STDLIB
 #else
-#undef  MA_USE_CXX11_STD
+#undef  MA_USE_CXX11_STDLIB
 #endif
 
-#if defined(MA_USE_CXX11_STD)
+#if defined(MA_USE_CXX11_STDLIB)
 
 #define MA_SHARED_PTR              ::std::shared_ptr
 #define MA_WEAK_PTR                ::std::weak_ptr
@@ -191,7 +193,7 @@
 #define MA_ADDRESS_OF              ::std::addressof
 #define MA_STATIC_POINTER_CAST     ::std::static_pointer_cast
 
-#else
+#else // defined(MA_USE_CXX11_STDLIB)
 
 #define MA_SHARED_PTR              ::boost::shared_ptr
 #define MA_WEAK_PTR                ::boost::weak_ptr
@@ -205,6 +207,6 @@
 #define MA_ADDRESS_OF              ::boost::addressof
 #define MA_STATIC_POINTER_CAST     ::voost::static_pointer_cast
 
-#endif // defined(MA_USE_CXX11_STD)
+#endif // defined(MA_USE_CXX11_STDLIB)
 
 #endif // MA_CONFIG_HPP

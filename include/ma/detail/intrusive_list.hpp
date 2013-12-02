@@ -18,11 +18,11 @@
 #include <boost/noncopyable.hpp>
 #include <ma/config.hpp>
 
-#if defined(MA_USE_CXX11_STD)
+#if defined(MA_USE_CXX11_STDLIB)
 #include <memory>
 #else
 #include <boost/utility/addressof.hpp>
-#endif // defined(MA_USE_CXX11_STD)
+#endif // defined(MA_USE_CXX11_STDLIB)
 
 namespace ma {
 namespace detail {

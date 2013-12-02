@@ -17,12 +17,12 @@
 #include <ma/console_close_guard.hpp>
 #include <ma/windows/console_signal.hpp>
 
-#if defined(MA_USE_CXX11_STD)
+#if defined(MA_USE_CXX11_STDLIB)
 #include <functional>
 #else
 #include <boost/ref.hpp>
 #include <boost/bind.hpp>
-#endif // defined(MA_USE_CXX11_STD)
+#endif // defined(MA_USE_CXX11_STDLIB)
 
 namespace {
 
@@ -87,10 +87,8 @@ private:
   static void start_wait(signal_alerter& alerter, 
       const ctrl_function_type& ctrl_function)
   {
-    using MA_REF;
-
-    alerter.async_wait(
-        MA_BIND(&handle_signal, MA_PLACEHOLDER_1, ref(alerter), ctrl_function));
+    alerter.async_wait(MA_BIND(&handle_signal, 
+        MA_PLACEHOLDER_1, MA_REF(alerter), ctrl_function));
   }
 
   signal_alerter signal_alerter_;

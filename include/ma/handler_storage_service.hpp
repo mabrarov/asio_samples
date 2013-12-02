@@ -31,11 +31,11 @@
 #include <utility>
 #endif // defined(MA_HAS_RVALUE_REFS)
 
-#if defined(MA_USE_CXX11_STD)
+#if defined(MA_USE_CXX11_STDLIB)
 #include <functional>
 #else
 #include <boost/ref.hpp>
-#endif // defined(MA_USE_CXX11_STD)
+#endif // defined(MA_USE_CXX11_STDLIB)
 
 namespace ma {
 

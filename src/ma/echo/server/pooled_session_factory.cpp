@@ -12,13 +12,13 @@
 #include <ma/echo/server/error.hpp>
 #include <ma/echo/server/pooled_session_factory.hpp>
 
-#if defined(MA_USE_CXX11_STD)
+#if defined(MA_USE_CXX11_STDLIB)
 #include <memory>
 #include <functional>
 #else
 #include <boost/ref.hpp>
 #include <boost/make_shared.hpp>
-#endif // defined(MA_USE_CXX11_STD)
+#endif // defined(MA_USE_CXX11_STDLIB)
 
 namespace ma {
 namespace echo {
@@ -36,10 +36,7 @@ public:
       const session_config& config, const pool_link& back_link)
   {
     typedef shared_ptr_factory_helper<this_type> helper;
-
-    using MA_REF;
-
-    return MA_MAKE_SHARED<helper>(ref(io_service), config, back_link);
+    return MA_MAKE_SHARED<helper>(MA_REF(io_service), config, back_link);
   }
 
   const pool_link& back_link() const
@@ -158,9 +155,7 @@ pooled_session_factory::pool pooled_session_factory::create_pool(
   for (io_service_vector::const_iterator i = io_services.begin(),
       end = io_services.end(); i != end; ++i)
   {
-    using MA_REF;
-
-    result.push_back(MA_MAKE_SHARED<pool_item>(ref(**i), max_recycled));
+    result.push_back(MA_MAKE_SHARED<pool_item>(MA_REF(**i), max_recycled));
   }
   return result;
 }

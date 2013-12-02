@@ -13,13 +13,13 @@
 #include <ma/echo/server/error.hpp>
 #include <ma/echo/server/session.hpp>
 
-#if defined(MA_USE_CXX11_STD)
+#if defined(MA_USE_CXX11_STDLIB)
 #include <memory>
 #include <functional>
 #else
 #include <boost/ref.hpp>
 #include <boost/make_shared.hpp>
-#endif // defined(MA_USE_CXX11_STD)
+#endif // defined(MA_USE_CXX11_STDLIB)
 
 namespace ma {
 namespace echo {
@@ -132,10 +132,7 @@ session_ptr session::create(boost::asio::io_service& io_service,
     const session_config& config)
 {
   typedef shared_ptr_factory_helper<this_type> helper;
-
-  using MA_REF;
-
-  return MA_MAKE_SHARED<helper>(ref(io_service), config);
+  return MA_MAKE_SHARED<helper>(MA_REF(io_service), config);
 }
 
 session::session(boost::asio::io_service& io_service,

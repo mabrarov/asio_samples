@@ -14,12 +14,12 @@
 
 #include <ma/config.hpp>
 
-#if defined(MA_USE_CXX11_STD)
+#if defined(MA_USE_CXX11_STDLIB)
 #include <memory>
 #else
 #include <boost/weak_ptr.hpp>
 #include <boost/shared_ptr.hpp>
-#endif // defined(MA_USE_CXX11_STD)
+#endif // defined(MA_USE_CXX11_STDLIB)
 
 namespace ma {
 namespace echo {
