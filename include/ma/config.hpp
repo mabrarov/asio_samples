@@ -192,6 +192,9 @@
 #define MA_FUNCTION                ::std::function
 #define MA_ADDRESS_OF              ::std::addressof
 #define MA_STATIC_POINTER_CAST     ::std::static_pointer_cast
+#define MA_TUPLE                   ::std::tuple
+#define MA_TUPLE_GET               ::std::get
+#define MA_MAKE_TUPLE              ::std::make_tuple
 
 #else // defined(MA_USE_CXX11_STDLIB)
 
@@ -206,6 +209,9 @@
 #define MA_FUNCTION                ::boost::function
 #define MA_ADDRESS_OF              ::boost::addressof
 #define MA_STATIC_POINTER_CAST     ::boost::static_pointer_cast
+#define MA_TUPLE                   ::boost::tuple
+#define MA_TUPLE_GET               ::boost::get
+#define MA_MAKE_TUPLE              ::boost::make_tuple
 
 #endif // defined(MA_USE_CXX11_STDLIB)
 

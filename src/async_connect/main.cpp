@@ -17,15 +17,10 @@
 #include <algorithm>
 #include <exception>
 #include <boost/assert.hpp>
-#include <boost/ref.hpp>
 #include <boost/asio.hpp>
-#include <boost/bind.hpp>
 #include <boost/thread.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/noncopyable.hpp>
-#include <boost/scoped_array.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/make_shared.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
 #include <boost/optional.hpp>
@@ -40,6 +35,16 @@
 #if defined(MA_HAS_BOOST_TIMER)
 #include <boost/timer/timer.hpp>
 #endif // defined(MA_HAS_BOOST_TIMER)
+
+#if defined(MA_USE_CXX11_STDLIB)
+#include <memory>
+#include <functional>
+#else
+#include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
+#include <boost/ref.hpp>
+#include <boost/bind.hpp>
+#endif // defined(MA_USE_CXX11_STDLIB)
 
 namespace {
 
@@ -168,13 +173,13 @@ public:
   void async_start(const protocol::resolver::iterator& endpoint_iterator)
   {
     strand_.post(ma::make_custom_alloc_handler(connect_allocator_,
-        boost::bind(&this_type::do_start, this, endpoint_iterator)));
+        MA_BIND(&this_type::do_start, this, endpoint_iterator)));
   }
 
   void async_stop()
   {
     strand_.post(ma::make_custom_alloc_handler(stop_allocator_,
-        boost::bind(&this_type::do_stop, this)));
+        MA_BIND(&this_type::do_stop, this)));
   }
 
   limited_counter connect_count() const
@@ -215,7 +220,7 @@ private:
     protocol::endpoint endpoint = *current_endpoint_iterator;
     ma::async_connect(socket_, endpoint, MA_STRAND_WRAP(strand_,
         ma::make_custom_alloc_handler(connect_allocator_,
-            boost::bind(&this_type::handle_connect, this, _1,
+            MA_BIND(&this_type::handle_connect, this, MA_PLACEHOLDER_1,
                 initial_endpoint_iterator, current_endpoint_iterator))));
   }
 
@@ -276,7 +281,7 @@ private:
     timer_.expires_from_now(*connect_pause_);
     timer_.async_wait(MA_STRAND_WRAP(strand_,
         ma::make_custom_alloc_handler(timer_allocator_,
-            boost::bind(&this_type::handle_timer, this, _1,
+            MA_BIND(&this_type::handle_timer, this, MA_PLACEHOLDER_1,
                 initial_endpoint_iterator))));
     timer_in_progess_ = true;
   }
@@ -385,7 +390,7 @@ private:
   ma::in_place_handler_allocator<256> timer_allocator_;
 }; // class session
 
-typedef boost::shared_ptr<session> session_ptr;
+typedef MA_SHARED_PTR<session> session_ptr;
 
 struct session_manager_config
 {
@@ -407,10 +412,10 @@ public:
   session_config    managed_session_config;
 }; // struct session_manager_config
 
-typedef boost::shared_ptr<boost::asio::io_service> io_service_ptr;
-typedef std::vector<io_service_ptr> io_service_vector;
-typedef boost::shared_ptr<boost::asio::io_service::work> io_service_work_ptr;
-typedef std::vector<io_service_work_ptr> io_service_work_vector;
+typedef MA_SHARED_PTR<boost::asio::io_service>       io_service_ptr;
+typedef std::vector<io_service_ptr>                  io_service_vector;
+typedef MA_SHARED_PTR<boost::asio::io_service::work> io_service_work_ptr;
+typedef std::vector<io_service_work_ptr>             io_service_work_vector;
 
 class session_manager : private boost::noncopyable
 {
@@ -442,8 +447,8 @@ public:
       for (iterator j = sbegin; (j != send) && (i != config.session_count);
           ++j, ++i)
       {
-        sessions_.push_back(boost::make_shared<session>(boost::ref(**j),
-            config.managed_session_config, boost::ref(work_state_)));
+        sessions_.push_back(MA_MAKE_SHARED<session>(MA_REF(**j),
+            config.managed_session_config, MA_REF(work_state_)));
       }
     }
     started_sessions_end_ = sessions_.begin();
@@ -455,20 +460,20 @@ public:
 
     std::for_each(session_vector::const_iterator(sessions_.begin()),
         started_sessions_end_,
-        boost::bind(&this_type::register_stats, this, _1));
+        MA_BIND(&this_type::register_stats, this, MA_PLACEHOLDER_1));
     stats_.print();
   }
 
   void async_start(const protocol::resolver::iterator& endpoint_iterator)
   {
     strand_.post(ma::make_custom_alloc_handler(start_allocator_,
-        boost::bind(&this_type::do_start, this, endpoint_iterator)));
+        MA_BIND(&this_type::do_start, this, endpoint_iterator)));
   }
 
   void async_stop()
   {
     strand_.post(ma::make_custom_alloc_handler(stop_allocator_,
-        boost::bind(&this_type::do_stop, this)));
+        MA_BIND(&this_type::do_stop, this)));
   }
 
   void wait(const boost::posix_time::time_duration& timeout)
@@ -519,14 +524,14 @@ private:
       timer_.expires_from_now(*block_pause_);
       timer_.async_wait(MA_STRAND_WRAP(strand_,
           ma::make_custom_alloc_handler(timer_allocator_,
-              boost::bind(&this_type::handle_scheduled_session_start, this,
-                  _1, endpoint_iterator))));
+              MA_BIND(&this_type::handle_scheduled_session_start, this,
+                  MA_PLACEHOLDER_1, endpoint_iterator))));
       timer_in_progess_ = true;
     }
     else
     {
       strand_.post(ma::make_custom_alloc_handler(timer_allocator_,
-          boost::bind(&this_type::handle_scheduled_session_start, this,
+          MA_BIND(&this_type::handle_scheduled_session_start, this,
               boost::system::error_code(), endpoint_iterator)));
     }
   }
@@ -574,7 +579,7 @@ private:
     cancel_timer();
     stopped_ = true;
     std::for_each(session_vector::const_iterator(sessions_.begin()),
-        started_sessions_end_, boost::bind(&session::async_stop, _1));
+        started_sessions_end_, MA_BIND(&session::async_stop, MA_PLACEHOLDER_1));
   }
 
   void register_stats(const session_ptr& session)
@@ -894,13 +899,13 @@ io_service_vector create_session_io_services(const client_config& config)
   {
     for (std::size_t i = 0; i != config.thread_count; ++i)
     {
-      io_services.push_back(boost::make_shared<boost::asio::io_service>(1));
+      io_services.push_back(MA_MAKE_SHARED<boost::asio::io_service>(1));
     }
   }
   else
   {
     io_services.push_back(
-        boost::make_shared<boost::asio::io_service>(config.thread_count));
+        MA_MAKE_SHARED<boost::asio::io_service>(config.thread_count));
   }
   return io_services;
 }
@@ -912,7 +917,7 @@ io_service_work_vector create_works(const io_service_vector& io_services)
       end = io_services.end(); i != end; ++i)
   {
     works.push_back(
-        boost::make_shared<boost::asio::io_service::work>(boost::ref(**i)));
+        MA_MAKE_SHARED<boost::asio::io_service::work>(MA_REF(**i)));
   }
   return works;
 }
@@ -925,8 +930,10 @@ void create_session_threads(boost::thread_group& threads,
     for (io_service_vector::const_iterator i = io_services.begin(),
         end = io_services.end(); i != end; ++i)
     {
-      threads.create_thread(
-          boost::bind(&boost::asio::io_service::run, i->get()));
+      threads.create_thread(MA_BIND(
+          static_cast<std::size_t (boost::asio::io_service::*)(void)>(
+              &boost::asio::io_service::run),
+          i->get()));
     }
   }
   else
@@ -934,8 +941,10 @@ void create_session_threads(boost::thread_group& threads,
     boost::asio::io_service& io_service = *io_services.front();
     for (std::size_t i = 0; i != config.thread_count; ++i)
     {
-      threads.create_thread(
-          boost::bind(&boost::asio::io_service::run, &io_service));
+      threads.create_thread(MA_BIND(
+          static_cast<std::size_t (boost::asio::io_service::*)(void)>(
+              &boost::asio::io_service::run),
+          &io_service));
     }
   }
 }
@@ -991,9 +1000,11 @@ int main(int argc, char* argv[])
     create_session_threads(session_threads, config, session_io_services);
 
     boost::optional<boost::asio::io_service::work> session_manager_work_guard(
-        boost::in_place(boost::ref(session_manager_io_service)));
-    boost::thread session_manager_thread(boost::bind(
-        &boost::asio::io_service::run, &session_manager_io_service));
+        boost::in_place(MA_REF(session_manager_io_service)));
+    boost::thread session_manager_thread(MA_BIND(
+        static_cast<std::size_t (boost::asio::io_service::*)(void)>(
+            &boost::asio::io_service::run), 
+        &session_manager_io_service));
 
 #if defined(MA_HAS_BOOST_TIMER)
     boost::timer::cpu_timer timer;

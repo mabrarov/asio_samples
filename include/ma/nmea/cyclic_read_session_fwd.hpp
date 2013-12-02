@@ -12,13 +12,19 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
+#include <ma/config.hpp>
+
+#if defined(MA_USE_CXX11_STDLIB)
+#include <memory>
+#else
 #include <boost/shared_ptr.hpp>
+#endif // defined(MA_USE_CXX11_STDLIB)
 
 namespace ma {
 namespace nmea {
 
 class cyclic_read_session;
-typedef boost::shared_ptr<cyclic_read_session> cyclic_read_session_ptr;
+typedef MA_SHARED_PTR<cyclic_read_session> cyclic_read_session_ptr;
 
 } // namespace nmea
 } // namespace ma

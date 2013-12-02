@@ -15,16 +15,11 @@
 #include <exception>
 #include <limits>
 #include <boost/assert.hpp>
-#include <boost/ref.hpp>
 #include <boost/asio.hpp>
-#include <boost/bind.hpp>
 #include <boost/optional.hpp>
-#include <boost/function.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/locks.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/make_shared.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/utility/in_place_factory.hpp>
 #include <ma/config.hpp>
@@ -36,6 +31,17 @@
 #if defined(MA_HAS_RVALUE_REFS)
 #include <utility>
 #endif // defined(MA_HAS_RVALUE_REFS)
+
+#if defined(MA_USE_CXX11_STDLIB)
+#include <memory>
+#include <functional>
+#else
+#include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
+#include <boost/ref.hpp>
+#include <boost/bind.hpp>
+#include <boost/function.hpp>
+#endif // defined(MA_USE_CXX11_STDLIB)
 
 namespace ma {
 namespace test {
@@ -106,12 +112,14 @@ class io_service_pool : private boost::noncopyable
 {
 public:
   io_service_pool(boost::asio::io_service& io_service, std::size_t size)
-    : work_guard_(boost::in_place(boost::ref(io_service)))
+    : work_guard_(boost::in_place(MA_REF(io_service)))
   {
     for (std::size_t i = 0; i < size; ++i)
     {
-      threads_.create_thread(
-          boost::bind(&boost::asio::io_service::run, &io_service));
+      threads_.create_thread(MA_BIND(
+          static_cast<std::size_t (boost::asio::io_service::*)(void)>(
+              &boost::asio::io_service::run),
+          &io_service));
     }
   }
 
@@ -183,7 +191,7 @@ private:
 namespace lockable_wrapper {
 
 typedef std::string data_type;
-typedef boost::function<void (void)> continuation;
+typedef MA_FUNCTION<void (void)> continuation;
 
 void mutating_func1(data_type& d, const continuation& cont)
 {
@@ -223,9 +231,9 @@ void run_test()
   {
     boost::lock_guard<boost::mutex> data_guard(mutex);
 
-    io_service.post(ma::make_lockable_wrapped_handler(mutex, boost::bind(
-        mutating_func1, boost::ref(data), continuation(
-            boost::bind(&threshold::dec, boost::ref(done_threshold))))));
+    io_service.post(ma::make_lockable_wrapped_handler(mutex, MA_BIND(
+        mutating_func1, MA_REF(data), continuation(
+            MA_BIND(&threshold::dec, MA_REF(done_threshold))))));
 
     boost::this_thread::sleep(boost::posix_time::seconds(5));
     data = "Zero";
@@ -242,9 +250,9 @@ void run_test()
 
 namespace handler_storage_service_destruction {
 
-typedef int arg_type;
-typedef ma::handler_storage<arg_type> handler_storage_type;
-typedef boost::shared_ptr<handler_storage_type> handler_storage_ptr;
+typedef int                                 arg_type;
+typedef ma::handler_storage<arg_type>       handler_storage_type;
+typedef MA_SHARED_PTR<handler_storage_type> handler_storage_ptr;
 
 class testable_handler_storage : public handler_storage_type
 {
@@ -378,10 +386,10 @@ private:
   typedef active_destructing_handler this_type;
 
 public:
-  typedef boost::function<void (void)> continuation;
+  typedef MA_FUNCTION<void (void)> continuation;
 
   active_destructing_handler(const continuation& cont, std::size_t& counter)
-    : cont_(boost::make_shared<continuation_holder>(cont))
+    : cont_(MA_MAKE_SHARED<continuation_holder>(cont))
     , counter_(counter)
   {
     ++counter_;
@@ -429,7 +437,7 @@ private:
     continuation cont_;
   }; // continuation_holder
 
-  typedef boost::shared_ptr<continuation_holder> continuation_holder_ptr;
+  typedef MA_SHARED_PTR<continuation_holder> continuation_holder_ptr;
 
   continuation_holder_ptr cont_;
   std::size_t& counter_;
@@ -478,16 +486,16 @@ void run_test()
     boost::asio::io_service io_service;
 
     handler_storage_ptr handler_storage1 =
-        boost::make_shared<testable_handler_storage>(
-            boost::ref(io_service), boost::ref(counter));
+        MA_MAKE_SHARED<testable_handler_storage>(
+            MA_REF(io_service), MA_REF(counter));
     handler_storage1->store(hooked_handler(handler_storage1, counter));
 
     handler_storage_ptr handler_storage2 =
-        boost::make_shared<testable_handler_storage>(
-            boost::ref(io_service), boost::ref(counter));
+        MA_MAKE_SHARED<testable_handler_storage>(
+            MA_REF(io_service), MA_REF(counter));
     handler_storage2->store(active_destructing_handler(
-        boost::bind(store_hooked_handler, handler_storage2, handler_storage2,
-            boost::ref(counter)),
+        MA_BIND(store_hooked_handler, handler_storage2, 
+            handler_storage2, MA_REF(counter)),
         counter));
   }
   BOOST_ASSERT_MSG(0 == counter, "Not all objects were destroyed");
@@ -510,38 +518,37 @@ void run_test()
     handler_storage2.store(simple_handler(counter));
 
     handler_storage_ptr handler_storage3 =
-        boost::make_shared<testable_handler_storage>(
-            boost::ref(io_service), boost::ref(counter));
+        MA_MAKE_SHARED<testable_handler_storage>(
+            MA_REF(io_service), MA_REF(counter));
     handler_storage3->store(hooked_handler(handler_storage3, counter));
 
     testable_handler_storage handler_storage4(io_service, counter);
     handler_storage4.store(simple_handler(counter));
 
     handler_storage_ptr handler_storage5 =
-        boost::make_shared<testable_handler_storage>(
-            boost::ref(io_service), boost::ref(counter));
+        MA_MAKE_SHARED<testable_handler_storage>(
+            MA_REF(io_service), MA_REF(counter));
     handler_storage5->store(active_destructing_handler(
-        boost::bind(store_simple_handler, handler_storage5,
-            boost::ref(counter)),
+        MA_BIND(store_simple_handler, handler_storage5, MA_REF(counter)),
         counter));
 
     testable_handler_storage handler_storage6(io_service, counter);
     handler_storage6.store(simple_handler(counter));
 
     handler_storage_ptr handler_storage7 =
-        boost::make_shared<testable_handler_storage>(
-            boost::ref(io_service), boost::ref(counter));
+        MA_MAKE_SHARED<testable_handler_storage>(
+            MA_REF(io_service), MA_REF(counter));
     handler_storage7->store(active_destructing_handler(
-        boost::bind(store_hooked_handler, handler_storage7, handler_storage7,
-            boost::ref(counter)),
+        MA_BIND(store_hooked_handler, handler_storage7, 
+            handler_storage7, MA_REF(counter)),
         counter));
 
     handler_storage_ptr handler_storage8 =
-        boost::make_shared<testable_handler_storage>(
-            boost::ref(io_service), boost::ref(counter));
+        MA_MAKE_SHARED<testable_handler_storage>(
+            MA_REF(io_service), MA_REF(counter));
     handler_storage8->store(active_destructing_handler(
-        boost::bind(store_hooked_handler, handler_storage7, handler_storage5,
-            boost::ref(counter)),
+        MA_BIND(store_hooked_handler, handler_storage7, 
+            handler_storage5, MA_REF(counter)),
         counter));
   }
   BOOST_ASSERT_MSG(0 == counter, "Not all objects were destroyed");
@@ -641,7 +648,7 @@ void run_test()
 
 namespace handler_storage_arg {
 
-typedef boost::function<void (void)> continuation;
+typedef MA_FUNCTION<void (void)> continuation;
 
 class test_handler_base
 {
@@ -766,7 +773,7 @@ void run_test()
 
     handler_storage_type handler_storage(io_service);
     handler_storage.store(void_handler_without_target(4,
-        boost::bind(&threshold::dec, &done_threshold)));
+        MA_BIND(&threshold::dec, &done_threshold)));
 
     std::cout << handler_storage.target() << std::endl;
     done_threshold.inc();
@@ -778,7 +785,7 @@ void run_test()
 
     handler_storage_type handler_storage(io_service);
     handler_storage.store(int_handler_without_target(4,
-        boost::bind(&threshold::dec, &done_threshold)));
+        MA_BIND(&threshold::dec, &done_threshold)));
 
     std::cout << handler_storage.target() << std::endl;
     done_threshold.inc();
@@ -790,7 +797,7 @@ void run_test()
 
     handler_storage_type handler_storage(io_service);
     handler_storage.store(void_handler_with_target(4,
-        boost::bind(&threshold::dec, &done_threshold)));
+        MA_BIND(&threshold::dec, &done_threshold)));
 
     std::cout << handler_storage.target()->get_value() << std::endl;
     done_threshold.inc();
@@ -802,7 +809,7 @@ void run_test()
 
     handler_storage_type handler_storage(io_service);
     handler_storage.store(int_handler_with_target(4,
-        boost::bind(&threshold::dec, &done_threshold)));
+        MA_BIND(&threshold::dec, &done_threshold)));
 
     std::cout << handler_storage.target()->get_value() << std::endl;
     done_threshold.inc();
@@ -814,11 +821,11 @@ void run_test()
 
     ma::handler_storage<int, test_handler_base> handler_storage1(io_service);
     handler_storage1.store(int_handler_with_target(1,
-        boost::bind(&threshold::dec, &done_threshold)));
+        MA_BIND(&threshold::dec, &done_threshold)));
 
     ma::handler_storage<void> handler_storage2(io_service);
     handler_storage2.store(void_handler_without_target(2,
-        boost::bind(&threshold::dec, &done_threshold)));
+        MA_BIND(&threshold::dec, &done_threshold)));
   }
 
   done_threshold.wait();

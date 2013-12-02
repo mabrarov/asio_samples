@@ -13,7 +13,6 @@
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
 #include <cstddef>
-#include <boost/utility/addressof.hpp>
 #include <boost/thread/locks.hpp>
 #include <ma/config.hpp>
 #include <ma/handler_alloc_helpers.hpp>
@@ -24,6 +23,12 @@
 #include <utility>
 #include <ma/type_traits.hpp>
 #endif // defined(MA_HAS_RVALUE_REFS)
+
+#if defined(MA_USE_CXX11_STDLIB)
+#include <memory>
+#else
+#include <boost/utility/addressof.hpp>
+#endif // defined(MA_USE_CXX11_STDLIB)
 
 namespace ma {
 
@@ -48,7 +53,7 @@ public:
 
   template <typename H>
   lockable_wrapped_handler(Lockable& lockable, H&& handler)
-    : lockable_(boost::addressof(lockable))
+    : lockable_(MA_ADDRESS_OF(lockable))
     , handler_(std::forward<H>(handler))
   {
   }
@@ -76,7 +81,7 @@ public:
 #else // defined(MA_HAS_RVALUE_REFS)
 
   lockable_wrapped_handler(Lockable& lockable, const Handler& handler)
-    : lockable_(boost::addressof(lockable))
+    : lockable_(MA_ADDRESS_OF(lockable))
     , handler_(handler)
   {
   }

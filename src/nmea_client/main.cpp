@@ -16,13 +16,11 @@
 #include <utility>
 #include <iostream>
 #include <exception>
-#include <boost/ref.hpp>
 #include <boost/asio.hpp>
-#include <boost/bind.hpp>
 #include <boost/thread.hpp>
-#include <boost/make_shared.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/system/error_code.hpp>
+#include <ma/config.hpp>
 #include <ma/codecvt_cast.hpp>
 #include <ma/handler_allocator.hpp>
 #include <ma/custom_alloc_handler.hpp>
@@ -30,13 +28,22 @@
 #include <ma/nmea/cyclic_read_session.hpp>
 #include <ma/console_close_guard.hpp>
 
+#if defined(MA_USE_CXX11_STDLIB)
+#include <memory>
+#include <functional>
+#else
+#include <boost/make_shared.hpp>
+#include <boost/ref.hpp>
+#include <boost/bind.hpp>
+#endif // defined(MA_USE_CXX11_STDLIB)
+
 typedef std::codecvt<wchar_t, char, mbstate_t> wcodecvt_type;
-typedef ma::nmea::cyclic_read_session        session;
-typedef ma::nmea::cyclic_read_session_ptr    session_ptr;
-typedef ma::nmea::frame_ptr                  frame_ptr;
-typedef ma::in_place_handler_allocator<128>  handler_allocator_type;
-typedef std::vector<frame_ptr>               frame_buffer_type;
-typedef boost::shared_ptr<frame_buffer_type> frame_buffer_ptr;
+typedef ma::nmea::cyclic_read_session          session;
+typedef ma::nmea::cyclic_read_session_ptr      session_ptr;
+typedef ma::nmea::frame_ptr                    frame_ptr;
+typedef ma::in_place_handler_allocator<128>    handler_allocator_type;
+typedef std::vector<frame_ptr>                 frame_buffer_type;
+typedef MA_SHARED_PTR<frame_buffer_type>       frame_buffer_ptr;
 
 void handle_start(const session_ptr& the_session,
     handler_allocator_type& the_allocator,
@@ -147,7 +154,7 @@ int main(int argc, char* argv[])
     handler_allocator_type the_allocator;
 
     frame_buffer_ptr the_frame_buffer(
-        boost::make_shared<frame_buffer_type>(message_queue_size));
+        MA_MAKE_SHARED<frame_buffer_type>(message_queue_size));
 
     // An io_service for the thread pool
     // (for the executors... Java Executors API? Apache MINA :)
@@ -175,12 +182,12 @@ int main(int argc, char* argv[])
 
     // Start session (not actually, because there are no work threads yet)
     the_session->async_start(ma::make_custom_alloc_handler(the_allocator,
-        boost::bind(handle_start, the_session, boost::ref(the_allocator),
-            the_frame_buffer, _1)));
+        MA_BIND(handle_start, the_session, MA_REF(the_allocator),
+            the_frame_buffer, MA_PLACEHOLDER_1)));
 
     // Setup console controller
     ma::console_close_guard console_close_guard(
-        boost::bind(handle_console_close, the_session));
+        MA_BIND(handle_console_close, the_session));
 
     std::cout << "Press Ctrl+C to exit...\n";
 
@@ -188,8 +195,10 @@ int main(int argc, char* argv[])
     boost::thread_group work_threads;
     for (std::size_t i = 0; i != thread_count; ++i)
     {
-      work_threads.create_thread(
-          boost::bind(&boost::asio::io_service::run, &session_io_service));
+      work_threads.create_thread(MA_BIND(
+          static_cast<std::size_t (boost::asio::io_service::*)(void)>(
+              &boost::asio::io_service::run),
+          &session_io_service));
     }
     work_threads.join_all();
 
@@ -210,7 +219,7 @@ int main(int argc, char* argv[])
 void handle_console_close(const session_ptr& session)
 {
   std::cout << "User console close detected. Begin stop the session...\n";
-  session->async_stop(boost::bind(handle_stop, _1));
+  session->async_stop(MA_BIND(handle_stop, MA_PLACEHOLDER_1));
 }
 
 void handle_start(const session_ptr& the_session,
@@ -228,8 +237,9 @@ void handle_start(const session_ptr& the_session,
   std::cout << "Session started successfully. Begin read...\n";
 
   the_session->async_read_some(frame_buffer->begin(), frame_buffer->end(),
-      ma::make_custom_alloc_handler(the_allocator, boost::bind(handle_read,
-          the_session, boost::ref(the_allocator), frame_buffer, _1, _2)));
+      ma::make_custom_alloc_handler(the_allocator, MA_BIND(handle_read,
+          the_session, MA_REF(the_allocator), frame_buffer, 
+              MA_PLACEHOLDER_1, MA_PLACEHOLDER_2)));
 }
 
 void handle_stop(const boost::system::error_code& error)
@@ -266,8 +276,9 @@ void handle_read(const session_ptr& the_session,
         " But it\'s a serial port so begin read operation again...\n";
 
     the_session->async_read_some(frame_buffer->begin(), frame_buffer->end(),
-        ma::make_custom_alloc_handler(the_allocator, boost::bind(handle_read,
-            the_session, boost::ref(the_allocator), frame_buffer, _1, _2)));
+        ma::make_custom_alloc_handler(the_allocator, MA_BIND(handle_read,
+            the_session, MA_REF(the_allocator), frame_buffer, 
+                MA_PLACEHOLDER_1, MA_PLACEHOLDER_2)));
     return;
   }
 
@@ -275,18 +286,20 @@ void handle_read(const session_ptr& the_session,
   {
     std::cout << "Read unsuccessful. Begin the session stop...\n";
     the_session->async_stop(ma::make_custom_alloc_handler(the_allocator,
-        boost::bind(handle_stop, _1)));
+        MA_BIND(handle_stop, MA_PLACEHOLDER_1)));
     return;
   }
 
   the_session->async_read_some(frame_buffer->begin(), frame_buffer->end(),
-      ma::make_custom_alloc_handler(the_allocator, boost::bind(handle_read,
-          the_session, boost::ref(the_allocator), frame_buffer, _1, _2)));
+      ma::make_custom_alloc_handler(the_allocator, MA_BIND(handle_read,
+          the_session, MA_REF(the_allocator), frame_buffer, 
+              MA_PLACEHOLDER_1, MA_PLACEHOLDER_2)));
 
   // Only for test of cyclic_read_session::async_write_some
   //frame_ptr frame = *(frame_buffer->begin());
   //the_session->async_write_some(boost::asio::buffer(*frame),
-  //    boost::bind(handle_write, the_session, frame, _1, _2));
+  //    MA_BIND(handle_write, the_session, frame, 
+  //        MA_PLACEHOLDER_1, MA_PLACEHOLDER_2));
 }
 
 void print_frames(const frame_buffer_type& frames, std::size_t size)

@@ -6,10 +6,18 @@
 //
 
 #include <stdexcept>
-#include <boost/ref.hpp>
-#include <boost/make_shared.hpp>
+#include <ma/config.hpp>
 #include <ma/shared_ptr_factory.hpp>
 #include <ma/nmea/cyclic_read_session.hpp>
+
+#if defined(MA_USE_CXX11_STDLIB)
+#include <memory>
+#include <functional>
+#else
+#include <boost/make_shared.hpp>
+#include <boost/ref.hpp>
+#include <boost/bind.hpp>
+#endif // defined(MA_USE_CXX11_STDLIB)
 
 namespace ma {
 namespace nmea {
@@ -20,7 +28,7 @@ cyclic_read_session_ptr cyclic_read_session::create(
     const std::string& frame_tail)
 {
   typedef shared_ptr_factory_helper<this_type> helper;
-  return boost::make_shared<helper>(boost::ref(io_service), read_buffer_size,
+  return MA_MAKE_SHARED<helper>(MA_REF(io_service), read_buffer_size,
       frame_buffer_size, frame_head, frame_tail);
 }
 
@@ -175,8 +183,8 @@ void cyclic_read_session::read_until_head()
 {
   boost::asio::async_read_until(serial_port_, read_buffer_, frame_head_,
       MA_STRAND_WRAP(strand_, make_custom_alloc_handler(read_allocator_,
-          boost::bind(&this_type::handle_read_head, shared_from_this(),
-              _1, _2))));
+          MA_BIND(&this_type::handle_read_head, shared_from_this(),
+              MA_PLACEHOLDER_1, MA_PLACEHOLDER_2))));
 
   port_read_in_progress_ = true;
 }
@@ -185,8 +193,8 @@ void cyclic_read_session::read_until_tail()
 {
   boost::asio::async_read_until(serial_port_, read_buffer_, frame_tail_,
       MA_STRAND_WRAP(strand_, make_custom_alloc_handler(read_allocator_,
-          boost::bind(&this_type::handle_read_tail, shared_from_this(),
-              _1, _2))));
+          MA_BIND(&this_type::handle_read_tail, shared_from_this(),
+              MA_PLACEHOLDER_1, MA_PLACEHOLDER_2))));
 
   port_read_in_progress_ = true;
 }
@@ -274,7 +282,7 @@ void cyclic_read_session::handle_read_tail(
   }
   else
   {
-    new_frame = boost::make_shared<frame>(data_begin, data_end);
+    new_frame = MA_MAKE_SHARED<frame>(data_begin, data_end);
   }
 
   // Consume processed data
@@ -290,7 +298,7 @@ void cyclic_read_session::handle_read_tail(
   if (extern_read_handler_base* handler = extern_read_handler_.target())
   {
     read_result_type copy_result = handler->copy(frame_buffer_);
-    frame_buffer_.erase_begin(copy_result.get<1>());
+    frame_buffer_.erase_begin(MA_TUPLE_GET<1>(copy_result));
     extern_read_handler_.post(copy_result);
   }
 }

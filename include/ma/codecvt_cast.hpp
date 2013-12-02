@@ -15,8 +15,14 @@
 #include <locale>
 #include <string>
 #include <stdexcept>
-#include <boost/scoped_array.hpp>
 #include <boost/throw_exception.hpp>
+#include <ma/config.hpp>
+
+#if defined(MA_USE_CXX11_STDLIB)
+#include <memory>
+#else
+#include <boost/scoped_array.hpp>
+#endif // defined(MA_USE_CXX11_STDLIB)
 
 namespace ma {
 namespace codecvt_cast {
@@ -52,7 +58,11 @@ const std::basic_string<CharType> in(
           codecvt.length(state, first_external, last_external,
               internal_str.max_size()));
 
+#if defined(MA_USE_CXX11_STDLIB)
+  std::unique_ptr<CharType[]> out_buf(new CharType[out_buf_size]);
+#else
   boost::scoped_array<CharType> out_buf(new CharType[out_buf_size]);
+#endif // defined(MA_USE_CXX11_STDLIB)
 
   CharType* first_internal = out_buf.get();
   CharType* last_internal  = first_internal + out_buf_size;
@@ -94,7 +104,12 @@ const std::basic_string<Byte> out(
   typename wstring::size_type out_buf_size =
       static_cast<typename wstring::size_type>(codecvt.max_length()) *
           internal_str_size;
+
+#if defined(MA_USE_CXX11_STDLIB)
+  std::unique_ptr<Byte[]> out_buf(new Byte[out_buf_size]);
+#else
   boost::scoped_array<Byte> out_buf(new Byte[out_buf_size]);
+#endif // defined(MA_USE_CXX11_STDLIB)
 
   const CharType* first_internal = internal_str.data();
   const CharType* last_internal  = first_internal + internal_str_size;
