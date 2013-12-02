@@ -15,12 +15,7 @@
 #include <string>
 #include <iostream>
 #include <exception>
-#include <boost/ref.hpp>
 #include <boost/asio.hpp>
-#include <boost/bind.hpp>
-#include <boost/function.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/make_shared.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/tuple/tuple.hpp>
@@ -28,6 +23,7 @@
 #include <boost/thread/thread.hpp>
 #include <boost/program_options.hpp>
 #include <boost/thread/condition_variable.hpp>
+#include <ma/config.hpp>
 #include <ma/handler_allocator.hpp>
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/console_close_guard.hpp>
@@ -35,6 +31,16 @@
 #include <ma/echo/server/pooled_session_factory.hpp>
 #include <ma/echo/server/session_manager.hpp>
 #include "config.hpp"
+
+#if defined(MA_USE_CXX11_STD)
+#include <memory>
+#include <functional>
+#else
+#include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
+#include <boost/ref.hpp>
+#include <boost/bind.hpp>
+#endif // defined(MA_USE_CXX11_STD)
 
 namespace echo_server {
 
@@ -106,12 +112,11 @@ int main(int argc, char* argv[])
 
 namespace {
 
-typedef boost::shared_ptr<boost::asio::io_service> io_service_ptr;
-typedef std::vector<io_service_ptr>                io_service_vector;
-typedef boost::shared_ptr<ma::echo::server::session_factory>
-    session_factory_ptr;
-typedef boost::shared_ptr<boost::asio::io_service::work> io_service_work_ptr;
-typedef std::vector<io_service_work_ptr> io_service_work_vector;
+typedef MA_SHARED_PTR<boost::asio::io_service>           io_service_ptr;
+typedef std::vector<io_service_ptr>                      io_service_vector;
+typedef MA_SHARED_PTR<ma::echo::server::session_factory> session_factory_ptr;
+typedef MA_SHARED_PTR<boost::asio::io_service::work>     io_service_work_ptr;
+typedef std::vector<io_service_work_ptr>                 io_service_work_vector;
 
 class server_base_0 : private boost::noncopyable
 {
@@ -148,12 +153,12 @@ private:
     {
       for (std::size_t i = 0; i != exec_config.session_thread_count; ++i)
       {
-        io_services.push_back(boost::make_shared<boost::asio::io_service>(1));
+        io_services.push_back(MA_MAKE_SHARED<boost::asio::io_service>(1));
       }
     }
     else
     {
-      io_service_ptr io_service = boost::make_shared<boost::asio::io_service>(
+      io_service_ptr io_service = MA_MAKE_SHARED<boost::asio::io_service>(
           exec_config.session_thread_count);
       io_services.push_back(io_service);
     }
@@ -192,15 +197,16 @@ private:
   {
     if (exec_config.ios_per_work_thread)
     {
-      return boost::make_shared<ma::echo::server::pooled_session_factory>(
+      return MA_MAKE_SHARED<ma::echo::server::pooled_session_factory>(
           session_io_services, session_manager_config.recycled_session_count);
     }
     else
     {
+      using MA_REF;
+
       boost::asio::io_service& io_service = *session_io_services.front();
-      return boost::make_shared<ma::echo::server::simple_session_factory>(
-          boost::ref(io_service),
-          session_manager_config.recycled_session_count);
+      return MA_MAKE_SHARED<ma::echo::server::simple_session_factory>(
+          ref(io_service), session_manager_config.recycled_session_count);
     }
   }
 }; // class server_base_1
@@ -280,8 +286,9 @@ private:
       for (io_service_vector::const_iterator i = session_io_services_.begin(),
           end = session_io_services_.end(); i != end; ++i)
       {
-        threads_.create_thread(
-            boost::bind(func, boost::ref(**i), wrapped_handler));
+        using MA_REF;
+
+        threads_.create_thread(MA_BIND(func, ref(**i), wrapped_handler));
       }
     }
     else
@@ -289,15 +296,18 @@ private:
       boost::asio::io_service& io_service = *session_io_services_.front();
       for (std::size_t i = 0; i != session_thread_count_; ++i)
       {
-        threads_.create_thread(
-            boost::bind(func, boost::ref(io_service), wrapped_handler));
+        using MA_REF;
+
+        threads_.create_thread(MA_BIND(func, ref(io_service), wrapped_handler));
       }
     }
 
     for (std::size_t i = 0; i != session_manager_thread_count_; ++i)
     {
-      threads_.create_thread(boost::bind(func,
-          boost::ref(session_manager_io_service_), wrapped_handler));
+      using MA_REF;
+
+      threads_.create_thread(
+          MA_BIND(func, ref(session_manager_io_service_), wrapped_handler));
     }
   }
 
@@ -322,8 +332,9 @@ private:
     for (io_service_vector::const_iterator i = io_services.begin(),
         end = io_services.end(); i != end; ++i)
     {
-      works.push_back(
-          boost::make_shared<boost::asio::io_service::work>(boost::ref(**i)));
+      using MA_REF;
+
+      works.push_back(MA_MAKE_SHARED<boost::asio::io_service::work>(ref(**i)));
     }
     return works;
   }
@@ -481,7 +492,9 @@ void handle_work_thread_exception(server_state& the_server_state)
 }
 
 void handle_app_exit(server_state& the_server_state, server& the_server)
-{
+{  
+  using MA_REF;
+
   std::cout << "Application exit request detected." << std::endl;
 
   server_state::lock_guard lock_guard(the_server_state.mutex);
@@ -498,8 +511,8 @@ void handle_app_exit(server_state& the_server_state, server& the_server)
     break;
 
   default:
-    the_server.async_stop(boost::bind(handle_server_stop,
-        boost::ref(the_server_state), boost::ref(the_server), _1));
+    the_server.async_stop(MA_BIND(handle_server_stop,
+        ref(the_server_state), ref(the_server), MA_PLACEHOLDER_1));
     switch_to_stopping(lock_guard, the_server_state, true);
     std::cout << "Server is stopping." \
         " Press Ctrl+C to terminate server." << std::endl;
@@ -510,6 +523,8 @@ void handle_app_exit(server_state& the_server_state, server& the_server)
 void handle_server_start(server_state& the_server_state, server& the_server,
     const boost::system::error_code& error)
 {
+  using MA_REF;
+
   server_state::lock_guard lock_guard(the_server_state.mutex);
   switch (the_server_state.value)
   {
@@ -524,8 +539,8 @@ void handle_server_start(server_state& the_server_state, server& the_server,
     {
       std::cout << "Server has started." << std::endl;
       switch_to_working(lock_guard, the_server_state);
-      the_server.async_wait(boost::bind(handle_server_wait,
-          boost::ref(the_server_state), boost::ref(the_server), _1));
+      the_server.async_wait(MA_BIND(handle_server_wait,
+          ref(the_server_state), ref(the_server), MA_PLACEHOLDER_1));
     }
     break;
 
@@ -538,6 +553,8 @@ void handle_server_start(server_state& the_server_state, server& the_server,
 void handle_server_wait(server_state& the_server_state, server& the_server,
     const boost::system::error_code& error)
 {
+  using MA_REF;
+
   server_state::lock_guard lock_guard(the_server_state.mutex);
   switch (the_server_state.value)
   {
@@ -551,8 +568,8 @@ void handle_server_wait(server_state& the_server_state, server& the_server,
     {
       std::cout << "Server can't continue work." << std::endl;
     }
-    the_server.async_stop(boost::bind(handle_server_stop,
-        boost::ref(the_server_state), boost::ref(the_server), _1));
+    the_server.async_stop(MA_BIND(handle_server_stop,
+        ref(the_server_state), ref(the_server), MA_PLACEHOLDER_1));
     switch_to_stopping(lock_guard, the_server_state, false);
     break;
 
@@ -616,18 +633,20 @@ void print_stats(const ma::echo::server::session_manager_stats& stats)
 int echo_server::run_server(const echo_server::execution_config& exec_config,
     const ma::echo::server::session_manager_config& session_manager_config)
 {
+  using MA_REF;
+
   server_state the_server_state;
 
   server the_server(exec_config, session_manager_config,
-      boost::bind(handle_work_thread_exception, boost::ref(the_server_state)));
+      MA_BIND(handle_work_thread_exception, ref(the_server_state)));
 
   std::cout << "Server is starting." << std::endl;
-  the_server.async_start(boost::bind(handle_server_start,
-      boost::ref(the_server_state), boost::ref(the_server), _1));
+  the_server.async_start(MA_BIND(handle_server_start,
+      ref(the_server_state), ref(the_server), MA_PLACEHOLDER_1));
 
   // Lookup for app termination
-  ma::console_close_guard console_close_guard(boost::bind(
-      handle_app_exit, boost::ref(the_server_state), boost::ref(the_server)));
+  ma::console_close_guard console_close_guard(MA_BIND(
+      handle_app_exit, ref(the_server_state), ref(the_server)));
   std::cout << "Press Ctrl+C to exit." << std::endl;
 
   int exit_code = EXIT_SUCCESS;

@@ -33,8 +33,10 @@
 #endif // defined(MA_HAS_RVALUE_REFS)
 
 #if defined(MA_USE_CXX11_STD)
+#include <memory>
 #include <functional>
 #else
+#include <boost/shared_ptr.hpp>
 #include <boost/ref.hpp>
 #endif // defined(MA_USE_CXX11_STD)
 
@@ -52,7 +54,7 @@ public:
 
 protected:
   class system_service;
-  typedef boost::shared_ptr<system_service> system_service_ptr;
+  typedef MA_SHARED_PTR<system_service> system_service_ptr;
 
   console_signal_service_base()
   {

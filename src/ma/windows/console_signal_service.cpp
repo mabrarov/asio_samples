@@ -12,8 +12,6 @@
 #include <windows.h>
 #include <limits>
 #include <boost/noncopyable.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/make_shared.hpp>
 #include <boost/throw_exception.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/system/system_error.hpp>
@@ -25,6 +23,13 @@
 #if defined(MA_HAS_RVALUE_REFS)
 #include <utility>
 #endif // defined(MA_HAS_RVALUE_REFS)
+
+#if defined(MA_USE_CXX11_STD)
+#include <memory>
+#else
+#include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
+#endif // defined(MA_USE_CXX11_STD)
 
 namespace ma {
 namespace windows {
@@ -80,7 +85,7 @@ private:
   typedef post_adapter this_type;
 
 public:
-  typedef boost::shared_ptr<handler_list_guard> handler_list_guard_ptr;
+  typedef MA_SHARED_PTR<handler_list_guard> handler_list_guard_ptr;
 
   post_adapter(const handler_list_guard_ptr&);
 
@@ -179,7 +184,7 @@ console_signal_service_base::system_service::factory::operator()(
     const instance_guard_type& singleton_instance_guard)
 {
   typedef ma::shared_ptr_factory_helper<system_service> helper;  
-  return boost::make_shared<helper>(singleton_instance_guard);
+  return MA_MAKE_SHARED<helper>(singleton_instance_guard);
 }
 
 #if defined(MA_TYPE_ERASURE_USE_VURTUAL)
@@ -370,7 +375,7 @@ void console_signal_service::shutdown_service()
 bool console_signal_service::deliver_signal()
 {
   post_adapter::handler_list_guard_ptr handlers =
-      boost::make_shared<handler_list_guard>();
+      MA_MAKE_SHARED<handler_list_guard>();
   lock_guard lock(mutex_);
   if (impl_list_.empty())
   {

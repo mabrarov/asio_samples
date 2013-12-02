@@ -87,8 +87,10 @@ private:
   static void start_wait(signal_alerter& alerter, 
       const ctrl_function_type& ctrl_function)
   {
+    using MA_REF;
+
     alerter.async_wait(
-        boost::bind(&handle_signal, _1, boost::ref(alerter), ctrl_function));
+        MA_BIND(&handle_signal, MA_PLACEHOLDER_1, ref(alerter), ctrl_function));
   }
 
   signal_alerter signal_alerter_;
@@ -103,7 +105,9 @@ class console_close_guard::implementation : private console_close_guard_base_1
 public:
   explicit implementation(const ctrl_function_type& ctrl_function)
     : console_close_guard_base_1(ctrl_function)
-    , work_thread_(MA_BIND(&boost::asio::io_service::run, 
+    , work_thread_(MA_BIND(
+          static_cast<std::size_t (boost::asio::io_service::*)(void)>(
+              &boost::asio::io_service::run), 
           MA_REF(io_service_)))
   {    
   }

@@ -1247,14 +1247,10 @@ void session_manager::start_accept_session(const session_wrapper_ptr& session)
 
 #else
 
-#if defined(MA_USE_CXX11_STD)
-  using namespace ::std::placeholders;
-#endif
-
   acceptor_.async_accept(session->socket(), session->remote_endpoint(),
       MA_STRAND_WRAP(strand_, make_custom_alloc_handler(accept_allocator_,
           MA_BIND(&this_type::handle_accept, shared_from_this(),
-              session, _1))));
+              session, MA_PLACEHOLDER_1))));
 
 #endif
 
@@ -1307,12 +1303,8 @@ void session_manager::start_session_start(const session_wrapper_ptr& session)
 
 #else
 
-#if defined(MA_USE_CXX11_STD)
-  using namespace ::std::placeholders;
-#endif
-
   session->async_start(MA_BIND(&this_type::dispatch_handle_session_start,
-      session_manager_weak_ptr(shared_from_this()), session, _1));
+      session_manager_weak_ptr(shared_from_this()), session, MA_PLACEHOLDER_1));
 
 #endif
 
@@ -1364,12 +1356,8 @@ void session_manager::start_session_stop(const session_wrapper_ptr& session)
 
 #else
 
-#if defined(MA_USE_CXX11_STD)
-  using namespace ::std::placeholders;
-#endif
-
   session->async_stop(MA_BIND(&this_type::dispatch_handle_session_stop,
-      session_manager_weak_ptr(shared_from_this()), session, _1));
+      session_manager_weak_ptr(shared_from_this()), session, MA_PLACEHOLDER_1));
 
 #endif
 
@@ -1421,12 +1409,8 @@ void session_manager::start_session_wait(const session_wrapper_ptr& session)
 
 #else
 
-#if defined(MA_USE_CXX11_STD)
-  using namespace ::std::placeholders;
-#endif
-
   session->async_wait(MA_BIND(&this_type::dispatch_handle_session_wait,
-      session_manager_weak_ptr(shared_from_this()), session, _1));
+      session_manager_weak_ptr(shared_from_this()), session, MA_PLACEHOLDER_1));
 
 #endif
 

@@ -291,13 +291,9 @@ void session::async_start(Handler&& handler)
 
 #else  // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
-
-#if defined(MA_USE_CXX11_STD)
-  using namespace ::std::placeholders;
-#endif
-
   strand_.post(make_explicit_context_alloc_handler(
-      std::forward<Handler>(handler), MA_BIND(func, shared_from_this(), _1)));
+      std::forward<Handler>(handler), 
+      MA_BIND(func, shared_from_this(), MA_PLACEHOLDER_1)));
 
 #endif // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
@@ -340,12 +336,9 @@ void session::async_stop(Handler&& handler)
 
 #else  // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
-#if defined(MA_USE_CXX11_STD)
-  using namespace ::std::placeholders;
-#endif
-
   strand_.post(make_explicit_context_alloc_handler(
-      std::forward<Handler>(handler), MA_BIND(func, shared_from_this(), _1)));
+      std::forward<Handler>(handler), 
+      MA_BIND(func, shared_from_this(), MA_PLACEHOLDER_1)));
 
 #endif // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
@@ -388,12 +381,9 @@ void session::async_wait(Handler&& handler)
 
 #else  // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
-#if defined(MA_USE_CXX11_STD)
-  using namespace ::std::placeholders;
-#endif
-
   strand_.post(make_explicit_context_alloc_handler(
-      std::forward<Handler>(handler), MA_BIND(func, shared_from_this(), _1)));
+      std::forward<Handler>(handler), 
+      MA_BIND(func, shared_from_this(), MA_PLACEHOLDER_1)));
 
 #endif // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
@@ -410,12 +400,8 @@ void session::async_start(const Handler& handler)
 
   func_type func = &this_type::start_extern_start<handler_type>;
 
-#if defined(MA_USE_CXX11_STD)
-  using namespace ::std::placeholders;
-#endif
-
   strand_.post(make_explicit_context_alloc_handler(handler,
-      MA_BIND(func, shared_from_this(), _1)));
+      MA_BIND(func, shared_from_this(), MA_PLACEHOLDER_1)));
 }
 
 template <typename Handler>
@@ -426,12 +412,8 @@ void session::async_stop(const Handler& handler)
 
   func_type func = &this_type::start_extern_stop<handler_type>;
 
-#if defined(MA_USE_CXX11_STD)
-  using namespace ::std::placeholders;
-#endif
-
   strand_.post(make_explicit_context_alloc_handler(handler,
-      MA_BIND(func, shared_from_this(), _1)));
+      MA_BIND(func, shared_from_this(), MA_PLACEHOLDER_1)));
 }
 
 template <typename Handler>
@@ -442,12 +424,8 @@ void session::async_wait(const Handler& handler)
 
   func_type func = &this_type::start_extern_wait<handler_type>;
 
-#if defined(MA_USE_CXX11_STD)
-  using namespace ::std::placeholders;
-#endif
-
   strand_.post(make_explicit_context_alloc_handler(handler,
-      MA_BIND(func, shared_from_this(), _1)));
+      MA_BIND(func, shared_from_this(), MA_PLACEHOLDER_1)));
 }
 
 #endif // defined(MA_HAS_RVALUE_REFS)
