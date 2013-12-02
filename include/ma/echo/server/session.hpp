@@ -14,10 +14,8 @@
 
 #include <cstddef>
 #include <boost/asio.hpp>
-#include <boost/bind.hpp>
 #include <boost/optional.hpp>
 #include <boost/noncopyable.hpp>
-#include <boost/enable_shared_from_this.hpp>
 #include <ma/config.hpp>
 #include <ma/cyclic_buffer.hpp>
 #include <ma/handler_storage.hpp>
@@ -33,13 +31,21 @@
 #include <ma/type_traits.hpp>
 #endif // defined(MA_HAS_RVALUE_REFS)
 
+#if defined(MA_USE_CXX11_STD)
+#include <memory>
+#include <functional> 
+#else
+#include <boost/bind.hpp>
+#include <boost/enable_shared_from_this.hpp>
+#endif // defined(MA_USE_CXX11_STD)
+
 namespace ma {
 namespace echo {
 namespace server {
 
 class session
   : private boost::noncopyable
-  , public boost::enable_shared_from_this<session>
+  , public MA_ENABLE_SHARED_FROM_THIS<session>
 {
 private:
   typedef session this_type;
@@ -285,9 +291,13 @@ void session::async_start(Handler&& handler)
 
 #else  // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
+
+#if defined(MA_USE_CXX11_STD)
+  using namespace ::std::placeholders;
+#endif
+
   strand_.post(make_explicit_context_alloc_handler(
-      std::forward<Handler>(handler),
-      boost::bind(func, shared_from_this(), _1)));
+      std::forward<Handler>(handler), MA_BIND(func, shared_from_this(), _1)));
 
 #endif // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
@@ -330,9 +340,12 @@ void session::async_stop(Handler&& handler)
 
 #else  // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
+#if defined(MA_USE_CXX11_STD)
+  using namespace ::std::placeholders;
+#endif
+
   strand_.post(make_explicit_context_alloc_handler(
-      std::forward<Handler>(handler),
-      boost::bind(func, shared_from_this(), _1)));
+      std::forward<Handler>(handler), MA_BIND(func, shared_from_this(), _1)));
 
 #endif // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
@@ -375,9 +388,12 @@ void session::async_wait(Handler&& handler)
 
 #else  // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
+#if defined(MA_USE_CXX11_STD)
+  using namespace ::std::placeholders;
+#endif
+
   strand_.post(make_explicit_context_alloc_handler(
-      std::forward<Handler>(handler),
-      boost::bind(func, shared_from_this(), _1)));
+      std::forward<Handler>(handler), MA_BIND(func, shared_from_this(), _1)));
 
 #endif // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
@@ -394,8 +410,12 @@ void session::async_start(const Handler& handler)
 
   func_type func = &this_type::start_extern_start<handler_type>;
 
+#if defined(MA_USE_CXX11_STD)
+  using namespace ::std::placeholders;
+#endif
+
   strand_.post(make_explicit_context_alloc_handler(handler,
-      boost::bind(func, shared_from_this(), _1)));
+      MA_BIND(func, shared_from_this(), _1)));
 }
 
 template <typename Handler>
@@ -406,8 +426,12 @@ void session::async_stop(const Handler& handler)
 
   func_type func = &this_type::start_extern_stop<handler_type>;
 
+#if defined(MA_USE_CXX11_STD)
+  using namespace ::std::placeholders;
+#endif
+
   strand_.post(make_explicit_context_alloc_handler(handler,
-      boost::bind(func, shared_from_this(), _1)));
+      MA_BIND(func, shared_from_this(), _1)));
 }
 
 template <typename Handler>
@@ -418,8 +442,12 @@ void session::async_wait(const Handler& handler)
 
   func_type func = &this_type::start_extern_wait<handler_type>;
 
+#if defined(MA_USE_CXX11_STD)
+  using namespace ::std::placeholders;
+#endif
+
   strand_.post(make_explicit_context_alloc_handler(handler,
-      boost::bind(func, shared_from_this(), _1)));
+      MA_BIND(func, shared_from_this(), _1)));
 }
 
 #endif // defined(MA_HAS_RVALUE_REFS)

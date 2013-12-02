@@ -513,8 +513,11 @@ session_manager_ptr session_manager::create(
     const session_manager_config& config)
 {
   typedef shared_ptr_factory_helper<this_type> helper;
-  return MA_MAKE_SHARED<helper>(boost::ref(io_service),
-      MA_REF(managed_session_factory), config);
+
+  using MA_REF;
+
+  return MA_MAKE_SHARED<helper>(
+      ref(io_service), ref(managed_session_factory), config);
 }
 
 session_manager::session_manager(boost::asio::io_service& io_service,
@@ -1094,7 +1097,7 @@ void session_manager::start_stop(const boost::system::error_code& error)
 
   // Stop active sessions (not more than max_stopping_sessions_)
   stopping_sessions_end_ = start_active_session_stop(
-      boost::static_pointer_cast<session_wrapper>(active_sessions_.front()),
+      MA_STATIC_POINTER_CAST<session_wrapper>(active_sessions_.front()),
       max_stopping_sessions_);
   if (stopping_sessions_end_)
   {
@@ -1139,7 +1142,7 @@ session_manager::session_wrapper_ptr session_manager::start_active_session_stop(
       start_session_stop(begin);
     }
     --max_count;
-    begin = boost::static_pointer_cast<session_wrapper>(
+    begin = MA_STATIC_POINTER_CAST<session_wrapper>(
         session_list::next(begin));
   }
   return begin;
@@ -1180,7 +1183,7 @@ void session_manager::schedule_active_session_stop()
 {
   io_service_.post(MA_STRAND_WRAP(strand_, ma::make_custom_alloc_handler(
       session_stop_allocator_,
-      boost::bind(&this_type::handle_scheduled_active_session_stop, 
+      MA_BIND(&this_type::handle_scheduled_active_session_stop, 
           shared_from_this()))));
   ++pending_operations_;
 }
@@ -1245,9 +1248,13 @@ void session_manager::start_accept_session(const session_wrapper_ptr& session)
 
 #else
 
+#if defined(MA_USE_CXX11_STD)
+  using namespace ::std::placeholders;
+#endif
+
   acceptor_.async_accept(session->socket(), session->remote_endpoint(),
       MA_STRAND_WRAP(strand_, make_custom_alloc_handler(accept_allocator_,
-          boost::bind(&this_type::handle_accept, shared_from_this(),
+          MA_BIND(&this_type::handle_accept, shared_from_this(),
               session, _1))));
 
 #endif
@@ -1301,7 +1308,11 @@ void session_manager::start_session_start(const session_wrapper_ptr& session)
 
 #else
 
-  session->async_start(boost::bind(&this_type::dispatch_handle_session_start,
+#if defined(MA_USE_CXX11_STD)
+  using namespace ::std::placeholders;
+#endif
+
+  session->async_start(MA_BIND(&this_type::dispatch_handle_session_start,
       session_manager_weak_ptr(shared_from_this()), session, _1));
 
 #endif
@@ -1354,7 +1365,11 @@ void session_manager::start_session_stop(const session_wrapper_ptr& session)
 
 #else
 
-  session->async_stop(boost::bind(&this_type::dispatch_handle_session_stop,
+#if defined(MA_USE_CXX11_STD)
+  using namespace ::std::placeholders;
+#endif
+
+  session->async_stop(MA_BIND(&this_type::dispatch_handle_session_stop,
       session_manager_weak_ptr(shared_from_this()), session, _1));
 
 #endif
@@ -1407,7 +1422,11 @@ void session_manager::start_session_wait(const session_wrapper_ptr& session)
 
 #else
 
-  session->async_wait(boost::bind(&this_type::dispatch_handle_session_wait,
+#if defined(MA_USE_CXX11_STD)
+  using namespace ::std::placeholders;
+#endif
+
+  session->async_wait(MA_BIND(&this_type::dispatch_handle_session_wait,
       session_manager_weak_ptr(shared_from_this()), session, _1));
 
 #endif
@@ -1454,7 +1473,7 @@ session_manager::session_wrapper_ptr session_manager::create_session(
   if (!recycled_sessions_.empty())
   {
     session_wrapper_ptr wrapper =
-        boost::static_pointer_cast<session_wrapper>(recycled_sessions_.front());
+        MA_STATIC_POINTER_CAST<session_wrapper>(recycled_sessions_.front());
     remove_from_recycled(wrapper);
 
     wrapper->attach(session);
@@ -1499,7 +1518,7 @@ void session_manager::remove_from_active(const session_wrapper_ptr& session)
 {
   if (session == stopping_sessions_end_)
   {
-    stopping_sessions_end_ = boost::static_pointer_cast<session_wrapper>(
+    stopping_sessions_end_ = MA_STATIC_POINTER_CAST<session_wrapper>(
         session_list::next(session));
   }
   active_sessions_.erase(session);
@@ -1550,7 +1569,7 @@ void session_manager::dispatch_handle_session_start(
 #else
 
     this_ptr->strand_.dispatch(make_custom_alloc_handler(
-        session->start_allocator(), boost::bind(
+        session->start_allocator(), MA_BIND(
             &session_manager::handle_session_start, this_ptr, session,
                 error)));
 
@@ -1575,7 +1594,7 @@ void session_manager::dispatch_handle_session_wait(
 #else
 
     this_ptr->strand_.dispatch(make_custom_alloc_handler(
-        session->wait_allocator(), boost::bind(
+        session->wait_allocator(), MA_BIND(
             &session_manager::handle_session_wait, this_ptr, session, error)));
 
 #endif
@@ -1599,7 +1618,7 @@ void session_manager::dispatch_handle_session_stop(
 #else
 
     this_ptr->strand_.dispatch(make_custom_alloc_handler(
-        session->stop_allocator(), boost::bind(
+        session->stop_allocator(), MA_BIND(
             &session_manager::handle_session_stop, this_ptr, session, error)));
 
 #endif
@@ -1629,7 +1648,7 @@ void session_manager::open(protocol_type::acceptor& acceptor,
     typedef protocol_type::acceptor guarded_type;
 
     acceptor_guard(guarded_type& guarded)
-      : guarded_(boost::addressof(guarded))
+      : guarded_(MA_ADDRESS_OF(guarded))
     {
     }
 

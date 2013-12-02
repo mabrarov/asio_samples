@@ -16,13 +16,18 @@
 #include <boost/config.hpp>
 #include <boost/asio.hpp>
 #include <boost/noncopyable.hpp>
-#include <boost/utility/addressof.hpp>
 #include <ma/config.hpp>
 #include <ma/handler_alloc_helpers.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)
 #include <utility>
 #endif // defined(MA_HAS_RVALUE_REFS)
+
+#if defined(MA_USE_CXX11_STD)
+#include <memory>
+#else
+#include <boost/utility/addressof.hpp>
+#endif // defined(MA_USE_CXX11_STD)
 
 namespace ma {
 namespace detail {
@@ -105,7 +110,7 @@ public:
   /// Take ownership of existing memory.
   handler_ptr(alloc_context_type& alloc_context, 
       pointer_type pointer) MA_NOEXCEPT
-    : alloc_context_(boost::addressof(alloc_context))
+    : alloc_context_(MA_ADDRESS_OF(alloc_context))
     , pointer_(pointer)
   {
   }
@@ -114,7 +119,7 @@ public:
   /// succeeds. 
   /// Throws if contructor of value_type throws.
   handler_ptr(raw_ptr_type& raw_ptr)
-    : alloc_context_(boost::addressof(raw_ptr.alloc_context_))
+    : alloc_context_(MA_ADDRESS_OF(raw_ptr.alloc_context_))
     , pointer_(new (raw_ptr.pointer_) value_type)
   {
     raw_ptr.pointer_ = 0;
@@ -127,7 +132,7 @@ public:
   /// Throws if contructor of value_type throws.
   template <typename Arg1>
   handler_ptr(raw_ptr_type& raw_ptr, Arg1&& a1)
-    : alloc_context_(boost::addressof(raw_ptr.alloc_context_))
+    : alloc_context_(MA_ADDRESS_OF(raw_ptr.alloc_context_))
     , pointer_(new (raw_ptr.pointer_) value_type(std::forward<Arg1>(a1)))
   {
     raw_ptr.pointer_ = 0;
@@ -138,7 +143,7 @@ public:
   /// Throws if contructor of value_type throws.
   template <typename Arg1, typename Arg2>
   handler_ptr(raw_ptr_type& raw_ptr, Arg1&& a1, Arg2&& a2)
-    : alloc_context_(boost::addressof(raw_ptr.alloc_context_))
+    : alloc_context_(MA_ADDRESS_OF(raw_ptr.alloc_context_))
     , pointer_(new (raw_ptr.pointer_) value_type(std::forward<Arg1>(a1),
           std::forward<Arg2>(a2)))
   {
@@ -150,7 +155,7 @@ public:
   /// Throws if contructor of value_type throws.
   template <typename Arg1, typename Arg2, typename Arg3>
   handler_ptr(raw_ptr_type& raw_ptr, Arg1&& a1, Arg2&& a2, Arg3&& a3)
-    : alloc_context_(boost::addressof(raw_ptr.alloc_context_))
+    : alloc_context_(MA_ADDRESS_OF(raw_ptr.alloc_context_))
     , pointer_(new (raw_ptr.pointer_) value_type(std::forward<Arg1>(a1),
           std::forward<Arg2>(a2), std::forward<Arg3>(a3)))
   {
@@ -163,7 +168,7 @@ public:
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4>
   handler_ptr(raw_ptr_type& raw_ptr, Arg1&& a1, Arg2&& a2, Arg3&& a3,
       Arg4&& a4)
-    : alloc_context_(boost::addressof(raw_ptr.alloc_context_))
+    : alloc_context_(MA_ADDRESS_OF(raw_ptr.alloc_context_))
     , pointer_(new (raw_ptr.pointer_) value_type(std::forward<Arg1>(a1),
           std::forward<Arg2>(a2), std::forward<Arg3>(a3),
           std::forward<Arg4>(a4)))
@@ -178,7 +183,7 @@ public:
       typename Arg5>
   handler_ptr(raw_ptr_type& raw_ptr, Arg1&& a1, Arg2&& a2, Arg3&& a3,
       Arg4&& a4, Arg5&& a5)
-    : alloc_context_(boost::addressof(raw_ptr.alloc_context_))
+    : alloc_context_(MA_ADDRESS_OF(raw_ptr.alloc_context_))
     , pointer_(new (raw_ptr.pointer_) value_type(std::forward<Arg1>(a1),
           std::forward<Arg2>(a2), std::forward<Arg3>(a3),
           std::forward<Arg4>(a4), std::forward<Arg5>(a5)))
@@ -193,7 +198,7 @@ public:
       typename Arg5, typename Arg6>
   handler_ptr(raw_ptr_type& raw_ptr, Arg1&& a1, Arg2&& a2, Arg3&& a3,
       Arg4&& a4, Arg5&& a5, Arg6&& a6)
-    : alloc_context_(boost::addressof(raw_ptr.alloc_context_))
+    : alloc_context_(MA_ADDRESS_OF(raw_ptr.alloc_context_))
     , pointer_(new (raw_ptr.pointer_) value_type(std::forward<Arg1>(a1),
           std::forward<Arg2>(a2), std::forward<Arg3>(a3),
           std::forward<Arg4>(a4), std::forward<Arg5>(a5),
@@ -209,7 +214,7 @@ public:
       typename Arg5, typename Arg6, typename Arg7>
   handler_ptr(raw_ptr_type& raw_ptr, Arg1&& a1, Arg2&& a2, Arg3&& a3,
       Arg4&& a4, Arg5&& a5, Arg6&& a6, Arg7&& a7)
-    : alloc_context_(boost::addressof(raw_ptr.alloc_context_))
+    : alloc_context_(MA_ADDRESS_OF(raw_ptr.alloc_context_))
     , pointer_(new (raw_ptr.pointer_) value_type(std::forward<Arg1>(a1),
           std::forward<Arg2>(a2), std::forward<Arg3>(a3),
           std::forward<Arg4>(a4), std::forward<Arg5>(a5),
@@ -225,7 +230,7 @@ public:
       typename Arg5, typename Arg6, typename Arg7, typename Arg8>
   handler_ptr(raw_ptr_type& raw_ptr, Arg1&& a1, Arg2&& a2, Arg3&& a3,
       Arg4&& a4, Arg5&& a5, Arg6&& a6, Arg7&& a7, Arg8&& a8)
-    : alloc_context_(boost::addressof(raw_ptr.alloc_context_))
+    : alloc_context_(MA_ADDRESS_OF(raw_ptr.alloc_context_))
     , pointer_(new (raw_ptr.pointer_) value_type(std::forward<Arg1>(a1),
           std::forward<Arg2>(a2), std::forward<Arg3>(a3),
           std::forward<Arg4>(a4), std::forward<Arg5>(a5),
@@ -242,7 +247,7 @@ public:
   /// Throws if contructor of value_type throws.
   template <typename Arg1>
   handler_ptr(raw_ptr_type& raw_ptr, const Arg1& a1)
-    : alloc_context_(boost::addressof(raw_ptr.alloc_context_))
+    : alloc_context_(MA_ADDRESS_OF(raw_ptr.alloc_context_))
     , pointer_(new (raw_ptr.pointer_) value_type(a1))
   {
     raw_ptr.pointer_ = 0;
@@ -253,7 +258,7 @@ public:
   /// Throws if contructor of value_type throws.
   template <typename Arg1, typename Arg2>
   handler_ptr(raw_ptr_type& raw_ptr, const Arg1& a1, const Arg2& a2)
-    : alloc_context_(boost::addressof(raw_ptr.alloc_context_))
+    : alloc_context_(MA_ADDRESS_OF(raw_ptr.alloc_context_))
     , pointer_(new (raw_ptr.pointer_) value_type(a1, a2))
   {
     raw_ptr.pointer_ = 0;
@@ -265,7 +270,7 @@ public:
   template <typename Arg1, typename Arg2, typename Arg3>
   handler_ptr(raw_ptr_type& raw_ptr, const Arg1& a1, const Arg2& a2,
       const Arg3& a3)
-    : alloc_context_(boost::addressof(raw_ptr.alloc_context_))
+    : alloc_context_(MA_ADDRESS_OF(raw_ptr.alloc_context_))
     , pointer_(new (raw_ptr.pointer_) value_type(a1, a2, a3))
   {
     raw_ptr.pointer_ = 0;
@@ -277,7 +282,7 @@ public:
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4>
   handler_ptr(raw_ptr_type& raw_ptr, const Arg1& a1, const Arg2& a2,
       const Arg3& a3, const Arg4& a4)
-    : alloc_context_(boost::addressof(raw_ptr.alloc_context_))
+    : alloc_context_(MA_ADDRESS_OF(raw_ptr.alloc_context_))
     , pointer_(new (raw_ptr.pointer_) value_type(a1, a2, a3, a4))
   {
     raw_ptr.pointer_ = 0;
@@ -290,7 +295,7 @@ public:
       typename Arg5>
   handler_ptr(raw_ptr_type& raw_ptr, const Arg1& a1, const Arg2& a2,
       const Arg3& a3, const Arg4& a4, const Arg5& a5)
-    : alloc_context_(boost::addressof(raw_ptr.alloc_context_))
+    : alloc_context_(MA_ADDRESS_OF(raw_ptr.alloc_context_))
     , pointer_(new (raw_ptr.pointer_) value_type(a1, a2, a3, a4, a5))
   {
     raw_ptr.pointer_ = 0;
@@ -303,7 +308,7 @@ public:
       typename Arg5, typename Arg6>
   handler_ptr(raw_ptr_type& raw_ptr, const Arg1& a1, const Arg2& a2,
       const Arg3& a3, const Arg4& a4, const Arg5& a5, const Arg6& a6)
-    : alloc_context_(boost::addressof(raw_ptr.alloc_context_))
+    : alloc_context_(MA_ADDRESS_OF(raw_ptr.alloc_context_))
     , pointer_(new (raw_ptr.pointer_) value_type(a1, a2, a3, a4, a5, a6))
   {
     raw_ptr.pointer_ = 0;
@@ -317,7 +322,7 @@ public:
   handler_ptr(raw_ptr_type& raw_ptr, const Arg1& a1, const Arg2& a2,
       const Arg3& a3, const Arg4& a4, const Arg5& a5, const Arg6& a6,
       const Arg7& a7)
-    : alloc_context_(boost::addressof(raw_ptr.alloc_context_))
+    : alloc_context_(MA_ADDRESS_OF(raw_ptr.alloc_context_))
     , pointer_(new (raw_ptr.pointer_) value_type(a1, a2, a3, a4, a5, a6, a7))
   {
     raw_ptr.pointer_ = 0;
@@ -331,7 +336,7 @@ public:
   handler_ptr(raw_ptr_type& raw_ptr, const Arg1& a1, const Arg2& a2,
       const Arg3& a3, const Arg4& a4, const Arg5& a5, const Arg6& a6,
       const Arg7& a7, const Arg8& a8)
-    : alloc_context_(boost::addressof(raw_ptr.alloc_context_))
+    : alloc_context_(MA_ADDRESS_OF(raw_ptr.alloc_context_))
     , pointer_(new (raw_ptr.pointer_) value_type(a1, a2, a3, a4, a5, a6, a7,
           a8))
   {
@@ -357,7 +362,7 @@ public:
   /// Change allocation context used for memory deallocation. Never throws.
   void set_alloc_context(alloc_context_type& alloc_context) MA_NOEXCEPT
   {
-    alloc_context_ = boost::addressof(alloc_context);
+    alloc_context_ = MA_ADDRESS_OF(alloc_context);
   }
 
   /// Release ownership of the memory.

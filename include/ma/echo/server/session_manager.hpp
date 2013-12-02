@@ -354,7 +354,7 @@ void session_manager::async_start(Handler&& handler)
 #else  // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
 #if defined(MA_USE_CXX11_STD)
-using namespace ::std::placeholders;
+  using namespace ::std::placeholders;
 #endif
 
   strand_.post(make_explicit_context_alloc_handler(
@@ -403,7 +403,7 @@ void session_manager::async_stop(Handler&& handler)
 #else  // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
 #if defined(MA_USE_CXX11_STD)
-using namespace ::std::placeholders;
+  using namespace ::std::placeholders;
 #endif
 
   strand_.post(make_explicit_context_alloc_handler(
@@ -452,7 +452,7 @@ void session_manager::async_wait(Handler&& handler)
 #else  // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
 #if defined(MA_USE_CXX11_STD)
-using namespace ::std::placeholders;
+  using namespace ::std::placeholders;
 #endif
 
   strand_.post(make_explicit_context_alloc_handler(
@@ -475,7 +475,7 @@ void session_manager::async_start(const Handler& handler)
   func_type func = &this_type::start_extern_start<handler_type>;
 
 #if defined(MA_USE_CXX11_STD)
-using namespace ::std::placeholders;
+  using namespace ::std::placeholders;
 #endif
 
   strand_.post(make_explicit_context_alloc_handler(handler,
@@ -491,7 +491,7 @@ void session_manager::async_stop(const Handler& handler)
   func_type func = &this_type::start_extern_stop<handler_type>;
 
 #if defined(MA_USE_CXX11_STD)
-using namespace ::std::placeholders;
+  using namespace ::std::placeholders;
 #endif
 
   strand_.post(make_explicit_context_alloc_handler(handler,
@@ -507,7 +507,7 @@ void session_manager::async_wait(const Handler& handler)
   func_type func = &this_type::start_extern_wait<handler_type>;
 
 #if defined(MA_USE_CXX11_STD)
-using namespace ::std::placeholders;
+  using namespace ::std::placeholders;
 #endif
 
   strand_.post(make_explicit_context_alloc_handler(handler,

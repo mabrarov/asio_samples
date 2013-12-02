@@ -17,7 +17,6 @@
 #if defined(MA_HAS_WINDOWS_CONSOLE_SIGNAL)
 
 #include <cstddef>
-#include <boost/ref.hpp>
 #include <boost/asio.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/thread/mutex.hpp>
@@ -32,6 +31,12 @@
 #if defined(MA_HAS_RVALUE_REFS)
 #include <utility>
 #endif // defined(MA_HAS_RVALUE_REFS)
+
+#if defined(MA_USE_CXX11_STD)
+#include <functional>
+#else
+#include <boost/ref.hpp>
+#endif // defined(MA_USE_CXX11_STD)
 
 namespace ma {
 namespace windows {
@@ -248,8 +253,7 @@ void console_signal_service::async_wait(
   {
     --queued_signals_;
     get_io_service().post(
-        bind_handler(MA_RVALUE_CAST(handler), 
-            boost::system::error_code()));
+        bind_handler(MA_RVALUE_CAST(handler), boost::system::error_code()));
     return;
   }
 
@@ -258,7 +262,7 @@ void console_signal_service::async_wait(
 
   detail::raw_handler_ptr<alloc_traits> raw_ptr(handler);
   detail::handler_ptr<alloc_traits> ptr(raw_ptr,
-      boost::ref(this->get_io_service()), MA_RVALUE_CAST(handler));
+      MA_REF(this->get_io_service()), MA_RVALUE_CAST(handler));
 
   // Add handler to the list of waiting handlers.
   impl.handlers_.push_front(*ptr.get());

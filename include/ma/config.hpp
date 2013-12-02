@@ -189,6 +189,7 @@
 #define MA_REF                     ::std::ref
 #define MA_FUNCTION                ::std::function
 #define MA_ADDRESS_OF              ::std::addressof
+#define MA_STATIC_POINTER_CAST     ::std::static_pointer_cast
 
 #else
 
@@ -202,6 +203,7 @@
 #define MA_REF                     ::boost::ref
 #define MA_FUNCTION                ::boost::function
 #define MA_ADDRESS_OF              ::boost::addressof
+#define MA_STATIC_POINTER_CAST     ::voost::static_pointer_cast
 
 #endif // defined(MA_USE_CXX11_STD)
 

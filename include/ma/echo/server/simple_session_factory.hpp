@@ -15,10 +15,16 @@
 #include <cstddef>
 #include <boost/asio.hpp>
 #include <boost/noncopyable.hpp>
-#include <boost/shared_ptr.hpp>
+#include <ma/config.hpp>
 #include <ma/sp_intrusive_list.hpp>
 #include <ma/echo/server/session.hpp>
 #include <ma/echo/server/session_factory.hpp>
+
+#if defined(MA_USE_CXX11_STD)
+#include <memory>
+#else
+#include <boost/shared_ptr.hpp>
+#endif // defined(MA_USE_CXX11_STD)
 
 namespace ma {
 namespace echo {
@@ -52,7 +58,7 @@ private:
   typedef sp_intrusive_list<session_wrapper_base> session_list;
 
   class session_wrapper;
-  typedef boost::shared_ptr<session_wrapper> session_wrapper_ptr;
+  typedef MA_SHARED_PTR<session_wrapper> session_wrapper_ptr;
 
   const std::size_t        max_recycled_;
   boost::asio::io_service& io_service_;

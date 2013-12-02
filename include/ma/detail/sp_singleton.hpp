@@ -15,14 +15,20 @@
 #include <cstddef>
 #include <limits>
 #include <boost/assert.hpp>
-#include <boost/weak_ptr.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/make_shared.hpp>
+
 #include <boost/noncopyable.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/locks.hpp>
 #include <boost/thread/once.hpp>
 #include <boost/thread/condition_variable.hpp>
+
+#if defined(MA_USE_CXX11_STD)
+#include <memory>
+#else
+#include <boost/weak_ptr.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
+#endif // defined(MA_USE_CXX11_STD)
 
 namespace ma {
 namespace detail {
@@ -59,7 +65,7 @@ private:
 
 public:
   typedef Value value_type;
-  typedef boost::shared_ptr<value_type> value_shared_ptr;
+  typedef MA_SHARED_PTR<value_type> value_shared_ptr;
 
   class instance_guard;
   
@@ -69,8 +75,8 @@ public:
   static value_shared_ptr get_instance(Factory);
 
 private:
-  typedef boost::weak_ptr<value_type>  value_weak_ptr;
-  typedef boost::shared_ptr<threshold> threshold_ptr;
+  typedef MA_WEAK_PTR<value_type>  value_weak_ptr;
+  typedef MA_SHARED_PTR<threshold> threshold_ptr;
 
   struct static_data;
   struct static_data_factory;
@@ -169,7 +175,7 @@ sp_singleton<Value>::static_data_ = 0;
 
 template <typename Value>
 sp_singleton<Value>::static_data::static_data()
-  : instance_threshold(boost::make_shared<threshold>())
+  : instance_threshold(MA_MAKE_SHARED<threshold>())
 {
 }
 

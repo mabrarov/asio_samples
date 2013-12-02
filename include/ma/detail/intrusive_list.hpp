@@ -16,8 +16,13 @@
 #include <utility>
 #include <boost/assert.hpp>
 #include <boost/noncopyable.hpp>
-#include <boost/utility/addressof.hpp>
 #include <ma/config.hpp>
+
+#if defined(MA_USE_CXX11_STD)
+#include <memory>
+#else
+#include <boost/utility/addressof.hpp>
+#endif // defined(MA_USE_CXX11_STD)
 
 namespace ma {
 namespace detail {
@@ -290,7 +295,7 @@ void intrusive_list<Value>::push_front(reference value) MA_NOEXCEPT
   BOOST_ASSERT_MSG(!value_hook.prev_ && !value_hook.next_,
       "The value to push has to be unlinked");
 
-  const pointer value_ptr = boost::addressof(value);
+  const pointer value_ptr = MA_ADDRESS_OF(value);
 
   value_hook.next_ = front_;
   if (value_hook.next_)
@@ -316,7 +321,7 @@ void intrusive_list<Value>::push_back(reference value) MA_NOEXCEPT
   BOOST_ASSERT_MSG(!value_hook.prev_ && !value_hook.next_,
       "The value to push has to be unlinked");
 
-  const pointer value_ptr = boost::addressof(value);
+  const pointer value_ptr = MA_ADDRESS_OF(value);
 
   value_hook.prev_ = back_;
   if (value_hook.prev_)
@@ -338,7 +343,7 @@ template<typename Value>
 void intrusive_list<Value>::erase(reference value) MA_NOEXCEPT
 {  
   base_hook& value_hook = get_hook(value);
-  const pointer value_ptr = boost::addressof(value);
+  const pointer value_ptr = MA_ADDRESS_OF(value);
   if (value_ptr == front_)
   {
     front_ = value_hook.next_;
@@ -575,7 +580,7 @@ void intrusive_forward_list<Value>::push_front(reference value) MA_NOEXCEPT
   BOOST_ASSERT_MSG(!value_hook.next_, "The value to push has to be unlinked");
 
   value_hook.next_ = front_;
-  front_ = boost::addressof(value);
+  front_ = MA_ADDRESS_OF(value);
   if (!back_)
   {
     back_ = front_;
@@ -593,7 +598,7 @@ void intrusive_forward_list<Value>::push_back(reference value) MA_NOEXCEPT
 
   BOOST_ASSERT_MSG(!value_hook.next_, "The value to push has to be unlinked");
 
-  const pointer value_ptr = boost::addressof(value);
+  const pointer value_ptr = MA_ADDRESS_OF(value);
   if (back_)
   {
     get_hook(*back_).next_ = value_ptr;
