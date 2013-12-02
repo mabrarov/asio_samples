@@ -205,7 +205,7 @@
 #define MA_REF                     ::boost::ref
 #define MA_FUNCTION                ::boost::function
 #define MA_ADDRESS_OF              ::boost::addressof
-#define MA_STATIC_POINTER_CAST     ::voost::static_pointer_cast
+#define MA_STATIC_POINTER_CAST     ::boost::static_pointer_cast
 
 #endif // defined(MA_USE_CXX11_STDLIB)
 
