@@ -19,7 +19,12 @@
 #include <boost/array.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/throw_exception.hpp>
+
+#if defined(MA_USE_CXX11_STDLIB)
+#include <memory>
+#else
 #include <boost/scoped_array.hpp>
+#endif // defined(MA_USE_CXX11_STDLIB)
 
 namespace ma {
 
@@ -120,7 +125,12 @@ public:
   mutable_buffers_type prepared(std::size_t max_size) const;
 
 private:
+#if defined(MA_USE_CXX11_STDLIB)
+  std::unique_ptr<char[]>   data_;
+#else
   boost::scoped_array<char> data_;
+#endif
+
   std::size_t size_;
   std::size_t nonfilled_start_;
   std::size_t nonfilled_size_;
