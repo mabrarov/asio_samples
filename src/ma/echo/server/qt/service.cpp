@@ -10,14 +10,11 @@ TRANSLATOR ma::echo::server::qt::Service
 //
 
 #include <vector>
-#include <boost/ref.hpp>
 #include <boost/asio.hpp>
-#include <boost/bind.hpp>
 #include <boost/assert.hpp>
-#include <boost/make_shared.hpp>
 #include <boost/noncopyable.hpp>
-#include <boost/tuple/tuple.hpp>
 #include <boost/thread/thread.hpp>
+#include <ma/config.hpp>
 #include <ma/echo/server/error.hpp>
 #include <ma/echo/server/simple_session_factory.hpp>
 #include <ma/echo/server/pooled_session_factory.hpp>
@@ -28,6 +25,17 @@ TRANSLATOR ma::echo::server::qt::Service
 #include <ma/echo/server/qt/serviceservantsignal.h>
 #include <ma/echo/server/qt/service.h>
 
+#if defined(MA_USE_CXX11_STDLIB)
+#include <memory>
+#include <tuple>
+#include <functional>
+#else
+#include <boost/make_shared.hpp>
+#include <boost/tuple/tuple.hpp>
+#include <boost/ref.hpp>
+#include <boost/bind.hpp>
+#endif // defined(MA_USE_CXX11_STDLIB)
+
 namespace ma {
 namespace echo {
 namespace server {
@@ -35,12 +43,11 @@ namespace qt {
 
 namespace {
 
-typedef boost::shared_ptr<boost::asio::io_service> io_service_ptr;
-typedef std::vector<io_service_ptr>                io_service_vector;
-typedef boost::shared_ptr<ma::echo::server::session_factory>
-    session_factory_ptr;
-typedef boost::shared_ptr<boost::asio::io_service::work> io_service_work_ptr;
-typedef std::vector<io_service_work_ptr> io_service_work_vector;
+typedef MA_SHARED_PTR<boost::asio::io_service>           io_service_ptr;
+typedef std::vector<io_service_ptr>                      io_service_vector;
+typedef MA_SHARED_PTR<ma::echo::server::session_factory> session_factory_ptr;
+typedef MA_SHARED_PTR<boost::asio::io_service::work>     io_service_work_ptr;
+typedef std::vector<io_service_work_ptr>                 io_service_work_vector;
 
 class server_base_0 : private boost::noncopyable
 {
@@ -77,12 +84,12 @@ private:
     {
       for (std::size_t i = 0; i != exec_config.session_thread_count; ++i)
       {
-        io_services.push_back(boost::make_shared<boost::asio::io_service>(1));
+        io_services.push_back(MA_MAKE_SHARED<boost::asio::io_service>(1));
       }
     }
     else
     {
-      io_service_ptr io_service = boost::make_shared<boost::asio::io_service>(
+      io_service_ptr io_service = MA_MAKE_SHARED<boost::asio::io_service>(
           exec_config.session_thread_count);
       io_services.push_back(io_service);
     }
@@ -121,15 +128,14 @@ private:
   {
     if (exec_config.ios_per_work_thread)
     {
-      return boost::make_shared<ma::echo::server::pooled_session_factory>(
+      return MA_MAKE_SHARED<ma::echo::server::pooled_session_factory>(
           session_io_services, session_manager_config.recycled_session_count);
     }
     else
     {
       boost::asio::io_service& io_service = *session_io_services.front();
-      return boost::make_shared<ma::echo::server::simple_session_factory>(
-          boost::ref(io_service),
-          session_manager_config.recycled_session_count);
+      return MA_MAKE_SHARED<ma::echo::server::simple_session_factory>(
+          MA_REF(io_service), session_manager_config.recycled_session_count);
     }
   }
 }; // class server_base_1
@@ -184,11 +190,11 @@ private:
   template <typename Handler>
   void create_threads(const Handler& handler)
   {
-    typedef boost::tuple<Handler> wrapped_handler_type;
+    typedef MA_TUPLE<Handler> wrapped_handler_type;
     typedef void (*thread_func_type)(boost::asio::io_service&,
         wrapped_handler_type);
 
-    wrapped_handler_type wrapped_handler = boost::make_tuple(handler);
+    wrapped_handler_type wrapped_handler = MA_MAKE_TUPLE(handler);
     thread_func_type func = &this_type::thread_func<Handler>;
 
     if (ios_per_work_thread_)
@@ -196,8 +202,7 @@ private:
       for (io_service_vector::const_iterator i = session_io_services_.begin(),
           end = session_io_services_.end(); i != end; ++i)
       {
-        threads_.create_thread(
-            boost::bind(func, boost::ref(**i), wrapped_handler));
+        threads_.create_thread(MA_BIND(func, MA_REF(**i), wrapped_handler));
       }
     }
     else
@@ -206,14 +211,14 @@ private:
       for (std::size_t i = 0; i != session_thread_count_; ++i)
       {
         threads_.create_thread(
-            boost::bind(func, boost::ref(io_service), wrapped_handler));
+            MA_BIND(func, MA_REF(io_service), wrapped_handler));
       }
     }
 
     for (std::size_t i = 0; i != session_manager_thread_count_; ++i)
     {
-      threads_.create_thread(boost::bind(func,
-          boost::ref(session_manager_io_service_), wrapped_handler));
+      threads_.create_thread(
+          MA_BIND(func, MA_REF(session_manager_io_service_), wrapped_handler));
     }
   }
 
@@ -226,7 +231,7 @@ private:
 
   template <typename Handler>
   static void thread_func(boost::asio::io_service& io_service,
-      boost::tuple<Handler> handler)
+      MA_TUPLE<Handler> handler)
   {
     try
     {
@@ -234,7 +239,7 @@ private:
     }
     catch (...)
     {
-      boost::get<0>(handler)();
+      MA_TUPLE_GET<0>(handler)();
     }
   }
 
@@ -246,7 +251,7 @@ private:
         end = io_services.end(); i != end; ++i)
     {
       works.push_back(
-          boost::make_shared<boost::asio::io_service::work>(boost::ref(**i)));
+          MA_MAKE_SHARED<boost::asio::io_service::work>(MA_REF(**i)));
     }
     return works;
   }
@@ -366,8 +371,8 @@ void Service::asyncStart(const execution_config& the_execution_config,
   }
 
   createServant(the_execution_config, the_session_manager_config);
-  server_->async_start(boost::bind(&ServiceServantSignal::emitStartCompleted,
-      servantSignal_, _1));
+  server_->async_start(MA_BIND(&ServiceServantSignal::emitStartCompleted,
+      servantSignal_, MA_PLACEHOLDER_1));
   state_ = ServiceState::Starting;
 }
 
@@ -385,8 +390,8 @@ void Service::onServantStartCompleted(const boost::system::error_code& error)
   }
   else
   {
-    server_->async_wait(boost::bind(&ServiceServantSignal::emitWaitCompleted,
-        servantSignal_, _1));
+    server_->async_wait(MA_BIND(&ServiceServantSignal::emitWaitCompleted,
+        servantSignal_, MA_PLACEHOLDER_1));
     state_ = ServiceState::Working;
   }
 
@@ -416,8 +421,8 @@ void Service::asyncStop()
     break;
   }
 
-  server_->async_stop(boost::bind(&ServiceServantSignal::emitStopCompleted,
-      servantSignal_, _1));
+  server_->async_stop(MA_BIND(&ServiceServantSignal::emitStopCompleted,
+      servantSignal_, MA_PLACEHOLDER_1));
   state_ = ServiceState::Stopping;
 }
 
@@ -482,7 +487,7 @@ void Service::onServantWorkThreadExceptionHappened()
 void Service::createServant(const execution_config& the_execution_config,
     const session_manager_config& the_session_manager_config)
 {
-  servantSignal_ = boost::make_shared<ServiceServantSignal>();
+  servantSignal_ = MA_MAKE_SHARED<ServiceServantSignal>();
 
   checkConnect(QObject::connect(servantSignal_.get(),
       SIGNAL(workThreadExceptionHappened()),
@@ -506,7 +511,7 @@ void Service::createServant(const execution_config& the_execution_config,
 
   server_.reset(new server(
       the_execution_config, the_session_manager_config,
-      boost::bind(&ServiceServantSignal::emitWorkThreadExceptionHappened,
+      MA_BIND(&ServiceServantSignal::emitWorkThreadExceptionHappened,
           servantSignal_)));
 
   stats_ = server_->stats();

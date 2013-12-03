@@ -12,10 +12,9 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
-#include <boost/scoped_ptr.hpp>
-#include <boost/shared_ptr.hpp>
 #include <boost/system/error_code.hpp>
 #include <QObject>
+#include <ma/config.hpp>
 #include <ma/echo/server/session_manager_config_fwd.hpp>
 #include <ma/echo/server/session_manager_stats.hpp>
 #include <ma/echo/server/qt/servicestate.h>
@@ -23,6 +22,13 @@
 #include <ma/echo/server/qt/serviceforwardsignal_fwd.h>
 #include <ma/echo/server/qt/serviceservantsignal_fwd.h>
 #include <ma/echo/server/qt/service_fwd.h>
+
+#if defined(MA_USE_CXX11_STDLIB)
+#include <memory>
+#else
+#include <boost/scoped_ptr.hpp>
+#include <boost/shared_ptr.hpp>
+#endif // defined(MA_USE_CXX11_STDLIB)
 
 namespace ma {
 namespace echo {
@@ -69,8 +75,12 @@ private:
   ServiceState::State   state_;
   ServiceForwardSignal* forwardSignal_;
   session_manager_stats stats_;
+#if defined(MA_USE_CXX11_STDLIB)
+  std::unique_ptr<server> server_;
+#else
   boost::scoped_ptr<server> server_;
-  boost::shared_ptr<ServiceServantSignal> servantSignal_;
+#endif
+  MA_SHARED_PTR<ServiceServantSignal> servantSignal_;
 }; // class Service
 
 } // namespace qt
