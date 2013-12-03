@@ -23,12 +23,12 @@
 #include <ma/echo/server/qt/serviceservantsignal_fwd.h>
 #include <ma/echo/server/qt/service_fwd.h>
 
-#if defined(MA_USE_CXX11_STDLIB)
+#if defined(MA_USE_CXX11_STDLIB_MEMORY)
 #include <memory>
 #else
 #include <boost/scoped_ptr.hpp>
 #include <boost/shared_ptr.hpp>
-#endif // defined(MA_USE_CXX11_STDLIB)
+#endif // defined(MA_USE_CXX11_STDLIB_MEMORY)
 
 namespace ma {
 namespace echo {
@@ -72,14 +72,10 @@ private:
   void createServant(const execution_config&, const session_manager_config&);
   void destroyServant();
 
-  ServiceState::State   state_;
-  ServiceForwardSignal* forwardSignal_;
-  session_manager_stats stats_;
-#if defined(MA_USE_CXX11_STDLIB)
-  std::unique_ptr<server> server_;
-#else
-  boost::scoped_ptr<server> server_;
-#endif
+  ServiceState::State                 state_;
+  ServiceForwardSignal*               forwardSignal_;
+  session_manager_stats               stats_;
+  MA_SCOPED_PTR<server>               server_;
   MA_SHARED_PTR<ServiceServantSignal> servantSignal_;
 }; // class Service
 

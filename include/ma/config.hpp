@@ -174,45 +174,67 @@
 #if (BOOST_VERSION >= 105500) && \
     ((defined(BOOST_MSVC) && (BOOST_MSVC >= 1700)) \
         || (defined(__GNUC__) && (__GNUC__ >= 4) && (__GNUC_MINOR__ >= 7)))
-#define MA_USE_CXX11_STDLIB
+#define MA_USE_CXX11_STDLIB_MEMORY
+#define MA_USE_CXX11_STDLIB_TUPLE
+#define MA_USE_CXX11_STDLIB_FUNCTIONAL
 #else
-#undef  MA_USE_CXX11_STDLIB
+#undef  MA_USE_CXX11_STDLIB_MEMORY
+#undef  MA_USE_CXX11_STDLIB_TUPLE
+#undef  MA_USE_CXX11_STDLIB_FUNCTIONAL
 #endif
 
-#if defined(MA_USE_CXX11_STDLIB)
+#if defined(MA_USE_CXX11_STDLIB_MEMORY)
 
+#define MA_ADDRESS_OF              ::std::addressof
+#define MA_SCOPED_PTR              ::std::unique_ptr
 #define MA_SHARED_PTR              ::std::shared_ptr
 #define MA_WEAK_PTR                ::std::weak_ptr
 #define MA_MAKE_SHARED             ::std::make_shared
 #define MA_ENABLE_SHARED_FROM_THIS ::std::enable_shared_from_this
+#define MA_STATIC_POINTER_CAST     ::std::static_pointer_cast
+
+#else  // defined(MA_USE_CXX11_STDLIB_MEMORY)
+
+#define MA_ADDRESS_OF              ::boost::addressof
+#define MA_SCOPED_PTR              ::boost::scoped_ptr
+#define MA_SHARED_PTR              ::boost::shared_ptr
+#define MA_WEAK_PTR                ::boost::weak_ptr
+#define MA_MAKE_SHARED             ::boost::make_shared
+#define MA_ENABLE_SHARED_FROM_THIS ::boost::enable_shared_from_this
+#define MA_STATIC_POINTER_CAST     ::boost::static_pointer_cast
+
+#endif // defined(MA_USE_CXX11_STDLIB_MEMORY)
+
+#if defined(MA_USE_CXX11_STDLIB_TUPLE)
+
+#define MA_TUPLE                   ::std::tuple
+#define MA_TUPLE_GET               ::std::get
+#define MA_MAKE_TUPLE              ::std::make_tuple
+
+#else  // defined(MA_USE_CXX11_STDLIB_TUPLE)
+
+#define MA_TUPLE                   ::boost::tuple
+#define MA_TUPLE_GET               ::boost::get
+#define MA_MAKE_TUPLE              ::boost::make_tuple
+
+#endif // defined(MA_USE_CXX11_STDLIB_TUPLE)
+
+#if defined(MA_USE_CXX11_STDLIB_FUNCTIONAL)
+
 #define MA_BIND                    ::std::bind
 #define MA_PLACEHOLDER_1           ::std::placeholders::_1
 #define MA_PLACEHOLDER_2           ::std::placeholders::_2
 #define MA_REF                     ::std::ref
 #define MA_FUNCTION                ::std::function
-#define MA_ADDRESS_OF              ::std::addressof
-#define MA_STATIC_POINTER_CAST     ::std::static_pointer_cast
-#define MA_TUPLE                   ::std::tuple
-#define MA_TUPLE_GET               ::std::get
-#define MA_MAKE_TUPLE              ::std::make_tuple
 
-#else // defined(MA_USE_CXX11_STDLIB)
+#else  // defined(MA_USE_CXX11_STDLIB_MEMORY)
 
-#define MA_SHARED_PTR              ::boost::shared_ptr
-#define MA_WEAK_PTR                ::boost::weak_ptr
-#define MA_MAKE_SHARED             ::boost::make_shared
-#define MA_ENABLE_SHARED_FROM_THIS ::boost::enable_shared_from_this
 #define MA_BIND                    ::boost::bind
 #define MA_PLACEHOLDER_1           _1
 #define MA_PLACEHOLDER_2           _2
 #define MA_REF                     ::boost::ref
 #define MA_FUNCTION                ::boost::function
-#define MA_ADDRESS_OF              ::boost::addressof
-#define MA_STATIC_POINTER_CAST     ::boost::static_pointer_cast
-#define MA_TUPLE                   ::boost::tuple
-#define MA_TUPLE_GET               ::boost::get
-#define MA_MAKE_TUPLE              ::boost::make_tuple
 
-#endif // defined(MA_USE_CXX11_STDLIB)
+#endif // defined(MA_USE_CXX11_STDLIB_MEMORY)
 
 #endif // MA_CONFIG_HPP

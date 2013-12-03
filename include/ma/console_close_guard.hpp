@@ -15,13 +15,17 @@
 #include <boost/noncopyable.hpp>
 #include <ma/config.hpp>
 
-#if defined(MA_USE_CXX11_STDLIB)
+#if defined(MA_USE_CXX11_STDLIB_MEMORY)
 #include <memory>
-#include <functional>
 #else
 #include <boost/scoped_ptr.hpp>
+#endif // defined(MA_USE_CXX11_STDLIB_MEMORY)
+
+#if defined(MA_USE_CXX11_STDLIB_FUNCTIONAL)
+#include <functional>
+#else
 #include <boost/function.hpp>
-#endif // defined(MA_USE_CXX11_STDLIB)
+#endif // defined(MA_USE_CXX11_STDLIB_FUNCTIONAL)
 
 namespace ma {
 
@@ -40,14 +44,8 @@ public:
 
 private:
   class implementation;
-
-#if defined(MA_USE_CXX11_STDLIB)
-  typedef std::unique_ptr<implementation> implementation_ptr;
-#else
-  typedef boost::scoped_ptr<implementation> implementation_ptr;
-#endif
-
-  implementation_ptr implementation_;
+  
+  MA_SCOPED_PTR<implementation> implementation_;
 }; // class console_close_guard
 
 } // namespace ma

@@ -24,12 +24,12 @@
 #include <utility>
 #endif // defined(MA_HAS_RVALUE_REFS)
 
-#if defined(MA_USE_CXX11_STDLIB)
+#if defined(MA_USE_CXX11_STDLIB_MEMORY)
 #include <memory>
 #else
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
-#endif // defined(MA_USE_CXX11_STDLIB)
+#endif // defined(MA_USE_CXX11_STDLIB_MEMORY)
 
 namespace ma {
 namespace windows {

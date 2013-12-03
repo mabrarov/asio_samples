@@ -21,11 +21,11 @@
 #include <ma/echo/server/session.hpp>
 #include <ma/echo/server/session_factory.hpp>
 
-#if defined(MA_USE_CXX11_STDLIB)
+#if defined(MA_USE_CXX11_STDLIB_MEMORY)
 #include <memory>
 #else
 #include <boost/shared_ptr.hpp>
-#endif // defined(MA_USE_CXX11_STDLIB)
+#endif // defined(MA_USE_CXX11_STDLIB_MEMORY)
 
 namespace ma {
 namespace echo {

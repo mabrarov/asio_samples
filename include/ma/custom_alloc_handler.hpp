@@ -23,11 +23,11 @@
 #include <ma/type_traits.hpp>
 #endif // defined(MA_HAS_RVALUE_REFS)
 
-#if defined(MA_USE_CXX11_STDLIB)
+#if defined(MA_USE_CXX11_STDLIB_MEMORY)
 #include <memory>
 #else
 #include <boost/utility/addressof.hpp>
-#endif // defined(MA_USE_CXX11_STDLIB)
+#endif // defined(MA_USE_CXX11_STDLIB_MEMORY)
 
 namespace ma {
 

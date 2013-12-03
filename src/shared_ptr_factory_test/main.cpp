@@ -14,9 +14,15 @@
 #include <iostream>
 #include <boost/static_assert.hpp>
 #include <boost/noncopyable.hpp>
+#include <ma/config.hpp>
+#include <ma/shared_ptr_factory.hpp>
+
+#if defined(MA_USE_CXX11_STDLIB_MEMORY)
+#include <memory>
+#else
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
-#include <ma/shared_ptr_factory.hpp>
+#endif // defined(MA_USE_CXX11_STDLIB_MEMORY)
 
 namespace ma {
 namespace test {
@@ -58,7 +64,7 @@ namespace test {
 namespace shared_ptr_factory {
 
 class A;
-typedef boost::shared_ptr<A> A_ptr;
+typedef MA_SHARED_PTR<A> A_ptr;
 
 class A : private boost::noncopyable
 {
@@ -66,7 +72,7 @@ public:
   static A_ptr create()
   {
     typedef ma::shared_ptr_factory_helper<A> A_helper;
-    return boost::make_shared<A_helper>();
+    return MA_MAKE_SHARED<A_helper>();
   }
 
 protected:
@@ -126,7 +132,7 @@ void run_test()
   {
     //BOOST_STATIC_ASSERT_MSG(!std::is_constructible<A>::value, 
     //    "class A has to be not constructible");
-    boost::shared_ptr<A> a = A::create();
+    MA_SHARED_PTR<A> a = A::create();
   }
   
   {    
@@ -134,7 +140,7 @@ void run_test()
     //    "class B has to be not constructible");
 
     typedef ma::shared_ptr_factory_helper<B> B_helper;
-    boost::shared_ptr<B> b = boost::make_shared<B_helper>(4, 2);
+    MA_SHARED_PTR<B> b = MA_MAKE_SHARED<B_helper>(4, 2);
   }
 
   {
@@ -143,7 +149,7 @@ void run_test()
     //    "class B has to be not constructible");
 
     typedef ma::shared_ptr_factory_helper<C> C_helper;  
-    boost::shared_ptr<C> c = boost::make_shared<C_helper>(1.0, 4, 2);
+    MA_SHARED_PTR<C> c = MA_MAKE_SHARED<C_helper>(1.0, 4, 2);
   }
 }
 

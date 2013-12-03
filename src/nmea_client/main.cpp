@@ -28,14 +28,18 @@
 #include <ma/nmea/cyclic_read_session.hpp>
 #include <ma/console_close_guard.hpp>
 
-#if defined(MA_USE_CXX11_STDLIB)
+#if defined(MA_USE_CXX11_STDLIB_MEMORY)
 #include <memory>
-#include <functional>
 #else
 #include <boost/make_shared.hpp>
+#endif // defined(MA_USE_CXX11_STDLIB_MEMORY)
+
+#if defined(MA_USE_CXX11_STDLIB_FUNCTIONAL)
+#include <functional>
+#else
 #include <boost/ref.hpp>
 #include <boost/bind.hpp>
-#endif // defined(MA_USE_CXX11_STDLIB)
+#endif // defined(MA_USE_CXX11_STDLIB_FUNCTIONAL)
 
 typedef std::codecvt<wchar_t, char, mbstate_t> wcodecvt_type;
 typedef ma::nmea::cyclic_read_session          session;

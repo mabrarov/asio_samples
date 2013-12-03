@@ -25,16 +25,24 @@ TRANSLATOR ma::echo::server::qt::Service
 #include <ma/echo/server/qt/serviceservantsignal.h>
 #include <ma/echo/server/qt/service.h>
 
-#if defined(MA_USE_CXX11_STDLIB)
+#if defined(MA_USE_CXX11_STDLIB_MEMORY)
 #include <memory>
-#include <tuple>
-#include <functional>
 #else
 #include <boost/make_shared.hpp>
+#endif // defined(MA_USE_CXX11_STDLIB_MEMORY)
+
+#if defined(MA_USE_CXX11_STDLIB_TUPLE)
+#include <tuple>
+#else
 #include <boost/tuple/tuple.hpp>
+#endif // defined(MA_USE_CXX11_STDLIB_TUPLE)
+
+#if defined(MA_USE_CXX11_STDLIB_FUNCTIONAL)
+#include <functional>
+#else
 #include <boost/ref.hpp>
 #include <boost/bind.hpp>
-#endif // defined(MA_USE_CXX11_STDLIB)
+#endif // defined(MA_USE_CXX11_STDLIB_FUNCTIONAL)
 
 namespace ma {
 namespace echo {

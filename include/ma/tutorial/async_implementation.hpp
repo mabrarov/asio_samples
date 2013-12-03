@@ -21,12 +21,12 @@
 #include <ma/steady_deadline_timer.hpp>
 #include <ma/tutorial/async_interface.hpp>
 
-#if defined(MA_USE_CXX11_STDLIB)
+#if defined(MA_USE_CXX11_STDLIB_MEMORY)
 #include <memory>
 #else
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
-#endif // defined(MA_USE_CXX11_STDLIB)
+#endif // defined(MA_USE_CXX11_STDLIB_MEMORY)
 
 namespace ma {
 namespace tutorial {

@@ -16,14 +16,18 @@
 #include <ma/echo/server/session_factory.hpp>
 #include <ma/echo/server/session_manager.hpp>
 
-#if defined(MA_USE_CXX11_STDLIB)
+#if defined(MA_USE_CXX11_STDLIB_MEMORY)
 #include <memory>
+#else
+#include <boost/make_shared.hpp>
+#include <boost/utility/addressof.hpp>
+#endif // defined(MA_USE_CXX11_STDLIB_MEMORY)
+
+#if defined(MA_USE_CXX11_STDLIB_FUNCTIONAL)
 #include <functional> 
 #else
 #include <boost/ref.hpp>
-#include <boost/make_shared.hpp>
-#include <boost/utility/addressof.hpp>
-#endif // defined(MA_USE_CXX11_STDLIB)
+#endif // defined(MA_USE_CXX11_STDLIB_FUNCTIONAL)
 
 namespace ma {
 namespace echo {

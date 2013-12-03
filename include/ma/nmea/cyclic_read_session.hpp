@@ -39,16 +39,24 @@
 #include <ma/type_traits.hpp>
 #endif // defined(MA_HAS_RVALUE_REFS)
 
-#if defined(MA_USE_CXX11_STDLIB)
-#include <tuple>
+#if defined(MA_USE_CXX11_STDLIB_MEMORY)
 #include <memory>
-#include <functional>
 #else
-#include <boost/tuple/tuple.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
+#endif // defined(MA_USE_CXX11_STDLIB_MEMORY)
+
+#if defined(MA_USE_CXX11_STDLIB_TUPLE)
+#include <tuple>
+#else
+#include <boost/tuple/tuple.hpp>
+#endif // defined(MA_USE_CXX11_STDLIB_TUPLE)
+
+#if defined(MA_USE_CXX11_STDLIB_FUNCTIONAL)
+#include <functional>
+#else
 #include <boost/bind.hpp>
-#endif // defined(MA_USE_CXX11_STDLIB)
+#endif // defined(MA_USE_CXX11_STDLIB_FUNCTIONAL)
 
 namespace ma {
 namespace nmea {

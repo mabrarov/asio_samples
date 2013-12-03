@@ -12,16 +12,26 @@
 #include <cstdlib>
 #include <exception>
 #include <iostream>
-#include <boost/ref.hpp>
-#include <boost/bind.hpp>
 #include <boost/asio.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/make_shared.hpp>
 #include <boost/system/error_code.hpp>
 #include <ma/config.hpp>
 #include <ma/handler_allocator.hpp>
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/windows/console_signal.hpp>
+
+#if defined(MA_USE_CXX11_STDLIB_MEMORY)
+#include <memory>
+#else
+#include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
+#endif // defined(MA_USE_CXX11_STDLIB_MEMORY)
+
+#if defined(MA_USE_CXX11_STDLIB_FUNCTIONAL)
+#include <functional>
+#else
+#include <boost/ref.hpp>
+#include <boost/bind.hpp>
+#endif // defined(MA_USE_CXX11_STDLIB_FUNCTIONAL)
 
 namespace ma {
 namespace test {
@@ -66,7 +76,7 @@ void handle_console_signal(const boost::system::error_code&)
   std::cout << "handle_console_signal" << std::endl;
 }
 
-typedef boost::shared_ptr<ma::windows::console_signal> console_signal_ptr;
+typedef MA_SHARED_PTR<ma::windows::console_signal> console_signal_ptr;
 
 void handle_console_signal2(const console_signal_ptr&,
     const boost::system::error_code&)
@@ -77,7 +87,7 @@ void handle_console_signal2(const console_signal_ptr&,
 typedef ma::in_place_handler_allocator<sizeof(std::size_t) * 64>
     handler_allocator;
 
-typedef boost::shared_ptr<handler_allocator> handler_allocator_ptr;
+typedef MA_SHARED_PTR<handler_allocator> handler_allocator_ptr;
 
 void handle_console_signal3(const console_signal_ptr&,
     const handler_allocator_ptr&, const boost::system::error_code&)
@@ -153,27 +163,25 @@ void run_test()
     boost::asio::io_service io_service;
     {
       console_signal_ptr s1 =
-          boost::make_shared<ma::windows::console_signal>(
-              boost::ref(io_service));
+          MA_MAKE_SHARED<ma::windows::console_signal>(MA_REF(io_service));
       console_signal_ptr s2 =
-          boost::make_shared<ma::windows::console_signal>(
-              boost::ref(io_service));
+          MA_MAKE_SHARED<ma::windows::console_signal>(MA_REF(io_service));
 
-      s1->async_wait(boost::bind(handle_console_signal2, s1, _1));
+      s1->async_wait(MA_BIND(handle_console_signal2, s1, MA_PLACEHOLDER_1));
       s1->async_wait(ma::make_custom_alloc_handler(alloc1,
-          boost::bind(handle_console_signal2, s1, _1)));
-      s1->async_wait(boost::bind(handle_console_signal2, s1, _1));
+          MA_BIND(handle_console_signal2, s1, MA_PLACEHOLDER_1)));
+      s1->async_wait(MA_BIND(handle_console_signal2, s1, MA_PLACEHOLDER_1));
 
-      s2->async_wait(boost::bind(handle_console_signal2, s2, _1));
-      s2->async_wait(boost::bind(handle_console_signal2, s2, _1));
-      s2->async_wait(boost::bind(handle_console_signal2, s2, _1));
+      s2->async_wait(MA_BIND(handle_console_signal2, s2, MA_PLACEHOLDER_1));
+      s2->async_wait(MA_BIND(handle_console_signal2, s2, MA_PLACEHOLDER_1));
+      s2->async_wait(MA_BIND(handle_console_signal2, s2, MA_PLACEHOLDER_1));
 
-      s1->async_wait(boost::bind(handle_console_signal2, s2, _1));
+      s1->async_wait(MA_BIND(handle_console_signal2, s2, MA_PLACEHOLDER_1));
 
       {
-        handler_allocator_ptr alloc2 = boost::make_shared<handler_allocator>();
+        handler_allocator_ptr alloc2 = MA_MAKE_SHARED<handler_allocator>();
         s1->async_wait(ma::make_custom_alloc_handler(*alloc2,
-            boost::bind(handle_console_signal3, s1, alloc2, _1)));
+            MA_BIND(handle_console_signal3, s1, alloc2, MA_PLACEHOLDER_1)));
       }
     }
   }

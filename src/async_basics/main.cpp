@@ -25,15 +25,19 @@
 #include <ma/tutorial/async_interface.hpp>
 #include <ma/tutorial/async_implementation.hpp>
 
-#if defined(MA_USE_CXX11_STDLIB)
+#if defined(MA_USE_CXX11_STDLIB_MEMORY)
 #include <memory>
-#include <functional>
 #else
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
+#endif // defined(MA_USE_CXX11_STDLIB_MEMORY)
+
+#if defined(MA_USE_CXX11_STDLIB_FUNCTIONAL)
+#include <functional>
+#else
 #include <boost/ref.hpp>
 #include <boost/bind.hpp>
-#endif // defined(MA_USE_CXX11_STDLIB)
+#endif // defined(MA_USE_CXX11_STDLIB_FUNCTIONAL)
 
 namespace {
 

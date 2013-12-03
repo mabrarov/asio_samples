@@ -17,12 +17,12 @@
 #include <boost/noncopyable.hpp>
 #include <ma/config.hpp>
 
-#if defined(MA_USE_CXX11_STDLIB)
+#if defined(MA_USE_CXX11_STDLIB_MEMORY)
 #include <memory>
 #else
 #include <boost/weak_ptr.hpp>
 #include <boost/shared_ptr.hpp>
-#endif // defined(MA_USE_CXX11_STDLIB)
+#endif // defined(MA_USE_CXX11_STDLIB_MEMORY)
 
 namespace ma {
 
