@@ -170,7 +170,8 @@
 #define MA_NOEXCEPT
 #endif
 
-//todo: add other compiler support
+//todo: add support for other compilers
+//      and try to rely on standard library version instead of compiler version
 #if (BOOST_VERSION >= 105500) && \
     ((defined(BOOST_MSVC) && (BOOST_MSVC >= 1700)) \
         || (defined(__GNUC__) && (__GNUC__ >= 4) && (__GNUC_MINOR__ >= 7)))
