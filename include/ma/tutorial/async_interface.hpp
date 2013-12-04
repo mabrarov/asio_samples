@@ -52,7 +52,7 @@ public:
 
 #if defined(MA_HAS_RVALUE_REFS)
 
-#if defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#if defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
   template <typename Handler>
   static void async_do_something(async_interface_ptr, Handler&&);
@@ -62,7 +62,7 @@ public:
   template <typename Handler>
   static void async_do_something(async_interface_ptr, Handler&&);
 
-#endif // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#endif // defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
 #else  // defined(MA_HAS_RVALUE_REFS)
 
@@ -91,7 +91,7 @@ protected:
 
 private:
 
-#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
   template <typename Arg>
   class forward_handler_binder;
@@ -102,7 +102,7 @@ private:
   static void start_do_something(const async_interface_ptr&, const Handler&);
 }; // async_interface
 
-#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
 template <typename Arg>
 class async_interface::forward_handler_binder
@@ -132,11 +132,11 @@ private:
 }; // class async_interface::forward_handler_binder
 
 #endif // defined(MA_HAS_RVALUE_REFS)
-       //     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+       //     && defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
 #if defined(MA_HAS_RVALUE_REFS)
 
-#if defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#if defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
 template <typename Handler>
 void async_interface::async_do_something(
@@ -153,7 +153,7 @@ void async_interface::async_do_something(
           func, std::move(async_interface))));
 }
 
-#else // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#else // defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
 template <typename Handler>
 void async_interface::async_do_something(
@@ -170,7 +170,7 @@ void async_interface::async_do_something(
       MA_BIND(func, std::move(async_interface), MA_PLACEHOLDER_1)));
 }
 
-#endif // defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#endif // defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
 #else  // defined(MA_HAS_RVALUE_REFS)
 
@@ -223,7 +223,7 @@ void async_interface::start_do_something(
   }
 }
 
-#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
 template <typename Arg>
 template <typename AsyncInterfacePtr>
@@ -261,7 +261,7 @@ void async_interface::forward_handler_binder<Arg>::operator()(const Arg& arg)
 }
 
 #endif // defined(MA_HAS_RVALUE_REFS)
-       //     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+       //     && defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
 } // namespace tutorial
 } // namespace ma

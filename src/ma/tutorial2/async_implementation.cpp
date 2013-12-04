@@ -218,7 +218,7 @@ private:
   boost::system::error_code error_;
 }; // class do_something_handler_binder
 
-#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
 class timer_handler_binder
 {
@@ -266,7 +266,7 @@ private:
 }; // class timer_handler_binder
 
 #endif // defined(MA_HAS_RVALUE_REFS)
-       //     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+       //     && defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
 } // anonymous namespace
 
@@ -348,7 +348,7 @@ async_implementation::do_start_do_something()
     return timer_error;
   }
 
-#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
   timer_.async_wait(MA_STRAND_WRAP(strand_, ma::make_custom_alloc_handler(
       timer_allocator_, timer_handler_binder(&this_type::handle_timer,
@@ -395,7 +395,7 @@ void async_implementation::handle_timer(const boost::system::error_code& error)
       return;
     }
 
-#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
     timer_.async_wait(MA_STRAND_WRAP(strand_, ma::make_custom_alloc_handler(
         timer_allocator_, timer_handler_binder(&this_type::handle_timer,

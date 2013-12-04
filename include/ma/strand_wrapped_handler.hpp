@@ -41,7 +41,7 @@ namespace ma {
  * http://www.boost.org/doc/libs/release/doc/html/boost_asio/reference/io_service__strand/wrap.html
  * ...
  * that, when invoked, executes code equivalent to:
- *   strand.dispatch(boost::bind(f, a1, ... an));
+ *   strand.dispatch(bind(f, a1, ... an));
  * ...
  * strand_wrapped_handler does strand.dispatch only when it is called by the
  * means of asio_handler_invoke. See MA_BOOST_ASIO_HEAVY_STRAND_WRAPPED_HANDLER

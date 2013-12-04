@@ -32,7 +32,7 @@ namespace server {
 namespace {
 
 #if defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR) \
+    && defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR) \
     && !(defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
 
 // Home-grown binders to support move semantic
@@ -125,10 +125,9 @@ private:
 }; // class timer_handler_binder
 
 #endif // defined(MA_HAS_RVALUE_REFS)
-       //     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+       //     && defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
        //     && !(defined(MA_HAS_LAMBDA)
        //         && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
-
 
 } // anonymous namespace
 
@@ -945,7 +944,7 @@ void session::start_socket_read(
   })));
 
 #elif defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+    && defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
   socket_.async_read_some(buffers, MA_STRAND_WRAP(strand_,
       make_custom_alloc_handler(read_allocator_, io_handler_binder(
@@ -1002,7 +1001,7 @@ void session::start_socket_write(
   })));
 
 #elif defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+    && defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
   socket_.async_write_some(buffers, MA_STRAND_WRAP(strand_,
       make_custom_alloc_handler(write_allocator_, io_handler_binder(
@@ -1058,7 +1057,7 @@ void session::start_timer_wait()
   })));
 
 #elif defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+    && defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
   timer_.async_wait(MA_STRAND_WRAP(strand_,
       make_custom_alloc_handler(timer_allocator_, timer_handler_binder(

@@ -26,10 +26,10 @@
 
 namespace ma {
 
-/// Simplified double-linked intrusive list of boost::shared_ptr.
+/// Simplified double-linked intrusive list of shared_ptr.
 /**
- * Const time insertion of boost::shared_ptr.
- * Const time deletion of boost::shared_ptr (deletion by value).
+ * Const time insertion of shared_ptr.
+ * Const time deletion of shared_ptr (deletion by value).
  *
  * Requirements:
  * if value is rvalue of type Value then expression

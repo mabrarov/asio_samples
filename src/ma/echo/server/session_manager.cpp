@@ -72,7 +72,7 @@ private:
 } // anonymous namespace
 
 #if defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR) \
+    && defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR) \
     && !(defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
 
 // Home-grown binders to support move semantic
@@ -231,7 +231,7 @@ private:
 }; // class session_manager::session_handler_binder
 
 #endif // defined(MA_HAS_RVALUE_REFS)
-       //     && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+       //     && defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
        //     && !(defined(MA_HAS_LAMBDA)
        //         && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
 
@@ -1239,7 +1239,7 @@ void session_manager::start_accept_session(const session_wrapper_ptr& session)
   })));
 
 #elif defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+    && defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
   acceptor_.async_accept(session->socket(), session->remote_endpoint(),
       MA_STRAND_WRAP(strand_, make_custom_alloc_handler(accept_allocator_,
@@ -1297,7 +1297,7 @@ void session_manager::start_session_start(const session_wrapper_ptr& session)
   });
 
 #elif defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+    && defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
   session->async_start(session_dispatch_binder(
       &this_type::dispatch_handle_session_start, shared_from_this(), session));
@@ -1350,7 +1350,7 @@ void session_manager::start_session_stop(const session_wrapper_ptr& session)
   });
 
 #elif defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+    && defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
   session->async_stop(session_dispatch_binder(
       &this_type::dispatch_handle_session_stop, shared_from_this(), session));
@@ -1403,7 +1403,7 @@ void session_manager::start_session_wait(const session_wrapper_ptr& session)
   });
 
 #elif defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+    && defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
   session->async_wait(session_dispatch_binder(
       &this_type::dispatch_handle_session_wait, shared_from_this(), session));
@@ -1543,7 +1543,7 @@ void session_manager::dispatch_handle_session_start(
   if (session_manager_ptr this_ptr = this_weak_ptr.lock())
   {
     // Forward completion
-#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
     this_ptr->strand_.dispatch(make_custom_alloc_handler(
         session->start_allocator(), session_handler_binder(
@@ -1569,7 +1569,7 @@ void session_manager::dispatch_handle_session_wait(
   if (session_manager_ptr this_ptr = this_weak_ptr.lock())
   {
     // Forward completion
-#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
     this_ptr->strand_.dispatch(make_custom_alloc_handler(
         session->wait_allocator(), session_handler_binder(
@@ -1593,7 +1593,7 @@ void session_manager::dispatch_handle_session_stop(
   if (session_manager_ptr this_ptr = this_weak_ptr.lock())
   {
     // Forward completion
-#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BOOST_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
     this_ptr->strand_.dispatch(make_custom_alloc_handler(
         session->stop_allocator(), session_handler_binder(
