@@ -151,7 +151,7 @@ private:
 
 public:
 
-#if defined(MA_TYPE_ERASURE_USE_VURTUAL)
+#if !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 
   virtual void destroy() = 0;
 
@@ -159,11 +159,11 @@ public:
 
   void destroy();
 
-#endif // defined(MA_TYPE_ERASURE_USE_VURTUAL)
+#endif // !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 
 protected:
 
-#if defined(MA_TYPE_ERASURE_USE_VURTUAL)
+#if !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 
   stored_base();
 
@@ -173,7 +173,7 @@ protected:
 
   stored_base(destroy_func_type);
 
-#endif // defined(MA_TYPE_ERASURE_USE_VURTUAL)
+#endif // !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 
   ~stored_base();
   stored_base(const this_type&);
@@ -181,7 +181,7 @@ protected:
 private:
   this_type& operator=(const this_type&);
 
-#if !defined(MA_TYPE_ERASURE_USE_VURTUAL)
+#if defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
   destroy_func_type destroy_func_;
 #endif
 }; // class handler_storage_service::stored_base
@@ -196,7 +196,7 @@ private:
 public:
   typedef Target target_type;
 
-#if defined(MA_TYPE_ERASURE_USE_VURTUAL)
+#if !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
   
   virtual void post(const Arg&) = 0;
   virtual target_type* target() = 0;
@@ -206,11 +206,11 @@ public:
   void post(const Arg&);
   target_type* target();
 
-#endif // defined(MA_TYPE_ERASURE_USE_VURTUAL)
+#endif // !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 
 protected:
 
-#if defined(MA_TYPE_ERASURE_USE_VURTUAL)
+#if !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 
   handler_base();
 
@@ -221,7 +221,7 @@ protected:
 
   handler_base(destroy_func_type, post_func_type, target_func_type);
 
-#endif // defined(MA_TYPE_ERASURE_USE_VURTUAL)
+#endif // !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 
   ~handler_base();
   handler_base(const this_type&);
@@ -229,10 +229,12 @@ protected:
 private:
   this_type& operator=(const this_type&);
 
-#if !defined(MA_TYPE_ERASURE_USE_VURTUAL)
+#if defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
+
   post_func_type   post_func_;
   target_func_type target_func_;
-#endif
+
+#endif // defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 }; // class handler_storage_service::handler_base
 
 template <typename Target>
@@ -246,7 +248,7 @@ private:
 public:
   typedef Target target_type;
 
-#if defined(MA_TYPE_ERASURE_USE_VURTUAL)
+#if !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 
   virtual void post() = 0;
   virtual target_type* target() = 0;
@@ -256,11 +258,11 @@ public:
   void post();
   target_type* target();
 
-#endif // defined(MA_TYPE_ERASURE_USE_VURTUAL)
+#endif // !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 
 protected:
 
-#if defined(MA_TYPE_ERASURE_USE_VURTUAL)
+#if !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 
   handler_base();
 
@@ -271,7 +273,7 @@ protected:
 
   handler_base(destroy_func_type, post_func_type, target_func_type);
 
-#endif // defined(MA_TYPE_ERASURE_USE_VURTUAL)
+#endif // !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 
   ~handler_base();
   handler_base(const this_type&);
@@ -279,10 +281,12 @@ protected:
 private:
   this_type& operator=(const this_type&);
 
-#if !defined(MA_TYPE_ERASURE_USE_VURTUAL)
+#if defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
+
   post_func_type   post_func_;
   target_func_type target_func_;
-#endif
+
+#endif // defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 }; // class handler_storage_service::handler_base
 
 template <typename Handler, typename Arg, typename Target>
@@ -314,11 +318,13 @@ public:
 
 #endif // defined(MA_HAS_RVALUE_REFS)
 
-#if defined(MA_TYPE_ERASURE_USE_VURTUAL)
+#if !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
+
   virtual void destroy();
   virtual void post(const Arg&);
   virtual target_type* target();
-#endif
+
+#endif // !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 
 #if !defined(NDEBUG)
   ~handler_wrapper();
@@ -364,11 +370,13 @@ public:
 
 #endif // defined(MA_HAS_RVALUE_REFS)
 
-#if defined(MA_TYPE_ERASURE_USE_VURTUAL)
+#if !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
+
   virtual void destroy();
   virtual void post();
   virtual target_type* target();
-#endif
+
+#endif // !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 
 #if !defined(NDEBUG)
   ~handler_wrapper();
@@ -385,7 +393,7 @@ private:
   Handler handler_;
 }; // class handler_storage_service::handler_wrapper
 
-#if defined(MA_TYPE_ERASURE_USE_VURTUAL)
+#if !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 
 inline handler_storage_service::stored_base::stored_base()
 {
@@ -404,7 +412,7 @@ inline handler_storage_service::stored_base::stored_base(
 {
 }
 
-#endif // defined(MA_TYPE_ERASURE_USE_VURTUAL)
+#endif // !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 
 inline handler_storage_service::stored_base::~stored_base()
 {
@@ -413,13 +421,13 @@ inline handler_storage_service::stored_base::~stored_base()
 inline handler_storage_service::stored_base::stored_base(
     const this_type& other)
   : base_type(other)
-#if !defined(MA_TYPE_ERASURE_USE_VURTUAL)
+#if defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
   , destroy_func_(other.destroy_func_)
 #endif
 {
 }
 
-#if defined(MA_TYPE_ERASURE_USE_VURTUAL)
+#if !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 
 template <typename Arg, typename Target>
 handler_storage_service::handler_base<Arg, Target>::handler_base()
@@ -427,7 +435,7 @@ handler_storage_service::handler_base<Arg, Target>::handler_base()
 {
 }
 
-#else // defined(MA_TYPE_ERASURE_USE_VURTUAL)
+#else // !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 
 template <typename Arg, typename Target>
 void handler_storage_service::handler_base<Arg, Target>::post(
@@ -453,7 +461,7 @@ handler_storage_service::handler_base<Arg, Target>::handler_base(
 {
 }
 
-#endif // defined(MA_TYPE_ERASURE_USE_VURTUAL)
+#endif // !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 
 template <typename Arg, typename Target>
 handler_storage_service::handler_base<Arg, Target>::~handler_base()
@@ -464,14 +472,14 @@ template <typename Arg, typename Target>
 handler_storage_service::handler_base<Arg, Target>::handler_base(
     const this_type& other)
   : base_type(other)
-#if !defined(MA_TYPE_ERASURE_USE_VURTUAL)
+#if defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
   , post_func_(other.post_func_)
   , target_func_(other.target_func_)
 #endif
 {
 }
 
-#if defined(MA_TYPE_ERASURE_USE_VURTUAL)
+#if !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 
 template <typename Target>
 handler_storage_service::handler_base<void, Target>::handler_base()
@@ -479,7 +487,7 @@ handler_storage_service::handler_base<void, Target>::handler_base()
 {
 }
 
-#else // defined(MA_TYPE_ERASURE_USE_VURTUAL)
+#else // !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 
 template <typename Target>
 void handler_storage_service::handler_base<void, Target>::post()
@@ -504,7 +512,7 @@ handler_storage_service::handler_base<void, Target>::handler_base(
 {
 }
 
-#endif // defined(MA_TYPE_ERASURE_USE_VURTUAL)
+#endif // !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 
 template <typename Target>
 handler_storage_service::handler_base<void, Target>::~handler_base()
@@ -515,7 +523,7 @@ template <typename Target>
 handler_storage_service::handler_base<void, Target>::handler_base(
     const this_type& other)
   : base_type(other)
-#if !defined(MA_TYPE_ERASURE_USE_VURTUAL)
+#if defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
   , post_func_(other.post_func_)
   , target_func_(other.target_func_)
 #endif
@@ -528,7 +536,7 @@ template <typename Handler, typename Arg, typename Target>
 template <typename H>
 handler_storage_service::handler_wrapper<Handler, Arg, Target>::handler_wrapper(
     boost::asio::io_service& io_service, H&& handler)
-#if defined(MA_TYPE_ERASURE_USE_VURTUAL)
+#if !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
   : base_type()
 #else
   : base_type(&this_type::do_destroy, &this_type::do_post,
@@ -566,7 +574,7 @@ handler_storage_service::handler_wrapper<Handler, Arg, Target>::handler_wrapper(
 template <typename Handler, typename Arg, typename Target>
 handler_storage_service::handler_wrapper<Handler, Arg, Target>::handler_wrapper(
     boost::asio::io_service& io_service, const Handler& handler)
-#if defined(MA_TYPE_ERASURE_USE_VURTUAL)
+#if !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
   : base_type()
 #else
   : base_type(&this_type::do_destroy, &this_type::do_post,
@@ -589,7 +597,7 @@ handler_storage_service::handler_wrapper<Handler, Arg, Target>::
 
 #endif // !defined(NDEBUG)
 
-#if defined(MA_TYPE_ERASURE_USE_VURTUAL)
+#if !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 
 template <typename Handler, typename Arg, typename Target>
 void handler_storage_service::handler_wrapper<Handler, Arg, Target>::destroy()
@@ -612,7 +620,7 @@ handler_storage_service::handler_wrapper<Handler, Arg, Target>::target()
   return do_target(this);
 }
 
-#endif // defined(MA_TYPE_ERASURE_USE_VURTUAL)
+#endif // !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 
 template <typename Handler, typename Arg, typename Target>
 void handler_storage_service::handler_wrapper<Handler, Arg, Target>::do_destroy(
@@ -678,7 +686,7 @@ template <typename Handler, typename Target>
 template <typename H>
 handler_storage_service::handler_wrapper<Handler, void, Target>::
     handler_wrapper(boost::asio::io_service& io_service, H&& handler)
-#if defined(MA_TYPE_ERASURE_USE_VURTUAL)
+#if !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
   : base_type()
 #else
   : base_type(&this_type::do_destroy, &this_type::do_post,
@@ -716,7 +724,7 @@ handler_storage_service::handler_wrapper<Handler, void, Target>::
 template <typename Handler, typename Target>
 handler_storage_service::handler_wrapper<Handler, void, Target>::
     handler_wrapper(boost::asio::io_service& io_service, const Handler& handler)
-#if defined(MA_TYPE_ERASURE_USE_VURTUAL)
+#if !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
   : base_type()
 #else
   : base_type(&this_type::do_destroy, &this_type::do_post,
@@ -739,7 +747,7 @@ handler_storage_service::handler_wrapper<Handler, void, Target>::
 
 #endif // !defined(NDEBUG)
 
-#if defined(MA_TYPE_ERASURE_USE_VURTUAL)
+#if !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 
 template <typename Handler, typename Target>
 void handler_storage_service::handler_wrapper<Handler, void, Target>::destroy()
@@ -761,7 +769,7 @@ handler_storage_service::handler_wrapper<Handler, void, Target>::target()
   return do_target(this);
 }
 
-#endif // defined(MA_TYPE_ERASURE_USE_VURTUAL)
+#endif // !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 
 template <typename Handler, typename Target>
 void handler_storage_service::handler_wrapper<Handler, void, Target>::

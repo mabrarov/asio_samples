@@ -94,7 +94,7 @@ private:
 
   public:
 
-#if defined(MA_TYPE_ERASURE_USE_VURTUAL)
+#if !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 
     virtual void destroy() = 0;
     virtual void post(const boost::system::error_code&) = 0;
@@ -104,11 +104,11 @@ private:
     void destroy();
     void post(const boost::system::error_code&);        
 
-#endif // defined(MA_TYPE_ERASURE_USE_VURTUAL)
+#endif // !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 
   protected:
 
-#if defined(MA_TYPE_ERASURE_USE_VURTUAL)
+#if !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 
     handler_base();
 
@@ -119,7 +119,7 @@ private:
 
     handler_base(destroy_func_type, post_func_type);
 
-#endif // defined(MA_TYPE_ERASURE_USE_VURTUAL)
+#endif // !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 
     ~handler_base();
     handler_base(const this_type&);    
@@ -127,10 +127,12 @@ private:
   private:
     this_type& operator=(const this_type&);
 
-#if !defined(MA_TYPE_ERASURE_USE_VURTUAL)
+#if defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
+
     destroy_func_type destroy_func_;
     post_func_type    post_func_;
-#endif
+
+#endif // defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
   }; // class handler_base
 
   typedef detail::intrusive_forward_list<handler_base> handler_list;
@@ -225,10 +227,12 @@ public:
 
 #endif // defined(MA_HAS_RVALUE_REFS)
 
-#if defined(MA_TYPE_ERASURE_USE_VURTUAL)
+#if !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
+
   void destroy();
   void post(const boost::system::error_code&);
-#endif
+
+#endif // !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 
 #if !defined(NDEBUG)
   ~handler_wrapper();
@@ -282,7 +286,7 @@ template <typename Handler>
 template <typename H>
 console_signal_service::handler_wrapper<Handler>::handler_wrapper(
     boost::asio::io_service& io_service, H&& handler)
-#if defined(MA_TYPE_ERASURE_USE_VURTUAL)
+#if !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
   : base_type()
 #else
   : base_type(&this_type::do_destroy, &this_type::do_post)
@@ -319,7 +323,7 @@ console_signal_service::handler_wrapper<Handler>::handler_wrapper(
 template <typename Handler>
 console_signal_service::handler_wrapper<Handler>::handler_wrapper(
     boost::asio::io_service& io_service, const Handler& handler)
-#if defined(MA_TYPE_ERASURE_USE_VURTUAL)
+#if !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
   : base_type()
 #else
   : base_type(&this_type::do_destroy, &this_type::do_post)
@@ -331,7 +335,7 @@ console_signal_service::handler_wrapper<Handler>::handler_wrapper(
 
 #endif // defined(MA_HAS_RVALUE_REFS)
 
-#if defined(MA_TYPE_ERASURE_USE_VURTUAL)
+#if !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 
 template <typename Handler>
 void console_signal_service::handler_wrapper<Handler>::destroy()
@@ -346,7 +350,7 @@ void console_signal_service::handler_wrapper<Handler>::post(
   do_post(this, error);
 }
 
-#endif // defined(MA_TYPE_ERASURE_USE_VURTUAL)
+#endif // !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 
 #if !defined(NDEBUG)
 

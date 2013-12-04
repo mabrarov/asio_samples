@@ -25,6 +25,7 @@
 #if (BOOST_VERSION >= 105500) && \
     ((defined(BOOST_MSVC) && (BOOST_MSVC >= 1700)) \
         || (defined(BOOST_GCC) && (BOOST_GCC >= 40700)) \
+        || (defined(BOOST_CLANG) && (__clang_major__ >= 3)) \
         || (defined(BOOST_INTEL) && (BOOST_INTEL_CXX_VERSION >= 1400) \
             && defined(BOOST_INTEL_STDCXX0X)))
 #define MA_USE_CXX11_STDLIB_MEMORY
@@ -213,8 +214,8 @@
 #undef  MA_HAS_BOOST_TIMER
 #endif
 
-// Use vurtual member functions for type erasure
-#define MA_TYPE_ERASURE_USE_VURTUAL
+// Use virtual member functions for type erasure
+#undef MA_TYPE_ERASURE_NOT_USE_VIRTUAL
 
 // Check C++11 lambdas availability
 #if (BOOST_VERSION >= 104000) && !defined(BOOST_NO_LAMBDAS)

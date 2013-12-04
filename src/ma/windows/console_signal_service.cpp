@@ -187,7 +187,7 @@ console_signal_service_base::system_service::factory::operator()(
   return MA_MAKE_SHARED<helper>(singleton_instance_guard);
 }
 
-#if defined(MA_TYPE_ERASURE_USE_VURTUAL)
+#if !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 
 console_signal_service::handler_base::handler_base()
 {
@@ -213,7 +213,7 @@ console_signal_service::handler_base::handler_base(
 {
 }
 
-#endif // defined(MA_TYPE_ERASURE_USE_VURTUAL)
+#endif // !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 
 console_signal_service::handler_base::~handler_base()
 {
@@ -221,7 +221,7 @@ console_signal_service::handler_base::~handler_base()
 
 console_signal_service::handler_base::handler_base(const this_type& other)
   : base_type(other)
-#if !defined(MA_TYPE_ERASURE_USE_VURTUAL)
+#if defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
   , destroy_func_(other.destroy_func_)
   , post_func_(other.post_func_)
 #endif
