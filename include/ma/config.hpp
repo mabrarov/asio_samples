@@ -117,49 +117,38 @@
  */
 #if defined(BOOST_GCC) && (BOOST_GCC >= 40600)
 
-/// Turns off explicit definition of move constructor (and copy constructor).
 #undef MA_NO_IMPLICIT_MOVE_CONSTRUCTOR
-/// Turns off usage of home-grown binders with move semantic support.
 #undef MA_BIND_HAS_NO_MOVE_CONTRUCTOR
 
 #elif defined(BOOST_CLANG)
 
 #if __has_feature(cxx_implicit_moves)
 
-/// Turns off explicit definition of move constructor (and copy constructor).
 #undef MA_NO_IMPLICIT_MOVE_CONSTRUCTOR
-/// Turns off usage of home-grown binders with move semantic support.
 #undef MA_BIND_HAS_NO_MOVE_CONTRUCTOR
 
 #else // __has_feature(cxx_implicit_moves)
 
-/// Turns on explicit definition of move constructor (and copy constructor).
 #define MA_NO_IMPLICIT_MOVE_CONSTRUCTOR
-/// Turns on usage of home-grown binders with move semantic support.
 #define MA_BIND_HAS_NO_MOVE_CONTRUCTOR
 
 #endif // __has_feature(cxx_implicit_moves)
 
-#elif defined(BOOST_MSVC) && (BOOST_MSVC >= 1700)
+#elif (defined(BOOST_MSVC) && (BOOST_MSVC >= 1700)) \
+    || (defined(BOOST_INTEL) && (BOOST_INTEL_CXX_VERSION >= 1400) \
+        && defined(BOOST_INTEL_STDCXX0X))
 
-/// Turns on explicit definition of move constructor (and copy constructor).
 #define MA_NO_IMPLICIT_MOVE_CONSTRUCTOR
-/// Turns off usage of home-grown binders with move semantic support.
-#undef  MA_BIND_HAS_NO_MOVE_CONTRUCTOR
 
-#elif defined(BOOST_INTEL) && (BOOST_INTEL_CXX_VERSION >= 1400) \
-    && defined(BOOST_INTEL_STDCXX0X)
-
-/// Turns on explicit definition of move constructor (and copy constructor).
-#define MA_NO_IMPLICIT_MOVE_CONSTRUCTOR
-/// Turns off usage of home-grown binders with move semantic support.
+#if defined(MA_USE_CXX11_STDLIB_FUNCTIONAL)
 #undef  MA_BIND_HAS_NO_MOVE_CONTRUCTOR
+#else
+#define MA_BIND_HAS_NO_MOVE_CONTRUCTOR
+#endif
 
 #else  // defined(BOOST_GCC) && (BOOST_GCC >= 40600)
 
-/// Turns on explicit definition of move constructor (and copy constructor).
 #define MA_NO_IMPLICIT_MOVE_CONSTRUCTOR
-/// Turns on usage of home-grown binders with move semantic support.
 #define MA_BIND_HAS_NO_MOVE_CONTRUCTOR
 
 #endif // defined(BOOST_GCC) && (BOOST_GCC >= 40600)
