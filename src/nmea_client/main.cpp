@@ -68,6 +68,13 @@ void print_frames(const frame_buffer_type& frames, std::size_t size);
 
 void print_usage();
 
+namespace {
+
+static const int min_arg_count = 2;
+static const int max_arg_count = 4;
+
+}
+
 #if defined(WIN32)
 int _tmain(int argc, _TCHAR* argv[])
 #else
@@ -83,7 +90,7 @@ int main(int argc, char* argv[])
     std::locale sys_locale("");
 #endif
 
-    if (2 > argc || 4 < argc)
+    if (min_arg_count > argc || max_arg_count < argc)
     {
       print_usage();
       return EXIT_FAILURE;

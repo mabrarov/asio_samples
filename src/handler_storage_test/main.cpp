@@ -628,6 +628,8 @@ private:
   int value_;
 }; // class handler
 
+static const int value4 = 4;
+
 void run_test()
 {
   std::cout << "*** ma::test::handler_storage_target ***" << std::endl;
@@ -641,9 +643,9 @@ void run_test()
     typedef ma::handler_storage<int, handler_base> handler_storage_type;
 
     handler_storage_type handler_storage(io_service);
-    handler_storage.store(handler(4));
+    handler_storage.store(handler(value4));
 
-    BOOST_ASSERT_MSG(4 == handler_storage.target()->get_value(),
+    BOOST_ASSERT_MSG(value4 == handler_storage.target()->get_value(),
         "Stored value and target are different");
   }
 } // run_test
@@ -762,6 +764,10 @@ private:
   continuation cont_;
 }; // class int_handler_with_target
 
+static const int value4 = 4;
+static const int value1 = 1;
+static const int value2 = 2;
+
 void run_test()
 {
   std::cout << "*** ma::test::handler_storage_arg ***" << std::endl;
@@ -776,7 +782,7 @@ void run_test()
     typedef ma::handler_storage<void> handler_storage_type;
 
     handler_storage_type handler_storage(io_service);
-    handler_storage.store(void_handler_without_target(4,
+    handler_storage.store(void_handler_without_target(value4,
         MA_BIND(&threshold::dec, &done_threshold)));
 
     std::cout << handler_storage.target() << std::endl;
@@ -788,20 +794,23 @@ void run_test()
     typedef ma::handler_storage<int> handler_storage_type;
 
     handler_storage_type handler_storage(io_service);
-    handler_storage.store(int_handler_without_target(4,
+    handler_storage.store(int_handler_without_target(value4,
         MA_BIND(&threshold::dec, &done_threshold)));
 
     std::cout << handler_storage.target() << std::endl;
     done_threshold.inc();
-    handler_storage.post(2);
+    handler_storage.post(value2);
   }
 
   {
     typedef ma::handler_storage<void, test_handler_base> handler_storage_type;
 
     handler_storage_type handler_storage(io_service);
-    handler_storage.store(void_handler_with_target(4,
+    handler_storage.store(void_handler_with_target(value4,
         MA_BIND(&threshold::dec, &done_threshold)));
+
+    BOOST_ASSERT_MSG(value4 == handler_storage.target()->get_value(), 
+        "Data of target is different than the stored data");
 
     std::cout << handler_storage.target()->get_value() << std::endl;
     done_threshold.inc();
@@ -812,23 +821,29 @@ void run_test()
     typedef ma::handler_storage<int, test_handler_base> handler_storage_type;
 
     handler_storage_type handler_storage(io_service);
-    handler_storage.store(int_handler_with_target(4,
+    handler_storage.store(int_handler_with_target(value4,
         MA_BIND(&threshold::dec, &done_threshold)));
+
+    BOOST_ASSERT_MSG(value4 == handler_storage.target()->get_value(), 
+        "Data of target is different than the stored data");
 
     std::cout << handler_storage.target()->get_value() << std::endl;
     done_threshold.inc();
-    handler_storage.post(2);
+    handler_storage.post(value2);
   }
 
   {
     boost::asio::io_service io_service;
 
     ma::handler_storage<int, test_handler_base> handler_storage1(io_service);
-    handler_storage1.store(int_handler_with_target(1,
+    handler_storage1.store(int_handler_with_target(value1,
         MA_BIND(&threshold::dec, &done_threshold)));
 
+    BOOST_ASSERT_MSG(value1 == handler_storage1.target()->get_value(), 
+        "Data of target is different than the stored data");
+
     ma::handler_storage<void> handler_storage2(io_service);
-    handler_storage2.store(void_handler_without_target(2,
+    handler_storage2.store(void_handler_without_target(value2,
         MA_BIND(&threshold::dec, &done_threshold)));
   }
 
