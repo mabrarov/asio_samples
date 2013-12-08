@@ -1138,9 +1138,9 @@ void create_session_threads(boost::thread_group& threads,
         end = io_services.end(); i != end; ++i)
     {
       threads.create_thread(MA_BIND(
-        static_cast<std::size_t (boost::asio::io_service::*)(void)>(
-            &boost::asio::io_service::run), 
-        i->get()));
+          static_cast<std::size_t (boost::asio::io_service::*)(void)>(
+              &boost::asio::io_service::run), 
+          i->get()));
     }
   }
   else

@@ -27,7 +27,7 @@
 
 namespace ma {
 
-#if defined (MA_HAS_BOOST_CHRONO)
+#if defined (MA_HAS_BOOST_CHRONO) && defined(BOOST_CHRONO_HAS_CLOCK_STEADY)
 
 struct steady_time_traits
 {
@@ -80,12 +80,14 @@ inline steady_time_traits::time_type steady_time_traits::now()
 
 inline boost::posix_time::time_duration steady_time_traits::to_posix_duration(
     const duration_type& duration)
-{
-  boost::chrono::nanoseconds d(duration);
+{  
 #if defined(BOOST_DATE_TIME_POSIX_TIME_STD_CONFIG)
+  boost::chrono::nanoseconds d(duration);
   return boost::posix_time::nanoseconds(d.count());
 #else
-  return boost::posix_time::microseconds(d.count() / 1000);
+  boost::chrono::microseconds d = 
+      boost::chrono::duration_cast<boost::chrono::microseconds>(duration);
+  return boost::posix_time::microseconds(d.count());
 #endif
 }
 
