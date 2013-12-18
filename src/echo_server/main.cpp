@@ -603,7 +603,7 @@ void print_stats(const ma::echo::server::session_manager_stats& stats)
             << "Recycled sessions          : "
             << boost::lexical_cast<std::string>(stats.recycled)
             << std::endl
-            << "Total accepeted sessions   : "
+            << "Total accepted sessions    : "
             << to_string(stats.total_accepted)
             << std::endl
             << "Active shutdowned sessions : "

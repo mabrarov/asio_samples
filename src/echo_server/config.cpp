@@ -7,6 +7,7 @@
 
 #include <string>
 #include <limits>
+#include <boost/asio.hpp>
 #include <boost/optional.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/throw_exception.hpp>
@@ -23,6 +24,7 @@ const char* session_threads_option_name         = "session_threads";
 const char* stop_timeout_option_name            = "stop_timeout";
 const char* max_sessions_option_name            = "max_sessions";
 const char* recycled_sessions_option_name       = "recycled_sessions";
+const char* listen_address_option_name          = "address";
 const char* listen_backlog_option_name          = "listen_backlog";
 const char* buffer_size_option_name             = "buffer";
 const char* inactivity_timeout_option_name      = "inactivity_timeout";
@@ -170,6 +172,12 @@ boost::program_options::options_description build_cmd_options_description(
       "set the maximum number of pooled inactive sessions"
     )
     (
+      listen_address_option_name,
+      boost::program_options::value<std::string>()->default_value(
+          boost::asio::ip::address_v4::any().to_string()),
+      "set the TCP address to listen on (IPv4 or IPv6)"
+    )    
+    (
       listen_backlog_option_name,
       boost::program_options::value<int>()->default_value(6),
       "set the size of TCP listen backlog"
@@ -261,6 +269,9 @@ void print_config(std::ostream& stream, std::size_t cpu_count,
          << std::endl
          << "Demultiplexer-per-work-thread mode    : "
          << to_string(exec_config.ios_per_work_thread)
+         << std::endl
+         << "Server listen address                 : "
+         << session_manager_config.accepting_endpoint.address()
          << std::endl
          << "Server listen port                    : "
          << session_manager_config.accepting_endpoint.port()
@@ -393,12 +404,15 @@ ma::echo::server::session_manager_config build_session_manager_config(
   //todo: read from CMD
   std::size_t max_stopping_sessions = 100;
 
+  boost::asio::ip::address listen_address = 
+      boost::asio::ip::address::from_string(
+          options_values[listen_address_option_name].as<std::string>());
   int listen_backlog = options_values[listen_backlog_option_name].as<int>();
 
   using boost::asio::ip::tcp;
 
   return ma::echo::server::session_manager_config(
-      tcp::endpoint(tcp::v4(), port), max_sessions, recycled_sessions, 
+      tcp::endpoint(listen_address, port), max_sessions, recycled_sessions, 
       max_stopping_sessions, listen_backlog, session_config);
 }
 

@@ -208,6 +208,8 @@ MainForm::MainForm(Service& service, QWidget* parent, Qt::WindowFlags flags)
       calcSessionThreadCount(hardwareConcurrency)));
   ui_.sessionThreadModelComboBox->setCurrentIndex(
       getDefaultSessionThreadModelIndex());
+  ui_.addressEdit->setText(QString::fromStdString(
+      boost::asio::ip::address_v4::any().to_string()));
   ui_.listenBacklogSpinBox->setMaximum(std::numeric_limits<int>::max());
 
   updateWidgetsStates(true);
