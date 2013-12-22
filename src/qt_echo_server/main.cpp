@@ -8,9 +8,18 @@
 #include <iostream>
 #include <exception>
 #include <QApplication>
+
+#ifndef QT_DLL
+#include <QtPlugin>
+#endif
+
 #include <ma/echo/server/qt/service.h>
 #include <ma/echo/server/qt/custommetatypes.h>
 #include <ma/echo/server/qt/mainform.h>
+
+#ifndef QT_DLL
+Q_IMPORT_PLUGIN(QWindowsIntegrationPlugin)
+#endif
 
 int main(int argc, char* argv[])
 {
