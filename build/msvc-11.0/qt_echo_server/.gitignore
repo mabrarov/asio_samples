@@ -4,3 +4,5 @@
 /*.vcxproj.user
 /Profile/
 /Test/
+/Release_static/
+/Debug_static/

@@ -9,3 +9,5 @@
 /*.vsp
 /Test/
 /*.plog
+/Release_static/
+/Debug_static/
