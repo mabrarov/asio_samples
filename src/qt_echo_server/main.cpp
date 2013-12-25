@@ -7,19 +7,24 @@
 
 #include <iostream>
 #include <exception>
+#include <qtglobal>
 #include <QApplication>
 
-#ifndef QT_DLL
+#if !defined(QT_DLL)
+#if QT_VERSION >= 0x050000
 #include <QtPlugin>
 #endif
+#endif // !defined(QT_DLL)
 
 #include <ma/echo/server/qt/service.h>
 #include <ma/echo/server/qt/custommetatypes.h>
 #include <ma/echo/server/qt/mainform.h>
 
-#ifndef QT_DLL
+#if !defined(QT_DLL)
+#if QT_VERSION >= 0x050000
 Q_IMPORT_PLUGIN(QWindowsIntegrationPlugin)
 #endif
+#endif // !defined(QT_DLL)
 
 int main(int argc, char* argv[])
 {
