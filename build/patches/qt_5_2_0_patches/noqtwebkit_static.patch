@@ -1,0 +1,11 @@
+--- qt.pro	Вс дек  8 19:10:22 2013
++++ qt.pro	Ср дек 25 20:00:40 2013
+@@ -73,7 +73,7 @@
+ addModule(qtconnectivity, qtbase, qtdeclarative)
+ addModule(qtfeedback, qtdeclarative, qtmultimedia)
+ addModule(qtpim, qtdeclarative, qtjsondb)
+-addModule(qtwebkit, qtdeclarative, qtlocation qtmultimedia qtsensors, WebKit.pro)
++!static:addModule(qtwebkit, qtdeclarative, qtlocation qtmultimedia qtsensors, WebKit.pro)
+ addModule(qttools, qtbase, qtdeclarative qtactiveqt qtwebkit)
+ addModule(qtwebkit-examples, qtwebkit qttools)
+ addModule(qtimageformats, qtbase)

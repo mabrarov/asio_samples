@@ -1,0 +1,19 @@
+--- qtbase/mkspecs/win32-msvc2012/qmake.conf	Вс дек  8 19:09:54 2013
++++ qtbase/mkspecs/win32-msvc2012/qmake.conf	Вс дек 22 21:55:46 2013
+@@ -21,12 +21,12 @@
+ QMAKE_LEXFLAGS          =
+ QMAKE_YACC              = byacc
+ QMAKE_YACCFLAGS         = -d
+-QMAKE_CFLAGS            = -nologo -Zm200 -Zc:wchar_t
++QMAKE_CFLAGS            = -nologo -Zm200
+ QMAKE_CFLAGS_WARN_ON    = -W3
+ QMAKE_CFLAGS_WARN_OFF   = -W0
+-QMAKE_CFLAGS_RELEASE    = -O2 -MD
+-QMAKE_CFLAGS_RELEASE_WITH_DEBUGINFO += -O2 -MD -Zi
+-QMAKE_CFLAGS_DEBUG      = -Zi -MDd
++QMAKE_CFLAGS_RELEASE    = -O2 -MT
++QMAKE_CFLAGS_RELEASE_WITH_DEBUGINFO += -O2 -MT -Zi -Fd$(DESTDIR)$(QMAKE_TARGET).pdb
++QMAKE_CFLAGS_DEBUG      = -Zi -MTd -Fd$(DESTDIR)$(QMAKE_TARGET).pdb
+ QMAKE_CFLAGS_YACC       =
+ QMAKE_CFLAGS_LTCG       = -GL
+ QMAKE_CFLAGS_MP         = -MP
