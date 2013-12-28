@@ -1,20 +1,20 @@
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "async_basics", "async_basics\async_basics.vcproj", "{DB2A4264-CCB5-4687-8A25-D6400FF5F8AE}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "async_basics", "projects\async_basics\async_basics.vcproj", "{DB2A4264-CCB5-4687-8A25-D6400FF5F8AE}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "echo_server", "echo_server\echo_server.vcproj", "{7CE8CB18-679D-4DCB-B64B-6493E1DA8739}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "echo_server", "projects\echo_server\echo_server.vcproj", "{7CE8CB18-679D-4DCB-B64B-6493E1DA8739}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "nmea_client", "nmea_client\nmea_client.vcproj", "{0293302C-9C34-42AD-8EAA-61B7DFCBCFAD}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "nmea_client", "projects\nmea_client\nmea_client.vcproj", "{0293302C-9C34-42AD-8EAA-61B7DFCBCFAD}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "async_basics2", "async_basics2\async_basics2.vcproj", "{78584AC5-EA5D-4FDE-A613-5A4C7E39682A}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "async_basics2", "projects\async_basics2\async_basics2.vcproj", "{78584AC5-EA5D-4FDE-A613-5A4C7E39682A}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "async_connect", "async_connect\async_connect.vcproj", "{C1082F46-E0B8-456F-9527-79ADFCE41BBD}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "async_connect", "projects\async_connect\async_connect.vcproj", "{C1082F46-E0B8-456F-9527-79ADFCE41BBD}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "asio_performance_test_client", "asio_performance_test_client\asio_performance_test_client.vcproj", "{B410DAEE-1208-4F65-8E05-2197FD5BB792}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "asio_performance_test_client", "projects\asio_performance_test_client\asio_performance_test_client.vcproj", "{B410DAEE-1208-4F65-8E05-2197FD5BB792}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "handler_storage_test", "handler_storage_test\handler_storage_test.vcproj", "{C41F6EDC-F8B1-4B64-9A17-D43D8696D7B1}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "handler_storage_test", "projects\handler_storage_test\handler_storage_test.vcproj", "{C41F6EDC-F8B1-4B64-9A17-D43D8696D7B1}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "windows_console_signal_test", "windows_console_signal_test\windows_console_signal_test.vcproj", "{5FB1B7B1-5D9C-415A-AC9E-2566398E06F7}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "windows_console_signal_test", "projects\windows_console_signal_test\windows_console_signal_test.vcproj", "{5FB1B7B1-5D9C-415A-AC9E-2566398E06F7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

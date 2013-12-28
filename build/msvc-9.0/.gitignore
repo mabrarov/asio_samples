@@ -1,4 +1,3 @@
-/Release/
+/out/
 /*.ncb
-/Debug/
 /*.suo
