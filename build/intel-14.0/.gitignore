@@ -1,11 +1,8 @@
 /*.sdf
 /*.opensdf
-/Release/
-/Debug/
+/out/
 /*.suo
 /*.user
 /ipch/
-/Profile/
 /*.vsp
-/Test/
 /*.plog
