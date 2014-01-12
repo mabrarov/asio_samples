@@ -7,7 +7,7 @@
 
 #include <iostream>
 #include <exception>
-#include <qtglobal>
+#include <qglobal.h>
 #include <QApplication>
 
 #if defined(QT_STATIC) || !(defined(QT_DLL) || defined(QT_SHARED))

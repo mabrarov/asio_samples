@@ -11,6 +11,10 @@ BOOST_INCLUDE = /home/marat/boost_1_55_0
 # Boost C++ Libraries binaries
 BOOST_LIB = $${BOOST_INCLUDE}/lib
 
+linux-llvm | macx-llvm | linux-clang {
+  BOOST_LIB = $${BOOST_INCLUDE}/lib/clang
+}
+
 win32: contains(QMAKE_TARGET.arch, x86) {
   BOOST_LIB = $${BOOST_INCLUDE}/lib/x86
 }
