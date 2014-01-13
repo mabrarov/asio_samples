@@ -5,7 +5,6 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include <iostream>
 #include <exception>
 #include <qglobal.h>
 #include <QApplication>
@@ -42,10 +41,10 @@ int main(int argc, char* argv[])
   }
   catch (const std::exception& e)
   {
-    std::cerr << "Unexpected error: " << e.what() << std::endl;
+    qFatal("Unexpected error: %s", e.what());
   }
   catch (...)
   {
-    std::cerr << "Unknown exception" << std::endl;
+    qFatal("Unknown exception");
   }
 }
