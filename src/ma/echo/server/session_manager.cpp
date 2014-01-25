@@ -35,6 +35,11 @@ namespace server {
 
 namespace {
 
+bool is_recoverable(const boost::system::error_code& error)
+{
+  return error == boost::asio::error::no_descriptors;
+}
+
 class session_release_guard : private boost::noncopyable
 {
 public:
@@ -834,8 +839,11 @@ void session_manager::handle_accept_at_work(const session_wrapper_ptr& session,
   // Handle result
   if (error)
   {
-    accept_state_ = accept_state::stopped;
     accept_error_ = error;
+    if (!is_recoverable(error))
+    {
+      accept_state_ = accept_state::stopped;
+    }
     recycle(session);
     continue_work();
     return;
