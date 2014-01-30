@@ -35,7 +35,7 @@ namespace server {
 
 namespace {
 
-bool is_recoverable(const boost::system::error_code& error)
+bool is_accept_recoverable(const boost::system::error_code& error)
 {
   return error == boost::asio::error::no_descriptors;
 }
@@ -838,10 +838,10 @@ void session_manager::handle_accept_at_work(const session_wrapper_ptr& session,
 
   // Handle result
   if (error)
-  {
-    accept_error_ = error;
-    if (!is_recoverable(error))
+  {    
+    if (!is_accept_recoverable(error))
     {
+      accept_error_ = error;
       accept_state_ = accept_state::stopped;
     }
     recycle(session);
