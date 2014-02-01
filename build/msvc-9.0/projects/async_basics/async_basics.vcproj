@@ -471,6 +471,10 @@
 						>
 					</File>
 					<File
+						RelativePath="..\..\..\..\include\ma\detail\latch.hpp"
+						>
+					</File>
+					<File
 						RelativePath="..\..\..\..\include\ma\detail\service_base.hpp"
 						>
 					</File>

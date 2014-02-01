@@ -35,6 +35,7 @@ HEADERS  += ../../../include/ma/echo/server/session_config_fwd.hpp \
             ../../../include/ma/detail/intrusive_list.hpp \
             ../../../include/ma/detail/service_base.hpp \
             ../../../include/ma/detail/sp_singleton.hpp \
+            ../../../include/ma/detail/latch.hpp \
             ../../../include/ma/windows/console_signal.hpp \
             ../../../include/ma/windows/console_signal_service.hpp \
             ../../../include/ma/bind_handler.hpp \

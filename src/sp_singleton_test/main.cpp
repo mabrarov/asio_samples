@@ -242,17 +242,17 @@ void thread_func(foo_ptr foo)
 }
 
 void thread_func2(const foo_weak_ptr& weak_foo, 
-  ma::detail::threshold& threshold1,
-  ma::detail::threshold& threshold2,
-  ma::detail::threshold& threshold3)
+  ma::detail::latch& latch1,
+  ma::detail::latch& latch2,
+  ma::detail::latch& latch3)
 {
   if (foo_ptr foo = weak_foo.lock())
   {
-    threshold1.dec();
+    latch1.count_down();
     (void) foo->data();
-    threshold2.wait();
+    latch2.wait();
   }
-  threshold3.dec();
+  latch3.count_down();
 }
 
 void run_test()
@@ -265,19 +265,19 @@ void run_test()
   }
 
   {
-    ma::detail::threshold threshold1(1);
-    ma::detail::threshold threshold2(1);
-    ma::detail::threshold threshold3(1);
+    ma::detail::latch latch1(1);
+    ma::detail::latch latch2(1);
+    ma::detail::latch latch3(1);
     MA_SCOPED_PTR<boost::thread> t;
     {
       const foo_ptr thread_foo = foo::get_instance();
       t.reset(new boost::thread(MA_BIND(thread_func2, foo_weak_ptr(thread_foo),
-          MA_REF(threshold1), MA_REF(threshold2), MA_REF(threshold3))));
-      threshold1.wait();
+          MA_REF(latch1), MA_REF(latch2), MA_REF(latch3))));
+      latch1.wait();
     }
     {
       const foo_ptr foo = foo::get_nullable_instance();
-      threshold2.dec();
+      latch2.count_down();
       BOOST_ASSERT_MSG(foo, "Instance has to exist");
     }
     {
@@ -289,7 +289,7 @@ void run_test()
       std::cout << to_string(count) << std::endl;
     }
     {
-      threshold3.wait();
+      latch3.wait();
       const foo_ptr foo = foo::get_nullable_instance();
       BOOST_ASSERT_MSG(!foo, "Instance has to not exist");
     }    
@@ -336,8 +336,8 @@ foo::~foo()
 
 namespace sp_singleton_sync {
 
-ma::detail::threshold destroy_start_threshold;
-ma::detail::threshold destroy_complete_threshold;
+ma::detail::latch destroy_start_latch;
+ma::detail::latch destroy_complete_latch;
 
 class foo;
 typedef MA_SHARED_PTR<foo> foo_ptr;
@@ -381,20 +381,20 @@ void thread_func()
 void run_test()
 {
   {
-    destroy_start_threshold.inc();
-    destroy_complete_threshold.inc();
+    destroy_start_latch.count_up();
+    destroy_complete_latch.count_up();
     boost::thread t(thread_func);
-    destroy_start_threshold.wait();
+    destroy_start_latch.wait();
     {
       const foo_ptr f = foo::get_nullable_instance();
       BOOST_ASSERT_MSG(!f, "Instance has to not exist");
     }
-    destroy_complete_threshold.dec();
+    destroy_complete_latch.count_down();
     {
       const foo_ptr f = foo::get_instance();      
       BOOST_ASSERT_MSG(f, "Instance has to exist");
       BOOST_ASSERT_MSG(1 == f->data(), "Instance has to be the second");
-      destroy_start_threshold.inc();
+      destroy_start_latch.count_up();
     }
     t.join();
   }  
@@ -435,8 +435,8 @@ foo::foo(const instance_guard_type& instance_guard, int data)
 
 foo::~foo()
 {
-  destroy_start_threshold.dec();  
-  destroy_complete_threshold.wait();
+  destroy_start_latch.count_down();  
+  destroy_complete_latch.wait();
   if (!data_)
   {
     boost::this_thread::sleep(boost::posix_time::seconds(1));

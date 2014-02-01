@@ -21,6 +21,7 @@
 #include <boost/thread/once.hpp>
 #include <boost/thread/condition_variable.hpp>
 #include <ma/config.hpp>
+#include <ma/detail/latch.hpp>
 
 #if defined(MA_USE_CXX11_STDLIB_MEMORY)
 #include <memory>
@@ -32,30 +33,6 @@
 
 namespace ma {
 namespace detail {
-
-class threshold : boost::noncopyable
-{
-private:
-  typedef threshold                      this_type;
-  typedef boost::mutex                   mutex_type;
-  typedef boost::unique_lock<mutex_type> lock_type;
-  typedef boost::lock_guard<mutex_type>  lock_guard_type;
-  typedef boost::condition_variable      condition_variable_type;
-
-public:
-  typedef std::size_t value_type;
-
-  explicit threshold(value_type value = 0);
-  void wait();
-  void inc();
-  void dec();
-  value_type value() const;
-
-private:
-  mutable mutex_type mutex_;
-  condition_variable_type condition_variable_;
-  value_type value_;
-}; // class threshold
 
 template <typename Value>
 class sp_singleton : private boost::noncopyable
@@ -76,7 +53,7 @@ public:
 
 private:
   typedef MA_WEAK_PTR<value_type>  value_weak_ptr;
-  typedef MA_SHARED_PTR<threshold> threshold_ptr;
+  typedef MA_SHARED_PTR<latch> latch_ptr;
 
   struct static_data;
   struct static_data_factory;
@@ -101,12 +78,12 @@ public:
   ~instance_guard();  
 
 private:
-  explicit instance_guard(const threshold_ptr&);
+  explicit instance_guard(const latch_ptr&);
   this_type& operator=(const this_type&);
 
   friend class sp_singleton<Value>;
 
-  threshold_ptr instance_threshold_;
+  latch_ptr instance_latch_;
 }; // class sp_singleton<Value>::instance_guard
 
 template <typename Value>
@@ -119,7 +96,7 @@ struct sp_singleton<Value>::static_data : private boost::noncopyable
     
   mutex_type     mutex;
   value_weak_ptr weak_value;
-  threshold_ptr  instance_threshold;
+  latch_ptr  instance_latch;
 }; // struct sp_singleton<Value>::static_data
 
 template <typename Value>
@@ -149,9 +126,9 @@ sp_singleton<Value>::get_instance(Factory factory)
   {
     return shared_value;
   }
-  sd.instance_threshold->wait();
+  sd.instance_latch->wait();
   value_shared_ptr shared_value = 
-      factory(instance_guard(sd.instance_threshold));
+      factory(instance_guard(sd.instance_latch));
   sd.weak_value = shared_value;
   return shared_value;
 }
@@ -175,7 +152,7 @@ sp_singleton<Value>::static_data_ = 0;
 
 template <typename Value>
 sp_singleton<Value>::static_data::static_data()
-  : instance_threshold(MA_MAKE_SHARED<threshold>())
+  : instance_latch(MA_MAKE_SHARED<latch>())
 {
 }
 
@@ -188,62 +165,23 @@ void sp_singleton<Value>::static_data_factory::operator()() const
 
 template <typename Value>
 sp_singleton<Value>::instance_guard::instance_guard(
-    const threshold_ptr& instance_threshold)
-  : instance_threshold_(instance_threshold)
+    const latch_ptr& instance_latch)
+  : instance_latch_(instance_latch)
 {
-  instance_threshold_->inc();
+  instance_latch_->count_up();
 }
 
 template <typename Value>
 sp_singleton<Value>::instance_guard::instance_guard(const this_type& other)
-  : instance_threshold_(other.instance_threshold_)
+  : instance_latch_(other.instance_latch_)
 {
-  instance_threshold_->inc();
+  instance_latch_->count_up();
 }
 
 template <typename Value>
 sp_singleton<Value>::instance_guard::~instance_guard()
 {
-  instance_threshold_->dec();
-}
-
-inline threshold::threshold(value_type value)
-  : value_(value)
-{
-}
-
-inline void threshold::wait()
-{
-  lock_type lock(mutex_);
-  while (value_)
-  {
-    condition_variable_.wait(lock);
-  }
-}
-
-inline void threshold::inc()
-{
-  lock_guard_type lock_guard(mutex_);
-  BOOST_ASSERT_MSG(value_ != (std::numeric_limits<value_type>::max)(),
-      "Value is too large. Overflow");
-  ++value_;
-}
-
-inline void threshold::dec()
-{
-  lock_guard_type lock_guard(mutex_);
-  BOOST_ASSERT_MSG(value_, "Value is too small. Underflow");
-  --value_;
-  if (!value_)
-  {
-    condition_variable_.notify_one();
-  }
-}
-
-inline threshold::value_type threshold::value() const
-{
-  lock_type lock(mutex_);
-  return value_;
+  instance_latch_->count_down();
 }
   
 } // namespace detail

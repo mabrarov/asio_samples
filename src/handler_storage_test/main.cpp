@@ -27,6 +27,7 @@
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/handler_storage.hpp>
 #include <ma/lockable_wrapped_handler.hpp>
+#include <ma/detail/latch.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)
 #include <utility>
@@ -112,6 +113,11 @@ int main(int /*argc*/, char* /*argv*/[])
 namespace ma {
 namespace test {
 
+void count_down(ma::detail::latch& latch)
+{
+  latch.count_down();
+}
+
 class io_service_pool : private boost::noncopyable
 {
 public:
@@ -141,56 +147,6 @@ private:
   optional_io_work    work_guard_;
   boost::thread_group threads_;
 }; // class io_service_pool
-
-class threshold : boost::noncopyable
-{
-private:
-  typedef threshold this_type;
-  typedef boost::mutex mutex_type;
-  typedef boost::unique_lock<mutex_type> lock_type;
-  typedef boost::condition_variable condition_variable_type;
-
-public:
-  typedef std::size_t value_type;
-
-  explicit threshold(value_type value = 0)
-    : value_(value)
-  {
-  }
-
-  void wait()
-  {
-    lock_type lock(mutex_);
-    while (value_)
-    {
-      condition_variable_.wait(lock);
-    }
-  }
-
-  void inc()
-  {
-    lock_type lock(mutex_);
-    BOOST_ASSERT_MSG(value_ != (std::numeric_limits<value_type>::max)(),
-        "Value is too large. Overflow");
-    ++value_;
-  }
-
-  void dec()
-  {
-    lock_type lock(mutex_);
-    BOOST_ASSERT_MSG(value_, "Value is too small. Underflow");
-    --value_;
-    if (!value_)
-    {
-      condition_variable_.notify_one();
-    }
-  }
-
-private:
-  mutex_type mutex_;
-  condition_variable_type condition_variable_;
-  value_type value_;
-}; // class threshold
 
 namespace lockable_wrapper {
 
@@ -231,18 +187,18 @@ void run_test()
     data = "0";
   }
 
-  threshold done_threshold(1);
+  ma::detail::latch done_latch(1);
   {
     boost::lock_guard<boost::mutex> data_guard(mutex);
 
     io_service.post(ma::make_lockable_wrapped_handler(mutex, MA_BIND(
         mutating_func1, MA_REF(data), continuation(
-            MA_BIND(&threshold::dec, MA_REF(done_threshold))))));
+            MA_BIND(count_down, MA_REF(done_latch))))));
 
     boost::this_thread::sleep(boost::posix_time::seconds(5));
     data = "Zero";
   }
-  done_threshold.wait();
+  done_latch.wait();
 
   {
     boost::lock_guard<boost::mutex> lock_guard(mutex);
@@ -776,17 +732,17 @@ void run_test()
   std::size_t work_thread_count = cpu_count > 1 ? cpu_count : 2;
   boost::asio::io_service io_service(work_thread_count);
   io_service_pool work_threads(io_service, work_thread_count);
-  threshold done_threshold;
+  ma::detail::latch done_latch;
 
   {
     typedef ma::handler_storage<void> handler_storage_type;
 
     handler_storage_type handler_storage(io_service);
     handler_storage.store(void_handler_without_target(value4,
-        MA_BIND(&threshold::dec, &done_threshold)));
+        MA_BIND(count_down, MA_REF(done_latch))));
 
     std::cout << handler_storage.target() << std::endl;
-    done_threshold.inc();
+    done_latch.count_up();
     handler_storage.post();
   }
 
@@ -795,10 +751,10 @@ void run_test()
 
     handler_storage_type handler_storage(io_service);
     handler_storage.store(int_handler_without_target(value4,
-        MA_BIND(&threshold::dec, &done_threshold)));
+        MA_BIND(count_down, MA_REF(done_latch))));
 
     std::cout << handler_storage.target() << std::endl;
-    done_threshold.inc();
+    done_latch.count_up();
     handler_storage.post(value2);
   }
 
@@ -807,13 +763,13 @@ void run_test()
 
     handler_storage_type handler_storage(io_service);
     handler_storage.store(void_handler_with_target(value4,
-        MA_BIND(&threshold::dec, &done_threshold)));
+        MA_BIND(count_down, MA_REF(done_latch))));
 
     BOOST_ASSERT_MSG(value4 == handler_storage.target()->get_value(), 
         "Data of target is different than the stored data");
 
     std::cout << handler_storage.target()->get_value() << std::endl;
-    done_threshold.inc();
+    done_latch.count_up();
     handler_storage.post();
   }
 
@@ -822,13 +778,13 @@ void run_test()
 
     handler_storage_type handler_storage(io_service);
     handler_storage.store(int_handler_with_target(value4,
-        MA_BIND(&threshold::dec, &done_threshold)));
+        MA_BIND(count_down, MA_REF(done_latch))));
 
     BOOST_ASSERT_MSG(value4 == handler_storage.target()->get_value(), 
         "Data of target is different than the stored data");
 
     std::cout << handler_storage.target()->get_value() << std::endl;
-    done_threshold.inc();
+    done_latch.count_up();
     handler_storage.post(value2);
   }
 
@@ -837,17 +793,17 @@ void run_test()
 
     ma::handler_storage<int, test_handler_base> handler_storage1(io_service);
     handler_storage1.store(int_handler_with_target(value1,
-        MA_BIND(&threshold::dec, &done_threshold)));
+        MA_BIND(count_down, MA_REF(done_latch))));
 
     BOOST_ASSERT_MSG(value1 == handler_storage1.target()->get_value(), 
         "Data of target is different than the stored data");
 
     ma::handler_storage<void> handler_storage2(io_service);
     handler_storage2.store(void_handler_without_target(value2,
-        MA_BIND(&threshold::dec, &done_threshold)));
+        MA_BIND(count_down, MA_REF(done_latch))));
   }
 
-  done_threshold.wait();
+  done_latch.wait();
 }
 
 } // namespace handler_storage_arg

@@ -127,5 +127,8 @@
     <ClInclude Include="..\..\..\..\include\ma\detail\sp_singleton.hpp">
       <Filter>Header Files\ma\detail</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\include\ma\detail\latch.hpp">
+      <Filter>Header Files\ma\detail</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
