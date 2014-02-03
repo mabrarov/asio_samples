@@ -56,7 +56,7 @@ inline latch::latch(value_type value)
 
 inline latch::value_type latch::value() const
 {
-  lock_type lock(mutex_);
+  lock_guard_type lock_guard(mutex_);
   return value_;
 }
 

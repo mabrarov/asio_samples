@@ -96,7 +96,7 @@ struct sp_singleton<Value>::static_data : private boost::noncopyable
     
   mutex_type     mutex;
   value_weak_ptr weak_value;
-  latch_ptr  instance_latch;
+  latch_ptr      instance_latch;
 }; // struct sp_singleton<Value>::static_data
 
 template <typename Value>
