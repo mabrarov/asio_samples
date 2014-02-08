@@ -52,8 +52,8 @@ public:
   static value_shared_ptr get_instance(Factory);
 
 private:
-  typedef MA_WEAK_PTR<value_type>  value_weak_ptr;
-  typedef MA_SHARED_PTR<latch> latch_ptr;
+  typedef MA_WEAK_PTR<value_type> value_weak_ptr;
+  typedef MA_SHARED_PTR<latch>    latch_ptr;
 
   struct static_data;
   struct static_data_factory;
