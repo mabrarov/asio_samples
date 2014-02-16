@@ -15,6 +15,7 @@
 #include <cstddef>
 #include <utility>
 #include <stdexcept>
+#include <boost/assert.hpp>
 #include <boost/asio.hpp>
 #include <boost/array.hpp>
 #include <boost/noncopyable.hpp>
@@ -125,6 +126,9 @@ public:
   mutable_buffers_type prepared(std::size_t max_size) const;
 
 private:
+  const_buffers_type   data_of_size(std::size_t buffers_size) const;
+  mutable_buffers_type prepared_of_size(std::size_t buffers_size) const;
+
 #if defined(MA_USE_CXX11_STDLIB_MEMORY)
   std::unique_ptr<char[]>   data_;
 #else
@@ -238,46 +242,35 @@ inline void cyclic_buffer::consume(std::size_t size)
 
 inline cyclic_buffer::const_buffers_type cyclic_buffer::data() const
 {
-  if (!filled_size_)
-  {
-    return const_buffers_type();
-  }
-  std::size_t d = size_ - filled_start_;
-  if (filled_size_ > d)
-  {
-    return const_buffers_type(
-        boost::asio::const_buffer(data_.get() + filled_start_, d),
-        boost::asio::const_buffer(data_.get(), filled_size_ - d));
-  }
-  return const_buffers_type(boost::asio::const_buffer(
-      data_.get() + filled_start_, filled_size_));
+  return data_of_size(filled_size_);
 }
 
 inline cyclic_buffer::mutable_buffers_type cyclic_buffer::prepared() const
 {
-  if (!nonfilled_size_)
-  {
-    return mutable_buffers_type();
-  }
-  std::size_t d = size_ - nonfilled_start_;
-  if (nonfilled_size_ > d)
-  {
-    return mutable_buffers_type(
-        boost::asio::mutable_buffer(data_.get() + nonfilled_start_, d),
-        boost::asio::mutable_buffer(data_.get(), nonfilled_size_ - d));
-  }
-  return mutable_buffers_type(boost::asio::mutable_buffer(
-      data_.get() + nonfilled_start_, nonfilled_size_));
+  return prepared_of_size(nonfilled_size_);
 }
 
 inline cyclic_buffer::const_buffers_type
 cyclic_buffer::data(std::size_t max_size) const
 {
-  if (!filled_size_)
+  return data_of_size((std::min<std::size_t>)(filled_size_, max_size));
+}
+
+inline cyclic_buffer::mutable_buffers_type
+cyclic_buffer::prepared(std::size_t max_size) const
+{
+  return prepared_of_size((std::min<std::size_t>)(nonfilled_size_, max_size));
+}
+
+inline cyclic_buffer::const_buffers_type
+cyclic_buffer::data_of_size(std::size_t buffers_size) const
+{
+  BOOST_ASSERT_MSG(buffers_size <= filled_size_,
+      "The specified buffers size must be <= curent filled size");
+  if (!buffers_size)
   {
     return const_buffers_type();
   }
-  std::size_t buffers_size = (std::min<std::size_t>)(filled_size_, max_size);
   std::size_t d = size_ - filled_start_;
   if (buffers_size > d)
   {
@@ -289,15 +282,15 @@ cyclic_buffer::data(std::size_t max_size) const
       data_.get() + filled_start_, buffers_size));
 }
 
-inline cyclic_buffer::mutable_buffers_type
-cyclic_buffer::prepared(std::size_t max_size) const
+inline cyclic_buffer::mutable_buffers_type 
+cyclic_buffer::prepared_of_size(std::size_t buffers_size) const
 {
-  if (!nonfilled_size_)
+  BOOST_ASSERT_MSG(buffers_size <= nonfilled_size_,
+      "The specified buffers size must be <= curent nonfilled size");
+  if (!buffers_size)
   {
     return mutable_buffers_type();
   }
-  std::size_t buffers_size =
-      (std::min<std::size_t>)(nonfilled_size_, max_size);
   std::size_t d = size_ - nonfilled_start_;
   if (buffers_size > d)
   {
