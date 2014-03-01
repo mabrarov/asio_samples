@@ -25,7 +25,7 @@
 #include <ui_mainform.h>
 
 QT_BEGIN_NAMESPACE
-class Qtimer;
+class QTimer;
 QT_END_NAMESPACE
 
 namespace ma {
