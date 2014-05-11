@@ -30,6 +30,7 @@
     <ProjectGuid>{D1810138-9E2E-445A-B06D-FC036EAF4E2A}</ProjectGuid>
     <Keyword>Qt4VSv1.0</Keyword>
     <RootNamespace>qt_echo_server</RootNamespace>
+    <IgnoreWarnCompileDuplicatedFilename>true</IgnoreWarnCompileDuplicatedFilename>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -2376,7 +2377,7 @@
   </ImportGroup>
   <ProjectExtensions>
     <VisualStudio>
-      <UserProperties MocDir=".\GeneratedFiles\$(ConfigurationName)\$(PlatformName)" UicDir=".\GeneratedFiles\$(PlatformName)" RccDir=".\GeneratedFiles\$(PlatformName)" lupdateOnBuild="0" Qt5Version_x0020_Win32="5.1.1 shared" Qt5Version_x0020_x64="5.2.0 shared x64" MocOptions="" />
+      <UserProperties MocDir=".\GeneratedFiles\$(ConfigurationName)\$(PlatformName)" UicDir=".\GeneratedFiles\$(PlatformName)" RccDir=".\GeneratedFiles\$(PlatformName)" lupdateOnBuild="0" Qt5Version_x0020_Win32="5.2.1 shared" Qt5Version_x0020_x64="5.2.1 shared x64" MocOptions="" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>
