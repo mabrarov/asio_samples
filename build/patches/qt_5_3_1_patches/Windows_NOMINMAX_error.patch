@@ -1,0 +1,11 @@
+--- qtbase/src/corelib/tools/qdatetime.h	Âò èþë  2 10:10:02 2013
++++ qtbase/src/corelib/tools/qdatetime.h	×ò èþë  4 00:55:17 2013
+@@ -118,7 +118,7 @@
+     inline qint64 toJulianDay() const { return jd; }
+ 
+ private:
+-    static inline qint64 nullJd() { return std::numeric_limits<qint64>::min(); }
++    static inline qint64 nullJd() { return (std::numeric_limits<qint64>::min)(); }
+     static inline qint64 minJd() { return Q_INT64_C(-784350574879); }
+     static inline qint64 maxJd() { return Q_INT64_C( 784354017364); }
+ 
