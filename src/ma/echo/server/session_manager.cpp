@@ -1163,8 +1163,8 @@ void session_manager::schedule_active_session_stop()
 {
   session_manager_ptr shared_this = shared_from_this();
 
-  strand_.post(ma::make_custom_alloc_handler(session_stop_allocator_,
-      [shared_this]()
+  io_service_.post(MA_STRAND_WRAP(strand_, 
+      ma::make_custom_alloc_handler(session_stop_allocator_, [shared_this]()
   {
     --shared_this->pending_operations_;
 
@@ -1178,7 +1178,7 @@ void session_manager::schedule_active_session_stop()
     }
 
     shared_this->continue_stop();
-  }));
+  })));
 
   ++pending_operations_;
 }
