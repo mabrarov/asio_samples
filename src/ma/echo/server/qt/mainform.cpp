@@ -37,6 +37,14 @@ const int statsTimerIntervalMillis = 1000;
 const int singleDemuxModelIndex    = 0;
 const int poolOfDemuxModelIndex    = 1;
 
+void setText(QLineEdit& edit, const QString& text)
+{
+  if (edit.text() != text)
+  {
+    edit.setText(text);
+  }
+}
+
 QString format(std::size_t value)
 {
   return QString("%1").arg(value);
@@ -532,15 +540,14 @@ void MainForm::showConfigError(const QString& message, QWidget* widget)
 
 void MainForm::showStats(const session_manager_stats& stats)
 {
-  ui_.activeSessionsEdit->setText(format(stats.active));
-  ui_.maxActiveSessionsEdit->setText(format(stats.max_active));
-  ui_.recycledSessionsEdit->setText(format(stats.recycled));
-  ui_.totalAcceptedSessionsEdit->setText(format(stats.total_accepted));
-  ui_.activeShutdownedSessionsEdit->setText(
-      format(stats.active_shutdowned));
-  ui_.outOfWorkSessionsEdit->setText(format(stats.out_of_work));
-  ui_.timedOutSessionsEdit->setText(format(stats.timed_out));
-  ui_.errorStoppedSessionsEdit->setText(format(stats.error_stopped));
+  setText(*ui_.activeSessionsEdit, format(stats.active));
+  setText(*ui_.maxActiveSessionsEdit, format(stats.max_active));
+  setText(*ui_.recycledSessionsEdit, format(stats.recycled));
+  setText(*ui_.totalAcceptedSessionsEdit, format(stats.total_accepted));
+  setText(*ui_.activeShutdownedSessionsEdit, format(stats.active_shutdowned));
+  setText(*ui_.outOfWorkSessionsEdit, format(stats.out_of_work));
+  setText(*ui_.timedOutSessionsEdit, format(stats.timed_out));
+  setText(*ui_.errorStoppedSessionsEdit, format(stats.error_stopped));
 }
 
 void MainForm::writeLog(const QString& message)
