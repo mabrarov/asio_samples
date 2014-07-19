@@ -6,20 +6,35 @@
 #
 
 # Boost C++ Libraries headers
-BOOST_INCLUDE = /home/marat/boost_1_55_0
+win32 {
+  BOOST_INCLUDE = $$(USERPROFILE)/Boost
+} else {
+  BOOST_INCLUDE = /usr/include
+}
 
 # Boost C++ Libraries binaries
-BOOST_LIB = $${BOOST_INCLUDE}/lib
-
-linux-llvm | macx-llvm | linux-clang {
-  BOOST_LIB = $${BOOST_INCLUDE}/lib/clang
+# Base path to binaries of Boost C++ Libraries
+win32 {
+  BOOST_LIB = $${BOOST_INCLUDE}/lib
+} else {
+  BOOST_LIB = /usr/lib
 }
 
-win32: contains(QMAKE_TARGET.arch, x86) {
-  BOOST_LIB = $${BOOST_INCLUDE}/lib/x86
-}
-win32: contains(QMAKE_TARGET.arch, x86_64) {
-  BOOST_LIB = $${BOOST_INCLUDE}/lib/amd64
+# Target specific path to binaries of Boost C++ Libraries
+win32 {
+  contains(QMAKE_TARGET.arch, x86) {
+    BOOST_LIB = $${BOOST_LIB}/x86
+  }
+  contains(QMAKE_TARGET.arch, x86_64) {
+    BOOST_LIB = $${BOOST_LIB}/amd64
+  }
+} else {
+  linux-g++-64 {
+    BOOST_LIB = $${BOOST_LIB}/x86_64-linux-gnu
+  }
+  linux-llvm | macx-llvm | linux-clang {
+    BOOST_LIB = $${BOOST_LIB}/clang
+  }
 }
 
 # Additional C/C++ preprocessor definitions
