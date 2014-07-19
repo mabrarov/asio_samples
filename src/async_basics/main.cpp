@@ -110,7 +110,7 @@ int main(int /*argc*/, char* /*argv*/[])
       ma::tutorial::async_interface_ptr active_object =
           ma::tutorial::async_implementation::create(work_io_service, *name);
 
-      ma::tutorial::async_interface::async_do_something(active_object,
+      active_object->async_do_something(
           ma::make_custom_alloc_handler(*allocator,
               MA_BIND(handle_do_something, active_object, 
                   MA_PLACEHOLDER_1, name, allocator)));

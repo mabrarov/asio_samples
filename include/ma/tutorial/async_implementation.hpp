@@ -54,6 +54,7 @@ protected:
   {
   }
 
+  async_interface_ptr get_interface_ptr();
   boost::asio::io_service::strand& strand();
   do_something_handler_storage_type& do_something_handler_storage();
   optional_do_something_result start_do_something();
