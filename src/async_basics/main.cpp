@@ -22,6 +22,7 @@
 #include <ma/handler_allocator.hpp>
 #include <ma/console_close_guard.hpp>
 #include <ma/custom_alloc_handler.hpp>
+#include <ma/thread_group.hpp>
 #include <ma/tutorial/async_interface.hpp>
 #include <ma/tutorial/async_implementation.hpp>
 
@@ -87,7 +88,7 @@ int main(int /*argc*/, char* /*argv*/[])
         MA_BIND(handle_program_exit, MA_REF(work_io_service)));
     std::cout << "Press Ctrl+C to exit.\n";
 
-    boost::thread_group work_threads;
+    ma::thread_group work_threads;
     boost::optional<io_service::work> work_guard(
         boost::in_place(MA_REF(work_io_service)));
     for (std::size_t i = 0; i != work_thread_count; ++i)
