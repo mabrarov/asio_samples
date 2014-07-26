@@ -16,6 +16,7 @@
 #include <boost/system/error_code.hpp>
 #include <boost/system/system_error.hpp>
 #include <ma/config.hpp>
+#include <ma/memory.hpp>
 #include <ma/shared_ptr_factory.hpp>
 #include <ma/detail/sp_singleton.hpp>
 #include <ma/windows/console_signal_service.hpp>
@@ -23,13 +24,6 @@
 #if defined(MA_HAS_RVALUE_REFS)
 #include <utility>
 #endif // defined(MA_HAS_RVALUE_REFS)
-
-#if defined(MA_USE_CXX11_STDLIB_MEMORY)
-#include <memory>
-#else
-#include <boost/shared_ptr.hpp>
-#include <boost/make_shared.hpp>
-#endif // defined(MA_USE_CXX11_STDLIB_MEMORY)
 
 namespace ma {
 namespace windows {

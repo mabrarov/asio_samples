@@ -18,26 +18,14 @@
 #include <boost/optional.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/utility/in_place_factory.hpp>
-#include <ma/config.hpp>
+#include <ma/memory.hpp>
+#include <ma/functional.hpp>
 #include <ma/handler_allocator.hpp>
 #include <ma/console_close_guard.hpp>
 #include <ma/thread_group.hpp>
 #include <ma/tutorial2/async_interface.hpp>
 #include <ma/tutorial2/async_implementation.hpp>
 #include <ma/tutorial2/do_something_handler.hpp>
-
-#if defined(MA_USE_CXX11_STDLIB_MEMORY)
-#include <memory>
-#else
-#include <boost/make_shared.hpp>
-#endif // defined(MA_USE_CXX11_STDLIB_MEMORY)
-
-#if defined(MA_USE_CXX11_STDLIB_FUNCTIONAL)
-#include <functional>
-#else
-#include <boost/ref.hpp>
-#include <boost/bind.hpp>
-#endif // defined(MA_USE_CXX11_STDLIB_FUNCTIONAL)
 
 namespace {
 

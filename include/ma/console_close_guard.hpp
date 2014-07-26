@@ -13,19 +13,8 @@
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
 #include <boost/noncopyable.hpp>
-#include <ma/config.hpp>
-
-#if defined(MA_USE_CXX11_STDLIB_MEMORY)
-#include <memory>
-#else
-#include <boost/scoped_ptr.hpp>
-#endif // defined(MA_USE_CXX11_STDLIB_MEMORY)
-
-#if defined(MA_USE_CXX11_STDLIB_FUNCTIONAL)
-#include <functional>
-#else
-#include <boost/function.hpp>
-#endif // defined(MA_USE_CXX11_STDLIB_FUNCTIONAL)
+#include <ma/memory.hpp>
+#include <ma/functional.hpp>
 
 namespace ma {
 

@@ -13,6 +13,8 @@
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
 #include <ma/config.hpp>
+#include <ma/functional.hpp>
+#include <boost/noncopyable.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)
 #include <utility>
@@ -25,9 +27,6 @@
 #else
 #include <boost/thread.hpp>
 #endif
-
-#include <boost/noncopyable.hpp>
-#include <ma/functional.hpp>
 
 namespace ma {
 

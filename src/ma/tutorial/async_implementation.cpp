@@ -7,24 +7,12 @@
 
 #include <iostream>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
-#include <ma/config.hpp>
+#include <ma/memory.hpp>
+#include <ma/functional.hpp>
 #include <ma/shared_ptr_factory.hpp>
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/strand_wrapped_handler.hpp>
 #include <ma/tutorial/async_implementation.hpp>
-
-#if defined(MA_USE_CXX11_STDLIB_MEMORY)
-#include <memory>
-#else
-#include <boost/make_shared.hpp>
-#endif // defined(MA_USE_CXX11_STDLIB_MEMORY)
-
-#if defined(MA_USE_CXX11_STDLIB_FUNCTIONAL)
-#include <functional>
-#else
-#include <boost/ref.hpp>
-#include <boost/bind.hpp>
-#endif // defined(MA_USE_CXX11_STDLIB_FUNCTIONAL)
 
 namespace ma {
 namespace tutorial {

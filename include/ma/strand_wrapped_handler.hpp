@@ -15,6 +15,7 @@
 #include <cstddef>
 #include <boost/asio.hpp>
 #include <ma/config.hpp>
+#include <ma/memory.hpp>
 #include <ma/handler_alloc_helpers.hpp>
 #include <ma/handler_cont_helpers.hpp>
 #include <ma/context_wrapped_handler.hpp>
@@ -23,8 +24,6 @@
 #include <utility>
 #include <ma/type_traits.hpp>
 #endif // defined(MA_HAS_RVALUE_REFS)
-
-#include <ma/memory.hpp>
 
 namespace ma {
 
