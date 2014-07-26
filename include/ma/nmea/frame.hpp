@@ -13,13 +13,7 @@
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
 #include <string>
-#include <ma/config.hpp>
-
-#if defined(MA_USE_CXX11_STDLIB_MEMORY)
-#include <memory>
-#else
-#include <boost/shared_ptr.hpp>
-#endif // defined(MA_USE_CXX11_STDLIB_MEMORY)
+#include <ma/memory.hpp>
 
 namespace ma {
 namespace nmea {

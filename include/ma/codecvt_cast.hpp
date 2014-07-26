@@ -16,13 +16,7 @@
 #include <string>
 #include <stdexcept>
 #include <boost/throw_exception.hpp>
-#include <ma/config.hpp>
-
-#if defined(MA_USE_CXX11_STDLIB_MEMORY)
-#include <memory>
-#else
-#include <boost/scoped_array.hpp>
-#endif // defined(MA_USE_CXX11_STDLIB_MEMORY)
+#include <ma/memory.hpp>
 
 namespace ma {
 namespace codecvt_cast {

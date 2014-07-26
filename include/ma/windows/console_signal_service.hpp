@@ -22,7 +22,6 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/locks.hpp>
 #include <boost/system/error_code.hpp>
-#include <ma/config.hpp>
 #include <ma/memory.hpp>
 #include <ma/functional.hpp>
 #include <ma/type_traits.hpp>

@@ -16,7 +16,7 @@
 #include <boost/assert.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/aligned_storage.hpp>
-#include <boost/scoped_array.hpp>
+#include <ma/memory.hpp>
 
 namespace ma {
 
@@ -75,7 +75,12 @@ private:
   bool storage_initialized() const;
   byte_type* retrieve_aligned_address();
 
+#if defined(MA_USE_CXX11_STDLIB_MEMORY)
+  std::unique_ptr<byte_type[]>   storage_;
+#else
   boost::scoped_array<byte_type> storage_;
+#endif
+
   std::size_t size_;
   bool        in_use_;
 }; // class in_heap_handler_allocator

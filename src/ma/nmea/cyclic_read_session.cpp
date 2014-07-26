@@ -6,22 +6,10 @@
 //
 
 #include <stdexcept>
-#include <ma/config.hpp>
+#include <ma/memory.hpp>
+#include <ma/functional.hpp>
 #include <ma/shared_ptr_factory.hpp>
 #include <ma/nmea/cyclic_read_session.hpp>
-
-#if defined(MA_USE_CXX11_STDLIB_MEMORY)
-#include <memory>
-#else
-#include <boost/make_shared.hpp>
-#endif // defined(MA_USE_CXX11_STDLIB_MEMORY)
-
-#if defined(MA_USE_CXX11_STDLIB_FUNCTIONAL)
-#include <functional>
-#else
-#include <boost/ref.hpp>
-#include <boost/bind.hpp>
-#endif // defined(MA_USE_CXX11_STDLIB_FUNCTIONAL)
 
 namespace ma {
 namespace nmea {
