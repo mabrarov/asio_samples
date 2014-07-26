@@ -35,6 +35,7 @@
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/strand_wrapped_handler.hpp>
 #include <ma/limited_int.hpp>
+#include <ma/thread_group.hpp>
 
 #if defined(MA_HAS_BOOST_TIMER)
 #include <boost/timer/timer.hpp>
@@ -1129,7 +1130,7 @@ io_service_work_vector create_works(const io_service_vector& io_services)
   return works;
 }
 
-void create_session_threads(boost::thread_group& threads,
+void create_session_threads(ma::thread_group& threads,
     const client_config& config, const io_service_vector& io_services)
 {
   if (config.ios_per_work_thread)
@@ -1201,14 +1202,15 @@ int main(int argc, char* argv[])
     session_manager client_session_manager(session_manager_io_service,
         session_io_services, config.client_session_manager_config);
 
-    boost::thread_group session_threads;
+    ma::thread_group session_threads;
     io_service_work_vector session_work_guards =
         create_works(session_io_services);
     create_session_threads(session_threads, config, session_io_services);
 
     boost::optional<boost::asio::io_service::work> session_manager_work_guard(
         boost::in_place(MA_REF(session_manager_io_service)));
-    boost::thread session_manager_thread(MA_BIND(
+    ma::thread_group session_manager_threads;
+    session_manager_threads.create_thread(MA_BIND(
         static_cast<std::size_t (boost::asio::io_service::*)(void)>(
             &boost::asio::io_service::run),
         &session_manager_io_service));
@@ -1223,7 +1225,7 @@ int main(int argc, char* argv[])
     client_session_manager.async_stop();
 
     session_manager_work_guard = boost::none;
-    session_manager_thread.join();
+    session_manager_threads.join_all();
 
     session_work_guards.clear();
     session_threads.join_all();
