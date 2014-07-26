@@ -13,8 +13,8 @@ TRANSLATOR ma::echo::server::qt::Service
 #include <boost/asio.hpp>
 #include <boost/assert.hpp>
 #include <boost/noncopyable.hpp>
-#include <boost/thread/thread.hpp>
 #include <ma/config.hpp>
+#include <ma/thread_group.hpp>
 #include <ma/echo/server/error.hpp>
 #include <ma/echo/server/simple_session_factory.hpp>
 #include <ma/echo/server/pooled_session_factory.hpp>
@@ -275,7 +275,7 @@ private:
 
   const io_service_work_vector session_work_;
   const boost::asio::io_service::work session_manager_work_;
-  boost::thread_group threads_;
+  ma::thread_group threads_;
 }; // class server_base_3
 
 } // anonymous namespace

@@ -3135,6 +3135,7 @@
     <ClInclude Include="..\..\..\..\include\ma\detail\intrusive_list.hpp" />
     <ClInclude Include="..\..\..\..\include\ma\detail\service_base.hpp" />
     <ClInclude Include="..\..\..\..\include\ma\handler_cont_helpers.hpp" />
+    <ClInclude Include="..\..\..\..\include\ma\thread_group.hpp" />
     <ClInclude Include="GeneratedFiles\Win32\ui_mainform.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug_static|x64'">true</ExcludedFromBuild>
