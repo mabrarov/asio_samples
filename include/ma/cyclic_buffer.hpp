@@ -20,7 +20,7 @@
 #include <boost/array.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/throw_exception.hpp>
-#include <ma/memory.hpp>
+#include <ma/config.hpp>
 
 namespace ma {
 

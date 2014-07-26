@@ -15,16 +15,10 @@
 #include <cstddef>
 #include <boost/asio.hpp>
 #include <boost/noncopyable.hpp>
-#include <ma/config.hpp>
+#include <ma/memory.hpp>
 #include <ma/sp_intrusive_list.hpp>
 #include <ma/echo/server/session.hpp>
 #include <ma/echo/server/session_factory.hpp>
-
-#if defined(MA_USE_CXX11_STDLIB_MEMORY)
-#include <memory>
-#else
-#include <boost/shared_ptr.hpp>
-#endif // defined(MA_USE_CXX11_STDLIB_MEMORY)
 
 namespace ma {
 namespace echo {

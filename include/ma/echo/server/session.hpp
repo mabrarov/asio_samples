@@ -17,6 +17,8 @@
 #include <boost/optional.hpp>
 #include <boost/noncopyable.hpp>
 #include <ma/config.hpp>
+#include <ma/memory.hpp>
+#include <ma/functional.hpp>
 #include <ma/cyclic_buffer.hpp>
 #include <ma/handler_storage.hpp>
 #include <ma/handler_allocator.hpp>
@@ -30,18 +32,6 @@
 #include <utility>
 #include <ma/type_traits.hpp>
 #endif // defined(MA_HAS_RVALUE_REFS)
-
-#if defined(MA_USE_CXX11_STDLIB_MEMORY)
-#include <memory>
-#else
-#include <boost/enable_shared_from_this.hpp>
-#endif // defined(MA_USE_CXX11_STDLIB_MEMORY)
-
-#if defined(MA_USE_CXX11_STDLIB_FUNCTIONAL)
-#include <functional> 
-#else
-#include <boost/bind.hpp>
-#endif // defined(MA_USE_CXX11_STDLIB_FUNCTIONAL)
 
 namespace ma {
 namespace echo {
