@@ -14,6 +14,8 @@ TRANSLATOR ma::echo::server::qt::Service
 #include <boost/assert.hpp>
 #include <boost/noncopyable.hpp>
 #include <ma/config.hpp>
+#include <ma/memory.hpp>
+#include <ma/functional.hpp>
 #include <ma/thread_group.hpp>
 #include <ma/echo/server/error.hpp>
 #include <ma/echo/server/simple_session_factory.hpp>
@@ -25,24 +27,11 @@ TRANSLATOR ma::echo::server::qt::Service
 #include <ma/echo/server/qt/serviceservantsignal.h>
 #include <ma/echo/server/qt/service.h>
 
-#if defined(MA_USE_CXX11_STDLIB_MEMORY)
-#include <memory>
-#else
-#include <boost/make_shared.hpp>
-#endif // defined(MA_USE_CXX11_STDLIB_MEMORY)
-
 #if defined(MA_USE_CXX11_STDLIB_TUPLE)
 #include <tuple>
 #else
 #include <boost/tuple/tuple.hpp>
 #endif // defined(MA_USE_CXX11_STDLIB_TUPLE)
-
-#if defined(MA_USE_CXX11_STDLIB_FUNCTIONAL)
-#include <functional>
-#else
-#include <boost/ref.hpp>
-#include <boost/bind.hpp>
-#endif // defined(MA_USE_CXX11_STDLIB_FUNCTIONAL)
 
 namespace ma {
 namespace echo {
