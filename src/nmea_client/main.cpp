@@ -24,6 +24,7 @@
 #include <ma/codecvt_cast.hpp>
 #include <ma/handler_allocator.hpp>
 #include <ma/custom_alloc_handler.hpp>
+#include <ma/thread_group.hpp>
 #include <ma/nmea/frame.hpp>
 #include <ma/nmea/cyclic_read_session.hpp>
 #include <ma/console_close_guard.hpp>
@@ -203,7 +204,7 @@ int main(int argc, char* argv[])
     std::cout << "Press Ctrl+C to exit...\n";
 
     // Create work threads
-    boost::thread_group work_threads;
+    ma::thread_group work_threads;
     for (std::size_t i = 0; i != thread_count; ++i)
     {
       work_threads.create_thread(MA_BIND(
