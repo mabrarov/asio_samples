@@ -27,6 +27,7 @@
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/handler_storage.hpp>
 #include <ma/lockable_wrapped_handler.hpp>
+#include <ma/thread_group.hpp>
 #include <ma/detail/latch.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)
@@ -145,7 +146,7 @@ private:
   typedef boost::optional<boost::asio::io_service::work> optional_io_work;
 
   optional_io_work    work_guard_;
-  boost::thread_group threads_;
+  ma::thread_group threads_;
 }; // class io_service_pool
 
 namespace lockable_wrapper {
