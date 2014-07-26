@@ -25,25 +25,11 @@
 #include <boost/thread/barrier.hpp>
 #include <boost/random.hpp>
 #include <boost/date_time/posix_time/ptime.hpp>
-#include <ma/config.hpp>
+#include <ma/memory.hpp>
+#include <ma/functional.hpp>
 #include <ma/limited_int.hpp>
 #include <ma/shared_ptr_factory.hpp>
 #include <ma/detail/sp_singleton.hpp>
-
-#if defined(MA_USE_CXX11_STDLIB_MEMORY)
-#include <memory>
-#else
-#include <boost/scoped_ptr.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/make_shared.hpp>
-#endif // defined(MA_USE_CXX11_STDLIB_MEMORY)
-
-#if defined(MA_USE_CXX11_STDLIB_FUNCTIONAL)
-#include <functional>
-#else
-#include <boost/ref.hpp>
-#include <boost/bind.hpp>
-#endif // defined(MA_USE_CXX11_STDLIB_FUNCTIONAL)
 
 namespace ma {
 namespace test {
