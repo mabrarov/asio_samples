@@ -20,26 +20,15 @@
 #include <boost/thread.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/system/error_code.hpp>
-#include <ma/config.hpp>
+#include <ma/memory.hpp>
+#include <ma/functional.hpp>
 #include <ma/codecvt_cast.hpp>
 #include <ma/handler_allocator.hpp>
 #include <ma/custom_alloc_handler.hpp>
+#include <ma/thread_group.hpp>
 #include <ma/nmea/frame.hpp>
 #include <ma/nmea/cyclic_read_session.hpp>
 #include <ma/console_close_guard.hpp>
-
-#if defined(MA_USE_CXX11_STDLIB_MEMORY)
-#include <memory>
-#else
-#include <boost/make_shared.hpp>
-#endif // defined(MA_USE_CXX11_STDLIB_MEMORY)
-
-#if defined(MA_USE_CXX11_STDLIB_FUNCTIONAL)
-#include <functional>
-#else
-#include <boost/ref.hpp>
-#include <boost/bind.hpp>
-#endif // defined(MA_USE_CXX11_STDLIB_FUNCTIONAL)
 
 typedef std::codecvt<wchar_t, char, mbstate_t> wcodecvt_type;
 typedef ma::nmea::cyclic_read_session          session;
@@ -203,7 +192,7 @@ int main(int argc, char* argv[])
     std::cout << "Press Ctrl+C to exit...\n";
 
     // Create work threads
-    boost::thread_group work_threads;
+    ma::thread_group work_threads;
     for (std::size_t i = 0; i != thread_count; ++i)
     {
       work_threads.create_thread(MA_BIND(

@@ -13,16 +13,9 @@
 
 #include <boost/asio.hpp>
 #include <boost/thread/thread.hpp>
-#include <ma/config.hpp>
+#include <ma/functional.hpp>
 #include <ma/console_close_guard.hpp>
 #include <ma/windows/console_signal.hpp>
-
-#if defined(MA_USE_CXX11_STDLIB_FUNCTIONAL)
-#include <functional>
-#else
-#include <boost/ref.hpp>
-#include <boost/bind.hpp>
-#endif // defined(MA_USE_CXX11_STDLIB_FUNCTIONAL)
 
 namespace {
 

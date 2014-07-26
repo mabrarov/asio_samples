@@ -14,16 +14,11 @@
 
 #include <boost/asio.hpp>
 #include <ma/config.hpp>
+#include <ma/memory.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)
 #include <utility>
 #endif // defined(MA_HAS_RVALUE_REFS)
-
-#if defined(MA_USE_CXX11_STDLIB_MEMORY)
-#include <memory>
-#else
-#include <boost/utility/addressof.hpp>
-#endif // defined(MA_USE_CXX11_STDLIB_MEMORY)
 
 // Calls to asio_handler_invoke must be made from a namespace that does not
 // contain any overloads of this function. The ma_handler_invoke_helpers

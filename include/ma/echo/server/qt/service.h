@@ -14,7 +14,7 @@
 
 #include <boost/system/error_code.hpp>
 #include <QObject>
-#include <ma/config.hpp>
+#include <ma/memory.hpp>
 #include <ma/echo/server/session_manager_config_fwd.hpp>
 #include <ma/echo/server/session_manager_stats.hpp>
 #include <ma/echo/server/qt/servicestate.h>
@@ -22,13 +22,6 @@
 #include <ma/echo/server/qt/serviceforwardsignal_fwd.h>
 #include <ma/echo/server/qt/serviceservantsignal_fwd.h>
 #include <ma/echo/server/qt/service_fwd.h>
-
-#if defined(MA_USE_CXX11_STDLIB_MEMORY)
-#include <memory>
-#else
-#include <boost/scoped_ptr.hpp>
-#include <boost/shared_ptr.hpp>
-#endif // defined(MA_USE_CXX11_STDLIB_MEMORY)
 
 namespace ma {
 namespace echo {

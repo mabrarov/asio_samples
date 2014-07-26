@@ -21,6 +21,7 @@
 #include <boost/thread/locks.hpp>
 #include <boost/throw_exception.hpp>
 #include <ma/config.hpp>
+#include <ma/functional.hpp>
 #include <ma/type_traits.hpp>
 #include <ma/bind_handler.hpp>
 #include <ma/detail/handler_ptr.hpp>
@@ -30,12 +31,6 @@
 #if defined(MA_HAS_RVALUE_REFS)
 #include <utility>
 #endif // defined(MA_HAS_RVALUE_REFS)
-
-#if defined(MA_USE_CXX11_STDLIB_FUNCTIONAL)
-#include <functional>
-#else
-#include <boost/ref.hpp>
-#endif // defined(MA_USE_CXX11_STDLIB_FUNCTIONAL)
 
 namespace ma {
 

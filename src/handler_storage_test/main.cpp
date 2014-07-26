@@ -23,30 +23,18 @@
 #include <boost/noncopyable.hpp>
 #include <boost/utility/in_place_factory.hpp>
 #include <ma/config.hpp>
+#include <ma/memory.hpp>
+#include <ma/functional.hpp>
 #include <ma/handler_allocator.hpp>
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/handler_storage.hpp>
 #include <ma/lockable_wrapped_handler.hpp>
+#include <ma/thread_group.hpp>
 #include <ma/detail/latch.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)
 #include <utility>
 #endif // defined(MA_HAS_RVALUE_REFS)
-
-#if defined(MA_USE_CXX11_STDLIB_MEMORY)
-#include <memory>
-#else
-#include <boost/shared_ptr.hpp>
-#include <boost/make_shared.hpp>
-#endif // defined(MA_USE_CXX11_STDLIB_MEMORY)
-
-#if defined(MA_USE_CXX11_STDLIB_FUNCTIONAL)
-#include <functional>
-#else
-#include <boost/ref.hpp>
-#include <boost/bind.hpp>
-#include <boost/function.hpp>
-#endif // defined(MA_USE_CXX11_STDLIB_FUNCTIONAL)
 
 namespace ma {
 namespace test {
@@ -145,7 +133,7 @@ private:
   typedef boost::optional<boost::asio::io_service::work> optional_io_work;
 
   optional_io_work    work_guard_;
-  boost::thread_group threads_;
+  ma::thread_group threads_;
 }; // class io_service_pool
 
 namespace lockable_wrapper {

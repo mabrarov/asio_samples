@@ -17,17 +17,11 @@
 #include <boost/optional.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/system/error_code.hpp>
-#include <ma/config.hpp>
+#include <ma/memory.hpp>
 #include <ma/handler_storage.hpp>
 #include <ma/handler_allocator.hpp>
 #include <ma/steady_deadline_timer.hpp>
 #include <ma/tutorial2/async_interface.hpp>
-
-#if defined(MA_USE_CXX11_STDLIB_MEMORY)
-#include <memory>
-#else
-#include <boost/enable_shared_from_this.hpp>
-#endif // defined(MA_USE_CXX11_STDLIB_MEMORY)
 
 namespace ma {
 namespace tutorial2 {
