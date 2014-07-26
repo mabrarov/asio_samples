@@ -14,10 +14,10 @@
 
 #include <cstddef>
 #include <ma/config.hpp>
+#include <ma/memory.hpp>
 #include <ma/handler_alloc_helpers.hpp>
 #include <ma/handler_invoke_helpers.hpp>
 #include <ma/handler_cont_helpers.hpp>
-#include <ma/memory.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)
 #include <utility>
