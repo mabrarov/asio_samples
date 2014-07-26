@@ -25,10 +25,12 @@ HEADERS  += ../../../include/ma/detail/binder.hpp \
             ../../../include/ma/bind_handler.hpp \
             ../../../include/ma/config.hpp \
             ../../../include/ma/custom_alloc_handler.hpp \
+            ../../../include/ma/functional.hpp \
             ../../../include/ma/handler_alloc_helpers.hpp \
             ../../../include/ma/handler_allocator.hpp \
             ../../../include/ma/handler_cont_helpers.hpp \
             ../../../include/ma/handler_invoke_helpers.hpp \
+            ../../../include/ma/memory.hpp \
             ../../../include/ma/type_traits.hpp
 
 SOURCES  += ../../../src/ma/windows/console_signal_service.cpp \

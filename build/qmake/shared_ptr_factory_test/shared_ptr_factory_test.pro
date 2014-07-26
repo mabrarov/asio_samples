@@ -15,6 +15,7 @@ CONFIG   -= app_bundle
 include(../config.pri)
 
 HEADERS  += ../../../include/ma/config.hpp \
+            ../../../include/ma/memory.hpp \
             ../../../include/ma/shared_ptr_factory.hpp
 
 SOURCES  += ../../../src/shared_ptr_factory_test/main.cpp

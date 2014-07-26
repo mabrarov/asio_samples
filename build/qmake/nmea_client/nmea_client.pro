@@ -33,14 +33,18 @@ HEADERS  += ../../../include/ma/detail/binder.hpp \
             ../../../include/ma/context_wrapped_handler.hpp \
             ../../../include/ma/custom_alloc_handler.hpp \
             ../../../include/ma/cyclic_buffer.hpp \
+            ../../../include/ma/functional.hpp \
             ../../../include/ma/handler_alloc_helpers.hpp \
             ../../../include/ma/handler_allocator.hpp \
             ../../../include/ma/handler_cont_helpers.hpp \
             ../../../include/ma/handler_invoke_helpers.hpp \
             ../../../include/ma/handler_storage.hpp \
             ../../../include/ma/handler_storage_service.hpp \
+            ../../../include/ma/memory.hpp \
             ../../../include/ma/shared_ptr_factory.hpp \
             ../../../include/ma/strand_wrapped_handler.hpp \
+            ../../../include/ma/thread_group.hpp \
+            ../../../include/ma/tuple.hpp \
             ../../../include/ma/type_traits.hpp
 
 SOURCES  += ../../../src/ma/nmea/error.cpp \

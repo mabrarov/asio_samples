@@ -400,9 +400,6 @@
     <ClInclude Include="..\..\..\..\include\ma\handler_cont_helpers.hpp">
       <Filter>Header Files\ma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\include\ma\thread_group.hpp">
-      <Filter>Source Files\ma</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\include\ma\functional.hpp">
       <Filter>Header Files\ma</Filter>
     </ClInclude>
@@ -410,6 +407,9 @@
       <Filter>Header Files\ma</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\include\ma\tuple.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\ma\thread_group.hpp">
       <Filter>Header Files\ma</Filter>
     </ClInclude>
   </ItemGroup>
