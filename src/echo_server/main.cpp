@@ -456,11 +456,14 @@ bool wait_until_server_stopped(server_state& the_server_state,
   const boost::posix_time::time_duration& duration)
 {
   server_state::unique_lock lock(the_server_state.mutex);
-  if (server_state::stopped == the_server_state.value)
+  while (server_state::stopped != the_server_state.value)
   {
-    return true;
+    if (!the_server_state.condition_variable.timed_wait(lock, duration))
+    {
+      return false;
+    }
   }
-  return the_server_state.condition_variable.timed_wait(lock, duration);
+  return true;
 }
 
 void handle_work_thread_exception(server_state&);
