@@ -15,15 +15,8 @@
 #include <boost/static_assert.hpp>
 #include <boost/assert.hpp>
 #include <boost/noncopyable.hpp>
-#include <ma/config.hpp>
+#include <ma/memory.hpp>
 #include <ma/shared_ptr_factory.hpp>
-
-#if defined(MA_USE_CXX11_STDLIB_MEMORY)
-#include <memory>
-#else
-#include <boost/shared_ptr.hpp>
-#include <boost/make_shared.hpp>
-#endif // defined(MA_USE_CXX11_STDLIB_MEMORY)
 
 namespace ma {
 namespace test {

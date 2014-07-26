@@ -25,5 +25,8 @@
     <ClInclude Include="..\..\..\..\include\ma\shared_ptr_factory.hpp">
       <Filter>Header Files\ma</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\include\ma\memory.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
