@@ -14,13 +14,7 @@
 
 #include <cstddef>
 #include <boost/asio.hpp>
-#include <ma/config.hpp>
-
-#if defined(MA_USE_CXX11_STDLIB_MEMORY)
-#include <memory>
-#else
-#include <boost/utility/addressof.hpp>
-#endif // defined(MA_USE_CXX11_STDLIB_MEMORY)
+#include <ma/memory.hpp>
 
 // Calls to asio_handler_allocate and asio_handler_deallocate must be made from
 // a namespace that does not contain any overloads of these functions. The

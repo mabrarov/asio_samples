@@ -14,13 +14,7 @@
 
 #include <boost/version.hpp>
 #include <boost/asio.hpp>
-#include <ma/config.hpp>
-
-#if defined(MA_USE_CXX11_STDLIB_MEMORY)
-#include <memory>
-#else
-#include <boost/utility/addressof.hpp>
-#endif // defined(MA_USE_CXX11_STDLIB_MEMORY)
+#include <ma/memory.hpp>
 
 namespace ma_handler_cont_helpers {
 

@@ -14,9 +14,6 @@
 
 #include <ma/config.hpp>
 
-// TODO: move to "ma/config.hpp"
-//#define MA_USE_CXX11_THREAD
-
 #if defined(MA_HAS_RVALUE_REFS)
 #include <utility>
 #endif
@@ -30,6 +27,7 @@
 #endif
 
 #include <boost/noncopyable.hpp>
+#include <ma/functional.hpp>
 
 namespace ma {
 

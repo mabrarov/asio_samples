@@ -20,12 +20,7 @@
 #include <boost/array.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/throw_exception.hpp>
-
-#if defined(MA_USE_CXX11_STDLIB_MEMORY)
-#include <memory>
-#else
-#include <boost/scoped_array.hpp>
-#endif // defined(MA_USE_CXX11_STDLIB_MEMORY)
+#include <ma/memory.hpp>
 
 namespace ma {
 

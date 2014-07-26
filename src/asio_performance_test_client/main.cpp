@@ -41,19 +41,8 @@
 #include <boost/timer/timer.hpp>
 #endif // defined(MA_HAS_BOOST_TIMER)
 
-#if defined(MA_USE_CXX11_STDLIB_MEMORY)
-#include <memory>
-#else
-#include <boost/shared_ptr.hpp>
-#include <boost/make_shared.hpp>
-#endif // defined(MA_USE_CXX11_STDLIB_MEMORY)
-
-#if defined(MA_USE_CXX11_STDLIB_FUNCTIONAL)
-#include <functional>
-#else
-#include <boost/ref.hpp>
-#include <boost/bind.hpp>
-#endif // defined(MA_USE_CXX11_STDLIB_FUNCTIONAL)
+#include <ma/memory.hpp>
+#include <ma/functional.hpp>
 
 namespace {
 
