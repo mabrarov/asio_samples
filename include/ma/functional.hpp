@@ -18,11 +18,11 @@
 
 #include <functional>
 
-#define MA_BIND                    ::std::bind
-#define MA_FUNCTION                ::std::function
-#define MA_REF                     ::std::ref
-#define MA_PLACEHOLDER_1           ::std::placeholders::_1
-#define MA_PLACEHOLDER_2           ::std::placeholders::_2
+#define MA_BIND          ::std::bind
+#define MA_FUNCTION      ::std::function
+#define MA_REF           ::std::ref
+#define MA_PLACEHOLDER_1 ::std::placeholders::_1
+#define MA_PLACEHOLDER_2 ::std::placeholders::_2
 
 #else  // defined(MA_USE_CXX11_STDLIB_MEMORY)
 
@@ -30,11 +30,11 @@
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 
-#define MA_BIND                    ::boost::bind
-#define MA_FUNCTION                ::boost::function
-#define MA_REF                     ::boost::ref
-#define MA_PLACEHOLDER_1           _1
-#define MA_PLACEHOLDER_2           _2
+#define MA_BIND          ::boost::bind
+#define MA_FUNCTION      ::boost::function
+#define MA_REF           ::boost::ref
+#define MA_PLACEHOLDER_1 _1
+#define MA_PLACEHOLDER_2 _2
 
 #endif // defined(MA_USE_CXX11_STDLIB_MEMORY)
 

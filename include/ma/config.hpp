@@ -44,20 +44,6 @@
 #undef  MA_USE_CXX11_THREAD
 #endif
 
-#if defined(MA_USE_CXX11_STDLIB_TUPLE)
-
-#define MA_TUPLE                   ::std::tuple
-#define MA_TUPLE_GET               ::std::get
-#define MA_MAKE_TUPLE              ::std::make_tuple
-
-#else  // defined(MA_USE_CXX11_STDLIB_TUPLE)
-
-#define MA_TUPLE                   ::boost::tuple
-#define MA_TUPLE_GET               ::boost::get
-#define MA_MAKE_TUPLE              ::boost::make_tuple
-
-#endif // defined(MA_USE_CXX11_STDLIB_TUPLE)
-
 // Check the presence of r-value references support.
 #if (BOOST_VERSION >= 104000) && !defined(BOOST_NO_RVALUE_REFERENCES)
 #define MA_HAS_RVALUE_REFS

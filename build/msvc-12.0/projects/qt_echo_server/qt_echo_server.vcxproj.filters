@@ -409,5 +409,8 @@
     <ClInclude Include="..\..\..\..\include\ma\memory.hpp">
       <Filter>Header Files\ma</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\include\ma\tuple.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

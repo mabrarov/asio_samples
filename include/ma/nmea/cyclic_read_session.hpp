@@ -22,6 +22,7 @@
 #include <boost/noncopyable.hpp>
 #include <boost/circular_buffer.hpp>
 #include <ma/config.hpp>
+#include <ma/tuple.hpp>
 #include <ma/memory.hpp>
 #include <ma/functional.hpp>
 #include <ma/handler_storage.hpp>
@@ -40,12 +41,6 @@
 #if defined(MA_HAS_RVALUE_REFS)
 #include <ma/type_traits.hpp>
 #endif // defined(MA_HAS_RVALUE_REFS)
-
-#if defined(MA_USE_CXX11_STDLIB_TUPLE)
-#include <tuple>
-#else
-#include <boost/tuple/tuple.hpp>
-#endif // defined(MA_USE_CXX11_STDLIB_TUPLE)
 
 namespace ma {
 namespace nmea {

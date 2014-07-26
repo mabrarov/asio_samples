@@ -13,7 +13,7 @@ TRANSLATOR ma::echo::server::qt::Service
 #include <boost/asio.hpp>
 #include <boost/assert.hpp>
 #include <boost/noncopyable.hpp>
-#include <ma/config.hpp>
+#include <ma/tuple.hpp>
 #include <ma/memory.hpp>
 #include <ma/functional.hpp>
 #include <ma/thread_group.hpp>
@@ -26,12 +26,6 @@ TRANSLATOR ma::echo::server::qt::Service
 #include <ma/echo/server/qt/serviceforwardsignal.h>
 #include <ma/echo/server/qt/serviceservantsignal.h>
 #include <ma/echo/server/qt/service.h>
-
-#if defined(MA_USE_CXX11_STDLIB_TUPLE)
-#include <tuple>
-#else
-#include <boost/tuple/tuple.hpp>
-#endif // defined(MA_USE_CXX11_STDLIB_TUPLE)
 
 namespace ma {
 namespace echo {
