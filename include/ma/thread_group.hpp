@@ -25,7 +25,7 @@
 #include <vector>
 #include <algorithm>
 #else
-#include <boost/thread.hpp>
+#include <boost/thread/thread.hpp>
 #endif
 
 namespace ma {
