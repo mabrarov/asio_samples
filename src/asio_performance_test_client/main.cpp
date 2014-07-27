@@ -21,7 +21,6 @@
 #include <exception>
 #include <boost/assert.hpp>
 #include <boost/asio.hpp>
-#include <boost/thread.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/lexical_cast.hpp>
@@ -35,19 +34,25 @@
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/strand_wrapped_handler.hpp>
 #include <ma/limited_int.hpp>
+#include <ma/memory.hpp>
+#include <ma/functional.hpp>
+#include <ma/thread.hpp>
 #include <ma/thread_group.hpp>
 
 #if defined(MA_HAS_BOOST_TIMER)
 #include <boost/timer/timer.hpp>
 #endif // defined(MA_HAS_BOOST_TIMER)
 
-#include <ma/memory.hpp>
-#include <ma/functional.hpp>
-
 namespace {
 
 class work_state : private boost::noncopyable
 {
+private:
+  typedef MA_MUTEX                   mutex_type;
+  typedef MA_LOCK_GUARD<mutex_type>  lock_guard_type;
+  typedef MA_UNIQUE_LOCK<mutex_type> unique_lock_type;
+  typedef MA_CONDITION_VARIABLE      condition_variable_type;
+
 public:
   explicit work_state(std::size_t outstanding)
     : outstanding_(outstanding)
@@ -56,7 +61,7 @@ public:
 
   void dec_outstanding()
   {
-    boost::mutex::scoped_lock lock(mutex_);
+    lock_guard_type lock(mutex_);
     --outstanding_;
     if (!outstanding_)
     {
@@ -66,17 +71,20 @@ public:
 
   void wait(const boost::posix_time::time_duration& timeout)
   {
-    boost::unique_lock<boost::mutex> lock(mutex_);
-    if (outstanding_)
+    unique_lock_type lock(mutex_);
+    while (outstanding_)
     {
-      condition_.timed_wait(lock, timeout);
+      if (!ma::timed_wait(condition_, lock, timeout))
+      {
+        return;
+      }
     }
   }
 
 private:
   std::size_t outstanding_;
-  boost::mutex mutex_;
-  boost::condition_variable condition_;
+  mutex_type  mutex_;
+  condition_variable_type condition_;
 }; // class work_state
 
 template <typename Integer>
@@ -1156,7 +1164,7 @@ int main(int argc, char* argv[])
 {
   try
   {
-    const std::size_t cpu_count = boost::thread::hardware_concurrency();
+    const std::size_t cpu_count = MA_THREAD::hardware_concurrency();
 
     const boost::program_options::options_description
         cmd_options_description = build_cmd_options_description(cpu_count);
