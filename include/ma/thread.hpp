@@ -31,13 +31,14 @@
 #define MA_CONDITION_VARIABLE ::std::condition_variable
 #define MA_ONCE_FLAG          ::std::once_flag
 #define MA_CALL_ONCE          ::std::call_once
-#define MA_ONCE_FLAG_INIT
 
 #else  // defined(MA_USE_CXX11_THREAD)
 
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
+#include <boost/thread/recursive_mutex.hpp>
 #include <boost/thread/condition_variable.hpp>
+#include <boost/thread/once.hpp>
 
 #define MA_THREAD             ::boost::thread
 #define MA_MUTEX              ::boost::mutex
@@ -47,7 +48,6 @@
 #define MA_CONDITION_VARIABLE ::boost::condition_variable
 #define MA_ONCE_FLAG          ::boost::once_flag
 #define MA_CALL_ONCE          ::boost::call_once
-#define MA_ONCE_FLAG_INIT     = BOOST_ONCE_INIT
 
 #endif // defined(MA_USE_CXX11_THREAD)
 

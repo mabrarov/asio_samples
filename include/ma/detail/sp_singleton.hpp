@@ -132,8 +132,17 @@ sp_singleton<Value>::get_static_data()
   return *static_data_;
 }
 
+#if defined(MA_USE_CXX11_THREAD)
+
 template <typename Value>
-MA_ONCE_FLAG sp_singleton<Value>::static_data_init_flag_ MA_ONCE_FLAG_INIT;
+MA_ONCE_FLAG sp_singleton<Value>::static_data_init_flag_;
+
+#else  // defined(MA_USE_CXX11_THREAD)
+
+template <typename Value>
+MA_ONCE_FLAG sp_singleton<Value>::static_data_init_flag_ = BOOST_ONCE_INIT;
+
+#endif // defined(MA_USE_CXX11_THREAD)
 
 template <typename Value>
 typename sp_singleton<Value>::static_data* 
