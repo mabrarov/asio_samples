@@ -17,14 +17,12 @@
 #include <boost/assert.hpp>
 #include <boost/asio.hpp>
 #include <boost/optional.hpp>
-#include <boost/thread/thread.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/locks.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/utility/in_place_factory.hpp>
 #include <ma/config.hpp>
 #include <ma/memory.hpp>
 #include <ma/functional.hpp>
+#include <ma/thread.hpp>
 #include <ma/handler_allocator.hpp>
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/handler_storage.hpp>
@@ -161,35 +159,39 @@ void mutating_func3(data_type& d, const continuation& cont)
 
 void run_test()
 {
+  typedef MA_MUTEX                  mutex_type;
+  typedef MA_LOCK_GUARD<mutex_type> lock_guard_type;
+
   std::cout << "*** ma::test::lockable_wrapper ***" << std::endl;
 
-  std::size_t cpu_count = boost::thread::hardware_concurrency();
+  std::size_t cpu_count = MA_THREAD::hardware_concurrency();
   std::size_t work_thread_count = cpu_count > 1 ? cpu_count : 2;
   boost::asio::io_service io_service(work_thread_count);
   io_service_pool work_threads(io_service, work_thread_count);
+   
 
-  boost::mutex mutex;
+  mutex_type mutex;
   std::string data;
   {
-    boost::lock_guard<boost::mutex> lock_guard(mutex);
+    lock_guard_type lock_guard(mutex);
     data = "0";
   }
 
   ma::detail::latch done_latch(1);
   {
-    boost::lock_guard<boost::mutex> data_guard(mutex);
+    lock_guard_type data_guard(mutex);
 
     io_service.post(ma::make_lockable_wrapped_handler(mutex, MA_BIND(
         mutating_func1, MA_REF(data), continuation(
             MA_BIND(count_down, MA_REF(done_latch))))));
 
-    boost::this_thread::sleep(boost::posix_time::seconds(5));
+    ma::sleep(boost::posix_time::seconds(5));
     data = "Zero";
   }
   done_latch.wait();
 
   {
-    boost::lock_guard<boost::mutex> lock_guard(mutex);
+    lock_guard_type lock_guard(mutex);
     BOOST_ASSERT_MSG("Zero 1 " == data, "Invalid value of data");
   }
 } // run_test
@@ -578,7 +580,7 @@ void run_test()
 {
   std::cout << "*** ma::test::handler_storage_target ***" << std::endl;
 
-  std::size_t cpu_count = boost::thread::hardware_concurrency();
+  std::size_t cpu_count = MA_THREAD::hardware_concurrency();
   std::size_t work_thread_count = cpu_count > 1 ? cpu_count : 2;
   boost::asio::io_service io_service(work_thread_count);
   io_service_pool work_threads(io_service, work_thread_count);
@@ -716,7 +718,7 @@ void run_test()
 {
   std::cout << "*** ma::test::handler_storage_arg ***" << std::endl;
 
-  std::size_t cpu_count = boost::thread::hardware_concurrency();
+  std::size_t cpu_count = MA_THREAD::hardware_concurrency();
   std::size_t work_thread_count = cpu_count > 1 ? cpu_count : 2;
   boost::asio::io_service io_service(work_thread_count);
   io_service_pool work_threads(io_service, work_thread_count);

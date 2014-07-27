@@ -18,16 +18,15 @@
 #include <boost/asio.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/tuple/tuple.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/thread.hpp>
 #include <boost/program_options.hpp>
-#include <boost/thread/condition_variable.hpp>
+#include <ma/thread.hpp>
 #include <ma/memory.hpp>
 #include <ma/functional.hpp>
+#include <ma/tuple.hpp>
 #include <ma/handler_allocator.hpp>
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/console_close_guard.hpp>
+#include <ma/thread.hpp>
 #include <ma/thread_group.hpp>
 #include <ma/echo/server/simple_session_factory.hpp>
 #include <ma/echo/server/pooled_session_factory.hpp>
@@ -51,7 +50,7 @@ int main(int argc, char* argv[])
   {
     using namespace echo_server;
 
-    const std::size_t cpu_count = boost::thread::hardware_concurrency();
+    const std::size_t cpu_count = MA_THREAD::hardware_concurrency();
     const boost::program_options::options_description
         cmd_options_description = build_cmd_options_description(cpu_count);
 
@@ -264,11 +263,11 @@ private:
   template <typename Handler>
   void create_threads(const Handler& handler)
   {
-    typedef boost::tuple<Handler> wrapped_handler_type;
+    typedef MA_TUPLE<Handler> wrapped_handler_type;
     typedef void (*thread_func_type)(boost::asio::io_service&,
         wrapped_handler_type);
 
-    wrapped_handler_type wrapped_handler = boost::make_tuple(handler);
+    wrapped_handler_type wrapped_handler = MA_MAKE_TUPLE(handler);
     thread_func_type func = &this_type::thread_func<Handler>;
 
     if (ios_per_work_thread_)
@@ -297,8 +296,8 @@ private:
   }
 
   template <typename Handler>
-  static void thread_func(boost::asio::io_service& io_service,
-      boost::tuple<Handler> handler)
+  static void thread_func(boost::asio::io_service& io_service, 
+      MA_TUPLE<Handler> handler)
   {
     try
     {
@@ -306,7 +305,7 @@ private:
     }
     catch (...)
     {
-      boost::get<0>(handler)();
+      MA_TUPLE_GET<0>(handler)();
     }
   }
 
@@ -390,9 +389,9 @@ private:
 struct server_state : private boost::noncopyable
 {
 public:
-  typedef boost::mutex                   mutex_type;
-  typedef boost::lock_guard<mutex_type>  lock_guard;
-  typedef boost::unique_lock<mutex_type> unique_lock;
+  typedef MA_MUTEX                   mutex_type;
+  typedef MA_LOCK_GUARD<mutex_type>  lock_guard;
+  typedef MA_UNIQUE_LOCK<mutex_type> unique_lock;
 
   enum value_t {starting, working, stopping, stopped};
 
@@ -402,10 +401,10 @@ public:
   {
   }
 
-  mutex_type                 mutex;
-  boost::condition_variable  condition_variable;
-  value_t                    value;
-  bool                       user_initiated_stop;
+  mutex_type            mutex;
+  MA_CONDITION_VARIABLE condition_variable;
+  value_t               value;
+  bool                  user_initiated_stop;
 }; // struct server_state
 
 void switch_to_stopped(const server_state::lock_guard&,
@@ -446,7 +445,7 @@ bool wait_until_server_stopped(server_state& the_server_state,
   server_state::unique_lock lock(the_server_state.mutex);
   while (server_state::stopped != the_server_state.value)
   {
-    if (!the_server_state.condition_variable.timed_wait(lock, duration))
+    if (!ma::timed_wait(the_server_state.condition_variable, lock, duration))
     {
       return false;
     }

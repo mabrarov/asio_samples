@@ -10,9 +10,8 @@
 #endif
 
 #include <boost/config.hpp>
-
 #include <boost/asio.hpp>
-#include <boost/thread/thread.hpp>
+#include <ma/thread.hpp>
 #include <ma/functional.hpp>
 #include <ma/console_close_guard.hpp>
 #include <ma/windows/console_signal.hpp>
@@ -110,7 +109,7 @@ public:
   }
   
 private:
-  boost::thread work_thread_;
+  MA_THREAD work_thread_;
 }; // class console_close_guard::implementation
 
 console_close_guard::console_close_guard(

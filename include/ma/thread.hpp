@@ -13,6 +13,8 @@
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
 #include <ma/config.hpp>
+#include <boost/date_time/posix_time/ptime.hpp>
+#include <boost/thread/barrier.hpp>
 
 #if defined(MA_USE_CXX11_THREAD)
 
@@ -23,35 +25,55 @@
 
 #define MA_THREAD             ::std::thread
 #define MA_MUTEX              ::std::mutex
+#define MA_RECURSIVE_MUTEX    ::std::recursive_mutex
 #define MA_UNIQUE_LOCK        ::std::unique_lock
 #define MA_LOCK_GUARD         ::std::lock_guard
 #define MA_CONDITION_VARIABLE ::std::condition_variable
+#define MA_ONCE_FLAG          ::std::once_flag
+#define MA_CALL_ONCE          ::std::call_once
+#define MA_ONCE_FLAG_INIT
 
 #else  // defined(MA_USE_CXX11_THREAD)
 
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition_variable.hpp>
-#include <boost/date_time/posix_time/ptime.hpp>
 
 #define MA_THREAD             ::boost::thread
 #define MA_MUTEX              ::boost::mutex
+#define MA_RECURSIVE_MUTEX    ::boost::recursive_mutex
 #define MA_UNIQUE_LOCK        ::boost::unique_lock
 #define MA_LOCK_GUARD         ::boost::lock_guard
 #define MA_CONDITION_VARIABLE ::boost::condition_variable
+#define MA_ONCE_FLAG          ::boost::once_flag
+#define MA_CALL_ONCE          ::boost::call_once
+#define MA_ONCE_FLAG_INIT     = BOOST_ONCE_INIT
 
 #endif // defined(MA_USE_CXX11_THREAD)
+
+#define MA_BARRIER            ::boost::barrier
 
 namespace ma {
 
 #if defined(MA_USE_CXX11_THREAD)
 
+inline std::chrono::nanoseconds to_duration(
+    const boost::posix_time::time_duration& posix_duration)
+{
+  return std::chrono::nanoseconds(posix_duration.total_nanoseconds());
+}
+
 template<typename Lock>
 bool timed_wait(std::condition_variable& condition,
     Lock& lock, const boost::posix_time::time_duration& posix_duration)
 {
-  return std::cv_status::timeout != condition.wait_for(lock, 
-      std::chrono::nanoseconds(posix_duration.total_nanoseconds()));
+  return std::cv_status::timeout != 
+      condition.wait_for(lock, to_duration(posix_duration));
+}
+
+inline void sleep(const boost::posix_time::time_duration& posix_duration)
+{
+  std::this_thread::sleep_for(to_duration(posix_duration));
 }
 
 #else  // defined(MA_USE_CXX11_THREAD)
@@ -63,7 +85,17 @@ bool timed_wait(boost::condition_variable& condition,
   return condition.timed_wait(lock, posix_duration);
 }
 
+inline void sleep(const boost::posix_time::time_duration& posix_duration)
+{
+  boost::this_thread::sleep(posix_duration);
+}
+
 #endif // defined(MA_USE_CXX11_THREAD)
+
+inline void count_down_and_wait(MA_BARRIER& barrier)
+{
+  barrier.wait();
+}
 
 } // namespace ma
 

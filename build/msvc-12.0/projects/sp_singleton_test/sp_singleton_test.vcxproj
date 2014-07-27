@@ -218,6 +218,7 @@
     <ClInclude Include="..\..\..\..\include\ma\limited_int.hpp" />
     <ClInclude Include="..\..\..\..\include\ma\memory.hpp" />
     <ClInclude Include="..\..\..\..\include\ma\shared_ptr_factory.hpp" />
+    <ClInclude Include="..\..\..\..\include\ma\thread.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

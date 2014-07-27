@@ -13,7 +13,6 @@
 #include <iostream>
 #include <exception>
 #include <boost/asio.hpp>
-#include <boost/thread.hpp>
 #include <boost/format.hpp>
 #include <boost/optional.hpp>
 #include <boost/noncopyable.hpp>
@@ -22,6 +21,7 @@
 #include <ma/functional.hpp>
 #include <ma/handler_allocator.hpp>
 #include <ma/console_close_guard.hpp>
+#include <ma/thread.hpp>
 #include <ma/thread_group.hpp>
 #include <ma/tutorial2/async_interface.hpp>
 #include <ma/tutorial2/async_implementation.hpp>
@@ -94,7 +94,7 @@ int main(int /*argc*/, char* /*argv*/[])
 {
   try
   {
-    std::size_t cpu_count = boost::thread::hardware_concurrency();
+    std::size_t cpu_count = MA_THREAD::hardware_concurrency();
     std::size_t work_thread_count = cpu_count < 2 ? 2 : cpu_count;
 
     using boost::asio::io_service;

@@ -13,9 +13,9 @@
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
 #include <vector>
-#include <boost/tuple/tuple.hpp>
 #include <boost/system/error_code.hpp>
 #include <QWidget>
+#include <ma/tuple.hpp>
 #include <ma/echo/server/session_config.hpp>
 #include <ma/echo/server/session_manager_config.hpp>
 #include <ma/echo/server/session_manager_stats_fwd.hpp>
@@ -53,9 +53,8 @@ private slots:
   void on_service_workCompleted(const boost::system::error_code&);
 
 private:
-  typedef boost::tuple<execution_config, session_manager_config> ServiceConfig;
-
-  typedef boost::tuple<int, QWidget*> OptionWidget;
+  typedef MA_TUPLE<execution_config, session_manager_config> ServiceConfig;
+  typedef MA_TUPLE<int, QWidget*> OptionWidget;
 
   Q_DISABLE_COPY(MainForm)
 

@@ -16,10 +16,10 @@
 #include <boost/asio.hpp>
 #include <boost/optional.hpp>
 #include <boost/noncopyable.hpp>
-#include <boost/thread/mutex.hpp>
 #include <ma/config.hpp>
 #include <ma/memory.hpp>
 #include <ma/functional.hpp>
+#include <ma/thread.hpp>
 #include <ma/handler_storage.hpp>
 #include <ma/handler_allocator.hpp>
 #include <ma/bind_handler.hpp>
@@ -95,8 +95,8 @@ private:
   class stats_collector : private boost::noncopyable
   {
   private:
-    typedef boost::mutex mutex_type;
-    typedef boost::lock_guard<mutex_type> lock_guard_type;
+    typedef MA_MUTEX                  mutex_type;
+    typedef MA_LOCK_GUARD<mutex_type> lock_guard_type;
 
   public:
     stats_collector();

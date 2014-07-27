@@ -16,11 +16,8 @@
 #include <limits>
 #include <boost/assert.hpp>
 #include <boost/noncopyable.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/locks.hpp>
-#include <boost/thread/once.hpp>
-#include <boost/thread/condition_variable.hpp>
 #include <ma/memory.hpp>
+#include <ma/thread.hpp>
 #include <ma/detail/latch.hpp>
 
 namespace ma {
@@ -55,8 +52,8 @@ private:
 
   static static_data& get_static_data();
 
-  static boost::once_flag static_data_init_flag_;
-  static static_data*     static_data_;
+  static MA_ONCE_FLAG static_data_init_flag_;
+  static static_data* static_data_;
 }; // class sp_singleton
 
 template <typename Value>
@@ -81,8 +78,8 @@ private:
 template <typename Value>
 struct sp_singleton<Value>::static_data : private boost::noncopyable
 {
-  typedef boost::mutex                  mutex_type;
-  typedef boost::lock_guard<mutex_type> lock_guard_type;
+  typedef MA_MUTEX                  mutex_type;
+  typedef MA_LOCK_GUARD<mutex_type> lock_guard_type;
 
   static_data();
     
@@ -129,14 +126,14 @@ template <typename Value>
 typename sp_singleton<Value>::static_data&
 sp_singleton<Value>::get_static_data()
 {
-  boost::call_once(static_data_init_flag_, static_data_factory());
+  MA_CALL_ONCE(static_data_init_flag_, static_data_factory());
   BOOST_ASSERT_MSG(static_data_,
       "Singleton static data wasn't initialized correctly");
   return *static_data_;
 }
 
 template <typename Value>
-boost::once_flag sp_singleton<Value>::static_data_init_flag_ = BOOST_ONCE_INIT;
+MA_ONCE_FLAG sp_singleton<Value>::static_data_init_flag_ MA_ONCE_FLAG_INIT;
 
 template <typename Value>
 typename sp_singleton<Value>::static_data* 

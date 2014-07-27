@@ -19,13 +19,12 @@
 #include <cstddef>
 #include <boost/asio.hpp>
 #include <boost/noncopyable.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/locks.hpp>
 #include <boost/system/error_code.hpp>
 #include <ma/memory.hpp>
 #include <ma/functional.hpp>
 #include <ma/type_traits.hpp>
 #include <ma/bind_handler.hpp>
+#include <ma/thread.hpp>
 #include <ma/detail/handler_ptr.hpp>
 #include <ma/detail/service_base.hpp>
 #include <ma/detail/intrusive_list.hpp>
@@ -173,8 +172,8 @@ private:
   template <typename Handler>
   class handler_wrapper;  
 
-  typedef boost::mutex                      mutex_type;
-  typedef boost::lock_guard<mutex_type>     lock_guard;
+  typedef MA_MUTEX                          mutex_type;
+  typedef MA_LOCK_GUARD<mutex_type>         lock_guard;
   typedef detail::intrusive_list<impl_base> impl_base_list;  
 
   virtual void shutdown_service();

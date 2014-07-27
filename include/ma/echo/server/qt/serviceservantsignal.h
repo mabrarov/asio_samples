@@ -13,9 +13,8 @@
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
 #include <boost/system/error_code.hpp>
-#include <boost/thread/locks.hpp>
-#include <boost/thread/recursive_mutex.hpp>
 #include <QObject>
+#include <ma/thread.hpp>
 #include <ma/echo/server/qt/serviceservantsignal_fwd.h>
 
 namespace ma {
@@ -28,8 +27,8 @@ class ServiceServantSignal : public QObject
   Q_OBJECT //-V524
 
 private:
-  typedef boost::recursive_mutex mutex_type;
-  typedef boost::lock_guard<mutex_type> lock_guard;
+  typedef MA_RECURSIVE_MUTEX        mutex_type;
+  typedef MA_LOCK_GUARD<mutex_type> lock_guard;
 
 public:
   ServiceServantSignal()

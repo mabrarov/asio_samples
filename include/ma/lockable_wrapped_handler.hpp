@@ -13,8 +13,8 @@
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
 #include <cstddef>
-#include <boost/thread/locks.hpp>
 #include <ma/config.hpp>
+#include <ma/thread.hpp>
 #include <ma/handler_alloc_helpers.hpp>
 #include <ma/handler_invoke_helpers.hpp>
 #include <ma/handler_cont_helpers.hpp>
@@ -117,7 +117,7 @@ public:
   friend void asio_handler_invoke(Function&& function, this_type* context)
   {
     // Acquire lock    
-    boost::lock_guard<Lockable> lock_guard(*context->lockable_);
+    MA_LOCK_GUARD<Lockable> lock_guard(*context->lockable_);
     // Forward to asio_handler_invoke provided by source handler.
     ma_handler_invoke_helpers::invoke(
         std::forward<Function>(function), context->handler_);
@@ -129,7 +129,7 @@ public:
   friend void asio_handler_invoke(Function& function, this_type* context)
   {
     // Acquire lock    
-    boost::lock_guard<Lockable> lock_guard(*context->lockable_);
+    MA_LOCK_GUARD<Lockable> lock_guard(*context->lockable_);
     // Forward to asio_handler_invoke provided by source handler.
     ma_handler_invoke_helpers::invoke(function, context->handler_);
   }
@@ -138,7 +138,7 @@ public:
   friend void asio_handler_invoke(const Function& function, this_type* context)
   {
     // Acquire lock    
-    boost::lock_guard<Lockable> lock_guard(*context->lockable_);
+    MA_LOCK_GUARD<Lockable> lock_guard(*context->lockable_);
     // Forward to asio_handler_invoke provided by source handler.
     ma_handler_invoke_helpers::invoke(function, context->handler_);
   }

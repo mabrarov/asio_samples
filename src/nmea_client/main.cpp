@@ -17,11 +17,11 @@
 #include <iostream>
 #include <exception>
 #include <boost/asio.hpp>
-#include <boost/thread.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/system/error_code.hpp>
 #include <ma/memory.hpp>
 #include <ma/functional.hpp>
+#include <ma/thread.hpp>
 #include <ma/codecvt_cast.hpp>
 #include <ma/handler_allocator.hpp>
 #include <ma/custom_alloc_handler.hpp>
@@ -85,7 +85,7 @@ int main(int argc, char* argv[])
       return EXIT_FAILURE;
     }
 
-    std::size_t cpu_count = boost::thread::hardware_concurrency();
+    std::size_t cpu_count = MA_THREAD::hardware_concurrency();
     std::size_t concurrent_count = 2 > cpu_count ? 2 : cpu_count;
     std::size_t thread_count = 2;
 

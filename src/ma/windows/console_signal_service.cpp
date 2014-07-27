@@ -47,8 +47,8 @@ protected:
 private:
   struct factory;
 
-  typedef boost::mutex                  mutex_type;
-  typedef boost::lock_guard<mutex_type> lock_guard;
+  typedef MA_MUTEX                  mutex_type;
+  typedef MA_LOCK_GUARD<mutex_type> lock_guard;
   typedef detail::intrusive_list<console_signal_service_base> subscriber_list;
 
   static system_service_ptr get_nullable_instance();

@@ -21,12 +21,12 @@
 #include <boost/optional.hpp>
 #include <boost/assert.hpp>
 #include <boost/noncopyable.hpp>
-#include <boost/thread/thread.hpp>
-#include <boost/thread/barrier.hpp>
 #include <boost/random.hpp>
 #include <boost/date_time/posix_time/ptime.hpp>
 #include <ma/memory.hpp>
 #include <ma/functional.hpp>
+#include <ma/thread.hpp>
+#include <ma/thread_group.hpp>
 #include <ma/limited_int.hpp>
 #include <ma/shared_ptr_factory.hpp>
 #include <ma/detail/sp_singleton.hpp>
@@ -244,7 +244,7 @@ void thread_func2(const foo_weak_ptr& weak_foo,
 void run_test()
 {
   {
-    boost::thread t(MA_BIND(thread_func, foo::get_instance()));
+    MA_THREAD t(MA_BIND(thread_func, foo::get_instance()));
     t.join();
     const foo_ptr foo = foo::get_instance();
     BOOST_ASSERT_MSG(1 == foo->data(), "Instance has to be different");
@@ -254,10 +254,10 @@ void run_test()
     ma::detail::latch latch1(1);
     ma::detail::latch latch2(1);
     ma::detail::latch latch3(1);
-    MA_SCOPED_PTR<boost::thread> t;
+    MA_SCOPED_PTR<MA_THREAD> t;
     {
       const foo_ptr thread_foo = foo::get_instance();
-      t.reset(new boost::thread(MA_BIND(thread_func2, foo_weak_ptr(thread_foo),
+      t.reset(new MA_THREAD(MA_BIND(thread_func2, foo_weak_ptr(thread_foo),
           MA_REF(latch1), MA_REF(latch2), MA_REF(latch3))));
       latch1.wait();
     }
@@ -369,7 +369,7 @@ void run_test()
   {
     destroy_start_latch.count_up();
     destroy_complete_latch.count_up();
-    boost::thread t(thread_func);
+    MA_THREAD t(thread_func);
     destroy_start_latch.wait();
     {
       const foo_ptr f = foo::get_nullable_instance();
@@ -488,16 +488,16 @@ void work_func(const random_generator_ptr& rng)
   }
 }
 
-void thread_func(boost::barrier& work_barrier, const random_generator_ptr& rng)
+void thread_func(MA_BARRIER& work_barrier, const random_generator_ptr& rng)
 {
-  work_barrier.wait();
+  ma::count_down_and_wait(work_barrier); 
   work_func(rng);
 }
 
 void run_test()
 {
   const std::size_t thread_count = static_cast<std::size_t>(
-      std::max<unsigned>(boost::thread::hardware_concurrency(), 16));
+      std::max<unsigned>(MA_THREAD::hardware_concurrency(), 16));
 
   std::vector<random_generator_ptr> rngs;
   for (std::size_t i = 0; i != thread_count; ++i)
@@ -507,8 +507,8 @@ void run_test()
 
   for (std::size_t n = 0; n != iteration_count; ++n)
   {
-    boost::barrier work_barrier(static_cast<unsigned>(thread_count));
-    boost::thread_group threads;
+    MA_BARRIER work_barrier(static_cast<unsigned>(thread_count));
+    ma::thread_group threads;
     for (std::size_t i = 0; i != thread_count - 1; ++i)
     {
       threads.create_thread(
