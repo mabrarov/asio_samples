@@ -167,6 +167,15 @@
     <ClInclude Include="..\..\..\..\include\ma\detail\latch.hpp">
       <Filter>Header Files\ma\detail</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\include\ma\functional.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\ma\memory.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\ma\thread_group.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\src\echo_server\main.cpp">

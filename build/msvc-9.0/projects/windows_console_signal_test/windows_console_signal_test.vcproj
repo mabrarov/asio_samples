@@ -380,6 +380,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\..\..\include\ma\functional.hpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\..\..\include\ma\handler_alloc_helpers.hpp"
 					>
 				</File>
@@ -393,6 +397,10 @@
 				</File>
 				<File
 					RelativePath="..\..\..\..\include\ma\handler_invoke_helpers.hpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\include\ma\memory.hpp"
 					>
 				</File>
 				<File

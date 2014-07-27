@@ -372,6 +372,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\..\..\include\ma\functional.hpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\..\..\include\ma\handler_alloc_helpers.hpp"
 					>
 				</File>
@@ -400,6 +404,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\..\..\include\ma\memory.hpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\..\..\include\ma\shared_ptr_factory.hpp"
 					>
 				</File>
@@ -413,6 +421,10 @@
 				</File>
 				<File
 					RelativePath="..\..\..\..\include\ma\strand_wrapped_handler.hpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\include\ma\thread_group.hpp"
 					>
 				</File>
 				<File
