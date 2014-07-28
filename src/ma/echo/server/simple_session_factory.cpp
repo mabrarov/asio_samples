@@ -6,11 +6,11 @@
 //
 
 #include <new>
-#include <ma/memory.hpp>
-#include <ma/functional.hpp>
 #include <ma/shared_ptr_factory.hpp>
 #include <ma/echo/server/error.hpp>
 #include <ma/echo/server/simple_session_factory.hpp>
+#include <ma/detail/memory.hpp>
+#include <ma/detail/functional.hpp>
 
 namespace ma {
 namespace echo {
@@ -28,7 +28,7 @@ public:
       const session_config& config)
   {
     typedef shared_ptr_factory_helper<this_type> helper;
-    return MA_MAKE_SHARED<helper>(MA_REF(io_service), config);
+    return MA_MAKE_SHARED<helper>(detail::ref(io_service), config);
   }
 
 protected:

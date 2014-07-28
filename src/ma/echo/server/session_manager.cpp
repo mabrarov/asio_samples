@@ -8,8 +8,6 @@
 #include <new>
 #include <boost/assert.hpp>
 #include <ma/config.hpp>
-#include <ma/memory.hpp>
-#include <ma/functional.hpp>
 #include <ma/shared_ptr_factory.hpp>
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/strand_wrapped_handler.hpp>
@@ -17,6 +15,8 @@
 #include <ma/echo/server/session.hpp>
 #include <ma/echo/server/session_factory.hpp>
 #include <ma/echo/server/session_manager.hpp>
+#include <ma/detail/memory.hpp>
+#include <ma/detail/functional.hpp>
 
 namespace ma {
 namespace echo {
@@ -511,7 +511,7 @@ session_manager_ptr session_manager::create(
 {
   typedef shared_ptr_factory_helper<this_type> helper;
   return MA_MAKE_SHARED<helper>(
-      MA_REF(io_service), MA_REF(managed_session_factory), config);
+      detail::ref(io_service), detail::ref(managed_session_factory), config);
 }
 
 session_manager::session_manager(boost::asio::io_service& io_service,
@@ -1180,7 +1180,7 @@ void session_manager::schedule_active_session_stop()
 {
   io_service_.post(MA_STRAND_WRAP(strand_, ma::make_custom_alloc_handler(
       session_stop_allocator_,
-      MA_BIND(&this_type::handle_scheduled_active_session_stop, 
+      detail::bind(&this_type::handle_scheduled_active_session_stop,
           shared_from_this()))));
   ++pending_operations_;
 }
@@ -1247,7 +1247,7 @@ void session_manager::start_accept_session(const session_wrapper_ptr& session)
 
   acceptor_.async_accept(session->socket(), session->remote_endpoint(),
       MA_STRAND_WRAP(strand_, make_custom_alloc_handler(accept_allocator_,
-          MA_BIND(&this_type::handle_accept, shared_from_this(),
+          detail::bind(&this_type::handle_accept, shared_from_this(),
               session, MA_PLACEHOLDER_1))));
 
 #endif
@@ -1301,7 +1301,7 @@ void session_manager::start_session_start(const session_wrapper_ptr& session)
 
 #else
 
-  session->async_start(MA_BIND(&this_type::dispatch_handle_session_start,
+  session->async_start(detail::bind(&this_type::dispatch_handle_session_start,
       session_manager_weak_ptr(shared_from_this()), session, MA_PLACEHOLDER_1));
 
 #endif
@@ -1354,7 +1354,7 @@ void session_manager::start_session_stop(const session_wrapper_ptr& session)
 
 #else
 
-  session->async_stop(MA_BIND(&this_type::dispatch_handle_session_stop,
+  session->async_stop(detail::bind(&this_type::dispatch_handle_session_stop,
       session_manager_weak_ptr(shared_from_this()), session, MA_PLACEHOLDER_1));
 
 #endif
@@ -1407,7 +1407,7 @@ void session_manager::start_session_wait(const session_wrapper_ptr& session)
 
 #else
 
-  session->async_wait(MA_BIND(&this_type::dispatch_handle_session_wait,
+  session->async_wait(detail::bind(&this_type::dispatch_handle_session_wait,
       session_manager_weak_ptr(shared_from_this()), session, MA_PLACEHOLDER_1));
 
 #endif
@@ -1550,7 +1550,7 @@ void session_manager::dispatch_handle_session_start(
 #else
 
     this_ptr->strand_.dispatch(make_custom_alloc_handler(
-        session->start_allocator(), MA_BIND(
+        session->start_allocator(), detail::bind(
             &session_manager::handle_session_start, this_ptr, session,
                 error)));
 
@@ -1575,7 +1575,7 @@ void session_manager::dispatch_handle_session_wait(
 #else
 
     this_ptr->strand_.dispatch(make_custom_alloc_handler(
-        session->wait_allocator(), MA_BIND(
+        session->wait_allocator(), detail::bind(
             &session_manager::handle_session_wait, this_ptr, session, error)));
 
 #endif
@@ -1599,7 +1599,7 @@ void session_manager::dispatch_handle_session_stop(
 #else
 
     this_ptr->strand_.dispatch(make_custom_alloc_handler(
-        session->stop_allocator(), MA_BIND(
+        session->stop_allocator(), detail::bind(
             &session_manager::handle_session_stop, this_ptr, session, error)));
 
 #endif
@@ -1629,7 +1629,7 @@ void session_manager::open(protocol_type::acceptor& acceptor,
     typedef protocol_type::acceptor guarded_type;
 
     acceptor_guard(guarded_type& guarded)
-      : guarded_(MA_ADDRESS_OF(guarded))
+      : guarded_(detail::addressof(guarded))
     {
     }
 

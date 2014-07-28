@@ -16,8 +16,8 @@
 #include <limits>
 #include <boost/assert.hpp>
 #include <boost/noncopyable.hpp>
-#include <ma/memory.hpp>
-#include <ma/thread.hpp>
+#include <ma/detail/memory.hpp>
+#include <ma/detail/thread.hpp>
 #include <ma/detail/latch.hpp>
 
 namespace ma {
@@ -31,7 +31,7 @@ private:
 
 public:
   typedef Value value_type;
-  typedef MA_SHARED_PTR<value_type> value_shared_ptr;
+  typedef detail::shared_ptr<value_type> value_shared_ptr;
 
   class instance_guard;
   
@@ -41,8 +41,8 @@ public:
   static value_shared_ptr get_instance(Factory);
 
 private:
-  typedef MA_WEAK_PTR<value_type> value_weak_ptr;
-  typedef MA_SHARED_PTR<latch>    latch_ptr;
+  typedef detail::weak_ptr<value_type> value_weak_ptr;
+  typedef detail::shared_ptr<latch>    latch_ptr;
 
   struct static_data;
   struct static_data_factory;
@@ -52,8 +52,8 @@ private:
 
   static static_data& get_static_data();
 
-  static MA_ONCE_FLAG static_data_init_flag_;
-  static static_data* static_data_;
+  static detail::once_flag static_data_init_flag_;
+  static static_data*      static_data_;
 }; // class sp_singleton
 
 template <typename Value>
@@ -78,8 +78,8 @@ private:
 template <typename Value>
 struct sp_singleton<Value>::static_data : private boost::noncopyable
 {
-  typedef MA_MUTEX                  mutex_type;
-  typedef MA_LOCK_GUARD<mutex_type> lock_guard_type;
+  typedef detail::mutex                  mutex_type;
+  typedef detail::lock_guard<mutex_type> lock_guard_type;
 
   static_data();
     

@@ -16,10 +16,10 @@
 #include <boost/system/error_code.hpp>
 #include <boost/system/system_error.hpp>
 #include <ma/config.hpp>
-#include <ma/memory.hpp>
 #include <ma/shared_ptr_factory.hpp>
-#include <ma/detail/sp_singleton.hpp>
 #include <ma/windows/console_signal_service.hpp>
+#include <ma/detail/memory.hpp>
+#include <ma/detail/sp_singleton.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)
 #include <utility>

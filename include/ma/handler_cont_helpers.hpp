@@ -14,7 +14,7 @@
 
 #include <boost/version.hpp>
 #include <boost/asio.hpp>
-#include <ma/memory.hpp>
+#include <ma/detail/memory.hpp>
 
 namespace ma_handler_cont_helpers {
 
@@ -24,7 +24,7 @@ template <typename Context>
 inline bool is_continuation(Context& context)
 {
   using namespace boost::asio;
-  return asio_handler_is_continuation(MA_ADDRESS_OF(context));
+  return asio_handler_is_continuation(ma::detail::addressof(context));
 }
 
 #else  // BOOST_VERSION >= 105400

@@ -15,10 +15,10 @@
 #include <cstddef>
 #include <boost/asio.hpp>
 #include <boost/noncopyable.hpp>
-#include <ma/memory.hpp>
 #include <ma/sp_intrusive_list.hpp>
 #include <ma/echo/server/session.hpp>
 #include <ma/echo/server/session_factory.hpp>
+#include <ma/detail/memory.hpp>
 
 namespace ma {
 namespace echo {

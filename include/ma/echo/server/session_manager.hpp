@@ -17,9 +17,6 @@
 #include <boost/optional.hpp>
 #include <boost/noncopyable.hpp>
 #include <ma/config.hpp>
-#include <ma/memory.hpp>
-#include <ma/functional.hpp>
-#include <ma/thread.hpp>
 #include <ma/handler_storage.hpp>
 #include <ma/handler_allocator.hpp>
 #include <ma/bind_handler.hpp>
@@ -31,6 +28,9 @@
 #include <ma/echo/server/session_manager_config.hpp>
 #include <ma/echo/server/session_manager_stats.hpp>
 #include <ma/echo/server/session_manager_fwd.hpp>
+#include <ma/detail/memory.hpp>
+#include <ma/detail/functional.hpp>
+#include <ma/detail/thread.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)
 #include <utility>
@@ -38,13 +38,12 @@
 #endif // defined(MA_HAS_RVALUE_REFS)
 
 namespace ma {
-
 namespace echo {
 namespace server {
 
 class session_manager
   : private boost::noncopyable
-  , public MA_ENABLE_SHARED_FROM_THIS<session_manager>
+  , public  detail::enable_shared_from_this<session_manager>
 {
 private:
   typedef session_manager this_type;
@@ -95,8 +94,8 @@ private:
   class stats_collector : private boost::noncopyable
   {
   private:
-    typedef MA_MUTEX                  mutex_type;
-    typedef MA_LOCK_GUARD<mutex_type> lock_guard_type;
+    typedef detail::mutex                  mutex_type;
+    typedef detail::lock_guard<mutex_type> lock_guard_type;
 
   public:
     stats_collector();
@@ -119,7 +118,7 @@ private:
   }; // class session_wrapper_base
 
   class session_wrapper;
-  typedef MA_SHARED_PTR<session_wrapper> session_wrapper_ptr;
+  typedef detail::shared_ptr<session_wrapper> session_wrapper_ptr;
   typedef sp_intrusive_list<session_wrapper_base> session_list;
 
 #if defined(MA_HAS_RVALUE_REFS) \
@@ -348,7 +347,7 @@ void session_manager::async_start(Handler&& handler)
 
   strand_.post(make_explicit_context_alloc_handler(
       std::forward<Handler>(handler),
-      MA_BIND(func, shared_from_this(), MA_PLACEHOLDER_1)));
+      detail::bind(func, shared_from_this(), detail::placeholders::_1)));
 
 #endif // defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
@@ -393,7 +392,7 @@ void session_manager::async_stop(Handler&& handler)
 
   strand_.post(make_explicit_context_alloc_handler(
       std::forward<Handler>(handler),
-      MA_BIND(func, shared_from_this(), MA_PLACEHOLDER_1)));
+      detail::bind(func, shared_from_this(), detail::placeholders::_1)));
 
 #endif // defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
@@ -438,7 +437,7 @@ void session_manager::async_wait(Handler&& handler)
 
   strand_.post(make_explicit_context_alloc_handler(
       std::forward<Handler>(handler),
-      MA_BIND(func, shared_from_this(), MA_PLACEHOLDER_1)));
+      detail::bind(func, shared_from_this(), detail::placeholders::_1)));
 
 #endif // defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
@@ -456,7 +455,7 @@ void session_manager::async_start(const Handler& handler)
   func_type func = &this_type::start_extern_start<handler_type>;
 
   strand_.post(make_explicit_context_alloc_handler(handler,
-      MA_BIND(func, shared_from_this(), MA_PLACEHOLDER_1)));
+      detail::bind(func, shared_from_this(), detail::placeholders::_1)));
 }
 
 template <typename Handler>
@@ -468,7 +467,7 @@ void session_manager::async_stop(const Handler& handler)
   func_type func = &this_type::start_extern_stop<handler_type>;
 
   strand_.post(make_explicit_context_alloc_handler(handler,
-      MA_BIND(func, shared_from_this(), MA_PLACEHOLDER_1)));
+      detail::bind(func, shared_from_this(), detail::placeholders::_1)));
 }
 
 template <typename Handler>
@@ -480,7 +479,7 @@ void session_manager::async_wait(const Handler& handler)
   func_type func = &this_type::start_extern_wait<handler_type>;
 
   strand_.post(make_explicit_context_alloc_handler(handler,
-      MA_BIND(func, shared_from_this(), MA_PLACEHOLDER_1)));
+      detail::bind(func, shared_from_this(), detail::placeholders::_1)));
 }
 
 #endif // defined(MA_HAS_RVALUE_REFS)

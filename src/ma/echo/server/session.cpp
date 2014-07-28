@@ -7,13 +7,13 @@
 
 #include <boost/assert.hpp>
 #include <ma/config.hpp>
-#include <ma/memory.hpp>
-#include <ma/functional.hpp>
 #include <ma/shared_ptr_factory.hpp>
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/strand_wrapped_handler.hpp>
 #include <ma/echo/server/error.hpp>
 #include <ma/echo/server/session.hpp>
+#include <ma/detail/memory.hpp>
+#include <ma/detail/functional.hpp>
 
 namespace ma {
 namespace echo {
@@ -125,7 +125,7 @@ session_ptr session::create(boost::asio::io_service& io_service,
     const session_config& config)
 {
   typedef shared_ptr_factory_helper<this_type> helper;
-  return MA_MAKE_SHARED<helper>(MA_REF(io_service), config);
+  return MA_MAKE_SHARED<helper>(detail::ref(io_service), config);
 }
 
 session::session(boost::asio::io_service& io_service,
@@ -943,7 +943,7 @@ void session::start_socket_read(
 #else
 
   socket_.async_read_some(buffers, MA_STRAND_WRAP(strand_,
-      make_custom_alloc_handler(read_allocator_, MA_BIND(
+      make_custom_alloc_handler(read_allocator_, detail::bind(
           &this_type::handle_read, shared_from_this(), 
           MA_PLACEHOLDER_1, MA_PLACEHOLDER_2))));
 
@@ -1000,7 +1000,7 @@ void session::start_socket_write(
 #else
 
   socket_.async_write_some(buffers, MA_STRAND_WRAP(strand_,
-      make_custom_alloc_handler(write_allocator_, MA_BIND(
+      make_custom_alloc_handler(write_allocator_, detail::bind(
           &this_type::handle_write, shared_from_this(), 
           MA_PLACEHOLDER_1, MA_PLACEHOLDER_2))));
 
@@ -1056,7 +1056,7 @@ void session::start_timer_wait()
 #else
 
   timer_.async_wait(MA_STRAND_WRAP(strand_,
-      make_custom_alloc_handler(timer_allocator_, MA_BIND(
+      make_custom_alloc_handler(timer_allocator_, detail::bind(
           &this_type::handle_timer, shared_from_this(), MA_PLACEHOLDER_1))));
 
 #endif

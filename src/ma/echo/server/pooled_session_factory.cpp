@@ -7,11 +7,11 @@
 
 #include <new>
 #include <algorithm>
-#include <ma/memory.hpp>
-#include <ma/functional.hpp>
 #include <ma/shared_ptr_factory.hpp>
 #include <ma/echo/server/error.hpp>
 #include <ma/echo/server/pooled_session_factory.hpp>
+#include <ma/detail/memory.hpp>
+#include <ma/detail/functional.hpp>
 
 namespace ma {
 namespace echo {
@@ -29,7 +29,7 @@ public:
       const session_config& config, const pool_link& back_link)
   {
     typedef shared_ptr_factory_helper<this_type> helper;
-    return MA_MAKE_SHARED<helper>(MA_REF(io_service), config, back_link);
+    return MA_MAKE_SHARED<helper>(detail::ref(io_service), config, back_link);
   }
 
   const pool_link& back_link() const
@@ -148,7 +148,7 @@ pooled_session_factory::pool pooled_session_factory::create_pool(
   for (io_service_vector::const_iterator i = io_services.begin(),
       end = io_services.end(); i != end; ++i)
   {
-    result.push_back(MA_MAKE_SHARED<pool_item>(MA_REF(**i), max_recycled));
+    result.push_back(MA_MAKE_SHARED<pool_item>(detail::ref(**i), max_recycled));
   }
   return result;
 }

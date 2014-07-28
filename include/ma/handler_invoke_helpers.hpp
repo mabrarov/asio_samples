@@ -14,7 +14,7 @@
 
 #include <boost/asio.hpp>
 #include <ma/config.hpp>
-#include <ma/memory.hpp>
+#include <ma/detail/memory.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)
 #include <utility>
@@ -33,7 +33,7 @@ inline void invoke(Function&& function, Context& context)
 {
   using namespace boost::asio;
   asio_handler_invoke(
-      std::forward<Function>(function), MA_ADDRESS_OF(context));
+      std::forward<Function>(function), ma::detail::addressof(context));
 }
 
 #else // defined(MA_HAS_RVALUE_REFS)
@@ -42,14 +42,14 @@ template <typename Function, typename Context>
 inline void invoke(Function& function, Context& context)
 {
   using namespace boost::asio;
-  asio_handler_invoke(function, MA_ADDRESS_OF(context));
+  asio_handler_invoke(function, ma::detail::addressof(context));
 }
 
 template <typename Function, typename Context>
 inline void invoke(const Function& function, Context& context)
 {
   using namespace boost::asio;
-  asio_handler_invoke(function, MA_ADDRESS_OF(context));
+  asio_handler_invoke(function, ma::detail::addressof(context));
 }
 
 #endif // defined(MA_HAS_RVALUE_REFS)

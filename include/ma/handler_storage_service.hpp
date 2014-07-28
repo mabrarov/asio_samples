@@ -19,10 +19,10 @@
 #include <boost/noncopyable.hpp>
 #include <boost/throw_exception.hpp>
 #include <ma/config.hpp>
-#include <ma/functional.hpp>
 #include <ma/type_traits.hpp>
 #include <ma/bind_handler.hpp>
-#include <ma/thread.hpp>
+#include <ma/detail/functional.hpp>
+#include <ma/detail/thread.hpp>
 #include <ma/detail/handler_ptr.hpp>
 #include <ma/detail/service_base.hpp>
 #include <ma/detail/intrusive_list.hpp>
@@ -923,7 +923,7 @@ void handler_storage_service::store(implementation_type& impl, Handler handler)
   // Create wrapped handler at allocated memory and
   // move ownership of allocated memory to ptr
   detail::handler_ptr<alloc_traits> ptr(raw_ptr,
-      MA_REF(this->get_io_service()), MA_RVALUE_CAST(handler));
+      detail::ref(this->get_io_service()), MA_RVALUE_CAST(handler));
   // Copy current handler
   stored_base* old_handler = impl.handler_;
   // Move ownership of already created wrapped handler

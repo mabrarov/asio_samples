@@ -15,10 +15,10 @@
 #include <cstddef>
 #include <boost/asio.hpp>
 #include <ma/config.hpp>
-#include <ma/memory.hpp>
 #include <ma/handler_alloc_helpers.hpp>
 #include <ma/handler_cont_helpers.hpp>
 #include <ma/context_wrapped_handler.hpp>
+#include <ma/detail/memory.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)
 #include <utility>
@@ -74,7 +74,7 @@ public:
 
   template <typename H>
   strand_wrapped_handler(boost::asio::io_service::strand& strand, H&& handler)
-    : strand_(MA_ADDRESS_OF(strand))
+    : strand_(detail::addressof(strand))
     , handler_(std::forward<H>(handler))
   {
   }
@@ -103,7 +103,7 @@ public:
 
   strand_wrapped_handler(boost::asio::io_service::strand& strand,
       const Handler& handler)
-    : strand_(MA_ADDRESS_OF(strand))
+    : strand_(detail::addressof(strand))
     , handler_(handler)
   {
   }

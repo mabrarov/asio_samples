@@ -20,11 +20,11 @@
 #include <boost/asio.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/system/error_code.hpp>
-#include <ma/memory.hpp>
-#include <ma/functional.hpp>
 #include <ma/type_traits.hpp>
 #include <ma/bind_handler.hpp>
-#include <ma/thread.hpp>
+#include <ma/detail/memory.hpp>
+#include <ma/detail/functional.hpp>
+#include <ma/detail/thread.hpp>
 #include <ma/detail/handler_ptr.hpp>
 #include <ma/detail/service_base.hpp>
 #include <ma/detail/intrusive_list.hpp>
@@ -261,7 +261,7 @@ void console_signal_service::async_wait(
 
   detail::raw_handler_ptr<alloc_traits> raw_ptr(handler);
   detail::handler_ptr<alloc_traits> ptr(raw_ptr,
-      MA_REF(this->get_io_service()), MA_RVALUE_CAST(handler));
+      detail::ref(this->get_io_service()), MA_RVALUE_CAST(handler));
 
   // Add handler to the list of waiting handlers.
   impl.handlers_.push_front(*ptr.get());
