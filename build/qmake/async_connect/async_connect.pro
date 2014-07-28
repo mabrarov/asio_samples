@@ -29,6 +29,7 @@ HEADERS  += ../../../include/ma/detail/binder.hpp \
             ../../../include/ma/memory.hpp \
             ../../../include/ma/steady_deadline_timer.hpp \
             ../../../include/ma/strand_wrapped_handler.hpp \
+            ../../../include/ma/thread.hpp \
             ../../../include/ma/thread_group.hpp \
             ../../../include/ma/type_traits.hpp
 

@@ -31,6 +31,7 @@ HEADERS  += ../../../include/ma/detail/binder.hpp \
             ../../../include/ma/handler_cont_helpers.hpp \
             ../../../include/ma/handler_invoke_helpers.hpp \
             ../../../include/ma/memory.hpp \
+            ../../../include/ma/thread.hpp \
             ../../../include/ma/type_traits.hpp
 
 SOURCES  += ../../../src/ma/windows/console_signal_service.cpp \
