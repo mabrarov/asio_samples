@@ -126,7 +126,7 @@ template <typename Value>
 typename sp_singleton<Value>::static_data&
 sp_singleton<Value>::get_static_data()
 {
-  MA_CALL_ONCE(static_data_init_flag_, static_data_factory());
+  detail::call_once(static_data_init_flag_, static_data_factory());
   BOOST_ASSERT_MSG(static_data_,
       "Singleton static data wasn't initialized correctly");
   return *static_data_;
@@ -135,12 +135,12 @@ sp_singleton<Value>::get_static_data()
 #if defined(MA_USE_CXX11_THREAD)
 
 template <typename Value>
-MA_ONCE_FLAG sp_singleton<Value>::static_data_init_flag_;
+detail::once_flag sp_singleton<Value>::static_data_init_flag_;
 
 #else  // defined(MA_USE_CXX11_THREAD)
 
 template <typename Value>
-MA_ONCE_FLAG sp_singleton<Value>::static_data_init_flag_ = BOOST_ONCE_INIT;
+detail::once_flag sp_singleton<Value>::static_data_init_flag_ = BOOST_ONCE_INIT;
 
 #endif // defined(MA_USE_CXX11_THREAD)
 
@@ -150,7 +150,7 @@ sp_singleton<Value>::static_data_ = 0;
 
 template <typename Value>
 sp_singleton<Value>::static_data::static_data()
-  : instance_latch(MA_MAKE_SHARED<latch>())
+  : instance_latch(detail::make_shared<latch>())
 {
 }
 

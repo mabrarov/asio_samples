@@ -47,7 +47,7 @@ public:
 
 protected:
   class system_service;
-  typedef MA_SHARED_PTR<system_service> system_service_ptr;
+  typedef detail::shared_ptr<system_service> system_service_ptr;
 
   console_signal_service_base()
   {
@@ -172,8 +172,8 @@ private:
   template <typename Handler>
   class handler_wrapper;  
 
-  typedef MA_MUTEX                          mutex_type;
-  typedef MA_LOCK_GUARD<mutex_type>         lock_guard;
+  typedef detail::mutex                     mutex_type;
+  typedef detail::lock_guard<mutex_type>    lock_guard;
   typedef detail::intrusive_list<impl_base> impl_base_list;  
 
   virtual void shutdown_service();

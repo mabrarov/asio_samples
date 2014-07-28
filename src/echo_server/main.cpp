@@ -317,7 +317,7 @@ private:
     }
     catch (...)
     {
-      MA_TUPLE_GET<0>(handler)();
+      ma::detail::get<0>(handler)();
     }
   }
 

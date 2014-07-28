@@ -52,7 +52,7 @@ private:
   typedef sp_intrusive_list<session_wrapper_base> session_list;
 
   class session_wrapper;
-  typedef MA_SHARED_PTR<session_wrapper> session_wrapper_ptr;
+  typedef detail::shared_ptr<session_wrapper> session_wrapper_ptr;
 
   const std::size_t        max_recycled_;
   boost::asio::io_service& io_service_;

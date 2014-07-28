@@ -80,7 +80,7 @@ private:
       const ctrl_function_type& ctrl_function)
   {
     alerter.async_wait(ma::detail::bind(&handle_signal,
-        MA_PLACEHOLDER_1, ma::detail::ref(alerter), ctrl_function));
+        ma::detail::placeholders::_1, ma::detail::ref(alerter), ctrl_function));
   }
 
   signal_alerter signal_alerter_;
@@ -108,7 +108,7 @@ public:
   }
   
 private:
-  MA_THREAD work_thread_;
+  detail::thread work_thread_;
 }; // class console_close_guard::implementation
 
 console_close_guard::console_close_guard(

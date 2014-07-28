@@ -117,8 +117,8 @@ private:
   template <typename Handler, typename Target>
   class handler_wrapper<Handler, void, Target>;
 
-  typedef MA_MUTEX                          mutex_type;
-  typedef MA_LOCK_GUARD<mutex_type>         lock_guard;
+  typedef detail::mutex                     mutex_type;
+  typedef detail::lock_guard<mutex_type>    lock_guard;
   typedef detail::intrusive_list<impl_base> impl_base_list;
 
   virtual void shutdown_service();

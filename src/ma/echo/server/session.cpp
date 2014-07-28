@@ -125,7 +125,7 @@ session_ptr session::create(boost::asio::io_service& io_service,
     const session_config& config)
 {
   typedef shared_ptr_factory_helper<this_type> helper;
-  return MA_MAKE_SHARED<helper>(detail::ref(io_service), config);
+  return detail::make_shared<helper>(detail::ref(io_service), config);
 }
 
 session::session(boost::asio::io_service& io_service,
@@ -945,7 +945,7 @@ void session::start_socket_read(
   socket_.async_read_some(buffers, MA_STRAND_WRAP(strand_,
       make_custom_alloc_handler(read_allocator_, detail::bind(
           &this_type::handle_read, shared_from_this(), 
-          MA_PLACEHOLDER_1, MA_PLACEHOLDER_2))));
+          detail::placeholders::_1, detail::placeholders::_2))));
 
 #endif
 
@@ -1002,7 +1002,7 @@ void session::start_socket_write(
   socket_.async_write_some(buffers, MA_STRAND_WRAP(strand_,
       make_custom_alloc_handler(write_allocator_, detail::bind(
           &this_type::handle_write, shared_from_this(), 
-          MA_PLACEHOLDER_1, MA_PLACEHOLDER_2))));
+          detail::placeholders::_1, detail::placeholders::_2))));
 
 #endif
 
@@ -1057,7 +1057,8 @@ void session::start_timer_wait()
 
   timer_.async_wait(MA_STRAND_WRAP(strand_,
       make_custom_alloc_handler(timer_allocator_, detail::bind(
-          &this_type::handle_timer, shared_from_this(), MA_PLACEHOLDER_1))));
+          &this_type::handle_timer, shared_from_this(), 
+          detail::placeholders::_1))));
 
 #endif
 
