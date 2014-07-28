@@ -130,5 +130,8 @@
     <ClInclude Include="..\..\..\..\include\ma\thread_group.hpp">
       <Filter>Header Files\ma</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\include\ma\thread.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
