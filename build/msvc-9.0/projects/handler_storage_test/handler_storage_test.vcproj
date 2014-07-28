@@ -420,6 +420,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\..\..\include\ma\thread.hpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\..\..\include\ma\thread_group.hpp"
 					>
 				</File>
