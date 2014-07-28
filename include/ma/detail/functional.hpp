@@ -5,8 +5,8 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef MA_FUNCTIONAL_HPP
-#define MA_FUNCTIONAL_HPP
+#ifndef MA_DETAIL_FUNCTIONAL_HPP
+#define MA_DETAIL_FUNCTIONAL_HPP
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1020)
 #pragma once
@@ -18,24 +18,47 @@
 
 #include <functional>
 
-#define MA_BIND          ::std::bind
-#define MA_FUNCTION      ::std::function
-#define MA_REF           ::std::ref
-#define MA_PLACEHOLDER_1 ::std::placeholders::_1
-#define MA_PLACEHOLDER_2 ::std::placeholders::_2
-
 #else  // defined(MA_USE_CXX11_STDLIB_MEMORY)
 
 #include <boost/ref.hpp>
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 
-#define MA_BIND          ::boost::bind
-#define MA_FUNCTION      ::boost::function
-#define MA_REF           ::boost::ref
-#define MA_PLACEHOLDER_1 _1
-#define MA_PLACEHOLDER_2 _2
-
 #endif // defined(MA_USE_CXX11_STDLIB_MEMORY)
 
-#endif // MA_FUNCTIONAL_HPP
+namespace ma {
+namespace detail {
+
+#if defined(MA_USE_CXX11_STDLIB_FUNCTIONAL)
+
+using std::bind;
+using std::function;
+using std::ref;
+namespace placeholders = std::placeholders;
+
+#else  // defined(MA_USE_CXX11_STDLIB_FUNCTIONAL)
+
+using boost::bind;
+using boost::function;
+using boost::ref;
+
+namespace placeholders {
+
+using _1;
+using _2;
+using _3;
+using _4;
+using _5;
+using _6;
+using _7;
+using _8;
+using _9;
+
+} // namespace placeholders
+
+#endif // defined(MA_USE_CXX11_STDLIB_FUNCTIONAL)
+
+} // namespace detail
+} // namespace ma
+
+#endif // MA_DETAIL_FUNCTIONAL_HPP

@@ -17,7 +17,7 @@
 #include <boost/assert.hpp>
 #include <boost/noncopyable.hpp>
 #include <ma/config.hpp>
-#include <ma/memory.hpp>
+#include <ma/detail/memory.hpp>
 
 namespace ma {
 namespace detail {

@@ -17,8 +17,8 @@
 #include <boost/asio.hpp>
 #include <boost/noncopyable.hpp>
 #include <ma/config.hpp>
-#include <ma/memory.hpp>
 #include <ma/handler_alloc_helpers.hpp>
+#include <ma/detail/memory.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)
 #include <utility>
