@@ -641,7 +641,6 @@ int echo_server::run_server(const echo_server::execution_config& exec_config,
 {
   using ma::detail::bind;
   using ma::detail::ref;
-  using namespace ma::detail::placeholders;
 
   server_state the_server_state;
 
@@ -650,7 +649,7 @@ int echo_server::run_server(const echo_server::execution_config& exec_config,
 
   std::cout << "Server is starting." << std::endl;
   the_server.async_start(bind(handle_server_start,
-      ref(the_server_state), ref(the_server), _1));
+      ref(the_server_state), ref(the_server), ma::detail::placeholders::_1));
 
   // Lookup for app termination
   ma::console_close_guard console_close_guard(bind(

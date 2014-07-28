@@ -34,7 +34,12 @@ public:
 private:
   class implementation;
   
-  MA_SCOPED_PTR<implementation> implementation_;
+#if defined(MA_USE_CXX11_STDLIB_MEMORY)
+  std::unique_ptr<implementation> implementation_;
+#else
+  boost::scoped_ptr<implementation> implementation_;
+#endif
+
 }; // class console_close_guard
 
 } // namespace ma
