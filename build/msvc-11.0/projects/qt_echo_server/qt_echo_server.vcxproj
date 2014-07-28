@@ -4172,6 +4172,7 @@
     <ClInclude Include="..\..\..\..\include\ma\functional.hpp" />
     <ClInclude Include="..\..\..\..\include\ma\handler_cont_helpers.hpp" />
     <ClInclude Include="..\..\..\..\include\ma\memory.hpp" />
+    <ClInclude Include="..\..\..\..\include\ma\thread.hpp" />
     <ClInclude Include="..\..\..\..\include\ma\thread_group.hpp" />
     <ClInclude Include="..\..\..\..\include\ma\tuple.hpp" />
     <ClInclude Include="GeneratedFiles\Win32\ui_mainform.h">
