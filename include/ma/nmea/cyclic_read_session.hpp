@@ -46,11 +46,11 @@ namespace ma {
 namespace nmea {
 
 class cyclic_read_session;
-typedef MA_SHARED_PTR<cyclic_read_session> cyclic_read_session_ptr;
+typedef detail::shared_ptr<cyclic_read_session> cyclic_read_session_ptr;
 
 class cyclic_read_session
   : private boost::noncopyable
-  , public MA_ENABLE_SHARED_FROM_THIS<cyclic_read_session>
+  , public  detail::enable_shared_from_this<cyclic_read_session>
 {
 private:
   typedef cyclic_read_session this_type;
@@ -112,9 +112,10 @@ private:
     enum value_t {ready, work, stop, stopped};
   }; // struct extern_state
 
-  typedef boost::optional<boost::system::error_code>       optional_error_code;
-  typedef boost::circular_buffer<frame_ptr>                frame_buffer_type;
-  typedef MA_TUPLE<boost::system::error_code, std::size_t> read_result_type;
+  typedef boost::optional<boost::system::error_code> optional_error_code;
+  typedef boost::circular_buffer<frame_ptr> frame_buffer_type;
+  typedef detail::tuple<boost::system::error_code, std::size_t> 
+      read_result_type;
 
   template <typename Iterator>
   static read_result_type copy_buffer(const frame_buffer_type& buffer,
@@ -161,7 +162,7 @@ private:
 
   template <typename Handler>
   void handle_write(const boost::system::error_code& error,
-      std::size_t bytes_transferred, const MA_TUPLE<Handler>& handler);
+      std::size_t bytes_transferred, const detail::tuple<Handler>& handler);
 
   void read_until_head();
   void read_until_tail();
@@ -292,7 +293,7 @@ void cyclic_read_session::async_start(Handler&& handler)
 
   strand_.post(make_explicit_context_alloc_handler(
       std::forward<Handler>(handler),
-      MA_BIND(func, shared_from_this(), MA_PLACEHOLDER_1)));
+      detail::bind(func, shared_from_this(), detail::placeholders::_1)));
 }
 
 template <typename Handler>
@@ -305,7 +306,7 @@ void cyclic_read_session::async_stop(Handler&& handler)
 
   strand_.post(make_explicit_context_alloc_handler(
       std::forward<Handler>(handler),
-      MA_BIND(func, shared_from_this(), MA_PLACEHOLDER_1)));
+      detail::bind(func, shared_from_this(), detail::placeholders::_1)));
 }
 
 // Handler()(const boost::system::error_code&, std::size_t)
@@ -323,8 +324,8 @@ void cyclic_read_session::async_read_some(
 
   strand_.post(make_explicit_context_alloc_handler(
       std::forward<Handler>(handler),
-      MA_BIND(func, shared_from_this(), std::forward<Iterator>(begin),
-          std::forward<Iterator>(end), MA_PLACEHOLDER_1)));
+      detail::bind(func, shared_from_this(), std::forward<Iterator>(begin),
+          std::forward<Iterator>(end), detail::placeholders::_1)));
 }
 
 template <typename ConstBufferSequence, typename Handler>
@@ -342,8 +343,9 @@ void cyclic_read_session::async_write_some(
 
   strand_.post(make_explicit_context_alloc_handler(
       std::forward<Handler>(handler),
-      MA_BIND(func, shared_from_this(),
-          std::forward<ConstBufferSequence>(buffers), MA_PLACEHOLDER_1)));
+      detail::bind(func, shared_from_this(),
+          std::forward<ConstBufferSequence>(buffers), 
+          detail::placeholders::_1)));
 }
 
 #else // defined(MA_HAS_RVALUE_REFS)
@@ -357,7 +359,7 @@ void cyclic_read_session::async_start(const Handler& handler)
   func_type func = &this_type::start_extern_start<handler_type>;
 
   strand_.post(make_explicit_context_alloc_handler(handler,
-      MA_BIND(func, shared_from_this(), MA_PLACEHOLDER_1)));
+      detail::bind(func, shared_from_this(), detail::placeholders::_1)));
 }
 
 template <typename Handler>
@@ -369,7 +371,7 @@ void cyclic_read_session::async_stop(const Handler& handler)
   func_type func = &this_type::start_extern_stop<handler_type>;
 
   strand_.post(make_explicit_context_alloc_handler(handler,
-      MA_BIND(func, shared_from_this(), MA_PLACEHOLDER_1)));
+      detail::bind(func, shared_from_this(), detail::placeholders::_1)));
 }
 
 // Handler()(const boost::system::error_code&, std::size_t)
@@ -386,7 +388,8 @@ void cyclic_read_session::async_read_some(
       &this_type::start_extern_read_some<handler_type, iterator_type>;
 
   strand_.post(make_explicit_context_alloc_handler(handler,
-      MA_BIND(func, shared_from_this(), begin, end, MA_PLACEHOLDER_1)));
+      detail::bind(func, shared_from_this(), begin, end, 
+          detail::placeholders::_1)));
 }
 
 template <typename ConstBufferSequence, typename Handler>
@@ -402,7 +405,8 @@ void cyclic_read_session::async_write_some(
       &this_type::start_extern_write_some<buffers_type, handler_type>;
 
   strand_.post(make_explicit_context_alloc_handler(handler,
-      MA_BIND(func, shared_from_this(), buffers, MA_PLACEHOLDER_1)));
+      detail::bind(func, shared_from_this(), buffers, 
+          detail::placeholders::_1)));
 }
 
 #endif // defined(MA_HAS_RVALUE_REFS)
@@ -505,7 +509,7 @@ template <typename Handler, typename Iterator>
 void cyclic_read_session::wrapped_extern_read_handler<Handler, Iterator>
     ::operator()(const read_result_type& result)
 {
-  handler_(MA_TUPLE_GET<0>(result), MA_TUPLE_GET<1>(result));
+  handler_(detail::get<0>(result), detail::get<1>(result));
 }
 
 template <typename Handler>
@@ -543,11 +547,11 @@ void cyclic_read_session::start_extern_read_some(
 
     // Try to copy buffer data
     read_result_type copy_result = copy_buffer(frame_buffer_, begin, end);
-    frame_buffer_.erase_begin(MA_TUPLE_GET<1>(copy_result));
+    frame_buffer_.erase_begin(detail::get<1>(copy_result));
 
     // Post the handler
     io_service_.post(bind_handler(handler, 
-        MA_TUPLE_GET<0>(copy_result), MA_TUPLE_GET<1>(copy_result)));
+        detail::get<0>(copy_result), detail::get<1>(copy_result)));
   }
   else
   {
@@ -568,22 +572,22 @@ void cyclic_read_session::start_extern_write_some(
   }
 
   serial_port_.async_write_some(buffers, MA_STRAND_WRAP(strand_,
-      make_custom_alloc_handler(write_allocator_, MA_BIND(
-        &this_type::handle_write<Handler>, shared_from_this(), 
-            MA_PLACEHOLDER_1, MA_PLACEHOLDER_2,
-            MA_MAKE_TUPLE<Handler>(handler)))));
+      make_custom_alloc_handler(write_allocator_, detail::bind(
+          &this_type::handle_write<Handler>, shared_from_this(), 
+          detail::placeholders::_1, detail::placeholders::_2,
+          detail::make_tuple<Handler>(handler)))));
 
   port_write_in_progress_ = true;
 }
 
 template <typename Handler>
 void cyclic_read_session::handle_write(const boost::system::error_code& error,
-    std::size_t bytes_transferred, const MA_TUPLE<Handler>& handler)
+    std::size_t bytes_transferred, const detail::tuple<Handler>& handler)
 {
   port_write_in_progress_ = false;
 
   io_service_.post(bind_handler(
-      MA_TUPLE_GET<0>(handler), error, bytes_transferred));
+      detail::get<0>(handler), error, bytes_transferred));
 
   if ((extern_state::stop == extern_state_) && may_complete_stop())
   {

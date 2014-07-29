@@ -27,8 +27,8 @@ class ServiceServantSignal : public QObject
   Q_OBJECT //-V524
 
 private:
-  typedef MA_RECURSIVE_MUTEX        mutex_type;
-  typedef MA_LOCK_GUARD<mutex_type> lock_guard;
+  typedef detail::recursive_mutex        mutex_type;
+  typedef detail::lock_guard<mutex_type> lock_guard;
 
 public:
   ServiceServantSignal()

@@ -19,7 +19,7 @@ namespace ma {
 namespace nmea {
 
 typedef std::string frame;
-typedef MA_SHARED_PTR<frame> frame_ptr;
+typedef detail::shared_ptr<frame> frame_ptr;
 
 } // namespace nmea
 } // namespace ma

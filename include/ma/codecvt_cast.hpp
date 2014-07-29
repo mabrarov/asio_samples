@@ -53,9 +53,9 @@ const std::basic_string<CharType> in(
               internal_str.max_size()));
 
 #if defined(MA_USE_CXX11_STDLIB_MEMORY)
-  std::unique_ptr<CharType[]> out_buf(new CharType[out_buf_size]);
+  detail::unique_ptr<CharType[]> out_buf(new CharType[out_buf_size]);
 #else
-  boost::scoped_array<CharType> out_buf(new CharType[out_buf_size]);
+  detail::scoped_array<CharType> out_buf(new CharType[out_buf_size]);
 #endif
 
   CharType* first_internal = out_buf.get();
@@ -100,9 +100,9 @@ const std::basic_string<Byte> out(
           internal_str_size;
 
 #if defined(MA_USE_CXX11_STDLIB_MEMORY)
-  std::unique_ptr<Byte[]> out_buf(new Byte[out_buf_size]);
+  detail::unique_ptr<Byte[]> out_buf(new Byte[out_buf_size]);
 #else
-  boost::scoped_array<Byte> out_buf(new Byte[out_buf_size]);
+  detail::scoped_array<Byte> out_buf(new Byte[out_buf_size]);
 #endif
 
   const CharType* first_internal = internal_str.data();

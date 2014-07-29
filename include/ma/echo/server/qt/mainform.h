@@ -53,8 +53,8 @@ private slots:
   void on_service_workCompleted(const boost::system::error_code&);
 
 private:
-  typedef MA_TUPLE<execution_config, session_manager_config> ServiceConfig;
-  typedef MA_TUPLE<int, QWidget*> OptionWidget;
+  typedef detail::tuple<execution_config, session_manager_config> ServiceConfig;
+  typedef detail::tuple<int, QWidget*> OptionWidget;
 
   Q_DISABLE_COPY(MainForm)
 

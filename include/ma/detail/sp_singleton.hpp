@@ -31,7 +31,7 @@ private:
 
 public:
   typedef Value value_type;
-  typedef detail::shared_ptr<value_type> value_shared_ptr;
+  typedef shared_ptr<value_type> value_shared_ptr;
 
   class instance_guard;
   
@@ -41,8 +41,8 @@ public:
   static value_shared_ptr get_instance(Factory);
 
 private:
-  typedef detail::weak_ptr<value_type> value_weak_ptr;
-  typedef detail::shared_ptr<latch>    latch_ptr;
+  typedef weak_ptr<value_type> value_weak_ptr;
+  typedef shared_ptr<latch>    latch_ptr;
 
   struct static_data;
   struct static_data_factory;
@@ -52,7 +52,7 @@ private:
 
   static static_data& get_static_data();
 
-  static detail::once_flag static_data_init_flag_;
+  static once_flag static_data_init_flag_;
   static static_data*      static_data_;
 }; // class sp_singleton
 
@@ -78,8 +78,8 @@ private:
 template <typename Value>
 struct sp_singleton<Value>::static_data : private boost::noncopyable
 {
-  typedef detail::mutex                  mutex_type;
-  typedef detail::lock_guard<mutex_type> lock_guard_type;
+  typedef mutex                  mutex_type;
+  typedef lock_guard<mutex_type> lock_guard_type;
 
   static_data();
     
@@ -126,7 +126,7 @@ template <typename Value>
 typename sp_singleton<Value>::static_data&
 sp_singleton<Value>::get_static_data()
 {
-  detail::call_once(static_data_init_flag_, static_data_factory());
+  call_once(static_data_init_flag_, static_data_factory());
   BOOST_ASSERT_MSG(static_data_,
       "Singleton static data wasn't initialized correctly");
   return *static_data_;
@@ -135,12 +135,12 @@ sp_singleton<Value>::get_static_data()
 #if defined(MA_USE_CXX11_THREAD)
 
 template <typename Value>
-detail::once_flag sp_singleton<Value>::static_data_init_flag_;
+once_flag sp_singleton<Value>::static_data_init_flag_;
 
 #else  // defined(MA_USE_CXX11_THREAD)
 
 template <typename Value>
-detail::once_flag sp_singleton<Value>::static_data_init_flag_ = BOOST_ONCE_INIT;
+once_flag sp_singleton<Value>::static_data_init_flag_ = BOOST_ONCE_INIT;
 
 #endif // defined(MA_USE_CXX11_THREAD)
 
@@ -150,7 +150,7 @@ sp_singleton<Value>::static_data_ = 0;
 
 template <typename Value>
 sp_singleton<Value>::static_data::static_data()
-  : instance_latch(detail::make_shared<latch>())
+  : instance_latch(make_shared<latch>())
 {
 }
 
