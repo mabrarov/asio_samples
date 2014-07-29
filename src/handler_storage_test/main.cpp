@@ -177,7 +177,7 @@ void run_test()
     data = "0";
   }
 
-  ma::detail::latch done_latch(1);
+  detail::latch done_latch(1);
   {
     lock_guard_type data_guard(mutex);
 
@@ -185,7 +185,7 @@ void run_test()
         mutating_func1, MA_REF(data), continuation(
             MA_BIND(count_down, MA_REF(done_latch))))));
 
-    ma::sleep(boost::posix_time::seconds(5));
+    detail::this_thread::sleep(boost::posix_time::seconds(5));
     data = "Zero";
   }
   done_latch.wait();

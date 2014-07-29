@@ -490,7 +490,7 @@ void work_func(const random_generator_ptr& rng)
 
 void thread_func(detail::barrier& work_barrier, const random_generator_ptr& rng)
 {
-  ma::count_down_and_wait(work_barrier); 
+  work_barrier.count_down_and_wait();
   work_func(rng);
 }
 
@@ -507,7 +507,8 @@ void run_test()
 
   for (std::size_t n = 0; n != iteration_count; ++n)
   {
-    detail::barrier work_barrier(static_cast<unsigned>(thread_count));
+    detail::barrier work_barrier(
+        static_cast<detail::barrier::counter_type>(thread_count));
     ma::thread_group threads;
     for (std::size_t i = 0; i != thread_count - 1; ++i)
     {

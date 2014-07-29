@@ -21,7 +21,7 @@
 namespace ma {
 namespace detail {
 
-class latch : boost::noncopyable
+class latch : private boost::noncopyable
 {
 private:
   typedef latch                   this_type;

@@ -12,7 +12,9 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
+#include <cstddef>
 #include <ma/config.hpp>
+#include <boost/noncopyable.hpp>
 #include <boost/date_time/posix_time/ptime.hpp>
 #include <boost/thread/barrier.hpp>
 
@@ -43,10 +45,21 @@ using std::mutex;
 using std::recursive_mutex;
 using std::unique_lock;
 using std::lock_guard;
-using std::condition_variable;
 using std::once_flag;
 using std::call_once;
-using boost::barrier;
+
+class condition_variable : private boost::noncopyable
+{
+private:
+public:  
+  void notify_one();
+  void notify_all();
+  void wait(unique_lock<mutex>&);
+  bool timed_wait(unique_lock<mutex>&, const boost::posix_time::time_duration&);
+
+private:
+  std::condition_variable condition_;
+}; // class condition_variable
 
 inline std::chrono::nanoseconds to_duration(
     const boost::posix_time::time_duration& posix_duration)
@@ -54,17 +67,35 @@ inline std::chrono::nanoseconds to_duration(
   return std::chrono::nanoseconds(posix_duration.total_nanoseconds());
 }
 
-template<typename Lock>
-bool timed_wait(std::condition_variable& condition,
-    Lock& lock, const boost::posix_time::time_duration& posix_duration)
-{
-  return std::cv_status::timeout !=
-      condition.wait_for(lock, to_duration(posix_duration));
-}
+namespace this_thread {
 
 inline void sleep(const boost::posix_time::time_duration& posix_duration)
 {
   std::this_thread::sleep_for(to_duration(posix_duration));
+}
+
+} // namespace this_thread
+
+inline void condition_variable::notify_one()
+{
+  condition_.notify_one();
+}
+
+inline void condition_variable::notify_all()
+{
+  condition_.notify_all();
+}
+
+inline void condition_variable::wait(unique_lock<mutex>& lock)
+{
+  condition_.wait(lock);
+}
+
+inline bool condition_variable::timed_wait(unique_lock<mutex>& lock,
+    const boost::posix_time::time_duration& posix_duration)
+{
+  return std::cv_status::timeout !=
+      condition_.wait_for(lock, to_duration(posix_duration));
 }
 
 #else  // defined(MA_USE_CXX11_THREAD)
@@ -77,25 +108,30 @@ using boost::lock_guard;
 using boost::condition_variable;
 using boost::once_flag;
 using boost::call_once;
-using boost::barrier;
-
-template<typename Lock>
-bool timed_wait(boost::condition_variable& condition,
-    Lock& lock, const boost::posix_time::time_duration& posix_duration)
-{
-  return condition.timed_wait(lock, posix_duration);
-}
-
-inline void sleep(const boost::posix_time::time_duration& posix_duration)
-{
-  boost::this_thread::sleep(posix_duration);
-}
+namespace this_thread = boost::this_thread;
 
 #endif // defined(MA_USE_CXX11_THREAD)
 
-inline void count_down_and_wait(barrier& b)
+class barrier : private boost::noncopyable
 {
-  b.wait();
+public:
+  typedef unsigned int counter_type;
+
+  explicit barrier(counter_type count);
+  void count_down_and_wait();
+
+private:
+  boost::barrier barrier_;
+}; // class barrier
+
+inline barrier::barrier(counter_type count)
+  : barrier_(count)
+{
+}
+
+inline void barrier::count_down_and_wait()
+{
+  barrier_.wait();
 }
 
 } // namespace detail

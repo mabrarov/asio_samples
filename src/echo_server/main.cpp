@@ -458,8 +458,7 @@ bool wait_until_server_stopped(server_state& the_server_state,
   server_state::unique_lock lock(the_server_state.mutex);
   while (server_state::stopped != the_server_state.value)
   {
-    if (!ma::detail::timed_wait(
-        the_server_state.condition_variable, lock, duration))
+    if (!the_server_state.condition_variable.timed_wait(lock, duration))
     {
       return false;
     }
@@ -495,7 +494,6 @@ void handle_app_exit(server_state& the_server_state, server& the_server)
 {  
   using ma::detail::bind;
   using ma::detail::ref;
-  using namespace ma::detail::placeholders;
 
   std::cout << "Application exit request detected." << std::endl;
 
@@ -514,7 +512,8 @@ void handle_app_exit(server_state& the_server_state, server& the_server)
 
   default:
     the_server.async_stop(bind(handle_server_stop,
-        ref(the_server_state), ref(the_server), _1));
+        ref(the_server_state), ref(the_server), 
+        ma::detail::placeholders::_1));
     switch_to_stopping(lock_guard, the_server_state, true);
     std::cout << "Server is stopping." \
         " Press Ctrl+C to terminate server." << std::endl;
@@ -527,7 +526,6 @@ void handle_server_start(server_state& the_server_state, server& the_server,
 {
   using ma::detail::bind;
   using ma::detail::ref;
-  using namespace ma::detail::placeholders;
 
   server_state::lock_guard lock_guard(the_server_state.mutex);
   switch (the_server_state.value)
@@ -544,7 +542,8 @@ void handle_server_start(server_state& the_server_state, server& the_server,
       std::cout << "Server has started." << std::endl;
       switch_to_working(lock_guard, the_server_state);
       the_server.async_wait(bind(handle_server_wait,
-          ref(the_server_state), ref(the_server), _1));
+          ref(the_server_state), ref(the_server), 
+          ma::detail::placeholders::_1));
     }
     break;
 
@@ -559,7 +558,6 @@ void handle_server_wait(server_state& the_server_state, server& the_server,
 {
   using ma::detail::bind;
   using ma::detail::ref;
-  using namespace ma::detail::placeholders;
 
   server_state::lock_guard lock_guard(the_server_state.mutex);
   switch (the_server_state.value)
@@ -575,7 +573,7 @@ void handle_server_wait(server_state& the_server_state, server& the_server,
       std::cout << "Server can't continue work." << std::endl;
     }
     the_server.async_stop(bind(handle_server_stop,
-        ref(the_server_state), ref(the_server), _1));
+        ref(the_server_state), ref(the_server), ma::detail::placeholders::_1));
     switch_to_stopping(lock_guard, the_server_state, false);
     break;
 
