@@ -14,7 +14,6 @@
 
 #include <boost/system/error_code.hpp>
 #include <QObject>
-#include <ma/memory.hpp>
 #include <ma/echo/server/session_manager_config_fwd.hpp>
 #include <ma/echo/server/session_manager_stats.hpp>
 #include <ma/echo/server/qt/servicestate.h>
@@ -22,6 +21,7 @@
 #include <ma/echo/server/qt/serviceforwardsignal_fwd.h>
 #include <ma/echo/server/qt/serviceservantsignal_fwd.h>
 #include <ma/echo/server/qt/service_fwd.h>
+#include <ma/detail/memory.hpp>
 
 namespace ma {
 namespace echo {

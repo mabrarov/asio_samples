@@ -16,7 +16,7 @@
 #include <string>
 #include <stdexcept>
 #include <boost/throw_exception.hpp>
-#include <ma/memory.hpp>
+#include <ma/detail/memory.hpp>
 
 namespace ma {
 namespace codecvt_cast {

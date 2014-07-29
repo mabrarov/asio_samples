@@ -22,9 +22,6 @@
 #include <boost/noncopyable.hpp>
 #include <boost/circular_buffer.hpp>
 #include <ma/config.hpp>
-#include <ma/tuple.hpp>
-#include <ma/memory.hpp>
-#include <ma/functional.hpp>
 #include <ma/handler_storage.hpp>
 #include <ma/bind_handler.hpp>
 #include <ma/handler_allocator.hpp>
@@ -37,6 +34,9 @@
 #include <ma/nmea/frame.hpp>
 #include <ma/nmea/error.hpp>
 #include <ma/nmea/cyclic_read_session_fwd.hpp>
+#include <ma/detail/tuple.hpp>
+#include <ma/detail/memory.hpp>
+#include <ma/detail/functional.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)
 #include <ma/type_traits.hpp>

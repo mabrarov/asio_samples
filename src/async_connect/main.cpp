@@ -24,16 +24,16 @@
 #include <boost/program_options.hpp>
 #include <boost/optional.hpp>
 #include <ma/config.hpp>
-#include <ma/memory.hpp>
-#include <ma/functional.hpp>
 #include <ma/async_connect.hpp>
 #include <ma/steady_deadline_timer.hpp>
 #include <ma/handler_allocator.hpp>
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/strand_wrapped_handler.hpp>
 #include <ma/limited_int.hpp>
-#include <ma/thread.hpp>
 #include <ma/thread_group.hpp>
+#include <ma/detail/memory.hpp>
+#include <ma/detail/functional.hpp>
+#include <ma/detail/thread.hpp>
 
 #if defined(MA_HAS_BOOST_TIMER)
 #include <boost/timer/timer.hpp>

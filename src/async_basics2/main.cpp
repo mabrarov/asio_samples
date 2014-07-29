@@ -17,15 +17,15 @@
 #include <boost/optional.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/utility/in_place_factory.hpp>
-#include <ma/memory.hpp>
-#include <ma/functional.hpp>
 #include <ma/handler_allocator.hpp>
 #include <ma/console_close_guard.hpp>
-#include <ma/thread.hpp>
 #include <ma/thread_group.hpp>
 #include <ma/tutorial2/async_interface.hpp>
 #include <ma/tutorial2/async_implementation.hpp>
 #include <ma/tutorial2/do_something_handler.hpp>
+#include <ma/detail/memory.hpp>
+#include <ma/detail/functional.hpp>
+#include <ma/detail/thread.hpp>
 
 namespace {
 
@@ -94,7 +94,7 @@ int main(int /*argc*/, char* /*argv*/[])
 {
   try
   {
-    std::size_t cpu_count = MA_THREAD::hardware_concurrency();
+    std::size_t cpu_count = ma::detail::thread::hardware_concurrency();
     std::size_t work_thread_count = cpu_count < 2 ? 2 : cpu_count;
 
     using boost::asio::io_service;
@@ -102,19 +102,20 @@ int main(int /*argc*/, char* /*argv*/[])
 
     // Setup console controller
     ma::console_close_guard console_close_guard(
-        MA_BIND(handle_program_exit, MA_REF(work_io_service)));
+        ma::detail::bind(handle_program_exit, 
+            ma::detail::ref(work_io_service)));
 
     std::cout << "Press Ctrl+C to exit.\n";
 
     ma::thread_group work_threads;
     boost::optional<io_service::work> work_guard(
-        boost::in_place(MA_REF(work_io_service)));
+        boost::in_place(ma::detail::ref(work_io_service)));
     for (std::size_t i = 0; i != work_thread_count; ++i)
     {
-      work_threads.create_thread(MA_BIND(
+      work_threads.create_thread(ma::detail::bind(
           static_cast<std::size_t (boost::asio::io_service::*)(void)>(
               &io_service::run), 
-          MA_REF(work_io_service)));
+          ma::detail::ref(work_io_service)));
     }
 
     boost::format name_format("active_object%03d");
@@ -126,7 +127,7 @@ int main(int /*argc*/, char* /*argv*/[])
           ma::tutorial2::async_implementation::create(work_io_service, name);
 
       active_object->async_do_something(
-          MA_MAKE_SHARED<do_something_handler_implementation>(
+          ma::detail::make_shared<do_something_handler_implementation>(
               active_object, name));
     }
 

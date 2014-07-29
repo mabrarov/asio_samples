@@ -13,9 +13,6 @@ TRANSLATOR ma::echo::server::qt::Service
 #include <boost/asio.hpp>
 #include <boost/assert.hpp>
 #include <boost/noncopyable.hpp>
-#include <ma/tuple.hpp>
-#include <ma/memory.hpp>
-#include <ma/functional.hpp>
 #include <ma/thread_group.hpp>
 #include <ma/echo/server/error.hpp>
 #include <ma/echo/server/simple_session_factory.hpp>
@@ -26,6 +23,9 @@ TRANSLATOR ma::echo::server::qt::Service
 #include <ma/echo/server/qt/serviceforwardsignal.h>
 #include <ma/echo/server/qt/serviceservantsignal.h>
 #include <ma/echo/server/qt/service.h>
+#include <ma/detail/tuple.hpp>
+#include <ma/detail/memory.hpp>
+#include <ma/detail/functional.hpp>
 
 namespace ma {
 namespace echo {

@@ -16,11 +16,11 @@
 #include <boost/optional.hpp>
 #include <boost/system/error_code.hpp>
 #include <ma/config.hpp>
-#include <ma/memory.hpp>
-#include <ma/functional.hpp>
 #include <ma/handler_storage.hpp>
 #include <ma/bind_handler.hpp>
 #include <ma/context_alloc_handler.hpp>
+#include <ma/detail/memory.hpp>
+#include <ma/detail/functional.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)
 #include <utility>
@@ -31,7 +31,7 @@ namespace ma {
 namespace tutorial {
 
 class async_interface;
-typedef MA_SHARED_PTR<async_interface> async_interface_ptr;
+typedef detail::shared_ptr<async_interface> async_interface_ptr;
 
 class async_interface
 {
@@ -144,7 +144,7 @@ void async_interface::async_do_something(Handler&& handler)
 
   strand().post(ma::make_explicit_context_alloc_handler(
       std::forward<Handler>(handler),
-      MA_BIND(func, get_interface_ptr(), MA_PLACEHOLDER_1)));
+      detail::bind(func, get_interface_ptr(), detail::placeholders::_1)));
 }
 
 #endif // defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
@@ -160,7 +160,8 @@ void async_interface::async_do_something(const Handler& handler)
   func_type func = &this_type::start_do_something<handler_type>;
 
   strand().post(ma::make_explicit_context_alloc_handler(
-      handler, MA_BIND(func, get_interface_ptr(), MA_PLACEHOLDER_1)));
+      handler, 
+      detail::bind(func, get_interface_ptr(), detail::placeholders::_1)));
 }
 
 #endif // defined(MA_HAS_RVALUE_REFS)

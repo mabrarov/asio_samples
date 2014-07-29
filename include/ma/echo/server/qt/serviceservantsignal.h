@@ -14,8 +14,8 @@
 
 #include <boost/system/error_code.hpp>
 #include <QObject>
-#include <ma/thread.hpp>
 #include <ma/echo/server/qt/serviceservantsignal_fwd.h>
+#include <ma/detail/thread.hpp>
 
 namespace ma {
 namespace echo {

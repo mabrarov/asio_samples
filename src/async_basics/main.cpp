@@ -17,15 +17,15 @@
 #include <boost/format.hpp>
 #include <boost/optional.hpp>
 #include <boost/utility/in_place_factory.hpp>
-#include <ma/memory.hpp>
-#include <ma/functional.hpp>
 #include <ma/handler_allocator.hpp>
 #include <ma/console_close_guard.hpp>
 #include <ma/custom_alloc_handler.hpp>
-#include <ma/thread.hpp>
 #include <ma/thread_group.hpp>
 #include <ma/tutorial/async_interface.hpp>
 #include <ma/tutorial/async_implementation.hpp>
+#include <ma/detail/memory.hpp>
+#include <ma/detail/functional.hpp>
+#include <ma/detail/thread.hpp>
 
 namespace {
 
@@ -34,8 +34,8 @@ typedef ma::in_place_handler_allocator<128> allocator_type;
 void handle_do_something(
     const ma::tutorial::async_interface_ptr& /*active_object*/,
     const boost::system::error_code& error,
-    const MA_SHARED_PTR<const std::string>& name,
-    const MA_SHARED_PTR<allocator_type>& /*allocator*/)
+    const ma::detail::shared_ptr<const std::string>& name,
+    const ma::detail::shared_ptr<allocator_type>& /*allocator*/)
 {
   if (error)
   {
@@ -64,7 +64,7 @@ int main(int /*argc*/, char* /*argv*/[])
 {
   try
   {
-    std::size_t cpu_count = MA_THREAD::hardware_concurrency();
+    std::size_t cpu_count = ma::detail::thread::hardware_concurrency();
     std::size_t work_thread_count = cpu_count < 2 ? 2 : cpu_count;
 
     using boost::asio::io_service;
@@ -72,36 +72,37 @@ int main(int /*argc*/, char* /*argv*/[])
 
     // Setup console controller
     ma::console_close_guard console_close_guard(
-        MA_BIND(handle_program_exit, MA_REF(work_io_service)));
+        ma::detail::bind(handle_program_exit, 
+            ma::detail::ref(work_io_service)));
     std::cout << "Press Ctrl+C to exit.\n";
 
     ma::thread_group work_threads;
     boost::optional<io_service::work> work_guard(
-        boost::in_place(MA_REF(work_io_service)));
+        boost::in_place(ma::detail::ref(work_io_service)));
     for (std::size_t i = 0; i != work_thread_count; ++i)
     {
-      work_threads.create_thread(MA_BIND(
+      work_threads.create_thread(ma::detail::bind(
           static_cast<std::size_t (boost::asio::io_service::*)(void)>(
               &io_service::run), 
-          MA_REF(work_io_service)));
+          ma::detail::ref(work_io_service)));
     }
 
     boost::format name_format("active_object%03d");
     for (std::size_t i = 0; i != 20; ++i)
     {
-      MA_SHARED_PTR<const std::string> name =
-          MA_MAKE_SHARED<std::string>((name_format % i).str());
+      ma::detail::shared_ptr<const std::string> name =
+          ma::detail::make_shared<std::string>((name_format % i).str());
 
-      MA_SHARED_PTR<allocator_type> allocator =
-          MA_MAKE_SHARED<allocator_type>();
+      ma::detail::shared_ptr<allocator_type> allocator =
+          ma::detail::make_shared<allocator_type>();
 
       ma::tutorial::async_interface_ptr active_object =
           ma::tutorial::async_implementation::create(work_io_service, *name);
 
       active_object->async_do_something(
           ma::make_custom_alloc_handler(*allocator,
-              MA_BIND(handle_do_something, active_object, 
-                  MA_PLACEHOLDER_1, name, allocator)));
+              ma::detail::bind(handle_do_something, active_object,
+                  ma::detail::placeholders::_1, name, allocator)));
     }
 
     work_guard = boost::none;

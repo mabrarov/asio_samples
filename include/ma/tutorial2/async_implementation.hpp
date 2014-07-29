@@ -17,11 +17,11 @@
 #include <boost/optional.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/system/error_code.hpp>
-#include <ma/memory.hpp>
 #include <ma/handler_storage.hpp>
 #include <ma/handler_allocator.hpp>
 #include <ma/steady_deadline_timer.hpp>
 #include <ma/tutorial2/async_interface.hpp>
+#include <ma/detail/memory.hpp>
 
 namespace ma {
 namespace tutorial2 {
@@ -29,7 +29,7 @@ namespace tutorial2 {
 class async_implementation
   : private boost::noncopyable
   , public async_interface
-  , public MA_ENABLE_SHARED_FROM_THIS<async_implementation>
+  , public detail::enable_shared_from_this<async_implementation>
 {
 private:
   typedef async_implementation this_type;

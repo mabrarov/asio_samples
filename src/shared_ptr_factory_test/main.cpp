@@ -15,8 +15,8 @@
 #include <boost/static_assert.hpp>
 #include <boost/assert.hpp>
 #include <boost/noncopyable.hpp>
-#include <ma/memory.hpp>
 #include <ma/shared_ptr_factory.hpp>
+#include <ma/detail/memory.hpp>
 
 namespace ma {
 namespace test {

@@ -14,11 +14,11 @@
 #include <iostream>
 #include <boost/asio.hpp>
 #include <boost/system/error_code.hpp>
-#include <ma/memory.hpp>
-#include <ma/functional.hpp>
 #include <ma/handler_allocator.hpp>
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/windows/console_signal.hpp>
+#include <ma/detail/memory.hpp>
+#include <ma/detail/functional.hpp>
 
 namespace ma {
 namespace test {

@@ -19,9 +19,6 @@
 #include <boost/asio.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/system/error_code.hpp>
-#include <ma/memory.hpp>
-#include <ma/functional.hpp>
-#include <ma/thread.hpp>
 #include <ma/codecvt_cast.hpp>
 #include <ma/handler_allocator.hpp>
 #include <ma/custom_alloc_handler.hpp>
@@ -29,6 +26,9 @@
 #include <ma/nmea/frame.hpp>
 #include <ma/nmea/cyclic_read_session.hpp>
 #include <ma/console_close_guard.hpp>
+#include <ma/detail/memory.hpp>
+#include <ma/detail/functional.hpp>
+#include <ma/detail/thread.hpp>
 
 typedef std::codecvt<wchar_t, char, mbstate_t> wcodecvt_type;
 typedef ma::nmea::cyclic_read_session          session;

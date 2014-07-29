@@ -15,13 +15,13 @@
 #include <vector>
 #include <boost/system/error_code.hpp>
 #include <QWidget>
-#include <ma/tuple.hpp>
 #include <ma/echo/server/session_config.hpp>
 #include <ma/echo/server/session_manager_config.hpp>
 #include <ma/echo/server/session_manager_stats_fwd.hpp>
 #include <ma/echo/server/qt/service_fwd.h>
 #include <ma/echo/server/qt/servicestate.h>
 #include <ma/echo/server/qt/execution_config.h>
+#include <ma/detail/tuple.hpp>
 #include <ui_mainform.h>
 
 QT_BEGIN_NAMESPACE

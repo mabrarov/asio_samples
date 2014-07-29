@@ -23,12 +23,12 @@
 #include <boost/noncopyable.hpp>
 #include <boost/random.hpp>
 #include <boost/date_time/posix_time/ptime.hpp>
-#include <ma/memory.hpp>
-#include <ma/functional.hpp>
-#include <ma/thread.hpp>
 #include <ma/thread_group.hpp>
 #include <ma/limited_int.hpp>
 #include <ma/shared_ptr_factory.hpp>
+#include <ma/detail/memory.hpp>
+#include <ma/detail/functional.hpp>
+#include <ma/detail/thread.hpp>
 #include <ma/detail/sp_singleton.hpp>
 
 namespace ma {

@@ -19,12 +19,12 @@ TRANSLATOR ma::echo::server::qt::MainForm
 #include <QTimer>
 #include <QTextCursor>
 #include <QMessageBox>
-#include <ma/thread.hpp>
 #include <ma/echo/server/error.hpp>
 #include <ma/echo/server/session_manager_stats.hpp>
 #include <ma/echo/server/qt/service.h>
 #include <ma/echo/server/qt/signal_connect_error.h>
 #include <ma/echo/server/qt/mainform.h>
+#include <ma/detail/thread.hpp>
 
 namespace ma {
 namespace echo {
