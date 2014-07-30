@@ -9,7 +9,7 @@
 win32 {
   BOOST_INCLUDE = $$(USERPROFILE)/Boost
 } else {
-  BOOST_INCLUDE = /usr/include
+  BOOST_INCLUDE = /home/marat/Документы/boost-1_56_0_b1
 }
 
 # Boost C++ Libraries binaries
@@ -17,7 +17,7 @@ win32 {
 win32 {
   BOOST_LIB = $${BOOST_INCLUDE}/lib
 } else {
-  BOOST_LIB = /usr/lib
+  BOOST_LIB = $${BOOST_INCLUDE}/lib
 }
 
 # Target specific path to binaries of Boost C++ Libraries

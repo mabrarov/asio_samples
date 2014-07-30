@@ -227,10 +227,8 @@ void thread_func(foo_ptr foo)
   (void) foo->data();
 }
 
-void thread_func2(const foo_weak_ptr& weak_foo, 
-  ma::detail::latch& latch1,
-  ma::detail::latch& latch2,
-  ma::detail::latch& latch3)
+void thread_func2(const foo_weak_ptr& weak_foo, detail::latch& latch1,
+    detail::latch& latch2, detail::latch& latch3)
 {
   if (foo_ptr foo = weak_foo.lock())
   {
@@ -251,9 +249,9 @@ void run_test()
   }
 
   {
-    ma::detail::latch latch1(1);
-    ma::detail::latch latch2(1);
-    ma::detail::latch latch3(1);
+    detail::latch latch1(1);
+    detail::latch latch2(1);
+    detail::latch latch3(1);
 
 #if defined(MA_USE_CXX11_STDLIB_MEMORY)
     detail::unique_ptr<detail::thread> t;
@@ -329,8 +327,8 @@ foo::~foo()
 
 namespace sp_singleton_sync {
 
-ma::detail::latch destroy_start_latch;
-ma::detail::latch destroy_complete_latch;
+detail::latch destroy_start_latch;
+detail::latch destroy_complete_latch;
 
 class foo;
 typedef detail::shared_ptr<foo> foo_ptr;

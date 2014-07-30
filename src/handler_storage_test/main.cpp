@@ -99,7 +99,7 @@ int main(int /*argc*/, char* /*argv*/[])
 namespace ma {
 namespace test {
 
-void count_down(ma::detail::latch& latch)
+void count_down(detail::latch& latch)
 {
   latch.count_down();
 }
