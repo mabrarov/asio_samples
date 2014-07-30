@@ -22,7 +22,7 @@ HEADERS  += ../../../include/ma/detail/binder.hpp \
             ../../../include/ma/detail/memory.hpp \
             ../../../include/ma/detail/service_base.hpp \
             ../../../include/ma/detail/sp_singleton.hpp \
-            ../../../include/ma/thread.hpp \
+            ../../../include/ma/detail/thread.hpp \
             ../../../include/ma/windows/console_signal.hpp \
             ../../../include/ma/windows/console_signal_service.hpp \
             ../../../include/ma/tutorial/async_interface.hpp \

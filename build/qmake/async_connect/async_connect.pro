@@ -15,9 +15,9 @@ CONFIG   -= app_bundle
 include(../config.pri)
 
 HEADERS  += ../../../include/ma/detail/binder.hpp \
-            ../../../include/ma/detail/sfunctional.hpp \
-            ../../../include/ma/detail/smemory.hpp \
-            ../../../include/ma/detail/sthread.hpp \
+            ../../../include/ma/detail/functional.hpp \
+            ../../../include/ma/detail/memory.hpp \
+            ../../../include/ma/detail/thread.hpp \
             ../../../include/ma/async_connect.hpp \
             ../../../include/ma/bind_handler.hpp \
             ../../../include/ma/config.hpp \

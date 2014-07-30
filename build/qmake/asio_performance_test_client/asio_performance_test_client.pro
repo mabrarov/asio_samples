@@ -16,7 +16,7 @@ include(../config.pri)
 
 HEADERS  += ../../../include/ma/detail/binder.hpp \
             ../../../include/ma/detail/functional.hpp \
-            ../../../include/ma/memory.hpp \
+            ../../../include/ma/detail/memory.hpp \
             ../../../include/ma/detail/thread.hpp \
             ../../../include/ma/async_connect.hpp \
             ../../../include/ma/bind_handler.hpp \

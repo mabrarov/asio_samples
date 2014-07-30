@@ -15,7 +15,7 @@ CONFIG   -= app_bundle
 include(../config.pri)
 
 HEADERS  += ../../../include/ma/detail/binder.hpp \
-            ../../../include/ma/functional.hpp \
+            ../../../include/ma/detail/functional.hpp \
             ../../../include/ma/detail/handler_ptr.hpp \
             ../../../include/ma/detail/intrusive_list.hpp \
             ../../../include/ma/detail/latch.hpp \

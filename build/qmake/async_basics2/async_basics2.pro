@@ -19,7 +19,7 @@ HEADERS  += ../../../include/ma/detail/binder.hpp \
             ../../../include/ma/detail/handler_ptr.hpp \
             ../../../include/ma/detail/intrusive_list.hpp \
             ../../../include/ma/detail/latch.hpp \
-            ../../../include/ma/detail/smemory.hpp \
+            ../../../include/ma/detail/memory.hpp \
             ../../../include/ma/detail/service_base.hpp \
             ../../../include/ma/detail/sp_singleton.hpp \
             ../../../include/ma/detail/thread.hpp \
