@@ -140,19 +140,19 @@ private:
   static io_service_vector create_session_io_services(
       const echo_server::execution_config& exec_config)
   {
-    using ma::detail::make_shared;
+    namespace detail = ma::detail;
 
     io_service_vector io_services;
     if (exec_config.ios_per_work_thread)
     {
       for (std::size_t i = 0; i != exec_config.session_thread_count; ++i)
       {
-        io_services.push_back(make_shared<boost::asio::io_service>(1));
+        io_services.push_back(detail::make_shared<boost::asio::io_service>(1));
       }
     }
     else
     {
-      io_service_ptr io_service = make_shared<boost::asio::io_service>(
+      io_service_ptr io_service = detail::make_shared<boost::asio::io_service>(
           exec_config.session_thread_count);
       io_services.push_back(io_service);
     }
@@ -189,20 +189,20 @@ private:
       const ma::echo::server::session_manager_config& session_manager_config,
       const io_service_vector& session_io_services)
   {
-    using ma::detail::make_shared;
-    using ma::detail::ref;
     using ma::echo::server::pooled_session_factory;
     using ma::echo::server::simple_session_factory;
-
+    namespace detail = ma::detail;    
+    
     if (exec_config.ios_per_work_thread)
     {
-      return make_shared<pooled_session_factory>(session_io_services, 
+      return detail::make_shared<pooled_session_factory>(session_io_services,
           session_manager_config.recycled_session_count);
     }
     else
     {
       boost::asio::io_service& io_service = *session_io_services.front();
-      return make_shared<simple_session_factory>(ref(io_service), 
+      return detail::make_shared<simple_session_factory>(
+          detail::ref(io_service), 
           session_manager_config.recycled_session_count);
     }
   }
@@ -271,16 +271,13 @@ private:
   template <typename Handler>
   void create_threads(const Handler& handler)
   {    
-    using ma::detail::tuple;
-    using ma::detail::make_tuple;
-    using ma::detail::bind;
-    using ma::detail::ref;
+    namespace detail = ma::detail;
 
-    typedef tuple<Handler> wrapped_handler_type;
+    typedef detail::tuple<Handler> wrapped_handler_type;
     typedef void (*thread_func_type)(boost::asio::io_service&,
         wrapped_handler_type);
 
-    wrapped_handler_type wrapped_handler = make_tuple(handler);
+    wrapped_handler_type wrapped_handler = detail::make_tuple(handler);
     thread_func_type func = &this_type::thread_func<Handler>;
 
     if (ios_per_work_thread_)
@@ -288,7 +285,8 @@ private:
       for (io_service_vector::const_iterator i = session_io_services_.begin(),
           end = session_io_services_.end(); i != end; ++i)
       {
-        threads_.create_thread(bind(func, ref(**i), wrapped_handler));
+        threads_.create_thread(
+            detail::bind(func, detail::ref(**i), wrapped_handler));
       }
     }
     else
@@ -296,14 +294,16 @@ private:
       boost::asio::io_service& io_service = *session_io_services_.front();
       for (std::size_t i = 0; i != session_thread_count_; ++i)
       {
-        threads_.create_thread(bind(func, ref(io_service), wrapped_handler));
+        threads_.create_thread(
+            detail::bind(func, detail::ref(io_service), wrapped_handler));
       }
     }
 
     for (std::size_t i = 0; i != session_manager_thread_count_; ++i)
     {
       threads_.create_thread(
-          bind(func, ref(session_manager_io_service_), wrapped_handler));
+          detail::bind(func, detail::ref(session_manager_io_service_), 
+              wrapped_handler));
     }
   }
 
@@ -492,8 +492,7 @@ void handle_work_thread_exception(server_state& the_server_state)
 
 void handle_app_exit(server_state& the_server_state, server& the_server)
 {  
-  using ma::detail::bind;
-  using ma::detail::ref;
+  namespace detail = ma::detail;
 
   std::cout << "Application exit request detected." << std::endl;
 
@@ -511,9 +510,9 @@ void handle_app_exit(server_state& the_server_state, server& the_server)
     break;
 
   default:
-    the_server.async_stop(bind(handle_server_stop,
-        ref(the_server_state), ref(the_server), 
-        ma::detail::placeholders::_1));
+    the_server.async_stop(detail::bind(handle_server_stop,
+        detail::ref(the_server_state), detail::ref(the_server),
+        detail::placeholders::_1));
     switch_to_stopping(lock_guard, the_server_state, true);
     std::cout << "Server is stopping." \
         " Press Ctrl+C to terminate server." << std::endl;
@@ -524,8 +523,7 @@ void handle_app_exit(server_state& the_server_state, server& the_server)
 void handle_server_start(server_state& the_server_state, server& the_server,
     const boost::system::error_code& error)
 {
-  using ma::detail::bind;
-  using ma::detail::ref;
+  namespace detail = ma::detail;
 
   server_state::lock_guard lock_guard(the_server_state.mutex);
   switch (the_server_state.value)
@@ -541,9 +539,9 @@ void handle_server_start(server_state& the_server_state, server& the_server,
     {
       std::cout << "Server has started." << std::endl;
       switch_to_working(lock_guard, the_server_state);
-      the_server.async_wait(bind(handle_server_wait,
-          ref(the_server_state), ref(the_server), 
-          ma::detail::placeholders::_1));
+      the_server.async_wait(detail::bind(handle_server_wait,
+          detail::ref(the_server_state), detail::ref(the_server),
+          detail::placeholders::_1));
     }
     break;
 
@@ -556,8 +554,7 @@ void handle_server_start(server_state& the_server_state, server& the_server,
 void handle_server_wait(server_state& the_server_state, server& the_server,
     const boost::system::error_code& error)
 {
-  using ma::detail::bind;
-  using ma::detail::ref;
+  namespace detail = ma::detail;
 
   server_state::lock_guard lock_guard(the_server_state.mutex);
   switch (the_server_state.value)
@@ -572,8 +569,9 @@ void handle_server_wait(server_state& the_server_state, server& the_server,
     {
       std::cout << "Server can't continue work." << std::endl;
     }
-    the_server.async_stop(bind(handle_server_stop,
-        ref(the_server_state), ref(the_server), ma::detail::placeholders::_1));
+    the_server.async_stop(detail::bind(handle_server_stop,
+        detail::ref(the_server_state), detail::ref(the_server), 
+        detail::placeholders::_1));
     switch_to_stopping(lock_guard, the_server_state, false);
     break;
 
@@ -637,21 +635,21 @@ void print_stats(const ma::echo::server::session_manager_stats& stats)
 int echo_server::run_server(const echo_server::execution_config& exec_config,
     const ma::echo::server::session_manager_config& session_manager_config)
 {
-  using ma::detail::bind;
-  using ma::detail::ref;
+  namespace detail = ma::detail;
 
   server_state the_server_state;
 
-  server the_server(exec_config, session_manager_config,
-      bind(handle_work_thread_exception, ref(the_server_state)));
+  server the_server(exec_config, session_manager_config, detail::bind(
+      handle_work_thread_exception, detail::ref(the_server_state)));
 
   std::cout << "Server is starting." << std::endl;
-  the_server.async_start(bind(handle_server_start,
-      ref(the_server_state), ref(the_server), ma::detail::placeholders::_1));
+  the_server.async_start(detail::bind(handle_server_start,
+      detail::ref(the_server_state), detail::ref(the_server), 
+      detail::placeholders::_1));
 
   // Lookup for app termination
-  ma::console_close_guard console_close_guard(bind(
-      handle_app_exit, ref(the_server_state), ref(the_server)));
+  ma::console_close_guard console_close_guard(detail::bind(
+      handle_app_exit, detail::ref(the_server_state), detail::ref(the_server)));
   std::cout << "Press Ctrl+C to exit." << std::endl;
 
   int exit_code = EXIT_SUCCESS;
