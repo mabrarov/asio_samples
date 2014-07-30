@@ -22,25 +22,19 @@
 
 //todo: add support for other compilers
 //      and try to rely on standard library version instead of compiler version
-#if defined(BOOST_GCC) && (BOOST_GCC >= 40700) \
-        || defined(BOOST_CLANG) && (__clang_major__ >= 3)
+#if (BOOST_VERSION >= 105500) && \
+    ((defined(BOOST_MSVC) && (BOOST_MSVC >= 1700)) \
+        || (defined(BOOST_GCC) && (BOOST_GCC >= 40700)) \
+        || (defined(BOOST_CLANG) && (__clang_major__ >= 3)) \
+        || (defined(BOOST_INTEL) && (BOOST_INTEL_CXX_VERSION >= 1400) \
+            && defined(BOOST_INTEL_STDCXX0X)))
 
 #define MA_USE_CXX11_STDLIB_MEMORY
 #define MA_USE_CXX11_STDLIB_TUPLE
 #define MA_USE_CXX11_STDLIB_FUNCTIONAL
 #define MA_USE_CXX11_THREAD
 
-#elif defined(BOOST_MSVC) && (BOOST_MSVC >= 1700) \
-        || defined(BOOST_INTEL) && (BOOST_INTEL_CXX_VERSION >= 1400) \
-            && defined(BOOST_INTEL_STDCXX0X)
-
-#define MA_USE_CXX11_STDLIB_MEMORY
-#define MA_USE_CXX11_STDLIB_TUPLE
-#define MA_USE_CXX11_STDLIB_FUNCTIONAL
-// Usage of standard library threads increases size of built binaries
-#undef  MA_USE_CXX11_THREAD
-
-#elif defined(BOOST_MSVC) && (BOOST_MSVC >= 1600)
+#elif (BOOST_VERSION >= 105500) && defined(BOOST_MSVC) && (BOOST_MSVC >= 1600)
 
 #define MA_USE_CXX11_STDLIB_MEMORY
 #define MA_USE_CXX11_STDLIB_TUPLE
