@@ -380,10 +380,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\..\include\ma\functional.hpp"
-					>
-				</File>
-				<File
 					RelativePath="..\..\..\..\include\ma\handler_alloc_helpers.hpp"
 					>
 				</File>
@@ -400,14 +396,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\..\include\ma\memory.hpp"
-					>
-				</File>
-				<File
-					RelativePath="..\..\..\..\include\ma\thread.hpp"
-					>
-				</File>
-				<File
 					RelativePath="..\..\..\..\include\ma\type_traits.hpp"
 					>
 				</File>
@@ -416,6 +404,10 @@
 					>
 					<File
 						RelativePath="..\..\..\..\include\ma\detail\binder.hpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\..\..\include\ma\detail\functional.hpp"
 						>
 					</File>
 					<File
@@ -431,11 +423,19 @@
 						>
 					</File>
 					<File
+						RelativePath="..\..\..\..\include\ma\detail\memory.hpp"
+						>
+					</File>
+					<File
 						RelativePath="..\..\..\..\include\ma\detail\service_base.hpp"
 						>
 					</File>
 					<File
 						RelativePath="..\..\..\..\include\ma\detail\sp_singleton.hpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\..\..\include\ma\detail\thread.hpp"
 						>
 					</File>
 				</Filter>
