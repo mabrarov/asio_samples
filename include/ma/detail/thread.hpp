@@ -69,6 +69,8 @@ inline std::chrono::nanoseconds to_duration(
 
 namespace this_thread {
 
+using namespace std::this_thread;
+
 inline void sleep(const boost::posix_time::time_duration& posix_duration)
 {
   std::this_thread::sleep_for(to_duration(posix_duration));
