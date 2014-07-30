@@ -16,7 +16,7 @@
     <ProjectConfiguration Include="Release|x64">
       <Configuration>Release</Configuration>
       <Platform>x64</Platform>
-    </ProjectConfiguration>    
+    </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{D1810138-9E2E-445A-B06D-FC036EAF4E2A}</ProjectGuid>
@@ -35,7 +35,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-  </PropertyGroup>  
+  </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
@@ -54,7 +54,7 @@
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="Qt4VSPropertySheet.props" />
-  </ImportGroup>  
+  </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
@@ -65,7 +65,7 @@
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" />
     <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
-    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|x64'">AllRules.ruleset</CodeAnalysisRuleSet>    
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|x64'">AllRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
     <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
     <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
@@ -208,9 +208,13 @@
     <ClInclude Include="..\..\..\..\include\ma\custom_alloc_handler.hpp" />
     <ClInclude Include="..\..\..\..\include\ma\cyclic_buffer.hpp" />
     <ClInclude Include="..\..\..\..\include\ma\detail\binder.hpp" />
+    <ClInclude Include="..\..\..\..\include\ma\detail\functional.hpp" />
     <ClInclude Include="..\..\..\..\include\ma\detail\handler_ptr.hpp" />
     <ClInclude Include="..\..\..\..\include\ma\detail\intrusive_list.hpp" />
+    <ClInclude Include="..\..\..\..\include\ma\detail\memory.hpp" />
     <ClInclude Include="..\..\..\..\include\ma\detail\service_base.hpp" />
+    <ClInclude Include="..\..\..\..\include\ma\detail\thread.hpp" />
+    <ClInclude Include="..\..\..\..\include\ma\detail\tuple.hpp" />
     <ClInclude Include="..\..\..\..\include\ma\echo\server\error.hpp" />
     <ClInclude Include="..\..\..\..\include\ma\echo\server\pooled_session_factory.hpp" />
     <ClInclude Include="..\..\..\..\include\ma\echo\server\qt\custommetatypes.h" />
@@ -285,18 +289,14 @@
     <ClInclude Include="..\..\..\..\include\ma\echo\server\session_manager_stats.hpp" />
     <ClInclude Include="..\..\..\..\include\ma\echo\server\session_manager_stats_fwd.hpp" />
     <ClInclude Include="..\..\..\..\include\ma\echo\server\simple_session_factory.hpp" />
-    <ClInclude Include="..\..\..\..\include\ma\functional.hpp" />
     <ClInclude Include="..\..\..\..\include\ma\handler_allocator.hpp" />
     <ClInclude Include="..\..\..\..\include\ma\handler_cont_helpers.hpp" />
     <ClInclude Include="..\..\..\..\include\ma\limited_int.hpp" />
-    <ClInclude Include="..\..\..\..\include\ma\memory.hpp" />
     <ClInclude Include="..\..\..\..\include\ma\shared_ptr_factory.hpp" />
     <ClInclude Include="..\..\..\..\include\ma\sp_intrusive_list.hpp" />
     <ClInclude Include="..\..\..\..\include\ma\steady_deadline_timer.hpp" />
     <ClInclude Include="..\..\..\..\include\ma\strand_wrapped_handler.hpp" />
-    <ClInclude Include="..\..\..\..\include\ma\thread.hpp" />
     <ClInclude Include="..\..\..\..\include\ma\thread_group.hpp" />
-    <ClInclude Include="..\..\..\..\include\ma\tuple.hpp" />
     <ClInclude Include="..\..\..\..\include\ma\type_traits.hpp" />
     <ClInclude Include="GeneratedFiles\ui_mainform.h" />
     <CustomBuild Include="..\..\..\..\include\ma\echo\server\qt\mainform.h">
