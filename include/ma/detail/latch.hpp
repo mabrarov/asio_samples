@@ -24,11 +24,11 @@ namespace detail {
 class latch : private boost::noncopyable
 {
 private:
-  typedef latch                   this_type;
-  typedef mutex                   mutex_type;
-  typedef unique_lock<mutex_type> lock_type;
-  typedef lock_guard<mutex_type>  lock_guard_type;
-  typedef condition_variable      condition_variable_type;
+  typedef latch                           this_type;
+  typedef detail::mutex                   mutex_type;
+  typedef detail::unique_lock<mutex_type> lock_type;
+  typedef detail::lock_guard<mutex_type>  lock_guard_type;
+  typedef detail::condition_variable      condition_variable_type;
 
 public:
   typedef std::size_t value_type;

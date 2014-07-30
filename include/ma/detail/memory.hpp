@@ -47,6 +47,7 @@ using std::static_pointer_cast;
 
 using boost::addressof;
 using boost::scoped_ptr;
+using boost::scoped_array;
 using boost::shared_ptr;
 using boost::weak_ptr;
 using boost::make_shared;
