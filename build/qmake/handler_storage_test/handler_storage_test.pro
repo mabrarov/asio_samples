@@ -15,10 +15,13 @@ CONFIG   -= app_bundle
 include(../config.pri)
 
 HEADERS  += ../../../include/ma/detail/binder.hpp \
+            ../../../include/ma/detail/functional.hpp \
             ../../../include/ma/detail/handler_ptr.hpp \
             ../../../include/ma/detail/intrusive_list.hpp \
-            ../../../include/ma/detail/service_base.hpp \
             ../../../include/ma/detail/latch.hpp \
+            ../../../include/ma/detail/memory.hpp \
+            ../../../include/ma/detail/service_base.hpp \
+            ../../../include/ma/detail/thread.hpp \
             ../../../include/ma/bind_handler.hpp \
             ../../../include/ma/config.hpp \
             ../../../include/ma/console_close_guard.hpp \
@@ -33,9 +36,7 @@ HEADERS  += ../../../include/ma/detail/binder.hpp \
             ../../../include/ma/handler_storage.hpp \
             ../../../include/ma/handler_storage_service.hpp \
             ../../../include/ma/lockable_wrapped_handler.hpp \
-            ../../../include/ma/memory.hpp \
             ../../../include/ma/strand_wrapped_handler.hpp \
-            ../../../include/ma/thread.hpp \
             ../../../include/ma/thread_group.hpp \
             ../../../include/ma/type_traits.hpp
 
