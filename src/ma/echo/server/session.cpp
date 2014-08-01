@@ -904,9 +904,9 @@ void session::start_socket_read(
 
   session_ptr shared_this = shared_from_this();
 
-  socket_.async_read_some(buffers, MA_STRAND_WRAP(strand_,
-      make_custom_alloc_handler(read_allocator_, [shared_this](
-      const boost::system::error_code& error, std::size_t bytes_transferred)
+  socket_.async_read_some(buffers, strand_.wrap(make_custom_alloc_handler(
+      read_allocator_, [shared_this](const boost::system::error_code& error,
+          std::size_t bytes_transferred)
   {
     BOOST_ASSERT_MSG(read_state::in_progress == shared_this->read_state_,
         "Invalid read state");
@@ -936,15 +936,14 @@ void session::start_socket_read(
 #elif defined(MA_HAS_RVALUE_REFS) \
     && defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
-  socket_.async_read_some(buffers, MA_STRAND_WRAP(strand_,
-      make_custom_alloc_handler(read_allocator_, io_handler_binder(
-          &this_type::handle_read, shared_from_this()))));
+  socket_.async_read_some(buffers, strand_.wrap(make_custom_alloc_handler(
+      read_allocator_, io_handler_binder(&this_type::handle_read, 
+          shared_from_this()))));
 
 #else
 
-  socket_.async_read_some(buffers, MA_STRAND_WRAP(strand_,
-      make_custom_alloc_handler(read_allocator_, detail::bind(
-          &this_type::handle_read, shared_from_this(), 
+  socket_.async_read_some(buffers, strand_.wrap(make_custom_alloc_handler(
+      read_allocator_, detail::bind(&this_type::handle_read, shared_from_this(),
           detail::placeholders::_1, detail::placeholders::_2))));
 
 #endif
@@ -961,9 +960,9 @@ void session::start_socket_write(
 
   session_ptr shared_this = shared_from_this();
 
-  socket_.async_write_some(buffers, MA_STRAND_WRAP(strand_,
-      make_custom_alloc_handler(write_allocator_, [shared_this](
-      const boost::system::error_code& error, std::size_t bytes_transferred)
+  socket_.async_write_some(buffers, strand_.wrap(make_custom_alloc_handler(
+      write_allocator_, [shared_this](const boost::system::error_code& error,
+          std::size_t bytes_transferred)
   {
     BOOST_ASSERT_MSG(write_state::in_progress == shared_this->write_state_,
         "Invalid write state");
@@ -993,16 +992,16 @@ void session::start_socket_write(
 #elif defined(MA_HAS_RVALUE_REFS) \
     && defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
-  socket_.async_write_some(buffers, MA_STRAND_WRAP(strand_,
-      make_custom_alloc_handler(write_allocator_, io_handler_binder(
-          &this_type::handle_write, shared_from_this()))));
+  socket_.async_write_some(buffers, strand_.wrap(make_custom_alloc_handler(
+      write_allocator_, io_handler_binder(&this_type::handle_write, 
+          shared_from_this()))));
 
 #else
 
-  socket_.async_write_some(buffers, MA_STRAND_WRAP(strand_,
-      make_custom_alloc_handler(write_allocator_, detail::bind(
-          &this_type::handle_write, shared_from_this(), 
-          detail::placeholders::_1, detail::placeholders::_2))));
+  socket_.async_write_some(buffers, strand_.wrap(make_custom_alloc_handler(
+      write_allocator_, detail::bind(&this_type::handle_write, 
+          shared_from_this(), detail::placeholders::_1, 
+              detail::placeholders::_2))));
 
 #endif
 
@@ -1020,9 +1019,8 @@ void session::start_timer_wait()
 
   session_ptr shared_this = shared_from_this();
 
-  timer_.async_wait(MA_STRAND_WRAP(strand_,
-      make_custom_alloc_handler(timer_allocator_, [shared_this](
-      const boost::system::error_code& error)
+  timer_.async_wait(strand_.wrap(make_custom_alloc_handler(timer_allocator_, 
+      [shared_this](const boost::system::error_code& error)
   {
     BOOST_ASSERT_MSG(timer_state::in_progress == shared_this->timer_state_,
         "Invalid timer state");
@@ -1049,15 +1047,13 @@ void session::start_timer_wait()
 #elif defined(MA_HAS_RVALUE_REFS) \
     && defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
-  timer_.async_wait(MA_STRAND_WRAP(strand_,
-      make_custom_alloc_handler(timer_allocator_, timer_handler_binder(
-          &this_type::handle_timer, shared_from_this()))));
+  timer_.async_wait(strand_.wrap(make_custom_alloc_handler(timer_allocator_, 
+      timer_handler_binder(&this_type::handle_timer, shared_from_this()))));
 
 #else
 
-  timer_.async_wait(MA_STRAND_WRAP(strand_,
-      make_custom_alloc_handler(timer_allocator_, detail::bind(
-          &this_type::handle_timer, shared_from_this(), 
+  timer_.async_wait(strand_.wrap(make_custom_alloc_handler(timer_allocator_,
+      detail::bind(&this_type::handle_timer, shared_from_this(),
           detail::placeholders::_1))));
 
 #endif

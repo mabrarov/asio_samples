@@ -21,6 +21,7 @@
 #include <ma/handler_allocator.hpp>
 #include <ma/bind_handler.hpp>
 #include <ma/context_alloc_handler.hpp>
+#include <ma/strand.hpp>
 #include <ma/sp_intrusive_list.hpp>
 #include <ma/echo/server/session_fwd.hpp>
 #include <ma/echo/server/session_factory_fwd.hpp>
@@ -261,16 +262,16 @@ private:
   accept_state::value_t accept_state_;
   std::size_t           pending_operations_;
 
-  boost::asio::io_service&        io_service_;
-  session_factory&                session_factory_;
-  boost::asio::io_service::strand strand_;
-  protocol_type::acceptor         acceptor_;
-  session_list                    active_sessions_;
-  session_list                    recycled_sessions_;
-  session_wrapper_ptr             stopping_sessions_end_;
-  boost::system::error_code       accept_error_;
-  boost::system::error_code       extern_wait_error_;
-  stats_collector                 stats_collector_;
+  boost::asio::io_service&  io_service_;
+  session_factory&          session_factory_;
+  strand                    strand_;
+  protocol_type::acceptor   acceptor_;
+  session_list              active_sessions_;
+  session_list              recycled_sessions_;
+  session_wrapper_ptr       stopping_sessions_end_;
+  boost::system::error_code accept_error_;
+  boost::system::error_code extern_wait_error_;
+  stats_collector           stats_collector_;
 
   handler_storage<boost::system::error_code> extern_wait_handler_;
   handler_storage<boost::system::error_code> extern_stop_handler_;

@@ -1152,8 +1152,8 @@ void session_manager::schedule_active_session_stop()
 {
   session_manager_ptr shared_this = shared_from_this();
 
-  io_service_.post(MA_STRAND_WRAP(strand_, 
-      ma::make_custom_alloc_handler(session_stop_allocator_, [shared_this]()
+  io_service_.post(strand_.wrap(ma::make_custom_alloc_handler(
+      session_stop_allocator_, [shared_this]()
   {
     --shared_this->pending_operations_;
 
@@ -1178,9 +1178,9 @@ void session_manager::schedule_active_session_stop()
 
 void session_manager::schedule_active_session_stop()
 {
-  io_service_.post(MA_STRAND_WRAP(strand_, ma::make_custom_alloc_handler(
-      session_stop_allocator_,
-      detail::bind(&this_type::handle_scheduled_active_session_stop,
+  io_service_.post(strand_.wrap(ma::make_custom_alloc_handler(
+      session_stop_allocator_, detail::bind(
+          &this_type::handle_scheduled_active_session_stop,
           shared_from_this()))));
   ++pending_operations_;
 }
@@ -1211,7 +1211,7 @@ void session_manager::start_accept_session(const session_wrapper_ptr& session)
   session_manager_ptr shared_this = shared_from_this();
 
   acceptor_.async_accept(session->socket(), session->remote_endpoint(),
-      MA_STRAND_WRAP(strand_, make_custom_alloc_handler(accept_allocator_,
+      strand_.wrap(make_custom_alloc_handler(accept_allocator_,
           [shared_this, session](const boost::system::error_code& error)
   {
     BOOST_ASSERT_MSG(accept_state::in_progress == shared_this->accept_state_,
@@ -1239,14 +1239,14 @@ void session_manager::start_accept_session(const session_wrapper_ptr& session)
     && defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
   acceptor_.async_accept(session->socket(), session->remote_endpoint(),
-      MA_STRAND_WRAP(strand_, make_custom_alloc_handler(accept_allocator_,
+      strand_.wrap(make_custom_alloc_handler(accept_allocator_,
           accept_handler_binder(&this_type::handle_accept, shared_from_this(),
               session))));
 
 #else
 
   acceptor_.async_accept(session->socket(), session->remote_endpoint(),
-      MA_STRAND_WRAP(strand_, make_custom_alloc_handler(accept_allocator_,
+      strand_.wrap(make_custom_alloc_handler(accept_allocator_,
           detail::bind(&this_type::handle_accept, shared_from_this(),
               session, detail::placeholders::_1))));
 

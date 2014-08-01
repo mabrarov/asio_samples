@@ -51,9 +51,6 @@ namespace ma {
  * "Execution strategy" means handler related free function asio_handler_invoke
  * or the default one defined by Asio.
  * http://www.boost.org/doc/libs/release/doc/html/boost_asio/reference/Handler.html
- *
- * Use MA_STRAND_WRAP macros to create a strand-wrapped handler according to
- * asio-samples configuration (MA_BOOST_ASIO_HEAVY_STRAND_WRAPPED_HANDLER).
  */
 
 #if defined(_MSC_VER)
@@ -275,13 +272,6 @@ make_strand_wrapped_handler(boost::asio::io_service::strand& strand,
 } // make_strand_wrapped_handler
 
 #endif // defined(MA_HAS_RVALUE_REFS)
-
-#define MA_STRAND_WRAP(strand, handler) \
-    (::ma::make_strand_wrapped_handler((strand), (handler)))
-
-#else // defined(MA_BOOST_ASIO_HEAVY_STRAND_WRAPPED_HANDLER)
-
-#define MA_STRAND_WRAP(strand, handler) ((strand).wrap(handler))
 
 #endif // defined(MA_BOOST_ASIO_HEAVY_STRAND_WRAPPED_HANDLER)
 

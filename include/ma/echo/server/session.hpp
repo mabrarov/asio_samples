@@ -24,6 +24,7 @@
 #include <ma/context_alloc_handler.hpp>
 #include <ma/echo/server/session_config.hpp>
 #include <ma/echo/server/session_fwd.hpp>
+#include <ma/strand.hpp>
 #include <ma/steady_deadline_timer.hpp>
 #include <ma/detail/memory.hpp>
 #include <ma/detail/functional.hpp>
@@ -199,12 +200,12 @@ private:
   bool                  timer_turned_;
   std::size_t           pending_operations_;
 
-  boost::asio::io_service&        io_service_;
-  boost::asio::io_service::strand strand_;
-  protocol_type::socket           socket_;
-  deadline_timer                  timer_;
-  cyclic_buffer                   buffer_;
-  boost::system::error_code       extern_wait_error_;
+  boost::asio::io_service&  io_service_;
+  strand                    strand_;
+  protocol_type::socket     socket_;
+  deadline_timer            timer_;
+  cyclic_buffer             buffer_;
+  boost::system::error_code extern_wait_error_;
 
   handler_storage<boost::system::error_code> extern_wait_handler_;
   handler_storage<boost::system::error_code> extern_stop_handler_;
