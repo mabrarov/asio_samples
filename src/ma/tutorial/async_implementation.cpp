@@ -130,13 +130,13 @@ async_implementation::start_do_something()
 
 #if defined(MA_HAS_RVALUE_REFS) && defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
-  timer_.async_wait(MA_STRAND_WRAP(strand_,
+  timer_.async_wait(strand_.wrap(
       ma::make_custom_alloc_handler(timer_allocator_, timer_handler_binder(
           &this_type::handle_timer, shared_from_this()))));
 
 #else
 
-  timer_.async_wait(MA_STRAND_WRAP(strand_,
+  timer_.async_wait(strand_.wrap(
       ma::make_custom_alloc_handler(timer_allocator_, detail::bind(
           &this_type::handle_timer, shared_from_this(), 
           detail::placeholders::_1))));
@@ -189,13 +189,13 @@ void async_implementation::handle_timer(const boost::system::error_code& error)
 
 #if defined(MA_HAS_RVALUE_REFS) && defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
-    timer_.async_wait(MA_STRAND_WRAP(strand_,
+    timer_.async_wait(strand_.wrap(
         ma::make_custom_alloc_handler(timer_allocator_, timer_handler_binder(
             &this_type::handle_timer, shared_from_this()))));
 
 #else
 
-    timer_.async_wait(MA_STRAND_WRAP(strand_,
+    timer_.async_wait(strand_.wrap(
         ma::make_custom_alloc_handler(timer_allocator_, detail::bind(
             &this_type::handle_timer, shared_from_this(), 
             detail::placeholders::_1))));
