@@ -220,7 +220,7 @@ private:
       const protocol::resolver::iterator& current_endpoint_iterator)
   {
     protocol::endpoint endpoint = *current_endpoint_iterator;
-    ma::async_connect(socket_, endpoint, MA_STRAND_WRAP(strand_,
+    ma::async_connect(socket_, endpoint, strand_.wrap(
         ma::make_custom_alloc_handler(connect_allocator_,
             ma::detail::bind(&this_type::handle_connect, this, 
                 ma::detail::placeholders::_1, initial_endpoint_iterator, 
@@ -282,7 +282,7 @@ private:
     BOOST_ASSERT_MSG(!timer_in_progess_, "Invalid timer state");
 
     timer_.expires_from_now(*connect_pause_);
-    timer_.async_wait(MA_STRAND_WRAP(strand_,
+    timer_.async_wait(strand_.wrap(
         ma::make_custom_alloc_handler(timer_allocator_,
             ma::detail::bind(&this_type::handle_timer, this, 
                 ma::detail::placeholders::_1, initial_endpoint_iterator))));
@@ -527,7 +527,7 @@ private:
       BOOST_ASSERT_MSG(!timer_in_progess_, "Invalid timer state");
 
       timer_.expires_from_now(*block_pause_);
-      timer_.async_wait(MA_STRAND_WRAP(strand_,
+      timer_.async_wait(strand_.wrap(
           ma::make_custom_alloc_handler(timer_allocator_,
               ma::detail::bind(&this_type::handle_scheduled_session_start, this,
                   ma::detail::placeholders::_1, endpoint_iterator))));

@@ -97,5 +97,8 @@
     <ClInclude Include="..\..\..\..\include\ma\detail\thread.hpp">
       <Filter>Header Files\ma\detail</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\include\ma\strand.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

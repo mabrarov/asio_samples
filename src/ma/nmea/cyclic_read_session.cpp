@@ -174,7 +174,7 @@ void cyclic_read_session::complete_stop()
 void cyclic_read_session::read_until_head()
 {
   boost::asio::async_read_until(serial_port_, read_buffer_, frame_head_,
-      MA_STRAND_WRAP(strand_, make_custom_alloc_handler(read_allocator_,
+      strand_.wrap(make_custom_alloc_handler(read_allocator_,
           detail::bind(&this_type::handle_read_head, shared_from_this(),
               detail::placeholders::_1, detail::placeholders::_2))));
 
@@ -184,7 +184,7 @@ void cyclic_read_session::read_until_head()
 void cyclic_read_session::read_until_tail()
 {
   boost::asio::async_read_until(serial_port_, read_buffer_, frame_tail_,
-      MA_STRAND_WRAP(strand_, make_custom_alloc_handler(read_allocator_,
+      strand_.wrap(make_custom_alloc_handler(read_allocator_,
           detail::bind(&this_type::handle_read_tail, shared_from_this(),
               detail::placeholders::_1, detail::placeholders::_2))));
 

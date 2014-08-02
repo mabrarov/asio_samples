@@ -571,7 +571,7 @@ void cyclic_read_session::start_extern_write_some(
     return;
   }
 
-  serial_port_.async_write_some(buffers, MA_STRAND_WRAP(strand_,
+  serial_port_.async_write_some(buffers, strand_.wrap(
       make_custom_alloc_handler(write_allocator_, detail::bind(
           &this_type::handle_write<Handler>, shared_from_this(), 
           detail::placeholders::_1, detail::placeholders::_2,
