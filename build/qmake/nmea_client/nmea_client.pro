@@ -44,6 +44,7 @@ HEADERS  += ../../../include/ma/detail/binder.hpp \
             ../../../include/ma/handler_storage.hpp \
             ../../../include/ma/handler_storage_service.hpp \
             ../../../include/ma/shared_ptr_factory.hpp \
+            ../../../include/ma/strand.hpp \
             ../../../include/ma/strand_wrapped_handler.hpp \
             ../../../include/ma/thread_group.hpp \
             ../../../include/ma/type_traits.hpp

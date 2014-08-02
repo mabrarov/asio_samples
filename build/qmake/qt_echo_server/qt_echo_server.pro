@@ -71,6 +71,7 @@ HEADERS  += ../../../include/ma/echo/server/qt/custommetatypes.h \
             ../../../include/ma/shared_ptr_factory.hpp \
             ../../../include/ma/sp_intrusive_list.hpp \
             ../../../include/ma/steady_deadline_timer.hpp \
+            ../../../include/ma/strand.hpp \
             ../../../include/ma/strand_wrapped_handler.hpp \
             ../../../include/ma/thread_group.hpp \
             ../../../include/ma/type_traits.hpp
