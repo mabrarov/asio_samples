@@ -12,7 +12,6 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
-#include <cstddef>
 #include <boost/asio.hpp>
 #include <boost/noncopyable.hpp>
 #include <ma/config.hpp>
@@ -100,7 +99,7 @@ private:
 
 #else // defined(MA_BOOST_ASIO_HEAVY_STRAND_WRAPPED_HANDLER)
 
-using boost::asio::io_service::strand;
+typedef boost::asio::io_service::strand strand;
 
 #endif // defined(MA_BOOST_ASIO_HEAVY_STRAND_WRAPPED_HANDLER)
 

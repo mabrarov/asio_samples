@@ -201,7 +201,7 @@ private:
   std::size_t           pending_operations_;
 
   boost::asio::io_service&  io_service_;
-  strand                    strand_;
+  ma::strand                strand_;
   protocol_type::socket     socket_;
   deadline_timer            timer_;
   cyclic_buffer             buffer_;

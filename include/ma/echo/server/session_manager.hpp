@@ -264,7 +264,7 @@ private:
 
   boost::asio::io_service&  io_service_;
   session_factory&          session_factory_;
-  strand                    strand_;
+  ma::strand                strand_;
   protocol_type::acceptor   acceptor_;
   session_list              active_sessions_;
   session_list              recycled_sessions_;
