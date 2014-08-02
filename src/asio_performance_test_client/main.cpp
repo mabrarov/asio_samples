@@ -32,7 +32,7 @@
 #include <ma/steady_deadline_timer.hpp>
 #include <ma/handler_allocator.hpp>
 #include <ma/custom_alloc_handler.hpp>
-#include <ma/strand_wrapped_handler.hpp>
+#include <ma/strand.hpp>
 #include <ma/limited_int.hpp>
 #include <ma/thread_group.hpp>
 #include <ma/detail/memory.hpp>
@@ -290,7 +290,7 @@ private:
       const protocol::resolver::iterator& current_endpoint_iterator)
   {
     protocol::endpoint endpoint = *current_endpoint_iterator;
-    ma::async_connect(socket_, endpoint, MA_STRAND_WRAP(strand_,
+    ma::async_connect(socket_, endpoint, strand_.wrap(
         ma::make_custom_alloc_handler(write_allocator_,
             ma::detail::bind(&this_type::handle_connect, this, 
                 ma::detail::placeholders::_1, connect_attempt, 
@@ -423,7 +423,7 @@ private:
     ma::cyclic_buffer::const_buffers_type write_data = buffer_.data();
     if (!write_data.empty())
     {
-      socket_.async_write_some(write_data, MA_STRAND_WRAP(strand_,
+      socket_.async_write_some(write_data, strand_.wrap(
           ma::make_custom_alloc_handler(write_allocator_,
               ma::detail::bind(&this_type::handle_write, this,
                   ma::detail::placeholders::_1, 
@@ -437,7 +437,7 @@ private:
     ma::cyclic_buffer::mutable_buffers_type read_data = buffer_.prepared();
     if (!read_data.empty())
     {
-      socket_.async_read_some(read_data, MA_STRAND_WRAP(strand_,
+      socket_.async_read_some(read_data, strand_.wrap(
           ma::make_custom_alloc_handler(read_allocator_,
               ma::detail::bind(&this_type::handle_read, this,
                   ma::detail::placeholders::_1, 
@@ -515,11 +515,11 @@ private:
   const optional_int  socket_recv_buffer_size_;
   const optional_int  socket_send_buffer_size_;
   const optional_bool no_delay_;
-  boost::asio::io_service::strand strand_;
-  protocol::socket socket_;
-  ma::cyclic_buffer buffer_;
-  limited_counter bytes_written_;
-  limited_counter bytes_read_;
+  ma::strand          strand_;
+  protocol::socket    socket_;
+  ma::cyclic_buffer   buffer_;
+  limited_counter     bytes_written_;
+  limited_counter     bytes_read_;
   bool connected_;
   bool write_in_progress_;
   bool read_in_progress_;
@@ -669,7 +669,7 @@ private:
       BOOST_ASSERT_MSG(!timer_in_progess_, "Invalid timer state");
 
       timer_.expires_from_now(*block_pause_);
-      timer_.async_wait(MA_STRAND_WRAP(strand_,
+      timer_.async_wait(strand_.wrap(
           ma::make_custom_alloc_handler(timer_allocator_,
               ma::detail::bind(&this_type::handle_scheduled_session_start, this,
                   ma::detail::placeholders::_1, endpoint_iterator))));
