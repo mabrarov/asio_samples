@@ -227,11 +227,11 @@ void async_connect(Socket& socket,
 #if defined(MA_HAS_RVALUE_REFS)
 
       socket.get_io_service().post(
-          bind_handler(std::forward<Handler>(handler), error));
+          ma::bind_handler(std::forward<Handler>(handler), error));
 
 #else // defined(MA_HAS_RVALUE_REFS)
 
-      socket.get_io_service().post(bind_handler(handler, error));
+      socket.get_io_service().post(ma::bind_handler(handler, error));
 
 #endif // defined(MA_HAS_RVALUE_REFS)
       return;
@@ -274,11 +274,11 @@ void async_connect(Socket& socket,
 #if defined(MA_HAS_RVALUE_REFS)
 
     socket.get_io_service().post(
-        bind_handler(std::forward<Handler>(handler), error));
+        ma::bind_handler(std::forward<Handler>(handler), error));
 
 #else // defined(MA_HAS_RVALUE_REFS)
 
-    socket.get_io_service().post(bind_handler(handler, error));
+    socket.get_io_service().post(ma::bind_handler(handler, error));
 
 #endif // defined(MA_HAS_RVALUE_REFS)
     return;
