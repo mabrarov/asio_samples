@@ -404,6 +404,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\..\..\include\ma\strand.hpp"
+					>
+				</File>
+				<File
 					RelativePath="..\..\..\..\include\ma\strand_wrapped_handler.hpp"
 					>
 				</File>

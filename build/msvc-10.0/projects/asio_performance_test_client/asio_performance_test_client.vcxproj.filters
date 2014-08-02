@@ -16,7 +16,7 @@
     <Filter Include="Header Files\ma">
       <UniqueIdentifier>{cac2cfe1-1321-4c16-9326-529638c8d140}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\detail">
+    <Filter Include="Header Files\ma\detail">
       <UniqueIdentifier>{2026acca-ef6e-47aa-abf6-7d8174506eba}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -58,7 +58,7 @@
       <Filter>Header Files\ma</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\include\ma\detail\binder.hpp">
-      <Filter>Header Files\detail</Filter>
+      <Filter>Header Files\ma\detail</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\include\ma\bind_handler.hpp">
       <Filter>Header Files\ma</Filter>
@@ -70,13 +70,16 @@
       <Filter>Header Files\ma</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\include\ma\detail\functional.hpp">
-      <Filter>Header Files\detail</Filter>
+      <Filter>Header Files\ma\detail</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\include\ma\detail\memory.hpp">
-      <Filter>Header Files\detail</Filter>
+      <Filter>Header Files\ma\detail</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\include\ma\detail\thread.hpp">
-      <Filter>Header Files\detail</Filter>
+      <Filter>Header Files\ma\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\ma\strand.hpp">
+      <Filter>Header Files\ma</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

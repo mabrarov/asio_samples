@@ -300,6 +300,9 @@
     <ClInclude Include="..\..\..\..\include\ma\detail\tuple.hpp">
       <Filter>Header Files\ma\detail</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\include\ma\strand.hpp">
+      <Filter>Header Files\ma</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\..\src\qt_echo_server\qt_echo_server.ico">
