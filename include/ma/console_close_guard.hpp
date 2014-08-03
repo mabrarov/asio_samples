@@ -13,8 +13,8 @@
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
 #include <boost/noncopyable.hpp>
-#include <ma/memory.hpp>
-#include <ma/functional.hpp>
+#include <ma/detail/memory.hpp>
+#include <ma/detail/functional.hpp>
 
 namespace ma {
 
@@ -26,7 +26,7 @@ namespace ma {
 class console_close_guard : private boost::noncopyable
 {
 public:
-  typedef MA_FUNCTION<void (void)> ctrl_function_type;
+  typedef detail::function<void (void)> ctrl_function_type;
 
   console_close_guard(const ctrl_function_type& ctrl_function);
   ~console_close_guard();  
@@ -34,7 +34,12 @@ public:
 private:
   class implementation;
   
-  MA_SCOPED_PTR<implementation> implementation_;
+#if defined(MA_USE_CXX11_STDLIB_MEMORY)
+  detail::unique_ptr<implementation> implementation_;
+#else
+  detail::scoped_ptr<implementation> implementation_;
+#endif
+
 }; // class console_close_guard
 
 } // namespace ma

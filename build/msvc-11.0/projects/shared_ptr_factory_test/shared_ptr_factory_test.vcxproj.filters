@@ -12,6 +12,9 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
+    <Filter Include="Header Files\ma\detail">
+      <UniqueIdentifier>{9df6db90-b467-4932-8540-4b6d916c6620}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\src\shared_ptr_factory_test\main.cpp">
@@ -25,8 +28,8 @@
     <ClInclude Include="..\..\..\..\include\ma\shared_ptr_factory.hpp">
       <Filter>Header Files\ma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\include\ma\memory.hpp">
-      <Filter>Header Files\ma</Filter>
+    <ClInclude Include="..\..\..\..\include\ma\detail\memory.hpp">
+      <Filter>Header Files\ma\detail</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

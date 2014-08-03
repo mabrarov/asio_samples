@@ -10,12 +10,11 @@
 #endif
 
 #include <boost/config.hpp>
-
 #include <boost/asio.hpp>
-#include <boost/thread/thread.hpp>
-#include <ma/functional.hpp>
 #include <ma/console_close_guard.hpp>
 #include <ma/windows/console_signal.hpp>
+#include <ma/detail/functional.hpp>
+#include <ma/detail/thread.hpp>
 
 namespace {
 
@@ -80,8 +79,8 @@ private:
   static void start_wait(signal_alerter& alerter, 
       const ctrl_function_type& ctrl_function)
   {
-    alerter.async_wait(MA_BIND(&handle_signal, 
-        MA_PLACEHOLDER_1, MA_REF(alerter), ctrl_function));
+    alerter.async_wait(ma::detail::bind(&handle_signal,
+        ma::detail::placeholders::_1, ma::detail::ref(alerter), ctrl_function));
   }
 
   signal_alerter signal_alerter_;
@@ -96,10 +95,9 @@ class console_close_guard::implementation : private console_close_guard_base_1
 public:
   explicit implementation(const ctrl_function_type& ctrl_function)
     : console_close_guard_base_1(ctrl_function)
-    , work_thread_(MA_BIND(
+    , work_thread_(detail::bind(
           static_cast<std::size_t (boost::asio::io_service::*)(void)>(
-              &boost::asio::io_service::run), 
-          MA_REF(io_service_)))
+              &boost::asio::io_service::run), detail::ref(io_service_)))
   {    
   }
 
@@ -110,7 +108,7 @@ public:
   }
   
 private:
-  boost::thread work_thread_;
+  detail::thread work_thread_;
 }; // class console_close_guard::implementation
 
 console_close_guard::console_close_guard(

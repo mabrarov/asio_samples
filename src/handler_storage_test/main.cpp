@@ -17,20 +17,18 @@
 #include <boost/assert.hpp>
 #include <boost/asio.hpp>
 #include <boost/optional.hpp>
-#include <boost/thread/thread.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/locks.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/utility/in_place_factory.hpp>
 #include <ma/config.hpp>
-#include <ma/memory.hpp>
-#include <ma/functional.hpp>
 #include <ma/handler_allocator.hpp>
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/handler_storage.hpp>
 #include <ma/lockable_wrapped_handler.hpp>
 #include <ma/thread_group.hpp>
+#include <ma/detail/memory.hpp>
+#include <ma/detail/functional.hpp>
 #include <ma/detail/latch.hpp>
+#include <ma/detail/thread.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)
 #include <utility>
@@ -101,7 +99,7 @@ int main(int /*argc*/, char* /*argv*/[])
 namespace ma {
 namespace test {
 
-void count_down(ma::detail::latch& latch)
+void count_down(detail::latch& latch)
 {
   latch.count_down();
 }
@@ -110,11 +108,11 @@ class io_service_pool : private boost::noncopyable
 {
 public:
   io_service_pool(boost::asio::io_service& io_service, std::size_t size)
-    : work_guard_(boost::in_place(MA_REF(io_service)))
+    : work_guard_(boost::in_place(detail::ref(io_service)))
   {
     for (std::size_t i = 0; i < size; ++i)
     {
-      threads_.create_thread(MA_BIND(
+      threads_.create_thread(detail::bind(
           static_cast<std::size_t (boost::asio::io_service::*)(void)>(
               &boost::asio::io_service::run),
           &io_service));
@@ -139,7 +137,7 @@ private:
 namespace lockable_wrapper {
 
 typedef std::string data_type;
-typedef MA_FUNCTION<void (void)> continuation;
+typedef detail::function<void(void)> continuation;
 
 void mutating_func1(data_type& d, const continuation& cont)
 {
@@ -161,35 +159,39 @@ void mutating_func3(data_type& d, const continuation& cont)
 
 void run_test()
 {
+  typedef detail::mutex                  mutex_type;
+  typedef detail::lock_guard<mutex_type> lock_guard_type;
+
   std::cout << "*** ma::test::lockable_wrapper ***" << std::endl;
 
-  std::size_t cpu_count = boost::thread::hardware_concurrency();
+  std::size_t cpu_count = detail::thread::hardware_concurrency();
   std::size_t work_thread_count = cpu_count > 1 ? cpu_count : 2;
   boost::asio::io_service io_service(work_thread_count);
   io_service_pool work_threads(io_service, work_thread_count);
+   
 
-  boost::mutex mutex;
+  mutex_type mutex;
   std::string data;
   {
-    boost::lock_guard<boost::mutex> lock_guard(mutex);
+    lock_guard_type lock_guard(mutex);
     data = "0";
   }
 
-  ma::detail::latch done_latch(1);
+  detail::latch done_latch(1);
   {
-    boost::lock_guard<boost::mutex> data_guard(mutex);
+    lock_guard_type data_guard(mutex);
 
-    io_service.post(ma::make_lockable_wrapped_handler(mutex, MA_BIND(
-        mutating_func1, MA_REF(data), continuation(
-            MA_BIND(count_down, MA_REF(done_latch))))));
+    io_service.post(ma::make_lockable_wrapped_handler(mutex, detail::bind(
+        mutating_func1, detail::ref(data), continuation(
+            detail::bind(count_down, detail::ref(done_latch))))));
 
-    boost::this_thread::sleep(boost::posix_time::seconds(5));
+    detail::this_thread::sleep(boost::posix_time::seconds(5));
     data = "Zero";
   }
   done_latch.wait();
 
   {
-    boost::lock_guard<boost::mutex> lock_guard(mutex);
+    lock_guard_type lock_guard(mutex);
     BOOST_ASSERT_MSG("Zero 1 " == data, "Invalid value of data");
   }
 } // run_test
@@ -198,9 +200,9 @@ void run_test()
 
 namespace handler_storage_service_destruction {
 
-typedef int                                 arg_type;
-typedef ma::handler_storage<arg_type>       handler_storage_type;
-typedef MA_SHARED_PTR<handler_storage_type> handler_storage_ptr;
+typedef int                                      arg_type;
+typedef ma::handler_storage<arg_type>            handler_storage_type;
+typedef detail::shared_ptr<handler_storage_type> handler_storage_ptr;
 
 class testable_handler_storage : public handler_storage_type
 {
@@ -334,10 +336,10 @@ private:
   typedef active_destructing_handler this_type;
 
 public:
-  typedef MA_FUNCTION<void (void)> continuation;
+  typedef detail::function<void(void)> continuation;
 
   active_destructing_handler(const continuation& cont, std::size_t& counter)
-    : cont_(MA_MAKE_SHARED<continuation_holder>(cont))
+    : cont_(detail::make_shared<continuation_holder>(cont))
     , counter_(counter)
   {
     ++counter_;
@@ -385,7 +387,7 @@ private:
     continuation cont_;
   }; // continuation_holder
 
-  typedef MA_SHARED_PTR<continuation_holder> continuation_holder_ptr;
+  typedef detail::shared_ptr<continuation_holder> continuation_holder_ptr;
 
   continuation_holder_ptr cont_;
   std::size_t& counter_;
@@ -434,16 +436,16 @@ void run_test()
     boost::asio::io_service io_service;
 
     handler_storage_ptr handler_storage1 =
-        MA_MAKE_SHARED<testable_handler_storage>(
-            MA_REF(io_service), MA_REF(counter));
+        detail::make_shared<testable_handler_storage>(
+            detail::ref(io_service), detail::ref(counter));
     handler_storage1->store(hooked_handler(handler_storage1, counter));
 
     handler_storage_ptr handler_storage2 =
-        MA_MAKE_SHARED<testable_handler_storage>(
-            MA_REF(io_service), MA_REF(counter));
+        detail::make_shared<testable_handler_storage>(
+            detail::ref(io_service), detail::ref(counter));
     handler_storage2->store(active_destructing_handler(
-        MA_BIND(store_hooked_handler, handler_storage2, 
-            handler_storage2, MA_REF(counter)),
+        detail::bind(store_hooked_handler, handler_storage2,
+            handler_storage2, detail::ref(counter)),
         counter));
   }
   BOOST_ASSERT_MSG(0 == counter, "Not all objects were destroyed");
@@ -466,37 +468,37 @@ void run_test()
     handler_storage2.store(simple_handler(counter));
 
     handler_storage_ptr handler_storage3 =
-        MA_MAKE_SHARED<testable_handler_storage>(
-            MA_REF(io_service), MA_REF(counter));
+        detail::make_shared<testable_handler_storage>(
+            detail::ref(io_service), detail::ref(counter));
     handler_storage3->store(hooked_handler(handler_storage3, counter));
 
     testable_handler_storage handler_storage4(io_service, counter);
     handler_storage4.store(simple_handler(counter));
 
     handler_storage_ptr handler_storage5 =
-        MA_MAKE_SHARED<testable_handler_storage>(
-            MA_REF(io_service), MA_REF(counter));
+        detail::make_shared<testable_handler_storage>(
+            detail::ref(io_service), detail::ref(counter));
     handler_storage5->store(active_destructing_handler(
-        MA_BIND(store_simple_handler, handler_storage5, MA_REF(counter)),
-        counter));
+        detail::bind(store_simple_handler, handler_storage5, 
+            detail::ref(counter)), counter));
 
     testable_handler_storage handler_storage6(io_service, counter);
     handler_storage6.store(simple_handler(counter));
 
     handler_storage_ptr handler_storage7 =
-        MA_MAKE_SHARED<testable_handler_storage>(
-            MA_REF(io_service), MA_REF(counter));
+        detail::make_shared<testable_handler_storage>(
+            detail::ref(io_service), detail::ref(counter));
     handler_storage7->store(active_destructing_handler(
-        MA_BIND(store_hooked_handler, handler_storage7, 
-            handler_storage7, MA_REF(counter)),
+        detail::bind(store_hooked_handler, handler_storage7,
+            handler_storage7, detail::ref(counter)),
         counter));
 
     handler_storage_ptr handler_storage8 =
-        MA_MAKE_SHARED<testable_handler_storage>(
-            MA_REF(io_service), MA_REF(counter));
+        detail::make_shared<testable_handler_storage>(
+            detail::ref(io_service), detail::ref(counter));
     handler_storage8->store(active_destructing_handler(
-        MA_BIND(store_hooked_handler, handler_storage7, 
-            handler_storage5, MA_REF(counter)),
+        detail::bind(store_hooked_handler, handler_storage7,
+            handler_storage5, detail::ref(counter)),
         counter));
   }
   BOOST_ASSERT_MSG(0 == counter, "Not all objects were destroyed");
@@ -578,7 +580,7 @@ void run_test()
 {
   std::cout << "*** ma::test::handler_storage_target ***" << std::endl;
 
-  std::size_t cpu_count = boost::thread::hardware_concurrency();
+  std::size_t cpu_count = detail::thread::hardware_concurrency();
   std::size_t work_thread_count = cpu_count > 1 ? cpu_count : 2;
   boost::asio::io_service io_service(work_thread_count);
   io_service_pool work_threads(io_service, work_thread_count);
@@ -598,7 +600,7 @@ void run_test()
 
 namespace handler_storage_arg {
 
-typedef MA_FUNCTION<void (void)> continuation;
+typedef detail::function<void(void)> continuation;
 
 class test_handler_base
 {
@@ -716,7 +718,7 @@ void run_test()
 {
   std::cout << "*** ma::test::handler_storage_arg ***" << std::endl;
 
-  std::size_t cpu_count = boost::thread::hardware_concurrency();
+  std::size_t cpu_count = detail::thread::hardware_concurrency();
   std::size_t work_thread_count = cpu_count > 1 ? cpu_count : 2;
   boost::asio::io_service io_service(work_thread_count);
   io_service_pool work_threads(io_service, work_thread_count);
@@ -727,7 +729,7 @@ void run_test()
 
     handler_storage_type handler_storage(io_service);
     handler_storage.store(void_handler_without_target(value4,
-        MA_BIND(count_down, MA_REF(done_latch))));
+        detail::bind(count_down, detail::ref(done_latch))));
 
     std::cout << handler_storage.target() << std::endl;
     done_latch.count_up();
@@ -739,7 +741,7 @@ void run_test()
 
     handler_storage_type handler_storage(io_service);
     handler_storage.store(int_handler_without_target(value4,
-        MA_BIND(count_down, MA_REF(done_latch))));
+        detail::bind(count_down, detail::ref(done_latch))));
 
     std::cout << handler_storage.target() << std::endl;
     done_latch.count_up();
@@ -751,7 +753,7 @@ void run_test()
 
     handler_storage_type handler_storage(io_service);
     handler_storage.store(void_handler_with_target(value4,
-        MA_BIND(count_down, MA_REF(done_latch))));
+        detail::bind(count_down, detail::ref(done_latch))));
 
     BOOST_ASSERT_MSG(value4 == handler_storage.target()->get_value(), 
         "Data of target is different than the stored data");
@@ -766,7 +768,7 @@ void run_test()
 
     handler_storage_type handler_storage(io_service);
     handler_storage.store(int_handler_with_target(value4,
-        MA_BIND(count_down, MA_REF(done_latch))));
+        detail::bind(count_down, detail::ref(done_latch))));
 
     BOOST_ASSERT_MSG(value4 == handler_storage.target()->get_value(), 
         "Data of target is different than the stored data");
@@ -781,14 +783,14 @@ void run_test()
 
     ma::handler_storage<int, test_handler_base> handler_storage1(io_service);
     handler_storage1.store(int_handler_with_target(value1,
-        MA_BIND(count_down, MA_REF(done_latch))));
+        detail::bind(count_down, detail::ref(done_latch))));
 
     BOOST_ASSERT_MSG(value1 == handler_storage1.target()->get_value(), 
         "Data of target is different than the stored data");
 
     ma::handler_storage<void> handler_storage2(io_service);
     handler_storage2.store(void_handler_without_target(value2,
-        MA_BIND(count_down, MA_REF(done_latch))));
+        detail::bind(count_down, detail::ref(done_latch))));
   }
 
   done_latch.wait();

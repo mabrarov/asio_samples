@@ -69,11 +69,6 @@
     <Filter Include="Source Files\ma\echo\server\qt">
       <UniqueIdentifier>{f4e9ac4f-1b15-46b3-8b80-c5cb0b641c2e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Generated Files\Test">
-      <UniqueIdentifier>{8c080d1a-9975-4837-a30a-a2e061aa0811}</UniqueIdentifier>
-      <Extensions>cpp;moc</Extensions>
-      <SourceControlFiles>False</SourceControlFiles>
-    </Filter>
     <Filter Include="Header Files\ma\detail">
       <UniqueIdentifier>{bfc3881c-67ae-449f-8f70-bd604853c90c}</UniqueIdentifier>
     </Filter>
@@ -106,17 +101,11 @@
     <ClCompile Include="GeneratedFiles\Release\moc_serviceservantsignal.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Test\moc_serviceservantsignal.cpp">
-      <Filter>Generated Files\Test</Filter>
-    </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\moc_serviceforwardsignal.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Release\moc_serviceforwardsignal.cpp">
       <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Test\moc_serviceforwardsignal.cpp">
-      <Filter>Generated Files\Test</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\moc_service.cpp">
       <Filter>Generated Files\Debug</Filter>
@@ -124,17 +113,11 @@
     <ClCompile Include="GeneratedFiles\Release\moc_service.cpp">
       <Filter>Generated Files\Release</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Test\moc_service.cpp">
-      <Filter>Generated Files\Test</Filter>
-    </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\moc_mainform.cpp">
       <Filter>Generated Files\Debug</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Release\moc_mainform.cpp">
       <Filter>Generated Files\Release</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Test\moc_mainform.cpp">
-      <Filter>Generated Files\Test</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\src\ma\echo\server\pooled_session_factory.cpp">
       <Filter>Source Files\ma\echo\server</Filter>
@@ -302,16 +285,22 @@
     <ClInclude Include="..\..\..\..\include\ma\handler_cont_helpers.hpp">
       <Filter>Header Files\ma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\include\ma\functional.hpp">
-      <Filter>Header Files\ma</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\include\ma\memory.hpp">
-      <Filter>Header Files\ma</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\include\ma\thread_group.hpp">
       <Filter>Header Files\ma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\include\ma\tuple.hpp">
+    <ClInclude Include="..\..\..\..\include\ma\detail\functional.hpp">
+      <Filter>Header Files\ma\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\ma\detail\memory.hpp">
+      <Filter>Header Files\ma\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\ma\detail\thread.hpp">
+      <Filter>Header Files\ma\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\ma\detail\tuple.hpp">
+      <Filter>Header Files\ma\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\ma\strand.hpp">
       <Filter>Header Files\ma</Filter>
     </ClInclude>
   </ItemGroup>

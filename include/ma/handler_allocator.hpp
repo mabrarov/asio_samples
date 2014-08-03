@@ -16,7 +16,7 @@
 #include <boost/assert.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/aligned_storage.hpp>
-#include <ma/memory.hpp>
+#include <ma/detail/memory.hpp>
 
 namespace ma {
 
@@ -76,9 +76,9 @@ private:
   byte_type* retrieve_aligned_address();
 
 #if defined(MA_USE_CXX11_STDLIB_MEMORY)
-  std::unique_ptr<byte_type[]>   storage_;
+  detail::unique_ptr<byte_type[]>   storage_;
 #else
-  boost::scoped_array<byte_type> storage_;
+  detail::scoped_array<byte_type> storage_;
 #endif
 
   std::size_t size_;

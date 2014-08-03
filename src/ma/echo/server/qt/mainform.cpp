@@ -12,7 +12,6 @@ TRANSLATOR ma::echo::server::qt::MainForm
 #include <limits>
 #include <stdexcept>
 #include <boost/optional.hpp>
-#include <boost/thread/thread.hpp>
 #include <boost/throw_exception.hpp>
 #include <boost/numeric/conversion/cast.hpp>
 #include <QtGlobal>
@@ -25,6 +24,7 @@ TRANSLATOR ma::echo::server::qt::MainForm
 #include <ma/echo/server/qt/service.h>
 #include <ma/echo/server/qt/signal_connect_error.h>
 #include <ma/echo/server/qt/mainform.h>
+#include <ma/detail/thread.hpp>
 
 namespace ma {
 namespace echo {
@@ -159,39 +159,39 @@ MainForm::MainForm(Service& service, QWidget* parent, Qt::WindowFlags flags)
       SIGNAL(timeout()), SLOT(on_statsTimer_timeout())));
 
   optionsWidgets_.push_back(
-      boost::make_tuple(0, ui_.sessionManagerThreadsSpinBox));
+      detail::make_tuple(0, ui_.sessionManagerThreadsSpinBox));
   optionsWidgets_.push_back(
-      boost::make_tuple(0, ui_.sessionThreadsSpinBox));
+      detail::make_tuple(0, ui_.sessionThreadsSpinBox));
   optionsWidgets_.push_back(
-      boost::make_tuple(0, ui_.sessionThreadModelComboBox));
+      detail::make_tuple(0, ui_.sessionThreadModelComboBox));
   optionsWidgets_.push_back(
-      boost::make_tuple(1, ui_.maxSessionCountSpinBox));
+      detail::make_tuple(1, ui_.maxSessionCountSpinBox));
   optionsWidgets_.push_back(
-      boost::make_tuple(1, ui_.recycledSessionCountSpinBox));
+      detail::make_tuple(1, ui_.recycledSessionCountSpinBox));
   optionsWidgets_.push_back(
-      boost::make_tuple(1, ui_.listenBacklogSpinBox));
+      detail::make_tuple(1, ui_.listenBacklogSpinBox));
   optionsWidgets_.push_back(
-      boost::make_tuple(1, ui_.portNumberSpinBox));
+      detail::make_tuple(1, ui_.portNumberSpinBox));
   optionsWidgets_.push_back(
-      boost::make_tuple(1, ui_.addressEdit));
+      detail::make_tuple(1, ui_.addressEdit));
   optionsWidgets_.push_back(
-      boost::make_tuple(2, ui_.sessionBufferSizeSpinBox));
+      detail::make_tuple(2, ui_.sessionBufferSizeSpinBox));
   optionsWidgets_.push_back(
-      boost::make_tuple(2, ui_.inactivityTimeoutCheckBox));
+      detail::make_tuple(2, ui_.inactivityTimeoutCheckBox));
   optionsWidgets_.push_back(
-      boost::make_tuple(2, ui_.inactivityTimeoutSpinBox));
+      detail::make_tuple(2, ui_.inactivityTimeoutSpinBox));
   optionsWidgets_.push_back(
-      boost::make_tuple(2, ui_.maxTransferSizeSpinBox));
+      detail::make_tuple(2, ui_.maxTransferSizeSpinBox));
   optionsWidgets_.push_back(
-      boost::make_tuple(2, ui_.sockRecvBufferSizeCheckBox));
+      detail::make_tuple(2, ui_.sockRecvBufferSizeCheckBox));
   optionsWidgets_.push_back(
-      boost::make_tuple(2, ui_.sockRecvBufferSizeSpinBox));
+      detail::make_tuple(2, ui_.sockRecvBufferSizeSpinBox));
   optionsWidgets_.push_back(
-      boost::make_tuple(2, ui_.sockSendBufferSizeCheckBox));
+      detail::make_tuple(2, ui_.sockSendBufferSizeCheckBox));
   optionsWidgets_.push_back(
-      boost::make_tuple(2, ui_.sockSendBufferSizeSpinBox));
+      detail::make_tuple(2, ui_.sockSendBufferSizeSpinBox));
   optionsWidgets_.push_back(
-      boost::make_tuple(2, ui_.tcpNoDelayComboBox));
+      detail::make_tuple(2, ui_.tcpNoDelayComboBox));
 
   checkConnect(QObject::connect(&service,
       SIGNAL(exceptionHappened()),
@@ -209,7 +209,7 @@ MainForm::MainForm(Service& service, QWidget* parent, Qt::WindowFlags flags)
       SIGNAL(workCompleted(const boost::system::error_code&)),
       SLOT(on_service_workCompleted(const boost::system::error_code&))));
 
-  unsigned hardwareConcurrency = boost::thread::hardware_concurrency();
+  unsigned hardwareConcurrency = detail::thread::hardware_concurrency();
   ui_.sessionManagerThreadsSpinBox->setValue(boost::numeric_cast<int>(
       calcSessionManagerThreadCount(hardwareConcurrency)));
   ui_.sessionThreadsSpinBox->setValue(boost::numeric_cast<int>(
@@ -249,7 +249,8 @@ void MainForm::on_startButton_clicked()
   }
   if (serviceConfig)
   {
-    service_.asyncStart(serviceConfig->get<0>(), serviceConfig->get<1>());
+    service_.asyncStart(
+        detail::get<0>(*serviceConfig), detail::get<1>(*serviceConfig));
     writeLog(tr("Starting echo service."));
 
     startStatsTimer();
@@ -498,7 +499,7 @@ MainForm::ServiceConfig MainForm::buildServiceConfig() const
 {
   execution_config executionConfig = buildExecutionConfig();
   session_manager_config sessionManagerOptions = buildSessionManagerConfig();
-  return boost::make_tuple(executionConfig, sessionManagerOptions);
+  return detail::make_tuple(executionConfig, sessionManagerOptions);
 }
 
 void MainForm::startStatsTimer()
@@ -527,9 +528,9 @@ void MainForm::showConfigError(const QString& message, QWidget* widget)
     for (iterator_type i = optionsWidgets_.begin(),
         end = optionsWidgets_.end(); i != end; ++i)
     {
-      if (widget == i->get<1>())
+      if (widget == detail::get<1>(*i))
       {
-        ui_.configTabWidget->setCurrentIndex(i->get<0>());
+        ui_.configTabWidget->setCurrentIndex(detail::get<0>(*i));
         break;
       }
     }
@@ -575,7 +576,7 @@ void MainForm::updateWidgetsStates(bool ignorePrevServiceState)
     for (iterator_type i = optionsWidgets_.begin(),
         end = optionsWidgets_.end(); i != end; ++i)
     {
-      i->get<1>()->setEnabled(serviceStopped);
+      detail::get<1>(*i)->setEnabled(serviceStopped);
     }
 
     ui_.inactivityTimeoutSpinBox->setEnabled(serviceStopped &&

@@ -16,10 +16,10 @@
 #include <vector>
 #include <boost/asio.hpp>
 #include <boost/noncopyable.hpp>
-#include <ma/memory.hpp>
 #include <ma/sp_intrusive_list.hpp>
 #include <ma/echo/server/session.hpp>
 #include <ma/echo/server/session_factory.hpp>
+#include <ma/detail/memory.hpp>
 
 namespace ma {
 namespace echo {
@@ -33,7 +33,7 @@ private:
   typedef pooled_session_factory this_type;
 
 public:
-  typedef std::vector<MA_SHARED_PTR<boost::asio::io_service> >
+  typedef std::vector<detail::shared_ptr<boost::asio::io_service> >
       io_service_vector;
 
   pooled_session_factory(const io_service_vector& io_services,
@@ -56,12 +56,12 @@ private:
   typedef sp_intrusive_list<session_wrapper_base> session_list;
 
   class session_wrapper;
-  typedef MA_SHARED_PTR<session_wrapper> session_wrapper_ptr;
+  typedef detail::shared_ptr<session_wrapper> session_wrapper_ptr;
 
   class pool_item;
-  typedef MA_SHARED_PTR<pool_item> pool_item_ptr;
-  typedef std::vector<pool_item_ptr>   pool;
-  typedef pool::const_iterator         pool_link;
+  typedef detail::shared_ptr<pool_item> pool_item_ptr;
+  typedef std::vector<pool_item_ptr>    pool;
+  typedef pool::const_iterator          pool_link;
 
   static pool create_pool(const io_service_vector& io_services,
       std::size_t max_recycled);

@@ -21,14 +21,14 @@
 #include <boost/optional.hpp>
 #include <boost/assert.hpp>
 #include <boost/noncopyable.hpp>
-#include <boost/thread/thread.hpp>
-#include <boost/thread/barrier.hpp>
 #include <boost/random.hpp>
 #include <boost/date_time/posix_time/ptime.hpp>
-#include <ma/memory.hpp>
-#include <ma/functional.hpp>
+#include <ma/thread_group.hpp>
 #include <ma/limited_int.hpp>
 #include <ma/shared_ptr_factory.hpp>
+#include <ma/detail/memory.hpp>
+#include <ma/detail/functional.hpp>
+#include <ma/detail/thread.hpp>
 #include <ma/detail/sp_singleton.hpp>
 
 namespace ma {
@@ -111,7 +111,7 @@ std::string to_string(const ma::limited_int<Integer>& limited_value)
 namespace sp_singleton_construction {
 
 class foo;
-typedef MA_SHARED_PTR<foo> foo_ptr;
+typedef detail::shared_ptr<foo> foo_ptr;
 
 class foo : private boost::noncopyable
 {
@@ -161,7 +161,7 @@ struct foo::factory
   {
     typedef ma::shared_ptr_factory_helper<foo> helper;
     static int data = 0;
-    return MA_MAKE_SHARED<helper>(instance_guard, data++);
+    return detail::make_shared<helper>(instance_guard, data++);
   }
 }; // struct factory
 
@@ -195,8 +195,8 @@ foo::~foo()
 namespace sp_singleton_thread {
 
 class foo;
-typedef MA_SHARED_PTR<foo> foo_ptr;
-typedef MA_WEAK_PTR<foo>   foo_weak_ptr;
+typedef detail::shared_ptr<foo> foo_ptr;
+typedef detail::weak_ptr<foo>   foo_weak_ptr;
 
 class foo : private boost::noncopyable
 {
@@ -227,10 +227,8 @@ void thread_func(foo_ptr foo)
   (void) foo->data();
 }
 
-void thread_func2(const foo_weak_ptr& weak_foo, 
-  ma::detail::latch& latch1,
-  ma::detail::latch& latch2,
-  ma::detail::latch& latch3)
+void thread_func2(const foo_weak_ptr& weak_foo, detail::latch& latch1,
+    detail::latch& latch2, detail::latch& latch3)
 {
   if (foo_ptr foo = weak_foo.lock())
   {
@@ -244,21 +242,28 @@ void thread_func2(const foo_weak_ptr& weak_foo,
 void run_test()
 {
   {
-    boost::thread t(MA_BIND(thread_func, foo::get_instance()));
+    detail::thread t(detail::bind(thread_func, foo::get_instance()));
     t.join();
     const foo_ptr foo = foo::get_instance();
     BOOST_ASSERT_MSG(1 == foo->data(), "Instance has to be different");
   }
 
   {
-    ma::detail::latch latch1(1);
-    ma::detail::latch latch2(1);
-    ma::detail::latch latch3(1);
-    MA_SCOPED_PTR<boost::thread> t;
+    detail::latch latch1(1);
+    detail::latch latch2(1);
+    detail::latch latch3(1);
+
+#if defined(MA_USE_CXX11_STDLIB_MEMORY)
+    detail::unique_ptr<detail::thread> t;
+#else
+    detail::scoped_ptr<detail::thread> t;
+#endif
+
     {
       const foo_ptr thread_foo = foo::get_instance();
-      t.reset(new boost::thread(MA_BIND(thread_func2, foo_weak_ptr(thread_foo),
-          MA_REF(latch1), MA_REF(latch2), MA_REF(latch3))));
+      t.reset(new detail::thread(detail::bind(thread_func2, 
+          foo_weak_ptr(thread_foo), detail::ref(latch1), detail::ref(latch2),
+          detail::ref(latch3))));
       latch1.wait();
     }
     {
@@ -289,7 +294,7 @@ struct foo::factory
   {
     typedef ma::shared_ptr_factory_helper<foo> helper;
     static int data = 0;
-    return MA_MAKE_SHARED<helper>(instance_guard, data++);
+    return detail::make_shared<helper>(instance_guard, data++);
   }
 }; // struct foo::factory
 
@@ -322,11 +327,11 @@ foo::~foo()
 
 namespace sp_singleton_sync {
 
-ma::detail::latch destroy_start_latch;
-ma::detail::latch destroy_complete_latch;
+detail::latch destroy_start_latch;
+detail::latch destroy_complete_latch;
 
 class foo;
-typedef MA_SHARED_PTR<foo> foo_ptr;
+typedef detail::shared_ptr<foo> foo_ptr;
 
 class foo : private boost::noncopyable
 {
@@ -369,7 +374,7 @@ void run_test()
   {
     destroy_start_latch.count_up();
     destroy_complete_latch.count_up();
-    boost::thread t(thread_func);
+    detail::thread t(thread_func);
     destroy_start_latch.wait();
     {
       const foo_ptr f = foo::get_nullable_instance();
@@ -392,7 +397,7 @@ struct foo::factory
   {
     typedef ma::shared_ptr_factory_helper<foo> helper;
     static int data = 0;
-    return MA_MAKE_SHARED<helper>(instance_guard, data++);
+    return detail::make_shared<helper>(instance_guard, data++);
   }
 }; // struct foo::factory
 
@@ -436,7 +441,7 @@ foo::~foo()
 namespace sp_singleton_sync2 {
 
 class foo;
-typedef MA_SHARED_PTR<foo> foo_ptr;
+typedef detail::shared_ptr<foo> foo_ptr;
 
 class foo : private boost::noncopyable
 {
@@ -471,7 +476,7 @@ const std::size_t iteration_count  = 100;
 const std::size_t work_cycle_count = 100;
 
 typedef boost::random::mt19937 random_generator;
-typedef MA_SHARED_PTR<random_generator> random_generator_ptr;
+typedef detail::shared_ptr<random_generator> random_generator_ptr;
 
 void work_func(const random_generator_ptr& rng)
 {
@@ -488,31 +493,32 @@ void work_func(const random_generator_ptr& rng)
   }
 }
 
-void thread_func(boost::barrier& work_barrier, const random_generator_ptr& rng)
+void thread_func(detail::barrier& work_barrier, const random_generator_ptr& rng)
 {
-  work_barrier.wait();
+  work_barrier.count_down_and_wait();
   work_func(rng);
 }
 
 void run_test()
 {
   const std::size_t thread_count = static_cast<std::size_t>(
-      std::max<unsigned>(boost::thread::hardware_concurrency(), 16));
+      std::max<unsigned>(detail::thread::hardware_concurrency(), 16));
 
   std::vector<random_generator_ptr> rngs;
   for (std::size_t i = 0; i != thread_count; ++i)
   {
-    rngs.push_back(MA_MAKE_SHARED<random_generator>());
+    rngs.push_back(detail::make_shared<random_generator>());
   }
 
   for (std::size_t n = 0; n != iteration_count; ++n)
   {
-    boost::barrier work_barrier(static_cast<unsigned>(thread_count));
-    boost::thread_group threads;
+    detail::barrier work_barrier(
+        static_cast<detail::barrier::counter_type>(thread_count));
+    ma::thread_group threads;
     for (std::size_t i = 0; i != thread_count - 1; ++i)
     {
       threads.create_thread(
-          MA_BIND(thread_func, MA_REF(work_barrier), rngs[i]));
+          detail::bind(thread_func, detail::ref(work_barrier), rngs[i]));
     }
     thread_func(work_barrier, rngs.back());
     threads.join_all();
@@ -529,7 +535,7 @@ struct foo::factory
     typedef ma::shared_ptr_factory_helper<foo> helper;
     static counter init_counter = 0;
     ++init_counter;
-    return MA_MAKE_SHARED<helper>(instance_guard, init_counter);
+    return detail::make_shared<helper>(instance_guard, init_counter);
   }
 }; // struct foo::factory
 

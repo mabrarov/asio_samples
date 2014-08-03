@@ -380,10 +380,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\..\include\ma\functional.hpp"
-					>
-				</File>
-				<File
 					RelativePath="..\..\..\..\include\ma\handler_alloc_helpers.hpp"
 					>
 				</File>
@@ -404,11 +400,11 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\..\include\ma\memory.hpp"
+					RelativePath="..\..\..\..\include\ma\steady_deadline_timer.hpp"
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\..\include\ma\steady_deadline_timer.hpp"
+					RelativePath="..\..\..\..\include\ma\strand.hpp"
 					>
 				</File>
 				<File
@@ -428,6 +424,18 @@
 					>
 					<File
 						RelativePath="..\..\..\..\include\ma\detail\binder.hpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\..\..\include\ma\detail\functional.hpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\..\..\include\ma\detail\memory.hpp"
+						>
+					</File>
+					<File
+						RelativePath="..\..\..\..\include\ma\detail\thread.hpp"
 						>
 					</File>
 				</Filter>

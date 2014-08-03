@@ -16,7 +16,7 @@
 #include <boost/assert.hpp>
 #include <boost/noncopyable.hpp>
 #include <ma/config.hpp>
-#include <ma/memory.hpp>
+#include <ma/detail/memory.hpp>
 
 namespace ma {
 
@@ -37,8 +37,8 @@ public:
   typedef Value  value_type;
   typedef Value* pointer;
   typedef Value& reference;
-  typedef MA_WEAK_PTR<Value>   weak_pointer;
-  typedef MA_SHARED_PTR<Value> shared_pointer;
+  typedef detail::weak_ptr<Value>   weak_pointer;
+  typedef detail::shared_ptr<Value> shared_pointer;
 
   /// Required hook for items of the list.
   class base_hook;

@@ -15,10 +15,10 @@
 #include <cstddef>
 #include <boost/asio.hpp>
 #include <ma/config.hpp>
-#include <ma/memory.hpp>
 #include <ma/handler_alloc_helpers.hpp>
 #include <ma/handler_cont_helpers.hpp>
 #include <ma/context_wrapped_handler.hpp>
+#include <ma/detail/memory.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)
 #include <utility>
@@ -51,9 +51,6 @@ namespace ma {
  * "Execution strategy" means handler related free function asio_handler_invoke
  * or the default one defined by Asio.
  * http://www.boost.org/doc/libs/release/doc/html/boost_asio/reference/Handler.html
- *
- * Use MA_STRAND_WRAP macros to create a strand-wrapped handler according to
- * asio-samples configuration (MA_BOOST_ASIO_HEAVY_STRAND_WRAPPED_HANDLER).
  */
 
 #if defined(_MSC_VER)
@@ -74,7 +71,7 @@ public:
 
   template <typename H>
   strand_wrapped_handler(boost::asio::io_service::strand& strand, H&& handler)
-    : strand_(MA_ADDRESS_OF(strand))
+    : strand_(detail::addressof(strand))
     , handler_(std::forward<H>(handler))
   {
   }
@@ -103,7 +100,7 @@ public:
 
   strand_wrapped_handler(boost::asio::io_service::strand& strand,
       const Handler& handler)
-    : strand_(MA_ADDRESS_OF(strand))
+    : strand_(detail::addressof(strand))
     , handler_(handler)
   {
   }
@@ -275,13 +272,6 @@ make_strand_wrapped_handler(boost::asio::io_service::strand& strand,
 } // make_strand_wrapped_handler
 
 #endif // defined(MA_HAS_RVALUE_REFS)
-
-#define MA_STRAND_WRAP(strand, handler) \
-    (::ma::make_strand_wrapped_handler((strand), (handler)))
-
-#else // defined(MA_BOOST_ASIO_HEAVY_STRAND_WRAPPED_HANDLER)
-
-#define MA_STRAND_WRAP(strand, handler) ((strand).wrap(handler))
 
 #endif // defined(MA_BOOST_ASIO_HEAVY_STRAND_WRAPPED_HANDLER)
 

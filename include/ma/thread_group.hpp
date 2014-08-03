@@ -13,8 +13,8 @@
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
 #include <ma/config.hpp>
-#include <ma/functional.hpp>
 #include <boost/noncopyable.hpp>
+#include <ma/detail/functional.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)
 #include <utility>
@@ -74,7 +74,7 @@ inline void thread_group::create_thread(Task&& task)
 inline void thread_group::join_all()
 {
   std::for_each(threads_.begin(), threads_.end(), 
-      MA_BIND(&std::thread::join, MA_PLACEHOLDER_1));
+      detail::bind(&std::thread::join, detail::placeholders::_1));
 }
 
 #else  // defined(MA_USE_CXX11_THREAD) && defined(MA_HAS_RVALUE_REFS)

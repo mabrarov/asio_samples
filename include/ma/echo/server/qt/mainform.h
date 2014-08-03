@@ -13,7 +13,6 @@
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
 #include <vector>
-#include <boost/tuple/tuple.hpp>
 #include <boost/system/error_code.hpp>
 #include <QWidget>
 #include <ma/echo/server/session_config.hpp>
@@ -22,6 +21,7 @@
 #include <ma/echo/server/qt/service_fwd.h>
 #include <ma/echo/server/qt/servicestate.h>
 #include <ma/echo/server/qt/execution_config.h>
+#include <ma/detail/tuple.hpp>
 #include <ui_mainform.h>
 
 QT_BEGIN_NAMESPACE
@@ -53,9 +53,8 @@ private slots:
   void on_service_workCompleted(const boost::system::error_code&);
 
 private:
-  typedef boost::tuple<execution_config, session_manager_config> ServiceConfig;
-
-  typedef boost::tuple<int, QWidget*> OptionWidget;
+  typedef detail::tuple<execution_config, session_manager_config> ServiceConfig;
+  typedef detail::tuple<int, QWidget*> OptionWidget;
 
   Q_DISABLE_COPY(MainForm)
 

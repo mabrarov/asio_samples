@@ -13,22 +13,17 @@
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
 #include <cstddef>
-#include <boost/thread/locks.hpp>
 #include <ma/config.hpp>
 #include <ma/handler_alloc_helpers.hpp>
 #include <ma/handler_invoke_helpers.hpp>
 #include <ma/handler_cont_helpers.hpp>
+#include <ma/detail/memory.hpp>
+#include <ma/detail/thread.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)
 #include <utility>
 #include <ma/type_traits.hpp>
 #endif // defined(MA_HAS_RVALUE_REFS)
-
-#if defined(MA_USE_CXX11_STDLIB_MEMORY)
-#include <memory>
-#else
-#include <boost/utility/addressof.hpp>
-#endif // defined(MA_USE_CXX11_STDLIB_MEMORY)
 
 namespace ma {
 
@@ -53,7 +48,7 @@ public:
 
   template <typename H>
   lockable_wrapped_handler(Lockable& lockable, H&& handler)
-    : lockable_(MA_ADDRESS_OF(lockable))
+    : lockable_(detail::addressof(lockable))
     , handler_(std::forward<H>(handler))
   {
   }
@@ -81,7 +76,7 @@ public:
 #else // defined(MA_HAS_RVALUE_REFS)
 
   lockable_wrapped_handler(Lockable& lockable, const Handler& handler)
-    : lockable_(MA_ADDRESS_OF(lockable))
+    : lockable_(detail::addressof(lockable))
     , handler_(handler)
   {
   }
@@ -117,7 +112,7 @@ public:
   friend void asio_handler_invoke(Function&& function, this_type* context)
   {
     // Acquire lock    
-    boost::lock_guard<Lockable> lock_guard(*context->lockable_);
+    detail::lock_guard<Lockable> lock_guard(*context->lockable_);
     // Forward to asio_handler_invoke provided by source handler.
     ma_handler_invoke_helpers::invoke(
         std::forward<Function>(function), context->handler_);
@@ -129,7 +124,7 @@ public:
   friend void asio_handler_invoke(Function& function, this_type* context)
   {
     // Acquire lock    
-    boost::lock_guard<Lockable> lock_guard(*context->lockable_);
+    detail::lock_guard<Lockable> lock_guard(*context->lockable_);
     // Forward to asio_handler_invoke provided by source handler.
     ma_handler_invoke_helpers::invoke(function, context->handler_);
   }
@@ -138,7 +133,7 @@ public:
   friend void asio_handler_invoke(const Function& function, this_type* context)
   {
     // Acquire lock    
-    boost::lock_guard<Lockable> lock_guard(*context->lockable_);
+    detail::lock_guard<Lockable> lock_guard(*context->lockable_);
     // Forward to asio_handler_invoke provided by source handler.
     ma_handler_invoke_helpers::invoke(function, context->handler_);
   }

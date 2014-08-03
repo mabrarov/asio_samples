@@ -12,14 +12,14 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
-#include <ma/memory.hpp>
 #include <ma/tutorial2/do_something_handler_fwd.hpp>
+#include <ma/detail/memory.hpp>
 
 namespace ma {
 namespace tutorial2 {
 
 class async_interface;
-typedef MA_SHARED_PTR<ma::tutorial2::async_interface> async_interface_ptr;
+typedef detail::shared_ptr<ma::tutorial2::async_interface> async_interface_ptr;
 
 class async_interface
 {

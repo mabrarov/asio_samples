@@ -12,15 +12,15 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
-#include <ma/memory.hpp>
+#include <ma/detail/memory.hpp>
 
 namespace ma {
 namespace echo {
 namespace server {
 
 class session_manager;
-typedef MA_SHARED_PTR<session_manager> session_manager_ptr;
-typedef MA_WEAK_PTR<session_manager>   session_manager_weak_ptr;
+typedef detail::shared_ptr<session_manager> session_manager_ptr;
+typedef detail::weak_ptr<session_manager>   session_manager_weak_ptr;
 
 } // namespace server
 } // namespace echo

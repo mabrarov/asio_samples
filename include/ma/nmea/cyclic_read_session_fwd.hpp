@@ -12,13 +12,13 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
-#include <ma/memory.hpp>
+#include <ma/detail/memory.hpp>
 
 namespace ma {
 namespace nmea {
 
 class cyclic_read_session;
-typedef MA_SHARED_PTR<cyclic_read_session> cyclic_read_session_ptr;
+typedef detail::shared_ptr<cyclic_read_session> cyclic_read_session_ptr;
 
 } // namespace nmea
 } // namespace ma

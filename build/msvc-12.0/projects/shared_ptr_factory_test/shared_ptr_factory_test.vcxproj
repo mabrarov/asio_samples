@@ -212,7 +212,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\include\ma\config.hpp" />
-    <ClInclude Include="..\..\..\..\include\ma\memory.hpp" />
+    <ClInclude Include="..\..\..\..\include\ma\detail\memory.hpp" />
     <ClInclude Include="..\..\..\..\include\ma\shared_ptr_factory.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

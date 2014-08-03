@@ -20,7 +20,7 @@
 #include <boost/array.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/throw_exception.hpp>
-#include <ma/memory.hpp>
+#include <ma/detail/memory.hpp>
 
 namespace ma {
 
@@ -125,9 +125,9 @@ private:
   mutable_buffers_type prepared_of_size(std::size_t buffers_size) const;
 
 #if defined(MA_USE_CXX11_STDLIB_MEMORY)
-  std::unique_ptr<char[]>   data_;
+  detail::unique_ptr<char[]>   data_;
 #else
-  boost::scoped_array<char> data_;
+  detail::scoped_array<char> data_;
 #endif
 
   std::size_t size_;

@@ -82,16 +82,6 @@
       <Extensions>cpp;moc</Extensions>
       <SourceControlFiles>False</SourceControlFiles>
     </Filter>
-    <Filter Include="Generated Files\Test_Win32">
-      <UniqueIdentifier>{b8eca29f-7baf-41ee-97cd-3813cfffed44}</UniqueIdentifier>
-      <Extensions>cpp;moc</Extensions>
-      <SourceControlFiles>False</SourceControlFiles>
-    </Filter>
-    <Filter Include="Generated Files\Test_x64">
-      <UniqueIdentifier>{b94b03fb-31d6-4483-a4e3-e316ec8b65da}</UniqueIdentifier>
-      <Extensions>cpp;moc</Extensions>
-      <SourceControlFiles>False</SourceControlFiles>
-    </Filter>
     <Filter Include="Generated Files\Win32">
       <UniqueIdentifier>{9a8700f1-9440-4192-8d8d-bb1823daeff9}</UniqueIdentifier>
     </Filter>
@@ -157,23 +147,17 @@
     <ClCompile Include="GeneratedFiles\Release\x64\moc_serviceservantsignal.cpp">
       <Filter>Generated Files\Release_x64</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Test\Win32\moc_serviceservantsignal.cpp">
-      <Filter>Generated Files\Test_Win32</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Test\x64\moc_serviceservantsignal.cpp">
-      <Filter>Generated Files\Test_x64</Filter>
+    <ClCompile Include="GeneratedFiles\Release_static\x64\moc_serviceservantsignal.cpp">
+      <Filter>Generated Files\Release_static_x64</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Release_static\Win32\moc_serviceservantsignal.cpp">
       <Filter>Generated Files\Release_static_Win32</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release_static\x64\moc_serviceservantsignal.cpp">
-      <Filter>Generated Files\Release_static_x64</Filter>
+    <ClCompile Include="GeneratedFiles\Debug_static\x64\moc_serviceservantsignal.cpp">
+      <Filter>Generated Files\Debug_static_x64</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug_static\Win32\moc_serviceservantsignal.cpp">
       <Filter>Generated Files\Debug_static_Win32</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug_static\x64\moc_serviceservantsignal.cpp">
-      <Filter>Generated Files\Debug_static_x64</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\Win32\moc_serviceforwardsignal.cpp">
       <Filter>Generated Files\Debug_Win32</Filter>
@@ -187,23 +171,17 @@
     <ClCompile Include="GeneratedFiles\Release\x64\moc_serviceforwardsignal.cpp">
       <Filter>Generated Files\Release_x64</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Test\Win32\moc_serviceforwardsignal.cpp">
-      <Filter>Generated Files\Test_Win32</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Test\x64\moc_serviceforwardsignal.cpp">
-      <Filter>Generated Files\Test_x64</Filter>
+    <ClCompile Include="GeneratedFiles\Release_static\x64\moc_serviceforwardsignal.cpp">
+      <Filter>Generated Files\Release_static_x64</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Release_static\Win32\moc_serviceforwardsignal.cpp">
       <Filter>Generated Files\Release_static_Win32</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release_static\x64\moc_serviceforwardsignal.cpp">
-      <Filter>Generated Files\Release_static_x64</Filter>
+    <ClCompile Include="GeneratedFiles\Debug_static\x64\moc_serviceforwardsignal.cpp">
+      <Filter>Generated Files\Debug_static_x64</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug_static\Win32\moc_serviceforwardsignal.cpp">
       <Filter>Generated Files\Debug_static_Win32</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug_static\x64\moc_serviceforwardsignal.cpp">
-      <Filter>Generated Files\Debug_static_x64</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\Win32\moc_service.cpp">
       <Filter>Generated Files\Debug_Win32</Filter>
@@ -217,23 +195,17 @@
     <ClCompile Include="GeneratedFiles\Release\x64\moc_service.cpp">
       <Filter>Generated Files\Release_x64</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Test\Win32\moc_service.cpp">
-      <Filter>Generated Files\Test_Win32</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Test\x64\moc_service.cpp">
-      <Filter>Generated Files\Test_x64</Filter>
+    <ClCompile Include="GeneratedFiles\Release_static\x64\moc_service.cpp">
+      <Filter>Generated Files\Release_static_x64</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Release_static\Win32\moc_service.cpp">
       <Filter>Generated Files\Release_static_Win32</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release_static\x64\moc_service.cpp">
-      <Filter>Generated Files\Release_static_x64</Filter>
+    <ClCompile Include="GeneratedFiles\Debug_static\x64\moc_service.cpp">
+      <Filter>Generated Files\Debug_static_x64</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug_static\Win32\moc_service.cpp">
       <Filter>Generated Files\Debug_static_Win32</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug_static\x64\moc_service.cpp">
-      <Filter>Generated Files\Debug_static_x64</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug\Win32\moc_mainform.cpp">
       <Filter>Generated Files\Debug_Win32</Filter>
@@ -247,23 +219,17 @@
     <ClCompile Include="GeneratedFiles\Release\x64\moc_mainform.cpp">
       <Filter>Generated Files\Release_x64</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Test\Win32\moc_mainform.cpp">
-      <Filter>Generated Files\Test_Win32</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Test\x64\moc_mainform.cpp">
-      <Filter>Generated Files\Test_x64</Filter>
+    <ClCompile Include="GeneratedFiles\Release_static\x64\moc_mainform.cpp">
+      <Filter>Generated Files\Release_static_x64</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Release_static\Win32\moc_mainform.cpp">
       <Filter>Generated Files\Release_static_Win32</Filter>
     </ClCompile>
-    <ClCompile Include="GeneratedFiles\Release_static\x64\moc_mainform.cpp">
-      <Filter>Generated Files\Release_static_x64</Filter>
+    <ClCompile Include="GeneratedFiles\Debug_static\x64\moc_mainform.cpp">
+      <Filter>Generated Files\Debug_static_x64</Filter>
     </ClCompile>
     <ClCompile Include="GeneratedFiles\Debug_static\Win32\moc_mainform.cpp">
       <Filter>Generated Files\Debug_static_Win32</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneratedFiles\Debug_static\x64\moc_mainform.cpp">
-      <Filter>Generated Files\Debug_static_x64</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -436,16 +402,22 @@
     <ClInclude Include="..\..\..\..\include\ma\handler_cont_helpers.hpp">
       <Filter>Header Files\ma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\include\ma\functional.hpp">
-      <Filter>Header Files\ma</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\include\ma\memory.hpp">
-      <Filter>Header Files\ma</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\include\ma\thread_group.hpp">
       <Filter>Header Files\ma</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\include\ma\tuple.hpp">
+    <ClInclude Include="..\..\..\..\include\ma\detail\functional.hpp">
+      <Filter>Header Files\ma\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\ma\detail\memory.hpp">
+      <Filter>Header Files\ma\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\ma\detail\thread.hpp">
+      <Filter>Header Files\ma\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\ma\detail\tuple.hpp">
+      <Filter>Header Files\ma\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\ma\strand.hpp">
       <Filter>Header Files\ma</Filter>
     </ClInclude>
   </ItemGroup>

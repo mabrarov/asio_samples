@@ -7,11 +7,11 @@
 
 #include <new>
 #include <algorithm>
-#include <ma/memory.hpp>
-#include <ma/functional.hpp>
 #include <ma/shared_ptr_factory.hpp>
 #include <ma/echo/server/error.hpp>
 #include <ma/echo/server/pooled_session_factory.hpp>
+#include <ma/detail/memory.hpp>
+#include <ma/detail/functional.hpp>
 
 namespace ma {
 namespace echo {
@@ -29,7 +29,8 @@ public:
       const session_config& config, const pool_link& back_link)
   {
     typedef shared_ptr_factory_helper<this_type> helper;
-    return MA_MAKE_SHARED<helper>(MA_REF(io_service), config, back_link);
+    return detail::make_shared<helper>(
+        detail::ref(io_service), config, back_link);
   }
 
   const pool_link& back_link() const
@@ -69,7 +70,7 @@ public:
     if (!recycled_.empty())
     {
       session_wrapper_ptr session =
-          MA_STATIC_POINTER_CAST<session_wrapper>(recycled_.front());
+          detail::static_pointer_cast<session_wrapper>(recycled_.front());
       recycled_.erase(session);
       ++size_;
       error = boost::system::error_code();
@@ -135,7 +136,7 @@ void pooled_session_factory::release(const session_ptr& session)
 {
   // Find session's pool item
   const session_wrapper_ptr wrapped_session =
-      MA_STATIC_POINTER_CAST<session_wrapper>(session);
+      detail::static_pointer_cast<session_wrapper>(session);
   pool_item& session_pool_item = **(wrapped_session->back_link());
   // Release session by means of its pool item
   session_pool_item.release(wrapped_session);
@@ -148,7 +149,8 @@ pooled_session_factory::pool pooled_session_factory::create_pool(
   for (io_service_vector::const_iterator i = io_services.begin(),
       end = io_services.end(); i != end; ++i)
   {
-    result.push_back(MA_MAKE_SHARED<pool_item>(MA_REF(**i), max_recycled));
+    result.push_back(detail::make_shared<pool_item>(
+        detail::ref(**i), max_recycled));
   }
   return result;
 }

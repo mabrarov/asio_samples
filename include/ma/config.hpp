@@ -28,20 +28,26 @@
         || (defined(BOOST_CLANG) && (__clang_major__ >= 3)) \
         || (defined(BOOST_INTEL) && (BOOST_INTEL_CXX_VERSION >= 1400) \
             && defined(BOOST_INTEL_STDCXX0X)))
+
 #define MA_USE_CXX11_STDLIB_MEMORY
 #define MA_USE_CXX11_STDLIB_TUPLE
 #define MA_USE_CXX11_STDLIB_FUNCTIONAL
-#undef  MA_USE_CXX11_THREAD
+#define MA_USE_CXX11_THREAD
+
 #elif (BOOST_VERSION >= 105500) && defined(BOOST_MSVC) && (BOOST_MSVC >= 1600)
+
 #define MA_USE_CXX11_STDLIB_MEMORY
 #define MA_USE_CXX11_STDLIB_TUPLE
 #undef  MA_USE_CXX11_STDLIB_FUNCTIONAL
 #undef  MA_USE_CXX11_THREAD
+
 #else 
+
 #undef  MA_USE_CXX11_STDLIB_MEMORY
 #undef  MA_USE_CXX11_STDLIB_TUPLE
 #undef  MA_USE_CXX11_STDLIB_FUNCTIONAL
 #undef  MA_USE_CXX11_THREAD
+
 #endif
 
 // Check the presence of r-value references support.
@@ -171,9 +177,9 @@
 #if defined(BOOST_WINDOWS) && \
     ((defined(WINVER) && (WINVER >= 0x0500)) \
         || (defined(_WIN32_WINNT) && (_WIN32_WINNT >= 0x0500)))
-#define MA_HAS_WINDOWS_CONSOLE_SIGNAL 1
+#define MA_HAS_WINDOWS_CONSOLE_SIGNAL
 #else
-#undef MA_HAS_WINDOWS_CONSOLE_SIGNAL
+#undef  MA_HAS_WINDOWS_CONSOLE_SIGNAL
 #endif
 
 #if defined(BOOST_NOEXCEPT)

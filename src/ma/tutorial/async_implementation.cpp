@@ -7,12 +7,12 @@
 
 #include <iostream>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
-#include <ma/memory.hpp>
-#include <ma/functional.hpp>
 #include <ma/shared_ptr_factory.hpp>
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/strand_wrapped_handler.hpp>
 #include <ma/tutorial/async_implementation.hpp>
+#include <ma/detail/memory.hpp>
+#include <ma/detail/functional.hpp>
 
 namespace ma {
 namespace tutorial {
@@ -76,7 +76,7 @@ async_implementation_ptr async_implementation::create(
     boost::asio::io_service& io_service, const std::string& name)
 {
   typedef shared_ptr_factory_helper<this_type> helper;
-  return MA_MAKE_SHARED<helper>(MA_REF(io_service), name);
+  return detail::make_shared<helper>(detail::ref(io_service), name);
 }
 
 async_implementation::async_implementation(boost::asio::io_service& io_service,
@@ -130,15 +130,16 @@ async_implementation::start_do_something()
 
 #if defined(MA_HAS_RVALUE_REFS) && defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
-  timer_.async_wait(MA_STRAND_WRAP(strand_,
+  timer_.async_wait(strand_.wrap(
       ma::make_custom_alloc_handler(timer_allocator_, timer_handler_binder(
           &this_type::handle_timer, shared_from_this()))));
 
 #else
 
-  timer_.async_wait(MA_STRAND_WRAP(strand_,
-      ma::make_custom_alloc_handler(timer_allocator_, MA_BIND(
-          &this_type::handle_timer, shared_from_this(), MA_PLACEHOLDER_1))));
+  timer_.async_wait(strand_.wrap(
+      ma::make_custom_alloc_handler(timer_allocator_, detail::bind(
+          &this_type::handle_timer, shared_from_this(), 
+          detail::placeholders::_1))));
 
 #endif
 
@@ -188,15 +189,16 @@ void async_implementation::handle_timer(const boost::system::error_code& error)
 
 #if defined(MA_HAS_RVALUE_REFS) && defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
 
-    timer_.async_wait(MA_STRAND_WRAP(strand_,
+    timer_.async_wait(strand_.wrap(
         ma::make_custom_alloc_handler(timer_allocator_, timer_handler_binder(
             &this_type::handle_timer, shared_from_this()))));
 
 #else
 
-    timer_.async_wait(MA_STRAND_WRAP(strand_,
-        ma::make_custom_alloc_handler(timer_allocator_, MA_BIND(
-            &this_type::handle_timer, shared_from_this(), MA_PLACEHOLDER_1))));
+    timer_.async_wait(strand_.wrap(
+        ma::make_custom_alloc_handler(timer_allocator_, detail::bind(
+            &this_type::handle_timer, shared_from_this(), 
+            detail::placeholders::_1))));
 
 #endif
 

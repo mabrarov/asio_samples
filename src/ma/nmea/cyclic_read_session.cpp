@@ -6,10 +6,10 @@
 //
 
 #include <stdexcept>
-#include <ma/memory.hpp>
-#include <ma/functional.hpp>
 #include <ma/shared_ptr_factory.hpp>
 #include <ma/nmea/cyclic_read_session.hpp>
+#include <ma/detail/memory.hpp>
+#include <ma/detail/functional.hpp>
 
 namespace ma {
 namespace nmea {
@@ -20,7 +20,7 @@ cyclic_read_session_ptr cyclic_read_session::create(
     const std::string& frame_tail)
 {
   typedef shared_ptr_factory_helper<this_type> helper;
-  return MA_MAKE_SHARED<helper>(MA_REF(io_service), read_buffer_size,
+  return detail::make_shared<helper>(detail::ref(io_service), read_buffer_size,
       frame_buffer_size, frame_head, frame_tail);
 }
 
@@ -174,9 +174,9 @@ void cyclic_read_session::complete_stop()
 void cyclic_read_session::read_until_head()
 {
   boost::asio::async_read_until(serial_port_, read_buffer_, frame_head_,
-      MA_STRAND_WRAP(strand_, make_custom_alloc_handler(read_allocator_,
-          MA_BIND(&this_type::handle_read_head, shared_from_this(),
-              MA_PLACEHOLDER_1, MA_PLACEHOLDER_2))));
+      strand_.wrap(make_custom_alloc_handler(read_allocator_,
+          detail::bind(&this_type::handle_read_head, shared_from_this(),
+              detail::placeholders::_1, detail::placeholders::_2))));
 
   port_read_in_progress_ = true;
 }
@@ -184,9 +184,9 @@ void cyclic_read_session::read_until_head()
 void cyclic_read_session::read_until_tail()
 {
   boost::asio::async_read_until(serial_port_, read_buffer_, frame_tail_,
-      MA_STRAND_WRAP(strand_, make_custom_alloc_handler(read_allocator_,
-          MA_BIND(&this_type::handle_read_tail, shared_from_this(),
-              MA_PLACEHOLDER_1, MA_PLACEHOLDER_2))));
+      strand_.wrap(make_custom_alloc_handler(read_allocator_,
+          detail::bind(&this_type::handle_read_tail, shared_from_this(),
+              detail::placeholders::_1, detail::placeholders::_2))));
 
   port_read_in_progress_ = true;
 }
@@ -274,7 +274,7 @@ void cyclic_read_session::handle_read_tail(
   }
   else
   {
-    new_frame = MA_MAKE_SHARED<frame>(data_begin, data_end);
+    new_frame = detail::make_shared<frame>(data_begin, data_end);
   }
 
   // Consume processed data
@@ -290,7 +290,7 @@ void cyclic_read_session::handle_read_tail(
   if (extern_read_handler_base* handler = extern_read_handler_.target())
   {
     read_result_type copy_result = handler->copy(frame_buffer_);
-    frame_buffer_.erase_begin(MA_TUPLE_GET<1>(copy_result));
+    frame_buffer_.erase_begin(detail::get<1>(copy_result));
     extern_read_handler_.post(copy_result);
   }
 }

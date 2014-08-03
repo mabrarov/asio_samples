@@ -6,11 +6,11 @@
 //
 
 #include <new>
-#include <ma/memory.hpp>
-#include <ma/functional.hpp>
 #include <ma/shared_ptr_factory.hpp>
 #include <ma/echo/server/error.hpp>
 #include <ma/echo/server/simple_session_factory.hpp>
+#include <ma/detail/memory.hpp>
+#include <ma/detail/functional.hpp>
 
 namespace ma {
 namespace echo {
@@ -28,7 +28,7 @@ public:
       const session_config& config)
   {
     typedef shared_ptr_factory_helper<this_type> helper;
-    return MA_MAKE_SHARED<helper>(MA_REF(io_service), config);
+    return detail::make_shared<helper>(detail::ref(io_service), config);
   }
 
 protected:
@@ -49,7 +49,7 @@ session_ptr simple_session_factory::create(const session_config& config,
   if (!recycled_.empty())
   {
     session_wrapper_ptr session =
-        MA_STATIC_POINTER_CAST<session_wrapper>(recycled_.front());
+        detail::static_pointer_cast<session_wrapper>(recycled_.front());
     recycled_.erase(session);
     error = boost::system::error_code();
     return session;
@@ -73,7 +73,7 @@ void simple_session_factory::release(const session_ptr& session)
 {
   if (max_recycled_ > recycled_.size())
   {
-    recycled_.push_front(MA_STATIC_POINTER_CAST<session_wrapper>(session));
+    recycled_.push_front(detail::static_pointer_cast<session_wrapper>(session));
   }
 }
 

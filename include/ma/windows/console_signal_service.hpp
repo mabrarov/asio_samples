@@ -19,13 +19,12 @@
 #include <cstddef>
 #include <boost/asio.hpp>
 #include <boost/noncopyable.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/locks.hpp>
 #include <boost/system/error_code.hpp>
-#include <ma/memory.hpp>
-#include <ma/functional.hpp>
 #include <ma/type_traits.hpp>
 #include <ma/bind_handler.hpp>
+#include <ma/detail/memory.hpp>
+#include <ma/detail/functional.hpp>
+#include <ma/detail/thread.hpp>
 #include <ma/detail/handler_ptr.hpp>
 #include <ma/detail/service_base.hpp>
 #include <ma/detail/intrusive_list.hpp>
@@ -48,7 +47,7 @@ public:
 
 protected:
   class system_service;
-  typedef MA_SHARED_PTR<system_service> system_service_ptr;
+  typedef detail::shared_ptr<system_service> system_service_ptr;
 
   console_signal_service_base()
   {
@@ -173,8 +172,8 @@ private:
   template <typename Handler>
   class handler_wrapper;  
 
-  typedef boost::mutex                      mutex_type;
-  typedef boost::lock_guard<mutex_type>     lock_guard;
+  typedef detail::mutex                     mutex_type;
+  typedef detail::lock_guard<mutex_type>    lock_guard;
   typedef detail::intrusive_list<impl_base> impl_base_list;  
 
   virtual void shutdown_service();
@@ -262,7 +261,7 @@ void console_signal_service::async_wait(
 
   detail::raw_handler_ptr<alloc_traits> raw_ptr(handler);
   detail::handler_ptr<alloc_traits> ptr(raw_ptr,
-      MA_REF(this->get_io_service()), MA_RVALUE_CAST(handler));
+      detail::ref(this->get_io_service()), MA_RVALUE_CAST(handler));
 
   // Add handler to the list of waiting handlers.
   impl.handlers_.push_front(*ptr.get());

@@ -14,10 +14,10 @@
 
 #include <cstddef>
 #include <ma/config.hpp>
-#include <ma/memory.hpp>
 #include <ma/handler_alloc_helpers.hpp>
 #include <ma/handler_invoke_helpers.hpp>
 #include <ma/handler_cont_helpers.hpp>
+#include <ma/detail/memory.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)
 #include <utility>
@@ -104,7 +104,7 @@ public:
 
   template <typename H>
   custom_alloc_handler(Allocator& allocator, H&& handler)
-    : allocator_(MA_ADDRESS_OF(allocator))
+    : allocator_(detail::addressof(allocator))
     , handler_(std::forward<H>(handler))
   {
   }
@@ -132,7 +132,7 @@ public:
 #else // defined(MA_HAS_RVALUE_REFS)
 
   custom_alloc_handler(Allocator& allocator, const Handler& handler)
-    : allocator_(MA_ADDRESS_OF(allocator))
+    : allocator_(detail::addressof(allocator))
     , handler_(handler)
   {
   }

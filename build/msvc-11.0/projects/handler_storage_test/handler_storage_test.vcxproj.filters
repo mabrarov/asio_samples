@@ -85,14 +85,17 @@
     <ClInclude Include="..\..\..\..\include\ma\detail\latch.hpp">
       <Filter>Header Files\ma\detail</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\include\ma\functional.hpp">
-      <Filter>Header Files\ma</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\..\include\ma\memory.hpp">
-      <Filter>Header Files\ma</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\include\ma\thread_group.hpp">
       <Filter>Header Files\ma</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\ma\detail\functional.hpp">
+      <Filter>Header Files\ma\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\ma\detail\memory.hpp">
+      <Filter>Header Files\ma\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\ma\detail\thread.hpp">
+      <Filter>Header Files\ma\detail</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

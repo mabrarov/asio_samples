@@ -15,8 +15,8 @@
 #include <boost/static_assert.hpp>
 #include <boost/assert.hpp>
 #include <boost/noncopyable.hpp>
-#include <ma/memory.hpp>
 #include <ma/shared_ptr_factory.hpp>
+#include <ma/detail/memory.hpp>
 
 namespace ma {
 namespace test {
@@ -58,7 +58,7 @@ namespace test {
 namespace shared_ptr_factory {
 
 class A;
-typedef MA_SHARED_PTR<A> A_ptr;
+typedef detail::shared_ptr<A> A_ptr;
 
 class A : private boost::noncopyable
 {
@@ -66,7 +66,7 @@ public:
   static A_ptr create()
   {
     typedef ma::shared_ptr_factory_helper<A> A_helper;
-    return MA_MAKE_SHARED<A_helper>();
+    return detail::make_shared<A_helper>();
   }
 
 protected:
@@ -157,7 +157,7 @@ void run_test()
   {
     //BOOST_STATIC_ASSERT_MSG(!std::is_constructible<A>::value, 
     //    "class A has to be not constructible");
-    MA_SHARED_PTR<A> a = A::create();
+    detail::shared_ptr<A> a = A::create();
   }
   
   {    
@@ -165,7 +165,7 @@ void run_test()
     //    "class B has to be not constructible");
 
     typedef ma::shared_ptr_factory_helper<B> B_helper;
-    MA_SHARED_PTR<B> b = MA_MAKE_SHARED<B_helper>(i, j);
+    detail::shared_ptr<B> b = detail::make_shared<B_helper>(i, j);
     BOOST_ASSERT_MSG(i == b->get_i(), "Instance has different data");
     BOOST_ASSERT_MSG(j == b->get_j(), "Instance has different data");
   }
@@ -176,7 +176,7 @@ void run_test()
     //    "class B has to be not constructible");
 
     typedef ma::shared_ptr_factory_helper<C> C_helper;  
-    MA_SHARED_PTR<C> c = MA_MAKE_SHARED<C_helper>(d, i, j);
+    detail::shared_ptr<C> c = detail::make_shared<C_helper>(d, i, j);
     BOOST_ASSERT_MSG(i == c->get_i(), "Instance has different data");
     BOOST_ASSERT_MSG(j == c->get_j(), "Instance has different data");    
     BOOST_ASSERT_MSG(d == c->get_d(), "Instance has different data");

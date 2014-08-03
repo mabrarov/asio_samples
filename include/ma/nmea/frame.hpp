@@ -13,13 +13,13 @@
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
 #include <string>
-#include <ma/memory.hpp>
+#include <ma/detail/memory.hpp>
 
 namespace ma {
 namespace nmea {
 
 typedef std::string frame;
-typedef MA_SHARED_PTR<frame> frame_ptr;
+typedef detail::shared_ptr<frame> frame_ptr;
 
 } // namespace nmea
 } // namespace ma

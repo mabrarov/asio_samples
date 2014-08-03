@@ -16,21 +16,19 @@
 #include <limits>
 #include <boost/assert.hpp>
 #include <boost/noncopyable.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/thread/locks.hpp>
-#include <boost/thread/condition_variable.hpp>
+#include <ma/detail/thread.hpp>
 
 namespace ma {
 namespace detail {
 
-class latch : boost::noncopyable
+class latch : private boost::noncopyable
 {
 private:
-  typedef latch                          this_type;
-  typedef boost::mutex                   mutex_type;
-  typedef boost::unique_lock<mutex_type> lock_type;
-  typedef boost::lock_guard<mutex_type>  lock_guard_type;
-  typedef boost::condition_variable      condition_variable_type;
+  typedef latch                           this_type;
+  typedef detail::mutex                   mutex_type;
+  typedef detail::unique_lock<mutex_type> lock_type;
+  typedef detail::lock_guard<mutex_type>  lock_guard_type;
+  typedef detail::condition_variable      condition_variable_type;
 
 public:
   typedef std::size_t value_type;

@@ -16,10 +16,10 @@
 #include <boost/system/error_code.hpp>
 #include <boost/system/system_error.hpp>
 #include <ma/config.hpp>
-#include <ma/memory.hpp>
 #include <ma/shared_ptr_factory.hpp>
-#include <ma/detail/sp_singleton.hpp>
 #include <ma/windows/console_signal_service.hpp>
+#include <ma/detail/memory.hpp>
+#include <ma/detail/sp_singleton.hpp>
 
 #if defined(MA_HAS_RVALUE_REFS)
 #include <utility>
@@ -47,8 +47,8 @@ protected:
 private:
   struct factory;
 
-  typedef boost::mutex                  mutex_type;
-  typedef boost::lock_guard<mutex_type> lock_guard;
+  typedef detail::mutex                  mutex_type;
+  typedef detail::lock_guard<mutex_type> lock_guard;
   typedef detail::intrusive_list<console_signal_service_base> subscriber_list;
 
   static system_service_ptr get_nullable_instance();
@@ -79,7 +79,7 @@ private:
   typedef post_adapter this_type;
 
 public:
-  typedef MA_SHARED_PTR<handler_list_guard> handler_list_guard_ptr;
+  typedef detail::shared_ptr<handler_list_guard> handler_list_guard_ptr;
 
   post_adapter(const handler_list_guard_ptr&);
 
@@ -178,7 +178,7 @@ console_signal_service_base::system_service::factory::operator()(
     const instance_guard_type& singleton_instance_guard)
 {
   typedef ma::shared_ptr_factory_helper<system_service> helper;  
-  return MA_MAKE_SHARED<helper>(singleton_instance_guard);
+  return detail::make_shared<helper>(singleton_instance_guard);
 }
 
 #if !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
@@ -369,7 +369,7 @@ void console_signal_service::shutdown_service()
 bool console_signal_service::deliver_signal()
 {
   post_adapter::handler_list_guard_ptr handlers =
-      MA_MAKE_SHARED<handler_list_guard>();
+      detail::make_shared<handler_list_guard>();
   lock_guard lock(mutex_);
   if (impl_list_.empty())
   {
