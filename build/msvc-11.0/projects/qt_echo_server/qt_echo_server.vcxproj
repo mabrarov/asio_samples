@@ -3202,6 +3202,7 @@
     <ClInclude Include="..\..\..\..\include\ma\detail\thread.hpp" />
     <ClInclude Include="..\..\..\..\include\ma\detail\tuple.hpp" />
     <ClInclude Include="..\..\..\..\include\ma\handler_cont_helpers.hpp" />
+    <ClInclude Include="..\..\..\..\include\ma\strand.hpp" />
     <ClInclude Include="..\..\..\..\include\ma\thread_group.hpp" />
     <ClInclude Include="GeneratedFiles\Win32\ui_mainform.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
