@@ -13,8 +13,16 @@
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
 #include <boost/asio.hpp>
+#include <ma/config.hpp>
 
-#if defined(WIN32) && !defined(BOOST_ASIO_DISABLE_IOCP)
+#if defined(WIN32) && !defined(BOOST_ASIO_DISABLE_IOCP) \
+    && !defined(MA_BOOST_ASIO_WINDOWS_CONNECT_EX) && (_WIN32_WINNT >= 0x0501)
+#define MA_ASYNC_CONNECT_USES_WINDOWS_CONNECT_EX
+#else
+#undef  MA_ASYNC_CONNECT_USES_WINDOWS_CONNECT_EX
+#endif
+
+#if defined(MA_ASYNC_CONNECT_USES_WINDOWS_CONNECT_EX)
 #include <mswsock.h>
 #include <winsock2.h>
 #include <cstddef>
@@ -23,9 +31,7 @@
 #include <ma/handler_alloc_helpers.hpp>
 #include <ma/handler_invoke_helpers.hpp>
 #include <ma/handler_cont_helpers.hpp>
-#endif // defined(WIN32) && !defined(BOOST_ASIO_DISABLE_IOCP)
-
-#include <ma/config.hpp>
+#endif // defined(MA_ASYNC_CONNECT_USES_WINDOWS_CONNECT_EX)
 
 #if defined(MA_HAS_RVALUE_REFS)
 #include <utility>
@@ -34,7 +40,7 @@
 
 namespace ma {
 
-#if defined(WIN32) && !defined(BOOST_ASIO_DISABLE_IOCP)
+#if defined(MA_ASYNC_CONNECT_USES_WINDOWS_CONNECT_EX)
 
 namespace detail {
 
@@ -193,7 +199,7 @@ boost::system::error_code bind_to_any(Socket& socket,
 
 } // namespace detail
 
-#endif // defined(WIN32) && !defined(BOOST_ASIO_DISABLE_IOCP)
+#endif // defined(MA_ASYNC_CONNECT_USES_WINDOWS_CONNECT_EX)
 
 #if defined(MA_HAS_RVALUE_REFS)
 
@@ -210,12 +216,7 @@ void async_connect(Socket& socket,
 
 #endif // defined(MA_HAS_RVALUE_REFS)
 {
-#if defined(WIN32) && !defined(BOOST_ASIO_DISABLE_IOCP)
-
-#if (_WIN32_WINNT < 0x0501)
-#error The build environment does not support necessary Windows SDK header.\
-    Value of _WIN32_WINNT macro must be >= 0x0501.
-#endif
+#if defined(MA_ASYNC_CONNECT_USES_WINDOWS_CONNECT_EX)
 
   if (!socket.is_open())
   {
@@ -321,7 +322,7 @@ void async_connect(Socket& socket,
     overlapped.release();
   }
 
-#else // defined(WIN32) && !defined(BOOST_ASIO_DISABLE_IOCP)
+#else // defined(MA_ASYNC_CONNECT_USES_WINDOWS_CONNECT_EX)
 
 #if defined(MA_HAS_RVALUE_REFS)
 
@@ -333,7 +334,7 @@ void async_connect(Socket& socket,
 
 #endif // defined(MA_HAS_RVALUE_REFS)
 
-#endif // defined(WIN32)
+#endif // defined(MA_ASYNC_CONNECT_USES_WINDOWS_CONNECT_EX)
 
 }
 

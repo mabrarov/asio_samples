@@ -119,6 +119,13 @@
 
 #endif // defined(MA_HAS_RVALUE_REFS)
 
+#if defined(WIN32) && !defined(BOOST_ASIO_DISABLE_IOCP) \
+    && (BOOST_VERSION < 105600)
+#undef  MA_BOOST_ASIO_WINDOWS_CONNECT_EX
+#else
+#define MA_BOOST_ASIO_WINDOWS_CONNECT_EX
+#endif
+
 /// Defines does asio::io_service::strand::wrap produce "heavy" functor.
 /**
  * Because of the guarantee given by Asio:
