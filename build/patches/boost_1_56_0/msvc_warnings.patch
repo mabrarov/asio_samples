@@ -1,0 +1,93 @@
+--- boost/asio/detail/impl/socket_ops.ipp	ֿם ט‏כ 28 01:32:26 2014
++++ boost/asio/detail/impl/socket_ops.ipp	ֿע אגד  8 07:26:03 2014
+@@ -1965,7 +1965,18 @@
+   LPWSTR string_buffer = (LPWSTR)_alloca(length * sizeof(WCHAR));
+   int result = error_wrapper(::WSAAddressToStringW(&address.base,
+         address_length, 0, string_buffer, &string_length), ec);
++
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4267)
++#endif // #if defined(_MSC_VER)
++
+   ::WideCharToMultiByte(CP_ACP, 0, string_buffer, -1, dest, length, 0, 0);
++
++#if defined(_MSC_VER)
++#pragma warning(pop)
++#endif // #if defined(_MSC_VER)
++
+ #else
+   int result = error_wrapper(::WSAAddressToStringA(
+         &address.base, address_length, 0, dest, &string_length), ec);
+@@ -2169,7 +2180,18 @@
+   } address;
+   int address_length = sizeof(sockaddr_storage_type);
+ #if defined(BOOST_NO_ANSI_APIS) || (defined(_MSC_VER) && (_MSC_VER >= 1800))
++
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4267)
++#endif // #if defined(_MSC_VER)
++
+   int num_wide_chars = strlen(src) + 1;
++
++#if defined(_MSC_VER)
++#pragma warning(pop)
++#endif // #if defined(_MSC_VER)
++
+   LPWSTR wide_buffer = (LPWSTR)_alloca(num_wide_chars * sizeof(WCHAR));
+   ::MultiByteToWideChar(CP_ACP, 0, src, -1, wide_buffer, num_wide_chars);
+   int result = error_wrapper(::WSAStringToAddressW(
+
+--- boost/utility/in_place_factory.hpp	ֿע ט‏כ  4 22:05:56 2014
++++ boost/utility/in_place_factory.hpp	ֿע אגד  8 07:29:12 2014
+@@ -31,6 +31,11 @@
+ #else
+ #define N BOOST_PP_ITERATION()
+ 
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4512)
++#endif // #if defined(_MSC_VER)
++
+ #if N
+ template< BOOST_PP_ENUM_PARAMS(N, class A) >
+ #endif
+@@ -65,6 +70,10 @@
+   BOOST_PP_REPEAT(N, BOOST_DEFINE_INPLACE_FACTORY_CLASS_MEMBER_DECL, _)
+ };
+ 
++#if defined(_MSC_VER)
++#pragma warning(pop)
++#endif // #if defined(_MSC_VER)
++
+ #if N > 0
+ template< BOOST_PP_ENUM_PARAMS(N, class A) >
+ inline BOOST_PP_CAT(in_place_factory,N)< BOOST_PP_ENUM_PARAMS(N, A) >
+
+--- boost/program_options/options_description.hpp	ׁנ הוך  4 09:17:17 2013
++++ boost/program_options/options_description.hpp	ֿע אגד  8 07:32:14 2014
+@@ -170,6 +170,12 @@
+         See @ref a_adding_options "here" for option adding interface discussion.
+         @sa option_description
+     */
++
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4512)
++#endif // #if defined(_MSC_VER)
++
+     class BOOST_PROGRAM_OPTIONS_DECL options_description {
+     public:
+         static const unsigned m_default_line_length;
+@@ -264,6 +270,10 @@
+ 
+     };
+ 
++#if defined(_MSC_VER)
++#pragma warning(pop)
++#endif // #if defined(_MSC_VER)
++
+     /** Class thrown when duplicate option description is found. */
+     class BOOST_PROGRAM_OPTIONS_DECL duplicate_option_error : public error {
+     public:
