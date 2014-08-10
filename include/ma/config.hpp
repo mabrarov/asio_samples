@@ -189,10 +189,18 @@
 #undef  MA_HAS_WINDOWS_CONSOLE_SIGNAL
 #endif
 
-#if defined(BOOST_NOEXCEPT)
+#if (defined(BOOST_MSVC) && (BOOST_MSVC >= 1500) && (BOOST_MSVC <= 1800))
+
+#define MA_NOEXCEPT throw()
+
+#elif defined(BOOST_NOEXCEPT)
+
 #define MA_NOEXCEPT BOOST_NOEXCEPT
+
 #else
+
 #define MA_NOEXCEPT
+
 #endif
 
 #endif // MA_CONFIG_HPP
