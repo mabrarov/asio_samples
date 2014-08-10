@@ -95,7 +95,7 @@
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\..\..\..\include;..\..\..\..\..\boost_1_55_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalUsingDirectories>%(AdditionalUsingDirectories)</AdditionalUsingDirectories>
-      <PreprocessorDefinitions>WIN32;WIN32_LEAN_AND_MEAN;WINVER=0x0500;_WIN32_WINNT=0x0500;_WIN32_WINDOWS=0x0410;_WIN32_IE=0x0600;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;WIN32_LEAN_AND_MEAN;WINVER=0x0500;_WIN32_WINNT=0x0500;_WIN32_WINDOWS=0x0410;_WIN32_IE=0x0600;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_WINSOCK_DEPRECATED_NO_WARNINGS</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PrecompiledHeader>
       </PrecompiledHeader>
@@ -123,7 +123,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\..\..\..\include;..\..\..\..\..\boost_1_55_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;WIN32_LEAN_AND_MEAN;WINVER=0x0501;_WIN32_WINNT=0x0501;_WIN32_WINDOWS=0x0501;_WIN32_IE=0x0600;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;WIN32_LEAN_AND_MEAN;WINVER=0x0501;_WIN32_WINNT=0x0501;_WIN32_WINDOWS=0x0501;_WIN32_IE=0x0600;_DEBUG;_CONSOLE;%(PreprocessorDefinitions);_WINSOCK_DEPRECATED_NO_WARNINGS</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PrecompiledHeader>
       </PrecompiledHeader>
@@ -149,7 +149,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <AdditionalIncludeDirectories>..\..\..\..\include;..\..\..\..\..\boost_1_55_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NDEBUG;WIN32;WIN32_LEAN_AND_MEAN;WINVER=0x0500;_WIN32_WINNT=0x0500;_WIN32_WINDOWS=0x0410;_WIN32_IE=0x0600;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;WIN32;WIN32_LEAN_AND_MEAN;WINVER=0x0500;_WIN32_WINNT=0x0500;_WIN32_WINDOWS=0x0410;_WIN32_IE=0x0600;_CONSOLE;%(PreprocessorDefinitions);_WINSOCK_DEPRECATED_NO_WARNINGS</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <PrecompiledHeader>
@@ -179,7 +179,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <AdditionalIncludeDirectories>..\..\..\..\include;..\..\..\..\..\boost_1_55_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NDEBUG;WIN32;WIN32_LEAN_AND_MEAN;WINVER=0x0501;_WIN32_WINNT=0x0501;_WIN32_WINDOWS=0x0501;_WIN32_IE=0x0600;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;WIN32;WIN32_LEAN_AND_MEAN;WINVER=0x0501;_WIN32_WINNT=0x0501;_WIN32_WINDOWS=0x0501;_WIN32_IE=0x0600;_CONSOLE;%(PreprocessorDefinitions);_WINSOCK_DEPRECATED_NO_WARNINGS</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <PrecompiledHeader>
