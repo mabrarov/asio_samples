@@ -97,7 +97,12 @@
     || (defined(BOOST_INTEL) && (BOOST_INTEL_CXX_VERSION >= 1400) \
         && defined(BOOST_INTEL_STDCXX0X))
 
+#if defined(BOOST_MSVC) && (BOOST_MSVC >= 1900)
+// Starting from MSVS 2014 CTP Visual C+ supports implicit move constructors
+#undef  MA_NO_IMPLICIT_MOVE_CONSTRUCTOR
+#else
 #define MA_NO_IMPLICIT_MOVE_CONSTRUCTOR
+#endif // defined(BOOST_MSVC) && (BOOST_MSVC >= 1900)
 
 #if defined(MA_USE_CXX11_STDLIB_FUNCTIONAL)
 #undef  MA_BIND_HAS_NO_MOVE_CONTRUCTOR
