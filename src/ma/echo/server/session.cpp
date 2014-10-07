@@ -374,11 +374,11 @@ void session::handle_read_at_work(const boost::system::error_code& error,
   read_state_ = read_state::wait;
 
   // Try to cancel timer if it is in progress and wasn't already canceled
-  if (boost::system::error_code error = cancel_timer_wait())
+  if (boost::system::error_code timer_error = cancel_timer_wait())
   {
     // Start session stop due to fatal error
     read_state_ = read_state::stopped;
-    start_stop(error);
+    start_stop(timer_error);
     return;
   }
 
@@ -419,10 +419,10 @@ void session::handle_read_at_shutdown(const boost::system::error_code& error,
   read_state_ = read_state::wait;
 
   // Try to cancel timer if it is in progress and wasn't already canceled
-  if (boost::system::error_code error = cancel_timer_wait())
+  if (boost::system::error_code timer_error = cancel_timer_wait())
   {
     read_state_ = read_state::stopped;
-    start_stop(error);
+    start_stop(timer_error);
     return;
   }
 
@@ -471,10 +471,10 @@ void session::handle_write_at_work(const boost::system::error_code& error,
   --pending_operations_;
   write_state_ = write_state::wait;
 
-  if (boost::system::error_code error = cancel_timer_wait())
+  if (boost::system::error_code timer_error = cancel_timer_wait())
   {
     write_state_ = write_state::stopped;
-    start_stop(error);
+    start_stop(timer_error);
     return;
   }
 
@@ -505,10 +505,10 @@ void session::handle_write_at_shutdown(const boost::system::error_code& error,
   write_state_ = write_state::wait;
 
   // Try to cancel timer
-  if (boost::system::error_code error = cancel_timer_wait())
+  if (boost::system::error_code timer_error = cancel_timer_wait())
   {
     write_state_ = write_state::stopped;
-    start_stop(error);
+    start_stop(timer_error);
     return;
   }
 
