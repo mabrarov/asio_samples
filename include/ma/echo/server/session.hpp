@@ -16,6 +16,7 @@
 #include <boost/asio.hpp>
 #include <boost/optional.hpp>
 #include <boost/noncopyable.hpp>
+#include <boost/system/error_code.hpp>
 #include <ma/config.hpp>
 #include <ma/cyclic_buffer.hpp>
 #include <ma/handler_storage.hpp>
