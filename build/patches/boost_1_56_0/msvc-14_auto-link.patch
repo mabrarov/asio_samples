@@ -1,0 +1,20 @@
+--- boost/config/auto_link.hpp	ѕн июн  2 19:06:28 2014
++++ boost/config/auto_link.hpp	—р окт  8 01:59:14 2014
+@@ -156,11 +156,16 @@
+      // vc11:
+ #    define BOOST_LIB_TOOLSET "vc110"
+ 
+-#  elif defined(BOOST_MSVC)
++#  elif defined(BOOST_MSVC) && (BOOST_MSVC < 1900)
+ 
+      // vc12:
+ #    define BOOST_LIB_TOOLSET "vc120"
+ 
++#  elif defined(BOOST_MSVC)
++
++     // vc14:
++#    define BOOST_LIB_TOOLSET "vc140"
++
+ #  elif defined(__BORLANDC__)
+ 
+      // CBuilder 6:
