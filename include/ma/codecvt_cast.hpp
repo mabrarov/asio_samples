@@ -12,6 +12,7 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
+#include <cstring>
 #include <locale>
 #include <string>
 #include <stdexcept>
@@ -46,7 +47,10 @@ const std::basic_string<CharType> in(
 
   wstring internal_str;
 
-  typename codecvt_type::state_type state(0);
+  // Zero initialized
+  typename codecvt_type::state_type state;
+  std::memset(&state, 0, sizeof(state));
+
   typename wstring::size_type out_buf_size =
       static_cast<typename wstring::size_type>(
           codecvt.length(state, first_external, last_external,
@@ -113,7 +117,9 @@ const std::basic_string<Byte> out(
   Byte* last_external  = first_external + out_buf_size;
   Byte* next_external  = first_external;
 
-  typename codecvt_type::state_type state(0);
+  // Zero initialized
+  typename codecvt_type::state_type state;
+  std::memset(&state, 0, sizeof(state));
 
   typename codecvt_type::result r = codecvt.out(state,
       first_internal, last_internal, next_internal,
