@@ -194,9 +194,14 @@
 #undef  MA_HAS_WINDOWS_CONSOLE_SIGNAL
 #endif
 
-#if (defined(BOOST_MSVC) && (BOOST_MSVC >= 1500) && (BOOST_MSVC <= 1800))
+#if defined(BOOST_MSVC) && (BOOST_MSVC >= 1500)
 
+#if BOOST_MSVC < 1900
 #define MA_NOEXCEPT throw()
+#else
+// MSVSC 2014 CTP or higher supports C++11 noexcept keyword
+#define MA_NOEXCEPT noexcept
+#endif
 
 #elif defined(BOOST_NOEXCEPT)
 
