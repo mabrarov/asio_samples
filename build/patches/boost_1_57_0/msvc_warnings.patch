@@ -1,0 +1,52 @@
+--- boost/utility/in_place_factory.hpp	2014-09-06 22:19:24
++++ boost/utility/in_place_factory.hpp	2014-11-04 13:01:50
+@@ -31,6 +31,11 @@
+ #else
+ #define N BOOST_PP_ITERATION()
+ 
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4512)
++#endif
++
+ #if N
+ template< BOOST_PP_ENUM_PARAMS(N, class A) >
+ #endif
+@@ -65,6 +70,10 @@
+   BOOST_PP_REPEAT(N, BOOST_DEFINE_INPLACE_FACTORY_CLASS_MEMBER_DECL, _)
+ };
+ 
++#if defined(_MSC_VER)
++#pragma warning(pop)
++#endif
++
+ #if N > 0
+ template< BOOST_PP_ENUM_PARAMS(N, class A) >
+ inline BOOST_PP_CAT(in_place_factory,N)< BOOST_PP_ENUM_PARAMS(N, A) >
+
+--- boost/program_options/options_description.hpp	2013-11-04 09:17:17
++++ boost/program_options/options_description.hpp	2014-11-04 13:01:50
+@@ -170,6 +170,12 @@
+         See @ref a_adding_options "here" for option adding interface discussion.
+         @sa option_description
+     */
++
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4512)
++#endif
++
+     class BOOST_PROGRAM_OPTIONS_DECL options_description {
+     public:
+         static const unsigned m_default_line_length;
+@@ -264,6 +270,10 @@
+ 
+     };
+ 
++#if defined(_MSC_VER)
++#pragma warning(pop)
++#endif
++
+     /** Class thrown when duplicate option description is found. */
+     class BOOST_PROGRAM_OPTIONS_DECL duplicate_option_error : public error {
+     public:
