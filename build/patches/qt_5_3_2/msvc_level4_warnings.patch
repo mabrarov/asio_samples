@@ -1,0 +1,260 @@
+--- qtbase/src/corelib/tools/qmap.h	×ò èþí 19 13:08:08 2014
++++ qtbase/src/corelib/tools/qmap.h	Ñð èþí 25 19:43:23 2014
+@@ -281,9 +281,31 @@
+ template <class Key, class T>
+ void QMapData<Key, T>::deleteNode(QMapNode<Key, T> *z)
+ {
++
++#if defined(Q_CC_MSVC)
++#pragma warning( push )
++#pragma warning( disable : 4127 ) // conditional expression is constant
++#endif
++
+     if (QTypeInfo<Key>::isComplex)
++
++#if defined(Q_CC_MSVC)
++#pragma warning( pop )
++#endif
++
+         z->key.~Key();
++
++#if defined(Q_CC_MSVC)
++#pragma warning( push )
++#pragma warning( disable : 4127 ) // conditional expression is constant
++#endif
++
+     if (QTypeInfo<T>::isComplex)
++
++#if defined(Q_CC_MSVC)
++#pragma warning( pop )
++#endif
++
+         z->value.~T();
+     freeNodeAndRebalance(z);
+ }
+
+--- qtbase/src/corelib/tools/qvector.h	×ò èþí 19 13:08:08 2014
++++ qtbase/src/corelib/tools/qvector.h	Ñð èþí 25 20:03:16 2014
+@@ -265,7 +265,18 @@
+ template <typename T>
+ void QVector<T>::defaultConstruct(T *from, T *to)
+ {
++
++#if defined(Q_CC_MSVC)
++#pragma warning( push )
++#pragma warning( disable : 4127 ) // conditional expression is constant
++#endif
++
+     if (QTypeInfo<T>::isComplex) {
++
++#if defined(Q_CC_MSVC)
++#pragma warning( pop )
++#endif
++
+         while (from != to) {
+             new (from++) T();
+         }
+@@ -281,7 +292,18 @@
+ template <typename T>
+ void QVector<T>::copyConstruct(const T *srcFrom, const T *srcTo, T *dstFrom)
+ {
++
++#if defined(Q_CC_MSVC)
++#pragma warning( push )
++#pragma warning( disable : 4127 ) // conditional expression is constant
++#endif
++
+     if (QTypeInfo<T>::isComplex) {
++
++#if defined(Q_CC_MSVC)
++#pragma warning( pop )
++#endif
++
+         while (srcFrom != srcTo)
+             new (dstFrom++) T(*srcFrom++);
+     } else {
+@@ -297,7 +319,18 @@
+ template <typename T>
+ void QVector<T>::destruct(T *from, T *to)
+ {
++
++#if defined(Q_CC_MSVC)
++#pragma warning( push )
++#pragma warning( disable : 4127 ) // conditional expression is constant
++#endif
++
+     if (QTypeInfo<T>::isComplex) {
++
++#if defined(Q_CC_MSVC)
++#pragma warning( pop )
++#endif
++
+         while (from != to) {
+             from++->~T();
+         }
+@@ -486,7 +519,18 @@
+             QT_TRY {
+                 // allocate memory
+                 x = Data::allocate(aalloc, options);
++
++#if defined(Q_CC_MSVC)
++#pragma warning( push )
++#pragma warning( disable : 4127 ) // conditional expression is constant
++#endif
++
+                 Q_CHECK_PTR(x);
++
++#if defined(Q_CC_MSVC)
++#pragma warning( pop )
++#endif
++
+                 // aalloc is bigger then 0 so it is not [un]sharedEmpty
+ #if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
+                 Q_ASSERT(x->ref.isSharable() || options.testFlag(QArrayData::Unsharable));
+@@ -498,7 +542,17 @@
+                 T *srcEnd = asize > d->size ? d->end() : d->begin() + asize;
+                 T *dst = x->begin();
+ 
++#if defined(Q_CC_MSVC)
++#pragma warning( push )
++#pragma warning( disable : 4127 ) // conditional expression is constant
++#endif
++
+                 if (QTypeInfo<T>::isStatic || (isShared && QTypeInfo<T>::isComplex)) {
++
++#if defined(Q_CC_MSVC)
++#pragma warning( pop )
++#endif
++
+                     // we can not move the data, we need to copy construct it
+                     while (srcBegin != srcEnd) {
+                         new (dst++) T(*srcBegin++);
+@@ -543,7 +597,18 @@
+     }
+     if (d != x) {
+         if (!d->ref.deref()) {
++
++#if defined(Q_CC_MSVC)
++#pragma warning( push )
++#pragma warning( disable : 4127 ) // conditional expression is constant
++#endif
++
+             if (QTypeInfo<T>::isStatic || !aalloc || (isShared && QTypeInfo<T>::isComplex)) {
++
++#if defined(Q_CC_MSVC)
++#pragma warning( pop )
++#endif
++
+                 // data was copy constructed, we need to call destructors
+                 // or if !alloc we did nothing to the old 'd'.
+                 freeData(d);
+@@ -587,7 +652,18 @@
+         QArrayData::AllocationOptions opt(isTooSmall ? QArrayData::Grow : QArrayData::Default);
+         reallocData(d->size, isTooSmall ? d->size + 1 : d->alloc, opt);
+     }
++
++#if defined(Q_CC_MSVC)
++#pragma warning( push )
++#pragma warning( disable : 4127 ) // conditional expression is constant
++#endif
++
+     if (QTypeInfo<T>::isComplex)
++
++#if defined(Q_CC_MSVC)
++#pragma warning( pop )
++#endif
++
+         new (d->end()) T(copy);
+     else
+         *d->end() = copy;
+@@ -602,7 +678,18 @@
+ 
+     if (!d->ref.isShared()) {
+         --d->size;
++
++#if defined(Q_CC_MSVC)
++#pragma warning( push )
++#pragma warning( disable : 4127 ) // conditional expression is constant
++#endif
++
+         if (QTypeInfo<T>::isComplex)
++
++#if defined(Q_CC_MSVC)
++#pragma warning( pop )
++#endif
++
+             (d->data() + d->size)->~T();
+     } else {
+         reallocData(d->size - 1);
+@@ -619,7 +706,18 @@
+         const T copy(t);
+         if (!isDetached() || d->size + n > int(d->alloc))
+             reallocData(d->size, d->size + n, QArrayData::Grow);
++
++#if defined(Q_CC_MSVC)
++#pragma warning( push )
++#pragma warning( disable : 4127 ) // conditional expression is constant
++#endif
++
+         if (QTypeInfo<T>::isStatic) {
++
++#if defined(Q_CC_MSVC)
++#pragma warning( pop )
++#endif
++
+             T *b = d->end();
+             T *i = d->end() + n;
+             while (i != b)
+@@ -668,11 +766,33 @@
+         detach();
+         abegin = d->begin() + itemsUntouched;
+         aend = abegin + itemsToErase;
++
++#if defined(Q_CC_MSVC)
++#pragma warning( push )
++#pragma warning( disable : 4127 ) // conditional expression is constant
++#endif
++
+         if (QTypeInfo<T>::isStatic) {
++
++#if defined(Q_CC_MSVC)
++#pragma warning( pop )
++#endif
++
+             iterator moveBegin = abegin + itemsToErase;
+             iterator moveEnd = d->end();
+             while (moveBegin != moveEnd) {
++
++#if defined(Q_CC_MSVC)
++#pragma warning( push )
++#pragma warning( disable : 4127 ) // conditional expression is constant
++#endif
++
+                 if (QTypeInfo<T>::isComplex)
++
++#if defined(Q_CC_MSVC)
++#pragma warning( pop )
++#endif
++
+                     static_cast<T *>(abegin)->~T();
+                 new (abegin++) T(*moveBegin++);
+             }
+@@ -734,7 +854,18 @@
+         T *i = l.d->end();
+         T *b = l.d->begin();
+         while (i != b) {
++
++#if defined(Q_CC_MSVC)
++#pragma warning( push )
++#pragma warning( disable : 4127 ) // conditional expression is constant
++#endif
++
+             if (QTypeInfo<T>::isComplex)
++
++#if defined(Q_CC_MSVC)
++#pragma warning( pop )
++#endif
++
+                 new (--w) T(*--i);
+             else
+                 *--w = *--i;
