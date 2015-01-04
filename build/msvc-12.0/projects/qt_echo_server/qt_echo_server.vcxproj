@@ -183,7 +183,7 @@
       <SubSystem>Windows</SubSystem>
       <OutputFile>$(OutDir)\$(ProjectName).exe</OutputFile>
       <AdditionalLibraryDirectories>..\..\..\..\..\icu4c_53_1_msvc2013\lib;..\..\..\..\..\boost_1_57_0\lib\x86;$(QTDIR)\lib;$(QTDIR)\plugins\platforms;$(QTDIR)\plugins\imageformats;$(QTDIR)\plugins\iconengines;$(QTDIR)\plugins\sqldrivers;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>qtmaind.lib;Qt5Cored.lib;Qt5Guid.lib;Qt5Widgetsd.lib;Qt5PlatformSupportd.lib;qwindowsd.lib;sicuind.lib;sicuucd.lib;sicudtd.lib;opengl32.lib;imm32.lib;winmm.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>qtmaind.lib;Qt5Cored.lib;Qt5Guid.lib;Qt5Widgetsd.lib;Qt5PlatformSupportd.lib;qwindowsd.lib;qtharfbuzzngd.lib;sicuind.lib;sicuucd.lib;sicudtd.lib;opengl32.lib;imm32.lib;winmm.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent />
@@ -221,7 +221,7 @@
       <SubSystem>Windows</SubSystem>
       <OutputFile>$(OutDir)\$(ProjectName).exe</OutputFile>
       <AdditionalLibraryDirectories>..\..\..\..\..\icu4c_54_1_msvc2013\lib64;..\..\..\..\..\boost_1_57_0\lib\amd64;$(QTDIR)\lib;$(QTDIR)\plugins\platforms;$(QTDIR)\plugins\imageformats;$(QTDIR)\plugins\iconengines;$(QTDIR)\plugins\sqldrivers;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>qtmaind.lib;Qt5Cored.lib;Qt5Guid.lib;Qt5Widgetsd.lib;Qt5PlatformSupportd.lib;qwindowsd.lib;sicuind.lib;sicuucd.lib;sicudtd.lib;opengl32.lib;imm32.lib;winmm.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>qtmaind.lib;Qt5Cored.lib;Qt5Guid.lib;Qt5Widgetsd.lib;Qt5PlatformSupportd.lib;qwindowsd.lib;qtharfbuzzngd.lib;sicuind.lib;sicuucd.lib;sicudtd.lib;opengl32.lib;imm32.lib;winmm.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent />
@@ -266,7 +266,7 @@
       <SubSystem>Windows</SubSystem>
       <OutputFile>$(OutDir)\$(ProjectName).exe</OutputFile>
       <AdditionalLibraryDirectories>..\..\..\..\..\icu4c_53_1_msvc2013\lib;..\..\..\..\..\boost_1_57_0\lib\x86;$(QTDIR)\lib;$(QTDIR)\plugins\platforms;$(QTDIR)\plugins\imageformats;$(QTDIR)\plugins\iconengines;$(QTDIR)\plugins\sqldrivers;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>qtmain.lib;Qt5Core.lib;Qt5Gui.lib;Qt5Widgets.lib;Qt5PlatformSupport.lib;qwindows.lib;sicuin.lib;sicuuc.lib;sicudt.lib;opengl32.lib;imm32.lib;winmm.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>qtmain.lib;Qt5Core.lib;Qt5Gui.lib;Qt5Widgets.lib;Qt5PlatformSupport.lib;qwindows.lib;qtharfbuzzng.lib;sicuin.lib;sicuuc.lib;sicudt.lib;opengl32.lib;imm32.lib;winmm.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent />
   </ItemDefinitionGroup>
@@ -304,7 +304,7 @@
       <SubSystem>Windows</SubSystem>
       <OutputFile>$(OutDir)\$(ProjectName).exe</OutputFile>
       <AdditionalLibraryDirectories>..\..\..\..\..\icu4c_54_1_msvc2013\lib64;..\..\..\..\..\boost_1_57_0\lib\amd64;$(QTDIR)\lib;$(QTDIR)\plugins\platforms;$(QTDIR)\plugins\imageformats;$(QTDIR)\plugins\iconengines;$(QTDIR)\plugins\sqldrivers;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>qtmain.lib;Qt5Core.lib;Qt5Gui.lib;Qt5Widgets.lib;Qt5PlatformSupport.lib;qwindows.lib;sicuin.lib;sicuuc.lib;sicudt.lib;opengl32.lib;imm32.lib;winmm.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>qtmain.lib;Qt5Core.lib;Qt5Gui.lib;Qt5Widgets.lib;Qt5PlatformSupport.lib;qwindows.lib;qtharfbuzzng.lib;sicuin.lib;sicuuc.lib;sicudt.lib;opengl32.lib;imm32.lib;winmm.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent />
   </ItemDefinitionGroup>
@@ -3195,7 +3195,7 @@
   </ImportGroup>
   <ProjectExtensions>
     <VisualStudio>
-      <UserProperties MocDir=".\GeneratedFiles\$(ConfigurationName)\$(PlatformName)" UicDir=".\GeneratedFiles\$(PlatformName)" RccDir=".\GeneratedFiles\$(PlatformName)" lupdateOnBuild="0" Qt5Version_x0020_Win32="5.2.1 shared" Qt5Version_x0020_x64="5.3.2 shared x64" MocOptions="" />
+      <UserProperties MocDir=".\GeneratedFiles\$(ConfigurationName)\$(PlatformName)" UicDir=".\GeneratedFiles\$(PlatformName)" RccDir=".\GeneratedFiles\$(PlatformName)" lupdateOnBuild="0" Qt5Version_x0020_Win32="5.4.0 shared x86" Qt5Version_x0020_x64="5.4.0 shared x64" MocOptions="" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>
