@@ -99,8 +99,9 @@ template <typename Value>
 typename sp_singleton<Value>::value_shared_ptr 
 sp_singleton<Value>::get_nullable_instance()
 {
+  typedef typename static_data::lock_guard_type lock_guard_type;
   static_data& sd = get_static_data();  
-  static_data::lock_guard_type lock_guard(sd.mutex);
+  lock_guard_type lock_guard(sd.mutex);
   return sd.weak_value.lock();
 }
 
@@ -109,8 +110,9 @@ template <typename Factory>
 typename sp_singleton<Value>::value_shared_ptr 
 sp_singleton<Value>::get_instance(Factory factory)
 {
+  typedef typename static_data::lock_guard_type lock_guard_type;
   static_data& sd = get_static_data();  
-  static_data::lock_guard_type lock_guard(sd.mutex);
+  lock_guard_type lock_guard(sd.mutex);
   if (value_shared_ptr shared_value = sd.weak_value.lock())
   {
     return shared_value;
