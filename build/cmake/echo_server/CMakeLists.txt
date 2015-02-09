@@ -8,7 +8,7 @@
 cmake_minimum_required(VERSION 2.8)
 project(echo_server)
 
-find_package(Boost REQUIRED)
+find_package(Boost REQUIRED COMPONENTS system thread date_time program_options regex chrono)
 
 set(HEADERS_DIR "${PROJECT_SOURCE_DIR}/../../../include")
 set(SOURCES_DIR "${PROJECT_SOURCE_DIR}/../../../src")
@@ -28,4 +28,10 @@ set(SOURCES
     "${SOURCES_DIR}/echo_server/main.cpp"
 )
 
+set(LIBRARIES ${Boost_LIBRARIES})
+if(WIN32)
+    set(LIBRARIES "${LIBRARIES};ws2_32")
+endif()
+
 add_executable(echo_server ${SOURCES})
+target_link_libraries(echo_server ${LIBRARIES})

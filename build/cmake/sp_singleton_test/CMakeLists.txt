@@ -8,7 +8,7 @@
 cmake_minimum_required(VERSION 2.8)
 project(sp_singleton_test)
 
-find_package(Boost REQUIRED)
+find_package(Boost REQUIRED COMPONENTS system thread date_time chrono)
 
 set(HEADERS_DIR "${PROJECT_SOURCE_DIR}/../../../include")
 set(SOURCES_DIR "${PROJECT_SOURCE_DIR}/../../../src")
@@ -21,3 +21,4 @@ set(SOURCES
 )
 
 add_executable(sp_singleton_test ${SOURCES})
+target_link_libraries(sp_singleton_test ${Boost_LIBRARIES})

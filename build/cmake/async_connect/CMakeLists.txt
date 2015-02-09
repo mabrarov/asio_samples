@@ -8,7 +8,7 @@
 cmake_minimum_required(VERSION 2.8)
 project(async_connect)
 
-find_package(Boost REQUIRED)
+find_package(Boost REQUIRED COMPONENTS system thread date_time program_options regex timer chrono)
 
 set(HEADERS_DIR "${PROJECT_SOURCE_DIR}/../../../include")
 set(SOURCES_DIR "${PROJECT_SOURCE_DIR}/../../../src")
@@ -20,4 +20,10 @@ set(SOURCES
     "${SOURCES_DIR}/async_connect/main.cpp"
 )
 
+set(LIBRARIES ${Boost_LIBRARIES})
+if(WIN32)
+    set(LIBRARIES "${LIBRARIES};ws2_32")
+endif()
+
 add_executable(async_connect ${SOURCES})
+target_link_libraries(async_connect ${LIBRARIES})

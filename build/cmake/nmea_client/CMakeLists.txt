@@ -8,7 +8,7 @@
 cmake_minimum_required(VERSION 2.8)
 project(nmea_client)
 
-find_package(Boost REQUIRED)
+find_package(Boost REQUIRED COMPONENTS system thread date_time regex chrono)
 
 set(HEADERS_DIR "${PROJECT_SOURCE_DIR}/../../../include")
 set(SOURCES_DIR "${PROJECT_SOURCE_DIR}/../../../src")
@@ -24,4 +24,10 @@ set(SOURCES
     "${SOURCES_DIR}/nmea_client/main.cpp"
 )
 
+set(LIBRARIES ${Boost_LIBRARIES})
+if(WIN32)
+    set(LIBRARIES "${LIBRARIES};ws2_32")
+endif()
+
 add_executable(nmea_client ${SOURCES})
+target_link_libraries(nmea_client ${LIBRARIES})

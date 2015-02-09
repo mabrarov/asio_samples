@@ -10,12 +10,15 @@ project(asio_samples)
 
 # Set additional options for Windows targets
 if(WIN32)
-    add_definitions(
+    add_definitions(    
         -DWIN32_LEAN_AND_MEAN
+        -DWINVER=0x0501
+        -D_WIN32_WINNT=0x0501
+        -D_WIN32_WINDOWS=0x0501
+        -D_WIN32_IE=0x0600                
         -D_UNICODE
-        -DUNICODE
-        -DWINVER=0x0500
-        -D_WIN32_WINNT=0x0500)
+        -DUNICODE        
+        -D_WINSOCK_DEPRECATED_NO_WARNINGS)
 endif()
 
 # Turn on support of C++11 if it's available
