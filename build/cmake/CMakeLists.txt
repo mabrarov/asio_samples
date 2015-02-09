@@ -5,7 +5,7 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.11)
 project(asio_samples)
 
 # Set additional options for Windows targets
@@ -25,9 +25,9 @@ endif()
 # Turn on support of C++11 if it's available
 if(CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
-elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+elseif(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
     set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
-elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
+elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "Intel")
     set(CMAKE_CXX_FLAGS "/Qstd=c++0x ${CMAKE_CXX_FLAGS}")    
 endif()
 
@@ -43,6 +43,7 @@ add_subdirectory(async_connect)
 add_subdirectory(echo_server)
 add_subdirectory(handler_storage_test)
 add_subdirectory(nmea_client)
+add_subdirectory(qt_echo_server)
 add_subdirectory(shared_ptr_factory_test)
 add_subdirectory(sp_singleton_test)
 
