@@ -13,11 +13,10 @@ find_package(Boost REQUIRED)
 set(HEADERS_DIR "${PROJECT_SOURCE_DIR}/../../../include")
 set(SOURCES_DIR "${PROJECT_SOURCE_DIR}/../../../src")
 
-include_directories(${Boost_INCLUDE_DIRS})
-include_directories(${HEADERS_DIR})
-
 set(SOURCES     
     "${SOURCES_DIR}/shared_ptr_factory_test/main.cpp"
 )
 
+include_directories(${Boost_INCLUDE_DIRS})
+include_directories(${HEADERS_DIR})
 add_executable(shared_ptr_factory_test ${SOURCES})
