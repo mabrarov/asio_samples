@@ -10,14 +10,15 @@ project(asio_samples)
 
 # Set additional options for Windows targets
 if(WIN32)
-    add_definitions(    
+    add_definitions(
+        -DWIN32
         -DWIN32_LEAN_AND_MEAN
         -DWINVER=0x0501
         -D_WIN32_WINNT=0x0501
         -D_WIN32_WINDOWS=0x0501
-        -D_WIN32_IE=0x0600                
+        -D_WIN32_IE=0x0600
         -D_UNICODE
-        -DUNICODE        
+        -DUNICODE
         -D_WINSOCK_DEPRECATED_NO_WARNINGS)
 endif()
 
@@ -28,6 +29,11 @@ elseif("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
     set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
     set(CMAKE_CXX_FLAGS "/Qstd=c++0x ${CMAKE_CXX_FLAGS}")    
+endif()
+
+# Turn on Unicode support for MinGW for main function
+if(MINGW)
+    set(CMAKE_EXE_LINKER_FLAGS "-municode ${CMAKE_EXE_LINKER_FLAGS}")
 endif()
 
 add_subdirectory(asio_performance_test_client)
