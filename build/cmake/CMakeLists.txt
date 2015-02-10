@@ -1,5 +1,5 @@
 # 
-# Copyright (c) 2010-2015 Marat Abrarov (abrarov@gmail.com)
+# Copyright (c) 2015 Marat Abrarov (abrarov@gmail.com)
 #
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -8,7 +8,11 @@
 cmake_minimum_required(VERSION 2.8.11)
 project(asio_samples)
 
-# Set additional options for Windows targets
+# Setup compiler & linker options
+include(compiler_options.cmake)
+include(linker_options.cmake)
+
+# Additional preprocessor definitions for Windows target
 if(WIN32)
     add_definitions(
         -DWIN32
@@ -20,31 +24,6 @@ if(WIN32)
         -D_UNICODE
         -DUNICODE
         -D_WINSOCK_DEPRECATED_NO_WARNINGS)
-endif()
-
-# Turn on support of C++11 if it's available
-if(CMAKE_COMPILER_IS_GNUCXX)
-    set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
-elseif(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
-    set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
-elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "Intel")
-    set(CMAKE_CXX_FLAGS "/Qstd=c++0x ${CMAKE_CXX_FLAGS}")    
-endif()
-
-# Turn on more strict warning mode
-if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long -pedantic")
-elseif(MSVC)
-    if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
-        string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-    else()
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
-    endif()
-endif()
-
-# Turn on Unicode support for MinGW for main function
-if(MINGW)
-    set(CMAKE_EXE_LINKER_FLAGS "-municode ${CMAKE_EXE_LINKER_FLAGS}")
 endif()
 
 add_subdirectory(asio_performance_test_client)
