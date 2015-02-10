@@ -53,7 +53,7 @@ private:
   static static_data& get_static_data();
 
   static once_flag static_data_init_flag_;
-  static static_data*      static_data_;
+  static static_data* static_data_;
 }; // class sp_singleton
 
 template <typename Value>
@@ -83,7 +83,7 @@ struct sp_singleton<Value>::static_data : private boost::noncopyable
 
   static_data();
     
-  mutex_type     mutex;
+  mutex_type     value_mutex;
   value_weak_ptr weak_value;
   latch_ptr      instance_latch;
 }; // struct sp_singleton<Value>::static_data
@@ -101,7 +101,7 @@ sp_singleton<Value>::get_nullable_instance()
 {
   typedef typename static_data::lock_guard_type lock_guard_type;
   static_data& sd = get_static_data();  
-  lock_guard_type lock_guard(sd.mutex);
+  lock_guard_type lock_guard(sd.value_mutex);
   return sd.weak_value.lock();
 }
 
@@ -112,7 +112,7 @@ sp_singleton<Value>::get_instance(Factory factory)
 {
   typedef typename static_data::lock_guard_type lock_guard_type;
   static_data& sd = get_static_data();  
-  lock_guard_type lock_guard(sd.mutex);
+  lock_guard_type lock_guard(sd.value_mutex);
   if (value_shared_ptr shared_value = sd.weak_value.lock())
   {
     return shared_value;
