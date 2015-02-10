@@ -27,7 +27,33 @@ find_package(Boost REQUIRED COMPONENTS ${BOOST_COMPONENTS})
 set(HEADERS_DIR "${PROJECT_SOURCE_DIR}/../../../include")
 set(SOURCES_DIR "${PROJECT_SOURCE_DIR}/../../../src")
 
-set(SOURCES 
+set(HEADERS
+    "${HEADERS_DIR}/ma/detail/binder.hpp"
+    "${HEADERS_DIR}/ma/detail/functional.hpp"
+    "${HEADERS_DIR}/ma/detail/handler_ptr.hpp"
+    "${HEADERS_DIR}/ma/detail/intrusive_list.hpp"
+    "${HEADERS_DIR}/ma/detail/latch.hpp"
+    "${HEADERS_DIR}/ma/detail/memory.hpp"
+    "${HEADERS_DIR}/ma/detail/service_base.hpp"
+    "${HEADERS_DIR}/ma/detail/thread.hpp"
+    "${HEADERS_DIR}/ma/bind_handler.hpp"
+    "${HEADERS_DIR}/ma/config.hpp"
+    "${HEADERS_DIR}/ma/console_close_guard.hpp"
+    "${HEADERS_DIR}/ma/context_alloc_handler.hpp"
+    "${HEADERS_DIR}/ma/context_wrapped_handler.hpp"
+    "${HEADERS_DIR}/ma/custom_alloc_handler.hpp"
+    "${HEADERS_DIR}/ma/handler_alloc_helpers.hpp"
+    "${HEADERS_DIR}/ma/handler_allocator.hpp"
+    "${HEADERS_DIR}/ma/handler_cont_helpers.hpp"
+    "${HEADERS_DIR}/ma/handler_invoke_helpers.hpp"
+    "${HEADERS_DIR}/ma/handler_storage.hpp"
+    "${HEADERS_DIR}/ma/handler_storage_service.hpp"
+    "${HEADERS_DIR}/ma/lockable_wrapped_handler.hpp"
+    "${HEADERS_DIR}/ma/strand_wrapped_handler.hpp"
+    "${HEADERS_DIR}/ma/thread_group.hpp"
+    "${HEADERS_DIR}/ma/type_traits.hpp")
+
+set(SOURCES
     "${SOURCES_DIR}/handler_storage_test/main.cpp"
 )
 
@@ -45,5 +71,5 @@ endif()
 
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${HEADERS_DIR})
-add_executable(handler_storage_test ${SOURCES})
+add_executable(handler_storage_test ${HEADERS} ${SOURCES})
 target_link_libraries(handler_storage_test ${LIBRARIES})

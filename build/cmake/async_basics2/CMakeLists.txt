@@ -27,7 +27,42 @@ find_package(Boost REQUIRED COMPONENTS ${BOOST_COMPONENTS})
 set(HEADERS_DIR "${PROJECT_SOURCE_DIR}/../../../include")
 set(SOURCES_DIR "${PROJECT_SOURCE_DIR}/../../../src")
 
-set(SOURCES 
+set(HEADERS
+    "${HEADERS_DIR}/ma/detail/binder.hpp"
+    "${HEADERS_DIR}/ma/detail/functional.hpp"
+    "${HEADERS_DIR}/ma/detail/handler_ptr.hpp"
+    "${HEADERS_DIR}/ma/detail/intrusive_list.hpp"
+    "${HEADERS_DIR}/ma/detail/latch.hpp"
+    "${HEADERS_DIR}/ma/detail/memory.hpp"
+    "${HEADERS_DIR}/ma/detail/service_base.hpp"
+    "${HEADERS_DIR}/ma/detail/sp_singleton.hpp"
+    "${HEADERS_DIR}/ma/detail/thread.hpp"
+    "${HEADERS_DIR}/ma/windows/console_signal.hpp"
+    "${HEADERS_DIR}/ma/windows/console_signal_service.hpp"
+    "${HEADERS_DIR}/ma/tutorial2/async_implementation.hpp"
+    "${HEADERS_DIR}/ma/tutorial2/async_interface.hpp"
+    "${HEADERS_DIR}/ma/tutorial2/do_something_handler.hpp"
+    "${HEADERS_DIR}/ma/tutorial2/do_something_handler_fwd.hpp"
+    "${HEADERS_DIR}/ma/bind_handler.hpp"
+    "${HEADERS_DIR}/ma/config.hpp"
+    "${HEADERS_DIR}/ma/console_close_guard.hpp"
+    "${HEADERS_DIR}/ma/context_alloc_handler.hpp"
+    "${HEADERS_DIR}/ma/context_wrapped_handler.hpp"
+    "${HEADERS_DIR}/ma/custom_alloc_handler.hpp"
+    "${HEADERS_DIR}/ma/handler_alloc_helpers.hpp"
+    "${HEADERS_DIR}/ma/handler_allocator.hpp"
+    "${HEADERS_DIR}/ma/handler_cont_helpers.hpp"
+    "${HEADERS_DIR}/ma/handler_invoke_helpers.hpp"
+    "${HEADERS_DIR}/ma/handler_storage.hpp"
+    "${HEADERS_DIR}/ma/handler_storage_service.hpp"
+    "${HEADERS_DIR}/ma/shared_ptr_factory.hpp"
+    "${HEADERS_DIR}/ma/steady_deadline_timer.hpp"
+    "${HEADERS_DIR}/ma/strand.hpp"
+    "${HEADERS_DIR}/ma/strand_wrapped_handler.hpp"
+    "${HEADERS_DIR}/ma/thread_group.hpp"
+    "${HEADERS_DIR}/ma/type_traits.hpp")
+
+set(SOURCES
     "${SOURCES_DIR}/ma/tutorial2/async_implementation.cpp"
     "${SOURCES_DIR}/ma/windows/console_signal_service.cpp"
     "${SOURCES_DIR}/ma/console_close_guard.cpp"
@@ -48,5 +83,5 @@ endif()
 
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${HEADERS_DIR})
-add_executable(async_basics2 ${SOURCES})
+add_executable(async_basics2 ${HEADERS} ${SOURCES})
 target_link_libraries(async_basics2 ${LIBRARIES})

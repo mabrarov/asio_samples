@@ -44,7 +44,66 @@ set(UIC_FORMS
 set(RCC_RESOURCES
     )
 
-set(SOURCES 
+set(HEADERS
+    "${HEADERS_DIR}/ma/echo/server/qt/custommetatypes.h"
+    "${HEADERS_DIR}/ma/echo/server/qt/execution_config.h"
+    "${HEADERS_DIR}/ma/echo/server/qt/execution_config_fwd.h"
+    "${HEADERS_DIR}/ma/echo/server/qt/serviceforwardsignal_fwd.h"
+    "${HEADERS_DIR}/ma/echo/server/qt/serviceservantsignal_fwd.h"
+    "${HEADERS_DIR}/ma/echo/server/qt/servicestate.h"
+    "${HEADERS_DIR}/ma/echo/server/qt/service_fwd.h"
+    "${HEADERS_DIR}/ma/echo/server/qt/meta_type_register_error.h"
+    "${HEADERS_DIR}/ma/echo/server/qt/signal_connect_error.h"
+    "${HEADERS_DIR}/ma/echo/server/qt/service.h"
+    "${HEADERS_DIR}/ma/echo/server/qt/serviceforwardsignal.h"
+    "${HEADERS_DIR}/ma/echo/server/qt/serviceservantsignal.h"
+    "${HEADERS_DIR}/ma/echo/server/qt/mainform.h"
+    "${HEADERS_DIR}/ma/echo/server/session_config_fwd.hpp"
+    "${HEADERS_DIR}/ma/echo/server/session_manager_config_fwd.hpp"
+    "${HEADERS_DIR}/ma/echo/server/session_manager_stats.hpp"
+    "${HEADERS_DIR}/ma/echo/server/session_manager_stats_fwd.hpp"
+    "${HEADERS_DIR}/ma/echo/server/session_config.hpp"
+    "${HEADERS_DIR}/ma/echo/server/session_manager_config.hpp"
+    "${HEADERS_DIR}/ma/echo/server/session_fwd.hpp"
+    "${HEADERS_DIR}/ma/echo/server/session_manager_fwd.hpp"
+    "${HEADERS_DIR}/ma/echo/server/error.hpp"
+    "${HEADERS_DIR}/ma/echo/server/session.hpp"
+    "${HEADERS_DIR}/ma/echo/server/session_manager.hpp"
+    "${HEADERS_DIR}/ma/echo/server/session_manager_fwd.hpp"
+    "${HEADERS_DIR}/ma/echo/server/pooled_session_factory.hpp"
+    "${HEADERS_DIR}/ma/echo/server/session_factory.hpp"
+    "${HEADERS_DIR}/ma/echo/server/session_factory_fwd.hpp"
+    "${HEADERS_DIR}/ma/echo/server/simple_session_factory.hpp"
+    "${HEADERS_DIR}/ma/detail/binder.hpp"
+    "${HEADERS_DIR}/ma/detail/functional.hpp"
+    "${HEADERS_DIR}/ma/detail/handler_ptr.hpp"
+    "${HEADERS_DIR}/ma/detail/intrusive_list.hpp"
+    "${HEADERS_DIR}/ma/detail/memory.hpp"
+    "${HEADERS_DIR}/ma/detail/service_base.hpp"
+    "${HEADERS_DIR}/ma/detail/thread.hpp"
+    "${HEADERS_DIR}/ma/detail/tuple.hpp"
+    "${HEADERS_DIR}/ma/bind_handler.hpp"
+    "${HEADERS_DIR}/ma/config.hpp"
+    "${HEADERS_DIR}/ma/context_alloc_handler.hpp"
+    "${HEADERS_DIR}/ma/context_wrapped_handler.hpp"
+    "${HEADERS_DIR}/ma/custom_alloc_handler.hpp"
+    "${HEADERS_DIR}/ma/cyclic_buffer.hpp"
+    "${HEADERS_DIR}/ma/handler_alloc_helpers.hpp"
+    "${HEADERS_DIR}/ma/handler_allocator.hpp"
+    "${HEADERS_DIR}/ma/handler_cont_helpers.hpp"
+    "${HEADERS_DIR}/ma/handler_invoke_helpers.hpp"
+    "${HEADERS_DIR}/ma/handler_storage.hpp"
+    "${HEADERS_DIR}/ma/handler_storage_service.hpp"
+    "${HEADERS_DIR}/ma/limited_int.hpp"
+    "${HEADERS_DIR}/ma/shared_ptr_factory.hpp"
+    "${HEADERS_DIR}/ma/sp_intrusive_list.hpp"
+    "${HEADERS_DIR}/ma/steady_deadline_timer.hpp"
+    "${HEADERS_DIR}/ma/strand.hpp"
+    "${HEADERS_DIR}/ma/strand_wrapped_handler.hpp"
+    "${HEADERS_DIR}/ma/thread_group.hpp"
+    "${HEADERS_DIR}/ma/type_traits.hpp")
+
+set(SOURCES
     "${SOURCES_DIR}/ma/echo/server/qt/custommetatypes.cpp"
     "${SOURCES_DIR}/ma/echo/server/qt/service.cpp"
     "${SOURCES_DIR}/ma/echo/server/qt/mainform.cpp"
@@ -79,6 +138,7 @@ qt5_add_resources(RCC_GENERATED_SOURCES ${RCC_RESOURCES})
 
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${HEADERS_DIR})
-include_directories(${UIC_GENERATED_HEADERS})
-add_executable(qt_echo_server WIN32 ${SOURCES} ${MOC_GENERATED_SOURCES} ${RCC_GENERATED_SOURCES})
+add_executable(qt_echo_server WIN32 
+    ${HEADERS} ${SOURCES} 
+    ${MOC_GENERATED_SOURCES} ${RCC_GENERATED_SOURCES} ${UIC_GENERATED_HEADERS})
 target_link_libraries(qt_echo_server ${LIBRARIES})
