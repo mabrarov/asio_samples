@@ -11,7 +11,7 @@ project(echo_server)
 # Just determine version of Boost C++ Libraries
 find_package(Boost REQUIRED)
 
-# Build list of used Boost libraries depending on Boost veesion 
+# Build list of used Boost libraries depending on Boost version 
 # (use chono if available)
 set(BOOST_COMPONENTS "system;thread;date_time;program_options;regex")
 if(NOT(${Boost_VERSION} LESS 104700))
