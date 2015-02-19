@@ -901,29 +901,29 @@ void session::start_socket_read(
 #if defined(MA_HAS_RVALUE_REFS) \
     && defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
 
-  session_ptr shared_this = shared_from_this();
+  session_ptr self = shared_from_this();
 
   socket_.async_read_some(buffers, strand_.wrap(make_custom_alloc_handler(
-      read_allocator_, [shared_this](const boost::system::error_code& error,
+      read_allocator_, [self](const boost::system::error_code& error,
           std::size_t bytes_transferred)
   {
-    BOOST_ASSERT_MSG(read_state::in_progress == shared_this->read_state_,
+    BOOST_ASSERT_MSG(read_state::in_progress == self->read_state_,
         "Invalid read state");
 
     // Split handler based on current internal state
     // that might change during read operation
-    switch (shared_this->intern_state_)
+    switch (self->intern_state_)
     {
     case intern_state::work:
-      shared_this->handle_read_at_work(error, bytes_transferred);
+      self->handle_read_at_work(error, bytes_transferred);
       break;
 
     case intern_state::shutdown:
-      shared_this->handle_read_at_shutdown(error, bytes_transferred);
+      self->handle_read_at_shutdown(error, bytes_transferred);
       break;
 
     case intern_state::stop:
-      shared_this->handle_read_at_stop(error, bytes_transferred);
+      self->handle_read_at_stop(error, bytes_transferred);
       break;
 
     default:
@@ -957,29 +957,29 @@ void session::start_socket_write(
 #if defined(MA_HAS_RVALUE_REFS) \
     && defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
 
-  session_ptr shared_this = shared_from_this();
+  session_ptr self = shared_from_this();
 
   socket_.async_write_some(buffers, strand_.wrap(make_custom_alloc_handler(
-      write_allocator_, [shared_this](const boost::system::error_code& error,
+      write_allocator_, [self](const boost::system::error_code& error,
           std::size_t bytes_transferred)
   {
-    BOOST_ASSERT_MSG(write_state::in_progress == shared_this->write_state_,
+    BOOST_ASSERT_MSG(write_state::in_progress == self->write_state_,
         "Invalid write state");
 
     // Split handler based on current internal state
     // that might change during write operation
-    switch (shared_this->intern_state_)
+    switch (self->intern_state_)
     {
     case intern_state::work:
-      shared_this->handle_write_at_work(error, bytes_transferred);
+      self->handle_write_at_work(error, bytes_transferred);
       break;
 
     case intern_state::shutdown:
-      shared_this->handle_write_at_shutdown(error, bytes_transferred);
+      self->handle_write_at_shutdown(error, bytes_transferred);
       break;
 
     case intern_state::stop:
-      shared_this->handle_write_at_stop(error, bytes_transferred);
+      self->handle_write_at_stop(error, bytes_transferred);
       break;
 
     default:
@@ -1016,25 +1016,25 @@ void session::start_timer_wait()
 #if defined(MA_HAS_RVALUE_REFS) \
     && defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
 
-  session_ptr shared_this = shared_from_this();
+  session_ptr self = shared_from_this();
 
   timer_.async_wait(strand_.wrap(make_custom_alloc_handler(timer_allocator_, 
-      [shared_this](const boost::system::error_code& error)
+      [self](const boost::system::error_code& error)
   {
-    BOOST_ASSERT_MSG(timer_state::in_progress == shared_this->timer_state_,
+    BOOST_ASSERT_MSG(timer_state::in_progress == self->timer_state_,
         "Invalid timer state");
 
     // Split handler based on current internal state
     // that might change during timer wait operation
-    switch (shared_this->intern_state_)
+    switch (self->intern_state_)
     {
     case intern_state::work:
     case intern_state::shutdown:
-      shared_this->handle_timer_at_work(error);
+      self->handle_timer_at_work(error);
       break;
 
     case intern_state::stop:
-      shared_this->handle_timer_at_stop(error);
+      self->handle_timer_at_stop(error);
       break;
 
     default:

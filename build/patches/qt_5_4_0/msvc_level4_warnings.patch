@@ -1,0 +1,236 @@
+--- qtbase/src/corelib/tools/qvector.h	2014-12-05 18:24:38
++++ qtbase/src/corelib/tools/qvector.h	2015-01-03 00:26:58
+@@ -276,7 +276,17 @@
+ template <typename T>
+ void QVector<T>::defaultConstruct(T *from, T *to)
+ {
++#if defined(Q_CC_MSVC)
++#pragma warning(push)
++#pragma warning(disable : 4127) // conditional expression is constant
++#endif
++
+     if (QTypeInfo<T>::isComplex) {
++
++#if defined(Q_CC_MSVC)
++#pragma warning(pop)
++#endif
++
+         while (from != to) {
+             new (from++) T();
+         }
+@@ -292,7 +302,17 @@
+ template <typename T>
+ void QVector<T>::copyConstruct(const T *srcFrom, const T *srcTo, T *dstFrom)
+ {
++#if defined(Q_CC_MSVC)
++#pragma warning(push)
++#pragma warning(disable : 4127) // conditional expression is constant
++#endif
++
+     if (QTypeInfo<T>::isComplex) {
++
++#if defined(Q_CC_MSVC)
++#pragma warning(pop)
++#endif
++
+         while (srcFrom != srcTo)
+             new (dstFrom++) T(*srcFrom++);
+     } else {
+@@ -497,7 +517,18 @@
+             QT_TRY {
+                 // allocate memory
+                 x = Data::allocate(aalloc, options);
++
++#if defined(Q_CC_MSVC)
++#pragma warning(push)
++#pragma warning(disable : 4127) // conditional expression is constant
++#endif
++
+                 Q_CHECK_PTR(x);
++
++#if defined(Q_CC_MSVC)
++#pragma warning(pop)
++#endif
++
+                 // aalloc is bigger then 0 so it is not [un]sharedEmpty
+ #if QT_SUPPORTS(UNSHARABLE_CONTAINERS)
+                 Q_ASSERT(x->ref.isSharable() || options.testFlag(QArrayData::Unsharable));
+@@ -509,7 +540,17 @@
+                 T *srcEnd = asize > d->size ? d->end() : d->begin() + asize;
+                 T *dst = x->begin();
+ 
++#if defined(Q_CC_MSVC)
++#pragma warning(push)
++#pragma warning(disable : 4127) // conditional expression is constant
++#endif
++
+                 if (QTypeInfo<T>::isStatic || (isShared && QTypeInfo<T>::isComplex)) {
++
++#if defined(Q_CC_MSVC)
++#pragma warning(pop)
++#endif
++
+                     // we can not move the data, we need to copy construct it
+                     while (srcBegin != srcEnd) {
+                         new (dst++) T(*srcBegin++);
+@@ -554,7 +595,18 @@
+     }
+     if (d != x) {
+         if (!d->ref.deref()) {
++
++#if defined(Q_CC_MSVC)
++#pragma warning(push)
++#pragma warning(disable : 4127) // conditional expression is constant
++#endif
++
+             if (QTypeInfo<T>::isStatic || !aalloc || (isShared && QTypeInfo<T>::isComplex)) {
++
++#if defined(Q_CC_MSVC)
++#pragma warning(pop)
++#endif
++
+                 // data was copy constructed, we need to call destructors
+                 // or if !alloc we did nothing to the old 'd'.
+                 freeData(d);
+@@ -598,7 +650,18 @@
+         QArrayData::AllocationOptions opt(isTooSmall ? QArrayData::Grow : QArrayData::Default);
+         reallocData(d->size, isTooSmall ? d->size + 1 : d->alloc, opt);
+     }
++
++#if defined(Q_CC_MSVC)
++#pragma warning(push)
++#pragma warning(disable : 4127) // conditional expression is constant
++#endif
++
+     if (QTypeInfo<T>::isComplex)
++
++#if defined(Q_CC_MSVC)
++#pragma warning(pop)
++#endif
++
+         new (d->end()) T(copy);
+     else
+         *d->end() = copy;
+@@ -613,7 +676,18 @@
+ 
+     if (!d->ref.isShared()) {
+         --d->size;
++
++#if defined(Q_CC_MSVC)
++#pragma warning(push)
++#pragma warning(disable : 4127) // conditional expression is constant
++#endif
++
+         if (QTypeInfo<T>::isComplex)
++
++#if defined(Q_CC_MSVC)
++#pragma warning(pop)
++#endif
++
+             (d->data() + d->size)->~T();
+     } else {
+         reallocData(d->size - 1);
+@@ -630,7 +704,18 @@
+         const T copy(t);
+         if (!isDetached() || d->size + n > int(d->alloc))
+             reallocData(d->size, d->size + n, QArrayData::Grow);
++
++#if defined(Q_CC_MSVC)
++#pragma warning(push)
++#pragma warning(disable : 4127) // conditional expression is constant
++#endif
++
+         if (QTypeInfo<T>::isStatic) {
++
++#if defined(Q_CC_MSVC)
++#pragma warning(pop)
++#endif
++
+             T *b = d->end();
+             T *i = d->end() + n;
+             while (i != b)
+@@ -679,11 +764,33 @@
+         detach();
+         abegin = d->begin() + itemsUntouched;
+         aend = abegin + itemsToErase;
++
++#if defined(Q_CC_MSVC)
++#pragma warning(push)
++#pragma warning(disable : 4127) // conditional expression is constant
++#endif
++
+         if (QTypeInfo<T>::isStatic) {
++
++#if defined(Q_CC_MSVC)
++#pragma warning(pop)
++#endif
++
+             iterator moveBegin = abegin + itemsToErase;
+             iterator moveEnd = d->end();
+             while (moveBegin != moveEnd) {
++
++#if defined(Q_CC_MSVC)
++#pragma warning(push)
++#pragma warning(disable : 4127) // conditional expression is constant
++#endif
++
+                 if (QTypeInfo<T>::isComplex)
++
++#if defined(Q_CC_MSVC)
++#pragma warning(pop)
++#endif
++
+                     static_cast<T *>(abegin)->~T();
+                 new (abegin++) T(*moveBegin++);
+             }
+@@ -745,7 +852,18 @@
+         T *i = l.d->end();
+         T *b = l.d->begin();
+         while (i != b) {
++
++#if defined(Q_CC_MSVC)
++#pragma warning(push)
++#pragma warning(disable : 4127) // conditional expression is constant
++#endif
++
+             if (QTypeInfo<T>::isComplex)
++
++#if defined(Q_CC_MSVC)
++#pragma warning(pop)
++#endif
++
+                 new (--w) T(*--i);
+             else
+                 *--w = *--i;
+@@ -887,4 +1005,4 @@
+ 
+ QT_END_NAMESPACE
+ 
+-#endif // QVECTOR_H
++#endif // QVECTOR_H
+\ No newline at end of file
+
+--- qtbase/src/corelib/tools/qmap.h	2014-12-05 18:24:38
++++ qtbase/src/corelib/tools/qmap.h	2015-01-03 00:26:58
+@@ -266,10 +266,6 @@
+     }
+ }
+ 
+-#if defined(Q_CC_MSVC)
+-#pragma warning( pop )
+-#endif
+-
+ template <class Key, class T>
+ void QMapData<Key, T>::deleteNode(QMapNode<Key, T> *z)
+ {
+@@ -280,6 +276,10 @@
+     freeNodeAndRebalance(z);
+ }
+ 
++#if defined(Q_CC_MSVC)
++#pragma warning( pop )
++#endif
++
+ template <class Key, class T>
+ QMapNode<Key, T> *QMapData<Key, T>::findNode(const Key &akey) const
+ {

@@ -264,14 +264,14 @@ void session::async_start(Handler&& handler)
 
 #if defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
 
-  session_ptr shared_this = shared_from_this();
+  session_ptr self = shared_from_this();
 
   strand_.post(make_explicit_context_alloc_handler(
       std::forward<Handler>(handler),
-      [shared_this](const handler_type& handler)
+      [self](const handler_type& handler)
   {
-    boost::system::error_code result = shared_this->do_start_extern_start();
-    shared_this->io_service_.post(bind_handler(handler, result));
+    boost::system::error_code result = self->do_start_extern_start();
+    self->io_service_.post(bind_handler(handler, result));
   }));
 
 #else // defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
@@ -303,19 +303,19 @@ void session::async_stop(Handler&& handler)
 
 #if defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
 
-  session_ptr shared_this = shared_from_this();
+  session_ptr self = shared_from_this();
 
   strand_.post(make_explicit_context_alloc_handler(
       std::forward<Handler>(handler),
-      [shared_this](const handler_type& handler)
+      [self](const handler_type& handler)
   {
-    if (optional_error_code result = shared_this->do_start_extern_stop())
+    if (optional_error_code result = self->do_start_extern_stop())
     {
-      shared_this->io_service_.post(bind_handler(handler, *result));
+      self->io_service_.post(bind_handler(handler, *result));
     }
     else
     {
-      shared_this->extern_stop_handler_.store(handler);
+      self->extern_stop_handler_.store(handler);
     }
   }));
 
@@ -348,19 +348,19 @@ void session::async_wait(Handler&& handler)
 
 #if defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
 
-  session_ptr shared_this = shared_from_this();
+  session_ptr self = shared_from_this();
 
   strand_.post(make_explicit_context_alloc_handler(
       std::forward<Handler>(handler),
-      [shared_this](const handler_type& handler)
+      [self](const handler_type& handler)
   {
-    if (optional_error_code result = shared_this->do_start_extern_wait())
+    if (optional_error_code result = self->do_start_extern_wait())
     {
-      shared_this->io_service_.post(bind_handler(handler, *result));
+      self->io_service_.post(bind_handler(handler, *result));
     }
     else
     {
-      shared_this->extern_wait_handler_.store(handler);
+      self->extern_wait_handler_.store(handler);
     }
   }));
 
