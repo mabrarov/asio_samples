@@ -120,6 +120,40 @@ if(WIN32)
     set(LIBRARIES "ws2_32;mswsock;comdlg32;uuid;ole32;oleaut32;advapi32;imm32;winmm;winspool;${LIBRARIES}")    
 endif()
 
+# todo: should be determined according to compiler / linker settings
+#set(STATIC_CXX_RUNTIME true)
+
+# todo: should be determined according to Qt settings and STATIC_CXX_RUNTIME
+if(STATIC_CXX_RUNTIME)
+    set(STATIC_QT true)
+endif()
+
+set(Qt5PlatformSupport_DEBUG)
+set(Qt5PlatformSupport_RELEASE)
+set(Qt5HarfBuzzNG_DEBUG)
+set(Qt5HarfBuzzNG_RELEASE)
+
+if(STATIC_QT)
+    set(LIBRARIES "opengl32.lib;${LIBRARIES};Qt5::QWindowsIntegrationPlugin")
+
+    # Some Qt libraries have no cmake files so wee need to search them ourselves
+    # Those libraries should be located at the same directory as Qt Core library is located
+
+    # Extract directory of Qt Core library
+    get_target_property(QT_LIB_DIR Qt5::Core LOCATION) 
+    get_filename_component(QT_LIB_DIR "${QT_LIB_DIR}" PATH) 
+
+    # Qt5PlatformSupport library    
+    find_library(Qt5PlatformSupport_DEBUG   Qt5PlatformSupportd HINTS "${QT_LIB_DIR}")
+    find_library(Qt5PlatformSupport_RELEASE Qt5PlatformSupport  HINTS "${QT_LIB_DIR}")
+
+    # Starting from Qt 5.4.0 HarfBuzz-NG library is included (at least in Windows vesrion of Qt 5.4.0)
+    if(WIN32 AND NOT(${Qt5Gui_VERSION} VERSION_LESS "5.4.0"))        
+        find_library(Qt5HarfBuzzNG_DEBUG   qtharfbuzzngd HINTS "${QT_LIB_DIR}")
+        find_library(Qt5HarfBuzzNG_RELEASE qtharfbuzzng  HINTS "${QT_LIB_DIR}")
+    endif()
+endif()
+
 # Boost chrono requires rt library on *nix
 if(UNIX AND BOOST_HAS_CHRONO)
     set(LIBRARIES "rt;${LIBRARIES}")
@@ -135,7 +169,12 @@ qt5_add_resources(RCC_GENERATED_SOURCES ${RCC_RESOURCES})
 
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${HEADERS_DIR})
+
 add_executable(qt_echo_server WIN32 
     ${HEADERS} ${SOURCES} 
     ${MOC_GENERATED_SOURCES} ${RCC_GENERATED_SOURCES} ${UIC_GENERATED_HEADERS})
-target_link_libraries(qt_echo_server ${LIBRARIES})
+
+target_link_libraries(qt_echo_server 
+    ${LIBRARIES}
+    debug ${Qt5PlatformSupport_DEBUG} optimized ${Qt5HarfBuzzNG_RELEASE}
+    debug ${Qt5HarfBuzzNG_DEBUG}      optimized ${Qt5PlatformSupport_RELEASE})
