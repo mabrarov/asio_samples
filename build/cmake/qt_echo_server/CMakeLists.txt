@@ -54,10 +54,6 @@ set(HEADERS
     "${HEADERS_DIR}/ma/echo/server/qt/service_fwd.h"
     "${HEADERS_DIR}/ma/echo/server/qt/meta_type_register_error.h"
     "${HEADERS_DIR}/ma/echo/server/qt/signal_connect_error.h"
-    "${HEADERS_DIR}/ma/echo/server/qt/service.h"
-    "${HEADERS_DIR}/ma/echo/server/qt/serviceforwardsignal.h"
-    "${HEADERS_DIR}/ma/echo/server/qt/serviceservantsignal.h"
-    "${HEADERS_DIR}/ma/echo/server/qt/mainform.h"
     "${HEADERS_DIR}/ma/echo/server/session_config_fwd.hpp"
     "${HEADERS_DIR}/ma/echo/server/session_manager_config_fwd.hpp"
     "${HEADERS_DIR}/ma/echo/server/session_manager_stats.hpp"
@@ -101,7 +97,8 @@ set(HEADERS
     "${HEADERS_DIR}/ma/strand.hpp"
     "${HEADERS_DIR}/ma/strand_wrapped_handler.hpp"
     "${HEADERS_DIR}/ma/thread_group.hpp"
-    "${HEADERS_DIR}/ma/type_traits.hpp")
+    "${HEADERS_DIR}/ma/type_traits.hpp"
+    ${MOC_HEADERS})
 
 set(SOURCES
     "${SOURCES_DIR}/ma/echo/server/qt/custommetatypes.cpp"
