@@ -121,17 +121,12 @@ if(WIN32)
 endif()
 
 # todo: should be determined according to compiler / linker settings
-#set(STATIC_CXX_RUNTIME true)
+set(STATIC_CXX_RUNTIME true)
 
 # todo: should be determined according to Qt settings and STATIC_CXX_RUNTIME
 if(STATIC_CXX_RUNTIME)
     set(STATIC_QT true)
 endif()
-
-set(Qt5PlatformSupport_DEBUG)
-set(Qt5PlatformSupport_RELEASE)
-set(Qt5HarfBuzzNG_DEBUG)
-set(Qt5HarfBuzzNG_RELEASE)
 
 if(STATIC_QT)
     set(LIBRARIES "opengl32.lib;${LIBRARIES};Qt5::QWindowsIntegrationPlugin")
@@ -143,14 +138,29 @@ if(STATIC_QT)
     get_target_property(QT_LIB_DIR Qt5::Core LOCATION) 
     get_filename_component(QT_LIB_DIR "${QT_LIB_DIR}" PATH) 
 
-    # Qt5PlatformSupport library    
-    find_library(Qt5PlatformSupport_DEBUG   Qt5PlatformSupportd HINTS "${QT_LIB_DIR}")
+    # Qt PlatformSupport library
+    add_library(Qt5::PlatformSupport STATIC IMPORTED)
     find_library(Qt5PlatformSupport_RELEASE Qt5PlatformSupport  HINTS "${QT_LIB_DIR}")
+    find_library(Qt5PlatformSupport_DEBUG   Qt5PlatformSupportd HINTS "${QT_LIB_DIR}")
+    set_property(TARGET Qt5::PlatformSupport APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
+    set_target_properties(Qt5::PlatformSupport PROPERTIES IMPORTED_LOCATION_RELEASE ${Qt5PlatformSupport_RELEASE})
+    set_property(TARGET Qt5::PlatformSupport APPEND PROPERTY IMPORTED_CONFIGURATIONS DEBUG)
+    set_target_properties(Qt5::PlatformSupport PROPERTIES IMPORTED_LOCATION_DEBUG ${Qt5PlatformSupport_DEBUG})
+
+    set(LIBRARIES "${LIBRARIES};Qt5::PlatformSupport")
 
     # Starting from Qt 5.4.0 HarfBuzz-NG library is included (at least in Windows vesrion of Qt 5.4.0)
-    if(WIN32 AND NOT(${Qt5Gui_VERSION} VERSION_LESS "5.4.0"))        
-        find_library(Qt5HarfBuzzNG_DEBUG   qtharfbuzzngd HINTS "${QT_LIB_DIR}")
+    if(WIN32 AND NOT(${Qt5Gui_VERSION} VERSION_LESS "5.4.0"))
+        # Qt HarfBuzz-NG library
+        add_library(Qt5::Qt5HarfBuzzNG STATIC IMPORTED)
         find_library(Qt5HarfBuzzNG_RELEASE qtharfbuzzng  HINTS "${QT_LIB_DIR}")
+        find_library(Qt5HarfBuzzNG_DEBUG   qtharfbuzzngd HINTS "${QT_LIB_DIR}")
+        set_property(TARGET Qt5::Qt5HarfBuzzNG APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
+        set_target_properties(Qt5::Qt5HarfBuzzNG PROPERTIES IMPORTED_LOCATION_RELEASE ${Qt5HarfBuzzNG_RELEASE})
+        set_property(TARGET Qt5::Qt5HarfBuzzNG APPEND PROPERTY IMPORTED_CONFIGURATIONS DEBUG)
+        set_target_properties(Qt5::Qt5HarfBuzzNG PROPERTIES IMPORTED_LOCATION_DEBUG ${Qt5HarfBuzzNG_DEBUG})
+
+        set(LIBRARIES "${LIBRARIES};Qt5::Qt5HarfBuzzNG")
     endif()
 endif()
 
@@ -169,12 +179,7 @@ qt5_add_resources(RCC_GENERATED_SOURCES ${RCC_RESOURCES})
 
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${HEADERS_DIR})
-
 add_executable(qt_echo_server WIN32 
     ${HEADERS} ${SOURCES} 
     ${MOC_GENERATED_SOURCES} ${RCC_GENERATED_SOURCES} ${UIC_GENERATED_HEADERS})
-
-target_link_libraries(qt_echo_server 
-    ${LIBRARIES}
-    debug ${Qt5PlatformSupport_DEBUG} optimized ${Qt5HarfBuzzNG_RELEASE}
-    debug ${Qt5HarfBuzzNG_DEBUG}      optimized ${Qt5PlatformSupport_RELEASE})
+target_link_libraries(qt_echo_server ${LIBRARIES})
