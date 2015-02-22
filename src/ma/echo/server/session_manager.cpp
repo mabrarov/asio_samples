@@ -1149,23 +1149,23 @@ session_manager::session_wrapper_ptr session_manager::start_active_session_stop(
 
 void session_manager::schedule_active_session_stop()
 {
-  session_manager_ptr shared_this = shared_from_this();
+  session_manager_ptr self = shared_from_this();
 
   io_service_.post(strand_.wrap(ma::make_custom_alloc_handler(
-      session_stop_allocator_, [shared_this]()
+      session_stop_allocator_, [self]()
   {
-    --shared_this->pending_operations_;
+    --self->pending_operations_;
 
-    shared_this->stopping_sessions_end_ =
-        shared_this->start_active_session_stop(
-            shared_this->stopping_sessions_end_,
-            shared_this->max_stopping_sessions_);
-    if (shared_this->stopping_sessions_end_)
+    self->stopping_sessions_end_ =
+        self->start_active_session_stop(
+            self->stopping_sessions_end_,
+            self->max_stopping_sessions_);
+    if (self->stopping_sessions_end_)
     {
-      shared_this->schedule_active_session_stop();
+      self->schedule_active_session_stop();
     }
 
-    shared_this->continue_stop();
+    self->continue_stop();
   })));
 
   ++pending_operations_;
@@ -1207,25 +1207,25 @@ void session_manager::start_accept_session(const session_wrapper_ptr& session)
 #if defined(MA_HAS_RVALUE_REFS) \
     && defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
 
-  session_manager_ptr shared_this = shared_from_this();
+  session_manager_ptr self = shared_from_this();
 
   acceptor_.async_accept(session->socket(), session->remote_endpoint(),
       strand_.wrap(make_custom_alloc_handler(accept_allocator_,
-          [shared_this, session](const boost::system::error_code& error)
+          [self, session](const boost::system::error_code& error)
   {
-    BOOST_ASSERT_MSG(accept_state::in_progress == shared_this->accept_state_,
+    BOOST_ASSERT_MSG(accept_state::in_progress == self->accept_state_,
         "Invalid accept state");
 
     // Split handler based on current internal state
     // that might change during accept operation
-    switch (shared_this->intern_state_)
+    switch (self->intern_state_)
     {
     case intern_state::work:
-      shared_this->handle_accept_at_work(session, error);
+      self->handle_accept_at_work(session, error);
       break;
 
     case intern_state::stop:
-      shared_this->handle_accept_at_stop(session, error);
+      self->handle_accept_at_stop(session, error);
       break;
 
     default:
