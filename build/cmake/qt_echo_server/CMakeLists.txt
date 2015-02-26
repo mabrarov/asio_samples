@@ -120,11 +120,10 @@ if(WIN32)
     set(LIBRARIES "ws2_32;mswsock;comdlg32;uuid;ole32;oleaut32;advapi32;imm32;winmm;winspool;${LIBRARIES}")    
 endif()
 
-# todo: should be determined according to compiler / linker settings
-set(STATIC_CXX_RUNTIME true)
-
-# todo: should be determined according to Qt settings and STATIC_CXX_RUNTIME
-if(STATIC_CXX_RUNTIME)
+# Determine linkage type of Qt libraries (via linkage type of QtCore library)
+get_property(Qt5_Core_TYPE TARGET Qt5::Core PROPERTY TYPE)
+set(STATIC_QT false)
+if(${Qt5_Core_TYPE} STREQUAL "STATIC_LIBRARY")
     set(STATIC_QT true)
 endif()
 
