@@ -121,7 +121,11 @@ if(WIN32)
 endif()
 
 # Determine linkage type of Qt libraries (via linkage type of QtCore library)
-set(STATIC_QT $<STREQUAL:$<TARGET_PROPERTY:TYPE>,STATIC_LIBRARY>)
+get_property(Qt5_Core_TYPE TARGET Qt5::Core PROPERTY TYPE)
+set(STATIC_QT false)
+if(${Qt5_Core_TYPE} STREQUAL "STATIC_LIBRARY")
+    set(STATIC_QT true)
+endif()
 
 if(STATIC_QT)
     set(LIBRARIES "opengl32.lib;${LIBRARIES};Qt5::QWindowsIntegrationPlugin")
