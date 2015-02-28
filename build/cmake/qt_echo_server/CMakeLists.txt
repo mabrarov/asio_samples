@@ -144,7 +144,7 @@ if(STATIC_QT)
 
     # Qt PlatformSupport library
     add_library(Qt5::PlatformSupport STATIC IMPORTED)
-    find_library(Qt5PlatformSupport_RELEASE Qt5PlatformSupport  HINTS "${QT_LIB_DIR}")
+    find_library(Qt5PlatformSupport_RELEASE Qt5PlatformSupport HINTS "${QT_LIB_DIR}")
     set_property(TARGET Qt5::PlatformSupport APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
     set_target_properties(Qt5::PlatformSupport PROPERTIES IMPORTED_LOCATION_RELEASE ${Qt5PlatformSupport_RELEASE})
     find_library(Qt5PlatformSupport_DEBUG Qt5PlatformSupportd HINTS "${QT_LIB_DIR}")
@@ -159,7 +159,7 @@ if(STATIC_QT)
         set(LIBRARIES "${LIBRARIES};${ICU_LIBRARIES}")
     endif()
 
-    # Starting from Qt 5.4.0 HarfBuzz-NG library is included (at least in Windows vesrion of Qt 5.4.0)
+    # Starting from Qt 5.4.0 HarfBuzz-NG library is included (at least Windows version of Qt 5.4.0)
     if(WIN32 AND NOT(${Qt5Gui_VERSION} VERSION_LESS "5.4.0"))
         # Qt HarfBuzz-NG library
         add_library(Qt5::Qt5HarfBuzzNG STATIC IMPORTED)
