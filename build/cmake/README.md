@@ -7,12 +7,22 @@ Uses :
 * [cmake-qt CMake module](http://www.cmake.org/cmake/help/v3.1/manual/cmake-qt.7.html) (refer to [Qt cmake manual](http://doc.qt.io/qt-5/cmake-manual.html) also)
 * FindICU CMake module (see `FindICU.cmake`)
 
-To build with [static C/C++ run-time](http://www.cmake.org/Wiki/CMake_FAQ#How_can_I_build_my_MSVC_application_with_a_static_runtime) use:
+To build with [static C/C++ runtime](http://www.cmake.org/Wiki/CMake_FAQ#How_can_I_build_my_MSVC_application_with_a_static_runtime.3F) use:
 
-* `CMAKE_USER_MAKE_RULES_OVERRIDE` CMake parameter poinying to `static_c_runtime_overrides.cmake`
-* `CMAKE_USER_MAKE_RULES_OVERRIDE_CXX` CMake parameter poinying to `static_cxx_runtime_overrides.cmake`
+* `CMAKE_USER_MAKE_RULES_OVERRIDE` CMake parameter pointing to `static_c_runtime_overrides.cmake`
+* `CMAKE_USER_MAKE_RULES_OVERRIDE_CXX` CMake parameter pointing to `static_cxx_runtime_overrides.cmake`
 * Static build of Qt
-* `ICU_ROOT` CMake parameter poinying to root of ICU library (static build, required for Qt).
+* `ICU_ROOT` CMake parameter pointing to root of ICU library (static build, required for Qt).
 
 **Note** that on Windows `cmake-qt` searches for some system libraries (OpenGL) so to work correctly 
 cmake should be executed after Windows SDK environment was set up (even if `Visual Studio` generator is used).
+
+Example of generation of Visual Studio project:
+
+```
+cmake -D BOOST_INCLUDEDIR=<Boost headers directory> -D BOOST_LIBRARYDIR=<Boost built libraries directory> 
+      -D CMAKE_USER_MAKE_RULES_OVERRIDE=asio_samples/build/cmake/static_c_runtime_overrides.cmake 
+      -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX=asio_samples/build/cmake/static_cxx_runtime_overrides.cmake 
+      -D ICU_ROOT=<ICU root directory> -D Qt5Widgets_DIR=<Qt directory>/qtbase/lib/cmake/Qt5Widgets 
+      -G "Visual Studio 12 2013" asio_samples/build/cmake
+```
