@@ -7,6 +7,8 @@
 
 cmake_minimum_required(VERSION 2.8.11)
 
+# Use CMAKE_USER_MAKE_RULES_OVERRIDE command line argument to point these rules
+
 if(MSVC)
     set(CMAKE_C_FLAGS_DEBUG_INIT          "/D_DEBUG /MTd /Zi /Ob0 /Od /RTC1")
     set(CMAKE_C_FLAGS_MINSIZEREL_INIT     "/MT /O1 /Ob1 /D NDEBUG")
