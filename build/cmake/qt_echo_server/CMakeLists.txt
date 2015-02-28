@@ -128,7 +128,12 @@ if(${Qt5_Core_TYPE} STREQUAL "STATIC_LIBRARY")
 endif()
 
 if(STATIC_QT)
-    set(LIBRARIES "${LIBRARIES};${Qt5Gui_EGL_LIBRARIES};${Qt5Gui_OPENGL_LIBRARIES};${Qt5Gui_PLUGINS}")
+    # Qt CMake files use IMPORTED_LINK_DEPENDENT_LIBRARIES instead of INTERFACE_LINK_LIBRARIES for OpenGL dependencies.
+    # So we need to add those transitive dependencies explicitly.
+    set(LIBRARIES "${LIBRARIES};${Qt5Gui_EGL_LIBRARIES};${Qt5Gui_OPENGL_LIBRARIES}")
+
+    # Add Qt plugins
+    set(LIBRARIES "${LIBRARIES};${Qt5Core_PLUGINS};${Qt5Gui_PLUGINS};${Qt5Widgets_PLUGINS}")
 
     # Some Qt libraries have no cmake files so wee need to search them ourselves
     # Those libraries should be located at the same directory as Qt Core library is located
