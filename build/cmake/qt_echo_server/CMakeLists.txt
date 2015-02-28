@@ -25,9 +25,9 @@ endif()
 find_package(Boost REQUIRED COMPONENTS ${BOOST_COMPONENTS})
 
 # Find required Qt libraries
-find_package(Qt5Core    REQUIRED)
-find_package(Qt5Gui     REQUIRED)
 find_package(Qt5Widgets REQUIRED)
+find_package(Qt5Gui     REQUIRED)
+find_package(Qt5Core    REQUIRED)
 
 set(HEADERS_DIR "${PROJECT_SOURCE_DIR}/../../../include")
 set(SOURCES_DIR "${PROJECT_SOURCE_DIR}/../../../src")
