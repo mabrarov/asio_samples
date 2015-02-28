@@ -128,7 +128,7 @@ if(${Qt5_Core_TYPE} STREQUAL "STATIC_LIBRARY")
 endif()
 
 if(STATIC_QT)
-    set(LIBRARIES "opengl32.lib;${LIBRARIES};Qt5::QWindowsIntegrationPlugin")
+    set(LIBRARIES "${LIBRARIES};${Qt5Gui_PLUGINS}")
 
     # Some Qt libraries have no cmake files so wee need to search them ourselves
     # Those libraries should be located at the same directory as Qt Core library is located
@@ -166,7 +166,7 @@ if(STATIC_QT)
         set(LIBRARIES "${LIBRARIES};Qt5::Qt5HarfBuzzNG")
     endif()
 
-    if(NOT(${Qt5Gui_VERSION} VERSION_LESS "5.0.0"))
+    if(NOT(${Qt5Core_VERSION} VERSION_LESS "5.0.0"))
         find_package(ICU REQUIRED COMPONENTS data uc i18n)
         include_directories(${ICU_INCLUDE_DIRS})
         set(LIBRARIES "${LIBRARIES};${ICU_LIBRARIES}")
