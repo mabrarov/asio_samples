@@ -128,7 +128,7 @@ if(${Qt5_Core_TYPE} STREQUAL "STATIC_LIBRARY")
 endif()
 
 if(STATIC_QT)
-    set(LIBRARIES "${LIBRARIES};${Qt5Gui_PLUGINS}")
+    set(LIBRARIES "${LIBRARIES};${Qt5Gui_EGL_LIBRARIES};${Qt5Gui_OPENGL_LIBRARIES};${Qt5Gui_PLUGINS}")
 
     # Some Qt libraries have no cmake files so wee need to search them ourselves
     # Those libraries should be located at the same directory as Qt Core library is located
@@ -139,37 +139,32 @@ if(STATIC_QT)
 
     # Qt PlatformSupport library
     add_library(Qt5::PlatformSupport STATIC IMPORTED)
-
     find_library(Qt5PlatformSupport_RELEASE Qt5PlatformSupport  HINTS "${QT_LIB_DIR}")
     set_property(TARGET Qt5::PlatformSupport APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
     set_target_properties(Qt5::PlatformSupport PROPERTIES IMPORTED_LOCATION_RELEASE ${Qt5PlatformSupport_RELEASE})
-
     find_library(Qt5PlatformSupport_DEBUG Qt5PlatformSupportd HINTS "${QT_LIB_DIR}")
     set_property(TARGET Qt5::PlatformSupport APPEND PROPERTY IMPORTED_CONFIGURATIONS DEBUG)
     set_target_properties(Qt5::PlatformSupport PROPERTIES IMPORTED_LOCATION_DEBUG ${Qt5PlatformSupport_DEBUG})
 
     set(LIBRARIES "${LIBRARIES};Qt5::PlatformSupport")
 
-    # Starting from Qt 5.4.0 HarfBuzz-NG library is included (at least in Windows vesrion of Qt 5.4.0)
-    if(WIN32 AND NOT(${Qt5Gui_VERSION} VERSION_LESS "5.4.0"))
-        # Qt HarfBuzz-NG library
-        add_library(Qt5::Qt5HarfBuzzNG STATIC IMPORTED)
-
-        find_library(Qt5HarfBuzzNG_RELEASE qtharfbuzzng HINTS "${QT_LIB_DIR}")
-        set_property(TARGET Qt5::Qt5HarfBuzzNG APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
-        set_target_properties(Qt5::Qt5HarfBuzzNG PROPERTIES IMPORTED_LOCATION_RELEASE ${Qt5HarfBuzzNG_RELEASE})
-
-        find_library(Qt5HarfBuzzNG_DEBUG   qtharfbuzzngd HINTS "${QT_LIB_DIR}")
-        set_property(TARGET Qt5::Qt5HarfBuzzNG APPEND PROPERTY IMPORTED_CONFIGURATIONS DEBUG)
-        set_target_properties(Qt5::Qt5HarfBuzzNG PROPERTIES IMPORTED_LOCATION_DEBUG ${Qt5HarfBuzzNG_DEBUG})
-
-        set(LIBRARIES "${LIBRARIES};Qt5::Qt5HarfBuzzNG")
-    endif()
-
     if(NOT(${Qt5Core_VERSION} VERSION_LESS "5.0.0"))
         find_package(ICU REQUIRED COMPONENTS data uc i18n)
         include_directories(${ICU_INCLUDE_DIRS})
         set(LIBRARIES "${LIBRARIES};${ICU_LIBRARIES}")
+    endif()
+
+    # Starting from Qt 5.4.0 HarfBuzz-NG library is included (at least in Windows vesrion of Qt 5.4.0)
+    if(WIN32 AND NOT(${Qt5Gui_VERSION} VERSION_LESS "5.4.0"))
+        # Qt HarfBuzz-NG library
+        add_library(Qt5::Qt5HarfBuzzNG STATIC IMPORTED)
+        find_library(Qt5HarfBuzzNG_RELEASE qtharfbuzzng HINTS "${QT_LIB_DIR}")
+        set_property(TARGET Qt5::Qt5HarfBuzzNG APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
+        set_target_properties(Qt5::Qt5HarfBuzzNG PROPERTIES IMPORTED_LOCATION_RELEASE ${Qt5HarfBuzzNG_RELEASE})
+        find_library(Qt5HarfBuzzNG_DEBUG   qtharfbuzzngd HINTS "${QT_LIB_DIR}")
+        set_property(TARGET Qt5::Qt5HarfBuzzNG APPEND PROPERTY IMPORTED_CONFIGURATIONS DEBUG)
+        set_target_properties(Qt5::Qt5HarfBuzzNG PROPERTIES IMPORTED_LOCATION_DEBUG ${Qt5HarfBuzzNG_DEBUG})
+        set(LIBRARIES "${LIBRARIES};Qt5::Qt5HarfBuzzNG")
     endif()
 endif()
 
