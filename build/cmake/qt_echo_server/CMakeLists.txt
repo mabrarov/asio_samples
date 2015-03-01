@@ -24,10 +24,25 @@ endif()
 # Attach used Boost libraries
 find_package(Boost REQUIRED COMPONENTS ${BOOST_COMPONENTS})
 
+# Determine major version of Qt to use (Qt 5 is predeferred)
+if(NOT DEFINED QT_ECHO_SERVER_USE_QT5)
+    set(QT_ECHO_SERVER_USE_QT5 TRUE)
+    find_package(Qt5Widgets QUIET)
+    if(NOT Qt5Widgets_FOUND)
+        set(QT_ECHO_SERVER_USE_QT5 FALSE)
+    endif()
+endif()
+
 # Find required Qt libraries
-find_package(Qt5Widgets REQUIRED)
-find_package(Qt5Gui     REQUIRED)
-find_package(Qt5Core    REQUIRED)
+if(QT_ECHO_SERVER_USE_QT5)
+    find_package(Qt5Widgets REQUIRED)
+    find_package(Qt5Gui     REQUIRED)
+    find_package(Qt5Core    REQUIRED)
+    set(QT_ECHO_SERVER_QT_LIBRARIES "Qt5::Core;Qt5::Gui;Qt5::Widgets")
+else()
+    find_package(Qt4 REQUIRED QtCore QtGui)
+    set(QT_ECHO_SERVER_QT_LIBRARIES "Qt4::QtCore;Qt4::QtGui")    
+endif()
 
 set(HEADERS_DIR "${PROJECT_SOURCE_DIR}/../../../include")
 set(SOURCES_DIR "${PROJECT_SOURCE_DIR}/../../../src")
@@ -113,48 +128,50 @@ set(SOURCES
     "${SOURCES_DIR}/qt_echo_server/qt_echo_server.rc"
     ${UIC_FORMS})
 
-set(LIBRARIES "${Boost_LIBRARIES};Qt5::Core;Qt5::Gui;Qt5::Widgets")
+set(LIBRARIES "${Boost_LIBRARIES};${QT_ECHO_SERVER_QT_LIBRARIES}")
 
 # Required Winsock libraries
 if(WIN32)
     set(LIBRARIES "ws2_32;mswsock;comdlg32;uuid;ole32;oleaut32;advapi32;imm32;winmm;winspool;${LIBRARIES}")    
 endif()
 
-# Determine linkage type of Qt libraries (via linkage type of Qt Core library)
-get_property(Qt5_Core_TYPE TARGET Qt5::Core PROPERTY TYPE)
-set(QT5_STATIC_LINKAGE false)
-if(${Qt5_Core_TYPE} STREQUAL "STATIC_LIBRARY")
-    set(QT5_STATIC_LINKAGE true)
-endif()
+if(QT_ECHO_SERVER_USE_QT5)
+    # Determine linkage type of Qt libraries (via linkage type of Qt Core library)
+    get_property(Qt5_Core_TYPE TARGET Qt5::Core PROPERTY TYPE)
+    set(QT5_STATIC_LINKAGE false)
+    if(${Qt5_Core_TYPE} STREQUAL "STATIC_LIBRARY")
+        set(QT5_STATIC_LINKAGE true)
+    endif()
 
-# Statically linked Qt requires:
-#     All libraries used by Qt internally to be linked explicitly to the target.
-#     Used Qt plugins to be linked explicitly to the target.
-if(QT5_STATIC_LINKAGE)
-    # Qt CMake files use IMPORTED_LINK_DEPENDENT_LIBRARIES instead of INTERFACE_LINK_LIBRARIES for OpenGL dependencies.
-    # So we need to add those transitive (in case of static linkage) dependencies explicitly.
-    set(LIBRARIES "${LIBRARIES};${Qt5Gui_EGL_LIBRARIES};${Qt5Gui_OPENGL_LIBRARIES}")
+    # Statically linked Qt requires:
+    #     All libraries used by Qt internally to be linked explicitly to the target.
+    #     Used Qt plugins to be linked explicitly to the target.
+    if(QT5_STATIC_LINKAGE)
+        # Qt CMake files use IMPORTED_LINK_DEPENDENT_LIBRARIES instead of INTERFACE_LINK_LIBRARIES for OpenGL dependencies.
+        # So we need to add those transitive (in case of static linkage) dependencies explicitly.
+        set(LIBRARIES "${LIBRARIES};${Qt5Gui_EGL_LIBRARIES};${Qt5Gui_OPENGL_LIBRARIES}")
 
-    # Add (all) Qt plugins for Qt Core, Qt GUI and Qt Widgets libraries
-    set(LIBRARIES "${LIBRARIES};${Qt5Core_PLUGINS};${Qt5Gui_PLUGINS};${Qt5Widgets_PLUGINS}")
+        # Add (all) Qt plugins for Qt Core, Qt GUI and Qt Widgets libraries
+        set(LIBRARIES "${LIBRARIES};${Qt5Core_PLUGINS};${Qt5Gui_PLUGINS};${Qt5Widgets_PLUGINS}")
 
-    # Some Qt libraries have no cmake files so wee need to search them ourselves
-    # Refer to custom CMake modules:
-    #     FindICU.cmake
-    #     FindQt5PlatformSupport.cmake
-    #     FindQt5HarfBuzzNG.cmake
+        # Some Qt libraries have no cmake files so wee need to search them ourselves
+        # Refer to custom CMake modules:
+        #     FindICU.cmake
+        #     FindQt5PlatformSupport.cmake
+        #     FindQt5HarfBuzzNG.cmake
 
-    find_package(ICU REQUIRED COMPONENTS data uc i18n)
-    set(LIBRARIES "${LIBRARIES};${ICU_LIBRARIES}")
+        find_package(ICU REQUIRED COMPONENTS data uc i18n)
+        set(LIBRARIES "${LIBRARIES};${ICU_LIBRARIES}")
 
-    find_package(Qt5PlatformSupport REQUIRED)
-    set(LIBRARIES "${LIBRARIES};Qt5::PlatformSupport")
+        find_package(Qt5PlatformSupport REQUIRED)
+        set(LIBRARIES "${LIBRARIES};Qt5::PlatformSupport")
 
-    # Starting from Qt 5.4.0 HarfBuzz-NG library is included (at least Windows version of Qt 5.4.0)
-    if(WIN32 AND NOT(${Qt5Gui_VERSION} VERSION_LESS "5.4.0"))
-        find_package(Qt5HarfBuzzNG)
-        if(Qt5HarfBuzzNG_FOUND)
-            set(LIBRARIES "${LIBRARIES};Qt5::HarfBuzzNG")
+        # Starting from Qt 5.4.0 HarfBuzz-NG library is included (at least Windows version of Qt 5.4.0)
+        if(WIN32 AND NOT(${Qt5Gui_VERSION} VERSION_LESS "5.4.0"))
+            find_package(Qt5HarfBuzzNG)
+            if(Qt5HarfBuzzNG_FOUND)
+                set(LIBRARIES "${LIBRARIES};Qt5::HarfBuzzNG")
+            endif()
         endif()
     endif()
 endif()
@@ -168,9 +185,15 @@ endif()
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # Wrap Qt generated sources.
-qt5_wrap_cpp(MOC_GENERATED_SOURCES ${MOC_HEADERS})
-qt5_wrap_ui(UIC_GENERATED_HEADERS ${UIC_FORMS})
-qt5_add_resources(RCC_GENERATED_SOURCES ${RCC_RESOURCES})
+if(QT_ECHO_SERVER_USE_QT5)
+    qt5_wrap_cpp(MOC_GENERATED_SOURCES ${MOC_HEADERS})
+    qt5_wrap_ui(UIC_GENERATED_HEADERS ${UIC_FORMS})
+    qt5_add_resources(RCC_GENERATED_SOURCES ${RCC_RESOURCES})
+else()
+    qt4_wrap_cpp(MOC_GENERATED_SOURCES ${MOC_HEADERS})
+    qt4_wrap_ui(UIC_GENERATED_HEADERS ${UIC_FORMS})
+    qt4_add_resources(RCC_GENERATED_SOURCES ${RCC_RESOURCES})
+endif()
 
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${HEADERS_DIR})
