@@ -120,60 +120,42 @@ if(WIN32)
     set(LIBRARIES "ws2_32;mswsock;comdlg32;uuid;ole32;oleaut32;advapi32;imm32;winmm;winspool;${LIBRARIES}")    
 endif()
 
-# Determine linkage type of Qt libraries (via linkage type of QtCore library)
+# Determine linkage type of Qt libraries (via linkage type of Qt Core library)
 get_property(Qt5_Core_TYPE TARGET Qt5::Core PROPERTY TYPE)
-set(STATIC_QT false)
+set(QT5_STATIC_LINKAGE false)
 if(${Qt5_Core_TYPE} STREQUAL "STATIC_LIBRARY")
-    set(STATIC_QT true)
+    set(QT5_STATIC_LINKAGE true)
 endif()
 
-if(STATIC_QT)
+# Statically linked Qt requires:
+#     All libraries used by Qt internally to be linked explicitly to the target.
+#     Used Qt plugins to be linked explicitly to the target.
+if(QT5_STATIC_LINKAGE)
     # Qt CMake files use IMPORTED_LINK_DEPENDENT_LIBRARIES instead of INTERFACE_LINK_LIBRARIES for OpenGL dependencies.
-    # So we need to add those transitive dependencies explicitly.
+    # So we need to add those transitive (in case of static linkage) dependencies explicitly.
     set(LIBRARIES "${LIBRARIES};${Qt5Gui_EGL_LIBRARIES};${Qt5Gui_OPENGL_LIBRARIES}")
 
-    # Add Qt plugins
+    # Add (all) Qt plugins for Qt Core, Qt GUI and Qt Widgets libraries
     set(LIBRARIES "${LIBRARIES};${Qt5Core_PLUGINS};${Qt5Gui_PLUGINS};${Qt5Widgets_PLUGINS}")
 
     # Some Qt libraries have no cmake files so wee need to search them ourselves
-    # Those libraries should be located at the same directory as Qt Core library is located
+    # Refer to custom CMake modules:
+    #     FindICU.cmake
+    #     FindQt5PlatformSupport.cmake
+    #     FindQt5HarfBuzzNG.cmake
 
-    # Extract directory of Qt Core library
-    get_target_property(QT_LIB_DIR Qt5::Core LOCATION) 
-    get_filename_component(QT_LIB_DIR "${QT_LIB_DIR}" PATH) 
+    find_package(ICU REQUIRED COMPONENTS data uc i18n)
+    set(LIBRARIES "${LIBRARIES};${ICU_LIBRARIES}")
 
-    # Qt PlatformSupport library
-    add_library(Qt5::PlatformSupport STATIC IMPORTED)
-    find_library(Qt5PlatformSupport_RELEASE Qt5PlatformSupport HINTS "${QT_LIB_DIR}")
-    set_property(TARGET Qt5::PlatformSupport APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
-    set_target_properties(Qt5::PlatformSupport PROPERTIES IMPORTED_LOCATION_RELEASE ${Qt5PlatformSupport_RELEASE})
-    find_library(Qt5PlatformSupport_DEBUG Qt5PlatformSupportd HINTS "${QT_LIB_DIR}")
-    set_property(TARGET Qt5::PlatformSupport APPEND PROPERTY IMPORTED_CONFIGURATIONS DEBUG)
-    set_target_properties(Qt5::PlatformSupport PROPERTIES IMPORTED_LOCATION_DEBUG ${Qt5PlatformSupport_DEBUG})
-
+    find_package(Qt5PlatformSupport REQUIRED)
     set(LIBRARIES "${LIBRARIES};Qt5::PlatformSupport")
-
-    if(NOT(${Qt5Core_VERSION} VERSION_LESS "5.0.0"))
-        find_package(ICU REQUIRED COMPONENTS data uc i18n)
-        include_directories(${ICU_INCLUDE_DIRS})
-        set(LIBRARIES "${LIBRARIES};${ICU_LIBRARIES}")
-    endif()
 
     # Starting from Qt 5.4.0 HarfBuzz-NG library is included (at least Windows version of Qt 5.4.0)
     if(WIN32 AND NOT(${Qt5Gui_VERSION} VERSION_LESS "5.4.0"))
-        # Qt HarfBuzz-NG library
-        add_library(Qt5::Qt5HarfBuzzNG STATIC IMPORTED)
-        find_library(Qt5HarfBuzzNG_RELEASE qtharfbuzzng HINTS "${QT_LIB_DIR}")
-        if(Qt5HarfBuzzNG_RELEASE)
-            set_property(TARGET Qt5::Qt5HarfBuzzNG APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
-            set_target_properties(Qt5::Qt5HarfBuzzNG PROPERTIES IMPORTED_LOCATION_RELEASE ${Qt5HarfBuzzNG_RELEASE})
+        find_package(Qt5HarfBuzzNG)
+        if(Qt5HarfBuzzNG_FOUND)
+            set(LIBRARIES "${LIBRARIES};Qt5::HarfBuzzNG")
         endif()
-        find_library(Qt5HarfBuzzNG_DEBUG qtharfbuzzngd HINTS "${QT_LIB_DIR}")
-        if(Qt5HarfBuzzNG_DEBUG)            
-            set_property(TARGET Qt5::Qt5HarfBuzzNG APPEND PROPERTY IMPORTED_CONFIGURATIONS DEBUG)
-            set_target_properties(Qt5::Qt5HarfBuzzNG PROPERTIES IMPORTED_LOCATION_DEBUG ${Qt5HarfBuzzNG_DEBUG})
-        endif()
-        set(LIBRARIES "${LIBRARIES};Qt5::Qt5HarfBuzzNG")
     endif()
 endif()
 
@@ -189,10 +171,6 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 qt5_wrap_cpp(MOC_GENERATED_SOURCES ${MOC_HEADERS})
 qt5_wrap_ui(UIC_GENERATED_HEADERS ${UIC_FORMS})
 qt5_add_resources(RCC_GENERATED_SOURCES ${RCC_RESOURCES})
-
-if(${ICU_INCLUDE_DIRS})
-    include_directories(${ICU_INCLUDE_DIRS})
-endif()
 
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${HEADERS_DIR})
