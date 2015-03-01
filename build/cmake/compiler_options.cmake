@@ -7,6 +7,11 @@
 
 cmake_minimum_required(VERSION 2.8.11)
 
+# Turn on pthread usage
+if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
+    set(CMAKE_CXX_FLAGS "-pthread ${CMAKE_CXX_FLAGS}")
+endif()
+
 # Turn on support of C++11 if it's available
 if(CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")

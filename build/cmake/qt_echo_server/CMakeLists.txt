@@ -161,7 +161,7 @@ endif()
 
 # Boost chrono requires rt library on *nix
 if(UNIX AND BOOST_HAS_CHRONO)
-    set(LIBRARIES "rt;${LIBRARIES}")
+    set(LIBRARIES "${LIBRARIES};rt")
 endif()
 
 # Find includes in corresponding build directories
