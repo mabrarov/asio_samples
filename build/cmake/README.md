@@ -17,7 +17,7 @@ To build with [static C/C++ runtime](http://www.cmake.org/Wiki/CMake_FAQ#How_can
 **Note** that on Windows `cmake-qt` searches for some system libraries (OpenGL) therefore to work correctly 
 CMake should be executed after Windows SDK environment was set up (even if `Visual Studio` generator is used).
 
-Example of generation of Visual Studio project (static C/C++ runtime, static Boost and static Qt, x64):
+Example of generation of Visual Studio 2013 project (static C/C++ runtime, static Boost and static Qt 5, x64):
 
 ```
 cmake -D BOOST_INCLUDEDIR=<Boost headers directory> -D BOOST_LIBRARYDIR=<Boost built libraries directory> 
@@ -27,7 +27,16 @@ cmake -D BOOST_INCLUDEDIR=<Boost headers directory> -D BOOST_LIBRARYDIR=<Boost b
       -G "Visual Studio 12 2013 Win64" asio_samples/build/cmake
 ```
 
-Example of generation of NMake makefile project (shared C/C++ runtime, static Boost and shared Qt):
+Example of generation of Visual Studio 2008 project (static C/C++ runtime, static Boost and static Qt 4):
+```
+cmake -D BOOST_INCLUDEDIR=<Boost headers directory> -D BOOST_LIBRARYDIR=<Boost built libraries directory> 
+      -D CMAKE_USER_MAKE_RULES_OVERRIDE=asio_samples/build/cmake/static_c_runtime_overrides.cmake 
+      -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX=asio_samples/build/cmake/static_cxx_runtime_overrides.cmake 
+      -D QT_QMAKE_EXECUTABLE=<Qt directory>/bin/qmake.exe
+      -G "Visual Studio 9 2008" asio_samples/build/cmake
+```
+
+Example of generation of NMake makefile project (shared C/C++ runtime, static Boost and shared Qt 5):
 
 ```
 cmake -D BOOST_INCLUDEDIR=<Boost headers directory> -D BOOST_LIBRARYDIR=<Boost built libraries directory> 
