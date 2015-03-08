@@ -125,8 +125,13 @@ set(SOURCES
     "${SOURCES_DIR}/ma/echo/server/pooled_session_factory.cpp"
     "${SOURCES_DIR}/ma/echo/server/simple_session_factory.cpp"
     "${SOURCES_DIR}/qt_echo_server/main.cpp"
-    "${SOURCES_DIR}/qt_echo_server/qt_echo_server.rc"
     ${UIC_FORMS})
+
+# Windows specific source files
+if(WIN32)
+    list(APPEND SOURCES 
+        "${SOURCES_DIR}/qt_echo_server/qt_echo_server.rc")
+endif()
 
 set(LIBRARIES "${Boost_LIBRARIES};${QT_ECHO_SERVER_QT_LIBRARIES}")
 
