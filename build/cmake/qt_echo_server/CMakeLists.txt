@@ -173,7 +173,7 @@ if(QT_ECHO_SERVER_USE_QT5)
 
         # Starting from Qt 5.4.0 HarfBuzz-NG library is included (at least Windows version of Qt 5.4.0)
         if(WIN32 AND NOT(${Qt5Gui_VERSION} VERSION_LESS "5.4.0"))
-            find_package(Qt5HarfBuzzNG)
+            find_package(Qt5HarfBuzzNG QUIET)
             if(Qt5HarfBuzzNG_FOUND)
                 set(LIBRARIES "${LIBRARIES};Qt5::HarfBuzzNG")
             endif()
