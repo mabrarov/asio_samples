@@ -28,6 +28,7 @@ cmake -D BOOST_INCLUDEDIR=<Boost headers directory> -D BOOST_LIBRARYDIR=<Boost b
 ```
 
 Example of generation of Visual Studio 2008 project (static C/C++ runtime, static Boost and static Qt 4):
+
 ```
 cmake -D BOOST_INCLUDEDIR=<Boost headers directory> -D BOOST_LIBRARYDIR=<Boost built libraries directory> 
       -D CMAKE_USER_MAKE_RULES_OVERRIDE=asio_samples/build/cmake/static_c_runtime_overrides.cmake 

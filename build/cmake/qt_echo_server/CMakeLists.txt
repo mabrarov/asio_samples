@@ -125,8 +125,13 @@ set(SOURCES
     "${SOURCES_DIR}/ma/echo/server/pooled_session_factory.cpp"
     "${SOURCES_DIR}/ma/echo/server/simple_session_factory.cpp"
     "${SOURCES_DIR}/qt_echo_server/main.cpp"
-    "${SOURCES_DIR}/qt_echo_server/qt_echo_server.rc"
     ${UIC_FORMS})
+
+# Windows specific source files
+if(WIN32)
+    list(APPEND SOURCES 
+        "${SOURCES_DIR}/qt_echo_server/qt_echo_server.rc")
+endif()
 
 set(LIBRARIES "${Boost_LIBRARIES};${QT_ECHO_SERVER_QT_LIBRARIES}")
 
@@ -138,21 +143,28 @@ endif()
 if(QT_ECHO_SERVER_USE_QT5)
     # Determine linkage type of Qt libraries (via linkage type of Qt Core library)
     get_property(Qt5_Core_TYPE TARGET Qt5::Core PROPERTY TYPE)
-    set(QT5_STATIC_LINKAGE false)
+    set(QT5_IS_STATIC false)
     if(${Qt5_Core_TYPE} STREQUAL "STATIC_LIBRARY")
-        set(QT5_STATIC_LINKAGE true)
+        set(QT5_IS_STATIC true)
     endif()
 
     # Statically linked Qt requires:
     #     All libraries used by Qt internally to be linked explicitly to the target.
     #     Used Qt plugins to be linked explicitly to the target.
-    if(QT5_STATIC_LINKAGE)
+    if(QT5_IS_STATIC)
         # Qt CMake files use IMPORTED_LINK_DEPENDENT_LIBRARIES instead of INTERFACE_LINK_LIBRARIES for OpenGL dependencies.
         # So we need to add those transitive (in case of static linkage) dependencies explicitly.
         set(LIBRARIES "${LIBRARIES};${Qt5Gui_EGL_LIBRARIES};${Qt5Gui_OPENGL_LIBRARIES}")
 
-        # Add (all) Qt plugins for Qt Core, Qt GUI and Qt Widgets libraries
-        set(LIBRARIES "${LIBRARIES};${Qt5Core_PLUGINS};${Qt5Gui_PLUGINS};${Qt5Widgets_PLUGINS}")
+        # Add required platform integration plugins
+        if(WIN32)            
+            set(LIBRARIES "${LIBRARIES};Qt5::QWindowsIntegrationPlugin")
+        else()
+            # todo:
+            # add support for the rest of platforms supported by Qt
+            # by linking with platform specific plugin
+            # (add platfrom integration plugin to LIBRARIES)
+        endif()
 
         # Some Qt libraries have no cmake files so wee need to search them ourselves
         # Refer to custom CMake modules:
@@ -168,11 +180,18 @@ if(QT_ECHO_SERVER_USE_QT5)
 
         # Starting from Qt 5.4.0 HarfBuzz-NG library is included (at least Windows version of Qt 5.4.0)
         if(WIN32 AND NOT(${Qt5Gui_VERSION} VERSION_LESS "5.4.0"))
-            find_package(Qt5HarfBuzzNG)
+            find_package(Qt5HarfBuzzNG QUIET)
             if(Qt5HarfBuzzNG_FOUND)
                 set(LIBRARIES "${LIBRARIES};Qt5::HarfBuzzNG")
             endif()
         endif()
+    endif()
+else()
+    # Statically linked Qt requires:
+    #     All libraries used by Qt internally to be linked explicitly to the target.
+    #     Used Qt plugins to be linked explicitly to the target.
+    if(QT_IS_STATIC)
+        # Nothing to add as no Qt 4 plugins are used.
     endif()
 endif()
 

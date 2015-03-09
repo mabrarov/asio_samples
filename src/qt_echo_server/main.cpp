@@ -21,7 +21,13 @@
 
 #if defined(QT_STATIC) || !(defined(QT_DLL) || defined(QT_SHARED))
 #if QT_VERSION >= 0x050000
+#if defined(WIN32)
 Q_IMPORT_PLUGIN(QWindowsIntegrationPlugin)
+#else
+// todo: add support for the rest of platforms supported by Qt - 
+// import platform specific plugin with Q_IMPORT_PLUGIN macro.
+#error Platform specific Qt Platform Integration plugin should be imported
+#endif
 #endif
 #endif
 
