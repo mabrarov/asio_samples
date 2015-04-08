@@ -27,6 +27,17 @@ cmake -D BOOST_INCLUDEDIR=<Boost headers directory> -D BOOST_LIBRARYDIR=<Boost b
       -G "Visual Studio 12 2013 Win64" asio_samples/build/cmake
 ```
 
+Example of generation of Visual Studio 2013 project (static C/C++ runtime, static Boost and static Qt 5, x64) for usage with Intel C++ Compiler XE 2015:
+
+```
+cmake -D BOOST_INCLUDEDIR=<Boost headers directory> -D BOOST_LIBRARYDIR=<Boost built libraries directory> 
+      -D CMAKE_USER_MAKE_RULES_OVERRIDE=asio_samples/build/cmake/static_c_runtime_overrides.cmake 
+      -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX=asio_samples/build/cmake/static_cxx_runtime_overrides.cmake 
+      -D ICU_ROOT=<ICU root directory> -D Qt5Widgets_DIR=<Qt directory>/qtbase/lib/cmake/Qt5Widgets 
+      -G "Visual Studio 12 2013 Win64" -T "Intel C++ Compiler XE 15.0" -D CMAKE_C_COMPILER=icl -D CMAKE_CXX_COMPILER=icl
+      asio_samples/build/cmake
+```
+
 Example of generation of Visual Studio 2008 project (static C/C++ runtime, static Boost and static Qt 4):
 
 ```
