@@ -22,7 +22,11 @@ if(CMAKE_COMPILER_IS_GNUCXX)
 elseif(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
     set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "Intel")
-    set(CMAKE_CXX_FLAGS "/Qstd=c++0x ${CMAKE_CXX_FLAGS}")
+    if(NOT (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "14"))
+        set(CMAKE_CXX_FLAGS "/Qstd=c++11 ${CMAKE_CXX_FLAGS}")
+    elseif(NOT (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "12"))
+        set(CMAKE_CXX_FLAGS "/Qstd=c++0x ${CMAKE_CXX_FLAGS}")
+    endif()
 endif()
 
 # Turn on more strict warning mode
