@@ -8,6 +8,9 @@
 cmake_minimum_required(VERSION 2.8.11)
 project(asio_samples)
 
+# Setup path for additional CMake modules
+set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}")
+
 # Setup compiler & linker options
 include(compiler_options.cmake)
 include(linker_options.cmake)
