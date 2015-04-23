@@ -779,16 +779,17 @@ void run_test()
   }
 
   {
-    boost::asio::io_service io_service;
+    boost::asio::io_service another_io_service;
 
-    ma::handler_storage<int, test_handler_base> handler_storage1(io_service);
+    ma::handler_storage<int, test_handler_base> handler_storage1(
+        another_io_service);
     handler_storage1.store(int_handler_with_target(value1,
         detail::bind(count_down, detail::ref(done_latch))));
 
     BOOST_ASSERT_MSG(value1 == handler_storage1.target()->get_value(), 
         "Data of target is different than the stored data");
 
-    ma::handler_storage<void> handler_storage2(io_service);
+    ma::handler_storage<void> handler_storage2(another_io_service);
     handler_storage2.store(void_handler_without_target(value2,
         detail::bind(count_down, detail::ref(done_latch))));
   }

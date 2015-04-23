@@ -98,7 +98,7 @@ strand::wrap(Handler&& handler)
 {
   typedef typename remove_cv_reference<Handler>::type handler_type;
   return strand_wrapped_handler<handler_type>(
-    strand_, std::forward<Handler>(handler));
+      strand_, std::forward<Handler>(handler));
 }
 
 #else  // defined(MA_HAS_RVALUE_REFS)
