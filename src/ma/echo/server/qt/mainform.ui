@@ -279,6 +279,12 @@
        </item>
        <item row="3" column="0">
         <widget class="QCheckBox" name="sockRecvBufferSizeCheckBox">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="text">
           <string>Socket's recieve buffer size (bytes)</string>
          </property>
@@ -311,6 +317,12 @@
        </item>
        <item row="4" column="0">
         <widget class="QCheckBox" name="sockSendBufferSizeCheckBox">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="text">
           <string>Socket's send buffer size (bytes)</string>
          </property>
@@ -378,6 +390,12 @@
        </item>
        <item row="1" column="0">
         <widget class="QCheckBox" name="inactivityTimeoutCheckBox">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="text">
           <string>Inactivity timeout (seconds)</string>
          </property>
@@ -597,7 +615,16 @@
        <property name="spacing">
         <number>0</number>
        </property>
-       <property name="margin">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
         <number>0</number>
        </property>
        <item>
