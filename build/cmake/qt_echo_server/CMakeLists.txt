@@ -171,8 +171,8 @@ if(QT_ECHO_SERVER_USE_QT5)
         #     FindICU.cmake
         #     FindQt5PlatformSupport.cmake
         #     FindQt5HarfBuzzNG.cmake
-				#     FindQt5FreeType.cmake
-				#     FindQt5PCRE.cmake
+        #     FindQt5FreeType.cmake
+        #     FindQt5PCRE.cmake
 
         find_package(ICU REQUIRED COMPONENTS data uc i18n)
         set(LIBRARIES "${LIBRARIES};${ICU_LIBRARIES}")
