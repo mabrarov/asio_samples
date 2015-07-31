@@ -20,14 +20,14 @@ endif()
 set(${QT5_PCRE_PUBLIC_VAR_NS}_FOUND FALSE)
 set(${QT5_PCRE_PUBLIC_VAR_NS}_LIBRARIES )
 
-find_package(Qt5Gui)
+find_package(Qt5Core)
 
-if(Qt5Gui_FOUND)
+if(Qt5Core_FOUND)
     # Extract directory of Qt Core library
     get_target_property(${QT5_PCRE_PRIVATE_VAR_NS}_QT_CORE_LOCATION
         Qt5::Core
         LOCATION)
-    get_filename_component(${QT5_PCRE_PRIVATE_VAR_NS}_QT_GUI_DIR 
+    get_filename_component(${QT5_PCRE_PRIVATE_VAR_NS}_QT_CORE_DIR 
         "${${QT5_PCRE_PRIVATE_VAR_NS}_QT_CORE_LOCATION}" 
         PATH)
 
@@ -35,12 +35,12 @@ if(Qt5Gui_FOUND)
 
     find_library(${QT5_PCRE_PRIVATE_VAR_NS}_LIB_RELEASE 
         "qtpcre"
-        HINTS "${${QT5_PCRE_PRIVATE_VAR_NS}_QT_GUI_DIR}"
+        HINTS "${${QT5_PCRE_PRIVATE_VAR_NS}_QT_CORE_DIR}"
         DOC "Release library of Qt5::PCRE")
 
     find_library(${QT5_PCRE_PRIVATE_VAR_NS}_LIB_DEBUG 
         "qtpcred" 
-        HINTS "${${QT5_PCRE_PRIVATE_VAR_NS}_QT_GUI_DIR}"
+        HINTS "${${QT5_PCRE_PRIVATE_VAR_NS}_QT_CORE_DIR}"
         DOC "Debug library of Qt5::PCRE")
 
     if(${QT5_PCRE_PRIVATE_VAR_NS}_LIB_RELEASE OR ${QT5_PCRE_PRIVATE_VAR_NS}_LIB_DEBUG)
@@ -48,11 +48,11 @@ if(Qt5Gui_FOUND)
     endif()
 
     if(${QT5_PCRE_PUBLIC_VAR_NS}_FOUND)   
-        # Determine linkage type of imported Qt5::PCRE (via linkage type of Qt5::Gui library)
-        get_property(${QT5_PCRE_PRIVATE_VAR_NS}_QT_GUI_TARGET_TYPE 
-            TARGET Qt5::Gui PROPERTY TYPE)
+        # Determine linkage type of imported Qt5::PCRE (via linkage type of Qt5::Core library)
+        get_property(${QT5_PCRE_PRIVATE_VAR_NS}_QT_CORE_TARGET_TYPE 
+            TARGET Qt5::Core PROPERTY TYPE)
         set(${QT5_PCRE_PRIVATE_VAR_NS}_LINKAGE_TYPE "SHARED")
-        if(${${QT5_PCRE_PRIVATE_VAR_NS}_QT_GUI_TARGET_TYPE} STREQUAL "STATIC_LIBRARY")
+        if(${${QT5_PCRE_PRIVATE_VAR_NS}_QT_CORE_TARGET_TYPE} STREQUAL "STATIC_LIBRARY")
             set(${QT5_PCRE_PRIVATE_VAR_NS}_LINKAGE_TYPE "STATIC")
         endif()
 
