@@ -24,11 +24,11 @@ find_package(Qt5Gui)
 
 if(Qt5Gui_FOUND)
     # Extract directory of Qt Core library
-    get_target_property(${QT5_PCRE_PRIVATE_VAR_NS}_QT_GUI_LOCATION
-        Qt5::Gui
+    get_target_property(${QT5_PCRE_PRIVATE_VAR_NS}_QT_CORE_LOCATION
+        Qt5::Core
         LOCATION)
     get_filename_component(${QT5_PCRE_PRIVATE_VAR_NS}_QT_GUI_DIR 
-        "${${QT5_PCRE_PRIVATE_VAR_NS}_QT_GUI_LOCATION}" 
+        "${${QT5_PCRE_PRIVATE_VAR_NS}_QT_CORE_LOCATION}" 
         PATH)
 
     set(${QT5_PCRE_PRIVATE_VAR_NS}_LIBRARIES )
