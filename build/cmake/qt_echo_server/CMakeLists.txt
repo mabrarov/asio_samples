@@ -171,6 +171,8 @@ if(QT_ECHO_SERVER_USE_QT5)
         #     FindICU.cmake
         #     FindQt5PlatformSupport.cmake
         #     FindQt5HarfBuzzNG.cmake
+				#     FindQt5FreeType.cmake
+				#     FindQt5PCRE.cmake
 
         find_package(ICU REQUIRED COMPONENTS data uc i18n)
         set(LIBRARIES "${LIBRARIES};${ICU_LIBRARIES}")
@@ -183,6 +185,18 @@ if(QT_ECHO_SERVER_USE_QT5)
             find_package(Qt5HarfBuzzNG QUIET)
             if(Qt5HarfBuzzNG_FOUND)
                 set(LIBRARIES "${LIBRARIES};Qt5::HarfBuzzNG")
+            endif()
+        endif()
+
+				# Starting from Qt 5.5.0 FreeType and PCRE libraries are included
+        if(WIN32 AND NOT(${Qt5Gui_VERSION} VERSION_LESS "5.5.0"))
+            find_package(Qt5FreeType QUIET)
+            if(Qt5FreeType_FOUND)
+                set(LIBRARIES "${LIBRARIES};Qt5::FreeType")
+            endif()
+						find_package(Qt5PCRE QUIET)
+            if(Qt5PCRE_FOUND)
+                set(LIBRARIES "${LIBRARIES};Qt5::PCRE")
             endif()
         endif()
     endif()
