@@ -77,19 +77,19 @@
 #if defined(BOOST_GCC) && (BOOST_GCC >= 40600)
 
 #undef MA_NO_IMPLICIT_MOVE_CONSTRUCTOR
-#undef MA_BIND_HAS_NO_MOVE_CONTRUCTOR
+#undef MA_BIND_HAS_NO_MOVE_CONSTRUCTOR
 
 #elif defined(BOOST_CLANG)
 
 #if __has_feature(cxx_implicit_moves)
 
 #undef MA_NO_IMPLICIT_MOVE_CONSTRUCTOR
-#undef MA_BIND_HAS_NO_MOVE_CONTRUCTOR
+#undef MA_BIND_HAS_NO_MOVE_CONSTRUCTOR
 
 #else // __has_feature(cxx_implicit_moves)
 
 #define MA_NO_IMPLICIT_MOVE_CONSTRUCTOR
-#define MA_BIND_HAS_NO_MOVE_CONTRUCTOR
+#define MA_BIND_HAS_NO_MOVE_CONSTRUCTOR
 
 #endif // __has_feature(cxx_implicit_moves)
 
@@ -105,22 +105,22 @@
 #endif // defined(BOOST_MSVC) && (BOOST_MSVC >= 1900)
 
 #if defined(MA_USE_CXX11_STDLIB_FUNCTIONAL)
-#undef  MA_BIND_HAS_NO_MOVE_CONTRUCTOR
+#undef  MA_BIND_HAS_NO_MOVE_CONSTRUCTOR
 #else
-#define MA_BIND_HAS_NO_MOVE_CONTRUCTOR
+#define MA_BIND_HAS_NO_MOVE_CONSTRUCTOR
 #endif
 
 #else  // defined(BOOST_GCC) && (BOOST_GCC >= 40600)
 
 #define MA_NO_IMPLICIT_MOVE_CONSTRUCTOR
-#define MA_BIND_HAS_NO_MOVE_CONTRUCTOR
+#define MA_BIND_HAS_NO_MOVE_CONSTRUCTOR
 
 #endif // defined(BOOST_GCC) && (BOOST_GCC >= 40600)
 
 #else  // defined(MA_HAS_RVALUE_REFS)
 
 #define MA_NO_IMPLICIT_MOVE_CONSTRUCTOR
-#define MA_BIND_HAS_NO_MOVE_CONTRUCTOR
+#define MA_BIND_HAS_NO_MOVE_CONSTRUCTOR
 
 #endif // defined(MA_HAS_RVALUE_REFS)
 
