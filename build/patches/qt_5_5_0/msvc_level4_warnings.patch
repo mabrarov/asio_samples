@@ -1,0 +1,219 @@
+--- qtbase/src/gui/math3d/qvector2d.h	2015-06-29 23:04:56
++++ qtbase/src/gui/math3d/qvector2d.h	2015-08-01 15:44:59
+@@ -37,6 +37,11 @@
+ #include <QtCore/qpoint.h>
+ #include <QtCore/qmetatype.h>
+ 
++#if defined(Q_CC_MSVC)
++#pragma warning(push)
++#pragma warning(disable : 4127) // conditional expression is constant
++#endif
++
+ QT_BEGIN_NAMESPACE
+ 
+ 
+@@ -275,4 +280,8 @@
+ 
+ QT_END_NAMESPACE
+ 
++#if defined(Q_CC_MSVC)
++#pragma warning(pop)
+ #endif
++
++#endif
+
+--- qtbase/src/corelib/tools/qvector.h	2015-06-29 23:05:06
++++ qtbase/src/corelib/tools/qvector.h	2015-08-01 15:45:44
+@@ -50,6 +50,11 @@
+ 
+ #include <algorithm>
+ 
++#if defined(Q_CC_MSVC)
++#pragma warning(push)
++#pragma warning(disable : 4127) // conditional expression is constant
++#endif
++
+ QT_BEGIN_NAMESPACE
+ 
+ class QRegion;
+@@ -896,4 +901,8 @@
+ 
+ QT_END_NAMESPACE
+ 
++#if defined(Q_CC_MSVC)
++#pragma warning(pop)
++#endif
++
+ #endif // QVECTOR_H
+
+--- qtbase/src/corelib/tools/qstring.h	2015-06-29 23:05:06
++++ qtbase/src/corelib/tools/qstring.h	2015-08-01 23:05:06
+@@ -67,6 +67,11 @@
+ #  endif
+ #endif
+ 
++#if defined(Q_CC_MSVC)
++#pragma warning(push)
++#pragma warning(disable : 4127) // conditional expression is constant
++#endif
++
+ QT_BEGIN_NAMESPACE
+ 
+ class QCharRef;
+@@ -1586,6 +1591,10 @@
+ 
+ QT_END_NAMESPACE
+ 
++#if defined(Q_CC_MSVC)
++#pragma warning(pop)
++#endif
++
+ #if defined(QT_USE_FAST_OPERATOR_PLUS) || defined(QT_USE_QSTRINGBUILDER)
+ #include <QtCore/qstringbuilder.h>
+ #endif
+
+--- qtbase/src/corelib/tools/qsize.h	2015-06-29 23:05:06
++++ qtbase/src/corelib/tools/qsize.h	2015-08-01 23:05:06
+@@ -36,6 +36,11 @@
+ 
+ #include <QtCore/qnamespace.h>
+ 
++#if defined(Q_CC_MSVC)
++#pragma warning(push)
++#pragma warning(disable : 4127) // conditional expression is constant
++#endif
++
+ QT_BEGIN_NAMESPACE
+ 
+ 
+@@ -369,4 +374,8 @@
+ 
+ QT_END_NAMESPACE
+ 
++#if defined(Q_CC_MSVC)
++#pragma warning(pop)
++#endif
++
+ #endif // QSIZE_H
+
+--- qtbase/src/corelib/tools/qsharedpointer_impl.h	2015-06-29 23:05:06
++++ qtbase/src/corelib/tools/qsharedpointer_impl.h	2015-08-01 23:05:06
+@@ -61,6 +61,11 @@
+ #  include <utility>           // for std::forward
+ #endif
+ 
++#if defined(Q_CC_MSVC)
++#pragma warning(push)
++#pragma warning(disable : 4127) // conditional expression is constant
++#endif
++
+ QT_BEGIN_NAMESPACE
+ 
+ 
+@@ -961,4 +966,8 @@
+ 
+ QT_END_NAMESPACE
+ 
++#if defined(Q_CC_MSVC)
++#pragma warning(pop)
+ #endif
++
++#endif
+
+--- qtbase/src/corelib/tools/qscopedpointer.h	2015-06-29 23:05:06
++++ qtbase/src/corelib/tools/qscopedpointer.h	2015-08-01 23:05:06
+@@ -38,6 +38,11 @@
+ 
+ #include <stdlib.h>
+ 
++#if defined(Q_CC_MSVC)
++#pragma warning(push)
++#pragma warning(disable : 4127) // conditional expression is constant
++#endif
++
+ QT_BEGIN_NAMESPACE
+ 
+ template <typename T>
+@@ -241,4 +246,8 @@
+ 
+ QT_END_NAMESPACE
+ 
++#if defined(Q_CC_MSVC)
++#pragma warning(pop)
++#endif
++
+ #endif // QSCOPEDPOINTER_H
+
+--- qtbase/src/corelib/kernel/qmetatype.h	2015-06-29 23:04:58
++++ qtbase/src/corelib/kernel/qmetatype.h	2015-08-01 15:31:10
+@@ -54,6 +54,11 @@
+ #error qmetatype.h must be included before any header file that defines Bool
+ #endif
+ 
++#if defined(Q_CC_MSVC)
++#pragma warning(push)
++#pragma warning(disable : 4127) // conditional expression is constant
++#endif
++
+ QT_BEGIN_NAMESPACE
+ 
+ template <typename T>
+@@ -2249,4 +2254,8 @@
+ 
+ QT_END_NAMESPACE
+ 
++#if defined(Q_CC_MSVC)
++#pragma warning(pop)
++#endif
++
+ #endif // QMETATYPE_H
+
+--- qtbase/src/corelib/tools/qbytearray.h	2015-06-29 23:05:06
++++ qtbase/src/corelib/tools/qbytearray.h	2015-08-01 15:41:22
+@@ -55,6 +55,11 @@
+ #  endif
+ #endif
+ 
++#if defined(Q_CC_MSVC)
++#pragma warning(push)
++#pragma warning(disable : 4127) // conditional expression is constant
++#endif
++
+ QT_BEGIN_NAMESPACE
+ 
+ 
+@@ -676,6 +681,10 @@
+ 
+ QT_END_NAMESPACE
+ 
++#if defined(Q_CC_MSVC)
++#pragma warning(pop)
++#endif
++
+ #ifdef QT_USE_QSTRINGBUILDER
+ #include <QtCore/qstring.h>
+ #endif
+
+--- qtbase/src/corelib/tools/qarraydata.h	2015-06-29 23:05:06
++++ qtbase/src/corelib/tools/qarraydata.h	2015-08-01 23:05:06
+@@ -37,6 +37,11 @@
+ #include <QtCore/qrefcount.h>
+ #include <string.h>
+ 
++#if defined(Q_CC_MSVC)
++#pragma warning(push)
++#pragma warning(disable : 4127) // conditional expression is constant
++#endif
++
+ QT_BEGIN_NAMESPACE
+ 
+ struct Q_CORE_EXPORT QArrayData
+@@ -359,4 +364,8 @@
+ 
+ QT_END_NAMESPACE
+ 
++#if defined(Q_CC_MSVC)
++#pragma warning(pop)
++#endif
++
+ #endif // include guard
