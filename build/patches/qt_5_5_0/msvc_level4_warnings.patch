@@ -217,3 +217,28 @@
 +#endif
 +
  #endif // include guard
+
+--- qtbase/src/corelib/tools/qmap.h	2015-06-29 23:05:06
++++ qtbase/src/corelib/tools/qmap.h	2015-08-01 23:05:06
+@@ -266,10 +266,6 @@
+     }
+ }
+ 
+-#if defined(Q_CC_MSVC)
+-#pragma warning( pop )
+-#endif
+-
+ template <class Key, class T>
+ void QMapData<Key, T>::deleteNode(QMapNode<Key, T> *z)
+ {
+@@ -280,6 +276,10 @@
+     freeNodeAndRebalance(z);
+ }
+ 
++#if defined(Q_CC_MSVC)
++#pragma warning( pop )
++#endif
++
+ template <class Key, class T>
+ QMapNode<Key, T> *QMapData<Key, T>::findNode(const Key &akey) const
+ {
