@@ -23,6 +23,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
 #include <boost/optional.hpp>
+#include <boost/utility/in_place_factory.hpp>
 #include <ma/config.hpp>
 #include <ma/async_connect.hpp>
 #include <ma/steady_deadline_timer.hpp>

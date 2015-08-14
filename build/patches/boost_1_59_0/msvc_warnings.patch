@@ -1,0 +1,29 @@
+--- boost/random/detail/polynomial.hpp	2015-03-27 20:44:45
++++ boost/random/detail/polynomial.hpp	2018-08-14 04:14:34
+@@ -111,7 +111,7 @@
+                          const digit_t * rhs, std::size_t rhs_size,
+                          digit_t * output)
+     {
+-        std::fill_n(output, lhs_size + rhs_size, digit_t(0));
++        std::fill(output, output + lhs_size + rhs_size, digit_t(0));
+         multiply_add(lhs, lhs_size, rhs, rhs_size, output);
+     }
+ 
+@@ -253,7 +253,7 @@
+         const std::size_t highbit = mod_bits - 1;
+         if(exponent == 0) {
+             out[0] = 1;
+-            std::fill_n(out + 1, n - 1, digit_t(0));
++            std::fill(out + 1, out + n, digit_t(0));
+             return;
+         }
+         boost::uintmax_t i = std::numeric_limits<boost::uintmax_t>::digits - 1;
+@@ -261,7 +261,7 @@
+             --i;
+         }
+         out[0] = 2;
+-        std::fill_n(out + 1, n - 1, digit_t(0));
++        std::fill(out + 1, out + n, digit_t(0));
+         sparse_mod m(mod, mod_bits);
+         while(i--) {
+             sqr(out, n);
