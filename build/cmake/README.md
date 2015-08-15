@@ -27,7 +27,7 @@ cmake -D BOOST_INCLUDEDIR=<Boost headers directory> -D BOOST_LIBRARYDIR=<Boost b
       -G "Visual Studio 12 2013 Win64" asio_samples/build/cmake
 ```
 
-Example of generation of Visual Studio 2015 CTP project (shared C/C++ runtime, static Boost and shared Qt 5, x64):
+Example of generation of Visual Studio 2015 project (shared C/C++ runtime, static Boost and shared Qt 5, x64):
 
 ```
 cmake -D BOOST_INCLUDEDIR=<Boost headers directory> -D BOOST_LIBRARYDIR=<Boost built libraries directory> 
