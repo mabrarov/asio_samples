@@ -26,6 +26,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
 #include <boost/optional.hpp>
+#include <boost/utility/in_place_factory.hpp>
 #include <ma/config.hpp>
 #include <ma/cyclic_buffer.hpp>
 #include <ma/async_connect.hpp>

@@ -1,0 +1,94 @@
+--- boost/utility/in_place_factory.hpp	2014-09-06 22:19:24
++++ boost/utility/in_place_factory.hpp	2014-11-04 13:01:50
+@@ -31,6 +31,11 @@
+ #else
+ #define N BOOST_PP_ITERATION()
+ 
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4512)
++#endif
++
+ #if N
+ template< BOOST_PP_ENUM_PARAMS(N, class A) >
+ #endif
+@@ -65,6 +70,10 @@
+   BOOST_PP_REPEAT(N, BOOST_DEFINE_INPLACE_FACTORY_CLASS_MEMBER_DECL, _)
+ };
+ 
++#if defined(_MSC_VER)
++#pragma warning(pop)
++#endif
++
+ #if N > 0
+ template< BOOST_PP_ENUM_PARAMS(N, class A) >
+ inline BOOST_PP_CAT(in_place_factory,N)< BOOST_PP_ENUM_PARAMS(N, A) >
+
+--- boost/program_options/options_description.hpp	2013-11-04 09:17:17
++++ boost/program_options/options_description.hpp	2014-11-04 13:01:50
+@@ -170,6 +170,12 @@
+         See @ref a_adding_options "here" for option adding interface discussion.
+         @sa option_description
+     */
++
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4512)
++#endif
++
+     class BOOST_PROGRAM_OPTIONS_DECL options_description {
+     public:
+         static const unsigned m_default_line_length;
+@@ -264,6 +270,10 @@
+ 
+     };
+ 
++#if defined(_MSC_VER)
++#pragma warning(pop)
++#endif
++
+     /** Class thrown when duplicate option description is found. */
+     class BOOST_PROGRAM_OPTIONS_DECL duplicate_option_error : public error {
+     public:
+
+--- boost/random/detail/polynomial.hpp	2014-09-06 22:19:24
++++ boost/random/detail/polynomial.hpp	2015-04-19 17:54:06
+@@ -111,7 +111,7 @@
+                          const digit_t * rhs, std::size_t rhs_size,
+                          digit_t * output)
+     {
+-        std::fill_n(output, lhs_size + rhs_size, digit_t(0));
++        std::fill(output, output + lhs_size + rhs_size, digit_t(0));
+         multiply_add(lhs, lhs_size, rhs, rhs_size, output);
+     }
+ 
+@@ -253,7 +253,7 @@
+         const std::size_t highbit = mod_bits - 1;
+         if(exponent == 0) {
+             out[0] = 1;
+-            std::fill_n(out + 1, n - 1, digit_t(0));
++            std::fill(out + 1, out + n, digit_t(0));
+             return;
+         }
+         boost::uintmax_t i = std::numeric_limits<boost::uintmax_t>::digits - 1;
+@@ -261,7 +261,7 @@
+             --i;
+         }
+         out[0] = 2;
+-        std::fill_n(out + 1, n - 1, digit_t(0));
++        std::fill(out + 1, out + n, digit_t(0));
+         sparse_mod m(mod, mod_bits);
+         while(i--) {
+             sqr(out, n);
+
+--- boost/thread/future.hpp	2015-21-03 17:44:02
++++ boost/thread/future.hpp	2015-08-01 20:20:16
+@@ -407,7 +407,7 @@
+                 return policy_;
+             }
+ 
+-            future_state::state get_state(boost::unique_lock<boost::mutex>& lk) const
++            future_state::state get_state(boost::unique_lock<boost::mutex>&) const
+             {
+                 if(!done)
+                 {

@@ -72,7 +72,7 @@ protected:
 
 private:
 
-#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 
   template <typename Arg>
   class forward_handler_binder;
@@ -83,7 +83,7 @@ private:
   void start_do_something(const Handler&);
 }; // async_interface
 
-#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 
 template <typename Arg>
 class async_interface::forward_handler_binder
@@ -113,11 +113,11 @@ private:
 }; // class async_interface::forward_handler_binder
 
 #endif // defined(MA_HAS_RVALUE_REFS)
-       //     && defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
+       //     && defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 
 #if defined(MA_HAS_RVALUE_REFS)
 
-#if defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#if defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 
 template <typename Handler>
 void async_interface::async_do_something(Handler&& handler)
@@ -132,7 +132,7 @@ void async_interface::async_do_something(Handler&& handler)
       forward_handler_binder<handler_type>(func, get_interface_ptr())));
 }
 
-#else // defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#else // defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 
 template <typename Handler>
 void async_interface::async_do_something(Handler&& handler)
@@ -147,7 +147,7 @@ void async_interface::async_do_something(Handler&& handler)
       detail::bind(func, get_interface_ptr(), detail::placeholders::_1)));
 }
 
-#endif // defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#endif // defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 
 #else  // defined(MA_HAS_RVALUE_REFS)
 
@@ -196,7 +196,7 @@ void async_interface::start_do_something(const Handler& handler)
   }
 }
 
-#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 
 template <typename Arg>
 template <typename AsyncInterfacePtr>
@@ -234,7 +234,7 @@ void async_interface::forward_handler_binder<Arg>::operator()(const Arg& arg)
 }
 
 #endif // defined(MA_HAS_RVALUE_REFS)
-       //     && defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
+       //     && defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 
 } // namespace tutorial
 } // namespace ma

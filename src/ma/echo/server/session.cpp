@@ -21,7 +21,7 @@ namespace server {
 namespace {
 
 #if defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR) \
+    && defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR) \
     && !(defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
 
 // Home-grown binders to support move semantic
@@ -114,7 +114,7 @@ private:
 }; // class timer_handler_binder
 
 #endif // defined(MA_HAS_RVALUE_REFS)
-       //     && defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
+       //     && defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
        //     && !(defined(MA_HAS_LAMBDA)
        //         && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
 
@@ -933,7 +933,7 @@ void session::start_socket_read(
   })));
 
 #elif defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
+    && defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 
   socket_.async_read_some(buffers, strand_.wrap(make_custom_alloc_handler(
       read_allocator_, io_handler_binder(&this_type::handle_read, 
@@ -989,7 +989,7 @@ void session::start_socket_write(
   })));
 
 #elif defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
+    && defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 
   socket_.async_write_some(buffers, strand_.wrap(make_custom_alloc_handler(
       write_allocator_, io_handler_binder(&this_type::handle_write, 
@@ -1044,7 +1044,7 @@ void session::start_timer_wait()
   })));
 
 #elif defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
+    && defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 
   timer_.async_wait(strand_.wrap(make_custom_alloc_handler(timer_allocator_, 
       timer_handler_binder(&this_type::handle_timer, shared_from_this()))));
