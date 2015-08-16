@@ -1,0 +1,12 @@
+--- boost/asio/detail/config.hpp	2015-03-23 23:24:12
++++ boost/asio/detail/config.hpp	2015-08-14 04:15:51
+@@ -224,6 +224,9 @@
+ # endif // defined(__GNUC__)
+ # if defined(BOOST_ASIO_MSVC)
+ #  if (_MSC_VER >= 1900)
++#   if defined(BOOST_ASIO_ERROR_CATEGORY_NOEXCEPT)
++#    undef BOOST_ASIO_ERROR_CATEGORY_NOEXCEPT
++#   endif 
+ #   define BOOST_ASIO_ERROR_CATEGORY_NOEXCEPT noexcept(true)
+ #  endif // (_MSC_VER >= 1900)
+ # endif // defined(BOOST_ASIO_MSVC)

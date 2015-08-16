@@ -1,0 +1,67 @@
+--- boost/random/detail/polynomial.hpp	2015-03-27 20:44:45
++++ boost/random/detail/polynomial.hpp	2018-08-14 04:14:34
+@@ -111,7 +111,7 @@
+                          const digit_t * rhs, std::size_t rhs_size,
+                          digit_t * output)
+     {
+-        std::fill_n(output, lhs_size + rhs_size, digit_t(0));
++        std::fill(output, output + lhs_size + rhs_size, digit_t(0));
+         multiply_add(lhs, lhs_size, rhs, rhs_size, output);
+     }
+ 
+@@ -253,7 +253,7 @@
+         const std::size_t highbit = mod_bits - 1;
+         if(exponent == 0) {
+             out[0] = 1;
+-            std::fill_n(out + 1, n - 1, digit_t(0));
++            std::fill(out + 1, out + n, digit_t(0));
+             return;
+         }
+         boost::uintmax_t i = std::numeric_limits<boost::uintmax_t>::digits - 1;
+@@ -261,7 +261,7 @@
+             --i;
+         }
+         out[0] = 2;
+-        std::fill_n(out + 1, n - 1, digit_t(0));
++        std::fill(out + 1, out + n, digit_t(0));
+         sparse_mod m(mod, mod_bits);
+         while(i--) {
+             sqr(out, n);
+
+--- boost/utility/in_place_factory.hpp	2015-02-27 09:26:11
++++ boost/utility/in_place_factory.hpp	2015-08-15 06:54:07
+@@ -31,6 +31,11 @@
+ #else
+ #define N BOOST_PP_ITERATION()
+ 
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4512)
++#endif
++
+ #if N
+ template< BOOST_PP_ENUM_PARAMS(N, class A) >
+ #endif
+@@ -65,6 +70,10 @@
+   BOOST_PP_REPEAT(N, BOOST_DEFINE_INPLACE_FACTORY_CLASS_MEMBER_DECL, _)
+ };
+ 
++#if defined(_MSC_VER)
++#pragma warning(pop)
++#endif
++
+ #if N > 0
+ template< BOOST_PP_ENUM_PARAMS(N, class A) >
+ inline BOOST_PP_CAT(in_place_factory,N)< BOOST_PP_ENUM_PARAMS(N, A) >
+
+--- boost/thread/future.hpp	2015-04-18 12:56:34
++++ boost/thread/future.hpp	2015-08-15 06:59:00
+@@ -407,7 +407,7 @@
+                 return policy_;
+             }
+ 
+-            future_state::state get_state(boost::unique_lock<boost::mutex>& lk) const
++            future_state::state get_state(boost::unique_lock<boost::mutex>& /*lk*/) const
+             {
+                 if(!done)
+                 {

@@ -87,7 +87,7 @@ protected:
 private:
 
 #if defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR) \
+    && defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR) \
     && !(defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
 
   // Home-grown binder to support move semantic
@@ -223,7 +223,7 @@ inline session::protocol_type::socket& session::socket()
 
 #if defined(MA_HAS_RVALUE_REFS)
 
-#if defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR) \
+#if defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR) \
     && !(defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
 
 template <typename Arg>
@@ -253,7 +253,7 @@ private:
   session_ptr session_;
 }; // class session::forward_handler_binder
 
-#endif // defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#endif // defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
        //     && !(defined(MA_HAS_LAMBDA)
        //         && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
 
@@ -279,19 +279,19 @@ void session::async_start(Handler&& handler)
   typedef void (this_type::*func_type)(const handler_type&);
   func_type func = &this_type::start_extern_start<handler_type>;
 
-#if defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#if defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 
   strand_.post(make_explicit_context_alloc_handler(
       std::forward<Handler>(handler),
       forward_handler_binder<handler_type>(func, shared_from_this())));
 
-#else  // defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#else  // defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 
   strand_.post(make_explicit_context_alloc_handler(
       std::forward<Handler>(handler), 
       detail::bind(func, shared_from_this(), detail::placeholders::_1)));
 
-#endif // defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#endif // defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 
 #endif // defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
 }
@@ -324,19 +324,19 @@ void session::async_stop(Handler&& handler)
   typedef void (this_type::*func_type)(const handler_type&);
   func_type func = &this_type::start_extern_stop<handler_type>;
 
-#if defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#if defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 
   strand_.post(make_explicit_context_alloc_handler(
       std::forward<Handler>(handler),
       forward_handler_binder<handler_type>(func, shared_from_this())));
 
-#else  // defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#else  // defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 
   strand_.post(make_explicit_context_alloc_handler(
       std::forward<Handler>(handler), 
       detail::bind(func, shared_from_this(), detail::placeholders::_1)));
 
-#endif // defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#endif // defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 
 #endif // defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
 }
@@ -369,19 +369,19 @@ void session::async_wait(Handler&& handler)
   typedef void (this_type::*func_type)(const handler_type&);
   func_type func = &this_type::start_extern_wait<handler_type>;
 
-#if defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#if defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 
   strand_.post(make_explicit_context_alloc_handler(
       std::forward<Handler>(handler),
       forward_handler_binder<handler_type>(func, shared_from_this())));
 
-#else  // defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#else  // defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 
   strand_.post(make_explicit_context_alloc_handler(
       std::forward<Handler>(handler), 
       detail::bind(func, shared_from_this(), detail::placeholders::_1)));
 
-#endif // defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
+#endif // defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 
 #endif // defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
 }
@@ -471,7 +471,7 @@ void session::start_extern_wait(const Handler& handler)
        //     && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
 
 #if defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR) \
+    && defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR) \
     && !(defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
 
 template <typename Arg>
@@ -510,7 +510,7 @@ void session::forward_handler_binder<Arg>::operator()(const Arg& arg)
 }
 
 #endif // defined(MA_HAS_RVALUE_REFS)
-       //     && defined(MA_BIND_HAS_NO_MOVE_CONTRUCTOR)
+       //     && defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
        //     && !(defined(MA_HAS_LAMBDA)
        //         && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
 
