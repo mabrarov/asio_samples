@@ -196,7 +196,7 @@ if(QT_ECHO_SERVER_USE_QT5)
             endif()
         endif()
 
-        # Starting from Qt 5.5.0 PCRE library i used by QtCore
+        # Starting from Qt 5.5.0 PCRE library is used by QtCore
         if(WIN32 AND NOT(${Qt5Core_VERSION} VERSION_LESS "5.5.0"))
             find_package(Qt5PCRE QUIET)
             if(Qt5PCRE_FOUND)
