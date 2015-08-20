@@ -743,7 +743,7 @@ boost::program_options::options_description build_cmd_options_description(
   return description;
 }
 
-#if defined(WIN32)
+#if defined(MA_WIN32_TMAIN)
 boost::program_options::variables_map parse_cmd_line(
     const boost::program_options::options_description& options_description,
     int argc, _TCHAR* argv[])

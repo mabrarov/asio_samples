@@ -97,7 +97,7 @@ int main(int argc, char* argv[])
               << "Total number of work threads     : "
               << thread_count << std::endl;
 
-#if defined(WIN32)
+#if defined(MA_WIN32_TMAIN)
     std::wstring wide_device_name(argv[1]);
     const wcodecvt_type& wcodecvt(std::use_facet<wcodecvt_type>(sys_locale));
     std::string device_name(ma::codecvt_cast::out(wide_device_name, wcodecvt));
@@ -136,7 +136,7 @@ int main(int argc, char* argv[])
       }
     } // if (argc > 2)
 
-#if defined(WIN32)
+#if defined(MA_WIN32_TMAIN)
     std::wcout << L"NMEA 0183 device serial port: "
                << wide_device_name << std::endl
                << L"Read buffer size (bytes)    : "
@@ -150,7 +150,7 @@ int main(int argc, char* argv[])
               << read_buffer_size << std::endl
               << "Read buffer size (messages) : "
               << message_queue_size << std::endl;
-#endif // defined(WIN32)
+#endif
 
     handler_allocator_type the_allocator;
 
@@ -169,7 +169,7 @@ int main(int argc, char* argv[])
     the_session->serial_port().open(device_name, error);
     if (error)
     {
-#if defined(WIN32)
+#if defined(MA_WIN32_TMAIN)
       std::wstring error_message =
           ma::codecvt_cast::in(error.message(), wcodecvt);
       std::wcerr << L"Failed to open serial port: "
@@ -177,7 +177,7 @@ int main(int argc, char* argv[])
 #else
       std::cerr << "Failed to open serial port: "
           << error.message() << std::endl;
-#endif // defined(WIN32)
+#endif
       return EXIT_FAILURE;
     }
 
