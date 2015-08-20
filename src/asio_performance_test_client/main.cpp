@@ -1163,7 +1163,7 @@ void create_session_threads(ma::thread_group& threads,
 
 } // anonymous namespace
 
-#if defined(WIN32)
+#if defined(MA_WIN32_TMAIN)
 int _tmain(int argc, _TCHAR* argv[])
 #else
 int main(int argc, char* argv[])

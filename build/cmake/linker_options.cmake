@@ -6,8 +6,3 @@
 #
 
 cmake_minimum_required(VERSION 2.8.11)
-
-# Turn on Unicode support for MinGW for main function
-if(MINGW)
-    set(CMAKE_EXE_LINKER_FLAGS "-municode ${CMAKE_EXE_LINKER_FLAGS}")
-endif()

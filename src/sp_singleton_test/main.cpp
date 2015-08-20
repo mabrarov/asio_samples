@@ -23,6 +23,7 @@
 #include <boost/noncopyable.hpp>
 #include <boost/random.hpp>
 #include <boost/date_time/posix_time/ptime.hpp>
+#include <ma/config.hpp>
 #include <ma/thread_group.hpp>
 #include <ma/limited_int.hpp>
 #include <ma/shared_ptr_factory.hpp>
@@ -61,7 +62,7 @@ void run_test();
 } // namespace test
 } // namespace ma
 
-#if defined(WIN32)
+#if defined(MA_WIN32_TMAIN)
 int _tmain(int /*argc*/, _TCHAR* /*argv*/[])
 #else
 int main(int /*argc*/, char* /*argv*/[])

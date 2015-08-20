@@ -19,6 +19,7 @@
 #include <boost/asio.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/system/error_code.hpp>
+#include <ma/config.hpp>
 #include <ma/codecvt_cast.hpp>
 #include <ma/handler_allocator.hpp>
 #include <ma/custom_alloc_handler.hpp>
@@ -64,7 +65,7 @@ static const int max_arg_count = 4;
 
 }
 
-#if defined(WIN32)
+#if defined(MA_WIN32_TMAIN)
 int _tmain(int argc, _TCHAR* argv[])
 #else
 int main(int argc, char* argv[])

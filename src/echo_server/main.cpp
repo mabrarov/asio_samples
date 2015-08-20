@@ -19,6 +19,7 @@
 #include <boost/noncopyable.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
+#include <ma/config.hpp>
 #include <ma/handler_allocator.hpp>
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/console_close_guard.hpp>
@@ -39,7 +40,7 @@ int run_server(const execution_config&,
 
 } // namespace echo_server
 
-#if defined(WIN32)
+#if defined(MA_WIN32_TMAIN)
 int _tmain(int argc, _TCHAR* argv[])
 #else
 int main(int argc, char* argv[])
