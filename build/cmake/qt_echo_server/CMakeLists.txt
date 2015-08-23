@@ -135,11 +135,6 @@ endif()
 
 set(LIBRARIES "${Boost_LIBRARIES};${QT_ECHO_SERVER_QT_LIBRARIES}")
 
-# Required Winsock libraries
-if(WIN32)
-    set(LIBRARIES "ws2_32;mswsock;comdlg32;uuid;ole32;oleaut32;advapi32;imm32;winmm;winspool;${LIBRARIES}")    
-endif()
-
 if(QT_ECHO_SERVER_USE_QT5)
     # Determine linkage type of Qt libraries (via linkage type of Qt Core library)
     get_property(Qt5_Core_TYPE TARGET Qt5::Core PROPERTY TYPE)
@@ -216,6 +211,11 @@ endif()
 # Boost chrono requires rt library on *nix
 if(UNIX AND BOOST_HAS_CHRONO)
     set(LIBRARIES "${LIBRARIES};rt")
+endif()
+
+# Required Windows libraries
+if(WIN32)
+    set(LIBRARIES "${LIBRARIES};ws2_32;mswsock;comdlg32;uuid;ole32;oleaut32;advapi32;imm32;winmm;winspool")
 endif()
 
 # Find includes in corresponding build directories
