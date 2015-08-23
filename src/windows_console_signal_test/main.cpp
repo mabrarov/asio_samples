@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2014 Marat Abrarov (abrarov@gmail.com)
+// Copyright (c) 2010-2015 Marat Abrarov (abrarov@gmail.com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -14,6 +14,7 @@
 #include <iostream>
 #include <boost/asio.hpp>
 #include <boost/system/error_code.hpp>
+#include <ma/config.hpp>
 #include <ma/handler_allocator.hpp>
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/windows/console_signal.hpp>
@@ -30,7 +31,7 @@ void run_test();
 } // namespace test
 } // namespace ma
 
-#if defined(WIN32)
+#if defined(MA_WIN32_TMAIN)
 int _tmain(int /*argc*/, _TCHAR* /*argv*/[])
 #else
 int main(int /*argc*/, char* /*argv*/[])

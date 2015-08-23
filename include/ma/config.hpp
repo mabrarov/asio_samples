@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2014 Marat Abrarov (abrarov@gmail.com)
+// Copyright (c) 2010-2015 Marat Abrarov (abrarov@gmail.com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -211,6 +211,10 @@
 
 #define MA_NOEXCEPT
 
+#endif
+
+#if !defined(MA_WIN32_TMAIN) && defined(WIN32) && !defined(__MINGW32__)
+#define MA_WIN32_TMAIN
 #endif
 
 #endif // MA_CONFIG_HPP

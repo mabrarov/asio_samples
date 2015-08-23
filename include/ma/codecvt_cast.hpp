@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2014 Marat Abrarov (abrarov@gmail.com)
+// Copyright (c) 2010-2015 Marat Abrarov (abrarov@gmail.com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -70,9 +70,9 @@ const std::basic_string<CharType> in(
       first_external, last_external, next_external,
       first_internal, last_internal, next_internal);
 
-  if (codecvt_type::ok != r)
+  if (codecvt_type::ok == r)
   {
-    boost::throw_exception(bad_conversion());
+    internal_str.assign(first_internal, last_internal);
   }
   else if (codecvt_type::noconv == r)
   {
@@ -81,7 +81,7 @@ const std::basic_string<CharType> in(
   }
   else
   {
-    internal_str.assign(first_internal, last_internal);
+    boost::throw_exception(bad_conversion());
   }
 
   return internal_str;

@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2010-2014 Marat Abrarov (abrarov@gmail.com)
+// Copyright (c) 2010-2015 Marat Abrarov (abrarov@gmail.com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -206,7 +206,7 @@ boost::system::error_code session::do_start_extern_start()
 
 session::optional_error_code session::do_start_extern_stop()
 {
-  // Check exetrnal state consistency
+  // Check external state consistency
   if ((extern_state::stopped == extern_state_)
       || (extern_state::stop == extern_state_))
   {
@@ -236,7 +236,7 @@ session::optional_error_code session::do_start_extern_stop()
 
 session::optional_error_code session::do_start_extern_wait()
 {
-  // Check exetrnal state consistency
+  // Check external state consistency
   if ((extern_state::work != extern_state_)
       || extern_wait_handler_.has_target())
   {
