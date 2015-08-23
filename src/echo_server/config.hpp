@@ -21,6 +21,7 @@
 #include <boost/assert.hpp>
 #include <boost/program_options.hpp>
 #include <boost/date_time/posix_time/ptime.hpp>
+#include <ma/config.hpp>
 #include <ma/echo/server/session_config.hpp>
 #include <ma/echo/server/session_manager_config.hpp>
 
@@ -46,7 +47,7 @@ public:
 boost::program_options::options_description build_cmd_options_description(
     std::size_t hardware_concurrency);
 
-#if defined(WIN32)
+#if defined(MA_WIN32_TMAIN)
 
 boost::program_options::variables_map parse_cmd_line(
     const boost::program_options::options_description& options_description,

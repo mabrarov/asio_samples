@@ -11,6 +11,7 @@
 #include <boost/optional.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/throw_exception.hpp>
+#include <ma/config.hpp>
 #include "config.hpp"
 
 namespace echo_server {
@@ -223,7 +224,7 @@ boost::program_options::options_description build_cmd_options_description(
   return description;
 }
 
-#if defined(WIN32)
+#if defined(MA_WIN32_TMAIN)
 boost::program_options::variables_map parse_cmd_line(
     const boost::program_options::options_description& options_description,
     int argc, _TCHAR* argv[])

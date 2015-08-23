@@ -213,4 +213,8 @@
 
 #endif
 
+#if !defined(MA_WIN32_TMAIN) && defined(WIN32) && !defined(__MINGW32__)
+#define MA_WIN32_TMAIN
+#endif
+
 #endif // MA_CONFIG_HPP

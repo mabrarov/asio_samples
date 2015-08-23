@@ -17,6 +17,7 @@
 #include <boost/format.hpp>
 #include <boost/optional.hpp>
 #include <boost/utility/in_place_factory.hpp>
+#include <ma/config.hpp>
 #include <ma/handler_allocator.hpp>
 #include <ma/console_close_guard.hpp>
 #include <ma/custom_alloc_handler.hpp>
@@ -56,7 +57,7 @@ void handle_program_exit(boost::asio::io_service& io_service)
 
 } // anonymous namespace
 
-#if defined(WIN32)
+#if defined(MA_WIN32_TMAIN)
 int _tmain(int /*argc*/, _TCHAR* /*argv*/[])
 #else
 int main(int /*argc*/, char* /*argv*/[])

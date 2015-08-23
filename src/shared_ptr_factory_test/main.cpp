@@ -15,6 +15,7 @@
 #include <boost/static_assert.hpp>
 #include <boost/assert.hpp>
 #include <boost/noncopyable.hpp>
+#include <ma/config.hpp>
 #include <ma/shared_ptr_factory.hpp>
 #include <ma/detail/memory.hpp>
 
@@ -30,7 +31,7 @@ void run_test();
 } // namespace test
 } // namespace ma
 
-#if defined(WIN32)
+#if defined(MA_WIN32_TMAIN)
 int _tmain(int /*argc*/, _TCHAR* /*argv*/[])
 #else
 int main(int /*argc*/, char* /*argv*/[])

@@ -906,7 +906,7 @@ boost::program_options::options_description build_cmd_options_description(
   return description;
 }
 
-#if defined(WIN32)
+#if defined(MA_WIN32_TMAIN)
 boost::program_options::variables_map parse_cmd_line(
     const boost::program_options::options_description& options_description,
     int argc, _TCHAR* argv[])
@@ -1163,7 +1163,7 @@ void create_session_threads(ma::thread_group& threads,
 
 } // anonymous namespace
 
-#if defined(WIN32)
+#if defined(MA_WIN32_TMAIN)
 int _tmain(int argc, _TCHAR* argv[])
 #else
 int main(int argc, char* argv[])

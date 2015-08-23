@@ -1,0 +1,75 @@
+--- source/runConfigureICU	2014-10-03 10:18:36
++++ source/runConfigureICU	2015-08-23 06:34:01 
+@@ -26,6 +26,7 @@
+ Options: -h, --help         Print this message and exit
+          --enable-debug     Enable support for debugging
+          --disable-release  Disable presetting optimization flags
++         --static-runtime   Use a statically linked C/C++ runtime (Cygwin/MSVC and MINGW only)
+ 
+ If you want to add custom CFLAGS or CXXFLAGS or similar, provide them _before_
+ the runConfigureICU command:
+@@ -70,6 +71,7 @@
+ platform=
+ debug=0
+ release=1
++static_runtime=0
+ 
+ while test $# -ne 0
+ do
+@@ -85,6 +87,9 @@
+         release=0
+         OPTS="$OPTS --disable-release"
+         ;;
++    --static-runtime)
++        static_runtime=1
++        ;;
+     *)
+         platform="$1"
+         shift
+@@ -257,15 +262,21 @@
+         RELEASE_CXXFLAGS='-O3'
+         ;;
+     Cygwin/MSVC)
++        if [ "${static_runtime}" = "0" ]; then
++            RUNTIME_LINKER_OPTION='MD'
++        else
++            RUNTIME_LINKER_OPTION='MT'
++        fi
++        RUNTIME_LINKER_FLAG='/'${RUNTIME_LINKER_OPTION}
+         THE_OS="Windows with Cygwin"
+         THE_COMP="Microsoft Visual C++"
+         CC=cl; export CC
+         CXX=cl; export CXX
+-        RELEASE_CFLAGS='-Gy -MD'
+-        RELEASE_CXXFLAGS='-Gy -MD'
+-        DEBUG_CFLAGS='-Zi -MDd'
+-        DEBUG_CXXFLAGS='-Zi -MDd'
+-        DEBUG_LDFLAGS='-DEBUG'
++        RELEASE_CFLAGS='/Gy '${RUNTIME_LINKER_FLAG}
++        RELEASE_CXXFLAGS='/Gy '${RUNTIME_LINKER_FLAG}
++        DEBUG_CFLAGS='/Zi '${RUNTIME_LINKER_FLAG}d' /Fdicu'${RUNTIME_LINKER_OPTION}d
++        DEBUG_CXXFLAGS='/Zi '${RUNTIME_LINKER_FLAG}d' /Fdicu'${RUNTIME_LINKER_OPTION}d
++        DEBUG_LDFLAGS='/DEBUG'
+         ;;
+     Cygwin/MSVC2005)
+         THE_OS="Windows with Cygwin"
+@@ -309,12 +320,19 @@
+         CXX=g++; export CXX
+         ;;
+     MinGW)
++        if [ "${static_runtime}" = "0" ]; then
++            RUNTIME_LINKER_FLAGS='-shared -shared-libgcc -shared-libstdc++'
++        else
++            RUNTIME_LINKER_FLAGS='-static -static-libgcc -static-libstdc++'
++        fi
+         THE_OS="MinGW"
+         THE_COMP="the GNU C++"
+         RELEASE_CFLAGS='-O3'
+         RELEASE_CXXFLAGS='-O3'
+         CXXFLAGS="--std=c++03"
++        LDFLAGS="${RUNTIME_LINKER_FLAGS}"
+         export CXXFLAGS
++        export LDFLAGS
+         ;;
+     MSYS/MSVC)
+         THE_OS="MSYS"

@@ -135,11 +135,6 @@ endif()
 
 set(LIBRARIES "${Boost_LIBRARIES};${QT_ECHO_SERVER_QT_LIBRARIES}")
 
-# Required Winsock libraries
-if(WIN32)
-    set(LIBRARIES "ws2_32;mswsock;comdlg32;uuid;ole32;oleaut32;advapi32;imm32;winmm;winspool;${LIBRARIES}")    
-endif()
-
 if(QT_ECHO_SERVER_USE_QT5)
     # Determine linkage type of Qt libraries (via linkage type of Qt Core library)
     get_property(Qt5_Core_TYPE TARGET Qt5::Core PROPERTY TYPE)
@@ -157,7 +152,7 @@ if(QT_ECHO_SERVER_USE_QT5)
         set(LIBRARIES "${LIBRARIES};${Qt5Gui_EGL_LIBRARIES};${Qt5Gui_OPENGL_LIBRARIES}")
 
         # Add required platform integration plugins
-        if(WIN32)            
+        if(WIN32)
             set(LIBRARIES "${LIBRARIES};Qt5::QWindowsIntegrationPlugin")
         else()
             # todo:
@@ -174,11 +169,11 @@ if(QT_ECHO_SERVER_USE_QT5)
         #     FindQt5FreeType.cmake
         #     FindQt5PCRE.cmake
 
-        find_package(ICU REQUIRED COMPONENTS data uc i18n)
-        set(LIBRARIES "${LIBRARIES};${ICU_LIBRARIES}")
-
         find_package(Qt5PlatformSupport REQUIRED)
         set(LIBRARIES "${LIBRARIES};Qt5::PlatformSupport")
+
+        find_package(ICU REQUIRED COMPONENTS i18n uc data)
+        set(LIBRARIES "${LIBRARIES};${ICU_LIBRARIES}")
 
         # Starting from Qt 5.4.0 HarfBuzz-NG library is included (at least Windows version of Qt 5.4.0)
         if(WIN32 AND NOT(${Qt5Gui_VERSION} VERSION_LESS "5.4.0"))
@@ -211,6 +206,11 @@ else()
     if(QT_IS_STATIC)
         # Nothing to add as no Qt 4 plugins are used.
     endif()
+endif()
+
+# Required Windows libraries
+if(WIN32)
+    set(LIBRARIES "${LIBRARIES};ws2_32;mswsock;comdlg32;uuid;ole32;oleaut32;advapi32;imm32;winmm;winspool")
 endif()
 
 # Boost chrono requires rt library on *nix
