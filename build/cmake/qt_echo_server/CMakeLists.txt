@@ -1,4 +1,4 @@
-# 
+#
 # Copyright (c) 2015 Marat Abrarov (abrarov@gmail.com)
 #
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
@@ -11,7 +11,7 @@ project(qt_echo_server)
 # Just determine version of Boost C++ Libraries
 find_package(Boost REQUIRED)
 
-# Build list of used Boost libraries depending on Boost version 
+# Build list of used Boost libraries depending on Boost version
 # (use chono if available)
 set(BOOST_COMPONENTS "system;thread;date_time;regex")
 if(NOT(${Boost_VERSION} LESS 104700))
@@ -41,7 +41,7 @@ if(QT_ECHO_SERVER_USE_QT5)
     set(QT_ECHO_SERVER_QT_LIBRARIES "Qt5::Core;Qt5::Gui;Qt5::Widgets")
 else()
     find_package(Qt4 REQUIRED QtCore QtGui)
-    set(QT_ECHO_SERVER_QT_LIBRARIES "Qt4::QtCore;Qt4::QtGui")    
+    set(QT_ECHO_SERVER_QT_LIBRARIES "Qt4::QtCore;Qt4::QtGui")
 endif()
 
 set(HEADERS_DIR "${PROJECT_SOURCE_DIR}/../../../include")
@@ -129,7 +129,7 @@ set(SOURCES
 
 # Windows specific source files
 if(WIN32)
-    list(APPEND SOURCES 
+    list(APPEND SOURCES
         "${SOURCES_DIR}/qt_echo_server/qt_echo_server.rc")
 endif()
 
@@ -218,7 +218,10 @@ if(UNIX AND BOOST_HAS_CHRONO)
     set(LIBRARIES "${LIBRARIES};rt")
 endif()
 
-# Find includes in corresponding build directories
+include_directories(${Boost_INCLUDE_DIRS})
+include_directories(${HEADERS_DIR})
+
+# Required for Qt UIC
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # Wrap Qt generated sources.
@@ -232,9 +235,7 @@ else()
     qt4_add_resources(RCC_GENERATED_SOURCES ${RCC_RESOURCES})
 endif()
 
-include_directories(${Boost_INCLUDE_DIRS})
-include_directories(${HEADERS_DIR})
-add_executable(qt_echo_server WIN32 
-    ${HEADERS} ${SOURCES} 
+add_executable(qt_echo_server WIN32
+    ${HEADERS} ${SOURCES}
     ${MOC_GENERATED_SOURCES} ${RCC_GENERATED_SOURCES} ${UIC_GENERATED_HEADERS})
 target_link_libraries(qt_echo_server ${LIBRARIES})
