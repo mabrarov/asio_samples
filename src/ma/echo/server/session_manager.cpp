@@ -599,7 +599,7 @@ session_manager::optional_error_code session_manager::do_start_extern_stop()
     start_stop(server::error::operation_aborted);
   }
 
-  // intern_state_ can be changed by start_stop
+  // int_state_ can be changed by start_stop
   if (intern_state::stopped == intern_state_)
   {
     extern_state_ = extern_state::stopped;
@@ -725,13 +725,13 @@ void session_manager::handle_accept(const session_wrapper_ptr& session,
 
   // Split handler based on current internal state
   // that might change during accept operation
-  switch (intern_state_)
+  switch (int_state_)
   {
-  case intern_state::work:
+  case int_state::work:
     handle_accept_at_work(session, error);
     break;
 
-  case intern_state::stop:
+  case int_state::stop:
     handle_accept_at_stop(session, error);
     break;
 
@@ -746,13 +746,13 @@ void session_manager::handle_session_start(const session_wrapper_ptr& session,
 {
   // Split handler based on current internal state
   // that might change during session start
-  switch (intern_state_)
+  switch (int_state_)
   {
-  case intern_state::work:
+  case int_state::work:
     handle_session_start_at_work(session, error);
     break;
 
-  case intern_state::stop:
+  case int_state::stop:
     handle_session_start_at_stop(session, error);
     break;
 
@@ -767,13 +767,13 @@ void session_manager::handle_session_wait(const session_wrapper_ptr& session,
 {
   // Split handler based on current internal state
   // that might change during session wait
-  switch (intern_state_)
+  switch (int_state_)
   {
-  case intern_state::work:
+  case int_state::work:
     handle_session_wait_at_work(session, error);
     break;
 
-  case intern_state::stop:
+  case int_state::stop:
     handle_session_wait_at_stop(session, error);
     break;
 
@@ -788,13 +788,13 @@ void session_manager::handle_session_stop(const session_wrapper_ptr& session,
 {
   // Split handler based on current internal state
   // that might change during session stop
-  switch (intern_state_)
+  switch (int_state_)
   {
-  case intern_state::work:
+  case int_state::work:
     handle_session_stop_at_work(session, error);
     break;
 
-  case intern_state::stop:
+  case int_state::stop:
     handle_session_stop_at_stop(session, error);
     break;
 
@@ -826,7 +826,7 @@ void session_manager::handle_accept_at_work(const session_wrapper_ptr& session,
 
   // Handle result
   if (error)
-  {    
+  {
     if (!is_accept_recoverable(error))
     {
       accept_error_ = error;
@@ -1301,7 +1301,7 @@ void session_manager::start_session_start(const session_wrapper_ptr& session)
 #else
 
   session->async_start(detail::bind(&this_type::dispatch_handle_session_start,
-      session_manager_weak_ptr(shared_from_this()), session, 
+      session_manager_weak_ptr(shared_from_this()), session,
       detail::placeholders::_1));
 
 #endif
@@ -1355,7 +1355,7 @@ void session_manager::start_session_stop(const session_wrapper_ptr& session)
 #else
 
   session->async_stop(detail::bind(&this_type::dispatch_handle_session_stop,
-      session_manager_weak_ptr(shared_from_this()), session, 
+      session_manager_weak_ptr(shared_from_this()), session,
       detail::placeholders::_1));
 
 #endif
@@ -1409,7 +1409,7 @@ void session_manager::start_session_wait(const session_wrapper_ptr& session)
 #else
 
   session->async_wait(detail::bind(&this_type::dispatch_handle_session_wait,
-      session_manager_weak_ptr(shared_from_this()), session, 
+      session_manager_weak_ptr(shared_from_this()), session,
       detail::placeholders::_1));
 
 #endif

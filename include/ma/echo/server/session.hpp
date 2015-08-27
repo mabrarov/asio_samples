@@ -96,12 +96,12 @@ private:
 
 #endif
 
-  struct extern_state
+  struct ext_state
   {
     enum value_t {ready, work, stop, stopped};
   };
 
-  struct intern_state
+  struct int_state
   {
     enum value_t {work, shutdown, stop, stopped};
   };
@@ -192,14 +192,14 @@ private:
   const session_config::optional_bool no_delay_;
   const optional_duration             inactivity_timeout_;
 
-  extern_state::value_t extern_state_;
-  intern_state::value_t intern_state_;
-  read_state::value_t   read_state_;
-  write_state::value_t  write_state_;
-  timer_state::value_t  timer_state_;
-  bool                  timer_wait_cancelled_;
-  bool                  timer_turned_;
-  std::size_t           pending_operations_;
+  ext_state::value_t   ext_state_;
+  int_state::value_t   int_state_;
+  read_state::value_t  read_state_;
+  write_state::value_t write_state_;
+  timer_state::value_t timer_state_;
+  bool                 timer_wait_cancelled_;
+  bool                 timer_turned_;
+  std::size_t          pending_operations_;
 
   boost::asio::io_service&  io_service_;
   ma::strand                strand_;
@@ -288,7 +288,7 @@ void session::async_start(Handler&& handler)
 #else  // defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 
   strand_.post(make_explicit_context_alloc_handler(
-      std::forward<Handler>(handler), 
+      std::forward<Handler>(handler),
       detail::bind(func, shared_from_this(), detail::placeholders::_1)));
 
 #endif // defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
@@ -333,7 +333,7 @@ void session::async_stop(Handler&& handler)
 #else  // defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 
   strand_.post(make_explicit_context_alloc_handler(
-      std::forward<Handler>(handler), 
+      std::forward<Handler>(handler),
       detail::bind(func, shared_from_this(), detail::placeholders::_1)));
 
 #endif // defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
@@ -378,7 +378,7 @@ void session::async_wait(Handler&& handler)
 #else  // defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 
   strand_.post(make_explicit_context_alloc_handler(
-      std::forward<Handler>(handler), 
+      std::forward<Handler>(handler),
       detail::bind(func, shared_from_this(), detail::placeholders::_1)));
 
 #endif // defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
