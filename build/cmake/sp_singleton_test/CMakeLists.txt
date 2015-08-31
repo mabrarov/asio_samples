@@ -24,36 +24,39 @@ endif()
 # Attach used Boost libraries
 find_package(Boost REQUIRED COMPONENTS ${BOOST_COMPONENTS})
 
-set(HEADERS_DIR "${PROJECT_SOURCE_DIR}/../../../include")
-set(SOURCES_DIR "${PROJECT_SOURCE_DIR}/../../../src")
+set(PROJECT_BASE_DIR "${PROJECT_SOURCE_DIR}/../../..")
+set(SOURCES_DIR      "${PROJECT_BASE_DIR}/src")
+set(CPP_HEADERS_DIR  "${PROJECT_BASE_DIR}/include")
 
-set(HEADERS
-    "${HEADERS_DIR}/ma/detail/functional.hpp"
-    "${HEADERS_DIR}/ma/detail/latch.hpp"
-    "${HEADERS_DIR}/ma/detail/memory.hpp"
-    "${HEADERS_DIR}/ma/detail/sp_singleton.hpp"
-    "${HEADERS_DIR}/ma/detail/thread.hpp"
-    "${HEADERS_DIR}/ma/config.hpp"
-    "${HEADERS_DIR}/ma/limited_int.hpp"
-    "${HEADERS_DIR}/ma/shared_ptr_factory.hpp")
+set(CPP_HEADERS
+    "${CPP_HEADERS_DIR}/ma/detail/functional.hpp"
+    "${CPP_HEADERS_DIR}/ma/detail/latch.hpp"
+    "${CPP_HEADERS_DIR}/ma/detail/memory.hpp"
+    "${CPP_HEADERS_DIR}/ma/detail/sp_singleton.hpp"
+    "${CPP_HEADERS_DIR}/ma/detail/thread.hpp"
+    "${CPP_HEADERS_DIR}/ma/config.hpp"
+    "${CPP_HEADERS_DIR}/ma/limited_int.hpp"
+    "${CPP_HEADERS_DIR}/ma/shared_ptr_factory.hpp")
 
 set(SOURCES 
-    "${SOURCES_DIR}/sp_singleton_test/main.cpp"
-)
+    "${SOURCES_DIR}/sp_singleton_test/main.cpp")
 
 set(LIBRARIES ${Boost_LIBRARIES})
 
 # Required Winsock libraries
 if(WIN32)
-    set(LIBRARIES "ws2_32;mswsock;${LIBRARIES}")    
+    list(APPEND LIBRARIES 
+        "ws2_32"
+        "mswsock")
 endif()
 
 # Boost chrono requires rt library on *nix
 if(UNIX AND BOOST_HAS_CHRONO)
-    set(LIBRARIES "${LIBRARIES};rt")
+    list(APPEND LIBRARIES 
+        "rt")
 endif()
 
 include_directories(${Boost_INCLUDE_DIRS})
-include_directories(${HEADERS_DIR})
-add_executable(sp_singleton_test ${HEADERS} ${SOURCES})
+include_directories(${CPP_HEADERS_DIR})
+add_executable(sp_singleton_test ${CPP_HEADERS} ${SOURCES})
 target_link_libraries(sp_singleton_test ${Boost_LIBRARIES})

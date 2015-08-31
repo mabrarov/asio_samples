@@ -44,11 +44,12 @@ else()
     set(Qt_LIBRARIES "Qt4::QtCore;Qt4::QtGui")
 endif()
 
-set(CPP_HEADERS_DIR "${PROJECT_SOURCE_DIR}/../../../include")
-set(CPP_SOURCES_DIR "${PROJECT_SOURCE_DIR}/../../../src")
+set(PROJECT_BASE_DIR "${PROJECT_SOURCE_DIR}/../../..")
+set(SOURCES_DIR      "${PROJECT_BASE_DIR}/src")
+set(CPP_HEADERS_DIR  "${PROJECT_BASE_DIR}/include")
 
 set(UIC_FORMS
-    "${CPP_SOURCES_DIR}/ma/echo/server/qt/mainform.ui")
+    "${SOURCES_DIR}/ma/echo/server/qt/mainform.ui")
 
 set(QRC_RESOURCES )
 
@@ -115,20 +116,20 @@ set(CPP_HEADERS
     ${MOC_HEADERS})
 
 set(CPP_SOURCES
-    "${CPP_SOURCES_DIR}/ma/echo/server/qt/custommetatypes.cpp"
-    "${CPP_SOURCES_DIR}/ma/echo/server/qt/service.cpp"
-    "${CPP_SOURCES_DIR}/ma/echo/server/qt/mainform.cpp"
-    "${CPP_SOURCES_DIR}/ma/echo/server/error.cpp"
-    "${CPP_SOURCES_DIR}/ma/echo/server/session.cpp"
-    "${CPP_SOURCES_DIR}/ma/echo/server/session_manager.cpp"
-    "${CPP_SOURCES_DIR}/ma/echo/server/pooled_session_factory.cpp"
-    "${CPP_SOURCES_DIR}/ma/echo/server/simple_session_factory.cpp"
-    "${CPP_SOURCES_DIR}/qt_echo_server/main.cpp")
+    "${SOURCES_DIR}/ma/echo/server/qt/custommetatypes.cpp"
+    "${SOURCES_DIR}/ma/echo/server/qt/service.cpp"
+    "${SOURCES_DIR}/ma/echo/server/qt/mainform.cpp"
+    "${SOURCES_DIR}/ma/echo/server/error.cpp"
+    "${SOURCES_DIR}/ma/echo/server/session.cpp"
+    "${SOURCES_DIR}/ma/echo/server/session_manager.cpp"
+    "${SOURCES_DIR}/ma/echo/server/pooled_session_factory.cpp"
+    "${SOURCES_DIR}/ma/echo/server/simple_session_factory.cpp"
+    "${SOURCES_DIR}/qt_echo_server/main.cpp")
 
 set(NATIVE_RESOURCES )
 set(NATIVE_RESOURCE_HEADERS )
 if(WIN32)
-    list(APPEND NATIVE_RESOURCES "${CPP_SOURCES_DIR}/qt_echo_server/qt_echo_server.rc")
+    list(APPEND NATIVE_RESOURCES "${SOURCES_DIR}/qt_echo_server/qt_echo_server.rc")
 endif()
 
 set(LIBRARIES 
@@ -252,8 +253,6 @@ add_executable(qt_echo_server WIN32
     ${MOC_GENERATED_SOURCES} ${QRC_GENERATED_SOURCES} ${UIC_GENERATED_HEADERS})
 target_link_libraries(qt_echo_server ${LIBRARIES})
 
-source_group("Build scripts" FILES
-    ${BUILD_SCRIPTS})
 source_group("Form Files" FILES
     ${UIC_FORMS})
 source_group("Generated Files" FILES

@@ -30,48 +30,51 @@ endif()
 # Attach used Boost libraries
 find_package(Boost REQUIRED COMPONENTS ${BOOST_COMPONENTS})
 
-set(HEADERS_DIR "${PROJECT_SOURCE_DIR}/../../../include")
-set(SOURCES_DIR "${PROJECT_SOURCE_DIR}/../../../src")
+set(PROJECT_BASE_DIR "${PROJECT_SOURCE_DIR}/../../..")
+set(SOURCES_DIR      "${PROJECT_BASE_DIR}/src")
+set(CPP_HEADERS_DIR  "${PROJECT_BASE_DIR}/include")
 
-set(HEADERS
-    "${HEADERS_DIR}/ma/detail/binder.hpp"
-    "${HEADERS_DIR}/ma/detail/functional.hpp"
-    "${HEADERS_DIR}/ma/detail/memory.hpp"
-    "${HEADERS_DIR}/ma/detail/thread.hpp"
-    "${HEADERS_DIR}/ma/async_connect.hpp"
-    "${HEADERS_DIR}/ma/bind_handler.hpp"
-    "${HEADERS_DIR}/ma/config.hpp"
-    "${HEADERS_DIR}/ma/context_wrapped_handler.hpp"
-    "${HEADERS_DIR}/ma/custom_alloc_handler.hpp"
-    "${HEADERS_DIR}/ma/cyclic_buffer.hpp"
-    "${HEADERS_DIR}/ma/handler_alloc_helpers.hpp"
-    "${HEADERS_DIR}/ma/handler_allocator.hpp"
-    "${HEADERS_DIR}/ma/handler_invoke_helpers.hpp"
-    "${HEADERS_DIR}/ma/handler_cont_helpers.hpp"
-    "${HEADERS_DIR}/ma/limited_int.hpp"
-    "${HEADERS_DIR}/ma/steady_deadline_timer.hpp"
-    "${HEADERS_DIR}/ma/strand.hpp"
-    "${HEADERS_DIR}/ma/strand_wrapped_handler.hpp"
-    "${HEADERS_DIR}/ma/thread_group.hpp"
-    "${HEADERS_DIR}/ma/type_traits.hpp")
+set(CPP_HEADERS
+    "${CPP_HEADERS_DIR}/ma/detail/binder.hpp"
+    "${CPP_HEADERS_DIR}/ma/detail/functional.hpp"
+    "${CPP_HEADERS_DIR}/ma/detail/memory.hpp"
+    "${CPP_HEADERS_DIR}/ma/detail/thread.hpp"
+    "${CPP_HEADERS_DIR}/ma/async_connect.hpp"
+    "${CPP_HEADERS_DIR}/ma/bind_handler.hpp"
+    "${CPP_HEADERS_DIR}/ma/config.hpp"
+    "${CPP_HEADERS_DIR}/ma/context_wrapped_handler.hpp"
+    "${CPP_HEADERS_DIR}/ma/custom_alloc_handler.hpp"
+    "${CPP_HEADERS_DIR}/ma/cyclic_buffer.hpp"
+    "${CPP_HEADERS_DIR}/ma/handler_alloc_helpers.hpp"
+    "${CPP_HEADERS_DIR}/ma/handler_allocator.hpp"
+    "${CPP_HEADERS_DIR}/ma/handler_invoke_helpers.hpp"
+    "${CPP_HEADERS_DIR}/ma/handler_cont_helpers.hpp"
+    "${CPP_HEADERS_DIR}/ma/limited_int.hpp"
+    "${CPP_HEADERS_DIR}/ma/steady_deadline_timer.hpp"
+    "${CPP_HEADERS_DIR}/ma/strand.hpp"
+    "${CPP_HEADERS_DIR}/ma/strand_wrapped_handler.hpp"
+    "${CPP_HEADERS_DIR}/ma/thread_group.hpp"
+    "${CPP_HEADERS_DIR}/ma/type_traits.hpp")
 
 set(SOURCES
-    "${SOURCES_DIR}/asio_performance_test_client/main.cpp"
-)
+    "${SOURCES_DIR}/asio_performance_test_client/main.cpp")
 
 set(LIBRARIES ${Boost_LIBRARIES})
 
 # Required Winsock libraries
 if(WIN32)
-    set(LIBRARIES "ws2_32;mswsock;${LIBRARIES}")
+    list(APPEND LIBRARIES 
+        "ws2_32"
+        "mswsock")
 endif()
 
 # Boost chrono requires rt library on *nix
 if(UNIX AND BOOST_HAS_CHRONO)
-    set(LIBRARIES "${LIBRARIES};rt")
+    list(APPEND LIBRARIES 
+        "rt")
 endif()
 
 include_directories(${Boost_INCLUDE_DIRS})
-include_directories(${HEADERS_DIR})
-add_executable(asio_performance_test_client ${HEADERS} ${SOURCES})
+include_directories(${CPP_HEADERS_DIR})
+add_executable(asio_performance_test_client ${CPP_HEADERS} ${SOURCES})
 target_link_libraries(asio_performance_test_client ${LIBRARIES})
