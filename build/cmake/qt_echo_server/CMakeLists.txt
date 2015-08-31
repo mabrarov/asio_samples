@@ -150,11 +150,13 @@ if(QT_ECHO_SERVER_USE_QT5)
     if(QT5_IS_STATIC)
         # Qt CMake files use IMPORTED_LINK_DEPENDENT_LIBRARIES instead of INTERFACE_LINK_LIBRARIES for OpenGL dependencies.
         # So we need to add those transitive (in case of static linkage) dependencies explicitly.
-        set(LIBRARIES "${LIBRARIES};${Qt5Gui_EGL_LIBRARIES};${Qt5Gui_OPENGL_LIBRARIES}")
+        list(APPEND LIBRARIES 
+            "${Qt5Gui_EGL_LIBRARIES}"
+            "${Qt5Gui_OPENGL_LIBRARIES}")
 
         # Add required platform integration plugins
         if(WIN32)
-            set(LIBRARIES "${LIBRARIES};Qt5::QWindowsIntegrationPlugin")
+            list(APPEND LIBRARIES "Qt5::QWindowsIntegrationPlugin")
         else()
             # todo:
             # add support for the rest of platforms supported by Qt
@@ -171,16 +173,16 @@ if(QT_ECHO_SERVER_USE_QT5)
         #     FindQt5PCRE.cmake
 
         find_package(Qt5PlatformSupport REQUIRED)
-        set(LIBRARIES "${LIBRARIES};Qt5::PlatformSupport")
+        list(APPEND LIBRARIES "Qt5::PlatformSupport")
 
         find_package(ICU REQUIRED COMPONENTS i18n uc data)
-        set(LIBRARIES "${LIBRARIES};${ICU_LIBRARIES}")
+        list(APPEND LIBRARIES "${ICU_LIBRARIES}")
 
         # Starting from Qt 5.4.0 HarfBuzz-NG library is included (at least Windows version of Qt 5.4.0)
         if(WIN32 AND NOT(${Qt5Gui_VERSION} VERSION_LESS "5.4.0"))
             find_package(Qt5HarfBuzzNG QUIET)
             if(Qt5HarfBuzzNG_FOUND)
-                set(LIBRARIES "${LIBRARIES};Qt5::HarfBuzzNG")
+                list(APPEND LIBRARIES "Qt5::HarfBuzzNG")
             endif()
         endif()
 
@@ -188,7 +190,7 @@ if(QT_ECHO_SERVER_USE_QT5)
         if(WIN32 AND NOT(${Qt5Gui_VERSION} VERSION_LESS "5.5.0"))
             find_package(Qt5FreeType QUIET)
             if(Qt5FreeType_FOUND)
-                set(LIBRARIES "${LIBRARIES};Qt5::FreeType")
+                list(APPEND LIBRARIES "Qt5::FreeType")
             endif()
         endif()
 
@@ -196,7 +198,7 @@ if(QT_ECHO_SERVER_USE_QT5)
         if(WIN32 AND NOT(${Qt5Core_VERSION} VERSION_LESS "5.5.0"))
             find_package(Qt5PCRE QUIET)
             if(Qt5PCRE_FOUND)
-                set(LIBRARIES "${LIBRARIES};Qt5::PCRE")
+                list(APPEND LIBRARIES "Qt5::PCRE")
             endif()
         endif()
     endif()
