@@ -38,102 +38,102 @@ if(QT_ECHO_SERVER_USE_QT5)
     find_package(Qt5Widgets REQUIRED)
     find_package(Qt5Gui     REQUIRED)
     find_package(Qt5Core    REQUIRED)
-    set(QT_ECHO_SERVER_QT_LIBRARIES "Qt5::Core;Qt5::Gui;Qt5::Widgets")
+    set(Qt_LIBRARIES "Qt5::Core;Qt5::Gui;Qt5::Widgets")
 else()
     find_package(Qt4 REQUIRED QtCore QtGui)
-    set(QT_ECHO_SERVER_QT_LIBRARIES "Qt4::QtCore;Qt4::QtGui")
+    set(Qt_LIBRARIES "Qt4::QtCore;Qt4::QtGui")
 endif()
 
-set(HEADERS_DIR "${PROJECT_SOURCE_DIR}/../../../include")
-set(SOURCES_DIR "${PROJECT_SOURCE_DIR}/../../../src")
-
-set(MOC_HEADERS
-    "${HEADERS_DIR}/ma/echo/server/qt/mainform.h"
-    "${HEADERS_DIR}/ma/echo/server/qt/service.h"
-    "${HEADERS_DIR}/ma/echo/server/qt/serviceforwardsignal.h"
-    "${HEADERS_DIR}/ma/echo/server/qt/serviceservantsignal.h")
+set(CPP_HEADERS_DIR "${PROJECT_SOURCE_DIR}/../../../include")
+set(CPP_SOURCES_DIR "${PROJECT_SOURCE_DIR}/../../../src")
 
 set(UIC_FORMS
-    "${SOURCES_DIR}/ma/echo/server/qt/mainform.ui")
+    "${CPP_SOURCES_DIR}/ma/echo/server/qt/mainform.ui")
 
-set(RCC_RESOURCES
-    )
+set(QRC_RESOURCES )
 
-set(HEADERS
-    "${HEADERS_DIR}/ma/echo/server/qt/custommetatypes.h"
-    "${HEADERS_DIR}/ma/echo/server/qt/execution_config.h"
-    "${HEADERS_DIR}/ma/echo/server/qt/execution_config_fwd.h"
-    "${HEADERS_DIR}/ma/echo/server/qt/serviceforwardsignal_fwd.h"
-    "${HEADERS_DIR}/ma/echo/server/qt/serviceservantsignal_fwd.h"
-    "${HEADERS_DIR}/ma/echo/server/qt/servicestate.h"
-    "${HEADERS_DIR}/ma/echo/server/qt/service_fwd.h"
-    "${HEADERS_DIR}/ma/echo/server/qt/meta_type_register_error.h"
-    "${HEADERS_DIR}/ma/echo/server/qt/signal_connect_error.h"
-    "${HEADERS_DIR}/ma/echo/server/session_config_fwd.hpp"
-    "${HEADERS_DIR}/ma/echo/server/session_manager_config_fwd.hpp"
-    "${HEADERS_DIR}/ma/echo/server/session_manager_stats.hpp"
-    "${HEADERS_DIR}/ma/echo/server/session_manager_stats_fwd.hpp"
-    "${HEADERS_DIR}/ma/echo/server/session_config.hpp"
-    "${HEADERS_DIR}/ma/echo/server/session_manager_config.hpp"
-    "${HEADERS_DIR}/ma/echo/server/session_fwd.hpp"
-    "${HEADERS_DIR}/ma/echo/server/session_manager_fwd.hpp"
-    "${HEADERS_DIR}/ma/echo/server/error.hpp"
-    "${HEADERS_DIR}/ma/echo/server/session.hpp"
-    "${HEADERS_DIR}/ma/echo/server/session_manager.hpp"
-    "${HEADERS_DIR}/ma/echo/server/session_manager_fwd.hpp"
-    "${HEADERS_DIR}/ma/echo/server/pooled_session_factory.hpp"
-    "${HEADERS_DIR}/ma/echo/server/session_factory.hpp"
-    "${HEADERS_DIR}/ma/echo/server/session_factory_fwd.hpp"
-    "${HEADERS_DIR}/ma/echo/server/simple_session_factory.hpp"
-    "${HEADERS_DIR}/ma/detail/binder.hpp"
-    "${HEADERS_DIR}/ma/detail/functional.hpp"
-    "${HEADERS_DIR}/ma/detail/handler_ptr.hpp"
-    "${HEADERS_DIR}/ma/detail/intrusive_list.hpp"
-    "${HEADERS_DIR}/ma/detail/memory.hpp"
-    "${HEADERS_DIR}/ma/detail/service_base.hpp"
-    "${HEADERS_DIR}/ma/detail/thread.hpp"
-    "${HEADERS_DIR}/ma/detail/tuple.hpp"
-    "${HEADERS_DIR}/ma/bind_handler.hpp"
-    "${HEADERS_DIR}/ma/config.hpp"
-    "${HEADERS_DIR}/ma/context_alloc_handler.hpp"
-    "${HEADERS_DIR}/ma/context_wrapped_handler.hpp"
-    "${HEADERS_DIR}/ma/custom_alloc_handler.hpp"
-    "${HEADERS_DIR}/ma/cyclic_buffer.hpp"
-    "${HEADERS_DIR}/ma/handler_alloc_helpers.hpp"
-    "${HEADERS_DIR}/ma/handler_allocator.hpp"
-    "${HEADERS_DIR}/ma/handler_cont_helpers.hpp"
-    "${HEADERS_DIR}/ma/handler_invoke_helpers.hpp"
-    "${HEADERS_DIR}/ma/handler_storage.hpp"
-    "${HEADERS_DIR}/ma/handler_storage_service.hpp"
-    "${HEADERS_DIR}/ma/limited_int.hpp"
-    "${HEADERS_DIR}/ma/shared_ptr_factory.hpp"
-    "${HEADERS_DIR}/ma/sp_intrusive_list.hpp"
-    "${HEADERS_DIR}/ma/steady_deadline_timer.hpp"
-    "${HEADERS_DIR}/ma/strand.hpp"
-    "${HEADERS_DIR}/ma/strand_wrapped_handler.hpp"
-    "${HEADERS_DIR}/ma/thread_group.hpp"
-    "${HEADERS_DIR}/ma/type_traits.hpp"
+set(MOC_HEADERS
+    "${CPP_HEADERS_DIR}/ma/echo/server/qt/mainform.h"
+    "${CPP_HEADERS_DIR}/ma/echo/server/qt/service.h"
+    "${CPP_HEADERS_DIR}/ma/echo/server/qt/serviceforwardsignal.h"
+    "${CPP_HEADERS_DIR}/ma/echo/server/qt/serviceservantsignal.h")
+
+set(CPP_HEADERS
+    "${CPP_HEADERS_DIR}/ma/echo/server/qt/custommetatypes.h"
+    "${CPP_HEADERS_DIR}/ma/echo/server/qt/execution_config.h"
+    "${CPP_HEADERS_DIR}/ma/echo/server/qt/execution_config_fwd.h"
+    "${CPP_HEADERS_DIR}/ma/echo/server/qt/serviceforwardsignal_fwd.h"
+    "${CPP_HEADERS_DIR}/ma/echo/server/qt/serviceservantsignal_fwd.h"
+    "${CPP_HEADERS_DIR}/ma/echo/server/qt/servicestate.h"
+    "${CPP_HEADERS_DIR}/ma/echo/server/qt/service_fwd.h"
+    "${CPP_HEADERS_DIR}/ma/echo/server/qt/meta_type_register_error.h"
+    "${CPP_HEADERS_DIR}/ma/echo/server/qt/signal_connect_error.h"
+    "${CPP_HEADERS_DIR}/ma/echo/server/session_config_fwd.hpp"
+    "${CPP_HEADERS_DIR}/ma/echo/server/session_manager_config_fwd.hpp"
+    "${CPP_HEADERS_DIR}/ma/echo/server/session_manager_stats.hpp"
+    "${CPP_HEADERS_DIR}/ma/echo/server/session_manager_stats_fwd.hpp"
+    "${CPP_HEADERS_DIR}/ma/echo/server/session_config.hpp"
+    "${CPP_HEADERS_DIR}/ma/echo/server/session_manager_config.hpp"
+    "${CPP_HEADERS_DIR}/ma/echo/server/session_fwd.hpp"
+    "${CPP_HEADERS_DIR}/ma/echo/server/session_manager_fwd.hpp"
+    "${CPP_HEADERS_DIR}/ma/echo/server/error.hpp"
+    "${CPP_HEADERS_DIR}/ma/echo/server/session.hpp"
+    "${CPP_HEADERS_DIR}/ma/echo/server/session_manager.hpp"
+    "${CPP_HEADERS_DIR}/ma/echo/server/session_manager_fwd.hpp"
+    "${CPP_HEADERS_DIR}/ma/echo/server/pooled_session_factory.hpp"
+    "${CPP_HEADERS_DIR}/ma/echo/server/session_factory.hpp"
+    "${CPP_HEADERS_DIR}/ma/echo/server/session_factory_fwd.hpp"
+    "${CPP_HEADERS_DIR}/ma/echo/server/simple_session_factory.hpp"
+    "${CPP_HEADERS_DIR}/ma/detail/binder.hpp"
+    "${CPP_HEADERS_DIR}/ma/detail/functional.hpp"
+    "${CPP_HEADERS_DIR}/ma/detail/handler_ptr.hpp"
+    "${CPP_HEADERS_DIR}/ma/detail/intrusive_list.hpp"
+    "${CPP_HEADERS_DIR}/ma/detail/memory.hpp"
+    "${CPP_HEADERS_DIR}/ma/detail/service_base.hpp"
+    "${CPP_HEADERS_DIR}/ma/detail/thread.hpp"
+    "${CPP_HEADERS_DIR}/ma/detail/tuple.hpp"
+    "${CPP_HEADERS_DIR}/ma/bind_handler.hpp"
+    "${CPP_HEADERS_DIR}/ma/config.hpp"
+    "${CPP_HEADERS_DIR}/ma/context_alloc_handler.hpp"
+    "${CPP_HEADERS_DIR}/ma/context_wrapped_handler.hpp"
+    "${CPP_HEADERS_DIR}/ma/custom_alloc_handler.hpp"
+    "${CPP_HEADERS_DIR}/ma/cyclic_buffer.hpp"
+    "${CPP_HEADERS_DIR}/ma/handler_alloc_helpers.hpp"
+    "${CPP_HEADERS_DIR}/ma/handler_allocator.hpp"
+    "${CPP_HEADERS_DIR}/ma/handler_cont_helpers.hpp"
+    "${CPP_HEADERS_DIR}/ma/handler_invoke_helpers.hpp"
+    "${CPP_HEADERS_DIR}/ma/handler_storage.hpp"
+    "${CPP_HEADERS_DIR}/ma/handler_storage_service.hpp"
+    "${CPP_HEADERS_DIR}/ma/limited_int.hpp"
+    "${CPP_HEADERS_DIR}/ma/shared_ptr_factory.hpp"
+    "${CPP_HEADERS_DIR}/ma/sp_intrusive_list.hpp"
+    "${CPP_HEADERS_DIR}/ma/steady_deadline_timer.hpp"
+    "${CPP_HEADERS_DIR}/ma/strand.hpp"
+    "${CPP_HEADERS_DIR}/ma/strand_wrapped_handler.hpp"
+    "${CPP_HEADERS_DIR}/ma/thread_group.hpp"
+    "${CPP_HEADERS_DIR}/ma/type_traits.hpp"
     ${MOC_HEADERS})
 
-set(SOURCES
-    "${SOURCES_DIR}/ma/echo/server/qt/custommetatypes.cpp"
-    "${SOURCES_DIR}/ma/echo/server/qt/service.cpp"
-    "${SOURCES_DIR}/ma/echo/server/qt/mainform.cpp"
-    "${SOURCES_DIR}/ma/echo/server/error.cpp"
-    "${SOURCES_DIR}/ma/echo/server/session.cpp"
-    "${SOURCES_DIR}/ma/echo/server/session_manager.cpp"
-    "${SOURCES_DIR}/ma/echo/server/pooled_session_factory.cpp"
-    "${SOURCES_DIR}/ma/echo/server/simple_session_factory.cpp"
-    "${SOURCES_DIR}/qt_echo_server/main.cpp"
-    ${UIC_FORMS})
+set(CPP_SOURCES
+    "${CPP_SOURCES_DIR}/ma/echo/server/qt/custommetatypes.cpp"
+    "${CPP_SOURCES_DIR}/ma/echo/server/qt/service.cpp"
+    "${CPP_SOURCES_DIR}/ma/echo/server/qt/mainform.cpp"
+    "${CPP_SOURCES_DIR}/ma/echo/server/error.cpp"
+    "${CPP_SOURCES_DIR}/ma/echo/server/session.cpp"
+    "${CPP_SOURCES_DIR}/ma/echo/server/session_manager.cpp"
+    "${CPP_SOURCES_DIR}/ma/echo/server/pooled_session_factory.cpp"
+    "${CPP_SOURCES_DIR}/ma/echo/server/simple_session_factory.cpp"
+    "${CPP_SOURCES_DIR}/qt_echo_server/main.cpp")
 
-# Windows specific source files
+set(NATIVE_RESOURCES )
+set(NATIVE_RESOURCE_HEADERS )
 if(WIN32)
-    list(APPEND SOURCES
-        "${SOURCES_DIR}/qt_echo_server/qt_echo_server.rc")
+    list(APPEND NATIVE_RESOURCES "${CPP_SOURCES_DIR}/qt_echo_server/qt_echo_server.rc")
 endif()
 
-set(LIBRARIES "${Boost_LIBRARIES};${QT_ECHO_SERVER_QT_LIBRARIES}")
+set(LIBRARIES 
+    "${Boost_LIBRARIES}"
+    "${Qt_LIBRARIES}")
 
 if(QT_ECHO_SERVER_USE_QT5)
     # Determine linkage type of Qt libraries (via linkage type of Qt Core library)
@@ -210,16 +210,27 @@ endif()
 
 # Required Windows libraries
 if(WIN32)
-    set(LIBRARIES "${LIBRARIES};ws2_32;mswsock;comdlg32;uuid;ole32;oleaut32;advapi32;imm32;winmm;winspool")
+    list(APPEND LIBRARIES 
+        "ws2_32"
+        "mswsock"
+        "comdlg32"
+        "uuid"
+        "ole32"
+        "oleaut32"
+        "advapi32"
+        "imm32"
+        "winmm"
+        "winspool")
 endif()
 
 # Boost chrono requires rt library on *nix
 if(UNIX AND BOOST_HAS_CHRONO)
-    set(LIBRARIES "${LIBRARIES};rt")
+    list(APPEND LIBRARIES 
+        "rt")
 endif()
 
 include_directories(${Boost_INCLUDE_DIRS})
-include_directories(${HEADERS_DIR})
+include_directories(${CPP_HEADERS_DIR})
 
 # Required for Qt UIC
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -228,14 +239,28 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 if(QT_ECHO_SERVER_USE_QT5)
     qt5_wrap_cpp(MOC_GENERATED_SOURCES ${MOC_HEADERS})
     qt5_wrap_ui(UIC_GENERATED_HEADERS ${UIC_FORMS})
-    qt5_add_resources(RCC_GENERATED_SOURCES ${RCC_RESOURCES})
+    qt5_add_resources(QRC_GENERATED_SOURCES ${QRC_RESOURCES})
 else()
     qt4_wrap_cpp(MOC_GENERATED_SOURCES ${MOC_HEADERS})
     qt4_wrap_ui(UIC_GENERATED_HEADERS ${UIC_FORMS})
-    qt4_add_resources(RCC_GENERATED_SOURCES ${RCC_RESOURCES})
+    qt4_add_resources(QRC_GENERATED_SOURCES ${QRC_RESOURCES})
 endif()
 
 add_executable(qt_echo_server WIN32
-    ${HEADERS} ${SOURCES}
-    ${MOC_GENERATED_SOURCES} ${RCC_GENERATED_SOURCES} ${UIC_GENERATED_HEADERS})
+    ${CPP_HEADERS} ${CPP_SOURCES}
+    ${NATIVE_RESOURCES} ${NATIVE_RESOURCE_HEADERS}
+    ${MOC_GENERATED_SOURCES} ${QRC_GENERATED_SOURCES} ${UIC_GENERATED_HEADERS})
 target_link_libraries(qt_echo_server ${LIBRARIES})
+
+source_group("Build scripts" FILES
+    ${BUILD_SCRIPTS})
+source_group("Form Files" FILES
+    ${UIC_FORMS})
+source_group("Generated Files" FILES
+    ${MOC_GENERATED_SOURCES} 
+    ${QRC_GENERATED_SOURCES}
+    ${UIC_GENERATED_HEADERS})
+source_group("Resource Files" FILES
+    ${NATIVE_RESOURCES} 
+    ${NATIVE_RESOURCE_HEADERS}
+    ${QRC_RESOURCES})
