@@ -24,62 +24,65 @@ endif()
 # Attach used Boost libraries
 find_package(Boost REQUIRED COMPONENTS ${BOOST_COMPONENTS})
 
-set(HEADERS_DIR "${PROJECT_SOURCE_DIR}/../../../include")
-set(SOURCES_DIR "${PROJECT_SOURCE_DIR}/../../../src")
+set(PROJECT_BASE_DIR "${PROJECT_SOURCE_DIR}/../../..")
+set(SOURCES_DIR      "${PROJECT_BASE_DIR}/src")
+set(CPP_HEADERS_DIR  "${PROJECT_BASE_DIR}/include")
 
-set(HEADERS
-    "${HEADERS_DIR}/ma/detail/binder.hpp"
-    "${HEADERS_DIR}/ma/detail/functional.hpp"
-    "${HEADERS_DIR}/ma/detail/handler_ptr.hpp"
-    "${HEADERS_DIR}/ma/detail/intrusive_list.hpp"
-    "${HEADERS_DIR}/ma/detail/latch.hpp"
-    "${HEADERS_DIR}/ma/detail/memory.hpp"
-    "${HEADERS_DIR}/ma/detail/service_base.hpp"
-    "${HEADERS_DIR}/ma/detail/sp_singleton.hpp"
-    "${HEADERS_DIR}/ma/detail/thread.hpp"
-    "${HEADERS_DIR}/ma/windows/console_signal.hpp"
-    "${HEADERS_DIR}/ma/windows/console_signal_service.hpp"
-    "${HEADERS_DIR}/ma/tutorial/async_interface.hpp"
-    "${HEADERS_DIR}/ma/tutorial/async_implementation.hpp"
-    "${HEADERS_DIR}/ma/bind_handler.hpp"
-    "${HEADERS_DIR}/ma/config.hpp"
-    "${HEADERS_DIR}/ma/console_close_guard.hpp"
-    "${HEADERS_DIR}/ma/context_alloc_handler.hpp"
-    "${HEADERS_DIR}/ma/context_wrapped_handler.hpp"
-    "${HEADERS_DIR}/ma/custom_alloc_handler.hpp"
-    "${HEADERS_DIR}/ma/handler_alloc_helpers.hpp"
-    "${HEADERS_DIR}/ma/handler_allocator.hpp"
-    "${HEADERS_DIR}/ma/handler_invoke_helpers.hpp"
-    "${HEADERS_DIR}/ma/handler_cont_helpers.hpp"
-    "${HEADERS_DIR}/ma/handler_storage.hpp"
-    "${HEADERS_DIR}/ma/handler_storage_service.hpp"
-    "${HEADERS_DIR}/ma/shared_ptr_factory.hpp"
-    "${HEADERS_DIR}/ma/steady_deadline_timer.hpp"
-    "${HEADERS_DIR}/ma/strand.hpp"
-    "${HEADERS_DIR}/ma/strand_wrapped_handler.hpp"
-    "${HEADERS_DIR}/ma/thread_group.hpp"
-    "${HEADERS_DIR}/ma/type_traits.hpp")
+set(CPP_HEADERS
+    "${CPP_HEADERS_DIR}/ma/detail/binder.hpp"
+    "${CPP_HEADERS_DIR}/ma/detail/functional.hpp"
+    "${CPP_HEADERS_DIR}/ma/detail/handler_ptr.hpp"
+    "${CPP_HEADERS_DIR}/ma/detail/intrusive_list.hpp"
+    "${CPP_HEADERS_DIR}/ma/detail/latch.hpp"
+    "${CPP_HEADERS_DIR}/ma/detail/memory.hpp"
+    "${CPP_HEADERS_DIR}/ma/detail/service_base.hpp"
+    "${CPP_HEADERS_DIR}/ma/detail/sp_singleton.hpp"
+    "${CPP_HEADERS_DIR}/ma/detail/thread.hpp"
+    "${CPP_HEADERS_DIR}/ma/windows/console_signal.hpp"
+    "${CPP_HEADERS_DIR}/ma/windows/console_signal_service.hpp"
+    "${CPP_HEADERS_DIR}/ma/tutorial/async_interface.hpp"
+    "${CPP_HEADERS_DIR}/ma/tutorial/async_implementation.hpp"
+    "${CPP_HEADERS_DIR}/ma/bind_handler.hpp"
+    "${CPP_HEADERS_DIR}/ma/config.hpp"
+    "${CPP_HEADERS_DIR}/ma/console_close_guard.hpp"
+    "${CPP_HEADERS_DIR}/ma/context_alloc_handler.hpp"
+    "${CPP_HEADERS_DIR}/ma/context_wrapped_handler.hpp"
+    "${CPP_HEADERS_DIR}/ma/custom_alloc_handler.hpp"
+    "${CPP_HEADERS_DIR}/ma/handler_alloc_helpers.hpp"
+    "${CPP_HEADERS_DIR}/ma/handler_allocator.hpp"
+    "${CPP_HEADERS_DIR}/ma/handler_invoke_helpers.hpp"
+    "${CPP_HEADERS_DIR}/ma/handler_cont_helpers.hpp"
+    "${CPP_HEADERS_DIR}/ma/handler_storage.hpp"
+    "${CPP_HEADERS_DIR}/ma/handler_storage_service.hpp"
+    "${CPP_HEADERS_DIR}/ma/shared_ptr_factory.hpp"
+    "${CPP_HEADERS_DIR}/ma/steady_deadline_timer.hpp"
+    "${CPP_HEADERS_DIR}/ma/strand.hpp"
+    "${CPP_HEADERS_DIR}/ma/strand_wrapped_handler.hpp"
+    "${CPP_HEADERS_DIR}/ma/thread_group.hpp"
+    "${CPP_HEADERS_DIR}/ma/type_traits.hpp")
 
 set(SOURCES
     "${SOURCES_DIR}/ma/tutorial/async_implementation.cpp"
     "${SOURCES_DIR}/ma/windows/console_signal_service.cpp"
     "${SOURCES_DIR}/ma/console_close_guard.cpp"
-    "${SOURCES_DIR}/async_basics/main.cpp"
-)
+    "${SOURCES_DIR}/async_basics/main.cpp")
 
 set(LIBRARIES ${Boost_LIBRARIES})
 
 # Required Winsock libraries
 if(WIN32)
-    set(LIBRARIES "ws2_32;mswsock;${LIBRARIES}")    
+    list(APPEND LIBRARIES 
+        "ws2_32"
+        "mswsock")
 endif()
 
 # Boost chrono requires rt library on *nix
 if(UNIX AND BOOST_HAS_CHRONO)
-    set(LIBRARIES "${LIBRARIES};rt")
+    list(APPEND LIBRARIES 
+        "rt")
 endif()
 
 include_directories(${Boost_INCLUDE_DIRS})
-include_directories(${HEADERS_DIR})
-add_executable(async_basics ${HEADERS} ${SOURCES})
+include_directories(${CPP_HEADERS_DIR})
+add_executable(async_basics ${CPP_HEADERS} ${SOURCES})
 target_link_libraries(async_basics ${LIBRARIES})

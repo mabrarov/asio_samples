@@ -110,11 +110,11 @@ private:
   struct extern_state
   {
     enum value_t {ready, work, stop, stopped};
-  }; // struct extern_state
+  }; // struct ext_state
 
   typedef boost::optional<boost::system::error_code> optional_error_code;
   typedef boost::circular_buffer<frame_ptr> frame_buffer_type;
-  typedef detail::tuple<boost::system::error_code, std::size_t> 
+  typedef detail::tuple<boost::system::error_code, std::size_t>
       read_result_type;
 
   template <typename Iterator>
@@ -344,7 +344,7 @@ void cyclic_read_session::async_write_some(
   strand_.post(make_explicit_context_alloc_handler(
       std::forward<Handler>(handler),
       detail::bind(func, shared_from_this(),
-          std::forward<ConstBufferSequence>(buffers), 
+          std::forward<ConstBufferSequence>(buffers),
           detail::placeholders::_1)));
 }
 
@@ -388,7 +388,7 @@ void cyclic_read_session::async_read_some(
       &this_type::start_extern_read_some<handler_type, iterator_type>;
 
   strand_.post(make_explicit_context_alloc_handler(handler,
-      detail::bind(func, shared_from_this(), begin, end, 
+      detail::bind(func, shared_from_this(), begin, end,
           detail::placeholders::_1)));
 }
 
@@ -405,7 +405,7 @@ void cyclic_read_session::async_write_some(
       &this_type::start_extern_write_some<buffers_type, handler_type>;
 
   strand_.post(make_explicit_context_alloc_handler(handler,
-      detail::bind(func, shared_from_this(), buffers, 
+      detail::bind(func, shared_from_this(), buffers,
           detail::placeholders::_1)));
 }
 
@@ -550,7 +550,7 @@ void cyclic_read_session::start_extern_read_some(
     frame_buffer_.erase_begin(detail::get<1>(copy_result));
 
     // Post the handler
-    io_service_.post(bind_handler(handler, 
+    io_service_.post(bind_handler(handler,
         detail::get<0>(copy_result), detail::get<1>(copy_result)));
   }
   else
@@ -573,7 +573,7 @@ void cyclic_read_session::start_extern_write_some(
 
   serial_port_.async_write_some(buffers, strand_.wrap(
       make_custom_alloc_handler(write_allocator_, detail::bind(
-          &this_type::handle_write<Handler>, shared_from_this(), 
+          &this_type::handle_write<Handler>, shared_from_this(),
           detail::placeholders::_1, detail::placeholders::_2,
           detail::make_tuple<Handler>(handler)))));
 
