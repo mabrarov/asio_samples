@@ -55,7 +55,7 @@ set(CPP_HEADERS
     "${CPP_HEADERS_DIR}/ma/thread_group.hpp"
     "${CPP_HEADERS_DIR}/ma/type_traits.hpp")
 
-set(SOURCES
+set(CPP_SOURCES
     "${SOURCES_DIR}/async_connect/main.cpp")
 
 set(LIBRARIES ${Boost_LIBRARIES})
@@ -75,5 +75,5 @@ endif()
 
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${CPP_HEADERS_DIR})
-add_executable(async_connect ${CPP_HEADERS} ${SOURCES})
-target_link_libraries(async_connect ${LIBRARIES})
+add_executable(${PROJECT_NAME} ${CPP_HEADERS} ${CPP_SOURCES})
+target_link_libraries(${PROJECT_NAME} ${LIBRARIES})

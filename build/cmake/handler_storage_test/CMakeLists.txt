@@ -54,7 +54,7 @@ set(CPP_HEADERS
     "${CPP_HEADERS_DIR}/ma/thread_group.hpp"
     "${CPP_HEADERS_DIR}/ma/type_traits.hpp")
 
-set(SOURCES
+set(CPP_SOURCES
     "${SOURCES_DIR}/handler_storage_test/main.cpp")
 
 set(LIBRARIES ${Boost_LIBRARIES})
@@ -74,5 +74,5 @@ endif()
 
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${CPP_HEADERS_DIR})
-add_executable(handler_storage_test ${CPP_HEADERS} ${SOURCES})
-target_link_libraries(handler_storage_test ${LIBRARIES})
+add_executable(${PROJECT_NAME} ${CPP_HEADERS} ${CPP_SOURCES})
+target_link_libraries(${PROJECT_NAME} ${LIBRARIES})

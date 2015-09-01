@@ -65,7 +65,7 @@ set(CPP_HEADERS
     "${CPP_HEADERS_DIR}/ma/thread_group.hpp"
     "${CPP_HEADERS_DIR}/ma/type_traits.hpp")
 
-set(SOURCES
+set(CPP_SOURCES
     "${SOURCES_DIR}/ma/nmea/error.cpp"
     "${SOURCES_DIR}/ma/nmea/cyclic_read_session.cpp"
     "${SOURCES_DIR}/ma/windows/console_signal_service.cpp"
@@ -89,5 +89,5 @@ endif()
 
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${CPP_HEADERS_DIR})
-add_executable(nmea_client ${CPP_HEADERS} ${SOURCES})
-target_link_libraries(nmea_client ${LIBRARIES})
+add_executable(${PROJECT_NAME} ${CPP_HEADERS} ${CPP_SOURCES})
+target_link_libraries(${PROJECT_NAME} ${LIBRARIES})

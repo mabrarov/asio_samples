@@ -249,11 +249,11 @@ else()
     qt4_add_resources(QRC_GENERATED_SOURCES ${QRC_RESOURCES})
 endif()
 
-add_executable(qt_echo_server WIN32
+add_executable(${PROJECT_NAME} WIN32
     ${CPP_HEADERS} ${CPP_SOURCES}
     ${NATIVE_RESOURCES} ${NATIVE_RESOURCE_HEADERS}
     ${MOC_GENERATED_SOURCES} ${QRC_GENERATED_SOURCES} ${UIC_GENERATED_HEADERS})
-target_link_libraries(qt_echo_server ${LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
 
 source_group("Form Files" FILES
     ${UIC_FORMS})

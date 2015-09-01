@@ -61,7 +61,7 @@ set(CPP_HEADERS
     "${CPP_HEADERS_DIR}/ma/thread_group.hpp"
     "${CPP_HEADERS_DIR}/ma/type_traits.hpp")
 
-set(SOURCES
+set(CPP_SOURCES
     "${SOURCES_DIR}/ma/tutorial/async_implementation.cpp"
     "${SOURCES_DIR}/ma/windows/console_signal_service.cpp"
     "${SOURCES_DIR}/ma/console_close_guard.cpp"
@@ -84,5 +84,5 @@ endif()
 
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${CPP_HEADERS_DIR})
-add_executable(async_basics ${CPP_HEADERS} ${SOURCES})
-target_link_libraries(async_basics ${LIBRARIES})
+add_executable(${PROJECT_NAME} ${CPP_HEADERS} ${CPP_SOURCES})
+target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
