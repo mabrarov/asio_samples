@@ -38,7 +38,7 @@ set(CPP_HEADERS
     "${CPP_HEADERS_DIR}/ma/limited_int.hpp"
     "${CPP_HEADERS_DIR}/ma/shared_ptr_factory.hpp")
 
-set(SOURCES 
+set(CPP_SOURCES 
     "${SOURCES_DIR}/sp_singleton_test/main.cpp")
 
 set(LIBRARIES ${Boost_LIBRARIES})
@@ -58,5 +58,5 @@ endif()
 
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${CPP_HEADERS_DIR})
-add_executable(sp_singleton_test ${CPP_HEADERS} ${SOURCES})
-target_link_libraries(sp_singleton_test ${Boost_LIBRARIES})
+add_executable(${PROJECT_NAME} ${CPP_HEADERS} ${CPP_SOURCES})
+target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})

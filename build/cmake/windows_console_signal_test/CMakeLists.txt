@@ -49,7 +49,7 @@ set(CPP_HEADERS
     "${CPP_HEADERS_DIR}/ma/handler_invoke_helpers.hpp"
     "${CPP_HEADERS_DIR}/ma/type_traits.hpp")
 
-set(SOURCES
+set(CPP_SOURCES
     "${SOURCES_DIR}/ma/windows/console_signal_service.cpp"
     "${SOURCES_DIR}/windows_console_signal_test/main.cpp")
 
@@ -70,5 +70,5 @@ endif()
 
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${CPP_HEADERS_DIR})
-add_executable(windows_console_signal_test ${CPP_HEADERS} ${SOURCES})
-target_link_libraries(windows_console_signal_test ${LIBRARIES})
+add_executable(${PROJECT_NAME} ${CPP_HEADERS} ${CPP_SOURCES})
+target_link_libraries(${PROJECT_NAME} ${LIBRARIES})

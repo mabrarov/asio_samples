@@ -19,9 +19,9 @@ set(CPP_HEADERS
     "${CPP_HEADERS_DIR}/ma/config.hpp"
     "${CPP_HEADERS_DIR}/ma/shared_ptr_factory.hpp")
 
-set(SOURCES
+set(CPP_SOURCES
     "${SOURCES_DIR}/shared_ptr_factory_test/main.cpp")
 
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${CPP_HEADERS_DIR})
-add_executable(shared_ptr_factory_test ${CPP_HEADERS} ${SOURCES})
+add_executable(${PROJECT_NAME} ${CPP_HEADERS} ${CPP_SOURCES})

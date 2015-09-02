@@ -80,7 +80,7 @@ set(CPP_HEADERS
     "${CPP_HEADERS_DIR}/ma/type_traits.hpp"
     "${SOURCES_DIR}/echo_server/config.hpp")
 
-set(SOURCES
+set(CPP_SOURCES
     "${SOURCES_DIR}/ma/echo/server/error.cpp"
     "${SOURCES_DIR}/ma/echo/server/session.cpp"
     "${SOURCES_DIR}/ma/echo/server/session_manager.cpp"
@@ -108,5 +108,5 @@ endif()
 
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${CPP_HEADERS_DIR})
-add_executable(echo_server ${CPP_HEADERS} ${SOURCES})
-target_link_libraries(echo_server ${LIBRARIES})
+add_executable(${PROJECT_NAME} ${CPP_HEADERS} ${CPP_SOURCES})
+target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
