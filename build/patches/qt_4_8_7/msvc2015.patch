@@ -1,0 +1,157 @@
+--- tools/assistant/lib/fulltextsearch/fulltextsearch.pro	2015-05-07 17:14:40
++++ tools/assistant/lib/fulltextsearch/fulltextsearch.pro	2015-09-03 02:01:18
+@@ -44,6 +44,10 @@
+     QMAKE_CXXFLAGS_RELEASE	-= -O2    
+ }
+ 
++win32-msvc2015 {
++    DEFINES += _SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS
++}
++
+ # the following define could be set globally in case we need it elsewhere
+ solaris* {
+     DEFINES += Q_SOLARIS_VERSION=$$system(uname -r | sed -e 's/5\\.//')
+
+--- src/3rdparty/clucene/src/CLucene/util/VoidMap.h	2015-05-07 17:14:40
++++ src/3rdparty/clucene/src/CLucene/util/VoidMap.h	2015-09-03 02:01:18
+@@ -218,15 +218,15 @@
+ //A collection that contains no duplicates
+ //does not guarantee that the order will remain constant over time
+ template<typename _kt, typename _vt, 
+-	typename _Compare,
++	typename _CompareT,
+ 	typename _KeyDeletor=CL_NS(util)::Deletor::Dummy,
+ 	typename _ValueDeletor=CL_NS(util)::Deletor::Dummy>
+ class CLSet:public __CLMap<_kt,_vt,
+-	CL_NS_STD(map)<_kt,_vt, _Compare>,
++	CL_NS_STD(map)<_kt,_vt, _CompareT>,
+ 	_KeyDeletor,_ValueDeletor>
+ {
+-	typedef typename CL_NS_STD(map)<_kt,_vt,_Compare> _base;
+-	typedef __CLMap<_kt, _vt, CL_NS_STD(map)<_kt,_vt, _Compare>,
++	typedef typename CL_NS_STD(map)<_kt,_vt, _CompareT> _base;
++	typedef __CLMap<_kt, _vt, CL_NS_STD(map)<_kt,_vt, _CompareT>,
+ 		_KeyDeletor,_ValueDeletor> _this;
+ public:
+ 	CLSet ( const bool deleteKey=false, const bool deleteValue=false )
+
+--- src/3rdparty/javascriptcore/JavaScriptCore/runtime/ArgList.h	2015-05-07 17:14:40
++++ src/3rdparty/javascriptcore/JavaScriptCore/runtime/ArgList.h	2015-09-03 02:01:18
+@@ -172,7 +172,9 @@
+         void operator delete[](void*);
+ 
+         void* operator new(size_t, void*);
++#if !(defined(_MSC_VER) && (_MSC_VER >= 1900))
+         void operator delete(void*, size_t);
++#endif
+     };
+ 
+     class ArgList {
+
+--- src/3rdparty/webkit/Source/JavaScriptCore/runtime/ArgList.h	2015-05-07 17:14:46
++++ src/3rdparty/webkit/Source/JavaScriptCore/runtime/ArgList.h	2015-09-03 02:01:18
+@@ -174,7 +174,9 @@
+         void operator delete[](void*);
+ 
+         void* operator new(size_t, void*);
++#if !(defined(_MSC_VER) && (_MSC_VER >= 1900))      
+         void operator delete(void*, size_t);
++#endif
+     };
+ 
+     class ArgList {
+
+--- src/3rdparty/webkit/Source/JavaScriptCore/wtf/StringExtras.h	2015-05-07 17:14:46
++++ src/3rdparty/webkit/Source/JavaScriptCore/wtf/StringExtras.h	2015-09-03 02:01:18
+@@ -37,6 +37,7 @@
+ #if COMPILER(MSVC)
+ // FIXME: why a COMPILER check instead of OS? also, these should be HAVE checks
+ 
++#if (_MSC_VER < 1900)
+ inline int snprintf(char* buffer, size_t count, const char* format, ...) 
+ {
+     int result;
+@@ -52,6 +53,7 @@
+ 
+     return result;
+ }
++#endif
+ 
+ inline double wtf_vsnprintf(char* buffer, size_t count, const char* format, va_list args)
+ {
+
+--- src/3rdparty/webkit/Source/JavaScriptCore/wtf/TypeTraits.h	2015-05-07 17:14:46
++++ src/3rdparty/webkit/Source/JavaScriptCore/wtf/TypeTraits.h	2015-09-03 02:01:18
+@@ -183,8 +183,13 @@
+ 
+     // GCC's libstdc++ 20070724 and later supports C++ TR1 type_traits in the std namespace.
+     // VC10 (VS2010) and later support C++ TR1 type_traits in the std::tr1 namespace.
++#if (defined(_MSC_VER) && (_MSC_VER >= 1900))
++    template<typename T> struct HasTrivialConstructor : public std::is_trivially_default_constructible<T> { };
++    template<typename T> struct HasTrivialDestructor : public std::is_trivially_destructible<T> { };
++#else
+     template<typename T> struct HasTrivialConstructor : public std::tr1::has_trivial_constructor<T> { };
+     template<typename T> struct HasTrivialDestructor : public std::tr1::has_trivial_destructor<T> { };
++#endif
+ 
+ #else
+ 
+--- src/3rdparty/javascriptcore/WebKit.pri	2015-05-07 17:14:40
++++ src/3rdparty/javascriptcore/WebKit.pri	2015-09-03 02:01:18
+@@ -22,7 +22,7 @@
+ 
+ DEFINES += BUILDING_QT__=1
+ building-libs {
+-    win32-msvc*|win32-icc: INCLUDEPATH += $$PWD/JavaScriptCore/os-win32
++    win32-msvc200*|win32-msvc2010*|win32-msvc2012*|win32-msvc2013*|win32-icc: INCLUDEPATH += $$PWD/JavaScriptCore/os-win32
+ } else {
+     CONFIG(QTDIR_build) {
+         QT += webkit
+
+--- src/3rdparty/javascriptcore/JavaScriptCore/wtf/StringExtras.h	2015-05-07 17:14:40
++++ src/3rdparty/javascriptcore/JavaScriptCore/wtf/StringExtras.h	2015-09-03 02:01:18
+@@ -36,6 +36,7 @@
+ #if COMPILER(MSVC)
+ // FIXME: why a COMPILER check instead of OS? also, these should be HAVE checks
+ 
++#if (_MSC_VER < 1900)
+ inline int snprintf(char* buffer, size_t count, const char* format, ...) 
+ {
+     int result;
+@@ -45,6 +46,7 @@
+     va_end(args);
+     return result;
+ }
++#endif
+ 
+ #if COMPILER(MSVC7) || OS(WINCE)
+ 
+--- src/3rdparty/webkit/Source/WebKit.pri	2015-05-07 17:14:46
++++ src/3rdparty/webkit/Source/WebKit.pri	2015-09-03 02:01:18
+@@ -38,7 +38,7 @@
+ 
+ DEFINES += BUILDING_QT__=1
+ building-libs {
+-    win32-msvc*|win32-icc: INCLUDEPATH += $$PWD/JavaScriptCore/os-win32
++    win32-msvc200*|win32-msvc2010*|win32-msvc2012*|win32-msvc2013*|win32-icc: INCLUDEPATH += $$PWD/JavaScriptCore/os-win32
+ } else {
+     CONFIG(QTDIR_build) {
+         QT += webkit
+
+--- src/3rdparty/javascriptcore/JavaScriptCore/wtf/TypeTraits.h	2015-05-07 17:14:40
++++ src/3rdparty/javascriptcore/JavaScriptCore/wtf/TypeTraits.h	2015-09-03 02:01:18
+@@ -170,9 +170,13 @@
+ 
+     // GCC's libstdc++ 20070724 and later supports C++ TR1 type_traits in the std namespace.
+     // VC10 (VS2010) and later support C++ TR1 type_traits in the std::tr1 namespace.
++#if (defined(_MSC_VER) && (_MSC_VER >= 1900))
++    template<typename T> struct HasTrivialConstructor : public std::is_trivially_default_constructible<T> { };
++    template<typename T> struct HasTrivialDestructor : public std::is_trivially_destructible<T> { };
++#else
+     template<typename T> struct HasTrivialConstructor : public std::tr1::has_trivial_constructor<T> { };
+     template<typename T> struct HasTrivialDestructor : public std::tr1::has_trivial_destructor<T> { };
+-
++#endif
+ #else
+ 
+     // This compiler doesn't provide type traits, so we provide basic HasTrivialConstructor
