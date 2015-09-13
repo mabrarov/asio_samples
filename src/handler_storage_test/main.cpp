@@ -130,7 +130,7 @@ public:
 private:
   typedef boost::optional<boost::asio::io_service::work> optional_io_work;
 
-  optional_io_work    work_guard_;
+  optional_io_work work_guard_;
   ma::thread_group threads_;
 }; // class io_service_pool
 

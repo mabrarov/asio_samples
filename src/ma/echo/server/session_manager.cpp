@@ -599,7 +599,7 @@ session_manager::optional_error_code session_manager::do_start_extern_stop()
     start_stop(server::error::operation_aborted);
   }
 
-  // int_state_ can be changed by start_stop
+  // intern_state_ can be changed by start_stop
   if (intern_state::stopped == intern_state_)
   {
     extern_state_ = extern_state::stopped;
@@ -725,13 +725,13 @@ void session_manager::handle_accept(const session_wrapper_ptr& session,
 
   // Split handler based on current internal state
   // that might change during accept operation
-  switch (int_state_)
+  switch (intern_state_)
   {
-  case int_state::work:
+  case intern_state::work:
     handle_accept_at_work(session, error);
     break;
 
-  case int_state::stop:
+  case intern_state::stop:
     handle_accept_at_stop(session, error);
     break;
 
@@ -746,13 +746,13 @@ void session_manager::handle_session_start(const session_wrapper_ptr& session,
 {
   // Split handler based on current internal state
   // that might change during session start
-  switch (int_state_)
+  switch (intern_state_)
   {
-  case int_state::work:
+  case intern_state::work:
     handle_session_start_at_work(session, error);
     break;
 
-  case int_state::stop:
+  case intern_state::stop:
     handle_session_start_at_stop(session, error);
     break;
 
@@ -767,13 +767,13 @@ void session_manager::handle_session_wait(const session_wrapper_ptr& session,
 {
   // Split handler based on current internal state
   // that might change during session wait
-  switch (int_state_)
+  switch (intern_state_)
   {
-  case int_state::work:
+  case intern_state::work:
     handle_session_wait_at_work(session, error);
     break;
 
-  case int_state::stop:
+  case intern_state::stop:
     handle_session_wait_at_stop(session, error);
     break;
 
@@ -788,13 +788,13 @@ void session_manager::handle_session_stop(const session_wrapper_ptr& session,
 {
   // Split handler based on current internal state
   // that might change during session stop
-  switch (int_state_)
+  switch (intern_state_)
   {
-  case int_state::work:
+  case intern_state::work:
     handle_session_stop_at_work(session, error);
     break;
 
-  case int_state::stop:
+  case intern_state::stop:
     handle_session_stop_at_stop(session, error);
     break;
 
