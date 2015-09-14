@@ -58,9 +58,9 @@
 #endif
 
 #if defined(MA_HAS_RVALUE_REFS)
-#define MA_RVALUE_CAST(v) (::std::move(v))
+#define MA_FWD_REF &&
 #else
-#define MA_RVALUE_CAST(v) (v)
+#define MA_FWD_REF const &
 #endif
 
 //todo: add support for other compilers (than MSVC, GCC, Clang)

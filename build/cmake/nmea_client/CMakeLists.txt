@@ -39,6 +39,7 @@ set(CPP_HEADERS
     "${CPP_HEADERS_DIR}/ma/detail/sp_singleton.hpp"
     "${CPP_HEADERS_DIR}/ma/detail/thread.hpp"
     "${CPP_HEADERS_DIR}/ma/detail/tuple.hpp"
+    "${CPP_HEADERS_DIR}/ma/detail/utility.hpp"
     "${CPP_HEADERS_DIR}/ma/windows/console_signal.hpp"
     "${CPP_HEADERS_DIR}/ma/windows/console_signal_service.hpp"
     "${CPP_HEADERS_DIR}/ma/nmea/cyclic_read_session_fwd.hpp"

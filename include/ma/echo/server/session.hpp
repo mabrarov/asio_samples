@@ -18,6 +18,7 @@
 #include <boost/noncopyable.hpp>
 #include <boost/system/error_code.hpp>
 #include <ma/config.hpp>
+#include <ma/type_traits.hpp>
 #include <ma/cyclic_buffer.hpp>
 #include <ma/handler_storage.hpp>
 #include <ma/handler_allocator.hpp>
@@ -29,11 +30,7 @@
 #include <ma/steady_deadline_timer.hpp>
 #include <ma/detail/memory.hpp>
 #include <ma/detail/functional.hpp>
-
-#if defined(MA_HAS_RVALUE_REFS)
-#include <utility>
-#include <ma/type_traits.hpp>
-#endif // defined(MA_HAS_RVALUE_REFS)
+#include <ma/detail/utility.hpp>
 
 namespace ma {
 namespace echo {
@@ -56,29 +53,14 @@ public:
 
   void reset();
 
-#if defined(MA_HAS_RVALUE_REFS)
+  template <typename Handler>
+  void async_start(Handler MA_FWD_REF handler);
 
   template <typename Handler>
-  void async_start(Handler&& handler);
+  void async_stop(Handler MA_FWD_REF handler);
 
   template <typename Handler>
-  void async_stop(Handler&& handler);
-
-  template <typename Handler>
-  void async_wait(Handler&& handler);
-
-#else // defined(MA_HAS_RVALUE_REFS)
-
-  template <typename Handler>
-  void async_start(const Handler& handler);
-
-  template <typename Handler>
-  void async_stop(const Handler& handler);
-
-  template <typename Handler>
-  void async_wait(const Handler& handler);
-
-#endif // defined(MA_HAS_RVALUE_REFS)
+  void async_wait(Handler MA_FWD_REF handler);
 
 protected:
   session(boost::asio::io_service&, const session_config&);
@@ -86,9 +68,7 @@ protected:
 
 private:
 
-#if defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR) \
-    && !(defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 
   // Home-grown binder to support move semantic
   template <typename Arg>
@@ -96,12 +76,12 @@ private:
 
 #endif
 
-  struct ext_state
+  struct extern_state
   {
     enum value_t {ready, work, stop, stopped};
   };
 
-  struct int_state
+  struct intern_state
   {
     enum value_t {work, shutdown, stop, stopped};
   };
@@ -126,25 +106,18 @@ private:
   typedef deadline_timer::duration_type  duration_type;
   typedef boost::optional<duration_type> optional_duration;
 
-#if !(defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
+  template <typename Handler>
+  void start_extern_start(Handler&);
 
   template <typename Handler>
-  void start_extern_start(const Handler&);
+  void start_extern_stop(Handler&);
 
   template <typename Handler>
-  void start_extern_stop(const Handler&);
-
-  template <typename Handler>
-  void start_extern_wait(const Handler&);
+  void start_extern_wait(Handler&);
 
   void handle_read(const boost::system::error_code&, std::size_t);
   void handle_write(const boost::system::error_code&, std::size_t);
   void handle_timer(const boost::system::error_code&);
-
-#endif // !(defined(MA_HAS_RVALUE_REFS)
-       //     && defined(MA_HAS_LAMBDA)
-       //     && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
 
   boost::system::error_code do_start_extern_start();
   optional_error_code do_start_extern_stop();
@@ -192,14 +165,14 @@ private:
   const session_config::optional_bool no_delay_;
   const optional_duration             inactivity_timeout_;
 
-  ext_state::value_t   ext_state_;
-  int_state::value_t   int_state_;
-  read_state::value_t  read_state_;
-  write_state::value_t write_state_;
-  timer_state::value_t timer_state_;
-  bool                 timer_wait_cancelled_;
-  bool                 timer_turned_;
-  std::size_t          pending_operations_;
+  extern_state::value_t extern_state_;
+  intern_state::value_t intern_state_;
+  read_state::value_t   read_state_;
+  write_state::value_t  write_state_;
+  timer_state::value_t  timer_state_;
+  bool                  timer_wait_cancelled_;
+  bool                  timer_turned_;
+  std::size_t           pending_operations_;
 
   boost::asio::io_service&  io_service_;
   ma::strand                strand_;
@@ -221,10 +194,7 @@ inline session::protocol_type::socket& session::socket()
   return socket_;
 }
 
-#if defined(MA_HAS_RVALUE_REFS)
-
-#if defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR) \
-    && !(defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 
 template <typename Arg>
 class session::forward_handler_binder
@@ -234,7 +204,7 @@ private:
 
 public:
   typedef void result_type;
-  typedef void (session::*func_type)(const Arg&);
+  typedef void (session::*func_type)(Arg&);
 
   template <typename SessionPtr>
   forward_handler_binder(func_type func, SessionPtr&& session);
@@ -246,240 +216,127 @@ public:
 
 #endif // defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
-  void operator()(const Arg& arg);
+  void operator()(Arg& arg);
 
 private:
   func_type   func_;
   session_ptr session_;
 }; // class session::forward_handler_binder
 
-#endif // defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
-       //     && !(defined(MA_HAS_LAMBDA)
-       //         && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
+#endif // defined(MA_HAS_RVALUE_REFS) 
+       //     && defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 
 template <typename Handler>
-void session::async_start(Handler&& handler)
+void session::async_start(Handler MA_FWD_REF handler)
 {
   typedef typename remove_cv_reference<Handler>::type handler_type;
-
-#if defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
-
-  session_ptr self = shared_from_this();
-
-  strand_.post(make_explicit_context_alloc_handler(
-      std::forward<Handler>(handler),
-      [self](const handler_type& handler)
-  {
-    boost::system::error_code result = self->do_start_extern_start();
-    self->io_service_.post(bind_handler(handler, result));
-  }));
-
-#else // defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
-
-  typedef void (this_type::*func_type)(const handler_type&);
+  typedef void (this_type::*func_type)(handler_type&);
   func_type func = &this_type::start_extern_start<handler_type>;
 
 #if defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 
   strand_.post(make_explicit_context_alloc_handler(
-      std::forward<Handler>(handler),
+      detail::forward<Handler>(handler),
       forward_handler_binder<handler_type>(func, shared_from_this())));
 
-#else  // defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
+#else
 
   strand_.post(make_explicit_context_alloc_handler(
-      std::forward<Handler>(handler),
+      detail::forward<Handler>(handler),
       detail::bind(func, shared_from_this(), detail::placeholders::_1)));
 
 #endif // defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
-
-#endif // defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
 }
 
 template <typename Handler>
-void session::async_stop(Handler&& handler)
+void session::async_stop(Handler MA_FWD_REF handler)
 {
   typedef typename remove_cv_reference<Handler>::type handler_type;
-
-#if defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
-
-  session_ptr self = shared_from_this();
-
-  strand_.post(make_explicit_context_alloc_handler(
-      std::forward<Handler>(handler),
-      [self](const handler_type& handler)
-  {
-    if (optional_error_code result = self->do_start_extern_stop())
-    {
-      self->io_service_.post(bind_handler(handler, *result));
-    }
-    else
-    {
-      self->extern_stop_handler_.store(handler);
-    }
-  }));
-
-#else  // defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
-
-  typedef void (this_type::*func_type)(const handler_type&);
+  typedef void (this_type::*func_type)(handler_type&);
   func_type func = &this_type::start_extern_stop<handler_type>;
 
 #if defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 
   strand_.post(make_explicit_context_alloc_handler(
-      std::forward<Handler>(handler),
+      detail::forward<Handler>(handler),
       forward_handler_binder<handler_type>(func, shared_from_this())));
 
-#else  // defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
+#else
 
   strand_.post(make_explicit_context_alloc_handler(
-      std::forward<Handler>(handler),
+      detail::forward<Handler>(handler),
       detail::bind(func, shared_from_this(), detail::placeholders::_1)));
 
 #endif // defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
-
-#endif // defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
 }
 
 template <typename Handler>
-void session::async_wait(Handler&& handler)
+void session::async_wait(Handler MA_FWD_REF handler)
 {
   typedef typename remove_cv_reference<Handler>::type handler_type;
-
-#if defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
-
-  session_ptr self = shared_from_this();
-
-  strand_.post(make_explicit_context_alloc_handler(
-      std::forward<Handler>(handler),
-      [self](const handler_type& handler)
-  {
-    if (optional_error_code result = self->do_start_extern_wait())
-    {
-      self->io_service_.post(bind_handler(handler, *result));
-    }
-    else
-    {
-      self->extern_wait_handler_.store(handler);
-    }
-  }));
-
-#else  // defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
-
-  typedef void (this_type::*func_type)(const handler_type&);
+  typedef void (this_type::*func_type)(handler_type&);
   func_type func = &this_type::start_extern_wait<handler_type>;
 
 #if defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 
   strand_.post(make_explicit_context_alloc_handler(
-      std::forward<Handler>(handler),
+      detail::forward<Handler>(handler),
       forward_handler_binder<handler_type>(func, shared_from_this())));
 
-#else  // defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
+#else
 
   strand_.post(make_explicit_context_alloc_handler(
-      std::forward<Handler>(handler),
+      detail::forward<Handler>(handler),
       detail::bind(func, shared_from_this(), detail::placeholders::_1)));
 
 #endif // defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
-
-#endif // defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
 }
-
-#else  // defined(MA_HAS_RVALUE_REFS)
-
-template <typename Handler>
-void session::async_start(const Handler& handler)
-{
-  typedef Handler handler_type;
-  typedef void (this_type::*func_type)(const handler_type&);
-
-  func_type func = &this_type::start_extern_start<handler_type>;
-
-  strand_.post(make_explicit_context_alloc_handler(handler,
-      detail::bind(func, shared_from_this(), detail::placeholders::_1)));
-}
-
-template <typename Handler>
-void session::async_stop(const Handler& handler)
-{
-  typedef Handler handler_type;
-  typedef void (this_type::*func_type)(const handler_type&);
-
-  func_type func = &this_type::start_extern_stop<handler_type>;
-
-  strand_.post(make_explicit_context_alloc_handler(handler,
-      detail::bind(func, shared_from_this(), detail::placeholders::_1)));
-}
-
-template <typename Handler>
-void session::async_wait(const Handler& handler)
-{
-  typedef Handler handler_type;
-  typedef void (this_type::*func_type)(const handler_type&);
-
-  func_type func = &this_type::start_extern_wait<handler_type>;
-
-  strand_.post(make_explicit_context_alloc_handler(handler,
-      detail::bind(func, shared_from_this(), detail::placeholders::_1)));
-}
-
-#endif // defined(MA_HAS_RVALUE_REFS)
 
 inline session::~session()
 {
 }
 
-#if !(defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
-
 template <typename Handler>
-void session::start_extern_start(const Handler& handler)
+void session::start_extern_start(Handler& handler)
 {
   boost::system::error_code result = do_start_extern_start();
-  io_service_.post(bind_handler(handler, result));
+  io_service_.post(bind_handler(detail::move(handler), result));
 }
 
 template <typename Handler>
-void session::start_extern_stop(const Handler& handler)
+void session::start_extern_stop(Handler& handler)
 {
   if (optional_error_code result = do_start_extern_stop())
   {
-    io_service_.post(bind_handler(handler, *result));
+    io_service_.post(bind_handler(detail::move(handler), *result));
   }
   else
   {
-    extern_stop_handler_.store(handler);
+    extern_stop_handler_.store(detail::move(handler));
   }
 }
 
 template <typename Handler>
-void session::start_extern_wait(const Handler& handler)
+void session::start_extern_wait(Handler& handler)
 {
   if (optional_error_code result = do_start_extern_wait())
   {
-    io_service_.post(bind_handler(handler, *result));
+    io_service_.post(bind_handler(detail::move(handler), *result));
   }
   else
   {
-    extern_wait_handler_.store(handler);
+    extern_wait_handler_.store(detail::move(handler));
   }
 }
 
-#endif // !(defined(MA_HAS_RVALUE_REFS)
-       //     && defined(MA_HAS_LAMBDA)
-       //     && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
-
-#if defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR) \
-    && !(defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 
 template <typename Arg>
 template <typename SessionPtr>
 session::forward_handler_binder<Arg>::forward_handler_binder(
     func_type func, SessionPtr&& session)
   : func_(func)
-  , session_(std::forward<SessionPtr>(session))
+  , session_(detail::forward<SessionPtr>(session))
 {
 }
 
@@ -489,7 +346,7 @@ template <typename Arg>
 session::forward_handler_binder<Arg>::forward_handler_binder(
     this_type&& other)
   : func_(other.func_)
-  , session_(std::move(other.session_))
+  , session_(detail::move(other.session_))
 {
 }
 
@@ -504,15 +361,13 @@ session::forward_handler_binder<Arg>::forward_handler_binder(
 #endif // defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
 
 template <typename Arg>
-void session::forward_handler_binder<Arg>::operator()(const Arg& arg)
+void session::forward_handler_binder<Arg>::operator()(Arg& arg)
 {
   ((*session_).*func_)(arg);
 }
 
 #endif // defined(MA_HAS_RVALUE_REFS)
        //     && defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
-       //     && !(defined(MA_HAS_LAMBDA)
-       //         && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
 
 } // namespace server
 } // namespace echo
