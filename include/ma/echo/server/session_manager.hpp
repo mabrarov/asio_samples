@@ -18,6 +18,7 @@
 #include <boost/noncopyable.hpp>
 #include <boost/system/error_code.hpp>
 #include <ma/config.hpp>
+#include <ma/type_traits.hpp>
 #include <ma/handler_storage.hpp>
 #include <ma/handler_allocator.hpp>
 #include <ma/bind_handler.hpp>
@@ -34,11 +35,6 @@
 #include <ma/detail/functional.hpp>
 #include <ma/detail/thread.hpp>
 #include <ma/detail/utility.hpp>
-
-#if defined(MA_HAS_RVALUE_REFS)
-#include <utility>
-#include <ma/type_traits.hpp>
-#endif // defined(MA_HAS_RVALUE_REFS)
 
 namespace ma {
 namespace echo {
@@ -63,29 +59,14 @@ public:
 
   session_manager_stats stats();
 
-#if defined(MA_HAS_RVALUE_REFS)
+  template <typename Handler>
+  void async_start(Handler MA_FWD_REF handler);
 
   template <typename Handler>
-  void async_start(Handler&& handler);
+  void async_stop(Handler MA_FWD_REF handler);
 
   template <typename Handler>
-  void async_stop(Handler&& handler);
-
-  template <typename Handler>
-  void async_wait(Handler&& handler);
-
-#else // defined(MA_HAS_RVALUE_REFS)
-
-  template <typename Handler>
-  void async_start(const Handler& handler);
-
-  template <typename Handler>
-  void async_stop(const Handler& handler);
-
-  template <typename Handler>
-  void async_wait(const Handler& handler);
-
-#endif // defined(MA_HAS_RVALUE_REFS)
+  void async_wait(Handler MA_FWD_REF handler);
 
 protected:
   // Note that session_io_service has to outlive io_service
@@ -264,9 +245,7 @@ private:
   in_place_handler_allocator<256> session_stop_allocator_;
 }; // class session_manager
 
-#if defined(MA_HAS_RVALUE_REFS)
-
-#if defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 
 template <typename Arg>
 class session_manager::forward_handler_binder
@@ -295,10 +274,11 @@ private:
   session_manager_ptr session_manager_;
 }; // class session_manager::forward_handler_binder
 
-#endif // defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
+#endif // defined(MA_HAS_RVALUE_REFS) 
+       //     && defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 
 template <typename Handler>
-void session_manager::async_start(Handler&& handler)
+void session_manager::async_start(Handler MA_FWD_REF handler)
 {
   typedef typename remove_cv_reference<Handler>::type handler_type;
   typedef void (this_type::*func_type)(handler_type&);
@@ -307,20 +287,20 @@ void session_manager::async_start(Handler&& handler)
 #if defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 
   strand_.post(make_explicit_context_alloc_handler(
-      std::forward<Handler>(handler),
+      detail::forward<Handler>(handler),
       forward_handler_binder<handler_type>(func, shared_from_this())));
 
 #else
 
   strand_.post(make_explicit_context_alloc_handler(
-      std::forward<Handler>(handler),
+      detail::forward<Handler>(handler),
       detail::bind(func, shared_from_this(), detail::placeholders::_1)));
 
 #endif // defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 }
 
 template <typename Handler>
-void session_manager::async_stop(Handler&& handler)
+void session_manager::async_stop(Handler MA_FWD_REF handler)
 {
   typedef typename remove_cv_reference<Handler>::type handler_type;
   typedef void (this_type::*func_type)(handler_type&);
@@ -329,20 +309,20 @@ void session_manager::async_stop(Handler&& handler)
 #if defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 
   strand_.post(make_explicit_context_alloc_handler(
-      std::forward<Handler>(handler),
+      detail::forward<Handler>(handler),
       forward_handler_binder<handler_type>(func, shared_from_this())));
 
 #else
 
   strand_.post(make_explicit_context_alloc_handler(
-      std::forward<Handler>(handler),
+      detail::forward<Handler>(handler),
       detail::bind(func, shared_from_this(), detail::placeholders::_1)));
 
 #endif // defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 }
 
 template <typename Handler>
-void session_manager::async_wait(Handler&& handler)
+void session_manager::async_wait(Handler MA_FWD_REF handler)
 {
   typedef typename remove_cv_reference<Handler>::type handler_type;
   typedef void (this_type::*func_type)(handler_type&);
@@ -351,57 +331,17 @@ void session_manager::async_wait(Handler&& handler)
 #if defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 
   strand_.post(make_explicit_context_alloc_handler(
-      std::forward<Handler>(handler),
+      detail::forward<Handler>(handler),
       forward_handler_binder<handler_type>(func, shared_from_this())));
 
 #else
 
   strand_.post(make_explicit_context_alloc_handler(
-      std::forward<Handler>(handler),
+      detail::forward<Handler>(handler),
       detail::bind(func, shared_from_this(), detail::placeholders::_1)));
 
 #endif // defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 }
-
-#else  // defined(MA_HAS_RVALUE_REFS)
-
-template <typename Handler>
-void session_manager::async_start(const Handler& handler)
-{
-  typedef Handler handler_type;
-  typedef void (this_type::*func_type)(handler_type&);
-
-  func_type func = &this_type::start_extern_start<handler_type>;
-
-  strand_.post(make_explicit_context_alloc_handler(handler,
-      detail::bind(func, shared_from_this(), detail::placeholders::_1)));
-}
-
-template <typename Handler>
-void session_manager::async_stop(const Handler& handler)
-{
-  typedef Handler handler_type;
-  typedef void (this_type::*func_type)(handler_type&);
-
-  func_type func = &this_type::start_extern_stop<handler_type>;
-
-  strand_.post(make_explicit_context_alloc_handler(handler,
-      detail::bind(func, shared_from_this(), detail::placeholders::_1)));
-}
-
-template <typename Handler>
-void session_manager::async_wait(const Handler& handler)
-{
-  typedef Handler handler_type;
-  typedef void (this_type::*func_type)(handler_type&);
-
-  func_type func = &this_type::start_extern_wait<handler_type>;
-
-  strand_.post(make_explicit_context_alloc_handler(handler,
-      detail::bind(func, shared_from_this(), detail::placeholders::_1)));
-}
-
-#endif // defined(MA_HAS_RVALUE_REFS)
 
 inline session_manager::~session_manager()
 {
@@ -447,7 +387,7 @@ template <typename SessionManagerPtr>
 session_manager::forward_handler_binder<Arg>::forward_handler_binder(
     func_type func, SessionManagerPtr&& session_manager)
   : func_(func)
-  , session_manager_(std::forward<SessionManagerPtr>(session_manager))
+  , session_manager_(detail::forward<SessionManagerPtr>(session_manager))
 {
 }
 
@@ -457,7 +397,7 @@ template <typename Arg>
 session_manager::forward_handler_binder<Arg>::forward_handler_binder(
     this_type&& other)
   : func_(other.func_)
-  , session_manager_(std::move(other.session_manager_))
+  , session_manager_(detail::move(other.session_manager_))
 {
 }
 

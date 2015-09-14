@@ -37,7 +37,7 @@ public:
   template <typename SessionPtr>
   io_handler_binder(func_type func, SessionPtr&& session)
     : func_(func)
-    , session_(std::forward<SessionPtr>(session))
+    , session_(detail::forward<SessionPtr>(session))
   {
   }
 
@@ -45,7 +45,7 @@ public:
 
   io_handler_binder(this_type&& other)
     : func_(other.func_)
-    , session_(std::move(other.session_))
+    , session_(detail::move(other.session_))
   {
   }
 
@@ -81,7 +81,7 @@ public:
   template <typename SessionPtr>
   timer_handler_binder(func_type func, SessionPtr&& session)
     : func_(func)
-    , session_(std::forward<SessionPtr>(session))
+    , session_(detail::forward<SessionPtr>(session))
   {
   }
 
@@ -89,7 +89,7 @@ public:
 
   timer_handler_binder(this_type&& other)
     : func_(other.func_)
-    , session_(std::move(other.session_))
+    , session_(detail::move(other.session_))
   {
   }
 

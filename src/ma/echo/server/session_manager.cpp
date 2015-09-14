@@ -49,7 +49,7 @@ public:
   session_ptr release()
   {
 #if defined(MA_HAS_RVALUE_REFS)
-    return std::move(session_);
+    return detail::move(session_);
 #else
     session_ptr tmp;
     tmp.swap(session_);
@@ -83,8 +83,8 @@ public:
   accept_handler_binder(func_type func, SessionManagerPtr&& session_manager,
       SessionWrapperPtr&& session)
     : func_(func)
-    , session_manager_(std::forward<SessionManagerPtr>(session_manager))
-    , session_(std::forward<SessionWrapperPtr>(session))
+    , session_manager_(detail::forward<SessionManagerPtr>(session_manager))
+    , session_(detail::forward<SessionWrapperPtr>(session))
   {
   }
 
@@ -92,8 +92,8 @@ public:
 
   accept_handler_binder(this_type&& other)
     : func_(other.func_)
-    , session_manager_(std::move(other.session_manager_))
-    , session_(std::move(other.session_))
+    , session_manager_(detail::move(other.session_manager_))
+    , session_(detail::move(other.session_))
   {
   }
 
@@ -133,8 +133,8 @@ public:
   session_dispatch_binder(func_type func, SessionManagerPtr&& session_manager,
       SessionWrapperPtr&& session)
     : func_(func)
-    , session_manager_(std::forward<SessionManagerPtr>(session_manager))
-    , session_(std::forward<SessionWrapperPtr>(session))
+    , session_manager_(detail::forward<SessionManagerPtr>(session_manager))
+    , session_(detail::forward<SessionWrapperPtr>(session))
   {
   }
 
@@ -142,8 +142,8 @@ public:
 
   session_dispatch_binder(this_type&& other)
     : func_(other.func_)
-    , session_manager_(std::move(other.session_manager_))
-    , session_(std::move(other.session_))
+    , session_manager_(detail::move(other.session_manager_))
+    , session_(detail::move(other.session_))
   {
   }
 
@@ -183,8 +183,8 @@ public:
   session_handler_binder(func_type func, SessionManagerPtr&& session_manager,
       SessionWrapperPtr&& session, const boost::system::error_code& error)
     : func_(func)
-    , session_manager_(std::forward<SessionManagerPtr>(session_manager))
-    , session_(std::forward<SessionWrapperPtr>(session))
+    , session_manager_(detail::forward<SessionManagerPtr>(session_manager))
+    , session_(detail::forward<SessionWrapperPtr>(session))
     , error_(error)
   {
   }
@@ -193,9 +193,9 @@ public:
 
   session_handler_binder(this_type&& other)
     : func_(other.func_)
-    , session_manager_(std::move(other.session_manager_))
-    , session_(std::move(other.session_))
-    , error_(std::move(other.error_))
+    , session_manager_(detail::move(other.session_manager_))
+    , session_(detail::move(other.session_))
+    , error_(detail::move(other.error_))
   {
   }
 
@@ -345,7 +345,7 @@ public:
   session_ptr detach()
   {
 #if defined(MA_HAS_RVALUE_REFS)
-    return std::move(session_);
+    return detail::move(session_);
 #else
     session_ptr tmp;
     tmp.swap(session_);
@@ -418,59 +418,29 @@ public:
     state_ = state_type::work;
   }
 
-#if defined(MA_HAS_RVALUE_REFS)
-
   template <typename Handler>
-  void async_start(Handler&& handler)
+  void async_start(Handler MA_FWD_REF handler)
   {
     session_->async_start(make_custom_alloc_handler(
-        start_wait_allocator_, std::forward<Handler>(handler)));
+        start_wait_allocator_, detail::forward<Handler>(handler)));
     start_started();
   }
 
   template <typename Handler>
-  void async_stop(Handler&& handler)
+  void async_stop(Handler MA_FWD_REF handler)
   {
     session_->async_stop(make_custom_alloc_handler(
-        stop_allocator_, std::forward<Handler>(handler)));
+        stop_allocator_, detail::forward<Handler>(handler)));
     stop_started();
   }
 
   template <typename Handler>
-  void async_wait(Handler&& handler)
+  void async_wait(Handler MA_FWD_REF handler)
   {
     session_->async_wait(make_custom_alloc_handler(
-        start_wait_allocator_, std::forward<Handler>(handler)));
+        start_wait_allocator_, detail::forward<Handler>(handler)));
     wait_started();
   }
-
-#else // defined(MA_HAS_RVALUE_REFS)
-
-  template <typename Handler>
-  void async_start(const Handler& handler)
-  {
-    session_->async_start(make_custom_alloc_handler(
-        start_wait_allocator_, handler));
-    start_started();
-  }
-
-  template <typename Handler>
-  void async_stop(const Handler& handler)
-  {
-    session_->async_stop(make_custom_alloc_handler(
-        stop_allocator_, handler));
-    stop_started();
-  }
-
-  template <typename Handler>
-  void async_wait(const Handler& handler)
-  {
-    session_->async_wait(make_custom_alloc_handler(
-        start_wait_allocator_, handler));
-    wait_started();
-  }
-
-#endif // defined(MA_HAS_RVALUE_REFS)
 
 private:
   void start_started()

@@ -28,10 +28,7 @@
 #include <ma/detail/handler_ptr.hpp>
 #include <ma/detail/service_base.hpp>
 #include <ma/detail/intrusive_list.hpp>
-
-#if defined(MA_HAS_RVALUE_REFS)
-#include <utility>
-#endif // defined(MA_HAS_RVALUE_REFS)
+#include <ma/detail/utility.hpp>
 
 namespace ma {
 namespace windows {
@@ -243,16 +240,15 @@ void console_signal_service::async_wait(
   lock_guard lock(mutex_);
   if (shutdown_)
   {
-    get_io_service().post(
-        bind_handler(MA_RVALUE_CAST(handler), 
-            boost::asio::error::operation_aborted));
+    get_io_service().post(bind_handler(detail::move(handler),
+        boost::asio::error::operation_aborted));
     return;
   }
   if (queued_signals_)
   {
     --queued_signals_;
-    get_io_service().post(
-        bind_handler(MA_RVALUE_CAST(handler), boost::system::error_code()));
+    get_io_service().post(bind_handler(detail::move(handler), 
+        boost::system::error_code()));
     return;
   }
 
@@ -261,7 +257,7 @@ void console_signal_service::async_wait(
 
   detail::raw_handler_ptr<alloc_traits> raw_ptr(handler);
   detail::handler_ptr<alloc_traits> ptr(raw_ptr,
-      detail::ref(this->get_io_service()), MA_RVALUE_CAST(handler));
+      detail::ref(this->get_io_service()), detail::move(handler));
 
   // Add handler to the list of waiting handlers.
   impl.handlers_.push_front(*ptr.get());
@@ -361,7 +357,7 @@ void console_signal_service::handler_wrapper<Handler>::do_destroy(
   detail::handler_ptr<alloc_traits> ptr(this_ptr->handler_, this_ptr);
   // Make a local copy of handler stored at wrapper object
   // This local copy will be used for wrapper's memory deallocation later
-  Handler handler(MA_RVALUE_CAST(this_ptr->handler_));
+  Handler handler(detail::move(this_ptr->handler_));
   // Change the handler which will be used
   // for wrapper's memory deallocation
   ptr.set_alloc_context(handler);
@@ -382,19 +378,19 @@ void console_signal_service::handler_wrapper<Handler>::do_post(
   detail::handler_ptr<alloc_traits> ptr(this_ptr->handler_, this_ptr);
   // Make a local copy of handler stored at wrapper object
   // This local copy will be used for wrapper's memory deallocation later
-  Handler handler(MA_RVALUE_CAST(this_ptr->handler_));
+  Handler handler(detail::move(this_ptr->handler_));
   // Change the handler which will be used for wrapper's memory deallocation
   ptr.set_alloc_context(handler);
   // Make copies of other data placed at wrapper object
   // These copies will be used after the wrapper object destruction
   // and deallocation of its memory
-  boost::asio::io_service::work work(MA_RVALUE_CAST(this_ptr->work_));
+  boost::asio::io_service::work work(detail::move(this_ptr->work_));
   // Destroy wrapper object and deallocate its memory
   // through the local copy of handler
   ptr.reset();
   // Post the copy of handler's local copy to io_service
   boost::asio::io_service& io_service = work.get_io_service();
-  io_service.post(ma::bind_handler(MA_RVALUE_CAST(handler), error));
+  io_service.post(ma::bind_handler(detail::move(handler), error));
 }
 
 } // namespace windows

@@ -24,13 +24,35 @@ namespace detail {
 #if defined(MA_HAS_RVALUE_REFS)
 
 using std::move;
+using std::forward;
 
-#else
+#else // defined(MA_HAS_RVALUE_REFS)
 
 /// Dummy for std::move
 template <typename T>
 T& move(T& t) 
 { 
+  return t;
+}
+
+/// Dummy for std::move
+template <typename T>
+const T& move(const T& t)
+{
+  return t;
+}
+
+/// Dummy for std::forward
+template <typename T>
+T& forward(T& t)
+{
+  return t;
+}
+
+/// Dummy for std::forward
+template <typename T>
+const T& forward(const T& t)
+{
   return t;
 }
 
