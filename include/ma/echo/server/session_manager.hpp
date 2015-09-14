@@ -284,7 +284,7 @@ void session_manager::async_start(Handler MA_FWD_REF handler)
   typedef void (this_type::*func_type)(handler_type&);
   func_type func = &this_type::start_extern_start<handler_type>;
 
-#if defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 
   strand_.post(make_explicit_context_alloc_handler(
       detail::forward<Handler>(handler),
@@ -296,7 +296,7 @@ void session_manager::async_start(Handler MA_FWD_REF handler)
       detail::forward<Handler>(handler),
       detail::bind(func, shared_from_this(), detail::placeholders::_1)));
 
-#endif // defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
+#endif
 }
 
 template <typename Handler>
@@ -306,7 +306,7 @@ void session_manager::async_stop(Handler MA_FWD_REF handler)
   typedef void (this_type::*func_type)(handler_type&);
   func_type func = &this_type::start_extern_stop<handler_type>;
 
-#if defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 
   strand_.post(make_explicit_context_alloc_handler(
       detail::forward<Handler>(handler),
@@ -318,7 +318,7 @@ void session_manager::async_stop(Handler MA_FWD_REF handler)
       detail::forward<Handler>(handler),
       detail::bind(func, shared_from_this(), detail::placeholders::_1)));
 
-#endif // defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
+#endif
 }
 
 template <typename Handler>
@@ -328,7 +328,7 @@ void session_manager::async_wait(Handler MA_FWD_REF handler)
   typedef void (this_type::*func_type)(handler_type&);
   func_type func = &this_type::start_extern_wait<handler_type>;
 
-#if defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 
   strand_.post(make_explicit_context_alloc_handler(
       detail::forward<Handler>(handler),
@@ -340,7 +340,7 @@ void session_manager::async_wait(Handler MA_FWD_REF handler)
       detail::forward<Handler>(handler),
       detail::bind(func, shared_from_this(), detail::placeholders::_1)));
 
-#endif // defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
+#endif
 }
 
 inline session_manager::~session_manager()
