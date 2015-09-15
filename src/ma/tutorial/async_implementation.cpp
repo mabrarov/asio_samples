@@ -13,6 +13,7 @@
 #include <ma/tutorial/async_implementation.hpp>
 #include <ma/detail/memory.hpp>
 #include <ma/detail/functional.hpp>
+#include <ma/detail/utility.hpp>
 
 namespace ma {
 namespace tutorial {
@@ -37,7 +38,7 @@ public:
       AsyncImplementationPtr&& async_implementation)
     : func_(func)
     , async_implementation_(
-          std::forward<AsyncImplementationPtr>(async_implementation))
+          detail::forward<AsyncImplementationPtr>(async_implementation))
   {
   }
 

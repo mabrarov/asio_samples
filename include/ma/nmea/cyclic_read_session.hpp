@@ -37,10 +37,7 @@
 #include <ma/detail/tuple.hpp>
 #include <ma/detail/memory.hpp>
 #include <ma/detail/functional.hpp>
-
-#if defined(MA_HAS_RVALUE_REFS)
-#include <ma/type_traits.hpp>
-#endif // defined(MA_HAS_RVALUE_REFS)
+#include <ma/detail/utility.hpp>
 
 namespace ma {
 namespace nmea {
@@ -67,37 +64,20 @@ public:
   boost::asio::serial_port& serial_port();
   void resest();
 
-#if defined(MA_HAS_RVALUE_REFS)
+  template <typename Handler>
+  void async_start(Handler MA_FWD_REF handler);
 
   template <typename Handler>
-  void async_start(Handler&& handler);
-
-  template <typename Handler>
-  void async_stop(Handler&& handler);
+  void async_stop(Handler MA_FWD_REF handler);
 
   // Handler()(const boost::system::error_code&, std::size_t)
   template <typename Handler, typename Iterator>
-  void async_read_some(Iterator&& begin, Iterator&& end, Handler&& handler);
+  void async_read_some(Iterator MA_FWD_REF begin, Iterator MA_FWD_REF end, 
+      Handler MA_FWD_REF handler);
 
   template <typename ConstBufferSequence, typename Handler>
-  void async_write_some(ConstBufferSequence&& buffers, Handler&& handler);
-
-#else // defined(MA_HAS_RVALUE_REFS)
-
-  template <typename Handler>
-  void async_start(const Handler& handler);
-
-  template <typename Handler>
-  void async_stop(const Handler& handler);
-
-  // Handler()(const boost::system::error_code&, std::size_t)
-  template <typename Handler, typename Iterator>
-  void async_read_some(Iterator begin, Iterator end, const Handler& handler);
-
-  template <typename ConstBufferSequence, typename Handler>
-  void async_write_some(ConstBufferSequence buffers, const Handler& handler);
-
-#endif // defined(MA_HAS_RVALUE_REFS)
+  void async_write_some(ConstBufferSequence MA_FWD_REF buffers, 
+      Handler MA_FWD_REF handler);
 
 protected:
   cyclic_read_session(boost::asio::io_service& io_service,
@@ -142,16 +122,16 @@ private:
   class wrapped_extern_read_handler;
 
   template <typename Handler>
-  void start_extern_start(const Handler&);
+  void start_extern_start(Handler&);
 
   template <typename Handler>
-  void start_extern_stop(const Handler&);
+  void start_extern_stop(Handler&);
 
   template <typename Handler, typename Iterator>
-  void start_extern_read_some(const Iterator&, const Iterator&, const Handler&);
+  void start_extern_read_some(Iterator&, Iterator&, Handler&);
 
   template <typename ConstBufferSequence, typename Handler>
-  void start_extern_write_some(const ConstBufferSequence&, const Handler&);
+  void start_extern_write_some(ConstBufferSequence&, Handler&);
 
   boost::system::error_code do_start_extern_start();
   optional_error_code do_start_extern_stop();
@@ -205,24 +185,17 @@ private:
 
 public:
 
-#if defined(MA_HAS_RVALUE_REFS)
-
   template <typename H, typename I>
-  wrapped_extern_read_handler(H&& handler, I&& begin, I&& end);
+  wrapped_extern_read_handler(H MA_FWD_REF handler, 
+      I MA_FWD_REF begin, I MA_FWD_REF end);
 
-#if defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
+#if defined(MA_HAS_RVALUE_REFS) \
+    && (defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG))
 
   wrapped_extern_read_handler(this_type&&);
   wrapped_extern_read_handler(const this_type&);
 
-#endif // defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
-
-#else // defined(MA_HAS_RVALUE_REFS)
-
-  wrapped_extern_read_handler(const Handler& handler,
-      const Iterator& begin, const Iterator& end);
-
-#endif // defined(MA_HAS_RVALUE_REFS)
+#endif
 
   static read_result_type do_copy(extern_read_handler_base* base,
       const frame_buffer_type& buffer);
@@ -241,10 +214,11 @@ public:
 #if defined(MA_HAS_RVALUE_REFS)
 
   template <typename Function>
-  friend void asio_handler_invoke(Function&& function, this_type* context)
+  friend void asio_handler_invoke(Function MA_FWD_REF function, 
+      this_type* context)
   {
     ma_handler_invoke_helpers::invoke(
-        std::forward<Function>(function), context->handler_);
+        detail::forward<Function>(function), context->handler_);
   }
 
 #else // defined(MA_HAS_RVALUE_REFS)
@@ -281,135 +255,70 @@ inline boost::asio::serial_port& cyclic_read_session::serial_port()
   return serial_port_;
 }
 
-#if defined(MA_HAS_RVALUE_REFS)
-
 template <typename Handler>
-void cyclic_read_session::async_start(Handler&& handler)
+void cyclic_read_session::async_start(Handler MA_FWD_REF handler)
 {
   typedef typename remove_cv_reference<Handler>::type handler_type;
-  typedef void (this_type::*func_type)(const handler_type&);
+  typedef void (this_type::*func_type)(handler_type&);
 
   func_type func = &this_type::start_extern_start<handler_type>;
 
   strand_.post(make_explicit_context_alloc_handler(
-      std::forward<Handler>(handler),
+      detail::forward<Handler>(handler),
       detail::bind(func, shared_from_this(), detail::placeholders::_1)));
 }
 
 template <typename Handler>
-void cyclic_read_session::async_stop(Handler&& handler)
+void cyclic_read_session::async_stop(Handler MA_FWD_REF handler)
 {
   typedef typename remove_cv_reference<Handler>::type handler_type;
-  typedef void (this_type::*func_type)(const handler_type&);
+  typedef void (this_type::*func_type)(handler_type&);
 
   func_type func = &this_type::start_extern_stop<handler_type>;
 
   strand_.post(make_explicit_context_alloc_handler(
-      std::forward<Handler>(handler),
+      detail::forward<Handler>(handler),
       detail::bind(func, shared_from_this(), detail::placeholders::_1)));
 }
 
 // Handler()(const boost::system::error_code&, std::size_t)
 template <typename Handler, typename Iterator>
 void cyclic_read_session::async_read_some(
-    Iterator&& begin, Iterator&& end, Handler&& handler)
+    Iterator MA_FWD_REF begin, Iterator MA_FWD_REF end, 
+    Handler MA_FWD_REF handler)
 {
   typedef typename remove_cv_reference<Iterator>::type iterator_type;
   typedef typename remove_cv_reference<Handler>::type  handler_type;
-  typedef void (this_type::*func_type)(const iterator_type&,
-      const iterator_type&, const handler_type&);
+  typedef void (this_type::*func_type)(iterator_type&, iterator_type&,
+      handler_type&);
 
   func_type func =
       &this_type::start_extern_read_some<handler_type, iterator_type>;
 
   strand_.post(make_explicit_context_alloc_handler(
-      std::forward<Handler>(handler),
-      detail::bind(func, shared_from_this(), std::forward<Iterator>(begin),
-          std::forward<Iterator>(end), detail::placeholders::_1)));
+      detail::forward<Handler>(handler),
+      detail::bind(func, shared_from_this(), detail::forward<Iterator>(begin),
+          detail::forward<Iterator>(end), detail::placeholders::_1)));
 }
 
 template <typename ConstBufferSequence, typename Handler>
 void cyclic_read_session::async_write_some(
-    ConstBufferSequence&& buffers, Handler&& handler)
+    ConstBufferSequence MA_FWD_REF buffers, Handler MA_FWD_REF handler)
 {
   typedef typename remove_cv_reference<ConstBufferSequence>::type
       buffers_type;
   typedef typename remove_cv_reference<Handler>::type handler_type;
-  typedef void (this_type::*func_type)(const buffers_type&,
-      const handler_type&);
+  typedef void (this_type::*func_type)(buffers_type&, handler_type&);
 
   func_type func =
       &this_type::start_extern_write_some<buffers_type, handler_type>;
 
   strand_.post(make_explicit_context_alloc_handler(
-      std::forward<Handler>(handler),
+      detail::forward<Handler>(handler),
       detail::bind(func, shared_from_this(),
-          std::forward<ConstBufferSequence>(buffers),
+          detail::forward<ConstBufferSequence>(buffers),
           detail::placeholders::_1)));
 }
-
-#else // defined(MA_HAS_RVALUE_REFS)
-
-template <typename Handler>
-void cyclic_read_session::async_start(const Handler& handler)
-{
-  typedef Handler handler_type;
-  typedef void (this_type::*func_type)(const handler_type&);
-
-  func_type func = &this_type::start_extern_start<handler_type>;
-
-  strand_.post(make_explicit_context_alloc_handler(handler,
-      detail::bind(func, shared_from_this(), detail::placeholders::_1)));
-}
-
-template <typename Handler>
-void cyclic_read_session::async_stop(const Handler& handler)
-{
-  typedef Handler handler_type;
-  typedef void (this_type::*func_type)(const handler_type&);
-
-  func_type func = &this_type::start_extern_stop<handler_type>;
-
-  strand_.post(make_explicit_context_alloc_handler(handler,
-      detail::bind(func, shared_from_this(), detail::placeholders::_1)));
-}
-
-// Handler()(const boost::system::error_code&, std::size_t)
-template <typename Handler, typename Iterator>
-void cyclic_read_session::async_read_some(
-    Iterator begin, Iterator end, const Handler& handler)
-{
-  typedef Iterator iterator_type;
-  typedef Handler  handler_type;
-  typedef void (this_type::*func_type)(const iterator_type&,
-      const iterator_type&, const handler_type&);
-
-  func_type func =
-      &this_type::start_extern_read_some<handler_type, iterator_type>;
-
-  strand_.post(make_explicit_context_alloc_handler(handler,
-      detail::bind(func, shared_from_this(), begin, end,
-          detail::placeholders::_1)));
-}
-
-template <typename ConstBufferSequence, typename Handler>
-void cyclic_read_session::async_write_some(
-    ConstBufferSequence buffers, const Handler& handler)
-{
-  typedef ConstBufferSequence buffers_type;
-  typedef Handler             handler_type;
-  typedef void (this_type::*func_type)(const buffers_type&,
-      const handler_type&);
-
-  func_type func =
-      &this_type::start_extern_write_some<buffers_type, handler_type>;
-
-  strand_.post(make_explicit_context_alloc_handler(handler,
-      detail::bind(func, shared_from_this(), buffers,
-          detail::placeholders::_1)));
-}
-
-#endif // defined(MA_HAS_RVALUE_REFS)
 
 inline cyclic_read_session::~cyclic_read_session()
 {
@@ -444,28 +353,28 @@ cyclic_read_session::extern_read_handler_base::copy(
   return copy_func_(this, buffer);
 }
 
-#if defined(MA_HAS_RVALUE_REFS)
-
 template <typename Handler, typename Iterator>
 template <typename H, typename I>
 cyclic_read_session::wrapped_extern_read_handler<Handler, Iterator>
-    ::wrapped_extern_read_handler(H&& handler, I&& begin, I&& end)
+    ::wrapped_extern_read_handler(H MA_FWD_REF handler, I MA_FWD_REF begin, 
+          I MA_FWD_REF end)
   : extern_read_handler_base(&this_type::do_copy)
-  , handler_(std::forward<H>(handler))
-  , start_(std::forward<I>(begin))
-  , end_(std::forward<I>(end))
+  , handler_(detail::forward<H>(handler))
+  , start_(detail::forward<I>(begin))
+  , end_(detail::forward<I>(end))
 {
 }
 
-#if defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
+#if defined(MA_HAS_RVALUE_REFS) \
+    && (defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG))
 
 template <typename Handler, typename Iterator>
 cyclic_read_session::wrapped_extern_read_handler<Handler, Iterator>
     ::wrapped_extern_read_handler(this_type&& other)
-  : extern_read_handler_base(std::move(other))
-  , handler_(std::move(other.handler_))
-  , start_(std::move(other.start_))
-  , end_(std::move(other.end_))
+  : extern_read_handler_base(detail::move(other))
+  , handler_(detail::move(other.handler_))
+  , start_(detail::move(other.start_))
+  , end_(detail::move(other.end_))
 {
 }
 
@@ -479,22 +388,7 @@ cyclic_read_session::wrapped_extern_read_handler<Handler, Iterator>
 {
 }
 
-#endif // defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
-
-#else // defined(MA_HAS_RVALUE_REFS)
-
-template <typename Handler, typename Iterator>
-cyclic_read_session::wrapped_extern_read_handler<Handler, Iterator>
-  ::wrapped_extern_read_handler(const Handler& handler,
-    const Iterator& begin, const Iterator& end)
-  : extern_read_handler_base(&this_type::do_copy)
-  , handler_(handler)
-  , start_(begin)
-  , end_(end)
-{
-}
-
-#endif // defined(MA_HAS_RVALUE_REFS)
+#endif
 
 template <typename Handler, typename Iterator>
 cyclic_read_session::read_result_type
@@ -513,35 +407,35 @@ void cyclic_read_session::wrapped_extern_read_handler<Handler, Iterator>
 }
 
 template <typename Handler>
-void cyclic_read_session::start_extern_start(const Handler& handler)
+void cyclic_read_session::start_extern_start(Handler& handler)
 {
   boost::system::error_code error = do_start_extern_start();
-  io_service_.post(bind_handler(handler, error));
+  io_service_.post(bind_handler(detail::move(handler), error));
 }
 
 template <typename Handler>
-void cyclic_read_session::start_extern_stop(const Handler& handler)
+void cyclic_read_session::start_extern_stop(Handler& handler)
 {
   if (optional_error_code result = do_start_extern_stop())
   {
-    io_service_.post(bind_handler(handler, *result));
+    io_service_.post(bind_handler(detail::move(handler), *result));
   }
   else
   {
-    extern_stop_handler_.store(handler);
+    extern_stop_handler_.store(detail::move(handler));
   }
 }
 
 template <typename Handler, typename Iterator>
 void cyclic_read_session::start_extern_read_some(
-    const Iterator& begin, const Iterator& end, const Handler& handler)
+    Iterator& begin, Iterator& end, Handler& handler)
 {
   if (optional_error_code read_result = do_start_extern_read_some())
   {
     // Complete read operation "in place" if error
     if (*read_result)
     {
-      io_service_.post(bind_handler(handler, *read_result, 0));
+      io_service_.post(bind_handler(detail::move(handler), *read_result, 0));
       return;
     }
 
@@ -550,32 +444,33 @@ void cyclic_read_session::start_extern_read_some(
     frame_buffer_.erase_begin(detail::get<1>(copy_result));
 
     // Post the handler
-    io_service_.post(bind_handler(handler,
+    io_service_.post(bind_handler(detail::move(handler),
         detail::get<0>(copy_result), detail::get<1>(copy_result)));
   }
   else
   {
     typedef wrapped_extern_read_handler<Handler, Iterator> wrapped_handler_type;
-    extern_read_handler_.store(wrapped_handler_type(handler, begin, end));
+    extern_read_handler_.store(wrapped_handler_type(
+        detail::move(handler), detail::move(begin), detail::move(end)));
   }
 }
 
 template <typename ConstBufferSequence, typename Handler>
-void cyclic_read_session::start_extern_write_some(
-    const ConstBufferSequence& buffers, const Handler& handler)
+void cyclic_read_session::start_extern_write_some(ConstBufferSequence& buffers, 
+    Handler& handler)
 {
   if ((extern_state::work != extern_state_) || port_write_in_progress_)
   {
     boost::system::error_code error(nmea::error::invalid_state);
-    io_service_.post(bind_handler(handler, error, 0));
+    io_service_.post(bind_handler(detail::move(handler), error, 0));
     return;
   }
 
-  serial_port_.async_write_some(buffers, strand_.wrap(
+  serial_port_.async_write_some(detail::move(buffers), strand_.wrap(
       make_custom_alloc_handler(write_allocator_, detail::bind(
           &this_type::handle_write<Handler>, shared_from_this(),
           detail::placeholders::_1, detail::placeholders::_2,
-          detail::make_tuple<Handler>(handler)))));
+          detail::make_tuple<Handler>(detail::move(handler))))));
 
   port_write_in_progress_ = true;
 }
