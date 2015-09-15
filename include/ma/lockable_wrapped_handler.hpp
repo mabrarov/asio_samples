@@ -17,13 +17,10 @@
 #include <ma/handler_alloc_helpers.hpp>
 #include <ma/handler_invoke_helpers.hpp>
 #include <ma/handler_cont_helpers.hpp>
+#include <ma/type_traits.hpp>
 #include <ma/detail/memory.hpp>
 #include <ma/detail/thread.hpp>
-
-#if defined(MA_HAS_RVALUE_REFS)
-#include <utility>
-#include <ma/type_traits.hpp>
-#endif // defined(MA_HAS_RVALUE_REFS)
+#include <ma/detail/utility.hpp>
 
 namespace ma {
 
@@ -44,20 +41,19 @@ private:
 public:
   typedef void result_type;
 
-#if defined(MA_HAS_RVALUE_REFS)
-
   template <typename H>
-  lockable_wrapped_handler(Lockable& lockable, H&& handler)
+  lockable_wrapped_handler(Lockable& lockable, H MA_FWD_REF handler)
     : lockable_(detail::addressof(lockable))
-    , handler_(std::forward<H>(handler))
+    , handler_(detail::forward<H>(handler))
   {
   }
 
-#if defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
+#if defined(MA_HAS_RVALUE_REFS) \
+    && (defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG))
 
   lockable_wrapped_handler(this_type&& other)
     : lockable_(other.lockable_)
-    , handler_(std::move(other.handler_))
+    , handler_(detail::move(other.handler_))
   {
 #if !defined(NDEBUG)
     // For the check of usage of asio invocation.
@@ -72,16 +68,6 @@ public:
   }
 
 #endif
-
-#else // defined(MA_HAS_RVALUE_REFS)
-
-  lockable_wrapped_handler(Lockable& lockable, const Handler& handler)
-    : lockable_(detail::addressof(lockable))
-    , handler_(handler)
-  {
-  }
-
-#endif // defined(MA_HAS_RVALUE_REFS)
 
 #if !defined(NDEBUG)
   ~lockable_wrapped_handler()
@@ -109,13 +95,14 @@ public:
 #if defined(MA_HAS_RVALUE_REFS)
 
   template <typename Function>
-  friend void asio_handler_invoke(Function&& function, this_type* context)
+  friend void asio_handler_invoke(Function MA_FWD_REF function, 
+      this_type* context)
   {
     // Acquire lock    
     detail::lock_guard<Lockable> lock_guard(*context->lockable_);
     // Forward to asio_handler_invoke provided by source handler.
     ma_handler_invoke_helpers::invoke(
-        std::forward<Function>(function), context->handler_);
+        detail::forward<Function>(function), context->handler_);
   }
 
 #else // defined(MA_HAS_RVALUE_REFS)
@@ -151,36 +138,41 @@ public:
   }
 
   template <typename Arg1>
-  void operator()(const Arg1& arg1)
+  void operator()(Arg1 MA_FWD_REF arg1)
   {
-    handler_(arg1);
+    handler_(detail::forward<Arg1>(arg1));
   }
 
   template <typename Arg1, typename Arg2>
-  void operator()(const Arg1& arg1, const Arg2& arg2)
+  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2)
   {
-    handler_(arg1, arg2);
+    handler_(detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2));
   }
 
   template <typename Arg1, typename Arg2, typename Arg3>
-  void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3)
+  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2, 
+      Arg3 MA_FWD_REF arg3)
   {
-    handler_(arg1, arg2, arg3);
+    handler_(detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2), 
+        detail::forward<Arg3>(arg3));
   }
 
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4>
-  void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3,
-      const Arg4& arg4)
+  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2, 
+      Arg3 MA_FWD_REF arg3, Arg4 MA_FWD_REF arg4)
   {
-    handler_(arg1, arg2, arg3, arg4);
+    handler_(detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2),
+        detail::forward<Arg3>(arg3), detail::forward<Arg4>(arg4));
   }
 
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4,
       typename Arg5>
-  void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3,
-      const Arg4& arg4, const Arg5& arg5)
+  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2, 
+      Arg3 MA_FWD_REF arg3, Arg4 MA_FWD_REF arg4, Arg5 MA_FWD_REF arg5)
   {
-    handler_(arg1, arg2, arg3, arg4, arg5);
+    handler_(detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2),
+        detail::forward<Arg3>(arg3), detail::forward<Arg4>(arg4), 
+        detail::forward<Arg5>(arg5));
   }
 
   void operator()() const
@@ -189,36 +181,41 @@ public:
   }
 
   template <typename Arg1>
-  void operator()(const Arg1& arg1) const
+  void operator()(Arg1 MA_FWD_REF arg1) const
   {
-    handler_(arg1);
+    handler_(detail::forward<Arg1>(arg1));
   }
 
   template <typename Arg1, typename Arg2>
-  void operator()(const Arg1& arg1, const Arg2& arg2) const
+  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2) const
   {
-    handler_(arg1, arg2);
+    handler_(detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2));
   }
 
   template <typename Arg1, typename Arg2, typename Arg3>
-  void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3) const
+  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2, 
+      Arg3 MA_FWD_REF arg3) const
   {
-    handler_(arg1, arg2, arg3);
+    handler_(detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2), 
+        detail::forward<Arg3>(arg3));
   }
 
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4>
-  void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3,
-      const Arg4& arg4) const
+  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2, 
+      Arg3 MA_FWD_REF arg3, Arg4 MA_FWD_REF arg4) const
   {
-    handler_(arg1, arg2, arg3, arg4);
+    handler_(detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2),
+        detail::forward<Arg3>(arg3), detail::forward<Arg4>(arg4));
   }
 
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4,
       typename Arg5>
-  void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3,
-      const Arg4& arg4, const Arg5& arg5) const
+  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2, 
+      Arg3 MA_FWD_REF arg3, Arg4 MA_FWD_REF arg4, Arg5 MA_FWD_REF arg5) const
   {
-    handler_(arg1, arg2, arg3, arg4, arg5);
+    handler_(detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2),
+        detail::forward<Arg3>(arg3), detail::forward<Arg4>(arg4), 
+        detail::forward<Arg5>(arg5));
   }
 
 private:
@@ -230,30 +227,16 @@ private:
 #pragma warning(pop)
 #endif // #if defined(_MSC_VER)
 
-#if defined(MA_HAS_RVALUE_REFS)
-
 /// Helper for creation of wrapped handler.
 template <typename Lockable, typename Handler>
 inline lockable_wrapped_handler<
     Lockable, typename remove_cv_reference<Handler>::type>
-make_lockable_wrapped_handler(Lockable& lockable, Handler&& handler)
+make_lockable_wrapped_handler(Lockable& lockable, Handler MA_FWD_REF handler)
 {
   typedef typename remove_cv_reference<Handler>::type handler_type;
   return lockable_wrapped_handler<Lockable, handler_type>(
-      lockable, std::forward<Handler>(handler));
+      lockable, detail::forward<Handler>(handler));
 }
-
-#else // defined(MA_HAS_RVALUE_REFS)
-
-/// Helper for creation of wrapped handler.
-template <typename Lockable, typename Handler>
-inline lockable_wrapped_handler<Lockable, Handler>
-make_lockable_wrapped_handler(Lockable& lockable, const Handler& handler)
-{
-  return lockable_wrapped_handler<Lockable, Handler>(lockable, handler);
-}
-
-#endif // defined(MA_HAS_RVALUE_REFS)
 
 } // namespace ma
 

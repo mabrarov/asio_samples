@@ -258,7 +258,7 @@ console_signal_service::post_adapter::post_adapter(const this_type& other)
 }
 
 console_signal_service::post_adapter::post_adapter(this_type&& other)
-  : handlers_(std::move(other.handlers_))
+  : handlers_(detail::move(other.handlers_))
 {
 }
 
@@ -306,7 +306,7 @@ void console_signal_service::destroy(implementation_type& impl)
     {
       // Take ownership of waiting handlers
 #if defined(MA_HAS_RVALUE_REFS)
-      handlers.value = std::move(impl.handlers_);
+      handlers.value = detail::move(impl.handlers_);
 #else
       handlers.value.swap(impl.handlers_);
 #endif
@@ -332,7 +332,7 @@ std::size_t console_signal_service::cancel(implementation_type& impl,
     {
       // Take ownership of waiting handlers
 #if defined(MA_HAS_RVALUE_REFS)
-      handlers.value = std::move(impl.handlers_);
+      handlers.value = detail::move(impl.handlers_);
 #else
       handlers.value.swap(impl.handlers_);
 #endif

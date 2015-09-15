@@ -14,6 +14,8 @@
 
 #include <boost/asio.hpp>
 #include <ma/config.hpp>
+#include <ma/type_traits.hpp>
+#include <ma/detail/utility.hpp>
 
 #if defined(WIN32) && !defined(BOOST_ASIO_DISABLE_IOCP) \
     && !defined(MA_BOOST_ASIO_WINDOWS_CONNECT_EX) && (_WIN32_WINNT >= 0x0501)
@@ -32,11 +34,6 @@
 #include <ma/handler_invoke_helpers.hpp>
 #include <ma/handler_cont_helpers.hpp>
 #endif // defined(MA_ASYNC_CONNECT_USES_WINDOWS_CONNECT_EX)
-
-#if defined(MA_HAS_RVALUE_REFS)
-#include <utility>
-#include <ma/type_traits.hpp>
-#endif // defined(MA_HAS_RVALUE_REFS)
 
 namespace ma {
 
@@ -58,18 +55,17 @@ private:
 public:
   typedef void result_type;
 
-#if defined(MA_HAS_RVALUE_REFS)
-
   template <typename H>
-  explicit connect_ex_handler(H&& handler)
-    : handler_(std::forward<H>(handler))
+  explicit connect_ex_handler(H MA_FWD_REF handler)
+    : handler_(detail::forward<H>(handler))
   {
   }
 
-#if defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
+#if defined(MA_HAS_RVALUE_REFS) \
+    && (defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG))
 
   connect_ex_handler(this_type&& other)
-    : handler_(std::move(other.handler_))
+    : handler_(detail::move(other.handler_))
   {
   }
 
@@ -78,16 +74,7 @@ public:
   {
   }
 
-#endif // defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
-
-#else // defined(MA_HAS_RVALUE_REFS)
-
-  explicit connect_ex_handler(const Handler& handler)
-    : handler_(handler)
-  {
-  }
-
-#endif // defined(MA_HAS_RVALUE_REFS)
+#endif
 
 #if !defined(NDEBUG)
   ~connect_ex_handler()
@@ -109,10 +96,11 @@ public:
 #if defined(MA_HAS_RVALUE_REFS)
 
   template <typename Function>
-  friend void asio_handler_invoke(Function&& function, this_type* context)
+  friend void asio_handler_invoke(Function MA_FWD_REF function, 
+      this_type* context)
   {
     ma_handler_invoke_helpers::invoke(
-        std::forward<Function>(function), context->handler_);
+        detail::forward<Function>(function), context->handler_);
   }
 
 #else // defined(MA_HAS_RVALUE_REFS)
@@ -156,26 +144,13 @@ private:
 #pragma warning(pop)
 #endif // #if defined(_MSC_VER)
 
-#if defined(MA_HAS_RVALUE_REFS)
-
 template <typename Handler>
 inline connect_ex_handler<typename remove_cv_reference<Handler>::type>
-make_connect_ex_handler(Handler&& handler)
+make_connect_ex_handler(Handler MA_FWD_REF handler)
 {
   typedef typename remove_cv_reference<Handler>::type handler_type;
-  return connect_ex_handler<handler_type>(std::forward<Handler>(handler));
+  return connect_ex_handler<handler_type>(detail::forward<Handler>(handler));
 }
-
-#else // defined(MA_HAS_RVALUE_REFS)
-
-template <typename Handler>
-inline connect_ex_handler<Handler>
-make_connect_ex_handler(const Handler& handler)
-{
-  return connect_ex_handler<Handler>(handler);
-}
-
-#endif // defined(MA_HAS_RVALUE_REFS)
 
 template <typename Socket>
 boost::system::error_code bind_to_any(Socket& socket, 
@@ -201,20 +176,10 @@ boost::system::error_code bind_to_any(Socket& socket,
 
 #endif // defined(MA_ASYNC_CONNECT_USES_WINDOWS_CONNECT_EX)
 
-#if defined(MA_HAS_RVALUE_REFS)
-
 template <typename Socket, typename Handler>
 void async_connect(Socket& socket,
-    const typename Socket::endpoint_type& peer_endpoint, Handler&& handler)
-
-#else // defined(MA_HAS_RVALUE_REFS)
-
-template <typename Socket, typename Handler>
-void async_connect(Socket& socket,
-    const typename Socket::endpoint_type& peer_endpoint,
-    const Handler& handler)
-
-#endif // defined(MA_HAS_RVALUE_REFS)
+    const typename Socket::endpoint_type& peer_endpoint, 
+    Handler MA_FWD_REF handler)
 {
 #if defined(MA_ASYNC_CONNECT_USES_WINDOWS_CONNECT_EX)
 
@@ -225,16 +190,8 @@ void async_connect(Socket& socket,
     socket.open(peer_endpoint.protocol(), error);
     if (error)
     {
-#if defined(MA_HAS_RVALUE_REFS)
-
       socket.get_io_service().post(
-          ma::bind_handler(std::forward<Handler>(handler), error));
-
-#else // defined(MA_HAS_RVALUE_REFS)
-
-      socket.get_io_service().post(ma::bind_handler(handler, error));
-
-#endif // defined(MA_HAS_RVALUE_REFS)
+          ma::bind_handler(detail::forward<Handler>(handler), error));
       return;
     }
   }
@@ -257,53 +214,27 @@ void async_connect(Socket& socket,
   // If ConnectEx wasn't located then fall to common Asio async_connect.
   if ((SOCKET_ERROR == ctrl_result) || !connect_ex_func)
   {
-#if defined(MA_HAS_RVALUE_REFS)
-
-    socket.async_connect(peer_endpoint, std::forward<Handler>(handler));
-
-#else // defined(MA_HAS_RVALUE_REFS)
-
-    socket.async_connect(peer_endpoint, handler);
-
-#endif // defined(MA_HAS_RVALUE_REFS)
+    socket.async_connect(peer_endpoint, detail::forward<Handler>(handler));
     return;
   }
 
   if (boost::system::error_code error = detail::bind_to_any(socket, 
       peer_endpoint.protocol()))
   {
-#if defined(MA_HAS_RVALUE_REFS)
-
     socket.get_io_service().post(
-        ma::bind_handler(std::forward<Handler>(handler), error));
-
-#else // defined(MA_HAS_RVALUE_REFS)
-
-    socket.get_io_service().post(ma::bind_handler(handler, error));
-
-#endif // defined(MA_HAS_RVALUE_REFS)
+        ma::bind_handler(detail::forward<Handler>(handler), error));
     return;
   }
 
-#if defined(MA_HAS_RVALUE_REFS)
-
   // Construct an OVERLAPPED-derived object to contain the handler.
   boost::asio::windows::overlapped_ptr overlapped(socket.get_io_service(),
-      detail::make_connect_ex_handler(std::forward<Handler>(handler)));
-
-#else // defined(MA_HAS_RVALUE_REFS)
-
-  // Construct an OVERLAPPED-derived object to contain the handler.
-  boost::asio::windows::overlapped_ptr overlapped(socket.get_io_service(),
-      detail::make_connect_ex_handler(handler));
-
-#endif // defined(MA_HAS_RVALUE_REFS)
+      detail::make_connect_ex_handler(detail::forward<Handler>(handler)));
 
   // Initiate the ConnectEx operation.
   BOOL ok = connect_ex_func(native_socket, peer_endpoint.data(),
       boost::numeric_cast<int>(peer_endpoint.size()), NULL, 0, NULL,
       overlapped.get());
-  DWORD last_error = ::WSAGetLastError();
+  int last_error = ::WSAGetLastError();
 
   // Check if the operation completed immediately.
   if ((FALSE == ok) && (ERROR_IO_PENDING != last_error))
@@ -324,15 +255,7 @@ void async_connect(Socket& socket,
 
 #else // defined(MA_ASYNC_CONNECT_USES_WINDOWS_CONNECT_EX)
 
-#if defined(MA_HAS_RVALUE_REFS)
-
-  socket.async_connect(peer_endpoint, std::forward<Handler>(handler));
-
-#else // defined(MA_HAS_RVALUE_REFS)
-
-  socket.async_connect(peer_endpoint, handler);
-
-#endif // defined(MA_HAS_RVALUE_REFS)
+  socket.async_connect(peer_endpoint, detail::forward<Handler>(handler));
 
 #endif // defined(MA_ASYNC_CONNECT_USES_WINDOWS_CONNECT_EX)
 

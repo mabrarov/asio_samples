@@ -19,10 +19,7 @@
 #include <ma/config.hpp>
 #include <ma/handler_alloc_helpers.hpp>
 #include <ma/detail/memory.hpp>
-
-#if defined(MA_HAS_RVALUE_REFS)
-#include <utility>
-#endif // defined(MA_HAS_RVALUE_REFS)
+#include <ma/detail/utility.hpp>
 
 namespace ma {
 namespace detail {
@@ -120,15 +117,13 @@ public:
     raw_ptr.pointer_ = 0;
   }
 
-#if defined(MA_HAS_RVALUE_REFS)
-
   /// Construct object in raw memory and take ownership if construction
   /// succeeds. Forwards arg1,..., argn to the object's constructor.
   /// Throws if contructor of value_type throws.
   template <typename Arg1>
-  handler_ptr(raw_ptr_type& raw_ptr, Arg1&& a1)
+  handler_ptr(raw_ptr_type& raw_ptr, Arg1 MA_FWD_REF a1)
     : alloc_context_(detail::addressof(raw_ptr.alloc_context_))
-    , pointer_(new (raw_ptr.pointer_) value_type(std::forward<Arg1>(a1)))
+    , pointer_(new (raw_ptr.pointer_) value_type(detail::forward<Arg1>(a1)))
   {
     raw_ptr.pointer_ = 0;
   }
@@ -137,10 +132,10 @@ public:
   /// succeeds. Forwards arg1,..., argn to the object's constructor.
   /// Throws if contructor of value_type throws.
   template <typename Arg1, typename Arg2>
-  handler_ptr(raw_ptr_type& raw_ptr, Arg1&& a1, Arg2&& a2)
+  handler_ptr(raw_ptr_type& raw_ptr, Arg1 MA_FWD_REF a1, Arg2 MA_FWD_REF a2)
     : alloc_context_(detail::addressof(raw_ptr.alloc_context_))
-    , pointer_(new (raw_ptr.pointer_) value_type(std::forward<Arg1>(a1),
-          std::forward<Arg2>(a2)))
+    , pointer_(new (raw_ptr.pointer_) value_type(detail::forward<Arg1>(a1),
+          detail::forward<Arg2>(a2)))
   {
     raw_ptr.pointer_ = 0;
   }
@@ -149,10 +144,11 @@ public:
   /// succeeds. Forwards arg1,..., argn to the object's constructor.
   /// Throws if contructor of value_type throws.
   template <typename Arg1, typename Arg2, typename Arg3>
-  handler_ptr(raw_ptr_type& raw_ptr, Arg1&& a1, Arg2&& a2, Arg3&& a3)
+  handler_ptr(raw_ptr_type& raw_ptr, Arg1 MA_FWD_REF a1, Arg2 MA_FWD_REF a2, 
+      Arg3 MA_FWD_REF a3)
     : alloc_context_(detail::addressof(raw_ptr.alloc_context_))
-    , pointer_(new (raw_ptr.pointer_) value_type(std::forward<Arg1>(a1),
-          std::forward<Arg2>(a2), std::forward<Arg3>(a3)))
+    , pointer_(new (raw_ptr.pointer_) value_type(detail::forward<Arg1>(a1),
+          detail::forward<Arg2>(a2), detail::forward<Arg3>(a3)))
   {
     raw_ptr.pointer_ = 0;
   }
@@ -161,12 +157,12 @@ public:
   /// succeeds. Forwards arg1,..., argn to the object's constructor.
   /// Throws if contructor of value_type throws.
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4>
-  handler_ptr(raw_ptr_type& raw_ptr, Arg1&& a1, Arg2&& a2, Arg3&& a3,
-      Arg4&& a4)
+  handler_ptr(raw_ptr_type& raw_ptr, Arg1 MA_FWD_REF a1, Arg2 MA_FWD_REF a2, 
+      Arg3 MA_FWD_REF a3, Arg4 MA_FWD_REF a4)
     : alloc_context_(detail::addressof(raw_ptr.alloc_context_))
-    , pointer_(new (raw_ptr.pointer_) value_type(std::forward<Arg1>(a1),
-          std::forward<Arg2>(a2), std::forward<Arg3>(a3),
-          std::forward<Arg4>(a4)))
+    , pointer_(new (raw_ptr.pointer_) value_type(detail::forward<Arg1>(a1),
+          detail::forward<Arg2>(a2), detail::forward<Arg3>(a3),
+          detail::forward<Arg4>(a4)))
   {
     raw_ptr.pointer_ = 0;
   }
@@ -176,12 +172,12 @@ public:
   /// Throws if contructor of value_type throws.
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4,
       typename Arg5>
-  handler_ptr(raw_ptr_type& raw_ptr, Arg1&& a1, Arg2&& a2, Arg3&& a3,
-      Arg4&& a4, Arg5&& a5)
+  handler_ptr(raw_ptr_type& raw_ptr, Arg1 MA_FWD_REF a1, Arg2 MA_FWD_REF a2, 
+      Arg3 MA_FWD_REF a3, Arg4 MA_FWD_REF a4, Arg5 MA_FWD_REF a5)
     : alloc_context_(detail::addressof(raw_ptr.alloc_context_))
-    , pointer_(new (raw_ptr.pointer_) value_type(std::forward<Arg1>(a1),
-          std::forward<Arg2>(a2), std::forward<Arg3>(a3),
-          std::forward<Arg4>(a4), std::forward<Arg5>(a5)))
+    , pointer_(new (raw_ptr.pointer_) value_type(detail::forward<Arg1>(a1),
+          detail::forward<Arg2>(a2), detail::forward<Arg3>(a3),
+          detail::forward<Arg4>(a4), detail::forward<Arg5>(a5)))
   {
     raw_ptr.pointer_ = 0;
   }
@@ -191,13 +187,14 @@ public:
   /// Throws if contructor of value_type throws.
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4,
       typename Arg5, typename Arg6>
-  handler_ptr(raw_ptr_type& raw_ptr, Arg1&& a1, Arg2&& a2, Arg3&& a3,
-      Arg4&& a4, Arg5&& a5, Arg6&& a6)
+  handler_ptr(raw_ptr_type& raw_ptr, Arg1 MA_FWD_REF a1, Arg2 MA_FWD_REF a2, 
+      Arg3 MA_FWD_REF a3, Arg4 MA_FWD_REF a4, Arg5 MA_FWD_REF a5, 
+      Arg6 MA_FWD_REF a6)
     : alloc_context_(detail::addressof(raw_ptr.alloc_context_))
-    , pointer_(new (raw_ptr.pointer_) value_type(std::forward<Arg1>(a1),
-          std::forward<Arg2>(a2), std::forward<Arg3>(a3),
-          std::forward<Arg4>(a4), std::forward<Arg5>(a5),
-          std::forward<Arg6>(a6)))
+    , pointer_(new (raw_ptr.pointer_) value_type(detail::forward<Arg1>(a1),
+          detail::forward<Arg2>(a2), detail::forward<Arg3>(a3),
+          detail::forward<Arg4>(a4), detail::forward<Arg5>(a5),
+          detail::forward<Arg6>(a6)))
   {
     raw_ptr.pointer_ = 0;
   }
@@ -207,13 +204,14 @@ public:
   /// Throws if contructor of value_type throws.
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4,
       typename Arg5, typename Arg6, typename Arg7>
-  handler_ptr(raw_ptr_type& raw_ptr, Arg1&& a1, Arg2&& a2, Arg3&& a3,
-      Arg4&& a4, Arg5&& a5, Arg6&& a6, Arg7&& a7)
+  handler_ptr(raw_ptr_type& raw_ptr, Arg1 MA_FWD_REF a1, Arg2 MA_FWD_REF a2, 
+      Arg3 MA_FWD_REF a3, Arg4 MA_FWD_REF a4, Arg5 MA_FWD_REF a5, 
+      Arg6 MA_FWD_REF a6, Arg7 MA_FWD_REF a7)
     : alloc_context_(detail::addressof(raw_ptr.alloc_context_))
-    , pointer_(new (raw_ptr.pointer_) value_type(std::forward<Arg1>(a1),
-          std::forward<Arg2>(a2), std::forward<Arg3>(a3),
-          std::forward<Arg4>(a4), std::forward<Arg5>(a5),
-          std::forward<Arg6>(a6), std::forward<Arg7>(a7)))
+    , pointer_(new (raw_ptr.pointer_) value_type(detail::forward<Arg1>(a1),
+          detail::forward<Arg2>(a2), detail::forward<Arg3>(a3),
+          detail::forward<Arg4>(a4), detail::forward<Arg5>(a5),
+          detail::forward<Arg6>(a6), detail::forward<Arg7>(a7)))
   {
     raw_ptr.pointer_ = 0;
   }
@@ -223,122 +221,18 @@ public:
   /// Throws if contructor of value_type throws.
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4,
       typename Arg5, typename Arg6, typename Arg7, typename Arg8>
-  handler_ptr(raw_ptr_type& raw_ptr, Arg1&& a1, Arg2&& a2, Arg3&& a3,
-      Arg4&& a4, Arg5&& a5, Arg6&& a6, Arg7&& a7, Arg8&& a8)
+  handler_ptr(raw_ptr_type& raw_ptr, Arg1 MA_FWD_REF a1, Arg2 MA_FWD_REF a2, 
+      Arg3 MA_FWD_REF a3, Arg4 MA_FWD_REF a4, Arg5 MA_FWD_REF a5, 
+      Arg6 MA_FWD_REF a6, Arg7 MA_FWD_REF a7, Arg8 MA_FWD_REF a8)
     : alloc_context_(detail::addressof(raw_ptr.alloc_context_))
-    , pointer_(new (raw_ptr.pointer_) value_type(std::forward<Arg1>(a1),
-          std::forward<Arg2>(a2), std::forward<Arg3>(a3),
-          std::forward<Arg4>(a4), std::forward<Arg5>(a5),
-          std::forward<Arg6>(a6), std::forward<Arg7>(a7),
-          std::forward<Arg8>(a8)))
+    , pointer_(new (raw_ptr.pointer_) value_type(detail::forward<Arg1>(a1),
+          detail::forward<Arg2>(a2), detail::forward<Arg3>(a3),
+          detail::forward<Arg4>(a4), detail::forward<Arg5>(a5),
+          detail::forward<Arg6>(a6), detail::forward<Arg7>(a7),
+          detail::forward<Arg8>(a8)))
   {
     raw_ptr.pointer_ = 0;
   }
-
-#else // defined(MA_HAS_RVALUE_REFS)
-
-  /// Construct object in raw memory and take ownership if construction
-  /// succeeds. Forwards arg1,..., argn to the object's constructor.
-  /// Throws if contructor of value_type throws.
-  template <typename Arg1>
-  handler_ptr(raw_ptr_type& raw_ptr, const Arg1& a1)
-    : alloc_context_(detail::addressof(raw_ptr.alloc_context_))
-    , pointer_(new (raw_ptr.pointer_) value_type(a1))
-  {
-    raw_ptr.pointer_ = 0;
-  }
-
-  /// Construct object in raw memory and take ownership if construction
-  /// succeeds. Forwards arg1,..., argn to the object's constructor.
-  /// Throws if contructor of value_type throws.
-  template <typename Arg1, typename Arg2>
-  handler_ptr(raw_ptr_type& raw_ptr, const Arg1& a1, const Arg2& a2)
-    : alloc_context_(detail::addressof(raw_ptr.alloc_context_))
-    , pointer_(new (raw_ptr.pointer_) value_type(a1, a2))
-  {
-    raw_ptr.pointer_ = 0;
-  }
-
-  /// Construct object in raw memory and take ownership if construction
-  /// succeeds. Forwards arg1,..., argn to the object's constructor.
-  /// Throws if contructor of value_type throws.
-  template <typename Arg1, typename Arg2, typename Arg3>
-  handler_ptr(raw_ptr_type& raw_ptr, const Arg1& a1, const Arg2& a2,
-      const Arg3& a3)
-    : alloc_context_(detail::addressof(raw_ptr.alloc_context_))
-    , pointer_(new (raw_ptr.pointer_) value_type(a1, a2, a3))
-  {
-    raw_ptr.pointer_ = 0;
-  }
-
-  /// Construct object in raw memory and take ownership if construction
-  /// succeeds. Forwards arg1,..., argn to the object's constructor.
-  /// Throws if contructor of value_type throws.
-  template <typename Arg1, typename Arg2, typename Arg3, typename Arg4>
-  handler_ptr(raw_ptr_type& raw_ptr, const Arg1& a1, const Arg2& a2,
-      const Arg3& a3, const Arg4& a4)
-    : alloc_context_(detail::addressof(raw_ptr.alloc_context_))
-    , pointer_(new (raw_ptr.pointer_) value_type(a1, a2, a3, a4))
-  {
-    raw_ptr.pointer_ = 0;
-  }
-
-  /// Construct object in raw memory and take ownership if construction
-  /// succeeds. Forwards arg1,..., argn to the object's constructor.
-  /// Throws if contructor of value_type throws.
-  template <typename Arg1, typename Arg2, typename Arg3, typename Arg4,
-      typename Arg5>
-  handler_ptr(raw_ptr_type& raw_ptr, const Arg1& a1, const Arg2& a2,
-      const Arg3& a3, const Arg4& a4, const Arg5& a5)
-    : alloc_context_(detail::addressof(raw_ptr.alloc_context_))
-    , pointer_(new (raw_ptr.pointer_) value_type(a1, a2, a3, a4, a5))
-  {
-    raw_ptr.pointer_ = 0;
-  }
-
-  /// Construct object in raw memory and take ownership if construction
-  /// succeeds. Forwards arg1,..., argn to the object's constructor.
-  /// Throws if contructor of value_type throws.
-  template <typename Arg1, typename Arg2, typename Arg3, typename Arg4,
-      typename Arg5, typename Arg6>
-  handler_ptr(raw_ptr_type& raw_ptr, const Arg1& a1, const Arg2& a2,
-      const Arg3& a3, const Arg4& a4, const Arg5& a5, const Arg6& a6)
-    : alloc_context_(detail::addressof(raw_ptr.alloc_context_))
-    , pointer_(new (raw_ptr.pointer_) value_type(a1, a2, a3, a4, a5, a6))
-  {
-    raw_ptr.pointer_ = 0;
-  }
-
-  /// Construct object in raw memory and take ownership if construction
-  /// succeeds. Forwards arg1,..., argn to the object's constructor.
-  /// Throws if contructor of value_type throws.
-  template <typename Arg1, typename Arg2, typename Arg3, typename Arg4,
-      typename Arg5, typename Arg6, typename Arg7>
-  handler_ptr(raw_ptr_type& raw_ptr, const Arg1& a1, const Arg2& a2,
-      const Arg3& a3, const Arg4& a4, const Arg5& a5, const Arg6& a6,
-      const Arg7& a7)
-    : alloc_context_(detail::addressof(raw_ptr.alloc_context_))
-    , pointer_(new (raw_ptr.pointer_) value_type(a1, a2, a3, a4, a5, a6, a7))
-  {
-    raw_ptr.pointer_ = 0;
-  }
-
-  /// Construct object in raw memory and take ownership if construction
-  /// succeeds. Forwards arg1,..., argn to the object's constructor.
-  /// Throws if contructor of value_type throws.
-  template <typename Arg1, typename Arg2, typename Arg3, typename Arg4,
-      typename Arg5, typename Arg6, typename Arg7, typename Arg8>
-  handler_ptr(raw_ptr_type& raw_ptr, const Arg1& a1, const Arg2& a2,
-      const Arg3& a3, const Arg4& a4, const Arg5& a5, const Arg6& a6,
-      const Arg7& a7, const Arg8& a8)
-    : alloc_context_(detail::addressof(raw_ptr.alloc_context_))
-    , pointer_(new (raw_ptr.pointer_) value_type(a1, a2, a3, a4, a5, a6, a7,
-          a8))
-  {
-    raw_ptr.pointer_ = 0;
-  }
-
-#endif // defined(MA_HAS_RVALUE_REFS)
 
   /// Destructor automatically deallocates memory, unless it has been released.
   /// Throws if value_type destructor throws.

@@ -194,23 +194,16 @@ private:
 
 public:
 
-#if defined(MA_HAS_RVALUE_REFS)
-
   template <typename H>
-  handler_wrapper(boost::asio::io_service&, H&&);
+  handler_wrapper(boost::asio::io_service&, H MA_FWD_REF);
 
-#if defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
+#if defined(MA_HAS_RVALUE_REFS) \
+    && (defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG))
 
   handler_wrapper(this_type&&);
   handler_wrapper(const this_type&);
 
-#endif // defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
-
-#else // defined(MA_HAS_RVALUE_REFS)
-
-  handler_wrapper(boost::asio::io_service&, const Handler&);
-
-#endif // defined(MA_HAS_RVALUE_REFS)
+#endif
 
 #if !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 
@@ -234,8 +227,8 @@ private:
 }; // class console_signal_service::handler_wrapper
 
 template <typename Handler>
-void console_signal_service::async_wait(
-    implementation_type& impl, Handler handler)
+void console_signal_service::async_wait(implementation_type& impl, 
+    Handler handler)
 {
   lock_guard lock(mutex_);
   if (shutdown_)
@@ -264,30 +257,29 @@ void console_signal_service::async_wait(
   ptr.release();
 }
 
-#if defined(MA_HAS_RVALUE_REFS)
-
 template <typename Handler>
 template <typename H>
 console_signal_service::handler_wrapper<Handler>::handler_wrapper(
-    boost::asio::io_service& io_service, H&& handler)
+    boost::asio::io_service& io_service, H MA_FWD_REF handler)
 #if !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
   : base_type()
 #else
   : base_type(&this_type::do_destroy, &this_type::do_post)
 #endif
   , work_(io_service)
-  , handler_(std::forward<H>(handler))
+  , handler_(detail::forward<H>(handler))
 {
 }
 
-#if defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
+#if defined(MA_HAS_RVALUE_REFS) \
+    && (defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG))
 
 template <typename Handler>
 console_signal_service::handler_wrapper<Handler>::handler_wrapper(
     this_type&& other)
-  : base_type(std::move(other))
-  , work_(std::move(other.work_))
-  , handler_(std::move(other.handler_))
+  : base_type(detail::move(other))
+  , work_(detail::move(other.work_))
+  , handler_(detail::move(other.handler_))
 {
 }
 
@@ -300,24 +292,7 @@ console_signal_service::handler_wrapper<Handler>::handler_wrapper(
 {
 }
 
-#endif // defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
-
-#else // defined(MA_HAS_RVALUE_REFS)
-
-template <typename Handler>
-console_signal_service::handler_wrapper<Handler>::handler_wrapper(
-    boost::asio::io_service& io_service, const Handler& handler)
-#if !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
-  : base_type()
-#else
-  : base_type(&this_type::do_destroy, &this_type::do_post)
 #endif
-  , work_(io_service)
-  , handler_(handler)
-{
-}
-
-#endif // defined(MA_HAS_RVALUE_REFS)
 
 #if !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 
