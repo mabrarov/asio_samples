@@ -81,7 +81,7 @@ private:
 
 public:
   typedef void result_type;
-  typedef void (async_interface::*function_type)(const Arg&);
+  typedef void (async_interface::*function_type)(Arg&);
 
   template <typename AsyncInterfacePtr>
   forward_handler_binder(function_type, AsyncInterfacePtr&&);
@@ -93,7 +93,7 @@ public:
 
 #endif // defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
 
-  void operator()(const Arg&);
+  void operator()(Arg&);
 
 private:
   function_type       function_;
@@ -160,7 +160,7 @@ template <typename AsyncInterfacePtr>
 async_interface::forward_handler_binder<Arg>::forward_handler_binder(
     function_type function, AsyncInterfacePtr&& async_interface)
   : function_(function)
-  , async_interface_(detail::move<AsyncInterfacePtr>(async_interface))
+  , async_interface_(detail::forward<AsyncInterfacePtr>(async_interface))
 {
 }
 
@@ -185,7 +185,7 @@ async_interface::forward_handler_binder<Arg>::forward_handler_binder(
 #endif // defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
 
 template <typename Arg>
-void async_interface::forward_handler_binder<Arg>::operator()(const Arg& arg)
+void async_interface::forward_handler_binder<Arg>::operator()(Arg& arg)
 {
   ((*async_interface_).*function_)(arg);
 }
