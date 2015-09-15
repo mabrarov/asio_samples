@@ -111,7 +111,7 @@ void async_interface::async_do_something(Handler MA_FWD_REF handler)
 
   func_type func = &this_type::start_do_something<handler_type>;
 
-#if defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
   strand().post(ma::make_explicit_context_alloc_handler(
       detail::forward<Handler>(handler),
       forward_handler_binder<handler_type>(func, get_interface_ptr())));
