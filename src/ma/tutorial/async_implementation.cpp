@@ -46,7 +46,7 @@ public:
 
   timer_handler_binder(this_type&& other)
     : func_(other.func_)
-    , async_implementation_(std::move(other.async_implementation_))
+    , async_implementation_(detail::move(other.async_implementation_))
   {
   }
 

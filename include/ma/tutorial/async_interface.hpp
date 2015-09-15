@@ -170,7 +170,7 @@ template <typename Arg>
 async_interface::forward_handler_binder<Arg>::forward_handler_binder(
     this_type&& other)
   : function_(other.function_)
-  , async_interface_(std::move(other.async_interface_))
+  , async_interface_(detail::move(other.async_interface_))
 {
 }
 

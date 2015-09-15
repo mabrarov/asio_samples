@@ -50,8 +50,8 @@ public:
     && (defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG))
 
   forward_binder(this_type&& other)
-    : async_implementation_(std::move(other.async_implementation_))
-    , do_something_handler_(std::move(other.do_something_handler_))
+    : async_implementation_(detail::move(other.async_implementation_))
+    , do_something_handler_(detail::move(other.do_something_handler_))
     , func_(other.func_)
   {
   }
@@ -104,7 +104,7 @@ public:
 #if defined(MA_HAS_RVALUE_REFS) && defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
 
   do_something_handler_adapter(this_type&& other)
-    : do_something_handler_(std::move(other.do_something_handler_))
+    : do_something_handler_(detail::move(other.do_something_handler_))
   {
   }
 
@@ -154,8 +154,8 @@ public:
 #if defined(MA_HAS_RVALUE_REFS) && defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
 
   do_something_handler_binder(this_type&& other)
-    : do_something_handler_(std::move(other.do_something_handler_))
-    , error_(std::move(other.error_))
+    : do_something_handler_(detail::move(other.do_something_handler_))
+    , error_(detail::move(other.error_))
   {
   }
 
@@ -214,7 +214,7 @@ public:
 
   timer_handler_binder(this_type&& other)
     : func_(other.func_)
-    , async_implementation_(std::move(other.async_implementation_))
+    , async_implementation_(detail::move(other.async_implementation_))
   {
   }
 
