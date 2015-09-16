@@ -29,10 +29,7 @@
 #include <ma/detail/functional.hpp>
 #include <ma/detail/latch.hpp>
 #include <ma/detail/thread.hpp>
-
-#if defined(MA_HAS_RVALUE_REFS)
-#include <utility>
-#endif // defined(MA_HAS_RVALUE_REFS)
+#include <ma/detail/utility.hpp>
 
 namespace ma {
 namespace test {
@@ -305,7 +302,7 @@ public:
 
 #if defined(MA_HAS_RVALUE_REFS)
   hooked_handler(this_type&& other)
-    : handler_storage_(std::move(other.handler_storage_))
+    : handler_storage_(detail::move(other.handler_storage_))
     , counter_(other.counter_)
   {
     ++counter_;
@@ -359,7 +356,7 @@ public:
 
 #if defined(MA_HAS_RVALUE_REFS)
   active_destructing_handler(this_type&& other)
-    : cont_(std::move(other.cont_))
+    : cont_(detail::move(other.cont_))
     , counter_(other.counter_)
   {
     ++counter_;

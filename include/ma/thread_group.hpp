@@ -15,10 +15,7 @@
 #include <ma/config.hpp>
 #include <boost/noncopyable.hpp>
 #include <ma/detail/functional.hpp>
-
-#if defined(MA_HAS_RVALUE_REFS)
-#include <utility>
-#endif
+#include <ma/detail/utility.hpp>
 
 #if defined(MA_USE_CXX11_THREAD) && defined(MA_HAS_RVALUE_REFS)
 #include <thread>
@@ -35,16 +32,8 @@ class thread_group : private boost::noncopyable
 public:
   thread_group();
 
-#if defined(MA_USE_CXX11_THREAD) && defined(MA_HAS_RVALUE_REFS)
   template <typename Task> 
-  void create_thread(Task&&);
-#elif defined(MA_HAS_RVALUE_REFS)
-  template <typename Task>
-  void create_thread(Task&&);
-#else
-  template <typename Task>
-  void create_thread(const Task&);
-#endif
+  void create_thread(Task MA_FWD_REF task);
 
   void join_all();  
 
@@ -63,46 +52,25 @@ inline thread_group::thread_group()
 {
 }
 
-#if defined(MA_USE_CXX11_THREAD) && defined(MA_HAS_RVALUE_REFS)
-
 template <typename Task>
-inline void thread_group::create_thread(Task&& task)
+void thread_group::create_thread(Task MA_FWD_REF task)
 {
-  threads_.emplace_back(std::forward<Task>(task));
+#if defined(MA_USE_CXX11_THREAD) && defined(MA_HAS_RVALUE_REFS)
+  threads_.emplace_back(detail::forward<Task>(task));
+#else
+  threads_.create_thread(detail::forward<Task>(task));
+#endif
 }
 
 inline void thread_group::join_all()
 {
+#if defined(MA_USE_CXX11_THREAD) && defined(MA_HAS_RVALUE_REFS)
   std::for_each(threads_.begin(), threads_.end(), 
       detail::bind(&std::thread::join, detail::placeholders::_1));
-}
-
-#else  // defined(MA_USE_CXX11_THREAD) && defined(MA_HAS_RVALUE_REFS)
-
-#if defined(MA_HAS_RVALUE_REFS)
-
-template <typename Task>
-inline void thread_group::create_thread(Task&& task)
-{
-  threads_.create_thread(std::forward<Task>(task));
-}
-
-#else  // defined(MA_HAS_RVALUE_REFS)
-
-template <typename Task>
-inline void thread_group::create_thread(const Task& task)
-{
-  threads_.create_thread(task);
-}
-
-#endif // defined(MA_HAS_RVALUE_REFS)
-
-inline void thread_group::join_all()
-{
+#else
   threads_.join_all();
+#endif
 }
-
-#endif // defined(MA_USE_CXX11_THREAD) && defined(MA_HAS_RVALUE_REFS)
 
 } // namespace ma
 

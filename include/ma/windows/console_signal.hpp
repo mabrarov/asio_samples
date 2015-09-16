@@ -19,10 +19,7 @@
 #include <boost/asio.hpp>
 #include <boost/noncopyable.hpp>
 #include <ma/windows/console_signal_service.hpp>
-
-#if defined(MA_HAS_RVALUE_REFS)
-#include <utility>
-#endif // defined(MA_HAS_RVALUE_REFS)
+#include <ma/detail/utility.hpp>
 
 namespace ma {
 namespace windows {
@@ -41,17 +38,8 @@ public:
 
   boost::asio::io_service& get_io_service();
 
-#if defined(MA_HAS_RVALUE_REFS)
-  
   template <typename Handler>
-  void async_wait(Handler&& handler);
-
-#else // defined(MA_HAS_RVALUE_REFS)
-
-  template <typename Handler>
-  void async_wait(const Handler& handler);
-
-#endif // defined(MA_HAS_RVALUE_REFS)
+  void async_wait(Handler MA_FWD_REF handler);
 
   std::size_t cancel(boost::system::error_code& error);
   
@@ -76,23 +64,11 @@ boost::asio::io_service& console_signal::get_io_service()
   return service_.get_io_service();
 }
 
-#if defined(MA_HAS_RVALUE_REFS)
-
 template <typename Handler>
-void console_signal::async_wait(Handler&& handler)
+void console_signal::async_wait(Handler MA_FWD_REF handler)
 {
-  service_.async_wait(impl_, std::forward<Handler>(handler));
+  service_.async_wait(impl_, detail::forward<Handler>(handler));
 }
-
-#else // defined(MA_HAS_RVALUE_REFS)
-
-template<typename Handler>
-void console_signal::async_wait(const Handler& handler)
-{
-  service_.async_wait(impl_, handler);
-}
-
-#endif // defined(MA_HAS_RVALUE_REFS)
 
 std::size_t console_signal::cancel(boost::system::error_code& error)
 {
