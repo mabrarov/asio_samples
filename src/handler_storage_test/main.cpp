@@ -799,33 +799,70 @@ void run_test()
 
 namespace handler_move_support {
 
-class test_handler 
+class trackable
 {
 private:
-  typedef test_handler this_type;
+  typedef trackable this_type;
 
   this_type& operator=(const this_type&);
 
 public:
-  test_handler(ma::detail::latch& counter)
+  typedef ma::detail::latch counter_type;
+
+  explicit trackable(counter_type& counter)
     : counter_(counter)
   {
     counter_.count_up();
+  }
+
+  trackable(const this_type& other)
+    : counter_(other.counter_)
+  {
+    counter_.count_up();
+  }
+
+#if defined(MA_HAS_RVALUE_REFS)
+  trackable(this_type&& other)
+    : counter_(other.counter_)
+  {
+    counter_.count_up();
+  }
+#endif
+
+  ~trackable()
+  {
+    counter_.count_down();
+  }
+
+private:
+  counter_type& counter_;
+}; // class trackable
+
+class test_handler : public trackable
+{
+private:
+  typedef test_handler this_type;
+  typedef trackable    base_type;
+
+  this_type& operator=(const this_type&);
+
+public:
+  test_handler(trackable::counter_type& counter)
+    : trackable(counter)
+  {
     std::cout << "test_handler   : ctr!\n";
   }
 
   test_handler(const this_type& other)
-    : counter_(other.counter_)
+    : trackable(other)
   {
-    counter_.count_up();
     std::cout << "test_handler   : copy ctr!\n";
   }
 
 #if defined(MA_HAS_RVALUE_REFS)
   test_handler(this_type&& other)
-    : counter_(other.counter_)
+    : trackable(detail::move(other))
   {
-    counter_.count_up();
     std::cout << "test_handler   : move ctr\n";
   }
 #endif
@@ -833,51 +870,45 @@ public:
   ~test_handler()
   {
     std::cout << "test_handler   : dtr\n";
-    counter_.count_down();
   }
 
   void operator()()
   {
     std::cout << "test_handler   : operator()\n";
   }
-
-private:
-  ma::detail::latch& counter_;
 }; // class test_handler
 
 typedef ma::handler_storage<void> handler_storage_type;
 
-class context_handler
+class context_handler : public trackable
 {
 private:
   typedef context_handler this_type;
+  typedef trackable       base_type;
 
   this_type& operator=(const this_type&);
 
 public:
-  context_handler(ma::detail::latch& counter, 
+  context_handler(trackable::counter_type& counter,
       handler_storage_type& storage)
-    : counter_(counter)
+    : trackable(counter)
     , storage_(storage)
   {
-    counter_.count_up();
     std::cout << "context_handler: ctr!\n";
   }
 
   context_handler(const this_type& other)
-    : counter_(other.counter_)
+    : trackable(other)
     , storage_(other.storage_)
   {
-    counter_.count_up();
     std::cout << "context_handler: copy ctr!\n";
   }
 
 #if defined(MA_HAS_RVALUE_REFS)
   context_handler(this_type&& other)
-    : counter_(other.counter_)
+    : trackable(detail::move(other))
     , storage_(other.storage_)
   {
-    counter_.count_up();
     std::cout << "context_handler: move ctr\n";
   }
 #endif
@@ -885,7 +916,6 @@ public:
   ~context_handler()
   {
     std::cout << "context_handler: dtr\n";
-    counter_.count_down();
   }
 
   template <typename Handler>
@@ -899,7 +929,6 @@ public:
   }
 
 private:
-  ma::detail::latch&    counter_;
   handler_storage_type& storage_;
 }; // class context_handler
 
@@ -924,7 +953,7 @@ void run_test()
 
   std::cout << "*** Context allocated handler ***\n";
   io_service.post(ma::make_explicit_context_alloc_handler(
-      test_handler(done_latch), 
+      test_handler(done_latch),
       context_handler(done_latch, test_handler_storage)));
 
   done_latch.wait();
