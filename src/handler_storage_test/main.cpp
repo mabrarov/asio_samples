@@ -24,6 +24,7 @@
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/handler_storage.hpp>
 #include <ma/lockable_wrapped_handler.hpp>
+#include <ma/context_alloc_handler.hpp>
 #include <ma/thread_group.hpp>
 #include <ma/detail/memory.hpp>
 #include <ma/detail/functional.hpp>
@@ -58,6 +59,12 @@ void run_test();
 
 } // namespace handler_storage_arg
 
+namespace handler_move_support {
+
+void run_test();
+
+} // namespace handler_move_support
+
 } // namespace test
 } // namespace ma
 
@@ -73,13 +80,7 @@ int main(int /*argc*/, char* /*argv*/[])
     ma::test::handler_storage_service_destruction::run_test();
     ma::test::handler_storage_target::run_test();
     ma::test::handler_storage_arg::run_test();
-
-    //test_handler_storage_arg(io_service);
-
-//#if defined(MA_HAS_RVALUE_REFS)
-//    test_handler_storage_move_constructor(io_service);
-//#endif
-
+    ma::test::handler_move_support::run_test();
     return EXIT_SUCCESS;
   }
   catch (const std::exception& e)
@@ -795,6 +796,137 @@ void run_test()
 }
 
 } // namespace handler_storage_arg
+
+namespace handler_move_support {
+
+class test_handler 
+{
+private:
+  typedef test_handler this_type;
+
+public:
+  test_handler(ma::detail::latch& counter)
+    : counter_(counter)
+  {
+    counter_.count_up();
+    std::cout << "test_handler   : ctr!\n";
+  }
+
+  test_handler(const this_type& other)
+    : counter_(other.counter_)
+  {
+    counter_.count_up();
+    std::cout << "test_handler   : copy ctr!\n";
+  }
+
+#if defined(MA_HAS_RVALUE_REFS)
+  test_handler(this_type&& other)
+    : counter_(other.counter_)
+  {
+    counter_.count_up();
+    std::cout << "test_handler   : move ctr\n";
+  }
+#endif
+
+  ~test_handler()
+  {
+    std::cout << "test_handler   : dtr\n";
+    counter_.count_down();
+  }
+
+  void operator()()
+  {
+    std::cout << "test_handler   : operator()\n";
+  }
+
+private:
+  ma::detail::latch& counter_;
+}; // class test_handler
+
+typedef ma::handler_storage<void> handler_storage_type;
+
+class context_handler
+{
+private:
+  typedef context_handler this_type;
+
+public:
+  context_handler(ma::detail::latch& counter, 
+      handler_storage_type& storage)
+    : counter_(counter)
+    , storage_(storage)
+  {
+    counter_.count_up();
+    std::cout << "context_handler: ctr!\n";
+  }
+
+  context_handler(const this_type& other)
+    : counter_(other.counter_)
+    , storage_(other.storage_)
+  {
+    counter_.count_up();
+    std::cout << "context_handler: copy ctr!\n";
+  }
+
+#if defined(MA_HAS_RVALUE_REFS)
+  context_handler(this_type&& other)
+    : counter_(other.counter_)
+    , storage_(other.storage_)
+  {
+    counter_.count_up();
+    std::cout << "context_handler: move ctr\n";
+  }
+#endif
+
+  ~context_handler()
+  {
+    std::cout << "context_handler: dtr\n";
+    counter_.count_down();
+  }
+
+  template <typename Handler>
+  void operator()(Handler& handler)
+  {
+    std::cout << "context_handler: operator() - store\n";
+    storage_.store(detail::move(handler));
+
+    std::cout << "context_handler: operator() - post\n";
+    storage_.post();
+  }
+
+private:
+  ma::detail::latch&    counter_;
+  handler_storage_type& storage_;
+}; // class context_handler
+
+void run_test()
+{
+  std::cout << "*** ma::test::handler_move_support ***\n";
+
+  ma::detail::latch done_latch;
+
+  boost::asio::io_service io_service(1);
+  io_service_pool work_threads(io_service, 1);
+
+  ma::handler_storage<void> test_handler_storage(io_service);
+
+  std::cout << "*** Create and store handler ***\n";
+  test_handler_storage.store(test_handler(done_latch));
+
+  std::cout << "*** Post handler ***\n";
+  test_handler_storage.post();
+
+  done_latch.wait();
+
+  std::cout << "*** Context allocated handler ***\n";
+  io_service.post(ma::make_explicit_context_alloc_handler(
+      test_handler(done_latch), 
+      context_handler(done_latch, test_handler_storage)));
+
+  done_latch.wait();
+}
+
+} // namespace handler_move_support
 
 } // namespace test
 } // namespace ma
