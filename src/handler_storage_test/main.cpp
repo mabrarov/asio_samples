@@ -804,6 +804,8 @@ class test_handler
 private:
   typedef test_handler this_type;
 
+  this_type& operator=(const this_type&);
+
 public:
   test_handler(ma::detail::latch& counter)
     : counter_(counter)
@@ -849,6 +851,8 @@ class context_handler
 {
 private:
   typedef context_handler this_type;
+
+  this_type& operator=(const this_type&);
 
 public:
   context_handler(ma::detail::latch& counter, 
