@@ -75,7 +75,7 @@ int main(int /*argc*/, char* /*argv*/[])
 #endif
 {
   try
-  {    
+  {
     ma::test::lockable_wrapper::run_test();
     ma::test::handler_storage_service_destruction::run_test();
     ma::test::handler_storage_target::run_test();
@@ -166,7 +166,7 @@ void run_test()
   std::size_t work_thread_count = cpu_count > 1 ? cpu_count : 2;
   boost::asio::io_service io_service(work_thread_count);
   io_service_pool work_threads(io_service, work_thread_count);
-   
+
 
   mutex_type mutex;
   std::string data;
@@ -477,7 +477,7 @@ void run_test()
         detail::make_shared<testable_handler_storage>(
             detail::ref(io_service), detail::ref(counter));
     handler_storage5->store(active_destructing_handler(
-        detail::bind(store_simple_handler, handler_storage5, 
+        detail::bind(store_simple_handler, handler_storage5,
             detail::ref(counter)), counter));
 
     testable_handler_storage handler_storage6(io_service, counter);
@@ -753,7 +753,7 @@ void run_test()
     handler_storage.store(void_handler_with_target(value4,
         detail::bind(count_down, detail::ref(done_latch))));
 
-    BOOST_ASSERT_MSG(value4 == handler_storage.target()->get_value(), 
+    BOOST_ASSERT_MSG(value4 == handler_storage.target()->get_value(),
         "Data of target is different than the stored data");
 
     std::cout << handler_storage.target()->get_value() << std::endl;
@@ -768,7 +768,7 @@ void run_test()
     handler_storage.store(int_handler_with_target(value4,
         detail::bind(count_down, detail::ref(done_latch))));
 
-    BOOST_ASSERT_MSG(value4 == handler_storage.target()->get_value(), 
+    BOOST_ASSERT_MSG(value4 == handler_storage.target()->get_value(),
         "Data of target is different than the stored data");
 
     std::cout << handler_storage.target()->get_value() << std::endl;
@@ -784,7 +784,7 @@ void run_test()
     handler_storage1.store(int_handler_with_target(value1,
         detail::bind(count_down, detail::ref(done_latch))));
 
-    BOOST_ASSERT_MSG(value1 == handler_storage1.target()->get_value(), 
+    BOOST_ASSERT_MSG(value1 == handler_storage1.target()->get_value(),
         "Data of target is different than the stored data");
 
     ma::handler_storage<void> handler_storage2(another_io_service);
@@ -951,7 +951,7 @@ void run_test()
 
   std::cout << "*** Create and store handler ***\n";
   test_handler_storage.store(test_handler(done_latch, copy_latch));
-  std::cout << "Copy ctr is called (times): " 
+  std::cout << "Copy ctr is called (times): "
       << copy_latch.value() << std::endl;
 
 #if defined(MA_HAS_RVALUE_REFS)
@@ -961,29 +961,29 @@ void run_test()
 
   std::cout << "*** Post handler ***\n";
   test_handler_storage.post();
-  std::cout << "Copy ctr is called (times): " 
+  done_latch.wait();
+
+  std::cout << "Copy ctr is called (times): "
       << copy_latch.value() << std::endl;
 
 #if defined(MA_HAS_RVALUE_REFS)
   BOOST_ASSERT_MSG(!copy_latch.value(),
       "Copy ctr of handler should not be called if move ctr exists");
 #endif
-
-  done_latch.wait();
 
   std::cout << "*** Context allocated handler ***\n";
   io_service.post(ma::make_explicit_context_alloc_handler(
       test_handler(done_latch, copy_latch),
       context_handler(done_latch, copy_latch, test_handler_storage)));
-  std::cout << "Copy ctr is called (times): " 
+  done_latch.wait();
+
+  std::cout << "Copy ctr is called (times): "
       << copy_latch.value() << std::endl;
 
 #if defined(MA_HAS_RVALUE_REFS)
   BOOST_ASSERT_MSG(!copy_latch.value(),
       "Copy ctr of handler should not be called if move ctr exists");
 #endif
-
-  done_latch.wait();
 }
 
 } // namespace handler_move_support
