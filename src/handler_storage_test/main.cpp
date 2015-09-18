@@ -959,6 +959,7 @@ void run_test()
       "Copy ctr of handler should not be called if move ctr exists");
 #endif
 
+  copy_latch.reset();
   std::cout << "*** Post handler ***\n";
   test_handler_storage.post();
   done_latch.wait();
@@ -971,6 +972,7 @@ void run_test()
       "Copy ctr of handler should not be called if move ctr exists");
 #endif
 
+  copy_latch.reset();
   std::cout << "*** Context allocated handler ***\n";
   io_service.post(ma::make_explicit_context_alloc_handler(
       test_handler(done_latch, copy_latch),
