@@ -954,7 +954,7 @@ void run_test()
   std::cout << "Copy ctr is called (times): "
       << copy_latch.value() << std::endl;
 
-#if defined(MA_HAS_RVALUE_REFS)
+#if defined(MA_HAS_RVALUE_REFS) && defined(BOOST_ASIO_HAS_MOVE)
   BOOST_ASSERT_MSG(!copy_latch.value(),
       "Copy ctr of handler should not be called if move ctr exists");
 #endif
@@ -966,7 +966,7 @@ void run_test()
   std::cout << "Copy ctr is called (times): "
       << copy_latch.value() << std::endl;
 
-#if defined(MA_HAS_RVALUE_REFS)
+#if defined(MA_HAS_RVALUE_REFS) && defined(BOOST_ASIO_HAS_MOVE)
   BOOST_ASSERT_MSG(!copy_latch.value(),
       "Copy ctr of handler should not be called if move ctr exists");
 #endif
@@ -980,7 +980,7 @@ void run_test()
   std::cout << "Copy ctr is called (times): "
       << copy_latch.value() << std::endl;
 
-#if defined(MA_HAS_RVALUE_REFS)
+#if defined(MA_HAS_RVALUE_REFS) && defined(BOOST_ASIO_HAS_MOVE)
   BOOST_ASSERT_MSG(!copy_latch.value(),
       "Copy ctr of handler should not be called if move ctr exists");
 #endif
