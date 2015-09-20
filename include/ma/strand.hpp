@@ -16,11 +16,8 @@
 #include <boost/noncopyable.hpp>
 #include <ma/config.hpp>
 #include <ma/strand_wrapped_handler.hpp>
-
-#if defined(MA_HAS_RVALUE_REFS)
-#include <utility>
 #include <ma/type_traits.hpp>
-#endif // defined(MA_HAS_RVALUE_REFS)
+#include <ma/detail/utility.hpp>
 
 namespace ma {
 
@@ -33,36 +30,21 @@ public:
 
   boost::asio::io_service& get_io_service();
 
-#if defined(MA_HAS_RVALUE_REFS)
+  template<typename Handler>
+  void dispatch(Handler MA_FWD_REF handler);
 
   template<typename Handler>
-  void dispatch(Handler&& handler);
-
-  template<typename Handler>
-  void post(Handler&& handler);
+  void post(Handler MA_FWD_REF handler);
 
   template<typename Handler>
   strand_wrapped_handler<typename remove_cv_reference<Handler>::type>
-  wrap(Handler&& handler);
-
-#else  // defined(MA_HAS_RVALUE_REFS)
-
-  template<typename Handler>
-  void dispatch(const Handler& handler);
-
-  template<typename Handler>
-  void post(const Handler& handler);
-
-  template<typename Handler>
-  strand_wrapped_handler<Handler> wrap(const Handler& handler);
-
-#endif // defined(MA_HAS_RVALUE_REFS)
+  wrap(Handler MA_FWD_REF handler);
 
 #if BOOST_VERSION >= 105400
 
   bool running_in_this_thread() const;
 
-#endif // BOOST_VERSION >= 105400
+#endif
 
 private:
   boost::asio::io_service::strand strand_;
@@ -78,50 +60,26 @@ inline boost::asio::io_service& strand::get_io_service()
   return strand_.get_io_service();
 }
 
-#if defined(MA_HAS_RVALUE_REFS)
-
 template<typename Handler>
-void strand::dispatch(Handler&& handler)
+void strand::dispatch(Handler MA_FWD_REF handler)
 {
-  strand_.dispatch(std::forward<Handler>(handler));
+  strand_.dispatch(detail::forward<Handler>(handler));
 }
 
 template<typename Handler>
-void strand::post(Handler&& handler)
+void strand::post(Handler MA_FWD_REF handler)
 {
-  strand_.post(std::forward<Handler>(handler));
+  strand_.post(detail::forward<Handler>(handler));
 }
 
 template<typename Handler>
 strand_wrapped_handler<typename remove_cv_reference<Handler>::type>
-strand::wrap(Handler&& handler)
+strand::wrap(Handler MA_FWD_REF handler)
 {
   typedef typename remove_cv_reference<Handler>::type handler_type;
   return strand_wrapped_handler<handler_type>(
-      strand_, std::forward<Handler>(handler));
+      strand_, detail::forward<Handler>(handler));
 }
-
-#else  // defined(MA_HAS_RVALUE_REFS)
-
-template<typename Handler>
-void strand::dispatch(const Handler& handler)
-{
-  strand_.dispatch(handler);
-}
-
-template<typename Handler>
-void strand::post(const Handler& handler)
-{
-  strand_.post(handler);
-}
-
-template<typename Handler>
-strand_wrapped_handler<Handler> strand::wrap(const Handler& handler)
-{
-  return strand_wrapped_handler<Handler>(strand_, handler);
-}
-
-#endif // defined(MA_HAS_RVALUE_REFS)
 
 #if BOOST_VERSION >= 105400
 

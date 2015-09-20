@@ -19,13 +19,10 @@
 #include <ma/handler_storage.hpp>
 #include <ma/bind_handler.hpp>
 #include <ma/context_alloc_handler.hpp>
+#include <ma/type_traits.hpp>
 #include <ma/detail/memory.hpp>
 #include <ma/detail/functional.hpp>
-
-#if defined(MA_HAS_RVALUE_REFS)
-#include <utility>
-#include <ma/type_traits.hpp>
-#endif // defined(MA_HAS_RVALUE_REFS)
+#include <ma/detail/utility.hpp>
 
 namespace ma {
 namespace tutorial {
@@ -40,17 +37,8 @@ private:
 
 public:
 
-#if defined(MA_HAS_RVALUE_REFS)
-
   template <typename Handler>
-  void async_do_something(Handler&&);
-
-#else  // defined(MA_HAS_RVALUE_REFS)
-
-  template <typename Handler>
-  void async_do_something(const Handler& handler);
-
-#endif // defined(MA_HAS_RVALUE_REFS)
+  void async_do_something(Handler MA_FWD_REF);
 
 protected:
   typedef boost::system::error_code            do_something_result;
@@ -80,7 +68,7 @@ private:
 #endif
 
   template <typename Handler>
-  void start_do_something(const Handler&);
+  void start_do_something(Handler&);
 }; // async_interface
 
 #if defined(MA_HAS_RVALUE_REFS) && defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
@@ -93,7 +81,7 @@ private:
 
 public:
   typedef void result_type;
-  typedef void (async_interface::*function_type)(const Arg&);
+  typedef void (async_interface::*function_type)(Arg&);
 
   template <typename AsyncInterfacePtr>
   forward_handler_binder(function_type, AsyncInterfacePtr&&);
@@ -105,7 +93,7 @@ public:
 
 #endif // defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
 
-  void operator()(const Arg&);
+  void operator()(Arg&);
 
 private:
   function_type       function_;
@@ -115,56 +103,24 @@ private:
 #endif // defined(MA_HAS_RVALUE_REFS)
        //     && defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 
-#if defined(MA_HAS_RVALUE_REFS)
-
-#if defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
-
 template <typename Handler>
-void async_interface::async_do_something(Handler&& handler)
+void async_interface::async_do_something(Handler MA_FWD_REF handler)
 {
   typedef typename remove_cv_reference<Handler>::type handler_type;
-  typedef void (async_interface::*func_type)(const handler_type&);
+  typedef void (async_interface::*func_type)(handler_type&);
 
   func_type func = &this_type::start_do_something<handler_type>;
 
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
   strand().post(ma::make_explicit_context_alloc_handler(
-      std::forward<Handler>(handler), 
+      detail::forward<Handler>(handler),
       forward_handler_binder<handler_type>(func, get_interface_ptr())));
-}
-
-#else // defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
-
-template <typename Handler>
-void async_interface::async_do_something(Handler&& handler)
-{
-  typedef typename remove_cv_reference<Handler>::type handler_type;
-  typedef void (async_interface::*func_type)(const handler_type&);
-
-  func_type func = &this_type::start_do_something<handler_type>;
-
+#else
   strand().post(ma::make_explicit_context_alloc_handler(
-      std::forward<Handler>(handler),
+      detail::forward<Handler>(handler),
       detail::bind(func, get_interface_ptr(), detail::placeholders::_1)));
+#endif
 }
-
-#endif // defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
-
-#else  // defined(MA_HAS_RVALUE_REFS)
-
-template <typename Handler>
-void async_interface::async_do_something(const Handler& handler)
-{
-  typedef Handler handler_type;
-  typedef void (async_interface::*func_type)(const handler_type&);
-
-  func_type func = &this_type::start_do_something<handler_type>;
-
-  strand().post(ma::make_explicit_context_alloc_handler(
-      handler, 
-      detail::bind(func, get_interface_ptr(), detail::placeholders::_1)));
-}
-
-#endif // defined(MA_HAS_RVALUE_REFS)
 
 inline async_interface::async_interface()
 {
@@ -184,15 +140,16 @@ inline async_interface::this_type& async_interface::operator=(const this_type&)
 }
 
 template <typename Handler>
-void async_interface::start_do_something(const Handler& handler)
+void async_interface::start_do_something(Handler& handler)
 {
   if (optional_do_something_result result = start_do_something())
   {
-    strand().get_io_service().post(ma::bind_handler(handler, *result));
+    strand().get_io_service().post(
+        ma::bind_handler(detail::move(handler), *result));
   }
   else
   {
-    do_something_handler_storage().store(handler);
+    do_something_handler_storage().store(detail::move(handler));
   }
 }
 
@@ -203,7 +160,7 @@ template <typename AsyncInterfacePtr>
 async_interface::forward_handler_binder<Arg>::forward_handler_binder(
     function_type function, AsyncInterfacePtr&& async_interface)
   : function_(function)
-  , async_interface_(std::forward<AsyncInterfacePtr>(async_interface))
+  , async_interface_(detail::forward<AsyncInterfacePtr>(async_interface))
 {
 }
 
@@ -213,7 +170,7 @@ template <typename Arg>
 async_interface::forward_handler_binder<Arg>::forward_handler_binder(
     this_type&& other)
   : function_(other.function_)
-  , async_interface_(std::move(other.async_interface_))
+  , async_interface_(detail::move(other.async_interface_))
 {
 }
 
@@ -228,7 +185,7 @@ async_interface::forward_handler_binder<Arg>::forward_handler_binder(
 #endif // defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
 
 template <typename Arg>
-void async_interface::forward_handler_binder<Arg>::operator()(const Arg& arg)
+void async_interface::forward_handler_binder<Arg>::operator()(Arg& arg)
 {
   ((*async_interface_).*function_)(arg);
 }

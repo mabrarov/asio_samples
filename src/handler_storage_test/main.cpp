@@ -24,15 +24,13 @@
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/handler_storage.hpp>
 #include <ma/lockable_wrapped_handler.hpp>
+#include <ma/context_alloc_handler.hpp>
 #include <ma/thread_group.hpp>
 #include <ma/detail/memory.hpp>
 #include <ma/detail/functional.hpp>
 #include <ma/detail/latch.hpp>
 #include <ma/detail/thread.hpp>
-
-#if defined(MA_HAS_RVALUE_REFS)
-#include <utility>
-#endif // defined(MA_HAS_RVALUE_REFS)
+#include <ma/detail/utility.hpp>
 
 namespace ma {
 namespace test {
@@ -61,6 +59,12 @@ void run_test();
 
 } // namespace handler_storage_arg
 
+namespace handler_move_support {
+
+void run_test();
+
+} // namespace handler_move_support
+
 } // namespace test
 } // namespace ma
 
@@ -71,18 +75,12 @@ int main(int /*argc*/, char* /*argv*/[])
 #endif
 {
   try
-  {    
+  {
     ma::test::lockable_wrapper::run_test();
     ma::test::handler_storage_service_destruction::run_test();
     ma::test::handler_storage_target::run_test();
     ma::test::handler_storage_arg::run_test();
-
-    //test_handler_storage_arg(io_service);
-
-//#if defined(MA_HAS_RVALUE_REFS)
-//    test_handler_storage_move_constructor(io_service);
-//#endif
-
+    ma::test::handler_move_support::run_test();
     return EXIT_SUCCESS;
   }
   catch (const std::exception& e)
@@ -130,7 +128,7 @@ public:
 private:
   typedef boost::optional<boost::asio::io_service::work> optional_io_work;
 
-  optional_io_work    work_guard_;
+  optional_io_work work_guard_;
   ma::thread_group threads_;
 }; // class io_service_pool
 
@@ -168,7 +166,7 @@ void run_test()
   std::size_t work_thread_count = cpu_count > 1 ? cpu_count : 2;
   boost::asio::io_service io_service(work_thread_count);
   io_service_pool work_threads(io_service, work_thread_count);
-   
+
 
   mutex_type mutex;
   std::string data;
@@ -305,7 +303,7 @@ public:
 
 #if defined(MA_HAS_RVALUE_REFS)
   hooked_handler(this_type&& other)
-    : handler_storage_(std::move(other.handler_storage_))
+    : handler_storage_(detail::move(other.handler_storage_))
     , counter_(other.counter_)
   {
     ++counter_;
@@ -359,7 +357,7 @@ public:
 
 #if defined(MA_HAS_RVALUE_REFS)
   active_destructing_handler(this_type&& other)
-    : cont_(std::move(other.cont_))
+    : cont_(detail::move(other.cont_))
     , counter_(other.counter_)
   {
     ++counter_;
@@ -479,7 +477,7 @@ void run_test()
         detail::make_shared<testable_handler_storage>(
             detail::ref(io_service), detail::ref(counter));
     handler_storage5->store(active_destructing_handler(
-        detail::bind(store_simple_handler, handler_storage5, 
+        detail::bind(store_simple_handler, handler_storage5,
             detail::ref(counter)), counter));
 
     testable_handler_storage handler_storage6(io_service, counter);
@@ -755,7 +753,7 @@ void run_test()
     handler_storage.store(void_handler_with_target(value4,
         detail::bind(count_down, detail::ref(done_latch))));
 
-    BOOST_ASSERT_MSG(value4 == handler_storage.target()->get_value(), 
+    BOOST_ASSERT_MSG(value4 == handler_storage.target()->get_value(),
         "Data of target is different than the stored data");
 
     std::cout << handler_storage.target()->get_value() << std::endl;
@@ -770,7 +768,7 @@ void run_test()
     handler_storage.store(int_handler_with_target(value4,
         detail::bind(count_down, detail::ref(done_latch))));
 
-    BOOST_ASSERT_MSG(value4 == handler_storage.target()->get_value(), 
+    BOOST_ASSERT_MSG(value4 == handler_storage.target()->get_value(),
         "Data of target is different than the stored data");
 
     std::cout << handler_storage.target()->get_value() << std::endl;
@@ -786,7 +784,7 @@ void run_test()
     handler_storage1.store(int_handler_with_target(value1,
         detail::bind(count_down, detail::ref(done_latch))));
 
-    BOOST_ASSERT_MSG(value1 == handler_storage1.target()->get_value(), 
+    BOOST_ASSERT_MSG(value1 == handler_storage1.target()->get_value(),
         "Data of target is different than the stored data");
 
     ma::handler_storage<void> handler_storage2(another_io_service);
@@ -798,6 +796,199 @@ void run_test()
 }
 
 } // namespace handler_storage_arg
+
+namespace handler_move_support {
+
+class trackable
+{
+private:
+  typedef trackable this_type;
+
+  this_type& operator=(const this_type&);
+
+public:
+  typedef ma::detail::latch counter_type;
+
+  explicit trackable(counter_type& instance_counter, counter_type& copy_counter)
+    : instance_counter_(instance_counter)
+    , copy_counter_(copy_counter)
+  {
+    instance_counter_.count_up();
+  }
+
+  trackable(const this_type& other)
+    : instance_counter_(other.instance_counter_)
+    , copy_counter_(other.copy_counter_)
+  {
+    instance_counter_.count_up();
+    copy_counter_.count_up();
+  }
+
+#if defined(MA_HAS_RVALUE_REFS)
+  trackable(this_type&& other)
+    : instance_counter_(other.instance_counter_)
+    , copy_counter_(other.copy_counter_)
+  {
+    instance_counter_.count_up();
+  }
+#endif
+
+  ~trackable()
+  {
+    instance_counter_.count_down();
+  }
+
+private:
+  counter_type& instance_counter_;
+  counter_type& copy_counter_;
+}; // class trackable
+
+class test_handler : public trackable
+{
+private:
+  typedef test_handler this_type;
+  typedef trackable    base_type;
+
+  this_type& operator=(const this_type&);
+
+public:
+  test_handler(counter_type& instance_counter, counter_type& copy_counter)
+    : base_type(instance_counter, copy_counter)
+  {
+    std::cout << "test_handler   : ctr!\n";
+  }
+
+  test_handler(const this_type& other)
+    : base_type(other)
+  {
+    std::cout << "test_handler   : copy ctr!\n";
+  }
+
+#if defined(MA_HAS_RVALUE_REFS)
+  test_handler(this_type&& other)
+    : base_type(detail::move(other))
+  {
+    std::cout << "test_handler   : move ctr\n";
+  }
+#endif
+
+  ~test_handler()
+  {
+    std::cout << "test_handler   : dtr\n";
+  }
+
+  void operator()()
+  {
+    std::cout << "test_handler   : operator()\n";
+  }
+}; // class test_handler
+
+typedef ma::handler_storage<void> handler_storage_type;
+
+class context_handler : public trackable
+{
+private:
+  typedef context_handler this_type;
+  typedef trackable       base_type;
+
+  this_type& operator=(const this_type&);
+
+public:
+  context_handler(counter_type& instance_counter, counter_type& copy_counter,
+      handler_storage_type& storage)
+    : base_type(instance_counter, copy_counter)
+    , storage_(storage)
+  {
+    std::cout << "context_handler: ctr!\n";
+  }
+
+  context_handler(const this_type& other)
+    : base_type(other)
+    , storage_(other.storage_)
+  {
+    std::cout << "context_handler: copy ctr!\n";
+  }
+
+#if defined(MA_HAS_RVALUE_REFS)
+  context_handler(this_type&& other)
+    : base_type(detail::move(other))
+    , storage_(other.storage_)
+  {
+    std::cout << "context_handler: move ctr\n";
+  }
+#endif
+
+  ~context_handler()
+  {
+    std::cout << "context_handler: dtr\n";
+  }
+
+  template <typename Handler>
+  void operator()(Handler& handler)
+  {
+    std::cout << "context_handler: operator() - store\n";
+    storage_.store(detail::move(handler));
+
+    std::cout << "context_handler: operator() - post\n";
+    storage_.post();
+  }
+
+private:
+  handler_storage_type& storage_;
+}; // class context_handler
+
+void run_test()
+{
+  std::cout << "*** ma::test::handler_move_support ***\n";
+
+  ma::detail::latch done_latch;
+  ma::detail::latch copy_latch;
+
+  boost::asio::io_service io_service(1);
+  io_service_pool work_threads(io_service, 1);
+
+  ma::handler_storage<void> test_handler_storage(io_service);
+
+  std::cout << "*** Create and store handler ***\n";
+  test_handler_storage.store(test_handler(done_latch, copy_latch));
+  std::cout << "Copy ctr is called (times): "
+      << copy_latch.value() << std::endl;
+
+#if defined(MA_HAS_RVALUE_REFS) && defined(BOOST_ASIO_HAS_MOVE)
+  BOOST_ASSERT_MSG(!copy_latch.value(),
+      "Copy ctr of handler should not be called if move ctr exists");
+#endif
+
+  copy_latch.reset();
+  std::cout << "*** Post handler ***\n";
+  test_handler_storage.post();
+  done_latch.wait();
+
+  std::cout << "Copy ctr is called (times): "
+      << copy_latch.value() << std::endl;
+
+#if defined(MA_HAS_RVALUE_REFS) && defined(BOOST_ASIO_HAS_MOVE)
+  BOOST_ASSERT_MSG(!copy_latch.value(),
+      "Copy ctr of handler should not be called if move ctr exists");
+#endif
+
+  copy_latch.reset();
+  std::cout << "*** Context allocated handler ***\n";
+  io_service.post(ma::make_explicit_context_alloc_handler(
+      test_handler(done_latch, copy_latch),
+      context_handler(done_latch, copy_latch, test_handler_storage)));
+  done_latch.wait();
+
+  std::cout << "Copy ctr is called (times): "
+      << copy_latch.value() << std::endl;
+
+#if defined(MA_HAS_RVALUE_REFS) && defined(BOOST_ASIO_HAS_MOVE)
+  BOOST_ASSERT_MSG(!copy_latch.value(),
+      "Copy ctr of handler should not be called if move ctr exists");
+#endif
+}
+
+} // namespace handler_move_support
 
 } // namespace test
 } // namespace ma

@@ -33,12 +33,13 @@ private:
 public:
   typedef std::size_t value_type;
 
-  explicit latch(value_type value = 0);  
+  explicit latch(value_type value = 0);
   value_type value() const;  
   value_type count_up();
   value_type count_down(); 
   void wait();
   void count_down_and_wait();
+  void reset(value_type value = 0);
 
 private:
   mutable mutex_type mutex_;
@@ -92,6 +93,16 @@ inline void latch::count_down_and_wait()
   if (count_down())
   {
     wait();
+  }
+}
+
+inline void latch::reset(value_type value)
+{
+  lock_type lock(mutex_);
+  value_ = value;
+  if (!value_)
+  {
+    condition_variable_.notify_all();
   }
 }
   

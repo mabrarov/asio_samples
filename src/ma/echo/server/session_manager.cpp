@@ -49,7 +49,7 @@ public:
   session_ptr release()
   {
 #if defined(MA_HAS_RVALUE_REFS)
-    return std::move(session_);
+    return detail::move(session_);
 #else
     session_ptr tmp;
     tmp.swap(session_);
@@ -64,9 +64,7 @@ private:
 
 } // anonymous namespace
 
-#if defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR) \
-    && !(defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 
 // Home-grown binders to support move semantic
 class session_manager::accept_handler_binder
@@ -85,8 +83,8 @@ public:
   accept_handler_binder(func_type func, SessionManagerPtr&& session_manager,
       SessionWrapperPtr&& session)
     : func_(func)
-    , session_manager_(std::forward<SessionManagerPtr>(session_manager))
-    , session_(std::forward<SessionWrapperPtr>(session))
+    , session_manager_(detail::forward<SessionManagerPtr>(session_manager))
+    , session_(detail::forward<SessionWrapperPtr>(session))
   {
   }
 
@@ -94,8 +92,8 @@ public:
 
   accept_handler_binder(this_type&& other)
     : func_(other.func_)
-    , session_manager_(std::move(other.session_manager_))
-    , session_(std::move(other.session_))
+    , session_manager_(detail::move(other.session_manager_))
+    , session_(detail::move(other.session_))
   {
   }
 
@@ -135,8 +133,8 @@ public:
   session_dispatch_binder(func_type func, SessionManagerPtr&& session_manager,
       SessionWrapperPtr&& session)
     : func_(func)
-    , session_manager_(std::forward<SessionManagerPtr>(session_manager))
-    , session_(std::forward<SessionWrapperPtr>(session))
+    , session_manager_(detail::forward<SessionManagerPtr>(session_manager))
+    , session_(detail::forward<SessionWrapperPtr>(session))
   {
   }
 
@@ -144,8 +142,8 @@ public:
 
   session_dispatch_binder(this_type&& other)
     : func_(other.func_)
-    , session_manager_(std::move(other.session_manager_))
-    , session_(std::move(other.session_))
+    , session_manager_(detail::move(other.session_manager_))
+    , session_(detail::move(other.session_))
   {
   }
 
@@ -185,8 +183,8 @@ public:
   session_handler_binder(func_type func, SessionManagerPtr&& session_manager,
       SessionWrapperPtr&& session, const boost::system::error_code& error)
     : func_(func)
-    , session_manager_(std::forward<SessionManagerPtr>(session_manager))
-    , session_(std::forward<SessionWrapperPtr>(session))
+    , session_manager_(detail::forward<SessionManagerPtr>(session_manager))
+    , session_(detail::forward<SessionWrapperPtr>(session))
     , error_(error)
   {
   }
@@ -195,9 +193,9 @@ public:
 
   session_handler_binder(this_type&& other)
     : func_(other.func_)
-    , session_manager_(std::move(other.session_manager_))
-    , session_(std::move(other.session_))
-    , error_(std::move(other.error_))
+    , session_manager_(detail::move(other.session_manager_))
+    , session_(detail::move(other.session_))
+    , error_(detail::move(other.error_))
   {
   }
 
@@ -225,8 +223,6 @@ private:
 
 #endif // defined(MA_HAS_RVALUE_REFS)
        //     && defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
-       //     && !(defined(MA_HAS_LAMBDA)
-       //         && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
 
 session_manager::stats_collector::stats_collector()
   : mutex_()
@@ -349,7 +345,7 @@ public:
   session_ptr detach()
   {
 #if defined(MA_HAS_RVALUE_REFS)
-    return std::move(session_);
+    return detail::move(session_);
 #else
     session_ptr tmp;
     tmp.swap(session_);
@@ -422,59 +418,29 @@ public:
     state_ = state_type::work;
   }
 
-#if defined(MA_HAS_RVALUE_REFS)
-
   template <typename Handler>
-  void async_start(Handler&& handler)
+  void async_start(Handler MA_FWD_REF handler)
   {
     session_->async_start(make_custom_alloc_handler(
-        start_wait_allocator_, std::forward<Handler>(handler)));
+        start_wait_allocator_, detail::forward<Handler>(handler)));
     start_started();
   }
 
   template <typename Handler>
-  void async_stop(Handler&& handler)
+  void async_stop(Handler MA_FWD_REF handler)
   {
     session_->async_stop(make_custom_alloc_handler(
-        stop_allocator_, std::forward<Handler>(handler)));
+        stop_allocator_, detail::forward<Handler>(handler)));
     stop_started();
   }
 
   template <typename Handler>
-  void async_wait(Handler&& handler)
+  void async_wait(Handler MA_FWD_REF handler)
   {
     session_->async_wait(make_custom_alloc_handler(
-        start_wait_allocator_, std::forward<Handler>(handler)));
+        start_wait_allocator_, detail::forward<Handler>(handler)));
     wait_started();
   }
-
-#else // defined(MA_HAS_RVALUE_REFS)
-
-  template <typename Handler>
-  void async_start(const Handler& handler)
-  {
-    session_->async_start(make_custom_alloc_handler(
-        start_wait_allocator_, handler));
-    start_started();
-  }
-
-  template <typename Handler>
-  void async_stop(const Handler& handler)
-  {
-    session_->async_stop(make_custom_alloc_handler(
-        stop_allocator_, handler));
-    stop_started();
-  }
-
-  template <typename Handler>
-  void async_wait(const Handler& handler)
-  {
-    session_->async_wait(make_custom_alloc_handler(
-        start_wait_allocator_, handler));
-    wait_started();
-  }
-
-#endif // defined(MA_HAS_RVALUE_REFS)
 
 private:
   void start_started()
@@ -599,7 +565,7 @@ session_manager::optional_error_code session_manager::do_start_extern_stop()
     start_stop(server::error::operation_aborted);
   }
 
-  // int_state_ can be changed by start_stop
+  // intern_state_ can be changed by start_stop
   if (intern_state::stopped == intern_state_)
   {
     extern_state_ = extern_state::stopped;
@@ -714,9 +680,6 @@ void session_manager::continue_work()
   start_accept_session(session);
 }
 
-#if !(defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
-
 void session_manager::handle_accept(const session_wrapper_ptr& session,
     const boost::system::error_code& error)
 {
@@ -725,13 +688,13 @@ void session_manager::handle_accept(const session_wrapper_ptr& session,
 
   // Split handler based on current internal state
   // that might change during accept operation
-  switch (int_state_)
+  switch (intern_state_)
   {
-  case int_state::work:
+  case intern_state::work:
     handle_accept_at_work(session, error);
     break;
 
-  case int_state::stop:
+  case intern_state::stop:
     handle_accept_at_stop(session, error);
     break;
 
@@ -746,13 +709,13 @@ void session_manager::handle_session_start(const session_wrapper_ptr& session,
 {
   // Split handler based on current internal state
   // that might change during session start
-  switch (int_state_)
+  switch (intern_state_)
   {
-  case int_state::work:
+  case intern_state::work:
     handle_session_start_at_work(session, error);
     break;
 
-  case int_state::stop:
+  case intern_state::stop:
     handle_session_start_at_stop(session, error);
     break;
 
@@ -767,13 +730,13 @@ void session_manager::handle_session_wait(const session_wrapper_ptr& session,
 {
   // Split handler based on current internal state
   // that might change during session wait
-  switch (int_state_)
+  switch (intern_state_)
   {
-  case int_state::work:
+  case intern_state::work:
     handle_session_wait_at_work(session, error);
     break;
 
-  case int_state::stop:
+  case intern_state::stop:
     handle_session_wait_at_stop(session, error);
     break;
 
@@ -788,13 +751,13 @@ void session_manager::handle_session_stop(const session_wrapper_ptr& session,
 {
   // Split handler based on current internal state
   // that might change during session stop
-  switch (int_state_)
+  switch (intern_state_)
   {
-  case int_state::work:
+  case intern_state::work:
     handle_session_stop_at_work(session, error);
     break;
 
-  case int_state::stop:
+  case intern_state::stop:
     handle_session_stop_at_stop(session, error);
     break;
 
@@ -803,10 +766,6 @@ void session_manager::handle_session_stop(const session_wrapper_ptr& session,
     break;
   }
 }
-
-#endif // !(defined(MA_HAS_RVALUE_REFS)
-       //     && defined(MA_HAS_LAMBDA)
-       //     && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
 
 void session_manager::handle_accept_at_work(const session_wrapper_ptr& session,
     const boost::system::error_code& error)
@@ -1144,37 +1103,6 @@ session_manager::session_wrapper_ptr session_manager::start_active_session_stop(
   return begin;
 }
 
-#if defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
-
-void session_manager::schedule_active_session_stop()
-{
-  session_manager_ptr self = shared_from_this();
-
-  io_service_.post(strand_.wrap(ma::make_custom_alloc_handler(
-      session_stop_allocator_, [self]()
-  {
-    --self->pending_operations_;
-
-    self->stopping_sessions_end_ =
-        self->start_active_session_stop(
-            self->stopping_sessions_end_,
-            self->max_stopping_sessions_);
-    if (self->stopping_sessions_end_)
-    {
-      self->schedule_active_session_stop();
-    }
-
-    self->continue_stop();
-  })));
-
-  ++pending_operations_;
-}
-
-#else // defined(MA_HAS_RVALUE_REFS)
-      //     && defined(MA_HAS_LAMBDA)
-      //     && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
-
 void session_manager::schedule_active_session_stop()
 {
   io_service_.post(strand_.wrap(ma::make_custom_alloc_handler(
@@ -1198,44 +1126,9 @@ void session_manager::handle_scheduled_active_session_stop()
   continue_stop();
 }
 
-#endif // defined(MA_HAS_RVALUE_REFS)
-       //     && defined(MA_HAS_LAMBDA)
-       //     && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
-
 void session_manager::start_accept_session(const session_wrapper_ptr& session)
 {
-#if defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
-
-  session_manager_ptr self = shared_from_this();
-
-  acceptor_.async_accept(session->socket(), session->remote_endpoint(),
-      strand_.wrap(make_custom_alloc_handler(accept_allocator_,
-          [self, session](const boost::system::error_code& error)
-  {
-    BOOST_ASSERT_MSG(accept_state::in_progress == self->accept_state_,
-        "Invalid accept state");
-
-    // Split handler based on current internal state
-    // that might change during accept operation
-    switch (self->intern_state_)
-    {
-    case intern_state::work:
-      self->handle_accept_at_work(session, error);
-      break;
-
-    case intern_state::stop:
-      self->handle_accept_at_stop(session, error);
-      break;
-
-    default:
-      BOOST_ASSERT_MSG(false, "Invalid internal state");
-      break;
-    }
-  })));
-
-#elif defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 
   acceptor_.async_accept(session->socket(), session->remote_endpoint(),
       strand_.wrap(make_custom_alloc_handler(accept_allocator_,
@@ -1259,41 +1152,7 @@ void session_manager::start_session_start(const session_wrapper_ptr& session)
 {
   // Asynchronously start wrapped session
 
-#if defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
-
-  session_manager_weak_ptr weak_this = shared_from_this();
-
-  session->async_start(
-      [weak_this, session](const boost::system::error_code& error)
-  {
-    if (session_manager_ptr this_ptr = weak_this.lock())
-    {
-      this_ptr->strand_.dispatch(make_custom_alloc_handler(
-          session->start_allocator(), [this_ptr, session, error]()
-      {
-        // Split handler based on current internal state
-        // that might change during session start
-        switch (this_ptr->intern_state_)
-        {
-        case intern_state::work:
-          this_ptr->handle_session_start_at_work(session, error);
-          break;
-
-        case intern_state::stop:
-          this_ptr->handle_session_start_at_stop(session, error);
-          break;
-
-        default:
-          BOOST_ASSERT_MSG(false, "Invalid internal state");
-          break;
-        }
-      }));
-    }
-  });
-
-#elif defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 
   session->async_start(session_dispatch_binder(
       &this_type::dispatch_handle_session_start, shared_from_this(), session));
@@ -1313,41 +1172,7 @@ void session_manager::start_session_stop(const session_wrapper_ptr& session)
 {
   // Asynchronously stop wrapped session
 
-#if defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
-
-  session_manager_weak_ptr weak_this = shared_from_this();
-
-  session->async_stop(
-      [weak_this, session](const boost::system::error_code& error)
-  {
-    if (session_manager_ptr this_ptr = weak_this.lock())
-    {
-      this_ptr->strand_.dispatch(make_custom_alloc_handler(
-          session->stop_allocator(), [this_ptr, session, error]()
-      {
-        // Split handler based on current internal state
-        // that might change during session stop
-        switch (this_ptr->intern_state_)
-        {
-        case intern_state::work:
-          this_ptr->handle_session_stop_at_work(session, error);
-          break;
-
-        case intern_state::stop:
-          this_ptr->handle_session_stop_at_stop(session, error);
-          break;
-
-        default:
-          BOOST_ASSERT_MSG(false, "Invalid internal state");
-          break;
-        }
-      }));
-    }
-  });
-
-#elif defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 
   session->async_stop(session_dispatch_binder(
       &this_type::dispatch_handle_session_stop, shared_from_this(), session));
@@ -1367,41 +1192,7 @@ void session_manager::start_session_wait(const session_wrapper_ptr& session)
 {
   // Asynchronously wait on wrapped session
 
-#if defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
-
-  session_manager_weak_ptr weak_this = shared_from_this();
-
-  session->async_wait(
-      [weak_this, session](const boost::system::error_code& error)
-  {
-    if (session_manager_ptr this_ptr = weak_this.lock())
-    {
-      this_ptr->strand_.dispatch(make_custom_alloc_handler(
-          session->wait_allocator(), [this_ptr, session, error]()
-      {
-        // Split handler based on current internal state
-        // that might change during session wait
-        switch (this_ptr->intern_state_)
-        {
-        case intern_state::work:
-          this_ptr->handle_session_wait_at_work(session, error);
-          break;
-
-        case intern_state::stop:
-          this_ptr->handle_session_wait_at_stop(session, error);
-          break;
-
-        default:
-          BOOST_ASSERT_MSG(false, "Invalid internal state");
-          break;
-        }
-      }));
-    }
-  });
-
-#elif defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
+#if defined(MA_HAS_RVALUE_REFS) && defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 
   session->async_wait(session_dispatch_binder(
       &this_type::dispatch_handle_session_wait, shared_from_this(), session));
@@ -1529,9 +1320,6 @@ boost::system::error_code session_manager::close_acceptor()
   return error;
 }
 
-#if !(defined(MA_HAS_RVALUE_REFS) \
-    && defined(MA_HAS_LAMBDA) && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
-
 void session_manager::dispatch_handle_session_start(
     const session_manager_weak_ptr& this_weak_ptr,
     const session_wrapper_ptr& session,
@@ -1606,10 +1394,6 @@ void session_manager::dispatch_handle_session_stop(
 #endif
   }
 }
-
-#endif // !(defined(MA_HAS_RVALUE_REFS)
-       //     && defined(MA_HAS_LAMBDA)
-      //      && !defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR))
 
 void session_manager::open(protocol_type::acceptor& acceptor,
     const protocol_type::endpoint& endpoint, int backlog,

@@ -15,10 +15,7 @@
 #include <ma/tutorial2/async_implementation.hpp>
 #include <ma/detail/memory.hpp>
 #include <ma/detail/functional.hpp>
-
-#if defined(MA_HAS_RVALUE_REFS)
-#include <utility>
-#endif // defined(MA_HAS_RVALUE_REFS)
+#include <ma/detail/utility.hpp>
 
 namespace ma {
 namespace tutorial2 {
@@ -38,24 +35,23 @@ public:
   typedef void (async_implementation::*func_type)(
       const do_something_handler_ptr&);
 
-#if defined(MA_HAS_RVALUE_REFS)
-
   template <typename AsyncImplementationPtr, typename DoSomethingHandlerPtr>
-  forward_binder(AsyncImplementationPtr&& async_implementation,
-      DoSomethingHandlerPtr&& do_something_handler, func_type func)
-    : async_implementation_(std::forward<AsyncImplementationPtr>(
+  forward_binder(AsyncImplementationPtr MA_FWD_REF async_implementation,
+      DoSomethingHandlerPtr MA_FWD_REF do_something_handler, func_type func)
+    : async_implementation_(detail::forward<AsyncImplementationPtr>(
           async_implementation))
-    , do_something_handler_(std::forward<DoSomethingHandlerPtr>(
+    , do_something_handler_(detail::forward<DoSomethingHandlerPtr>(
           do_something_handler))
     , func_(func)
   {
   }
 
-#if defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
+#if defined(MA_HAS_RVALUE_REFS) \
+    && (defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG))
 
   forward_binder(this_type&& other)
-    : async_implementation_(std::move(other.async_implementation_))
-    , do_something_handler_(std::move(other.do_something_handler_))
+    : async_implementation_(detail::move(other.async_implementation_))
+    , do_something_handler_(detail::move(other.do_something_handler_))
     , func_(other.func_)
   {
   }
@@ -67,20 +63,7 @@ public:
   {
   }
 
-#endif // defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
-
-#else // defined(MA_HAS_RVALUE_REFS)
-
-  forward_binder(const async_implementation_ptr& async_implementation,
-      const do_something_handler_ptr& do_something_handler,
-      func_type function)
-    : async_implementation_(async_implementation)
-    , do_something_handler_(do_something_handler)
-    , func_(function)
-  {
-  }
-
-#endif // defined(MA_HAS_RVALUE_REFS)
+#endif
 
   void operator()()
   {
@@ -121,7 +104,7 @@ public:
 #if defined(MA_HAS_RVALUE_REFS) && defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
 
   do_something_handler_adapter(this_type&& other)
-    : do_something_handler_(std::move(other.do_something_handler_))
+    : do_something_handler_(detail::move(other.do_something_handler_))
   {
   }
 
@@ -171,8 +154,8 @@ public:
 #if defined(MA_HAS_RVALUE_REFS) && defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR)
 
   do_something_handler_binder(this_type&& other)
-    : do_something_handler_(std::move(other.do_something_handler_))
-    , error_(std::move(other.error_))
+    : do_something_handler_(detail::move(other.do_something_handler_))
+    , error_(detail::move(other.error_))
   {
   }
 
@@ -222,7 +205,7 @@ public:
   timer_handler_binder(func_type function,
       AsyncImplementationPtr&& async_implementation)
     : func_(function)
-    , async_implementation_(std::forward<AsyncImplementationPtr>(
+    , async_implementation_(detail::forward<AsyncImplementationPtr>(
           async_implementation))
   {
   }
@@ -231,7 +214,7 @@ public:
 
   timer_handler_binder(this_type&& other)
     : func_(other.func_)
-    , async_implementation_(std::move(other.async_implementation_))
+    , async_implementation_(detail::move(other.async_implementation_))
   {
   }
 

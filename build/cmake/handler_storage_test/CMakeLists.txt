@@ -37,6 +37,7 @@ set(CPP_HEADERS
     "${CPP_HEADERS_DIR}/ma/detail/memory.hpp"
     "${CPP_HEADERS_DIR}/ma/detail/service_base.hpp"
     "${CPP_HEADERS_DIR}/ma/detail/thread.hpp"
+    "${CPP_HEADERS_DIR}/ma/detail/utility.hpp"
     "${CPP_HEADERS_DIR}/ma/bind_handler.hpp"
     "${CPP_HEADERS_DIR}/ma/config.hpp"
     "${CPP_HEADERS_DIR}/ma/console_close_guard.hpp"

@@ -17,11 +17,8 @@
 #include <ma/handler_alloc_helpers.hpp>
 #include <ma/handler_invoke_helpers.hpp>
 #include <ma/handler_cont_helpers.hpp>
-
-#if defined(MA_HAS_RVALUE_REFS)
-#include <utility>
 #include <ma/type_traits.hpp>
-#endif // defined(MA_HAS_RVALUE_REFS)
+#include <ma/detail/utility.hpp>
 
 namespace ma {
 
@@ -72,20 +69,19 @@ private:
 public:
   typedef void result_type;
 
-#if defined(MA_HAS_RVALUE_REFS)
-
   template <typename C, typename H>
-  context_alloc_handler(C&& context, H&& handler)
-    : context_(std::forward<C>(context))
-    , handler_(std::forward<H>(handler))
+  context_alloc_handler(C MA_FWD_REF context, H MA_FWD_REF handler)
+    : context_(detail::forward<C>(context))
+    , handler_(detail::forward<H>(handler))
   {
   }
 
-#if defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
+#if defined(MA_HAS_RVALUE_REFS) \
+    && (defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG))
 
   context_alloc_handler(this_type&& other)
-    : context_(std::move(other.context_))
-    , handler_(std::move(other.handler_))
+    : context_(detail::move(other.context_))
+    , handler_(detail::move(other.handler_))
   {
   }
 
@@ -96,16 +92,6 @@ public:
   }
 
 #endif
-
-#else // defined(MA_HAS_RVALUE_REFS)
-
-  context_alloc_handler(const Context& context, const Handler& handler)
-    : context_(context)
-    , handler_(handler)
-  {
-  }
-
-#endif // defined(MA_HAS_RVALUE_REFS)
 
 #if !defined(NDEBUG)
   ~context_alloc_handler()
@@ -131,11 +117,12 @@ public:
 #if defined(MA_HAS_RVALUE_REFS)
 
   template <typename Function>
-  friend void asio_handler_invoke(Function&& function, this_type* context)
+  friend void asio_handler_invoke(Function MA_FWD_REF function, 
+      this_type* context)
   {
     // Forward to asio_handler_invoke provided by source handler.
     ma_handler_invoke_helpers::invoke(
-        std::forward<Function>(function), context->handler_);
+        detail::forward<Function>(function), context->handler_);
   }
 
 #else // defined(MA_HAS_RVALUE_REFS)
@@ -167,36 +154,41 @@ public:
   }
 
   template <typename Arg1>
-  void operator()(const Arg1& arg1)
+  void operator()(Arg1 MA_FWD_REF arg1)
   {
-    handler_(arg1);
+    handler_(detail::forward<Arg1>(arg1));
   }
 
   template <typename Arg1, typename Arg2>
-  void operator()(const Arg1& arg1, const Arg2& arg2)
+  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2)
   {
-    handler_(arg1, arg2);
+    handler_(detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2));
   }
 
   template <typename Arg1, typename Arg2, typename Arg3>
-  void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3)
+  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2, 
+      Arg3 MA_FWD_REF arg3)
   {
-    handler_(arg1, arg2, arg3);
+    handler_(detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2), 
+        detail::forward<Arg3>(arg3));
   }
 
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4>
-  void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3,
-      const Arg4& arg4)
+  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2, 
+      Arg3 MA_FWD_REF arg3, Arg4 MA_FWD_REF arg4)
   {
-    handler_(arg1, arg2, arg3, arg4);
+    handler_(detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2),
+        detail::forward<Arg3>(arg3), detail::forward<Arg4>(arg4));
   }
 
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4,
       typename Arg5>
-  void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3,
-      const Arg4& arg4, const Arg5& arg5)
+  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2, 
+      Arg3 MA_FWD_REF arg3, Arg4 MA_FWD_REF arg4, Arg5 MA_FWD_REF arg5)
   {
-    handler_(arg1, arg2, arg3, arg4, arg5);
+    handler_(detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2),
+        detail::forward<Arg3>(arg3), detail::forward<Arg4>(arg4), 
+        detail::forward<Arg5>(arg5));
   }
 
   void operator()() const
@@ -205,36 +197,41 @@ public:
   }
 
   template <typename Arg1>
-  void operator()(const Arg1& arg1) const
+  void operator()(Arg1 MA_FWD_REF arg1) const
   {
-    handler_(arg1);
+    handler_(detail::forward<Arg1>(arg1));
   }
 
   template <typename Arg1, typename Arg2>
-  void operator()(const Arg1& arg1, const Arg2& arg2) const
+  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2) const
   {
-    handler_(arg1, arg2);
+    handler_(detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2));
   }
 
   template <typename Arg1, typename Arg2, typename Arg3>
-  void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3) const
+  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2, 
+      Arg3 MA_FWD_REF arg3) const
   {
-    handler_(arg1, arg2, arg3);
+    handler_(detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2), 
+        detail::forward<Arg3>(arg3));
   }
 
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4>
-  void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3,
-      const Arg4& arg4) const
+  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2, 
+      Arg3 MA_FWD_REF arg3, Arg4 MA_FWD_REF arg4) const
   {
-    handler_(arg1, arg2, arg3, arg4);
+    handler_(detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2),
+        detail::forward<Arg3>(arg3), detail::forward<Arg4>(arg4));
   }
 
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4,
       typename Arg5>
-  void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3,
-      const Arg4& arg4, const Arg5& arg5) const
+  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2, 
+      Arg3 MA_FWD_REF arg3, Arg4 MA_FWD_REF arg4, Arg5 MA_FWD_REF arg5) const
   {
-    handler_(arg1, arg2, arg3, arg4, arg5);
+    handler_(detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2),
+        detail::forward<Arg3>(arg3), detail::forward<Arg4>(arg4), 
+        detail::forward<Arg5>(arg5));
   }
 
 private:
@@ -246,32 +243,19 @@ private:
 #pragma warning(pop)
 #endif // #if defined(_MSC_VER)
 
-#if defined(MA_HAS_RVALUE_REFS)
-
 /// Helper for creation of wrapped handler.
 template <typename Context, typename Handler>
 inline context_alloc_handler<
     typename remove_cv_reference<Context>::type,
     typename remove_cv_reference<Handler>::type>
-make_context_alloc_handler(Context&& context, Handler&& handler)
+make_context_alloc_handler(Context MA_FWD_REF context, 
+    Handler MA_FWD_REF handler)
 {
   typedef typename remove_cv_reference<Context>::type context_type;
   typedef typename remove_cv_reference<Handler>::type handler_type;
   return context_alloc_handler<context_type, handler_type>(
-      std::forward<Context>(context), std::forward<Handler>(handler));
+      detail::forward<Context>(context), detail::forward<Handler>(handler));
 }
-
-#else // defined(MA_HAS_RVALUE_REFS)
-
-/// Helper for creation of wrapped handler.
-template <typename Context, typename Handler>
-inline context_alloc_handler<Context, Handler>
-make_context_alloc_handler(const Context& context, const Handler& handler)
-{
-  return context_alloc_handler<Context, Handler>(context, handler);
-}
-
-#endif // defined(MA_HAS_RVALUE_REFS)
 
 /// Specialized version of context_alloc_handler that is optimized for reuse of
 /// specified context by the specified source handler.
@@ -296,20 +280,19 @@ private:
 public:
   typedef void result_type;
 
-#if defined(MA_HAS_RVALUE_REFS)
-
   template <typename C, typename H>
-  explicit_context_alloc_handler(C&& context, H&& handler)
-    : context_(std::forward<C>(context))
-    , handler_(std::forward<H>(handler))
+  explicit_context_alloc_handler(C MA_FWD_REF context, H MA_FWD_REF handler)
+    : context_(detail::forward<C>(context))
+    , handler_(detail::forward<H>(handler))
   {
   }
 
-#if defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG)
+#if defined(MA_HAS_RVALUE_REFS) \
+    && (defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG))
 
   explicit_context_alloc_handler(this_type&& other)
-    : context_(std::move(other.context_))
-    , handler_(std::move(other.handler_))
+    : context_(detail::move(other.context_))
+    , handler_(detail::move(other.handler_))
   {
   }
 
@@ -320,16 +303,6 @@ public:
   }
 
 #endif
-
-#else // defined(MA_HAS_RVALUE_REFS)
-
-  explicit_context_alloc_handler(const Context& context, const Handler& handler)
-    : context_(context)
-    , handler_(handler)
-  {
-  }
-
-#endif // defined(MA_HAS_RVALUE_REFS)
 
 #if !defined(NDEBUG)
   ~explicit_context_alloc_handler()
@@ -351,10 +324,11 @@ public:
 #if defined(MA_HAS_RVALUE_REFS)
 
   template <typename Function>
-  friend void asio_handler_invoke(Function&& function, this_type* context)
+  friend void asio_handler_invoke(Function MA_FWD_REF function, 
+      this_type* context)
   {
     ma_handler_invoke_helpers::invoke(
-        std::forward<Function>(function), context->handler_);
+        detail::forward<Function>(function), context->handler_);
   }
 
 #else // defined(MA_HAS_RVALUE_REFS)
@@ -380,41 +354,46 @@ public:
 
   void operator()()
   {
-    handler_(static_cast<const Context&>(context_));
+    handler_(context_);
   }
 
   template <typename Arg1>
-  void operator()(const Arg1& arg1)
+  void operator()(Arg1 MA_FWD_REF arg1)
   {
-    handler_(static_cast<const Context&>(context_), arg1);
+    handler_(context_, detail::forward<Arg1>(arg1));
   }
 
   template <typename Arg1, typename Arg2>
-  void operator()(const Arg1& arg1, const Arg2& arg2)
+  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2)
   {
-    handler_(static_cast<const Context&>(context_), arg1, arg2);
+    handler_(context_, detail::forward<Arg1>(arg1), 
+        detail::forward<Arg2>(arg2));
   }
 
   template <typename Arg1, typename Arg2, typename Arg3>
-  void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3)
+  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2, 
+      Arg3 MA_FWD_REF arg3)
   {
-    handler_(static_cast<const Context&>(context_), arg1, arg2, arg3);
+    handler_(context_, detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2),
+        detail::forward<Arg3>(arg3));
   }
 
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4>
-  void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3,
-      const Arg4& arg4)
+  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2, 
+      Arg3 MA_FWD_REF arg3, Arg4 MA_FWD_REF arg4)
   {
-    handler_(static_cast<const Context&>(context_), arg1, arg2, arg3, arg4);
+    handler_(context_, detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2),
+        detail::forward<Arg3>(arg3), detail::forward<Arg4>(arg4));
   }
 
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4,
       typename Arg5>
-  void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3,
-      const Arg4& arg4, const Arg5& arg5)
+  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2, 
+      Arg3 MA_FWD_REF arg3, Arg4 MA_FWD_REF arg4, Arg5 MA_FWD_REF arg5)
   {
-    handler_(static_cast<const Context&>(context_), arg1, arg2, arg3, arg4,
-        arg5);
+    handler_(context_, detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2),
+        detail::forward<Arg3>(arg3), detail::forward<Arg4>(arg4), 
+        detail::forward<Arg5>(arg5));
   }
 
   void operator()() const
@@ -423,36 +402,41 @@ public:
   }
 
   template <typename Arg1>
-  void operator()(const Arg1& arg1) const
+  void operator()(Arg1 MA_FWD_REF arg1) const
   {
-    handler_(context_, arg1);
+    handler_(context_, detail::forward<Arg1>(arg1));
   }
 
   template <typename Arg1, typename Arg2>
-  void operator()(const Arg1& arg1, const Arg2& arg2) const
+  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2) const
   {
-    handler_(context_, arg1, arg2);
+    handler_(context_, detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2));
   }
 
   template <typename Arg1, typename Arg2, typename Arg3>
-  void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3) const
+  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2, 
+      Arg3 MA_FWD_REF arg3) const
   {
-    handler_(context_, arg1, arg2, arg3);
+    handler_(context_, detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2),
+        detail::forward<Arg3>(arg3));
   }
 
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4>
-  void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3,
-      const Arg4& arg4) const
+  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2, 
+      Arg3 MA_FWD_REF arg3, Arg4 MA_FWD_REF arg4) const
   {
-    handler_(context_, arg1, arg2, arg3, arg4);
+    handler_(context_, detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2),
+        detail::forward<Arg3>(arg3), detail::forward<Arg4>(arg4));
   }
 
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4,
       typename Arg5>
-  void operator()(const Arg1& arg1, const Arg2& arg2, const Arg3& arg3,
-      const Arg4& arg4, const Arg5& arg5) const
+  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2, 
+      Arg3 MA_FWD_REF arg3, Arg4 MA_FWD_REF arg4, Arg5 MA_FWD_REF arg5) const
   {
-    handler_(context_, arg1, arg2, arg3, arg4, arg5);
+    handler_(context_, detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2),
+        detail::forward<Arg3>(arg3), detail::forward<Arg4>(arg4), 
+        detail::forward<Arg5>(arg5));
   }
 
 private:
@@ -464,31 +448,18 @@ private:
 #pragma warning(pop)
 #endif // #if defined(_MSC_VER)
 
-#if defined(MA_HAS_RVALUE_REFS)
-
 template <typename Context, typename Handler>
 inline explicit_context_alloc_handler<
     typename remove_cv_reference<Context>::type,
     typename remove_cv_reference<Handler>::type>
-make_explicit_context_alloc_handler(Context&& context, Handler&& handler)
+make_explicit_context_alloc_handler(Context MA_FWD_REF context, 
+    Handler MA_FWD_REF handler)
 {
   typedef typename remove_cv_reference<Context>::type context_type;
   typedef typename remove_cv_reference<Handler>::type handler_type;
   return explicit_context_alloc_handler<context_type, handler_type>(
-      std::forward<Context>(context), std::forward<Handler>(handler));
+      detail::forward<Context>(context), detail::forward<Handler>(handler));
 }
-
-#else // defined(MA_HAS_RVALUE_REFS)
-
-template <typename Context, typename Handler>
-inline explicit_context_alloc_handler<Context, Handler>
-make_explicit_context_alloc_handler(const Context& context,
-    const Handler& handler)
-{
-  return explicit_context_alloc_handler<Context, Handler>(context, handler);
-}
-
-#endif // defined(MA_HAS_RVALUE_REFS)
 
 } // namespace ma
 

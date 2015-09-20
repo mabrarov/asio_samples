@@ -15,10 +15,7 @@
 #include <boost/asio.hpp>
 #include <ma/config.hpp>
 #include <ma/detail/memory.hpp>
-
-#if defined(MA_HAS_RVALUE_REFS)
-#include <utility>
-#endif // defined(MA_HAS_RVALUE_REFS)
+#include <ma/detail/utility.hpp>
 
 // Calls to asio_handler_invoke must be made from a namespace that does not
 // contain any overloads of this function. The ma_handler_invoke_helpers
@@ -29,11 +26,11 @@ namespace ma_handler_invoke_helpers {
 #if defined(MA_HAS_RVALUE_REFS)
 
 template <typename Function, typename Context>
-inline void invoke(Function&& function, Context& context)
+inline void invoke(Function MA_FWD_REF function, Context& context)
 {
   using namespace boost::asio;
-  asio_handler_invoke(
-      std::forward<Function>(function), ma::detail::addressof(context));
+  asio_handler_invoke(ma::detail::forward<Function>(function), 
+      ma::detail::addressof(context));
 }
 
 #else // defined(MA_HAS_RVALUE_REFS)

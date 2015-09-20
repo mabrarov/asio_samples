@@ -17,10 +17,7 @@
 #include <ma/config.hpp>
 #include <ma/type_traits.hpp>
 #include <ma/handler_storage_service.hpp>
-
-#if defined(MA_HAS_RVALUE_REFS)
-#include <utility>
-#endif // defined(MA_HAS_RVALUE_REFS)
+#include <ma/detail/utility.hpp>
 
 namespace ma {
 
@@ -124,8 +121,6 @@ public:
   /// Clear stored handler if it exists.
   void clear();
 
-#if defined(MA_HAS_RVALUE_REFS)
-
   /// Store handler in this handler storage.
   /**
    * Really, "store" means "try to store, if can't (io_service's destructor is
@@ -134,21 +129,7 @@ public:
    * (called right after "store").
    */
   template <typename Handler>
-  void store(Handler&& handler);
-
-#else // defined(MA_HAS_RVALUE_REFS)
-
-  /// Store handler in this handler storage.
-  /**
-   * Really, "store" means "try to store, if can't (io_service's destructor is
-   * already called) then do nothing".
-   * For test of was "store" successful or not, "has_target" can be used
-   * (called right after "store").
-   */
-  template <typename Handler>
-  void store(const Handler& handler);
-
-#endif // defined(MA_HAS_RVALUE_REFS)
+  void store(Handler MA_FWD_REF handler);
 
   /// Post the stored handler to storage related io_service instance.
   /**
@@ -211,8 +192,6 @@ public:
   /// Clear stored handler if it exists.
   void clear();
 
-#if defined(MA_HAS_RVALUE_REFS)
-
   /// Store handler in this handler storage.
   /**
    * Really, "store" means "try to store, if can't (io_service's destructor is
@@ -221,21 +200,7 @@ public:
    * (called right after "store").
    */
   template <typename Handler>
-  void store(Handler&& handler);
-
-#else // defined(MA_HAS_RVALUE_REFS)
-
-  /// Store handler in this handler storage.
-  /**
-   * Really, "store" means "try to store, if can't (io_service's destructor is
-   * already called) then do nothing".
-   * For test of was "store" successful or not, "has_target" can be used
-   * (called right after "store").
-   */
-  template <typename Handler>
-  void store(const Handler& handler);
-
-#endif // defined(MA_HAS_RVALUE_REFS)
+  void store(Handler MA_FWD_REF handler);
 
   /// Post the stored handler to storage related io_service instance.
   /**
@@ -315,28 +280,14 @@ void handler_storage<Arg, Target>::clear()
   service_.clear(impl_);
 }
 
-#if defined(MA_HAS_RVALUE_REFS)
-
 template <typename Arg, typename Target>
 template <typename Handler>
-void handler_storage<Arg, Target>::store(Handler&& handler)
+void handler_storage<Arg, Target>::store(Handler MA_FWD_REF handler)
 {
   typedef typename remove_cv_reference<Handler>::type handler_type;
   service_.store<handler_type, arg_type, target_type>(
-      impl_, std::forward<Handler>(handler));
+      impl_, detail::forward<Handler>(handler));
 }
-
-#else // defined(MA_HAS_RVALUE_REFS)
-
-template <typename Arg, typename Target>
-template<typename Handler>
-void handler_storage<Arg, Target>::store(const Handler& handler)
-{
-  typedef Handler handler_type;
-  service_.store<handler_type, arg_type, target_type>(impl_, handler);
-}
-
-#endif // defined(MA_HAS_RVALUE_REFS)
 
 template <typename Arg, typename Target>
 void handler_storage<Arg, Target>::post(const arg_type& arg)
@@ -407,28 +358,14 @@ void handler_storage<void, Target>::clear()
   service_.clear(impl_);
 }
 
-#if defined(MA_HAS_RVALUE_REFS)
-
 template <typename Target>
 template <typename Handler>
-void handler_storage<void, Target>::store(Handler&& handler)
+void handler_storage<void, Target>::store(Handler MA_FWD_REF handler)
 {
   typedef typename remove_cv_reference<Handler>::type handler_type;
   service_.store<handler_type, void, target_type>(
-      impl_, std::forward<Handler>(handler));
+      impl_, detail::forward<Handler>(handler));
 }
-
-#else // defined(MA_HAS_RVALUE_REFS)
-
-template <typename Target>
-template <typename Handler>
-void handler_storage<void, Target>::store(const Handler& handler)
-{
-  typedef Handler handler_type;
-  service_.store<handler_type, void, target_type>(impl_, handler);
-}
-
-#endif // defined(MA_HAS_RVALUE_REFS)
 
 template <typename Target>
 void handler_storage<void, Target>::post()
