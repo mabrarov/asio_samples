@@ -72,11 +72,11 @@ public:
 
   // Handler()(const boost::system::error_code&, std::size_t)
   template <typename Handler, typename Iterator>
-  void async_read_some(Iterator MA_FWD_REF begin, Iterator MA_FWD_REF end, 
+  void async_read_some(Iterator begin, Iterator end, 
       Handler MA_FWD_REF handler);
 
   template <typename ConstBufferSequence, typename Handler>
-  void async_write_some(ConstBufferSequence MA_FWD_REF buffers, 
+  void async_write_some(ConstBufferSequence buffers, 
       Handler MA_FWD_REF handler);
 
 protected:
@@ -284,8 +284,7 @@ void cyclic_read_session::async_stop(Handler MA_FWD_REF handler)
 // Handler()(const boost::system::error_code&, std::size_t)
 template <typename Handler, typename Iterator>
 void cyclic_read_session::async_read_some(
-    Iterator MA_FWD_REF begin, Iterator MA_FWD_REF end, 
-    Handler MA_FWD_REF handler)
+    Iterator begin, Iterator end, Handler MA_FWD_REF handler)
 {
   typedef typename remove_cv_reference<Iterator>::type iterator_type;
   typedef typename remove_cv_reference<Handler>::type  handler_type;
@@ -303,7 +302,7 @@ void cyclic_read_session::async_read_some(
 
 template <typename ConstBufferSequence, typename Handler>
 void cyclic_read_session::async_write_some(
-    ConstBufferSequence MA_FWD_REF buffers, Handler MA_FWD_REF handler)
+    ConstBufferSequence buffers, Handler MA_FWD_REF handler)
 {
   typedef typename remove_cv_reference<ConstBufferSequence>::type
       buffers_type;
