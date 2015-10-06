@@ -1,4 +1,4 @@
-# 
+#
 # Copyright (c) 2010-2015 Marat Abrarov (abrarov@gmail.com)
 #
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
@@ -7,9 +7,15 @@
 
 cmake_minimum_required(VERSION 2.8.11)
 
-# Turn on pthread usage
+# Turn on thread support for GCC
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
-    set(CMAKE_CXX_FLAGS "-pthread ${CMAKE_CXX_FLAGS}")
+    if(MINGW)
+        set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -mthreads")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mthreads")
+    else()
+        set(CMAKE_C_FLAGS   "${CMAKE_C_FLAGS} -pthread")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+    endif()
 endif()
 
 # Turn on support of C++11 if it's available
