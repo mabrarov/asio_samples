@@ -28,6 +28,68 @@ bool is_accept_recoverable(const boost::system::error_code& error)
   return error == boost::asio::error::no_descriptors;
 }
 
+template <typename Closable>
+class close_guard : private boost::noncopyable
+{
+public:
+  explicit close_guard(Closable& closable)
+    : closable_(detail::addressof(closable))
+  {
+  }
+
+  ~close_guard()
+  {
+    if (closable_)
+    {
+      boost::system::error_code ignored;
+      closable_->close(ignored);
+    }
+  }
+
+  Closable* release()
+  {
+    Closable* tmp = closable_;
+    closable_ = 0;
+    return tmp;
+  }
+
+private:
+  Closable* closable_;
+}; // class close_guard
+
+template <typename Acceptor>
+void open(Acceptor& acceptor, const typename Acceptor::endpoint_type& endpoint,
+    int backlog, boost::system::error_code& error)
+{
+  acceptor.open(endpoint.protocol(), error);
+  if (error)
+  {
+    return;
+  }
+
+  close_guard<Acceptor> acceptor_close_guard(acceptor);
+
+  typename Acceptor::reuse_address reuse_address_opt(true);
+  acceptor.set_option(reuse_address_opt, error);
+  if (error)
+  {
+    return;
+  }
+
+  acceptor.bind(endpoint, error);
+  if (error)
+  {
+    return;
+  }
+
+  acceptor.listen(backlog, error);
+
+  if (!error)
+  {
+    acceptor_close_guard.release();
+  }
+}
+
 class session_release_guard : private boost::noncopyable
 {
 public:
@@ -1392,72 +1454,6 @@ void session_manager::dispatch_handle_session_stop(
             &session_manager::handle_session_stop, this_ptr, session, error)));
 
 #endif
-  }
-}
-
-void session_manager::open(protocol_type::acceptor& acceptor,
-    const protocol_type::endpoint& endpoint, int backlog,
-    boost::system::error_code& error)
-{
-  boost::system::error_code local_error;
-
-  acceptor.open(endpoint.protocol(), local_error);
-  if (local_error)
-  {
-    error = local_error;
-    return;
-  }
-
-  class acceptor_guard : private boost::noncopyable
-  {
-  public:
-    typedef protocol_type::acceptor guarded_type;
-
-    acceptor_guard(guarded_type& guarded)
-      : guarded_(detail::addressof(guarded))
-    {
-    }
-
-    ~acceptor_guard()
-    {
-      if (guarded_)
-      {
-        boost::system::error_code ignored;
-        guarded_->close(ignored);
-      }
-    }
-
-    void release()
-    {
-      guarded_ = 0;
-    }
-
-  private:
-    guarded_type* guarded_;
-  }; // class acceptor_guard
-
-  acceptor_guard closing_guard(acceptor);
-
-  protocol_type::acceptor::reuse_address reuse_address_opt(true);
-  acceptor.set_option(reuse_address_opt, local_error);
-  if (local_error)
-  {
-    error = local_error;
-    return;
-  }
-
-  acceptor.bind(endpoint, local_error);
-  if (local_error)
-  {
-    error = local_error;
-    return;
-  }
-
-  acceptor.listen(backlog, error);
-
-  if (!error)
-  {
-    closing_guard.release();
   }
 }
 
