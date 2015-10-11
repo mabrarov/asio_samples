@@ -23,6 +23,7 @@
 #include <boost/asio.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/noncopyable.hpp>
+#include <boost/logic/tribool.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
 #include <boost/optional.hpp>
@@ -146,7 +147,7 @@ private:
   limited_counter total_bytes_read_;
 }; // class stats
 
-typedef boost::optional<bool> optional_bool;
+typedef boost::logic::tribool tribool;
 typedef boost::optional<int>  optional_int;
 
 struct session_config
@@ -156,7 +157,7 @@ public:
       std::size_t the_max_connect_attempts,
       const optional_int& the_socket_recv_buffer_size,
       const optional_int& the_socket_send_buffer_size,
-      const optional_bool& the_no_delay)
+      const tribool& the_no_delay)
     : buffer_size(the_buffer_size)
     , max_connect_attempts(the_max_connect_attempts)
     , socket_recv_buffer_size(the_socket_recv_buffer_size)
@@ -178,7 +179,7 @@ public:
   std::size_t   max_connect_attempts;
   optional_int  socket_recv_buffer_size;
   optional_int  socket_send_buffer_size;
-  optional_bool no_delay;
+  tribool       no_delay;
 }; // struct session_config
 
 class session : private boost::noncopyable
@@ -293,8 +294,8 @@ private:
     protocol::endpoint endpoint = *current_endpoint_iterator;
     ma::async_connect(socket_, endpoint, strand_.wrap(
         ma::make_custom_alloc_handler(write_allocator_,
-            ma::detail::bind(&this_type::handle_connect, this, 
-                ma::detail::placeholders::_1, connect_attempt, 
+            ma::detail::bind(&this_type::handle_connect, this,
+                ma::detail::placeholders::_1, connect_attempt,
                 initial_endpoint_iterator, current_endpoint_iterator))));
   }
 
@@ -427,7 +428,7 @@ private:
       socket_.async_write_some(write_data, strand_.wrap(
           ma::make_custom_alloc_handler(write_allocator_,
               ma::detail::bind(&this_type::handle_write, this,
-                  ma::detail::placeholders::_1, 
+                  ma::detail::placeholders::_1,
                   ma::detail::placeholders::_2))));
       write_in_progress_ = true;
     }
@@ -441,7 +442,7 @@ private:
       socket_.async_read_some(read_data, strand_.wrap(
           ma::make_custom_alloc_handler(read_allocator_,
               ma::detail::bind(&this_type::handle_read, this,
-                  ma::detail::placeholders::_1, 
+                  ma::detail::placeholders::_1,
                   ma::detail::placeholders::_2))));
       read_in_progress_ = true;
     }
@@ -485,10 +486,10 @@ private:
       }
     }
 
-    if (no_delay_)
+    if (!boost::logic::indeterminate(no_delay_))
     {
       boost::system::error_code error;
-      socket_type::linger opt(*no_delay_, 0);
+      socket_type::linger opt(static_cast<bool>(no_delay_), 0);
       socket_.set_option(opt, error);
       if (error)
       {
@@ -515,7 +516,7 @@ private:
   const std::size_t   max_connect_attempts_;
   const optional_int  socket_recv_buffer_size_;
   const optional_int  socket_send_buffer_size_;
-  const optional_bool no_delay_;
+  const tribool       no_delay_;
   ma::strand          strand_;
   protocol::socket    socket_;
   ma::cyclic_buffer   buffer_;
@@ -595,7 +596,7 @@ public:
           ++j, ++i)
       {
         sessions_.push_back(ma::detail::make_shared<session>(
-            ma::detail::ref(**j), config.managed_session_config, 
+            ma::detail::ref(**j), config.managed_session_config,
             ma::detail::ref(work_state_)));
       }
     }
@@ -607,7 +608,7 @@ public:
     BOOST_ASSERT_MSG(!timer_in_progess_, "Invalid timer state");
 
     std::for_each(session_vector::const_iterator(sessions_.begin()),
-        started_sessions_end_, ma::detail::bind(&this_type::register_stats, 
+        started_sessions_end_, ma::detail::bind(&this_type::register_stats,
             this, ma::detail::placeholders::_1));
     stats_.print();
   }
@@ -727,7 +728,7 @@ private:
     cancel_timer();
     stopped_ = true;
     std::for_each(session_vector::const_iterator(sessions_.begin()),
-        started_sessions_end_, ma::detail::bind(&session::async_stop, 
+        started_sessions_end_, ma::detail::bind(&session::async_stop,
             ma::detail::placeholders::_1));
   }
 
@@ -972,7 +973,7 @@ client_config build_client_config(
   const optional_int socket_send_buffer_size =
       build_optional_int(options_values, socket_send_buffer_size_option_name);
 
-  optional_bool no_delay;
+  tribool no_delay = boost::logic::indeterminate;
   if (0 != options_values.count(no_delay_option_name))
   {
     no_delay = options_values[no_delay_option_name].as<bool>();
@@ -1042,16 +1043,13 @@ std::string to_string(bool value)
   return value ? "on" : "off";
 }
 
-std::string to_string(const optional_bool& value)
+std::string to_string(const tribool& value)
 {
-  if (value)
-  {
-    return to_string(*value);
-  }
-  else
+  if (boost::logic::indeterminate(value))
   {
     return "n/a";
   }
+  return to_string(static_cast<bool>(value));
 }
 
 void print(const client_config& config)
@@ -1144,7 +1142,7 @@ void create_session_threads(ma::thread_group& threads,
     {
       threads.create_thread(ma::detail::bind(
           static_cast<std::size_t (boost::asio::io_service::*)(void)>(
-              &boost::asio::io_service::run), 
+              &boost::asio::io_service::run),
           i->get()));
     }
   }
@@ -1155,7 +1153,7 @@ void create_session_threads(ma::thread_group& threads,
     {
       threads.create_thread(ma::detail::bind(
           static_cast<std::size_t (boost::asio::io_service::*)(void)>(
-              &boost::asio::io_service::run), 
+              &boost::asio::io_service::run),
           &io_service));
     }
   }
