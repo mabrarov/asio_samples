@@ -9,6 +9,7 @@
 #include <limits>
 #include <boost/asio.hpp>
 #include <boost/optional.hpp>
+#include <boost/logic/tribool.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/throw_exception.hpp>
 #include <ma/config.hpp>
@@ -56,10 +57,7 @@ std::string to_string(const boost::optional<Value>& value,
   {
     return boost::lexical_cast<std::string>(*value);
   }
-  else
-  {
-    return default_text;
-  }
+  return default_text;
 }
 
 std::string to_string(bool value)
@@ -68,24 +66,17 @@ std::string to_string(bool value)
   {
     return "on";
   }
-  else
-  {
-    return "off";
-  }
+  return "off";
 }
 
-template <>
-std::string to_string<bool>(const boost::optional<bool>& value,
+std::string to_string(const boost::logic::tribool& value,
     const std::string& default_text)
 {
-  if (value)
-  {
-    return to_string(*value);
-  }
-  else
+  if (boost::logic::indeterminate(value))
   {
     return default_text;
   }
+  return to_string(static_cast<bool>(value));
 }
 
 boost::optional<int> read_socket_buffer_size(
@@ -177,7 +168,7 @@ boost::program_options::options_description build_cmd_options_description(
       boost::program_options::value<std::string>()->default_value(
           boost::asio::ip::address_v4::any().to_string()),
       "set the TCP address to listen on (IPv4 or IPv6)"
-    )    
+    )
     (
       listen_backlog_option_name,
       boost::program_options::value<int>()->default_value(6),
@@ -353,7 +344,7 @@ ma::echo::server::session_config build_session_config(
 {
   using ma::echo::server::session_config;
 
-  boost::optional<bool> no_delay;
+  boost::logic::tribool no_delay = boost::logic::indeterminate;
   if (options_values.count(socket_no_delay_option_name))
   {
     no_delay = !options_values[socket_no_delay_option_name].as<bool>();
@@ -405,7 +396,7 @@ ma::echo::server::session_manager_config build_session_manager_config(
   //todo: read from CMD
   std::size_t max_stopping_sessions = 100;
 
-  boost::asio::ip::address listen_address = 
+  boost::asio::ip::address listen_address =
       boost::asio::ip::address::from_string(
           options_values[listen_address_option_name].as<std::string>());
   int listen_backlog = options_values[listen_backlog_option_name].as<int>();
@@ -413,7 +404,7 @@ ma::echo::server::session_manager_config build_session_manager_config(
   using boost::asio::ip::tcp;
 
   return ma::echo::server::session_manager_config(
-      tcp::endpoint(listen_address, port), max_sessions, recycled_sessions, 
+      tcp::endpoint(listen_address, port), max_sessions, recycled_sessions,
       max_stopping_sessions, listen_backlog, session_config);
 }
 

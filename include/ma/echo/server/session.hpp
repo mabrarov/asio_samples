@@ -162,7 +162,7 @@ private:
   const std::size_t                   max_transfer_size_;
   const session_config::optional_int  socket_recv_buffer_size_;
   const session_config::optional_int  socket_send_buffer_size_;
-  const session_config::optional_bool no_delay_;
+  const session_config::tribool       no_delay_;
   const optional_duration             inactivity_timeout_;
 
   extern_state::value_t extern_state_;
@@ -223,7 +223,7 @@ private:
   session_ptr session_;
 }; // class session::forward_handler_binder
 
-#endif // defined(MA_HAS_RVALUE_REFS) 
+#endif // defined(MA_HAS_RVALUE_REFS)
        //     && defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 
 template <typename Handler>

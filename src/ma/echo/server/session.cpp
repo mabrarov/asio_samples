@@ -6,6 +6,7 @@
 //
 
 #include <boost/assert.hpp>
+#include <boost/logic/tribool.hpp>
 #include <ma/config.hpp>
 #include <ma/shared_ptr_factory.hpp>
 #include <ma/custom_alloc_handler.hpp>
@@ -995,7 +996,7 @@ boost::system::error_code session::apply_socket_options()
     }
   }
 
-  // Apply all (really) configered socket options
+  // Apply all (really) configured socket options
   if (socket_recv_buffer_size_)
   {
     boost::system::error_code error;
@@ -1018,10 +1019,10 @@ boost::system::error_code session::apply_socket_options()
     }
   }
 
-  if (no_delay_)
+  if (!boost::logic::indeterminate(no_delay_))
   {
     boost::system::error_code error;
-    protocol_type::no_delay opt(*no_delay_);
+    protocol_type::no_delay opt(static_cast<bool>(no_delay_));
     socket_.set_option(opt, error);
     if (error)
     {

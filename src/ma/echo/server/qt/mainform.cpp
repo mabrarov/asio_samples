@@ -12,6 +12,7 @@ TRANSLATOR ma::echo::server::qt::MainForm
 #include <limits>
 #include <stdexcept>
 #include <boost/optional.hpp>
+#include <boost/logic/tribool.hpp>
 #include <boost/throw_exception.hpp>
 #include <boost/numeric/conversion/cast.hpp>
 #include <QtGlobal>
@@ -426,7 +427,7 @@ session_config MainForm::buildSessionConfig() const
   boost::optional<int> socketSendBufferSize = readOptionalValue(
       *ui_.sockSendBufferSizeCheckBox, *ui_.sockSendBufferSizeSpinBox);
 
-  boost::optional<bool> tcpNoDelay;
+  boost::logic::tribool tcpNoDelay = boost::logic::indeterminate;
   switch (ui_.tcpNoDelayComboBox->currentIndex())
   {
   case 1:
@@ -491,7 +492,7 @@ session_manager_config MainForm::buildSessionManagerConfig() const
 
   return session_manager_config(
       boost::asio::ip::tcp::endpoint(listenAddress, port),
-      maxSessions, recycledSessions, maxStoppingSessions, listenBacklog, 
+      maxSessions, recycledSessions, maxStoppingSessions, listenBacklog,
       buildSessionConfig());
 }
 
