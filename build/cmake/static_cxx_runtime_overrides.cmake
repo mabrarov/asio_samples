@@ -13,7 +13,7 @@ if(MSVC)
     set(CMAKE_CXX_FLAGS_DEBUG_INIT          "/D_DEBUG /MTd /Zi /Ob0 /Od /RTC1")
     set(CMAKE_CXX_FLAGS_MINSIZEREL_INIT     "/MT /O1 /Ob1 /D NDEBUG")
     set(CMAKE_CXX_FLAGS_RELEASE_INIT        "/MT /O2 /Ob2 /D NDEBUG")
-    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO_INIT "/MT /Zi /O2 /Ob1 /D NDEBUG")
+    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO_INIT "/MT /Zi /O2 /Ob1 /D NDEBUG")    
 endif()
 
 if(MINGW)
@@ -24,3 +24,7 @@ set(Boost_USE_STATIC_LIBS    ON)
 set(Boost_USE_STATIC_RUNTIME ON)
 
 set(ICU_USE_STATIC_LIBS      ON)
+
+if(MSVC)
+    set(GTEST_MSVC_SEARCH    "MT")
+endif()
