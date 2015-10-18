@@ -64,7 +64,7 @@ set(CPP_SOURCES
     "${SOURCES_DIR}/ma/test/io_service_pool.cpp"
     "${TEST_SOURCES_DIR}/handler_storage_test/main.cpp")
 
-set(LIBRARIES 
+set(LIBRARIES
     ${Boost_LIBRARIES}
     ${GTEST_BOTH_LIBRARIES})
 
@@ -91,4 +91,5 @@ if(NOT NO_CMAKE_DIR_SOURCE_GROUP)
     # Group files according to file path
     ma_dir_source_group("Header Files" "${CPP_HEADERS_DIR}" "${CPP_HEADERS}")
     ma_dir_source_group("Source Files" "${SOURCES_DIR}" "${CPP_SOURCES}")
+    ma_dir_source_group("Source Files" "${TEST_SOURCES_DIR}" "${CPP_SOURCES}")
 endif()
