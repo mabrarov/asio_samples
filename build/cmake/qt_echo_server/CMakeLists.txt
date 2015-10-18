@@ -133,7 +133,7 @@ if(WIN32)
     list(APPEND NATIVE_RESOURCES "${SOURCES_DIR}/qt_echo_server/qt_echo_server.rc")
 endif()
 
-set(LIBRARIES 
+set(LIBRARIES
     "${Boost_LIBRARIES}"
     "${Qt_LIBRARIES}")
 
@@ -151,7 +151,7 @@ if(QT_ECHO_SERVER_USE_QT5)
     if(QT5_IS_STATIC)
         # Qt CMake files use IMPORTED_LINK_DEPENDENT_LIBRARIES instead of INTERFACE_LINK_LIBRARIES for OpenGL dependencies.
         # So we need to add those transitive (in case of static linkage) dependencies explicitly.
-        list(APPEND LIBRARIES 
+        list(APPEND LIBRARIES
             "${Qt5Gui_EGL_LIBRARIES}"
             "${Qt5Gui_OPENGL_LIBRARIES}")
 
@@ -214,7 +214,7 @@ endif()
 
 # Required Windows libraries
 if(WIN32)
-    list(APPEND LIBRARIES 
+    list(APPEND LIBRARIES
         "ws2_32"
         "mswsock"
         "comdlg32"
@@ -229,7 +229,7 @@ endif()
 
 # Boost chrono requires rt library on *nix
 if(UNIX AND BOOST_HAS_CHRONO)
-    list(APPEND LIBRARIES 
+    list(APPEND LIBRARIES
         "rt")
 endif()
 
@@ -259,16 +259,16 @@ target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
 source_group("Form Files" FILES
     ${UIC_FORMS})
 source_group("Generated Files" FILES
-    ${MOC_GENERATED_SOURCES} 
+    ${MOC_GENERATED_SOURCES}
     ${QRC_GENERATED_SOURCES}
     ${UIC_GENERATED_HEADERS})
 source_group("Resource Files" FILES
-    ${NATIVE_RESOURCES} 
+    ${NATIVE_RESOURCES}
     ${NATIVE_RESOURCE_HEADERS}
     ${QRC_RESOURCES})
 
 if(NOT NO_CMAKE_DIR_SOURCE_GROUP)
-    # Group header files according to file path
+    # Group files according to file path
     ma_dir_source_group("Header Files" "${CPP_HEADERS_DIR}" "${CPP_HEADERS}")
     ma_dir_source_group("Source Files" "${SOURCES_DIR}" "${CPP_SOURCES}")
 endif()
