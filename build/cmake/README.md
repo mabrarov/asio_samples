@@ -79,5 +79,5 @@ cmake -D BOOST_INCLUDEDIR=<Boost headers directory> -D BOOST_LIBRARYDIR=<Boost b
 ```
 
 Note that if Google Test was built with CMake and MS Visual Studio then you have to "install" it somehow -
-just copying results of build (add "d" postfix into the name of debug artifacts) into Google Test folder 
+just copying results of build (add "d" postfix into the name of debug artifacts) into Google Test root folder 
 (or into "lib" sub-folder) would be enough for FindGTest.

@@ -29,6 +29,7 @@ find_package(GTest REQUIRED)
 
 set(PROJECT_BASE_DIR "${PROJECT_SOURCE_DIR}/../../..")
 set(SOURCES_DIR      "${PROJECT_BASE_DIR}/src")
+set(TEST_SOURCES_DIR "${PROJECT_BASE_DIR}/test")
 set(CPP_HEADERS_DIR  "${PROJECT_BASE_DIR}/include")
 
 set(CPP_HEADERS
@@ -41,6 +42,7 @@ set(CPP_HEADERS
     "${CPP_HEADERS_DIR}/ma/detail/service_base.hpp"
     "${CPP_HEADERS_DIR}/ma/detail/thread.hpp"
     "${CPP_HEADERS_DIR}/ma/detail/utility.hpp"
+    "${CPP_HEADERS_DIR}/ma/test/io_service_pool.hpp"
     "${CPP_HEADERS_DIR}/ma/bind_handler.hpp"
     "${CPP_HEADERS_DIR}/ma/config.hpp"
     "${CPP_HEADERS_DIR}/ma/console_close_guard.hpp"
@@ -59,7 +61,8 @@ set(CPP_HEADERS
     "${CPP_HEADERS_DIR}/ma/type_traits.hpp")
 
 set(CPP_SOURCES
-    "${SOURCES_DIR}/handler_storage_test/main.cpp")
+    "${SOURCES_DIR}/ma/test/io_service_pool.cpp"
+    "${TEST_SOURCES_DIR}/handler_storage_test/main.cpp")
 
 set(LIBRARIES 
     ${Boost_LIBRARIES}
