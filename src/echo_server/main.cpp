@@ -400,66 +400,66 @@ private:
   const ma::echo::server::session_manager_ptr session_manager_;
 }; // class server
 
-struct server_state : private boost::noncopyable
+struct execution_context : private boost::noncopyable
 {
 public:
   typedef ma::detail::mutex                   mutex_type;
   typedef ma::detail::lock_guard<mutex_type>  lock_guard;
   typedef ma::detail::unique_lock<mutex_type> unique_lock;
 
-  enum value_t {starting, working, stopping, stopped};
+  enum state_t {starting, working, stopping, stopped};
 
-  server_state()
-    : value(starting)
+  execution_context()
+    : state(starting)
     , user_initiated_stop(false)
   {
   }
 
   mutex_type mutex;
-  value_t    value;
+  state_t    state;
   bool       user_initiated_stop;
   ma::detail::condition_variable condition_variable;
-}; // struct server_state
+}; // struct execution_context
 
-void switch_to_stopped(const server_state::lock_guard&,
-    server_state& the_server_state)
+void switch_to_stopped(const execution_context::lock_guard&,
+    execution_context& context)
 {
-  the_server_state.value = server_state::stopped;
-  the_server_state.condition_variable.notify_all();
+  context.state = execution_context::stopped;
+  context.condition_variable.notify_all();
 }
 
-void switch_to_working(const server_state::lock_guard&,
-    server_state& the_server_state)
+void switch_to_working(const execution_context::lock_guard&,
+    execution_context& context)
 {
-  the_server_state.value = server_state::working;
-  the_server_state.condition_variable.notify_all();
+  context.state = execution_context::working;
+  context.condition_variable.notify_all();
 }
 
-void switch_to_stopping(const server_state::lock_guard&,
-    server_state& the_server_state, bool user_initiated)
+void switch_to_stopping(const execution_context::lock_guard&,
+    execution_context& context, bool user_initiated)
 {
-  the_server_state.value = server_state::stopping;
-  the_server_state.user_initiated_stop = user_initiated;
-  the_server_state.condition_variable.notify_all();
+  context.state = execution_context::stopping;
+  context.user_initiated_stop = user_initiated;
+  context.condition_variable.notify_all();
 }
 
-void wait_until_server_stopping(server_state& the_server_state)
+void wait_until_server_stopping(execution_context& context)
 {
-  server_state::unique_lock lock(the_server_state.mutex);
-  while ((server_state::stopping != the_server_state.value)
-      && (server_state::stopped  != the_server_state.value))
+  execution_context::unique_lock lock(context.mutex);
+  while ((execution_context::stopping != context.state)
+      && (execution_context::stopped  != context.state))
   {
-    the_server_state.condition_variable.wait(lock);
+    context.condition_variable.wait(lock);
   }
 }
 
-bool wait_until_server_stopped(server_state& the_server_state,
+bool wait_until_server_stopped(execution_context& context,
   const boost::posix_time::time_duration& duration)
 {
-  server_state::unique_lock lock(the_server_state.mutex);
-  while (server_state::stopped != the_server_state.value)
+  execution_context::unique_lock lock(context.mutex);
+  while (execution_context::stopped != context.state)
   {
-    if (!the_server_state.condition_variable.timed_wait(lock, duration))
+    if (!context.condition_variable.timed_wait(lock, duration))
     {
       return false;
     }
@@ -467,81 +467,81 @@ bool wait_until_server_stopped(server_state& the_server_state,
   return true;
 }
 
-void handle_work_thread_exception(server_state&);
-void handle_app_exit(server_state&, server&);
-void handle_server_start(server_state&, server&,
+void handle_work_thread_exception(execution_context&);
+void handle_app_exit(execution_context&, server&);
+void handle_server_start(execution_context&, server&,
     const boost::system::error_code&);
-void handle_server_wait(server_state&, server&,
+void handle_server_wait(execution_context&, server&,
     const boost::system::error_code&);
-void handle_server_stop(server_state&, server&,
+void handle_server_stop(execution_context&, server&,
     const boost::system::error_code&);
 
-void handle_work_thread_exception(server_state& the_server_state)
+void handle_work_thread_exception(execution_context& context)
 {
-  server_state::lock_guard lock_guard(the_server_state.mutex);
-  switch (the_server_state.value)
+  execution_context::lock_guard lock_guard(context.mutex);
+  switch (context.state)
   {
-  case server_state::stopped:
+  case execution_context::stopped:
     // Do nothing - server has already stopped
     break;
 
   default:
     std::cout << "Terminating server due to unexpected error." << std::endl;
-    switch_to_stopped(lock_guard, the_server_state);
+    switch_to_stopped(lock_guard, context);
   }
 }
 
-void handle_app_exit(server_state& the_server_state, server& the_server)
+void handle_app_exit(execution_context& context, server& the_server)
 {  
   namespace detail = ma::detail;
 
   std::cout << "Application exit request detected." << std::endl;
 
-  server_state::lock_guard lock_guard(the_server_state.mutex);
-  switch (the_server_state.value)
+  execution_context::lock_guard lock_guard(context.mutex);
+  switch (context.state)
   {
-  case server_state::stopped:
+  case execution_context::stopped:
     std::cout << "Server has already stopped." << std::endl;
     break;
 
-  case server_state::stopping:
+  case execution_context::stopping:
     std::cout << "Server is already stopping. Terminating server."
               << std::endl;
-    switch_to_stopped(lock_guard, the_server_state);
+    switch_to_stopped(lock_guard, context);
     break;
 
   default:
     the_server.async_stop(detail::bind(handle_server_stop,
-        detail::ref(the_server_state), detail::ref(the_server),
+        detail::ref(context), detail::ref(the_server),
         detail::placeholders::_1));
-    switch_to_stopping(lock_guard, the_server_state, true);
+    switch_to_stopping(lock_guard, context, true);
     std::cout << "Server is stopping." \
         " Press Ctrl+C to terminate server." << std::endl;
     break;
   }
 }
 
-void handle_server_start(server_state& the_server_state, server& the_server,
+void handle_server_start(execution_context& context, server& the_server,
     const boost::system::error_code& error)
 {
   namespace detail = ma::detail;
 
-  server_state::lock_guard lock_guard(the_server_state.mutex);
-  switch (the_server_state.value)
+  execution_context::lock_guard lock_guard(context.mutex);
+  switch (context.state)
   {
-  case server_state::starting:
+  case execution_context::starting:
     if (error)
     {
       std::cout << "Server can't start due to error: "
                 << error.message() << std::endl;
-      switch_to_stopped(lock_guard, the_server_state);
+      switch_to_stopped(lock_guard, context);
     }
     else
     {
       std::cout << "Server has started." << std::endl;
-      switch_to_working(lock_guard, the_server_state);
+      switch_to_working(lock_guard, context);
       the_server.async_wait(detail::bind(handle_server_wait,
-          detail::ref(the_server_state), detail::ref(the_server),
+          detail::ref(context), detail::ref(the_server),
           detail::placeholders::_1));
     }
     break;
@@ -552,15 +552,15 @@ void handle_server_start(server_state& the_server_state, server& the_server,
   }
 }
 
-void handle_server_wait(server_state& the_server_state, server& the_server,
+void handle_server_wait(execution_context& context, server& the_server,
     const boost::system::error_code& error)
 {
   namespace detail = ma::detail;
 
-  server_state::lock_guard lock_guard(the_server_state.mutex);
-  switch (the_server_state.value)
+  execution_context::lock_guard lock_guard(context.mutex);
+  switch (context.state)
   {
-  case server_state::working:
+  case execution_context::working:
     if (error)
     {
       std::cout << "Server can't continue work due to error: "
@@ -571,9 +571,9 @@ void handle_server_wait(server_state& the_server_state, server& the_server,
       std::cout << "Server can't continue work." << std::endl;
     }
     the_server.async_stop(detail::bind(handle_server_stop,
-        detail::ref(the_server_state), detail::ref(the_server), 
+        detail::ref(context), detail::ref(the_server), 
         detail::placeholders::_1));
-    switch_to_stopping(lock_guard, the_server_state, false);
+    switch_to_stopping(lock_guard, context, false);
     break;
 
   default:
@@ -582,12 +582,12 @@ void handle_server_wait(server_state& the_server_state, server& the_server,
   }
 }
 
-void handle_server_stop(server_state& the_server_state, server&,
+void handle_server_stop(execution_context& context, server&,
     const boost::system::error_code&)
 {
-  server_state::lock_guard lock_guard(the_server_state.mutex);
+  execution_context::lock_guard lock_guard(context.mutex);
   std::cout << "Server has stopped." << std::endl;
-  switch_to_stopped(lock_guard, the_server_state);
+  switch_to_stopped(lock_guard, context);
 }
 
 template <typename Integer>
@@ -638,25 +638,25 @@ int echo_server::run_server(const echo_server::execution_config& exec_config,
 {
   namespace detail = ma::detail;
 
-  server_state the_server_state;
+  execution_context context;
 
   server the_server(exec_config, session_manager_config, detail::bind(
-      handle_work_thread_exception, detail::ref(the_server_state)));
+      handle_work_thread_exception, detail::ref(context)));
 
   std::cout << "Server is starting." << std::endl;
   the_server.async_start(detail::bind(handle_server_start,
-      detail::ref(the_server_state), detail::ref(the_server), 
+      detail::ref(context), detail::ref(the_server), 
       detail::placeholders::_1));
 
   // Lookup for app termination
   ma::console_close_guard console_close_guard(detail::bind(
-      handle_app_exit, detail::ref(the_server_state), detail::ref(the_server)));
+      handle_app_exit, detail::ref(context), detail::ref(the_server)));
   std::cout << "Press Ctrl+C to exit." << std::endl;
 
   int exit_code = EXIT_SUCCESS;
 
-  wait_until_server_stopping(the_server_state);
-  if (!wait_until_server_stopped(the_server_state, exec_config.stop_timeout))
+  wait_until_server_stopping(context);
+  if (!wait_until_server_stopped(context, exec_config.stop_timeout))
   {
     // Timeout of server stop has expired - terminate server
     std::cout << "Server stop timeout expiration. Terminating server."
@@ -667,8 +667,8 @@ int echo_server::run_server(const echo_server::execution_config& exec_config,
   // Check the reason of server stop and signal it by exit code
   if (EXIT_SUCCESS == exit_code)
   {
-    server_state::lock_guard lock_guard(the_server_state.mutex);
-    if (!the_server_state.user_initiated_stop)
+    execution_context::lock_guard lock_guard(context.mutex);
+    if (!context.user_initiated_stop)
     {
       exit_code = EXIT_FAILURE;
     }
