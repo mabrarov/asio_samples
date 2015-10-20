@@ -21,6 +21,7 @@
 #include <boost/program_options.hpp>
 #include <ma/config.hpp>
 #include <ma/handler_allocator.hpp>
+#include <ma/handler_invoke_helpers.hpp>
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/console_close_guard.hpp>
 #include <ma/thread_group.hpp>
@@ -318,7 +319,8 @@ private:
     }
     catch (...)
     {
-      ma::detail::get<0>(handler)();
+      ma_handler_invoke_helpers::invoke(
+          ma::detail::get<0>(handler), ma::detail::get<0>(handler));
     }
   }
 
