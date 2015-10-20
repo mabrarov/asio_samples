@@ -88,7 +88,6 @@ set(CPP_SOURCES
     "${SOURCES_DIR}/ma/echo/server/pooled_session_factory.cpp"
     "${SOURCES_DIR}/ma/echo/server/simple_session_factory.cpp"
     "${SOURCES_DIR}/ma/windows/console_signal_service.cpp"
-    "${SOURCES_DIR}/ma/console_close_guard.cpp"
     "${SOURCES_DIR}/echo_server/config.cpp"
     "${SOURCES_DIR}/echo_server/main.cpp")
 
