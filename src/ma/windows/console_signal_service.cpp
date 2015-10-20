@@ -65,27 +65,27 @@ struct console_signal_service_base::system_service::factory
   system_service_ptr operator()(const instance_guard_type&);
 }; // class console_signal_service_base::system_service::factory
 
-struct console_signal_service::handler_list_guard : private boost::noncopyable
+struct console_signal_service::handler_list_owner : private boost::noncopyable
 {
 public:
-  ~handler_list_guard();
+  ~handler_list_owner();
 
   handler_list value;
-}; // class console_signal_service::handler_list_guard
+}; // class console_signal_service::handler_list_owner
 
-class console_signal_service::post_adapter
+class console_signal_service::handler_list_binder
 {
 private:
-  typedef post_adapter this_type;
+  typedef handler_list_binder this_type;
 
 public:
-  typedef detail::shared_ptr<handler_list_guard> handler_list_guard_ptr;
+  typedef detail::shared_ptr<handler_list_owner> handler_list_owner_ptr;
 
-  post_adapter(const handler_list_guard_ptr&);
+  handler_list_binder(const handler_list_owner_ptr&);
 
 #if defined(MA_HAS_RVALUE_REFS)
-  post_adapter(const this_type&);
-  post_adapter(this_type&&);
+  handler_list_binder(const this_type&);
+  handler_list_binder(this_type&&);
 #endif // defined(MA_HAS_RVALUE_REFS)
 
   void operator()();
@@ -93,8 +93,8 @@ public:
 private:
   this_type& operator=(const this_type&);
 
-  handler_list_guard_ptr handlers_;
-}; // class console_signal_service::post_adapter
+  handler_list_owner_ptr handlers_;
+}; // class console_signal_service::handler_list_binder
 
 console_signal_service_base::system_service_ptr
 console_signal_service_base::system_service::get_instance()
@@ -234,7 +234,7 @@ console_signal_service::impl_base::~impl_base()
 
 #endif // !defined(NDEBUG)
 
-console_signal_service::handler_list_guard::~handler_list_guard()
+console_signal_service::handler_list_owner::~handler_list_owner()
 {
   for (handler_base* handler = value.front(); handler; )
   {
@@ -244,27 +244,29 @@ console_signal_service::handler_list_guard::~handler_list_guard()
   }
 }
 
-console_signal_service::post_adapter::post_adapter(
-    const handler_list_guard_ptr& handlers)
+console_signal_service::handler_list_binder::handler_list_binder(
+    const handler_list_owner_ptr& handlers)
   : handlers_(handlers)
 {
 }
 
 #if defined(MA_HAS_RVALUE_REFS)
 
-console_signal_service::post_adapter::post_adapter(const this_type& other)
+console_signal_service::handler_list_binder::handler_list_binder(
+    const this_type& other)
   : handlers_(other.handlers_)
 {
 }
 
-console_signal_service::post_adapter::post_adapter(this_type&& other)
+console_signal_service::handler_list_binder::handler_list_binder(
+    this_type&& other)
   : handlers_(detail::move(other.handlers_))
 {
 }
 
 #endif // defined(MA_HAS_RVALUE_REFS)
 
-void console_signal_service::post_adapter::operator()()
+void console_signal_service::handler_list_binder::operator()()
 {
   while (handler_base* handler = handlers_->value.front())
   {
@@ -299,7 +301,7 @@ void console_signal_service::construct(implementation_type& impl)
 
 void console_signal_service::destroy(implementation_type& impl)
 {  
-  handler_list_guard handlers;
+  handler_list_owner handlers;
   {
     lock_guard lock(mutex_);
     if (!shutdown_)
@@ -325,7 +327,7 @@ void console_signal_service::destroy(implementation_type& impl)
 std::size_t console_signal_service::cancel(implementation_type& impl,
     boost::system::error_code& error)
 {
-  handler_list_guard handlers;
+  handler_list_owner handlers;
   {
     lock_guard lock(mutex_);
     if (!shutdown_)
@@ -352,7 +354,7 @@ std::size_t console_signal_service::cancel(implementation_type& impl,
 
 void console_signal_service::shutdown_service()
 {
-  handler_list_guard handlers;
+  handler_list_owner handlers;
   {
     lock_guard lock(mutex_);
     // Restrict usage of service.
@@ -368,8 +370,11 @@ void console_signal_service::shutdown_service()
 
 bool console_signal_service::deliver_signal()
 {
-  post_adapter::handler_list_guard_ptr handlers =
-      detail::make_shared<handler_list_guard>();
+  //todo
+  // shared_ptr can be replaced with handler_list_owner if the last
+  // will have reference counter (atomics required).
+  handler_list_binder::handler_list_owner_ptr handlers =
+      detail::make_shared<handler_list_owner>();
   lock_guard lock(mutex_);
   if (impl_list_.empty())
   {
@@ -393,7 +398,7 @@ bool console_signal_service::deliver_signal()
     }
     else
     {
-      get_io_service().post(post_adapter(handlers));
+      get_io_service().post(handler_list_binder(handlers));
     }
   }
   return true;
