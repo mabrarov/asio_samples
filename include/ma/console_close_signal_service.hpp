@@ -13,7 +13,9 @@
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
 #include <boost/asio.hpp>
+#include <boost/throw_exception.hpp>
 #include <boost/system/error_code.hpp>
+#include <boost/system/system_error.hpp>
 #include <ma/config.hpp>
 #include <ma/windows/console_signal.hpp>
 #include <ma/detail/service_base.hpp>
@@ -53,6 +55,10 @@ public:
 private:
   virtual void shutdown_service();
 
+#if !defined(MA_HAS_WINDOWS_CONSOLE_SIGNAL)
+  void throw_if_error(const boost::system::error_code& error);
+#endif
+
   service_impl_type& service_impl_;
 }; // class console_close_signal_service
 
@@ -71,13 +77,14 @@ inline void console_close_signal_service::construct(implementation_type& impl)
 
   boost::system::error_code error;
   service_impl_.add(impl, SIGINT, error);
-  //todo: throw if error
+  throw_if_error(error);
+
   service_impl_.add(impl, SIGTERM, error);
-  //todo: throw if error
+  throw_if_error(error);
 
 #if defined(SIGQUIT)
   service_impl_.add(impl, SIGQUIT, error);
-  //todo: throw if error
+  throw_if_error(error);
 #endif
 
 #endif // !defined(MA_HAS_WINDOWS_CONSOLE_SIGNAL)
@@ -106,6 +113,19 @@ inline void console_close_signal_service::shutdown_service()
   // Do nothing.
   // service_impl_type::shutdown_service() will be called by io_service
 }
+
+#if !defined(MA_HAS_WINDOWS_CONSOLE_SIGNAL)
+
+inline void console_close_signal_service::throw_if_error(
+    const boost::system::error_code& error)
+{
+  if (error)
+  {
+    boost::throw_exception(boost::system::system_error(error));
+  }
+}
+
+#endif // !defined(MA_HAS_WINDOWS_CONSOLE_SIGNAL)
 
 } // namespace ma
 
