@@ -23,7 +23,8 @@
 #include <ma/handler_allocator.hpp>
 #include <ma/handler_invoke_helpers.hpp>
 #include <ma/custom_alloc_handler.hpp>
-#include <ma/console_close_guard.hpp>
+#include <ma/console_close_signal.hpp>
+#include <ma/steady_deadline_timer.hpp>
 #include <ma/thread_group.hpp>
 #include <ma/echo/server/simple_session_factory.hpp>
 #include <ma/echo/server/pooled_session_factory.hpp>
@@ -106,9 +107,9 @@ namespace {
 
 typedef ma::detail::shared_ptr<boost::asio::io_service> io_service_ptr;
 typedef std::vector<io_service_ptr> io_service_vector;
-typedef ma::detail::shared_ptr<ma::echo::server::session_factory> 
+typedef ma::detail::shared_ptr<ma::echo::server::session_factory>
     session_factory_ptr;
-typedef ma::detail::shared_ptr<boost::asio::io_service::work> 
+typedef ma::detail::shared_ptr<boost::asio::io_service::work>
     io_service_work_ptr;
 typedef std::vector<io_service_work_ptr>  io_service_work_vector;
 
@@ -193,8 +194,8 @@ private:
   {
     using ma::echo::server::pooled_session_factory;
     using ma::echo::server::simple_session_factory;
-    namespace detail = ma::detail;    
-    
+    namespace detail = ma::detail;
+
     if (exec_config.ios_per_work_thread)
     {
       return detail::make_shared<pooled_session_factory>(session_io_services,
@@ -204,7 +205,7 @@ private:
     {
       boost::asio::io_service& io_service = *session_io_services.front();
       return detail::make_shared<simple_session_factory>(
-          detail::ref(io_service), 
+          detail::ref(io_service),
           session_manager_config.recycled_session_count);
     }
   }
@@ -272,7 +273,7 @@ public:
 private:
   template <typename Handler>
   void create_threads(const Handler& handler)
-  {    
+  {
     namespace detail = ma::detail;
 
     typedef detail::tuple<Handler> wrapped_handler_type;
@@ -304,13 +305,13 @@ private:
     for (std::size_t i = 0; i != session_manager_thread_count_; ++i)
     {
       threads_.create_thread(
-          detail::bind(func, detail::ref(session_manager_io_service_), 
+          detail::bind(func, detail::ref(session_manager_io_service_),
               wrapped_handler));
     }
   }
 
   template <typename Handler>
-  static void thread_func(boost::asio::io_service& io_service, 
+  static void thread_func(boost::asio::io_service& io_service,
       ma::detail::tuple<Handler> handler)
   {
     try
@@ -405,82 +406,83 @@ private:
 struct execution_context : private boost::noncopyable
 {
 public:
-  typedef ma::detail::mutex                   mutex_type;
-  typedef ma::detail::lock_guard<mutex_type>  lock_guard;
-  typedef ma::detail::unique_lock<mutex_type> unique_lock;
-
   enum state_t {starting, working, stopping, stopped};
 
-  execution_context()
-    : state(starting)
+  execution_context(const echo_server::execution_config& the_exec_config,
+      boost::asio::io_service& the_event_loop_service,
+      ma::steady_deadline_timer& the_stop_timer,
+      ma::console_close_signal& the_close_signal)
+    : exec_config(the_exec_config)
+    , event_loop_service(the_event_loop_service)
+    , stop_timer(the_stop_timer)
+    , close_signal(the_close_signal)
+    , state(starting)
     , user_initiated_stop(false)
   {
   }
 
-  mutex_type mutex;
-  state_t    state;
-  bool       user_initiated_stop;
-  ma::detail::condition_variable condition_variable;
+  const echo_server::execution_config& exec_config;
+  boost::asio::io_service&   event_loop_service;
+  ma::steady_deadline_timer& stop_timer;
+  ma::console_close_signal&  close_signal;
+  state_t state;
+  bool    user_initiated_stop;
 }; // struct execution_context
 
-void switch_to_stopped(const execution_context::lock_guard&,
-    execution_context& context)
+void stop_event_loop(execution_context& context);
+
+void start_server_stop(execution_context& context, server& the_server,
+    bool user_initiated_stop);
+
+void handle_work_thread_exception(execution_context& context);
+
+void handle_app_exit(execution_context& context, server& the_server);
+
+void handle_server_start(execution_context& context, server& the_server,
+    const boost::system::error_code& error);
+
+void handle_server_wait(execution_context& context, server& the_server,
+    const boost::system::error_code& error);
+
+void handle_server_stop_timeout(execution_context& context,
+    const boost::system::error_code& error);
+
+void handle_server_stop(execution_context& context,
+    const boost::system::error_code& error);
+
+void stop_event_loop(execution_context& context)
 {
+  context.event_loop_service.stop();
   context.state = execution_context::stopped;
-  context.condition_variable.notify_all();
 }
 
-void switch_to_working(const execution_context::lock_guard&,
-    execution_context& context)
+void start_server_stop(execution_context& context, server& the_server,
+    bool user_initiated_stop)
 {
-  context.state = execution_context::working;
-  context.condition_variable.notify_all();
-}
+  namespace detail = ma::detail;
 
-void switch_to_stopping(const execution_context::lock_guard&,
-    execution_context& context, bool user_initiated)
-{
+  the_server.async_stop(context.event_loop_service.wrap(detail::bind(
+      handle_server_stop, detail::ref(context), detail::placeholders::_1)));
+
   context.state = execution_context::stopping;
-  context.user_initiated_stop = user_initiated;
-  context.condition_variable.notify_all();
-}
+  context.user_initiated_stop = user_initiated_stop;
 
-void wait_until_server_stopping(execution_context& context)
-{
-  execution_context::unique_lock lock(context.mutex);
-  while ((execution_context::stopping != context.state)
-      && (execution_context::stopped  != context.state))
-  {
-    context.condition_variable.wait(lock);
-  }
-}
+  // Start timer for server stop
+  context.stop_timer.expires_from_now(ma::to_steady_deadline_timer_duration(
+      context.exec_config.stop_timeout));
+  context.stop_timer.async_wait(context.event_loop_service.wrap(detail::bind(
+      handle_server_stop_timeout, detail::ref(context),
+      detail::placeholders::_1)));
 
-bool wait_until_server_stopped(execution_context& context,
-  const boost::posix_time::time_duration& duration)
-{
-  execution_context::unique_lock lock(context.mutex);
-  while (execution_context::stopped != context.state)
-  {
-    if (!context.condition_variable.timed_wait(lock, duration))
-    {
-      return false;
-    }
-  }
-  return true;
-}
+  context.close_signal.async_wait(context.event_loop_service.wrap(detail::bind(
+      handle_app_exit, detail::ref(context), detail::ref(the_server))));
 
-void handle_work_thread_exception(execution_context&);
-void handle_app_exit(execution_context&, server&);
-void handle_server_start(execution_context&, server&,
-    const boost::system::error_code&);
-void handle_server_wait(execution_context&, server&,
-    const boost::system::error_code&);
-void handle_server_stop(execution_context&, server&,
-    const boost::system::error_code&);
+  std::cout << "Server is stopping." \
+      " Press Ctrl+C to terminate server." << std::endl;
+}
 
 void handle_work_thread_exception(execution_context& context)
 {
-  execution_context::lock_guard lock_guard(context.mutex);
   switch (context.state)
   {
   case execution_context::stopped:
@@ -489,17 +491,17 @@ void handle_work_thread_exception(execution_context& context)
 
   default:
     std::cout << "Terminating server due to unexpected error." << std::endl;
-    switch_to_stopped(lock_guard, context);
+    stop_event_loop(context);
+    break;
   }
 }
 
 void handle_app_exit(execution_context& context, server& the_server)
-{  
+{
   namespace detail = ma::detail;
 
   std::cout << "Application exit request detected." << std::endl;
 
-  execution_context::lock_guard lock_guard(context.mutex);
   switch (context.state)
   {
   case execution_context::stopped:
@@ -509,16 +511,11 @@ void handle_app_exit(execution_context& context, server& the_server)
   case execution_context::stopping:
     std::cout << "Server is already stopping. Terminating server."
               << std::endl;
-    switch_to_stopped(lock_guard, context);
+    stop_event_loop(context);
     break;
 
   default:
-    the_server.async_stop(detail::bind(handle_server_stop,
-        detail::ref(context), detail::ref(the_server),
-        detail::placeholders::_1));
-    switch_to_stopping(lock_guard, context, true);
-    std::cout << "Server is stopping." \
-        " Press Ctrl+C to terminate server." << std::endl;
+    start_server_stop(context, the_server, true);
     break;
   }
 }
@@ -528,23 +525,22 @@ void handle_server_start(execution_context& context, server& the_server,
 {
   namespace detail = ma::detail;
 
-  execution_context::lock_guard lock_guard(context.mutex);
   switch (context.state)
   {
   case execution_context::starting:
     if (error)
     {
-      std::cout << "Server can't start due to error: "
-                << error.message() << std::endl;
-      switch_to_stopped(lock_guard, context);
+      std::cout << "Server can't start due to error: " << error.message()
+                << std::endl;
+      stop_event_loop(context);
     }
     else
     {
       std::cout << "Server has started." << std::endl;
-      switch_to_working(lock_guard, context);
-      the_server.async_wait(detail::bind(handle_server_wait,
-          detail::ref(context), detail::ref(the_server),
-          detail::placeholders::_1));
+      context.state = execution_context::working;
+      the_server.async_wait(context.event_loop_service.wrap(detail::bind(
+          handle_server_wait, detail::ref(context), detail::ref(the_server),
+          detail::placeholders::_1)));
     }
     break;
 
@@ -559,7 +555,6 @@ void handle_server_wait(execution_context& context, server& the_server,
 {
   namespace detail = ma::detail;
 
-  execution_context::lock_guard lock_guard(context.mutex);
   switch (context.state)
   {
   case execution_context::working:
@@ -572,10 +567,7 @@ void handle_server_wait(execution_context& context, server& the_server,
     {
       std::cout << "Server can't continue work." << std::endl;
     }
-    the_server.async_stop(detail::bind(handle_server_stop,
-        detail::ref(context), detail::ref(the_server), 
-        detail::placeholders::_1));
-    switch_to_stopping(lock_guard, context, false);
+    start_server_stop(context, the_server, false);
     break;
 
   default:
@@ -584,12 +576,32 @@ void handle_server_wait(execution_context& context, server& the_server,
   }
 }
 
-void handle_server_stop(execution_context& context, server&,
+void handle_server_stop_timeout(execution_context& context,
+    const boost::system::error_code& error)
+{
+  if (boost::asio::error::operation_aborted == error)
+  {
+    return;
+  }
+
+  switch (context.state)
+  {
+  case execution_context::stopping:
+    std::cout << "Stop timeout expired. Terminating server." << std::endl;
+    stop_event_loop(context);
+    break;
+
+  default:
+    // Nothing to handle
+    break;
+  }
+}
+
+void handle_server_stop(execution_context& context,
     const boost::system::error_code&)
 {
-  execution_context::lock_guard lock_guard(context.mutex);
   std::cout << "Server has stopped." << std::endl;
-  switch_to_stopped(lock_guard, context);
+  stop_event_loop(context);
 }
 
 template <typename Integer>
@@ -638,48 +650,39 @@ void print_stats(const ma::echo::server::session_manager_stats& stats)
 int echo_server::run_server(const echo_server::execution_config& exec_config,
     const ma::echo::server::session_manager_config& session_manager_config)
 {
+  boost::asio::io_service   event_loop_service(1);
+  ma::steady_deadline_timer stop_timer(event_loop_service);
+  ma::console_close_signal  close_signal(event_loop_service);
+
+  execution_context context(exec_config, event_loop_service, stop_timer,
+      close_signal);
+
   namespace detail = ma::detail;
 
-  execution_context context;
+  server the_server(exec_config, session_manager_config,
+      event_loop_service.wrap(detail::bind(handle_work_thread_exception,
+          detail::ref(context))));
 
-  server the_server(exec_config, session_manager_config, detail::bind(
-      handle_work_thread_exception, detail::ref(context)));
+  // Wait for console close
+  std::cout << "Press Ctrl+C to exit." << std::endl;
+  close_signal.async_wait(event_loop_service.wrap(detail::bind(
+      handle_app_exit, detail::ref(context), detail::ref(the_server))));
 
   std::cout << "Server is starting." << std::endl;
-  the_server.async_start(detail::bind(handle_server_start,
-      detail::ref(context), detail::ref(the_server), 
-      detail::placeholders::_1));
+  the_server.async_start(event_loop_service.wrap(detail::bind(
+      handle_server_start, detail::ref(context), detail::ref(the_server),
+          detail::placeholders::_1)));
 
-  // Lookup for app termination
-  ma::console_close_guard console_close_guard(detail::bind(
-      handle_app_exit, detail::ref(context), detail::ref(the_server)));
-  std::cout << "Press Ctrl+C to exit." << std::endl;
-
-  int exit_code = EXIT_SUCCESS;
-
-  wait_until_server_stopping(context);
-  if (!wait_until_server_stopped(context, exec_config.stop_timeout))
-  {
-    // Timeout of server stop has expired - terminate server
-    std::cout << "Server stop timeout expiration. Terminating server."
-              << std::endl;
-    exit_code = EXIT_FAILURE;
-  }
-
-  // Check the reason of server stop and signal it by exit code
-  if (EXIT_SUCCESS == exit_code)
-  {
-    execution_context::lock_guard lock_guard(context.mutex);
-    if (!context.user_initiated_stop)
-    {
-      exit_code = EXIT_FAILURE;
-    }
-  }
+  // Run event loop
+  boost::asio::io_service::work event_loop_stop_guard(event_loop_service);
+  event_loop_service.run();
+  (void) event_loop_stop_guard;
 
   std::cout << "Waiting until work threads stop." << std::endl;
   the_server.stop_threads();
   std::cout << "Work threads have stopped." << std::endl;
 
   print_stats(the_server.stats());
-  return exit_code;
+
+  return context.user_initiated_stop ? EXIT_SUCCESS : EXIT_FAILURE;
 }
