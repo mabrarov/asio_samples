@@ -18,15 +18,11 @@
 #include <ma/type_traits.hpp>
 #include <ma/handler_invoke_helpers.hpp>
 #include <ma/context_alloc_handler.hpp>
-#include <ma/windows/console_signal.hpp>
+#include <ma/console_close_signal.hpp>
 #include <ma/detail/functional.hpp>
 #include <ma/detail/thread.hpp>
 #include <ma/detail/tuple.hpp>
 #include <ma/detail/utility.hpp>
-
-#if !defined(MA_HAS_WINDOWS_CONSOLE_SIGNAL)
-#include <csignal>
-#endif
 
 namespace ma {
 
@@ -39,21 +35,16 @@ public:
 protected:
   ~console_close_guard_base();
 
-#if defined(MA_HAS_WINDOWS_CONSOLE_SIGNAL)
-  typedef ma::windows::console_signal signal_alerter;
-#else
-  typedef boost::asio::signal_set     signal_alerter;
-#endif
+  template <typename Handler>
+  static void start_wait(console_close_signal& close_signal,
+      Handler MA_FWD_REF handler);
 
   template <typename Handler>
-  static void start_wait(signal_alerter& alerter, Handler MA_FWD_REF handler);
-
-  template <typename Handler>
-  static void handle_signal(signal_alerter& alerter,
+  static void handle_signal(console_close_signal& close_signal,
       Handler& handler, const boost::system::error_code& error);
 
   boost::asio::io_service io_service_;
-  signal_alerter signal_alerter_;
+  console_close_signal    close_signal_;
 }; // class console_close_guard_base
 
 /// Hook-helper for console application. Supports setup of the own functor that
@@ -75,16 +66,9 @@ private:
 template <typename Handler>
 console_close_guard_base::console_close_guard_base(Handler MA_FWD_REF handler)
   : io_service_(1)
-#if defined(MA_HAS_WINDOWS_CONSOLE_SIGNAL)
-  , signal_alerter_(io_service_)
-#else
-  , signal_alerter_(io_service_, SIGINT, SIGTERM)
-#endif
+  , close_signal_(io_service_)
 {
-#if !defined(MA_HAS_WINDOWS_CONSOLE_SIGNAL) && defined(SIGQUIT)
-  signal_alerter_.add(SIGQUIT);
-#endif
-  start_wait(signal_alerter_, detail::forward<Handler>(handler));
+  start_wait(close_signal_, detail::forward<Handler>(handler));
 }
 
 inline console_close_guard_base::~console_close_guard_base()
@@ -92,28 +76,28 @@ inline console_close_guard_base::~console_close_guard_base()
 }
 
 template <typename Handler>
-void console_close_guard_base::start_wait(signal_alerter& alerter,
+void console_close_guard_base::start_wait(console_close_signal& close_signal,
     Handler MA_FWD_REF handler)
 {
   typedef typename remove_cv_reference<Handler>::type handler_type;
-  alerter.async_wait(make_explicit_context_alloc_handler(
+  close_signal.async_wait(make_explicit_context_alloc_handler(
       detail::forward<Handler>(handler),
-      detail::bind(&handle_signal<handler_type>, detail::ref(alerter),
+      detail::bind(&handle_signal<handler_type>, detail::ref(close_signal),
           detail::placeholders::_1, detail::placeholders::_2)));
 }
 
 template <typename Handler>
-void console_close_guard_base::handle_signal(signal_alerter& alerter,
+void console_close_guard_base::handle_signal(console_close_signal& close_signal,
     Handler& handler, const boost::system::error_code& error)
 {
   if (boost::asio::error::operation_aborted != error)
   {
-    start_wait(alerter, handler);
+    start_wait(close_signal, handler);
     // This can cause handler associated allocator to be used
-    // for the second time while above call makes it being used 
+    // for the second time while above call makes it being used
     // for the first time, i.e. asio_handler_allocate can be invoked
-    // twice without asio_handler_deallocate between (but the number 
-    // of calls of asio_handler_allocate will keep being the same 
+    // twice without asio_handler_deallocate between (but the number
+    // of calls of asio_handler_allocate will keep being the same
     // as the number of calls of asio_handler_deallocate).
     ma_handler_invoke_helpers::invoke(handler, handler);
   }
