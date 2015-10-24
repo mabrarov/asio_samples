@@ -12,9 +12,9 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
-#include <ma/config.hpp>
 #include <boost/asio.hpp>
 #include <boost/noncopyable.hpp>
+#include <ma/config.hpp>
 #include <ma/detail/utility.hpp>
 #include <ma/console_close_signal_service.hpp>
 
@@ -37,7 +37,7 @@ public:
   template <typename Handler>
   void async_wait(Handler MA_FWD_REF handler);
 
-  std::size_t cancel(boost::system::error_code& error);
+  void cancel(boost::system::error_code& error);
 
 private:
   service_type&       service_;
@@ -67,10 +67,9 @@ void console_close_signal::async_wait(Handler MA_FWD_REF handler)
   service_.async_wait(impl_, detail::forward<Handler>(handler));
 }
 
-inline std::size_t console_close_signal::cancel(
-    boost::system::error_code& error)
+inline void console_close_signal::cancel(boost::system::error_code& error)
 {
-  return service_.cancel(impl_, error);
+  service_.cancel(impl_, error);
 }
 
 } // namespace ma

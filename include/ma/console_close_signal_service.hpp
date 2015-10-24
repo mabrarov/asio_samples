@@ -12,20 +12,11 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
-#include <cstddef>
 #include <boost/asio.hpp>
-#include <boost/noncopyable.hpp>
 #include <boost/system/error_code.hpp>
 #include <ma/config.hpp>
-#include <ma/type_traits.hpp>
-#include <ma/bind_handler.hpp>
 #include <ma/windows/console_signal.hpp>
-#include <ma/detail/memory.hpp>
-#include <ma/detail/functional.hpp>
-#include <ma/detail/thread.hpp>
-#include <ma/detail/handler_ptr.hpp>
 #include <ma/detail/service_base.hpp>
-#include <ma/detail/intrusive_list.hpp>
 #include <ma/detail/utility.hpp>
 
 #if !defined(MA_HAS_WINDOWS_CONSOLE_SIGNAL)
@@ -57,8 +48,7 @@ public:
   template <typename Handler>
   void async_wait(implementation_type& impl, Handler MA_FWD_REF handler);
 
-  std::size_t cancel(implementation_type& impl,
-      boost::system::error_code& error);
+  void cancel(implementation_type& impl, boost::system::error_code& error);
 
 private:
   virtual void shutdown_service();
@@ -81,13 +71,13 @@ inline void console_close_signal_service::construct(implementation_type& impl)
 
   boost::system::error_code error;
   service_impl_.add(impl, SIGINT, error);
-  //todo: throw it error
+  //todo: throw if error
   service_impl_.add(impl, SIGTERM, error);
-  //todo: throw it error
+  //todo: throw if error
 
 #if defined(SIGQUIT)
   service_impl_.add(impl, SIGQUIT, error);
-  //todo: throw it error
+  //todo: throw if error
 #endif
 
 #endif // !defined(MA_HAS_WINDOWS_CONSOLE_SIGNAL)
@@ -105,10 +95,10 @@ void console_close_signal_service::async_wait(implementation_type& impl,
   service_impl_.async_wait(impl, detail::forward<Handler>(handler));
 }
 
-inline std::size_t console_close_signal_service::cancel(
+inline void console_close_signal_service::cancel(
     implementation_type& impl, boost::system::error_code& error)
 {
-  return service_impl_.cancel(impl, error);
+  service_impl_.cancel(impl, error);
 }
 
 inline void console_close_signal_service::shutdown_service()
