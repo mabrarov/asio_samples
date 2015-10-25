@@ -40,6 +40,8 @@ set(CPP_HEADERS
     "${CPP_HEADERS_DIR}/ma/detail/utility.hpp"
     "${CPP_HEADERS_DIR}/ma/bind_handler.hpp"
     "${CPP_HEADERS_DIR}/ma/config.hpp"
+    "${CPP_HEADERS_DIR}/ma/console_close_signal.hpp"
+    "${CPP_HEADERS_DIR}/ma/console_close_signal_service.hpp"
     "${CPP_HEADERS_DIR}/ma/console_close_guard.hpp"
     "${CPP_HEADERS_DIR}/ma/context_alloc_handler.hpp"
     "${CPP_HEADERS_DIR}/ma/context_wrapped_handler.hpp"
