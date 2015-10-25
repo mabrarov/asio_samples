@@ -409,11 +409,11 @@ public:
   enum state_t {starting, working, stopping, stopped};
 
   execution_context(const echo_server::execution_config& the_exec_config,
-      boost::asio::io_service& the_event_loop_service,
+      boost::asio::io_service& the_event_loop,
       ma::steady_deadline_timer& the_stop_timer,
       ma::console_close_signal& the_close_signal)
     : exec_config(the_exec_config)
-    , event_loop_service(the_event_loop_service)
+    , event_loop(the_event_loop)
     , stop_timer(the_stop_timer)
     , close_signal(the_close_signal)
     , state(starting)
@@ -422,7 +422,7 @@ public:
   }
 
   const echo_server::execution_config& exec_config;
-  boost::asio::io_service&   event_loop_service;
+  boost::asio::io_service&   event_loop;
   ma::steady_deadline_timer& stop_timer;
   ma::console_close_signal&  close_signal;
   state_t state;
@@ -452,7 +452,7 @@ void handle_server_stop(execution_context& context,
 
 void stop_event_loop(execution_context& context)
 {
-  context.event_loop_service.stop();
+  context.event_loop.stop();
   context.state = execution_context::stopped;
 }
 
@@ -461,7 +461,7 @@ void start_server_stop(execution_context& context, server& the_server,
 {
   namespace detail = ma::detail;
 
-  the_server.async_stop(context.event_loop_service.wrap(detail::bind(
+  the_server.async_stop(context.event_loop.wrap(detail::bind(
       handle_server_stop, detail::ref(context), detail::placeholders::_1)));
 
   context.state = execution_context::stopping;
@@ -470,11 +470,11 @@ void start_server_stop(execution_context& context, server& the_server,
   // Start timer for server stop
   context.stop_timer.expires_from_now(ma::to_steady_deadline_timer_duration(
       context.exec_config.stop_timeout));
-  context.stop_timer.async_wait(context.event_loop_service.wrap(detail::bind(
+  context.stop_timer.async_wait(context.event_loop.wrap(detail::bind(
       handle_server_stop_timeout, detail::ref(context),
       detail::placeholders::_1)));
 
-  context.close_signal.async_wait(context.event_loop_service.wrap(detail::bind(
+  context.close_signal.async_wait(context.event_loop.wrap(detail::bind(
       handle_app_exit, detail::ref(context), detail::ref(the_server))));
 
   std::cout << "Server is stopping." \
@@ -538,7 +538,7 @@ void handle_server_start(execution_context& context, server& the_server,
     {
       std::cout << "Server has started." << std::endl;
       context.state = execution_context::working;
-      the_server.async_wait(context.event_loop_service.wrap(detail::bind(
+      the_server.async_wait(context.event_loop.wrap(detail::bind(
           handle_server_wait, detail::ref(context), detail::ref(the_server),
           detail::placeholders::_1)));
     }
@@ -650,32 +650,29 @@ void print_stats(const ma::echo::server::session_manager_stats& stats)
 int echo_server::run_server(const echo_server::execution_config& exec_config,
     const ma::echo::server::session_manager_config& session_manager_config)
 {
-  boost::asio::io_service   event_loop_service(1);
-  ma::steady_deadline_timer stop_timer(event_loop_service);
-  ma::console_close_signal  close_signal(event_loop_service);
-
-  execution_context context(exec_config, event_loop_service, stop_timer,
-      close_signal);
-
   namespace detail = ma::detail;
 
-  server the_server(exec_config, session_manager_config,
-      event_loop_service.wrap(detail::bind(handle_work_thread_exception,
-          detail::ref(context))));
+  boost::asio::io_service   event_loop(1);
+  ma::steady_deadline_timer stop_timer(event_loop);
+  ma::console_close_signal  close_signal(event_loop);
+  execution_context context(exec_config, event_loop, stop_timer, close_signal);
+
+  server the_server(exec_config, session_manager_config, event_loop.wrap(
+      detail::bind(handle_work_thread_exception, detail::ref(context))));
 
   // Wait for console close
   std::cout << "Press Ctrl+C to exit." << std::endl;
-  close_signal.async_wait(event_loop_service.wrap(detail::bind(
-      handle_app_exit, detail::ref(context), detail::ref(the_server))));
+  close_signal.async_wait(event_loop.wrap(detail::bind(handle_app_exit,
+      detail::ref(context), detail::ref(the_server))));
 
   std::cout << "Server is starting." << std::endl;
-  the_server.async_start(event_loop_service.wrap(detail::bind(
-      handle_server_start, detail::ref(context), detail::ref(the_server),
-          detail::placeholders::_1)));
+  the_server.async_start(event_loop.wrap(detail::bind(handle_server_start,
+      detail::ref(context), detail::ref(the_server),
+      detail::placeholders::_1)));
 
   // Run event loop
-  boost::asio::io_service::work event_loop_stop_guard(event_loop_service);
-  event_loop_service.run();
+  boost::asio::io_service::work event_loop_stop_guard(event_loop);
+  event_loop.run();
   (void) event_loop_stop_guard;
 
   std::cout << "Waiting until work threads stop." << std::endl;
