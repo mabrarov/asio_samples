@@ -72,19 +72,18 @@ int main(int /*argc*/, char* /*argv*/[])
     io_service work_io_service(cpu_count);
 
     // Setup console controller
-    ma::console_close_guard console_close_guard(
-        ma::detail::bind(handle_program_exit, 
-            ma::detail::ref(work_io_service)));
+    ma::console_close_guard console_close_guard(ma::detail::bind(
+        handle_program_exit, ma::detail::ref(work_io_service)));
     std::cout << "Press Ctrl+C to exit.\n";
 
     ma::thread_group work_threads;
     boost::optional<io_service::work> work_guard(
         boost::in_place(ma::detail::ref(work_io_service)));
-    for (std::size_t i = 0; i != work_thread_count; ++i)
+    for (std::size_t i = 0; i != work_thread_count - 1; ++i)
     {
       work_threads.create_thread(ma::detail::bind(
           static_cast<std::size_t (boost::asio::io_service::*)(void)>(
-              &io_service::run), 
+              &io_service::run),
           ma::detail::ref(work_io_service)));
     }
 
@@ -107,6 +106,7 @@ int main(int /*argc*/, char* /*argv*/[])
     }
 
     work_guard = boost::none;
+    work_io_service.run();
     work_threads.join_all();
 
     return EXIT_SUCCESS;

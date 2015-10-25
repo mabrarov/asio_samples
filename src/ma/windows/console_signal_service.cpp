@@ -65,27 +65,27 @@ struct console_signal_service_base::system_service::factory
   system_service_ptr operator()(const instance_guard_type&);
 }; // class console_signal_service_base::system_service::factory
 
-struct console_signal_service::handler_list_guard : private boost::noncopyable
+struct console_signal_service::handler_list_owner : private boost::noncopyable
 {
 public:
-  ~handler_list_guard();
+  ~handler_list_owner();
 
-  handler_list value;
-}; // class console_signal_service::handler_list_guard
+  handler_list list;
+}; // class console_signal_service::handler_list_owner
 
-class console_signal_service::post_adapter
+class console_signal_service::handler_list_binder
 {
 private:
-  typedef post_adapter this_type;
+  typedef handler_list_binder this_type;
 
 public:
-  typedef detail::shared_ptr<handler_list_guard> handler_list_guard_ptr;
+  typedef detail::shared_ptr<handler_list_owner> handler_list_owner_ptr;
 
-  post_adapter(const handler_list_guard_ptr&);
+  handler_list_binder(const handler_list_owner_ptr&);
 
 #if defined(MA_HAS_RVALUE_REFS)
-  post_adapter(const this_type&);
-  post_adapter(this_type&&);
+  handler_list_binder(const this_type&);
+  handler_list_binder(this_type&&);
 #endif // defined(MA_HAS_RVALUE_REFS)
 
   void operator()();
@@ -93,8 +93,8 @@ public:
 private:
   this_type& operator=(const this_type&);
 
-  handler_list_guard_ptr handlers_;
-}; // class console_signal_service::post_adapter
+  handler_list_owner_ptr handlers_;
+}; // class console_signal_service::handler_list_binder
 
 console_signal_service_base::system_service_ptr
 console_signal_service_base::system_service::get_instance()
@@ -234,41 +234,43 @@ console_signal_service::impl_base::~impl_base()
 
 #endif // !defined(NDEBUG)
 
-console_signal_service::handler_list_guard::~handler_list_guard()
+console_signal_service::handler_list_owner::~handler_list_owner()
 {
-  for (handler_base* handler = value.front(); handler; )
+  for (handler_base* handler = list.front(); handler; )
   {
-    handler_base* next = value.next(*handler);
+    handler_base* next = list.next(*handler);
     handler->destroy();
     handler = next;
   }
 }
 
-console_signal_service::post_adapter::post_adapter(
-    const handler_list_guard_ptr& handlers)
+console_signal_service::handler_list_binder::handler_list_binder(
+    const handler_list_owner_ptr& handlers)
   : handlers_(handlers)
 {
 }
 
 #if defined(MA_HAS_RVALUE_REFS)
 
-console_signal_service::post_adapter::post_adapter(const this_type& other)
+console_signal_service::handler_list_binder::handler_list_binder(
+    const this_type& other)
   : handlers_(other.handlers_)
 {
 }
 
-console_signal_service::post_adapter::post_adapter(this_type&& other)
+console_signal_service::handler_list_binder::handler_list_binder(
+    this_type&& other)
   : handlers_(detail::move(other.handlers_))
 {
 }
 
 #endif // defined(MA_HAS_RVALUE_REFS)
 
-void console_signal_service::post_adapter::operator()()
+void console_signal_service::handler_list_binder::operator()()
 {
-  while (handler_base* handler = handlers_->value.front())
+  while (handler_base* handler = handlers_->list.front())
   {
-    handlers_->value.pop_front();
+    handlers_->list.pop_front();
     handler->post(boost::system::error_code());
   }
 }
@@ -299,25 +301,25 @@ void console_signal_service::construct(implementation_type& impl)
 
 void console_signal_service::destroy(implementation_type& impl)
 {  
-  handler_list_guard handlers;
+  handler_list_owner handlers;
   {
     lock_guard lock(mutex_);
     if (!shutdown_)
     {
       // Take ownership of waiting handlers
 #if defined(MA_HAS_RVALUE_REFS)
-      handlers.value = detail::move(impl.handlers_);
+      handlers.list = detail::move(impl.handlers_);
 #else
-      handlers.value.swap(impl.handlers_);
+      handlers.list.swap(impl.handlers_);
 #endif
       // Remove implementation from the list of active implementations.
       impl_list_.erase(impl);
     }
   }
   // Cancel all waiting handlers.
-  while (handler_base* handler = handlers.value.front())
+  while (handler_base* handler = handlers.list.front())
   {
-    handlers.value.pop_front();
+    handlers.list.pop_front();
     handler->post(boost::asio::error::operation_aborted);
   }  
 }
@@ -325,24 +327,24 @@ void console_signal_service::destroy(implementation_type& impl)
 std::size_t console_signal_service::cancel(implementation_type& impl,
     boost::system::error_code& error)
 {
-  handler_list_guard handlers;
+  handler_list_owner handlers;
   {
     lock_guard lock(mutex_);
     if (!shutdown_)
     {
       // Take ownership of waiting handlers
 #if defined(MA_HAS_RVALUE_REFS)
-      handlers.value = detail::move(impl.handlers_);
+      handlers.list = detail::move(impl.handlers_);
 #else
-      handlers.value.swap(impl.handlers_);
+      handlers.list.swap(impl.handlers_);
 #endif
     }
   }
   // Post all handlers to signal operation was aborted
   std::size_t handler_count = 0;
-  while (handler_base* handler = handlers.value.front())
+  while (handler_base* handler = handlers.list.front())
   {
-    handlers.value.pop_front();
+    handlers.list.pop_front();
     handler->post(boost::asio::error::operation_aborted);
     ++handler_count;
   }
@@ -352,7 +354,7 @@ std::size_t console_signal_service::cancel(implementation_type& impl,
 
 void console_signal_service::shutdown_service()
 {
-  handler_list_guard handlers;
+  handler_list_owner handlers;
   {
     lock_guard lock(mutex_);
     // Restrict usage of service.
@@ -361,15 +363,15 @@ void console_signal_service::shutdown_service()
     for (impl_base* impl = impl_list_.front(); impl;
         impl = impl_list_.next(*impl))
     {
-      handlers.value.insert_front(impl->handlers_);
+      handlers.list.insert_front(impl->handlers_);
     }
   }
 }
 
 bool console_signal_service::deliver_signal()
 {
-  post_adapter::handler_list_guard_ptr handlers =
-      detail::make_shared<handler_list_guard>();
+  handler_list_binder::handler_list_owner_ptr handlers =
+      detail::make_shared<handler_list_owner>();
   lock_guard lock(mutex_);
   if (impl_list_.empty())
   {
@@ -381,9 +383,9 @@ bool console_signal_service::deliver_signal()
     for (impl_base* impl = impl_list_.front(); impl;
         impl = impl_list_.next(*impl))
     {      
-      handlers->value.insert_front(impl->handlers_);
+      handlers->list.insert_front(impl->handlers_);
     }
-    if (handlers->value.empty())
+    if (handlers->list.empty())
     {
       if ((std::numeric_limits<queued_signals_counter>::max)() 
           != queued_signals_)
@@ -393,7 +395,7 @@ bool console_signal_service::deliver_signal()
     }
     else
     {
-      get_io_service().post(post_adapter(handlers));
+      get_io_service().post(handler_list_binder(handlers));
     }
   }
   return true;
