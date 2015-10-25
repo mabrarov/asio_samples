@@ -625,7 +625,7 @@ void handler_storage_service::handler_wrapper<Handler, Arg, Target>::do_post(
   ptr.reset();
   // Post the copy of handler's local copy to io_service
   boost::asio::io_service& io_service = work.get_io_service();
-  io_service.post(bind_handler(detail::move(handler), arg));
+  io_service.post(ma::bind_handler(detail::move(handler), arg));
 }
 
 template <typename Handler, typename Arg, typename Target>
