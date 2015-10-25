@@ -49,6 +49,8 @@ set(CPP_HEADERS
     "${CPP_HEADERS_DIR}/ma/codecvt_cast.hpp"
     "${CPP_HEADERS_DIR}/ma/bind_handler.hpp"
     "${CPP_HEADERS_DIR}/ma/config.hpp"
+    "${CPP_HEADERS_DIR}/ma/console_close_signal.hpp"
+    "${CPP_HEADERS_DIR}/ma/console_close_signal_service.hpp"
     "${CPP_HEADERS_DIR}/ma/console_close_guard.hpp"
     "${CPP_HEADERS_DIR}/ma/context_alloc_handler.hpp"
     "${CPP_HEADERS_DIR}/ma/context_wrapped_handler.hpp"
@@ -70,7 +72,6 @@ set(CPP_SOURCES
     "${SOURCES_DIR}/ma/nmea/error.cpp"
     "${SOURCES_DIR}/ma/nmea/cyclic_read_session.cpp"
     "${SOURCES_DIR}/ma/windows/console_signal_service.cpp"
-    "${SOURCES_DIR}/ma/console_close_guard.cpp"
     "${SOURCES_DIR}/nmea_client/main.cpp")
 
 set(LIBRARIES ${Boost_LIBRARIES})

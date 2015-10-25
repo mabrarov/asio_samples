@@ -47,6 +47,8 @@ set(CPP_HEADERS
     "${CPP_HEADERS_DIR}/ma/tutorial2/do_something_handler_fwd.hpp"
     "${CPP_HEADERS_DIR}/ma/bind_handler.hpp"
     "${CPP_HEADERS_DIR}/ma/config.hpp"
+    "${CPP_HEADERS_DIR}/ma/console_close_signal.hpp"
+    "${CPP_HEADERS_DIR}/ma/console_close_signal_service.hpp"
     "${CPP_HEADERS_DIR}/ma/console_close_guard.hpp"
     "${CPP_HEADERS_DIR}/ma/context_alloc_handler.hpp"
     "${CPP_HEADERS_DIR}/ma/context_wrapped_handler.hpp"
@@ -67,7 +69,6 @@ set(CPP_HEADERS
 set(CPP_SOURCES
     "${SOURCES_DIR}/ma/tutorial2/async_implementation.cpp"
     "${SOURCES_DIR}/ma/windows/console_signal_service.cpp"
-    "${SOURCES_DIR}/ma/console_close_guard.cpp"
     "${SOURCES_DIR}/async_basics2/main.cpp")
 
 set(LIBRARIES ${Boost_LIBRARIES})

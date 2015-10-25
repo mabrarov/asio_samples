@@ -163,8 +163,8 @@ protected:
 private:
   typedef std::size_t queued_signals_counter;
 
-  struct handler_list_guard;
-  class post_adapter; 
+  struct handler_list_owner;
+  class handler_list_binder; 
 
   template <typename Handler>
   class handler_wrapper;  
@@ -233,14 +233,14 @@ void console_signal_service::async_wait(implementation_type& impl,
   lock_guard lock(mutex_);
   if (shutdown_)
   {
-    get_io_service().post(bind_handler(detail::move(handler),
+    get_io_service().post(ma::bind_handler(detail::move(handler),
         boost::asio::error::operation_aborted));
     return;
   }
   if (queued_signals_)
   {
     --queued_signals_;
-    get_io_service().post(bind_handler(detail::move(handler), 
+    get_io_service().post(ma::bind_handler(detail::move(handler), 
         boost::system::error_code()));
     return;
   }
