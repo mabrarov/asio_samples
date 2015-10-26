@@ -14,6 +14,7 @@ TRANSLATOR ma::echo::server::qt::Service
 #include <boost/assert.hpp>
 #include <boost/noncopyable.hpp>
 #include <ma/thread_group.hpp>
+#include <ma/handler_invoke_helpers.hpp>
 #include <ma/echo/server/error.hpp>
 #include <ma/echo/server/simple_session_factory.hpp>
 #include <ma/echo/server/pooled_session_factory.hpp>
@@ -233,7 +234,8 @@ private:
     }
     catch (...)
     {
-      detail::get<0>(handler)();
+      ma_handler_invoke_helpers::invoke(
+          ma::detail::get<0>(handler), ma::detail::get<0>(handler));
     }
   }
 

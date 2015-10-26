@@ -23,6 +23,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
 #include <boost/optional.hpp>
+#include <boost/logic/tribool.hpp>
 #include <boost/utility/in_place_factory.hpp>
 #include <ma/config.hpp>
 #include <ma/async_connect.hpp>
@@ -126,20 +127,20 @@ private:
 typedef ma::steady_deadline_timer      deadline_timer;
 typedef deadline_timer::duration_type  duration_type;
 typedef boost::optional<duration_type> optional_duration;
-typedef boost::optional<bool>          optional_bool;
+typedef boost::logic::tribool          tribool;
 
 struct session_config
 {
 public:
   session_config(const optional_duration& the_connect_pause,
-      const optional_bool& the_no_delay)
+      const tribool& the_no_delay)
     : connect_pause(the_connect_pause)
     , no_delay(the_no_delay)
   {
   }
 
   optional_duration connect_pause;
-  optional_bool     no_delay;
+  tribool           no_delay;
 }; // struct session_config
 
 class session : private boost::noncopyable
@@ -223,8 +224,8 @@ private:
     protocol::endpoint endpoint = *current_endpoint_iterator;
     ma::async_connect(socket_, endpoint, strand_.wrap(
         ma::make_custom_alloc_handler(connect_allocator_,
-            ma::detail::bind(&this_type::handle_connect, this, 
-                ma::detail::placeholders::_1, initial_endpoint_iterator, 
+            ma::detail::bind(&this_type::handle_connect, this,
+                ma::detail::placeholders::_1, initial_endpoint_iterator,
                 current_endpoint_iterator))));
   }
 
@@ -285,7 +286,7 @@ private:
     timer_.expires_from_now(*connect_pause_);
     timer_.async_wait(strand_.wrap(
         ma::make_custom_alloc_handler(timer_allocator_,
-            ma::detail::bind(&this_type::handle_timer, this, 
+            ma::detail::bind(&this_type::handle_timer, this,
                 ma::detail::placeholders::_1, initial_endpoint_iterator))));
     timer_in_progess_ = true;
   }
@@ -332,11 +333,11 @@ private:
       }
     }
 
-    // Apply all (really) configered socket options
-    if (no_delay_)
+    // Apply all (really) configured socket options
+    if (!boost::logic::indeterminate(no_delay_))
     {
       boost::system::error_code error;
-      socket_type::linger opt(*no_delay_, 0);
+      socket_type::linger opt(static_cast<bool>(no_delay_), 0);
       socket_.set_option(opt, error);
       if (error)
       {
@@ -379,7 +380,7 @@ private:
   }
 
   const optional_duration connect_pause_;
-  const optional_bool     no_delay_;
+  const tribool           no_delay_;
   boost::asio::io_service::strand strand_;
   protocol::socket socket_;
   deadline_timer   timer_;
@@ -453,7 +454,7 @@ public:
           ++j, ++i)
       {
         sessions_.push_back(ma::detail::make_shared<session>(
-            ma::detail::ref(**j), config.managed_session_config, 
+            ma::detail::ref(**j), config.managed_session_config,
             ma::detail::ref(work_state_)));
       }
     }
@@ -465,7 +466,7 @@ public:
     BOOST_ASSERT_MSG(!timer_in_progess_, "Invalid timer state");
 
     std::for_each(session_vector::const_iterator(sessions_.begin()),
-        started_sessions_end_, ma::detail::bind(&this_type::register_stats, 
+        started_sessions_end_, ma::detail::bind(&this_type::register_stats,
             this, ma::detail::placeholders::_1));
     stats_.print();
   }
@@ -585,7 +586,7 @@ private:
     cancel_timer();
     stopped_ = true;
     std::for_each(session_vector::const_iterator(sessions_.begin()),
-        started_sessions_end_, ma::detail::bind(&session::async_stop, 
+        started_sessions_end_, ma::detail::bind(&session::async_stop,
             ma::detail::placeholders::_1));
   }
 
@@ -787,7 +788,7 @@ client_config build_client_config(
       options_values[block_pause_option_name].as<long>();
   const long connect_pause_millis =
       options_values[connect_pause_option_name].as<long>();
-  optional_bool no_delay;
+  tribool no_delay = boost::logic::indeterminate;
   if (0 != options_values.count(no_delay_option_name))
   {
     no_delay = options_values[no_delay_option_name].as<bool>();
@@ -847,16 +848,13 @@ std::string to_string(bool value)
   return value ? "on" : "off";
 }
 
-std::string to_string(const optional_bool& value)
+std::string to_string(const tribool& value)
 {
-  if (value)
-  {
-    return to_string(*value);
-  }
-  else
+  if (boost::logic::indeterminate(value))
   {
     return "n/a";
   }
+  return to_string(static_cast<bool>(value));
 }
 
 void print(const client_config& config)
@@ -1012,7 +1010,7 @@ int main(int argc, char* argv[])
     ma::thread_group session_manager_threads;
     session_manager_threads.create_thread(ma::detail::bind(
         static_cast<std::size_t (boost::asio::io_service::*)(void)>(
-            &boost::asio::io_service::run), 
+            &boost::asio::io_service::run),
         &session_manager_io_service));
 
 #if defined(MA_HAS_BOOST_TIMER)

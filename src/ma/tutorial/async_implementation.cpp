@@ -117,7 +117,7 @@ async_implementation::start_do_something()
     return do_something_result(boost::asio::error::operation_not_supported);
   }
 
-  counter_ = 10000;
+  counter_ = 100;
   std::cout << start_message_fmt_ % name_ % counter_;
 
   boost::system::error_code timer_error;
@@ -139,7 +139,7 @@ async_implementation::start_do_something()
 
   timer_.async_wait(strand_.wrap(
       ma::make_custom_alloc_handler(timer_allocator_, detail::bind(
-          &this_type::handle_timer, shared_from_this(), 
+          &this_type::handle_timer, shared_from_this(),
           detail::placeholders::_1))));
 
 #endif
@@ -179,7 +179,7 @@ void async_implementation::handle_timer(const boost::system::error_code& error)
 
     boost::system::error_code timer_error;
     timer_.expires_from_now(
-        to_steady_deadline_timer_duration(boost::posix_time::milliseconds(1)),
+        to_steady_deadline_timer_duration(boost::posix_time::milliseconds(500)),
         timer_error);
     if (timer_error)
     {
@@ -198,7 +198,7 @@ void async_implementation::handle_timer(const boost::system::error_code& error)
 
     timer_.async_wait(strand_.wrap(
         ma::make_custom_alloc_handler(timer_allocator_, detail::bind(
-            &this_type::handle_timer, shared_from_this(), 
+            &this_type::handle_timer, shared_from_this(),
             detail::placeholders::_1))));
 
 #endif

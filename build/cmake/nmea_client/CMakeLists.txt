@@ -1,4 +1,4 @@
-# 
+#
 # Copyright (c) 2015 Marat Abrarov (abrarov@gmail.com)
 #
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
@@ -11,7 +11,7 @@ project(nmea_client)
 # Just determine version of Boost C++ Libraries
 find_package(Boost REQUIRED)
 
-# Build list of used Boost libraries depending on Boost version 
+# Build list of used Boost libraries depending on Boost version
 # (use chono if available)
 set(BOOST_COMPONENTS "system;thread;date_time;regex")
 if(NOT(${Boost_VERSION} LESS 104700))
@@ -49,6 +49,8 @@ set(CPP_HEADERS
     "${CPP_HEADERS_DIR}/ma/codecvt_cast.hpp"
     "${CPP_HEADERS_DIR}/ma/bind_handler.hpp"
     "${CPP_HEADERS_DIR}/ma/config.hpp"
+    "${CPP_HEADERS_DIR}/ma/console_close_signal.hpp"
+    "${CPP_HEADERS_DIR}/ma/console_close_signal_service.hpp"
     "${CPP_HEADERS_DIR}/ma/console_close_guard.hpp"
     "${CPP_HEADERS_DIR}/ma/context_alloc_handler.hpp"
     "${CPP_HEADERS_DIR}/ma/context_wrapped_handler.hpp"
@@ -70,21 +72,20 @@ set(CPP_SOURCES
     "${SOURCES_DIR}/ma/nmea/error.cpp"
     "${SOURCES_DIR}/ma/nmea/cyclic_read_session.cpp"
     "${SOURCES_DIR}/ma/windows/console_signal_service.cpp"
-    "${SOURCES_DIR}/ma/console_close_guard.cpp"
     "${SOURCES_DIR}/nmea_client/main.cpp")
 
 set(LIBRARIES ${Boost_LIBRARIES})
 
 # Required Winsock libraries
 if(WIN32)
-    list(APPEND LIBRARIES 
+    list(APPEND LIBRARIES
         "ws2_32"
-        "mswsock")    
+        "mswsock")
 endif()
 
 # Boost chrono requires rt library on *nix
 if(UNIX AND BOOST_HAS_CHRONO)
-    list(APPEND LIBRARIES 
+    list(APPEND LIBRARIES
         "rt")
 endif()
 
@@ -92,3 +93,9 @@ include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${CPP_HEADERS_DIR})
 add_executable(${PROJECT_NAME} ${CPP_HEADERS} ${CPP_SOURCES})
 target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
+
+if(NOT NO_CMAKE_DIR_SOURCE_GROUP)
+    # Group files according to file path
+    ma_dir_source_group("Header Files" "${CPP_HEADERS_DIR}" "${CPP_HEADERS}")
+    ma_dir_source_group("Source Files" "${SOURCES_DIR}" "${CPP_SOURCES}")
+endif()

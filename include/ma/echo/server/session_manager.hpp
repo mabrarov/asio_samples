@@ -211,10 +211,6 @@ private:
   static void dispatch_handle_session_stop(const session_manager_weak_ptr&,
       const session_wrapper_ptr&, const boost::system::error_code&);
 
-  static void open(protocol_type::acceptor& acceptor,
-      const protocol_type::endpoint& endpoint, int backlog,
-      boost::system::error_code& error);
-
   const protocol_type::endpoint accepting_endpoint_;
   const int                     listen_backlog_;
   const std::size_t             max_session_count_;
@@ -351,7 +347,7 @@ template <typename Handler>
 void session_manager::start_extern_start(Handler& handler)
 {
   boost::system::error_code error = do_start_extern_start();
-  io_service_.post(bind_handler(detail::move(handler), error));
+  io_service_.post(ma::bind_handler(detail::move(handler), error));
 }
 
 template <typename Handler>
@@ -359,7 +355,7 @@ void session_manager::start_extern_stop(Handler& handler)
 {
   if (optional_error_code result = do_start_extern_stop())
   {
-    io_service_.post(bind_handler(detail::move(handler), *result));
+    io_service_.post(ma::bind_handler(detail::move(handler), *result));
   }
   else
   {
@@ -372,7 +368,7 @@ void session_manager::start_extern_wait(Handler& handler)
 {
   if (optional_error_code result = do_start_extern_wait())
   {
-    io_service_.post(bind_handler(detail::move(handler), *result));
+    io_service_.post(ma::bind_handler(detail::move(handler), *result));
   }
   else
   {

@@ -15,6 +15,7 @@
 #include <cstddef>
 #include <boost/assert.hpp>
 #include <boost/optional.hpp>
+#include <boost/logic/tribool.hpp>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 #include <ma/echo/server/session_config_fwd.hpp>
 
@@ -26,7 +27,7 @@ struct session_config
 {
 public:
   typedef boost::optional<int>             optional_int;
-  typedef boost::optional<bool>            optional_bool;
+  typedef boost::logic::tribool            tribool;
   typedef boost::posix_time::time_duration time_duration;
   typedef boost::optional<time_duration>   optional_time_duration;
 
@@ -35,11 +36,11 @@ public:
       std::size_t max_transfer_size,
       const optional_int& socket_recv_buffer_size = optional_int(),
       const optional_int& socket_send_buffer_size = optional_int(),
-      const optional_bool& no_delay = optional_bool(),
+      const tribool& no_delay = boost::logic::indeterminate,
       const optional_time_duration& inactivity_timeout =
           optional_time_duration());
 
-  optional_bool no_delay;
+  tribool       no_delay;
   optional_int  socket_recv_buffer_size;
   optional_int  socket_send_buffer_size;
   std::size_t   buffer_size;
@@ -52,7 +53,7 @@ inline session_config::session_config(
     std::size_t the_max_transfer_size,
     const optional_int& the_socket_recv_buffer_size,
     const optional_int& the_socket_send_buffer_size,
-    const optional_bool& the_no_delay,
+    const tribool& the_no_delay,
     const optional_time_duration& the_inactivity_timeout)
   : no_delay(the_no_delay)
   , socket_recv_buffer_size(the_socket_recv_buffer_size)

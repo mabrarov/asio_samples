@@ -14,6 +14,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}")
 # Setup compiler & linker options
 include(compiler_options.cmake)
 include(linker_options.cmake)
+# Additional helpers
+include(functions.cmake)
 
 # Additional preprocessor definitions for Windows target
 if(WIN32)
