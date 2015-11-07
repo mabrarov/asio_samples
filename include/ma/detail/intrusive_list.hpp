@@ -76,7 +76,7 @@ public:
   void pop_back() MA_NOEXCEPT;
 
   bool empty() const MA_NOEXCEPT;
-  
+
   void clear() MA_NOEXCEPT;
 
   void swap(this_type&) MA_NOEXCEPT;
@@ -167,7 +167,7 @@ public:
   void insert_back(this_type&) MA_NOEXCEPT;
 
 private:
-  static base_hook& get_hook(reference value) MA_NOEXCEPT;  
+  static base_hook& get_hook(reference value) MA_NOEXCEPT;
 
   pointer front_;
   pointer back_;
@@ -230,6 +230,7 @@ typename intrusive_list<Value>::this_type& intrusive_list<Value>::operator=(
 {
   front_ = other.front_;
   back_  = other.back_;
+  return *this;
 }
 
 #if defined(MA_HAS_RVALUE_REFS)
@@ -243,7 +244,7 @@ intrusive_list<Value>::intrusive_list(this_type&& other) MA_NOEXCEPT
 }
 
 template<typename Value>
-typename intrusive_list<Value>::this_type& 
+typename intrusive_list<Value>::this_type&
 intrusive_list<Value>::operator=(this_type&& other) MA_NOEXCEPT
 {
   front_ = other.front_;
@@ -336,7 +337,7 @@ void intrusive_list<Value>::push_back(reference value) MA_NOEXCEPT
 
 template<typename Value>
 void intrusive_list<Value>::erase(reference value) MA_NOEXCEPT
-{  
+{
   base_hook& value_hook = get_hook(value);
   const pointer value_ptr = detail::addressof(value);
   if (value_ptr == front_)
@@ -357,7 +358,7 @@ void intrusive_list<Value>::erase(reference value) MA_NOEXCEPT
   }
   value_hook.prev_ = value_hook.next_ = 0;
 
-  BOOST_ASSERT_MSG(!value_hook.prev_ && !value_hook.next_, 
+  BOOST_ASSERT_MSG(!value_hook.prev_ && !value_hook.next_,
       "The erased value has to be unlinked");
 }
 
@@ -439,9 +440,9 @@ void intrusive_list<Value>::insert_front(this_type& other) MA_NOEXCEPT
   }
 
   get_hook(*other.back_).next_ = front_;
-  get_hook(*front_).prev_ = other.back_;  
+  get_hook(*front_).prev_ = other.back_;
   front_ = other.front_;
-  
+
   other.front_ = other.back_ = 0;
 
   BOOST_ASSERT_MSG(other.empty(), "The moved list has to be empty");
@@ -464,7 +465,7 @@ void intrusive_list<Value>::insert_back(this_type& other) MA_NOEXCEPT
   }
 
   get_hook(*back_).next_ = other.front_;
-  get_hook(*other.front_).prev_ = back_;  
+  get_hook(*other.front_).prev_ = back_;
   back_ = other.back_;
 
   other.front_ = other.back_ = 0;
@@ -516,11 +517,12 @@ intrusive_forward_list<Value>::intrusive_forward_list(
 }
 
 template<typename Value>
-typename intrusive_forward_list<Value>::this_type& 
+typename intrusive_forward_list<Value>::this_type&
 intrusive_forward_list<Value>::operator=(const this_type& other) MA_NOEXCEPT
 {
   front_ = other.front_;
   back_  = other.back_;
+  return *this;
 }
 
 #if defined(MA_HAS_RVALUE_REFS)
@@ -535,7 +537,7 @@ intrusive_forward_list<Value>::intrusive_forward_list(
 }
 
 template<typename Value>
-typename intrusive_forward_list<Value>::this_type& 
+typename intrusive_forward_list<Value>::this_type&
 intrusive_forward_list<Value>::operator=(this_type&& other) MA_NOEXCEPT
 {
   front_ = other.front_;
@@ -581,7 +583,7 @@ void intrusive_forward_list<Value>::push_front(reference value) MA_NOEXCEPT
     back_ = front_;
   }
 
-  BOOST_ASSERT_MSG(value_hook.next_ || (front_ == back_), 
+  BOOST_ASSERT_MSG(value_hook.next_ || (front_ == back_),
       "The pushed value has to be linked");
   BOOST_ASSERT_MSG(front_ && back_, "The list has to be not empty");
 }
@@ -604,7 +606,7 @@ void intrusive_forward_list<Value>::push_back(reference value) MA_NOEXCEPT
     front_ = back_;
   }
 
-  BOOST_ASSERT_MSG(value_hook.next_ || (front_ == back_), 
+  BOOST_ASSERT_MSG(value_hook.next_ || (front_ == back_),
       "The pushed value has to be linked");
   BOOST_ASSERT_MSG(front_ && back_, "The list has to be not empty");
 }
@@ -663,7 +665,7 @@ void intrusive_forward_list<Value>::insert_front(
 
   get_hook(*other.back_).next_ = front_;
   front_ = other.front_;
-  
+
   other.front_ = other.back_ = 0;
 
   BOOST_ASSERT_MSG(other.empty(), "The moved list has to be empty");
@@ -686,7 +688,7 @@ void intrusive_forward_list<Value>::insert_back(this_type& other) MA_NOEXCEPT
   }
 
   get_hook(*back_).next_ = other.front_;
-  back_ = other.back_;  
+  back_ = other.back_;
 
   other.front_ = other.back_ = 0;
 

@@ -161,7 +161,7 @@ public:
     , connected_(false)
     , started_(false)
     , stopped_(false)
-    , timer_in_progess_(false)
+    , timer_in_progress_(false)
     , work_state_(work_state)
   {
   }
@@ -169,7 +169,7 @@ public:
   ~session()
   {
     BOOST_ASSERT_MSG(!connected_, "Invalid connect state");
-    BOOST_ASSERT_MSG(!timer_in_progess_, "Timer wait is still in progress");
+    BOOST_ASSERT_MSG(!timer_in_progress_, "Timer wait is still in progress");
     BOOST_ASSERT_MSG(!started_ || (started_ && stopped_),
         "Session was not stopped");
   }
@@ -281,20 +281,20 @@ private:
   void start_deferred_continue_work(
       const protocol::resolver::iterator& initial_endpoint_iterator)
   {
-    BOOST_ASSERT_MSG(!timer_in_progess_, "Invalid timer state");
+    BOOST_ASSERT_MSG(!timer_in_progress_, "Invalid timer state");
 
     timer_.expires_from_now(*connect_pause_);
     timer_.async_wait(strand_.wrap(
         ma::make_custom_alloc_handler(timer_allocator_,
             ma::detail::bind(&this_type::handle_timer, this,
                 ma::detail::placeholders::_1, initial_endpoint_iterator))));
-    timer_in_progess_ = true;
+    timer_in_progress_ = true;
   }
 
   void handle_timer(const boost::system::error_code& error,
       const protocol::resolver::iterator& initial_endpoint_iterator)
   {
-    timer_in_progess_ = false;
+    timer_in_progress_ = false;
 
     if (stopped_)
     {
@@ -363,7 +363,7 @@ private:
 
   void cancel_timer()
   {
-    if (timer_in_progess_)
+    if (timer_in_progress_)
     {
       boost::system::error_code ignored;
       timer_.cancel(ignored);
@@ -388,7 +388,7 @@ private:
   bool connected_;
   bool started_;
   bool stopped_;
-  bool timer_in_progess_;
+  bool timer_in_progress_;
   work_state&      work_state_;
   ma::in_place_handler_allocator<256> stop_allocator_;
   ma::in_place_handler_allocator<512> connect_allocator_;
@@ -440,7 +440,7 @@ public:
     , strand_(session_manager_io_service)
     , timer_(session_manager_io_service)
     , stopped_(false)
-    , timer_in_progess_(false)
+    , timer_in_progress_(false)
     , work_state_(config.session_count)
   {
     typedef io_service_vector::const_iterator iterator;
@@ -463,7 +463,7 @@ public:
 
   ~session_manager()
   {
-    BOOST_ASSERT_MSG(!timer_in_progess_, "Invalid timer state");
+    BOOST_ASSERT_MSG(!timer_in_progress_, "Invalid timer state");
 
     std::for_each(session_vector::const_iterator(sessions_.begin()),
         started_sessions_end_, ma::detail::bind(&this_type::register_stats,
@@ -526,14 +526,14 @@ private:
   {
     if (block_pause_)
     {
-      BOOST_ASSERT_MSG(!timer_in_progess_, "Invalid timer state");
+      BOOST_ASSERT_MSG(!timer_in_progress_, "Invalid timer state");
 
       timer_.expires_from_now(*block_pause_);
       timer_.async_wait(strand_.wrap(
           ma::make_custom_alloc_handler(timer_allocator_,
               ma::detail::bind(&this_type::handle_scheduled_session_start, this,
                   ma::detail::placeholders::_1, endpoint_iterator))));
-      timer_in_progess_ = true;
+      timer_in_progress_ = true;
     }
     else
     {
@@ -546,7 +546,7 @@ private:
   void handle_scheduled_session_start(const boost::system::error_code& error,
       const protocol::resolver::iterator& endpoint_iterator)
   {
-    timer_in_progess_ = false;
+    timer_in_progress_ = false;
 
     if (stopped_)
     {
@@ -569,7 +569,7 @@ private:
 
   void cancel_timer()
   {
-    if (timer_in_progess_)
+    if (timer_in_progress_)
     {
       boost::system::error_code ignored;
       timer_.cancel(ignored);
@@ -603,7 +603,7 @@ private:
   session_vector sessions_;
   session_vector::const_iterator started_sessions_end_;
   bool  stopped_;
-  bool  timer_in_progess_;
+  bool  timer_in_progress_;
   stats stats_;
   work_state work_state_;
   ma::in_place_handler_allocator<256> start_allocator_;

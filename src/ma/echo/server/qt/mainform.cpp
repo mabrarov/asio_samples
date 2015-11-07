@@ -20,6 +20,8 @@ TRANSLATOR ma::echo::server::qt::MainForm
 #include <QTimer>
 #include <QTextCursor>
 #include <QMessageBox>
+#include <QLineEdit>
+#include <QSpinBox>
 #include <ma/echo/server/error.hpp>
 #include <ma/echo/server/session_manager_stats.hpp>
 #include <ma/echo/server/qt/service.h>
