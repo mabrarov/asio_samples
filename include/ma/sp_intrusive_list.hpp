@@ -194,7 +194,7 @@ void sp_intrusive_list<Value>::erase(const shared_pointer& value) MA_NOEXCEPT
 template <typename Value>
 void sp_intrusive_list<Value>::clear()
 {
-  // We don't want to have recusrive calls of wrapped_session's destructor
+  // We don't want to have recursive calls of wrapped_session's destructor
   // because the deep of such recursion may be equal to the size of list.
   // The last can be too great for the stack.
   while (front_)

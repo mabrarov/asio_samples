@@ -188,7 +188,7 @@ public:
   typedef Target target_type;
 
 #if !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
-  
+
   virtual void post(const Arg&) = 0;
   virtual target_type* target() = 0;
 
@@ -245,7 +245,7 @@ public:
   virtual target_type* target() = 0;
 
 #else
-  
+
   void post();
   target_type* target();
 
@@ -810,7 +810,7 @@ inline void handler_storage_service::move_construct(implementation_type& impl,
   {
     return;
   }
-  
+
   // Add implementation to the list of active implementations.
   {
     lock_guard impl_list_lock(impl_list_mutex_);
@@ -819,7 +819,7 @@ inline void handler_storage_service::move_construct(implementation_type& impl,
 
   // Move ownership of the stored handler
   impl.handler_ = other_impl.handler_;
-  other_impl.handler_ = 0;  
+  other_impl.handler_ = 0;
 }
 
 inline void handler_storage_service::destroy(implementation_type& impl)
@@ -828,7 +828,7 @@ inline void handler_storage_service::destroy(implementation_type& impl)
   {
     return;
   }
-  
+
   // Remove implementation from the list of active implementations.
   {
     lock_guard impl_list_lock(impl_list_mutex_);
@@ -857,7 +857,7 @@ void handler_storage_service::store(implementation_type& impl, Handler handler)
   {
     return;
   }
-  
+
   typedef typename remove_cv_reference<Arg>::type           arg_type;
   typedef typename remove_cv_reference<Target>::type        target_type;
   typedef handler_wrapper<Handler, arg_type, target_type>   value_type;
@@ -874,11 +874,11 @@ void handler_storage_service::store(implementation_type& impl, Handler handler)
   // Move ownership of already created wrapped handler
   // (and allocated memory) to the impl
   impl.handler_ = ptr.release();
-  // Destroy previosly stored handler
+  // Destroy previously stored handler
   if (old_handler)
   {
     old_handler->destroy();
-  }  
+  }
 }
 
 template <typename Arg, typename Target>

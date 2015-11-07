@@ -449,7 +449,7 @@ void run_test()
   BOOST_ASSERT_MSG(0 == counter, "Not all objects were destroyed");
 }
 
-} // namespace cyclil_references
+} // namespace cyclic_references
 
 namespace reenterable_call {
 
