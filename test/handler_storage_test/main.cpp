@@ -32,67 +32,6 @@
 #include <ma/detail/utility.hpp>
 #include <ma/test/io_service_pool.hpp>
 
-namespace ma {
-namespace test {
-
-namespace lockable_wrapper {
-
-void run_test();
-
-} // namespace lockable_wrapper
-
-namespace handler_storage_service_destruction {
-
-void run_test();
-
-} // namespace handler_storage_service_destruction
-
-namespace handler_storage_target {
-
-void run_test();
-
-} // namespace handler_storage_target
-
-namespace handler_storage_arg {
-
-void run_test();
-
-} // namespace handler_storage_arg
-
-namespace handler_move_support {
-
-void run_test();
-
-} // namespace handler_move_support
-
-} // namespace test
-} // namespace ma
-
-TEST(LockableWrapperTest, Simple)
-{
-  ma::test::lockable_wrapper::run_test();
-}
-
-TEST(HandlerStorageTest, Destruction)
-{
-  ma::test::handler_storage_service_destruction::run_test();
-}
-
-TEST(HandlerStorageTest, Target)
-{
-  ma::test::handler_storage_target::run_test();
-}
-
-TEST(HandlerStorageTest, Arg)
-{
-  ma::test::handler_storage_arg::run_test();
-}
-
-TEST(HandlerStorageTest, MoveSupport)
-{
-  ma::test::handler_move_support::run_test();
-}
-
 #if defined(MA_WIN32_TMAIN)
 int _tmain(int argc, _TCHAR* argv[])
 #else
@@ -129,7 +68,7 @@ void mutating_func3(data_type& d, const continuation& cont)
   cont();
 }
 
-void run_test()
+TEST(LockableWrapperTest, Simple)
 {
   typedef detail::mutex                  mutex_type;
   typedef detail::lock_guard<mutex_type> lock_guard_type;
@@ -167,7 +106,7 @@ void run_test()
     lock_guard_type lock_guard(mutex);
     ASSERT_EQ("Zero 1 ", data);
   }
-} // run_test
+} // LockableWrapperTest.Simple
 
 } // namespace lockable_wrapper
 
@@ -479,7 +418,7 @@ void run_test()
 
 } // namespace reenterable_call
 
-void run_test()
+TEST(HandlerStorageTest, Destruction)
 {
   std::cout << "*** ma::test::handler_storage_service_destruction ***"
       << std::endl;
@@ -487,7 +426,7 @@ void run_test()
   simple::run_test();
   cyclic_references::run_test();
   reenterable_call::run_test();
-}
+} // HandlerStorageTest.Destruction
 
 } // namespace handler_storage_service_destruction
 
@@ -549,7 +488,7 @@ private:
 
 static const int value4 = 4;
 
-void run_test()
+TEST(HandlerStorageTest, Target)
 {
   std::cout << "*** ma::test::handler_storage_target ***" << std::endl;
 
@@ -566,7 +505,7 @@ void run_test()
 
     ASSERT_EQ(value4, handler_storage.target()->get_value());
   }
-} // run_test
+} // HandlerStorageTest.Target
 
 } // namespace handler_storage_target
 
@@ -686,7 +625,7 @@ static const int value4 = 4;
 static const int value1 = 1;
 static const int value2 = 2;
 
-void run_test()
+TEST(HandlerStorageTest, Arg)
 {
   std::cout << "*** ma::test::handler_storage_arg ***" << std::endl;
 
@@ -764,7 +703,7 @@ void run_test()
   }
 
   done_latch.wait();
-}
+} // HandlerStorageTest.Arg
 
 } // namespace handler_storage_arg
 
@@ -908,7 +847,7 @@ private:
   handler_storage_type& storage_;
 }; // class context_handler
 
-void run_test()
+TEST(HandlerStorageTest, MoveSupport)
 {
   std::cout << "*** ma::test::handler_move_support ***\n";
 
@@ -954,7 +893,7 @@ void run_test()
 #if defined(MA_HAS_RVALUE_REFS) && defined(BOOST_ASIO_HAS_MOVE)
   ASSERT_EQ(0U, copy_latch.value());
 #endif
-}
+} // HandlerStorageTest.MoveSupport
 
 } // namespace handler_move_support
 
