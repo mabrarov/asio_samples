@@ -23,10 +23,10 @@
 
 namespace ma {
 
-/// Wrapper that overrides alloctaion strategy of the source handler by the
+/// Wrapper that overrides allocation strategy of the source handler by the
 /// means provided by specified handler allocator.
 /**
- * "Alloctaion strategy" means handler related pair of free functions:
+ * "Allocation strategy" means handler related pair of free functions:
  * asio_handler_allocate and asio_handler_deallocate or the default ones
  * defined by Asio.
  * http://www.boost.org/doc/libs/release/doc/html/boost_asio/reference/Handler.html
@@ -37,7 +37,7 @@ namespace ma {
  *
  * Functors created by custom_alloc_handler:
  *
- * @li override Asio alloctaion strategy by the means provided by specified
+ * @li override Asio allocation strategy by the means provided by specified
  * handler allocator.
  * @li forward Asio execution strategy to the one provided by handler
  * parameter.
@@ -139,7 +139,7 @@ public:
 #if defined(MA_HAS_RVALUE_REFS)
 
   template <typename Function>
-  friend void asio_handler_invoke(Function MA_FWD_REF function, 
+  friend void asio_handler_invoke(Function MA_FWD_REF function,
       this_type* context)
   {
     ma_handler_invoke_helpers::invoke(
@@ -185,15 +185,15 @@ public:
   }
 
   template <typename Arg1, typename Arg2, typename Arg3>
-  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2, 
+  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2,
       Arg3 MA_FWD_REF arg3)
   {
-    handler_(detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2), 
+    handler_(detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2),
         detail::forward<Arg3>(arg3));
   }
 
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4>
-  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2, 
+  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2,
       Arg3 MA_FWD_REF arg3, Arg4 MA_FWD_REF arg4)
   {
     handler_(detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2),
@@ -202,11 +202,11 @@ public:
 
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4,
       typename Arg5>
-  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2, 
+  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2,
       Arg3 MA_FWD_REF arg3, Arg4 MA_FWD_REF arg4, Arg5 MA_FWD_REF arg5)
   {
     handler_(detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2),
-        detail::forward<Arg3>(arg3), detail::forward<Arg4>(arg4), 
+        detail::forward<Arg3>(arg3), detail::forward<Arg4>(arg4),
         detail::forward<Arg5>(arg5));
   }
 
@@ -228,15 +228,15 @@ public:
   }
 
   template <typename Arg1, typename Arg2, typename Arg3>
-  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2, 
+  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2,
       Arg3 MA_FWD_REF arg3) const
   {
-    handler_(detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2), 
+    handler_(detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2),
         detail::forward<Arg3>(arg3));
   }
 
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4>
-  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2, 
+  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2,
       Arg3 MA_FWD_REF arg3, Arg4 MA_FWD_REF arg4) const
   {
     handler_(detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2),
@@ -245,11 +245,11 @@ public:
 
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4,
       typename Arg5>
-  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2, 
+  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2,
       Arg3 MA_FWD_REF arg3, Arg4 MA_FWD_REF arg4, Arg5 MA_FWD_REF arg5) const
   {
     handler_(detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2),
-        detail::forward<Arg3>(arg3), detail::forward<Arg4>(arg4), 
+        detail::forward<Arg3>(arg3), detail::forward<Arg4>(arg4),
         detail::forward<Arg5>(arg5));
   }
 

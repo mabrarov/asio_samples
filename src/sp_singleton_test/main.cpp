@@ -140,7 +140,7 @@ private:
 
 void run_test()
 {
-  std::vector<int> data;  
+  std::vector<int> data;
   for (std::size_t i = 0; i != 2; ++i)
   {
     foo_ptr foo0 = foo::get_nullable_instance();
@@ -149,7 +149,7 @@ void run_test()
     const foo_ptr foo2 = foo::get_instance();
     BOOST_ASSERT_MSG(foo1->data() == foo2->data(), "Instances are different");
     foo0 = foo::get_nullable_instance();
-    BOOST_ASSERT_MSG(foo0, "Instance has to exist");  
+    BOOST_ASSERT_MSG(foo0, "Instance has to exist");
     BOOST_ASSERT_MSG(foo0->data() == foo2->data(), "Instances are different");
     data.push_back(foo0->data());
   }
@@ -157,7 +157,7 @@ void run_test()
 }
 
 struct foo::factory
-{  
+{
   foo_ptr operator()(const instance_guard_type& instance_guard)
   {
     typedef ma::shared_ptr_factory_helper<foo> helper;
@@ -262,7 +262,7 @@ void run_test()
 
     {
       const foo_ptr thread_foo = foo::get_instance();
-      t.reset(new detail::thread(detail::bind(thread_func2, 
+      t.reset(new detail::thread(detail::bind(thread_func2,
           foo_weak_ptr(thread_foo), detail::ref(latch1), detail::ref(latch2),
           detail::ref(latch3))));
       latch1.wait();
@@ -284,7 +284,7 @@ void run_test()
       latch3.wait();
       const foo_ptr foo = foo::get_nullable_instance();
       BOOST_ASSERT_MSG(!foo, "Instance has to not exist");
-    }    
+    }
     t->join();
   }
 }
@@ -305,7 +305,7 @@ foo_ptr foo::get_nullable_instance()
 }
 
 foo_ptr foo::get_instance()
-{  
+{
   return detail::sp_singleton<foo>::get_instance(factory());
 }
 
@@ -357,7 +357,7 @@ private:
   static std::size_t instance_count_;
 
   boost::optional<instance_guard_type> instance_guard_;
-  int data_;  
+  int data_;
 }; // class foo
 
 std::size_t foo::instance_count_ = 0;
@@ -383,13 +383,13 @@ void run_test()
     }
     destroy_complete_latch.count_down();
     {
-      const foo_ptr f = foo::get_instance();      
+      const foo_ptr f = foo::get_instance();
       BOOST_ASSERT_MSG(f, "Instance has to exist");
       BOOST_ASSERT_MSG(1 == f->data(), "Instance has to be the second");
       destroy_start_latch.count_up();
     }
     t.join();
-  }  
+  }
 }
 
 struct foo::factory
@@ -427,7 +427,7 @@ foo::foo(const instance_guard_type& instance_guard, int data)
 
 foo::~foo()
 {
-  destroy_start_latch.count_down();  
+  destroy_start_latch.count_down();
   destroy_complete_latch.wait();
   if (!data_)
   {
@@ -469,7 +469,7 @@ private:
   static std::size_t instance_count_;
 
   boost::optional<instance_guard_type> instance_guard_;
-  counter init_counter_;  
+  counter init_counter_;
 }; // class foo
 
 std::size_t foo::instance_count_   = 0;
@@ -546,7 +546,7 @@ foo_ptr foo::get_nullable_instance()
 }
 
 foo_ptr foo::get_instance()
-{  
+{
   return detail::sp_singleton<foo>::get_instance(factory());
 }
 

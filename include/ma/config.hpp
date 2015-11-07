@@ -17,7 +17,7 @@
 
 /// Provides asio-samples configuration options.
 /**
- * Listed options mostly provide aditional optimizations.
+ * Listed options mostly provide additional optimizations.
  */
 
 //todo: add support for other compilers

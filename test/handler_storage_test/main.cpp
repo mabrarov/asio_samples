@@ -363,7 +363,7 @@ void run_test()
   ASSERT_EQ(0U, counter);
 }
 
-} // namespace cyclil_references
+} // namespace cyclic_references
 
 namespace reenterable_call {
 

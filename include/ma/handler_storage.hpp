@@ -134,7 +134,7 @@ public:
   /// Post the stored handler to storage related io_service instance.
   /**
    * Attention!
-   * Alwasy check if handler storage has any handler stored in it.
+   * Always check if handler storage has any handler stored in it.
    * Use "has_target". Always - even if you already have called "store" method.
    * Really, "store" means "try to store, if can't (io_service's destructor is
    * already called) then do nothing".
