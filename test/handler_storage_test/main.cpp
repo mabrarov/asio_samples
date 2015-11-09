@@ -56,18 +56,6 @@ void mutating_func1(data_type& d, const continuation& cont)
   cont();
 }
 
-void mutating_func2(data_type& d, const continuation& cont)
-{
-  d += " 2 ";
-  cont();
-}
-
-void mutating_func3(data_type& d, const continuation& cont)
-{
-  d += " 3 ";
-  cont();
-}
-
 TEST(LockableWrapperTest, Simple)
 {
   typedef detail::mutex                  mutex_type;
