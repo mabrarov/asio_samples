@@ -32,10 +32,10 @@ class thread_group : private boost::noncopyable
 public:
   thread_group();
 
-  template <typename Task> 
-  void create_thread(Task MA_FWD_REF task);
+  template <typename Task>
+  void create_thread(MA_FWD_REF(Task) task);
 
-  void join_all();  
+  void join_all();
 
 private:
 
@@ -53,7 +53,7 @@ inline thread_group::thread_group()
 }
 
 template <typename Task>
-void thread_group::create_thread(Task MA_FWD_REF task)
+void thread_group::create_thread(MA_FWD_REF(Task) task)
 {
 #if defined(MA_USE_CXX11_THREAD) && defined(MA_HAS_RVALUE_REFS)
   threads_.emplace_back(detail::forward<Task>(task));
@@ -65,7 +65,7 @@ void thread_group::create_thread(Task MA_FWD_REF task)
 inline void thread_group::join_all()
 {
 #if defined(MA_USE_CXX11_THREAD) && defined(MA_HAS_RVALUE_REFS)
-  std::for_each(threads_.begin(), threads_.end(), 
+  std::for_each(threads_.begin(), threads_.end(),
       detail::bind(&std::thread::join, detail::placeholders::_1));
 #else
   threads_.join_all();

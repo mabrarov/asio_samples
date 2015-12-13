@@ -48,7 +48,7 @@ public:
   void destroy(implementation_type& impl);
 
   template <typename Handler>
-  void async_wait(implementation_type& impl, Handler MA_FWD_REF handler);
+  void async_wait(implementation_type& impl, MA_FWD_REF(Handler) handler);
 
   void cancel(implementation_type& impl, boost::system::error_code& error);
 
@@ -97,7 +97,7 @@ inline void console_close_signal_service::destroy(implementation_type& impl)
 
 template <typename Handler>
 void console_close_signal_service::async_wait(implementation_type& impl,
-    Handler MA_FWD_REF handler)
+    MA_FWD_REF(Handler) handler)
 {
   service_impl_.async_wait(impl, detail::forward<Handler>(handler));
 }

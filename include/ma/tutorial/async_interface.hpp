@@ -38,7 +38,7 @@ private:
 public:
 
   template <typename Handler>
-  void async_do_something(Handler MA_FWD_REF);
+  void async_do_something(MA_FWD_REF(Handler));
 
 protected:
   typedef boost::system::error_code            do_something_result;
@@ -104,7 +104,7 @@ private:
        //     && defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 
 template <typename Handler>
-void async_interface::async_do_something(Handler MA_FWD_REF handler)
+void async_interface::async_do_something(MA_FWD_REF(Handler) handler)
 {
   typedef typename remove_cv_reference<Handler>::type handler_type;
   typedef void (async_interface::*func_type)(handler_type&);

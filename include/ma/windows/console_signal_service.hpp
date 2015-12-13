@@ -33,7 +33,7 @@
 namespace ma {
 namespace windows {
 
-class console_signal_service_base 
+class console_signal_service_base
   : public detail::intrusive_list<console_signal_service_base>::base_hook
 {
 private:
@@ -69,8 +69,8 @@ class console_signal_service
   : public detail::service_base<console_signal_service>
   , private console_signal_service_base
 {
-private:  
-  class handler_base 
+private:
+  class handler_base
     : public detail::intrusive_forward_list<handler_base>::base_hook
   {
   private:
@@ -87,7 +87,7 @@ private:
 #else
 
     void destroy();
-    void post(const boost::system::error_code&);        
+    void post(const boost::system::error_code&);
 
 #endif // !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 
@@ -107,7 +107,7 @@ private:
 #endif // !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 
     ~handler_base();
-    handler_base(const this_type&);    
+    handler_base(const this_type&);
 
   private:
     this_type& operator=(const this_type&);
@@ -164,18 +164,18 @@ private:
   typedef std::size_t queued_signals_counter;
 
   struct handler_list_owner;
-  class handler_list_binder; 
+  class handler_list_binder;
 
   template <typename Handler>
-  class handler_wrapper;  
+  class handler_wrapper;
 
   typedef detail::mutex                     mutex_type;
   typedef detail::lock_guard<mutex_type>    lock_guard;
-  typedef detail::intrusive_list<impl_base> impl_base_list;  
+  typedef detail::intrusive_list<impl_base> impl_base_list;
 
   virtual void shutdown_service();
   virtual bool deliver_signal();
-  
+
   mutex_type mutex_;
   // Double-linked intrusive list of active implementations.
   impl_base_list impl_list_;
@@ -195,7 +195,7 @@ private:
 public:
 
   template <typename H>
-  handler_wrapper(boost::asio::io_service&, H MA_FWD_REF);
+  handler_wrapper(boost::asio::io_service&, MA_FWD_REF(H));
 
 #if defined(MA_HAS_RVALUE_REFS) \
     && (defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG))
@@ -227,7 +227,7 @@ private:
 }; // class console_signal_service::handler_wrapper
 
 template <typename Handler>
-void console_signal_service::async_wait(implementation_type& impl, 
+void console_signal_service::async_wait(implementation_type& impl,
     Handler handler)
 {
   lock_guard lock(mutex_);
@@ -240,7 +240,7 @@ void console_signal_service::async_wait(implementation_type& impl,
   if (queued_signals_)
   {
     --queued_signals_;
-    get_io_service().post(ma::bind_handler(detail::move(handler), 
+    get_io_service().post(ma::bind_handler(detail::move(handler),
         boost::system::error_code()));
     return;
   }
@@ -260,7 +260,7 @@ void console_signal_service::async_wait(implementation_type& impl,
 template <typename Handler>
 template <typename H>
 console_signal_service::handler_wrapper<Handler>::handler_wrapper(
-    boost::asio::io_service& io_service, H MA_FWD_REF handler)
+    boost::asio::io_service& io_service, MA_FWD_REF(H) handler)
 #if !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
   : base_type()
 #else

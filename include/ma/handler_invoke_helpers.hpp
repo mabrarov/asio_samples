@@ -26,10 +26,10 @@ namespace ma_handler_invoke_helpers {
 #if defined(MA_HAS_RVALUE_REFS)
 
 template <typename Function, typename Context>
-inline void invoke(Function MA_FWD_REF function, Context& context)
+inline void invoke(MA_FWD_REF(Function) function, Context& context)
 {
   using namespace boost::asio;
-  asio_handler_invoke(ma::detail::forward<Function>(function), 
+  asio_handler_invoke(ma::detail::forward<Function>(function),
       ma::detail::addressof(context));
 }
 
