@@ -30,14 +30,14 @@ class console_close_guard_base : private boost::noncopyable
 {
 public:
   template <typename Handler>
-  explicit console_close_guard_base(Handler MA_FWD_REF handler);
+  explicit console_close_guard_base(MA_FWD_REF(Handler) handler);
 
 protected:
   ~console_close_guard_base();
 
   template <typename Handler>
   static void start_wait(console_close_signal& close_signal,
-      Handler MA_FWD_REF handler);
+      MA_FWD_REF(Handler) handler);
 
   template <typename Handler>
   static void handle_signal(console_close_signal& close_signal,
@@ -56,7 +56,7 @@ class console_close_guard : private console_close_guard_base
 {
 public:
   template <typename Handler>
-  explicit console_close_guard(Handler MA_FWD_REF handler);
+  explicit console_close_guard(MA_FWD_REF(Handler) handler);
   ~console_close_guard();
 
 private:
@@ -64,7 +64,7 @@ private:
 }; // class console_close_guard
 
 template <typename Handler>
-console_close_guard_base::console_close_guard_base(Handler MA_FWD_REF handler)
+console_close_guard_base::console_close_guard_base(MA_FWD_REF(Handler) handler)
   : io_service_(1)
   , close_signal_(io_service_)
 {
@@ -77,7 +77,7 @@ inline console_close_guard_base::~console_close_guard_base()
 
 template <typename Handler>
 void console_close_guard_base::start_wait(console_close_signal& close_signal,
-    Handler MA_FWD_REF handler)
+    MA_FWD_REF(Handler) handler)
 {
   typedef typename remove_cv_reference<Handler>::type handler_type;
   close_signal.async_wait(make_explicit_context_alloc_handler(
@@ -104,7 +104,7 @@ void console_close_guard_base::handle_signal(console_close_signal& close_signal,
 }
 
 template <typename Handler>
-console_close_guard::console_close_guard(Handler MA_FWD_REF handler)
+console_close_guard::console_close_guard(MA_FWD_REF(Handler) handler)
   : console_close_guard_base(detail::forward<Handler>(handler))
   , work_thread_(detail::bind(
         static_cast<std::size_t (boost::asio::io_service::*)(void)>(

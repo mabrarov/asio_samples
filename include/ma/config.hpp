@@ -58,9 +58,9 @@
 #endif
 
 #if defined(MA_HAS_RVALUE_REFS)
-#define MA_FWD_REF &&
+#define MA_FWD_REF(T) T &&
 #else
-#define MA_FWD_REF const &
+#define MA_FWD_REF(T) T const &
 #endif
 
 //todo: add support for other compilers (than MSVC, GCC, Clang)

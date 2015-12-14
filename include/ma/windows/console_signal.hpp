@@ -32,17 +32,17 @@ private:
 public:
   typedef console_signal_service            service_type;
   typedef service_type::implementation_type implementation_type;
-  
+
   explicit console_signal(boost::asio::io_service& io_service);
   ~console_signal();
 
   boost::asio::io_service& get_io_service();
 
   template <typename Handler>
-  void async_wait(Handler MA_FWD_REF handler);
+  void async_wait(MA_FWD_REF(Handler) handler);
 
   std::size_t cancel(boost::system::error_code& error);
-  
+
 private:
   service_type&       service_;
   implementation_type impl_;
@@ -65,7 +65,7 @@ boost::asio::io_service& console_signal::get_io_service()
 }
 
 template <typename Handler>
-void console_signal::async_wait(Handler MA_FWD_REF handler)
+void console_signal::async_wait(MA_FWD_REF(Handler) handler)
 {
   service_.async_wait(impl_, detail::forward<Handler>(handler));
 }

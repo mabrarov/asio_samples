@@ -54,13 +54,13 @@ public:
   void reset();
 
   template <typename Handler>
-  void async_start(Handler MA_FWD_REF handler);
+  void async_start(MA_FWD_REF(Handler) handler);
 
   template <typename Handler>
-  void async_stop(Handler MA_FWD_REF handler);
+  void async_stop(MA_FWD_REF(Handler) handler);
 
   template <typename Handler>
-  void async_wait(Handler MA_FWD_REF handler);
+  void async_wait(MA_FWD_REF(Handler) handler);
 
 protected:
   session(boost::asio::io_service&, const session_config&);
@@ -227,7 +227,7 @@ private:
        //     && defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 
 template <typename Handler>
-void session::async_start(Handler MA_FWD_REF handler)
+void session::async_start(MA_FWD_REF(Handler) handler)
 {
   typedef typename remove_cv_reference<Handler>::type handler_type;
   typedef void (this_type::*func_type)(handler_type&);
@@ -249,7 +249,7 @@ void session::async_start(Handler MA_FWD_REF handler)
 }
 
 template <typename Handler>
-void session::async_stop(Handler MA_FWD_REF handler)
+void session::async_stop(MA_FWD_REF(Handler) handler)
 {
   typedef typename remove_cv_reference<Handler>::type handler_type;
   typedef void (this_type::*func_type)(handler_type&);
@@ -271,7 +271,7 @@ void session::async_stop(Handler MA_FWD_REF handler)
 }
 
 template <typename Handler>
-void session::async_wait(Handler MA_FWD_REF handler)
+void session::async_wait(MA_FWD_REF(Handler) handler)
 {
   typedef typename remove_cv_reference<Handler>::type handler_type;
   typedef void (this_type::*func_type)(handler_type&);

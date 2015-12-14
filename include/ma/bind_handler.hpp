@@ -24,7 +24,7 @@ namespace ma {
 template <typename Handler, typename Arg1>
 inline detail::binder1<typename remove_cv_reference<Handler>::type,
     typename remove_cv_reference<Arg1>::type>
-bind_handler(Handler MA_FWD_REF handler, Arg1 MA_FWD_REF arg1)
+bind_handler(MA_FWD_REF(Handler) handler, MA_FWD_REF(Arg1) arg1)
 {
   typedef typename remove_cv_reference<Handler>::type handler_type;
   typedef typename remove_cv_reference<Arg1>::type arg1_type;
@@ -36,8 +36,8 @@ template <typename Handler, typename Arg1, typename Arg2>
 inline detail::binder2<typename remove_cv_reference<Handler>::type,
     typename remove_cv_reference<Arg1>::type,
     typename remove_cv_reference<Arg2>::type>
-bind_handler(Handler MA_FWD_REF handler, Arg1 MA_FWD_REF arg1,
-    Arg2 MA_FWD_REF arg2)
+bind_handler(MA_FWD_REF(Handler) handler, MA_FWD_REF(Arg1) arg1,
+    MA_FWD_REF(Arg2) arg2)
 {
   typedef typename remove_cv_reference<Handler>::type handler_type;
   typedef typename remove_cv_reference<Arg1>::type arg1_type;
@@ -52,8 +52,8 @@ inline detail::binder3<typename remove_cv_reference<Handler>::type,
     typename remove_cv_reference<Arg1>::type,
     typename remove_cv_reference<Arg2>::type,
     typename remove_cv_reference<Arg3>::type>
-bind_handler(Handler MA_FWD_REF handler, Arg1 MA_FWD_REF arg1,
-    Arg2 MA_FWD_REF arg2, Arg3 MA_FWD_REF arg3)
+bind_handler(MA_FWD_REF(Handler) handler, MA_FWD_REF(Arg1) arg1,
+    MA_FWD_REF(Arg2) arg2, MA_FWD_REF(Arg3) arg3)
 {
   typedef typename remove_cv_reference<Handler>::type handler_type;
   typedef typename remove_cv_reference<Arg1>::type arg1_type;
@@ -71,8 +71,8 @@ inline detail::binder4<typename remove_cv_reference<Handler>::type,
     typename remove_cv_reference<Arg2>::type,
     typename remove_cv_reference<Arg3>::type,
     typename remove_cv_reference<Arg4>::type>
-bind_handler(Handler MA_FWD_REF handler, Arg1 MA_FWD_REF arg1,
-    Arg2 MA_FWD_REF arg2, Arg3 MA_FWD_REF arg3, Arg4 MA_FWD_REF arg4)
+bind_handler(MA_FWD_REF(Handler) handler, MA_FWD_REF(Arg1) arg1,
+    MA_FWD_REF(Arg2) arg2, MA_FWD_REF(Arg3) arg3, MA_FWD_REF(Arg4) arg4)
 {
   typedef typename remove_cv_reference<Handler>::type handler_type;
   typedef typename remove_cv_reference<Arg1>::type arg1_type;
@@ -93,9 +93,9 @@ inline detail::binder5<typename remove_cv_reference<Handler>::type,
     typename remove_cv_reference<Arg3>::type,
     typename remove_cv_reference<Arg4>::type,
     typename remove_cv_reference<Arg5>::type>
-bind_handler(Handler MA_FWD_REF handler, Arg1 MA_FWD_REF arg1,
-    Arg2 MA_FWD_REF arg2, Arg3 MA_FWD_REF arg3, Arg4 MA_FWD_REF arg4,
-    Arg5 MA_FWD_REF arg5)
+bind_handler(MA_FWD_REF(Handler) handler, MA_FWD_REF(Arg1) arg1,
+    MA_FWD_REF(Arg2) arg2, MA_FWD_REF(Arg3) arg3, MA_FWD_REF(Arg4) arg4,
+    MA_FWD_REF(Arg5) arg5)
 {
   typedef typename remove_cv_reference<Handler>::type handler_type;
   typedef typename remove_cv_reference<Arg1>::type arg1_type;

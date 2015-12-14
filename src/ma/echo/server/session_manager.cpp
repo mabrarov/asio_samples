@@ -481,7 +481,7 @@ public:
   }
 
   template <typename Handler>
-  void async_start(Handler MA_FWD_REF handler)
+  void async_start(MA_FWD_REF(Handler) handler)
   {
     session_->async_start(make_custom_alloc_handler(
         start_wait_allocator_, detail::forward<Handler>(handler)));
@@ -489,7 +489,7 @@ public:
   }
 
   template <typename Handler>
-  void async_stop(Handler MA_FWD_REF handler)
+  void async_stop(MA_FWD_REF(Handler) handler)
   {
     session_->async_stop(make_custom_alloc_handler(
         stop_allocator_, detail::forward<Handler>(handler)));
@@ -497,7 +497,7 @@ public:
   }
 
   template <typename Handler>
-  void async_wait(Handler MA_FWD_REF handler)
+  void async_wait(MA_FWD_REF(Handler) handler)
   {
     session_->async_wait(make_custom_alloc_handler(
         start_wait_allocator_, detail::forward<Handler>(handler)));

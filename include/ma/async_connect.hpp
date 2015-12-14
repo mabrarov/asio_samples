@@ -56,7 +56,7 @@ public:
   typedef void result_type;
 
   template <typename H>
-  explicit connect_ex_handler(H MA_FWD_REF handler)
+  explicit connect_ex_handler(MA_FWD_REF(H) handler)
     : handler_(detail::forward<H>(handler))
   {
   }
@@ -96,7 +96,7 @@ public:
 #if defined(MA_HAS_RVALUE_REFS)
 
   template <typename Function>
-  friend void asio_handler_invoke(Function MA_FWD_REF function, 
+  friend void asio_handler_invoke(MA_FWD_REF(Function) function, 
       this_type* context)
   {
     ma_handler_invoke_helpers::invoke(
@@ -146,7 +146,7 @@ private:
 
 template <typename Handler>
 inline connect_ex_handler<typename remove_cv_reference<Handler>::type>
-make_connect_ex_handler(Handler MA_FWD_REF handler)
+make_connect_ex_handler(MA_FWD_REF(Handler) handler)
 {
   typedef typename remove_cv_reference<Handler>::type handler_type;
   return connect_ex_handler<handler_type>(detail::forward<Handler>(handler));
@@ -179,7 +179,7 @@ boost::system::error_code bind_to_any(Socket& socket,
 template <typename Socket, typename Handler>
 void async_connect(Socket& socket,
     const typename Socket::endpoint_type& peer_endpoint, 
-    Handler MA_FWD_REF handler)
+    MA_FWD_REF(Handler) handler)
 {
 #if defined(MA_ASYNC_CONNECT_USES_WINDOWS_CONNECT_EX)
 

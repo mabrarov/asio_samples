@@ -36,8 +36,8 @@ public:
       const do_something_handler_ptr&);
 
   template <typename AsyncImplementationPtr, typename DoSomethingHandlerPtr>
-  forward_binder(AsyncImplementationPtr MA_FWD_REF async_implementation,
-      DoSomethingHandlerPtr MA_FWD_REF do_something_handler, func_type func)
+  forward_binder(MA_FWD_REF(AsyncImplementationPtr) async_implementation,
+      MA_FWD_REF(DoSomethingHandlerPtr) do_something_handler, func_type func)
     : async_implementation_(detail::forward<AsyncImplementationPtr>(
           async_implementation))
     , do_something_handler_(detail::forward<DoSomethingHandlerPtr>(

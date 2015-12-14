@@ -70,7 +70,7 @@ public:
   typedef void result_type;
 
   template <typename H, typename A1>
-  binder1(H MA_FWD_REF handler, A1 MA_FWD_REF arg1)
+  binder1(MA_FWD_REF(H) handler, MA_FWD_REF(A1) arg1)
     : handler_(detail::forward<H>(handler))
     , arg1_(detail::forward<A1>(arg1))
   {
@@ -125,7 +125,7 @@ public:
 #if defined(MA_HAS_RVALUE_REFS)
 
   template <typename Function>
-  friend void asio_handler_invoke(Function MA_FWD_REF function, 
+  friend void asio_handler_invoke(MA_FWD_REF(Function) function,
       this_type* context)
   {
     // Forward to asio_handler_invoke provided by source handler.
@@ -180,7 +180,7 @@ public:
   typedef void result_type;
 
   template <typename H, typename A1, typename A2>
-  binder2(H MA_FWD_REF handler, A1 MA_FWD_REF arg1, A2 MA_FWD_REF arg2)
+  binder2(MA_FWD_REF(H) handler, MA_FWD_REF(A1) arg1, MA_FWD_REF(A2) arg2)
     : handler_(detail::forward<H>(handler))
     , arg1_(detail::forward<A1>(arg1))
     , arg2_(detail::forward<A2>(arg2))
@@ -236,7 +236,7 @@ public:
 #if defined(MA_HAS_RVALUE_REFS)
 
   template <typename Function>
-  friend void asio_handler_invoke(Function MA_FWD_REF function, 
+  friend void asio_handler_invoke(MA_FWD_REF(Function) function,
       this_type* context)
   {
     ma_handler_invoke_helpers::invoke(
@@ -289,8 +289,8 @@ public:
   typedef void result_type;
 
   template <typename H, typename A1, typename A2, typename A3>
-  binder3(H MA_FWD_REF handler, A1 MA_FWD_REF arg1, A2 MA_FWD_REF arg2, 
-      A3 MA_FWD_REF arg3)
+  binder3(MA_FWD_REF(H) handler, MA_FWD_REF(A1) arg1, MA_FWD_REF(A2) arg2,
+      MA_FWD_REF(A3) arg3)
     : handler_(detail::forward<H>(handler))
     , arg1_(detail::forward<A1>(arg1))
     , arg2_(detail::forward<A2>(arg2))
@@ -349,7 +349,7 @@ public:
 #if defined(MA_HAS_RVALUE_REFS)
 
   template <typename Function>
-  friend void asio_handler_invoke(Function MA_FWD_REF function, 
+  friend void asio_handler_invoke(MA_FWD_REF(Function) function,
       this_type* context)
   {
     ma_handler_invoke_helpers::invoke(
@@ -404,8 +404,8 @@ public:
   typedef void result_type;
 
   template <typename H, typename A1, typename A2, typename A3, typename A4>
-  binder4(H MA_FWD_REF handler, A1 MA_FWD_REF arg1, A2 MA_FWD_REF arg2, 
-      A3 MA_FWD_REF arg3, A4 MA_FWD_REF arg4)
+  binder4(MA_FWD_REF(H) handler, MA_FWD_REF(A1) arg1, MA_FWD_REF(A2) arg2,
+      MA_FWD_REF(A3) arg3, MA_FWD_REF(A4) arg4)
     : handler_(detail::forward<H>(handler))
     , arg1_(detail::forward<A1>(arg1))
     , arg2_(detail::forward<A2>(arg2))
@@ -467,7 +467,7 @@ public:
 #if defined(MA_HAS_RVALUE_REFS)
 
   template <typename Function>
-  friend void asio_handler_invoke(Function MA_FWD_REF function, 
+  friend void asio_handler_invoke(MA_FWD_REF(Function) function,
       this_type* context)
   {
     ma_handler_invoke_helpers::invoke(
@@ -524,8 +524,8 @@ public:
 
   template <typename H, typename A1, typename A2, typename A3, typename A4,
       typename A5>
-  binder5(H MA_FWD_REF handler, A1 MA_FWD_REF arg1, A2 MA_FWD_REF arg2, 
-      A3 MA_FWD_REF arg3, A4 MA_FWD_REF arg4, A5 MA_FWD_REF arg5)
+  binder5(MA_FWD_REF(H) handler, MA_FWD_REF(A1) arg1, MA_FWD_REF(A2) arg2,
+      MA_FWD_REF(A3) arg3, MA_FWD_REF(A4) arg4, MA_FWD_REF(A5) arg5)
     : handler_(detail::forward<H>(handler))
     , arg1_(detail::forward<A1>(arg1))
     , arg2_(detail::forward<A2>(arg2))
@@ -590,7 +590,7 @@ public:
 #if defined(MA_HAS_RVALUE_REFS)
 
   template <typename Function>
-  friend void asio_handler_invoke(Function MA_FWD_REF function, 
+  friend void asio_handler_invoke(MA_FWD_REF(Function) function,
       this_type* context)
   {
     ma_handler_invoke_helpers::invoke(
