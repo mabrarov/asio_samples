@@ -31,14 +31,14 @@ public:
   boost::asio::io_service& get_io_service();
 
   template<typename Handler>
-  void dispatch(Handler MA_FWD_REF handler);
+  void dispatch(MA_FWD_REF(Handler) handler);
 
   template<typename Handler>
-  void post(Handler MA_FWD_REF handler);
+  void post(MA_FWD_REF(Handler) handler);
 
   template<typename Handler>
   strand_wrapped_handler<typename remove_cv_reference<Handler>::type>
-  wrap(Handler MA_FWD_REF handler);
+  wrap(MA_FWD_REF(Handler) handler);
 
 #if BOOST_VERSION >= 105400
 
@@ -61,20 +61,20 @@ inline boost::asio::io_service& strand::get_io_service()
 }
 
 template<typename Handler>
-void strand::dispatch(Handler MA_FWD_REF handler)
+void strand::dispatch(MA_FWD_REF(Handler) handler)
 {
   strand_.dispatch(detail::forward<Handler>(handler));
 }
 
 template<typename Handler>
-void strand::post(Handler MA_FWD_REF handler)
+void strand::post(MA_FWD_REF(Handler) handler)
 {
   strand_.post(detail::forward<Handler>(handler));
 }
 
 template<typename Handler>
 strand_wrapped_handler<typename remove_cv_reference<Handler>::type>
-strand::wrap(Handler MA_FWD_REF handler)
+strand::wrap(MA_FWD_REF(Handler) handler)
 {
   typedef typename remove_cv_reference<Handler>::type handler_type;
   return strand_wrapped_handler<handler_type>(

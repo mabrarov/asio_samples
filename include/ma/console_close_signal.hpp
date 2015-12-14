@@ -35,7 +35,7 @@ public:
   boost::asio::io_service& get_io_service();
 
   template <typename Handler>
-  void async_wait(Handler MA_FWD_REF handler);
+  void async_wait(MA_FWD_REF(Handler) handler);
 
   void cancel(boost::system::error_code& error);
 
@@ -62,7 +62,7 @@ inline boost::asio::io_service& console_close_signal::get_io_service()
 }
 
 template <typename Handler>
-void console_close_signal::async_wait(Handler MA_FWD_REF handler)
+void console_close_signal::async_wait(MA_FWD_REF(Handler) handler)
 {
   service_.async_wait(impl_, detail::forward<Handler>(handler));
 }

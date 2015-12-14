@@ -26,28 +26,28 @@ struct shared_ptr_factory_helper : T
   }
 
   template <typename Arg1>
-  explicit shared_ptr_factory_helper(Arg1 MA_FWD_REF arg1)
+  explicit shared_ptr_factory_helper(MA_FWD_REF(Arg1) arg1)
     : T(detail::forward<Arg1>(arg1))
   {
   }
 
   template <typename Arg1, typename Arg2>
-  shared_ptr_factory_helper(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2)
+  shared_ptr_factory_helper(MA_FWD_REF(Arg1) arg1, MA_FWD_REF(Arg2) arg2)
     : T(detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2))
   {
   }
 
   template <typename Arg1, typename Arg2, typename Arg3>
-  shared_ptr_factory_helper(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2, 
-      Arg3 MA_FWD_REF arg3)
-    : T(detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2), 
+  shared_ptr_factory_helper(MA_FWD_REF(Arg1) arg1, MA_FWD_REF(Arg2) arg2,
+      MA_FWD_REF(Arg3) arg3)
+    : T(detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2),
           detail::forward<Arg3>(arg3))
   {
   }
 
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4>
-  shared_ptr_factory_helper(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2, 
-      Arg3 MA_FWD_REF arg3, Arg4 MA_FWD_REF arg4)
+  shared_ptr_factory_helper(MA_FWD_REF(Arg1) arg1, MA_FWD_REF(Arg2) arg2,
+      MA_FWD_REF(Arg3) arg3, MA_FWD_REF(Arg4) arg4)
     : T(detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2),
           detail::forward<Arg3>(arg3), detail::forward<Arg4>(arg4))
   {
@@ -55,8 +55,8 @@ struct shared_ptr_factory_helper : T
 
   template <typename Arg1, typename Arg2, typename Arg3,
       typename Arg4, typename Arg5>
-  shared_ptr_factory_helper(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2, 
-      Arg3 MA_FWD_REF arg3, Arg4 MA_FWD_REF arg4, Arg5 MA_FWD_REF arg5)
+  shared_ptr_factory_helper(MA_FWD_REF(Arg1) arg1, MA_FWD_REF(Arg2) arg2,
+      MA_FWD_REF(Arg3) arg3, MA_FWD_REF(Arg4) arg4, MA_FWD_REF(Arg5) arg5)
     : T(detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2),
           detail::forward<Arg3>(arg3), detail::forward<Arg4>(arg4),
           detail::forward<Arg5>(arg5))

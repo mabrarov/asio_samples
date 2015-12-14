@@ -65,19 +65,19 @@ public:
   void resest();
 
   template <typename Handler>
-  void async_start(Handler MA_FWD_REF handler);
+  void async_start(MA_FWD_REF(Handler) handler);
 
   template <typename Handler>
-  void async_stop(Handler MA_FWD_REF handler);
+  void async_stop(MA_FWD_REF(Handler) handler);
 
   // Handler()(const boost::system::error_code&, std::size_t)
   template <typename Handler, typename Iterator>
   void async_read_some(Iterator begin, Iterator end, 
-      Handler MA_FWD_REF handler);
+      MA_FWD_REF(Handler) handler);
 
   template <typename ConstBufferSequence, typename Handler>
-  void async_write_some(ConstBufferSequence buffers, 
-      Handler MA_FWD_REF handler);
+  void async_write_some(ConstBufferSequence buffers,
+      MA_FWD_REF(Handler) handler);
 
 protected:
   cyclic_read_session(boost::asio::io_service& io_service,
@@ -186,8 +186,8 @@ private:
 public:
 
   template <typename H, typename I>
-  wrapped_extern_read_handler(H MA_FWD_REF handler, 
-      I MA_FWD_REF begin, I MA_FWD_REF end);
+  wrapped_extern_read_handler(MA_FWD_REF(H) handler,
+      MA_FWD_REF(I) begin, MA_FWD_REF(I) end);
 
 #if defined(MA_HAS_RVALUE_REFS) \
     && (defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG))
@@ -214,7 +214,7 @@ public:
 #if defined(MA_HAS_RVALUE_REFS)
 
   template <typename Function>
-  friend void asio_handler_invoke(Function MA_FWD_REF function, 
+  friend void asio_handler_invoke(MA_FWD_REF(Function) function,
       this_type* context)
   {
     ma_handler_invoke_helpers::invoke(
@@ -256,7 +256,7 @@ inline boost::asio::serial_port& cyclic_read_session::serial_port()
 }
 
 template <typename Handler>
-void cyclic_read_session::async_start(Handler MA_FWD_REF handler)
+void cyclic_read_session::async_start(MA_FWD_REF(Handler) handler)
 {
   typedef typename remove_cv_reference<Handler>::type handler_type;
   typedef void (this_type::*func_type)(handler_type&);
@@ -269,7 +269,7 @@ void cyclic_read_session::async_start(Handler MA_FWD_REF handler)
 }
 
 template <typename Handler>
-void cyclic_read_session::async_stop(Handler MA_FWD_REF handler)
+void cyclic_read_session::async_stop(MA_FWD_REF(Handler) handler)
 {
   typedef typename remove_cv_reference<Handler>::type handler_type;
   typedef void (this_type::*func_type)(handler_type&);
@@ -284,7 +284,7 @@ void cyclic_read_session::async_stop(Handler MA_FWD_REF handler)
 // Handler()(const boost::system::error_code&, std::size_t)
 template <typename Handler, typename Iterator>
 void cyclic_read_session::async_read_some(
-    Iterator begin, Iterator end, Handler MA_FWD_REF handler)
+    Iterator begin, Iterator end, MA_FWD_REF(Handler) handler)
 {
   typedef typename remove_cv_reference<Iterator>::type iterator_type;
   typedef typename remove_cv_reference<Handler>::type  handler_type;
@@ -302,7 +302,7 @@ void cyclic_read_session::async_read_some(
 
 template <typename ConstBufferSequence, typename Handler>
 void cyclic_read_session::async_write_some(
-    ConstBufferSequence buffers, Handler MA_FWD_REF handler)
+    ConstBufferSequence buffers, MA_FWD_REF(Handler) handler)
 {
   typedef typename remove_cv_reference<ConstBufferSequence>::type
       buffers_type;
@@ -355,8 +355,8 @@ cyclic_read_session::extern_read_handler_base::copy(
 template <typename Handler, typename Iterator>
 template <typename H, typename I>
 cyclic_read_session::wrapped_extern_read_handler<Handler, Iterator>
-    ::wrapped_extern_read_handler(H MA_FWD_REF handler, I MA_FWD_REF begin, 
-          I MA_FWD_REF end)
+    ::wrapped_extern_read_handler(MA_FWD_REF(H) handler, MA_FWD_REF(I) begin,
+          MA_FWD_REF(I) end)
   : extern_read_handler_base(&this_type::do_copy)
   , handler_(detail::forward<H>(handler))
   , start_(detail::forward<I>(begin))
@@ -455,7 +455,7 @@ void cyclic_read_session::start_extern_read_some(
 }
 
 template <typename ConstBufferSequence, typename Handler>
-void cyclic_read_session::start_extern_write_some(ConstBufferSequence& buffers, 
+void cyclic_read_session::start_extern_write_some(ConstBufferSequence& buffers,
     Handler& handler)
 {
   if ((extern_state::work != extern_state_) || port_write_in_progress_)

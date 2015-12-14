@@ -121,7 +121,7 @@ public:
   /// succeeds. Forwards arg1,..., argn to the object's constructor.
   /// Throws if constructor of value_type throws.
   template <typename Arg1>
-  handler_ptr(raw_ptr_type& raw_ptr, Arg1 MA_FWD_REF a1)
+  handler_ptr(raw_ptr_type& raw_ptr, MA_FWD_REF(Arg1) a1)
     : alloc_context_(detail::addressof(raw_ptr.alloc_context_))
     , pointer_(new (raw_ptr.pointer_) value_type(detail::forward<Arg1>(a1)))
   {
@@ -132,7 +132,7 @@ public:
   /// succeeds. Forwards arg1,..., argn to the object's constructor.
   /// Throws if constructor of value_type throws.
   template <typename Arg1, typename Arg2>
-  handler_ptr(raw_ptr_type& raw_ptr, Arg1 MA_FWD_REF a1, Arg2 MA_FWD_REF a2)
+  handler_ptr(raw_ptr_type& raw_ptr, MA_FWD_REF(Arg1) a1, MA_FWD_REF(Arg2) a2)
     : alloc_context_(detail::addressof(raw_ptr.alloc_context_))
     , pointer_(new (raw_ptr.pointer_) value_type(detail::forward<Arg1>(a1),
           detail::forward<Arg2>(a2)))
@@ -144,8 +144,8 @@ public:
   /// succeeds. Forwards arg1,..., argn to the object's constructor.
   /// Throws if constructor of value_type throws.
   template <typename Arg1, typename Arg2, typename Arg3>
-  handler_ptr(raw_ptr_type& raw_ptr, Arg1 MA_FWD_REF a1, Arg2 MA_FWD_REF a2,
-      Arg3 MA_FWD_REF a3)
+  handler_ptr(raw_ptr_type& raw_ptr, MA_FWD_REF(Arg1) a1, MA_FWD_REF(Arg2) a2,
+      MA_FWD_REF(Arg3) a3)
     : alloc_context_(detail::addressof(raw_ptr.alloc_context_))
     , pointer_(new (raw_ptr.pointer_) value_type(detail::forward<Arg1>(a1),
           detail::forward<Arg2>(a2), detail::forward<Arg3>(a3)))
@@ -157,8 +157,8 @@ public:
   /// succeeds. Forwards arg1,..., argn to the object's constructor.
   /// Throws if constructor of value_type throws.
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4>
-  handler_ptr(raw_ptr_type& raw_ptr, Arg1 MA_FWD_REF a1, Arg2 MA_FWD_REF a2,
-      Arg3 MA_FWD_REF a3, Arg4 MA_FWD_REF a4)
+  handler_ptr(raw_ptr_type& raw_ptr, MA_FWD_REF(Arg1) a1, MA_FWD_REF(Arg2) a2,
+      MA_FWD_REF(Arg3) a3, MA_FWD_REF(Arg4) a4)
     : alloc_context_(detail::addressof(raw_ptr.alloc_context_))
     , pointer_(new (raw_ptr.pointer_) value_type(detail::forward<Arg1>(a1),
           detail::forward<Arg2>(a2), detail::forward<Arg3>(a3),
@@ -172,8 +172,8 @@ public:
   /// Throws if constructor of value_type throws.
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4,
       typename Arg5>
-  handler_ptr(raw_ptr_type& raw_ptr, Arg1 MA_FWD_REF a1, Arg2 MA_FWD_REF a2,
-      Arg3 MA_FWD_REF a3, Arg4 MA_FWD_REF a4, Arg5 MA_FWD_REF a5)
+  handler_ptr(raw_ptr_type& raw_ptr, MA_FWD_REF(Arg1) a1, MA_FWD_REF(Arg2) a2,
+      MA_FWD_REF(Arg3) a3, MA_FWD_REF(Arg4) a4, MA_FWD_REF(Arg5) a5)
     : alloc_context_(detail::addressof(raw_ptr.alloc_context_))
     , pointer_(new (raw_ptr.pointer_) value_type(detail::forward<Arg1>(a1),
           detail::forward<Arg2>(a2), detail::forward<Arg3>(a3),
@@ -187,9 +187,9 @@ public:
   /// Throws if constructor of value_type throws.
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4,
       typename Arg5, typename Arg6>
-  handler_ptr(raw_ptr_type& raw_ptr, Arg1 MA_FWD_REF a1, Arg2 MA_FWD_REF a2,
-      Arg3 MA_FWD_REF a3, Arg4 MA_FWD_REF a4, Arg5 MA_FWD_REF a5,
-      Arg6 MA_FWD_REF a6)
+  handler_ptr(raw_ptr_type& raw_ptr, MA_FWD_REF(Arg1) a1, MA_FWD_REF(Arg2) a2,
+      MA_FWD_REF(Arg3) a3, MA_FWD_REF(Arg4) a4, MA_FWD_REF(Arg5) a5,
+      MA_FWD_REF(Arg6) a6)
     : alloc_context_(detail::addressof(raw_ptr.alloc_context_))
     , pointer_(new (raw_ptr.pointer_) value_type(detail::forward<Arg1>(a1),
           detail::forward<Arg2>(a2), detail::forward<Arg3>(a3),
@@ -204,9 +204,9 @@ public:
   /// Throws if constructor of value_type throws.
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4,
       typename Arg5, typename Arg6, typename Arg7>
-  handler_ptr(raw_ptr_type& raw_ptr, Arg1 MA_FWD_REF a1, Arg2 MA_FWD_REF a2,
-      Arg3 MA_FWD_REF a3, Arg4 MA_FWD_REF a4, Arg5 MA_FWD_REF a5,
-      Arg6 MA_FWD_REF a6, Arg7 MA_FWD_REF a7)
+  handler_ptr(raw_ptr_type& raw_ptr, MA_FWD_REF(Arg1) a1, MA_FWD_REF(Arg2) a2,
+      MA_FWD_REF(Arg3) a3, MA_FWD_REF(Arg4) a4, MA_FWD_REF(Arg5) a5,
+      MA_FWD_REF(Arg6) a6, MA_FWD_REF(Arg7) a7)
     : alloc_context_(detail::addressof(raw_ptr.alloc_context_))
     , pointer_(new (raw_ptr.pointer_) value_type(detail::forward<Arg1>(a1),
           detail::forward<Arg2>(a2), detail::forward<Arg3>(a3),
@@ -221,9 +221,9 @@ public:
   /// Throws if constructor of value_type throws.
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4,
       typename Arg5, typename Arg6, typename Arg7, typename Arg8>
-  handler_ptr(raw_ptr_type& raw_ptr, Arg1 MA_FWD_REF a1, Arg2 MA_FWD_REF a2,
-      Arg3 MA_FWD_REF a3, Arg4 MA_FWD_REF a4, Arg5 MA_FWD_REF a5,
-      Arg6 MA_FWD_REF a6, Arg7 MA_FWD_REF a7, Arg8 MA_FWD_REF a8)
+  handler_ptr(raw_ptr_type& raw_ptr, MA_FWD_REF(Arg1) a1, MA_FWD_REF(Arg2) a2,
+      MA_FWD_REF(Arg3) a3, MA_FWD_REF(Arg4) a4, MA_FWD_REF(Arg5) a5,
+      MA_FWD_REF(Arg6) a6, MA_FWD_REF(Arg7) a7, MA_FWD_REF(Arg8) a8)
     : alloc_context_(detail::addressof(raw_ptr.alloc_context_))
     , pointer_(new (raw_ptr.pointer_) value_type(detail::forward<Arg1>(a1),
           detail::forward<Arg2>(a2), detail::forward<Arg3>(a3),
