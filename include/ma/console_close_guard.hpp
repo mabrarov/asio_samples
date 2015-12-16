@@ -16,12 +16,10 @@
 #include <boost/asio.hpp>
 #include <ma/config.hpp>
 #include <ma/type_traits.hpp>
-#include <ma/handler_invoke_helpers.hpp>
 #include <ma/context_alloc_handler.hpp>
 #include <ma/console_close_signal.hpp>
 #include <ma/detail/functional.hpp>
 #include <ma/detail/thread.hpp>
-#include <ma/detail/tuple.hpp>
 #include <ma/detail/utility.hpp>
 
 namespace ma {
@@ -99,7 +97,7 @@ void console_close_guard_base::handle_signal(console_close_signal& close_signal,
     // twice without asio_handler_deallocate between (but the number
     // of calls of asio_handler_allocate will keep being the same
     // as the number of calls of asio_handler_deallocate).
-    ma_handler_invoke_helpers::invoke(handler, handler);
+    close_signal.get_io_service().dispatch(handler);
   }
 }
 
