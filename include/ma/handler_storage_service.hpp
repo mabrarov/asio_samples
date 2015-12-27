@@ -292,7 +292,7 @@ public:
   typedef typename base_type::target_type target_type;
 
   template <typename H>
-  handler_wrapper(boost::asio::io_service&, H MA_FWD_REF);
+  handler_wrapper(boost::asio::io_service&, MA_FWD_REF(H));
 
 #if defined(MA_HAS_RVALUE_REFS) \
     && (defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG))
@@ -337,7 +337,7 @@ public:
   typedef typename base_type::target_type target_type;
 
   template <typename H>
-  handler_wrapper(boost::asio::io_service&, H MA_FWD_REF);
+  handler_wrapper(boost::asio::io_service&, MA_FWD_REF(H));
 
 #if defined(MA_HAS_RVALUE_REFS) \
     && (defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG))
@@ -510,7 +510,7 @@ handler_storage_service::handler_base<void, Target>::handler_base(
 template <typename Handler, typename Arg, typename Target>
 template <typename H>
 handler_storage_service::handler_wrapper<Handler, Arg, Target>::handler_wrapper(
-    boost::asio::io_service& io_service, H MA_FWD_REF handler)
+    boost::asio::io_service& io_service, MA_FWD_REF(H) handler)
 #if !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
   : base_type()
 #else
@@ -641,7 +641,7 @@ handler_storage_service::handler_wrapper<Handler, Arg, Target>::do_target(
 template <typename Handler, typename Target>
 template <typename H>
 handler_storage_service::handler_wrapper<Handler, void, Target>::
-    handler_wrapper(boost::asio::io_service& io_service, H MA_FWD_REF handler)
+    handler_wrapper(boost::asio::io_service& io_service, MA_FWD_REF(H) handler)
 #if !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
   : base_type()
 #else

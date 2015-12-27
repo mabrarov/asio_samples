@@ -129,7 +129,7 @@ public:
    * (called right after "store").
    */
   template <typename Handler>
-  void store(Handler MA_FWD_REF handler);
+  void store(MA_FWD_REF(Handler) handler);
 
   /// Post the stored handler to storage related io_service instance.
   /**
@@ -200,7 +200,7 @@ public:
    * (called right after "store").
    */
   template <typename Handler>
-  void store(Handler MA_FWD_REF handler);
+  void store(MA_FWD_REF(Handler) handler);
 
   /// Post the stored handler to storage related io_service instance.
   /**
@@ -282,7 +282,7 @@ void handler_storage<Arg, Target>::clear()
 
 template <typename Arg, typename Target>
 template <typename Handler>
-void handler_storage<Arg, Target>::store(Handler MA_FWD_REF handler)
+void handler_storage<Arg, Target>::store(MA_FWD_REF(Handler) handler)
 {
   typedef typename remove_cv_reference<Handler>::type handler_type;
   service_.store<handler_type, arg_type, target_type>(
@@ -360,7 +360,7 @@ void handler_storage<void, Target>::clear()
 
 template <typename Target>
 template <typename Handler>
-void handler_storage<void, Target>::store(Handler MA_FWD_REF handler)
+void handler_storage<void, Target>::store(MA_FWD_REF(Handler) handler)
 {
   typedef typename remove_cv_reference<Handler>::type handler_type;
   service_.store<handler_type, void, target_type>(

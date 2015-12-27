@@ -60,13 +60,13 @@ public:
   session_manager_stats stats();
 
   template <typename Handler>
-  void async_start(Handler MA_FWD_REF handler);
+  void async_start(MA_FWD_REF(Handler) handler);
 
   template <typename Handler>
-  void async_stop(Handler MA_FWD_REF handler);
+  void async_stop(MA_FWD_REF(Handler) handler);
 
   template <typename Handler>
-  void async_wait(Handler MA_FWD_REF handler);
+  void async_wait(MA_FWD_REF(Handler) handler);
 
 protected:
   // Note that session_io_service has to outlive io_service
@@ -270,11 +270,11 @@ private:
   session_manager_ptr session_manager_;
 }; // class session_manager::forward_handler_binder
 
-#endif // defined(MA_HAS_RVALUE_REFS) 
+#endif // defined(MA_HAS_RVALUE_REFS)
        //     && defined(MA_BIND_HAS_NO_MOVE_CONSTRUCTOR)
 
 template <typename Handler>
-void session_manager::async_start(Handler MA_FWD_REF handler)
+void session_manager::async_start(MA_FWD_REF(Handler) handler)
 {
   typedef typename remove_cv_reference<Handler>::type handler_type;
   typedef void (this_type::*func_type)(handler_type&);
@@ -296,7 +296,7 @@ void session_manager::async_start(Handler MA_FWD_REF handler)
 }
 
 template <typename Handler>
-void session_manager::async_stop(Handler MA_FWD_REF handler)
+void session_manager::async_stop(MA_FWD_REF(Handler) handler)
 {
   typedef typename remove_cv_reference<Handler>::type handler_type;
   typedef void (this_type::*func_type)(handler_type&);
@@ -318,7 +318,7 @@ void session_manager::async_stop(Handler MA_FWD_REF handler)
 }
 
 template <typename Handler>
-void session_manager::async_wait(Handler MA_FWD_REF handler)
+void session_manager::async_wait(MA_FWD_REF(Handler) handler)
 {
   typedef typename remove_cv_reference<Handler>::type handler_type;
   typedef void (this_type::*func_type)(handler_type&);

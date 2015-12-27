@@ -70,7 +70,7 @@ public:
   typedef void result_type;
 
   template <typename C, typename H>
-  context_alloc_handler(C MA_FWD_REF context, H MA_FWD_REF handler)
+  context_alloc_handler(MA_FWD_REF(C) context, MA_FWD_REF(H) handler)
     : context_(detail::forward<C>(context))
     , handler_(detail::forward<H>(handler))
   {
@@ -117,7 +117,7 @@ public:
 #if defined(MA_HAS_RVALUE_REFS)
 
   template <typename Function>
-  friend void asio_handler_invoke(Function MA_FWD_REF function,
+  friend void asio_handler_invoke(MA_FWD_REF(Function) function,
       this_type* context)
   {
     // Forward to asio_handler_invoke provided by source handler.
@@ -154,28 +154,28 @@ public:
   }
 
   template <typename Arg1>
-  void operator()(Arg1 MA_FWD_REF arg1)
+  void operator()(MA_FWD_REF(Arg1) arg1)
   {
     handler_(detail::forward<Arg1>(arg1));
   }
 
   template <typename Arg1, typename Arg2>
-  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2)
+  void operator()(MA_FWD_REF(Arg1) arg1, MA_FWD_REF(Arg2) arg2)
   {
     handler_(detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2));
   }
 
   template <typename Arg1, typename Arg2, typename Arg3>
-  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2,
-      Arg3 MA_FWD_REF arg3)
+  void operator()(MA_FWD_REF(Arg1) arg1, MA_FWD_REF(Arg2) arg2,
+      MA_FWD_REF(Arg3) arg3)
   {
     handler_(detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2),
         detail::forward<Arg3>(arg3));
   }
 
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4>
-  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2,
-      Arg3 MA_FWD_REF arg3, Arg4 MA_FWD_REF arg4)
+  void operator()(MA_FWD_REF(Arg1) arg1, MA_FWD_REF(Arg2) arg2,
+      MA_FWD_REF(Arg3) arg3, MA_FWD_REF(Arg4) arg4)
   {
     handler_(detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2),
         detail::forward<Arg3>(arg3), detail::forward<Arg4>(arg4));
@@ -183,8 +183,8 @@ public:
 
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4,
       typename Arg5>
-  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2,
-      Arg3 MA_FWD_REF arg3, Arg4 MA_FWD_REF arg4, Arg5 MA_FWD_REF arg5)
+  void operator()(MA_FWD_REF(Arg1) arg1, MA_FWD_REF(Arg2) arg2,
+      MA_FWD_REF(Arg3) arg3, MA_FWD_REF(Arg4) arg4, MA_FWD_REF(Arg5) arg5)
   {
     handler_(detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2),
         detail::forward<Arg3>(arg3), detail::forward<Arg4>(arg4),
@@ -197,28 +197,28 @@ public:
   }
 
   template <typename Arg1>
-  void operator()(Arg1 MA_FWD_REF arg1) const
+  void operator()(MA_FWD_REF(Arg1) arg1) const
   {
     handler_(detail::forward<Arg1>(arg1));
   }
 
   template <typename Arg1, typename Arg2>
-  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2) const
+  void operator()(MA_FWD_REF(Arg1) arg1, MA_FWD_REF(Arg2) arg2) const
   {
     handler_(detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2));
   }
 
   template <typename Arg1, typename Arg2, typename Arg3>
-  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2,
-      Arg3 MA_FWD_REF arg3) const
+  void operator()(MA_FWD_REF(Arg1) arg1, MA_FWD_REF(Arg2) arg2,
+      MA_FWD_REF(Arg3) arg3) const
   {
     handler_(detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2),
         detail::forward<Arg3>(arg3));
   }
 
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4>
-  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2,
-      Arg3 MA_FWD_REF arg3, Arg4 MA_FWD_REF arg4) const
+  void operator()(MA_FWD_REF(Arg1) arg1, MA_FWD_REF(Arg2) arg2,
+      MA_FWD_REF(Arg3) arg3, MA_FWD_REF(Arg4) arg4) const
   {
     handler_(detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2),
         detail::forward<Arg3>(arg3), detail::forward<Arg4>(arg4));
@@ -226,8 +226,8 @@ public:
 
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4,
       typename Arg5>
-  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2,
-      Arg3 MA_FWD_REF arg3, Arg4 MA_FWD_REF arg4, Arg5 MA_FWD_REF arg5) const
+  void operator()(MA_FWD_REF(Arg1) arg1, MA_FWD_REF(Arg2) arg2,
+      MA_FWD_REF(Arg3) arg3, MA_FWD_REF(Arg4) arg4, MA_FWD_REF(Arg5) arg5) const
   {
     handler_(detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2),
         detail::forward<Arg3>(arg3), detail::forward<Arg4>(arg4),
@@ -248,8 +248,8 @@ template <typename Context, typename Handler>
 inline context_alloc_handler<
     typename remove_cv_reference<Context>::type,
     typename remove_cv_reference<Handler>::type>
-make_context_alloc_handler(Context MA_FWD_REF context,
-    Handler MA_FWD_REF handler)
+make_context_alloc_handler(MA_FWD_REF(Context) context,
+    MA_FWD_REF(Handler) handler)
 {
   typedef typename remove_cv_reference<Context>::type context_type;
   typedef typename remove_cv_reference<Handler>::type handler_type;
@@ -281,7 +281,7 @@ public:
   typedef void result_type;
 
   template <typename C, typename H>
-  explicit_context_alloc_handler(C MA_FWD_REF context, H MA_FWD_REF handler)
+  explicit_context_alloc_handler(MA_FWD_REF(C) context, MA_FWD_REF(H) handler)
     : context_(detail::forward<C>(context))
     , handler_(detail::forward<H>(handler))
   {
@@ -324,7 +324,7 @@ public:
 #if defined(MA_HAS_RVALUE_REFS)
 
   template <typename Function>
-  friend void asio_handler_invoke(Function MA_FWD_REF function,
+  friend void asio_handler_invoke(MA_FWD_REF(Function) function,
       this_type* context)
   {
     ma_handler_invoke_helpers::invoke(
@@ -358,29 +358,29 @@ public:
   }
 
   template <typename Arg1>
-  void operator()(Arg1 MA_FWD_REF arg1)
+  void operator()(MA_FWD_REF(Arg1) arg1)
   {
     handler_(context_, detail::forward<Arg1>(arg1));
   }
 
   template <typename Arg1, typename Arg2>
-  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2)
+  void operator()(MA_FWD_REF(Arg1) arg1, MA_FWD_REF(Arg2) arg2)
   {
     handler_(context_, detail::forward<Arg1>(arg1),
         detail::forward<Arg2>(arg2));
   }
 
   template <typename Arg1, typename Arg2, typename Arg3>
-  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2,
-      Arg3 MA_FWD_REF arg3)
+  void operator()(MA_FWD_REF(Arg1) arg1, MA_FWD_REF(Arg2) arg2,
+      MA_FWD_REF(Arg3) arg3)
   {
     handler_(context_, detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2),
         detail::forward<Arg3>(arg3));
   }
 
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4>
-  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2,
-      Arg3 MA_FWD_REF arg3, Arg4 MA_FWD_REF arg4)
+  void operator()(MA_FWD_REF(Arg1) arg1, MA_FWD_REF(Arg2) arg2,
+      MA_FWD_REF(Arg3) arg3, MA_FWD_REF(Arg4) arg4)
   {
     handler_(context_, detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2),
         detail::forward<Arg3>(arg3), detail::forward<Arg4>(arg4));
@@ -388,8 +388,8 @@ public:
 
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4,
       typename Arg5>
-  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2,
-      Arg3 MA_FWD_REF arg3, Arg4 MA_FWD_REF arg4, Arg5 MA_FWD_REF arg5)
+  void operator()(MA_FWD_REF(Arg1) arg1, MA_FWD_REF(Arg2) arg2,
+      MA_FWD_REF(Arg3) arg3, MA_FWD_REF(Arg4) arg4, MA_FWD_REF(Arg5) arg5)
   {
     handler_(context_, detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2),
         detail::forward<Arg3>(arg3), detail::forward<Arg4>(arg4),
@@ -402,28 +402,28 @@ public:
   }
 
   template <typename Arg1>
-  void operator()(Arg1 MA_FWD_REF arg1) const
+  void operator()(MA_FWD_REF(Arg1) arg1) const
   {
     handler_(context_, detail::forward<Arg1>(arg1));
   }
 
   template <typename Arg1, typename Arg2>
-  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2) const
+  void operator()(MA_FWD_REF(Arg1) arg1, MA_FWD_REF(Arg2) arg2) const
   {
     handler_(context_, detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2));
   }
 
   template <typename Arg1, typename Arg2, typename Arg3>
-  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2,
-      Arg3 MA_FWD_REF arg3) const
+  void operator()(MA_FWD_REF(Arg1) arg1, MA_FWD_REF(Arg2) arg2,
+      MA_FWD_REF(Arg3) arg3) const
   {
     handler_(context_, detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2),
         detail::forward<Arg3>(arg3));
   }
 
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4>
-  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2,
-      Arg3 MA_FWD_REF arg3, Arg4 MA_FWD_REF arg4) const
+  void operator()(MA_FWD_REF(Arg1) arg1, MA_FWD_REF(Arg2) arg2,
+      MA_FWD_REF(Arg3) arg3, MA_FWD_REF(Arg4) arg4) const
   {
     handler_(context_, detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2),
         detail::forward<Arg3>(arg3), detail::forward<Arg4>(arg4));
@@ -431,8 +431,8 @@ public:
 
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4,
       typename Arg5>
-  void operator()(Arg1 MA_FWD_REF arg1, Arg2 MA_FWD_REF arg2,
-      Arg3 MA_FWD_REF arg3, Arg4 MA_FWD_REF arg4, Arg5 MA_FWD_REF arg5) const
+  void operator()(MA_FWD_REF(Arg1) arg1, MA_FWD_REF(Arg2) arg2,
+      MA_FWD_REF(Arg3) arg3, MA_FWD_REF(Arg4) arg4, MA_FWD_REF(Arg5) arg5) const
   {
     handler_(context_, detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2),
         detail::forward<Arg3>(arg3), detail::forward<Arg4>(arg4),
@@ -452,8 +452,8 @@ template <typename Context, typename Handler>
 inline explicit_context_alloc_handler<
     typename remove_cv_reference<Context>::type,
     typename remove_cv_reference<Handler>::type>
-make_explicit_context_alloc_handler(Context MA_FWD_REF context,
-    Handler MA_FWD_REF handler)
+make_explicit_context_alloc_handler(MA_FWD_REF(Context) context,
+    MA_FWD_REF(Handler) handler)
 {
   typedef typename remove_cv_reference<Context>::type context_type;
   typedef typename remove_cv_reference<Handler>::type handler_type;
