@@ -19,7 +19,7 @@
 #include <ma/handler_storage.hpp>
 #include <ma/bind_handler.hpp>
 #include <ma/context_alloc_handler.hpp>
-#include <ma/type_traits.hpp>
+#include <ma/detail/type_traits.hpp>
 #include <ma/detail/memory.hpp>
 #include <ma/detail/functional.hpp>
 #include <ma/detail/utility.hpp>
@@ -106,7 +106,7 @@ private:
 template <typename Handler>
 void async_interface::async_do_something(MA_FWD_REF(Handler) handler)
 {
-  typedef typename remove_cv_reference<Handler>::type handler_type;
+  typedef typename detail::decay<Handler>::type handler_type;
   typedef void (async_interface::*func_type)(handler_type&);
 
   func_type func = &this_type::start_do_something<handler_type>;

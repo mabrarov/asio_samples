@@ -79,7 +79,7 @@ set(CPP_HEADERS
     "${CPP_HEADERS_DIR}/ma/strand.hpp"
     "${CPP_HEADERS_DIR}/ma/strand_wrapped_handler.hpp"
     "${CPP_HEADERS_DIR}/ma/thread_group.hpp"
-    "${CPP_HEADERS_DIR}/ma/type_traits.hpp"
+    "${CPP_HEADERS_DIR}/ma/detail/type_traits.hpp"
     "${SOURCES_DIR}/echo_server/config.hpp")
 
 set(CPP_SOURCES

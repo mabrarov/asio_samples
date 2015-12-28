@@ -14,7 +14,7 @@
 
 #include <boost/asio.hpp>
 #include <ma/config.hpp>
-#include <ma/type_traits.hpp>
+#include <ma/detail/type_traits.hpp>
 #include <ma/detail/utility.hpp>
 
 #if defined(WIN32) && !defined(BOOST_ASIO_DISABLE_IOCP) \
@@ -145,10 +145,10 @@ private:
 #endif // #if defined(_MSC_VER)
 
 template <typename Handler>
-inline connect_ex_handler<typename remove_cv_reference<Handler>::type>
+inline connect_ex_handler<typename detail::decay<Handler>::type>
 make_connect_ex_handler(MA_FWD_REF(Handler) handler)
 {
-  typedef typename remove_cv_reference<Handler>::type handler_type;
+  typedef typename detail::decay<Handler>::type handler_type;
   return connect_ex_handler<handler_type>(detail::forward<Handler>(handler));
 }
 

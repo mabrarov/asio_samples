@@ -19,7 +19,7 @@
 #include <boost/noncopyable.hpp>
 #include <boost/throw_exception.hpp>
 #include <ma/config.hpp>
-#include <ma/type_traits.hpp>
+#include <ma/detail/type_traits.hpp>
 #include <ma/bind_handler.hpp>
 #include <ma/detail/functional.hpp>
 #include <ma/detail/thread.hpp>
@@ -858,8 +858,8 @@ void handler_storage_service::store(implementation_type& impl, Handler handler)
     return;
   }
 
-  typedef typename remove_cv_reference<Arg>::type           arg_type;
-  typedef typename remove_cv_reference<Target>::type        target_type;
+  typedef typename detail::decay<Arg>::type           arg_type;
+  typedef typename detail::decay<Target>::type        target_type;
   typedef handler_wrapper<Handler, arg_type, target_type>   value_type;
   typedef detail::handler_alloc_traits<Handler, value_type> alloc_traits;
 
@@ -884,8 +884,8 @@ void handler_storage_service::store(implementation_type& impl, Handler handler)
 template <typename Arg, typename Target>
 void handler_storage_service::post(implementation_type& impl, const Arg& arg)
 {
-  typedef typename remove_cv_reference<Arg>::type    arg_type;
-  typedef typename remove_cv_reference<Target>::type target_type;
+  typedef typename detail::decay<Arg>::type    arg_type;
+  typedef typename detail::decay<Target>::type target_type;
   typedef handler_base<arg_type, target_type>        handler_type;
 
   if (handler_type* handler = static_cast<handler_type*>(impl.handler_))
@@ -903,7 +903,7 @@ template <typename Target>
 void handler_storage_service::post(implementation_type& impl)
 {
   typedef void arg_type;
-  typedef typename remove_cv_reference<Target>::type target_type;
+  typedef typename detail::decay<Target>::type target_type;
   typedef handler_base<arg_type, target_type>        handler_type;
 
   if (handler_type* handler = static_cast<handler_type*>(impl.handler_))
@@ -920,8 +920,8 @@ void handler_storage_service::post(implementation_type& impl)
 template <typename Arg, typename Target>
 Target* handler_storage_service::target(const implementation_type& impl)
 {
-  typedef typename remove_cv_reference<Arg>::type    arg_type;
-  typedef typename remove_cv_reference<Target>::type target_type;
+  typedef typename detail::decay<Arg>::type    arg_type;
+  typedef typename detail::decay<Target>::type target_type;
   typedef handler_base<arg_type, target_type>        handler_type;
 
   if (handler_type* handler = static_cast<handler_type*>(impl.handler_))

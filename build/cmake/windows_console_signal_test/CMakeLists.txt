@@ -48,7 +48,7 @@ set(CPP_HEADERS
     "${CPP_HEADERS_DIR}/ma/handler_allocator.hpp"
     "${CPP_HEADERS_DIR}/ma/handler_cont_helpers.hpp"
     "${CPP_HEADERS_DIR}/ma/handler_invoke_helpers.hpp"
-    "${CPP_HEADERS_DIR}/ma/type_traits.hpp")
+    "${CPP_HEADERS_DIR}/ma/detail/type_traits.hpp")
 
 set(CPP_SOURCES
     "${SOURCES_DIR}/ma/windows/console_signal_service.cpp"
