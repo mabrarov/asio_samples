@@ -17,7 +17,9 @@
 #if defined(MA_USE_CXX11_STDLIB_TYPE_TRAITS)
 #include <type_traits>
 #else
+#include <boost/config.hpp>
 #include <boost/type_traits/decay.hpp>
+#include <boost/type_traits/remove_cv.hpp>
 #endif
 
 namespace ma {
@@ -29,7 +31,19 @@ using std::decay;
 
 #else
 
+#if BOOST_VERSION >= 106000
+
 using boost::decay;
+
+#else // BOOST_VERSION >= 106000
+
+template <typename T>
+struct decay
+{
+  typedef typename boost::remove_cv<typename boost::decay<T>::type>::type type;
+}; // struct decay
+
+#endif // BOOST_VERSION >= 106000
 
 #endif // defined(MA_USE_CXX11_STDLIB_TYPE_TRAITS)
 
