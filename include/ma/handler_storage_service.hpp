@@ -21,6 +21,7 @@
 #include <ma/config.hpp>
 #include <ma/detail/type_traits.hpp>
 #include <ma/bind_handler.hpp>
+#include <ma/detail/memory.hpp>
 #include <ma/detail/functional.hpp>
 #include <ma/detail/thread.hpp>
 #include <ma/detail/handler_ptr.hpp>
@@ -635,7 +636,7 @@ handler_storage_service::handler_wrapper<Handler, Arg, Target>::do_target(
     base_type* base)
 {
   this_type* this_ptr = static_cast<this_type*>(base);
-  return static_cast<target_type*>(boost::addressof(this_ptr->handler_));
+  return static_cast<target_type*>(detail::addressof(this_ptr->handler_));
 }
 
 template <typename Handler, typename Target>
@@ -765,7 +766,7 @@ handler_storage_service::handler_wrapper<Handler, void, Target>::do_target(
     base_type* base)
 {
   this_type* this_ptr = static_cast<this_type*>(base);
-  return static_cast<target_type*>(boost::addressof(this_ptr->handler_));
+  return static_cast<target_type*>(detail::addressof(this_ptr->handler_));
 }
 
 inline handler_storage_service::impl_base::impl_base()
