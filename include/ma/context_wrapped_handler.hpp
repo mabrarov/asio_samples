@@ -17,7 +17,7 @@
 #include <ma/handler_alloc_helpers.hpp>
 #include <ma/handler_invoke_helpers.hpp>
 #include <ma/handler_cont_helpers.hpp>
-#include <ma/type_traits.hpp>
+#include <ma/detail/type_traits.hpp>
 #include <ma/detail/utility.hpp>
 
 namespace ma {
@@ -242,13 +242,13 @@ private:
 
 template <typename Context, typename Handler>
 inline context_wrapped_handler<
-    typename remove_cv_reference<Context>::type,
-    typename remove_cv_reference<Handler>::type>
+    typename detail::decay<Context>::type,
+    typename detail::decay<Handler>::type>
 make_context_wrapped_handler(MA_FWD_REF(Context) context,
     MA_FWD_REF(Handler) handler)
 {
-  typedef typename remove_cv_reference<Context>::type context_type;
-  typedef typename remove_cv_reference<Handler>::type handler_type;
+  typedef typename detail::decay<Context>::type context_type;
+  typedef typename detail::decay<Handler>::type handler_type;
   return context_wrapped_handler<context_type, handler_type>(
       detail::forward<Context>(context), detail::forward<Handler>(handler));
 }
@@ -437,13 +437,13 @@ private:
 
 template <typename Context, typename Handler>
 inline explicit_context_wrapped_handler<
-    typename remove_cv_reference<Context>::type,
-    typename remove_cv_reference<Handler>::type>
+    typename detail::decay<Context>::type,
+    typename detail::decay<Handler>::type>
 make_explicit_context_wrapped_handler(MA_FWD_REF(Context) context,
     MA_FWD_REF(Handler) handler)
 {
-  typedef typename remove_cv_reference<Context>::type context_type;
-  typedef typename remove_cv_reference<Handler>::type handler_type;
+  typedef typename detail::decay<Context>::type context_type;
+  typedef typename detail::decay<Handler>::type handler_type;
   return explicit_context_wrapped_handler<context_type, handler_type>(
       detail::forward<Context>(context), detail::forward<Handler>(handler));
 }

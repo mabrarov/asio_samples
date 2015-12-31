@@ -18,7 +18,7 @@
 
 #if defined(MA_HAS_RVALUE_REFS)
 #include <utility>
-#include <ma/type_traits.hpp>
+#include <ma/detail/type_traits.hpp>
 #endif // defined(MA_HAS_RVALUE_REFS)
 
 #if defined(MA_HAS_BOOST_CHRONO)

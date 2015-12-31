@@ -15,7 +15,7 @@
 #include <boost/noncopyable.hpp>
 #include <boost/asio.hpp>
 #include <ma/config.hpp>
-#include <ma/type_traits.hpp>
+#include <ma/detail/type_traits.hpp>
 #include <ma/context_alloc_handler.hpp>
 #include <ma/console_close_signal.hpp>
 #include <ma/detail/functional.hpp>
@@ -62,7 +62,7 @@ console_close_guard_base::console_close_guard_base(MA_FWD_REF(Handler) handler)
   : io_service_(1)
   , close_signal_(io_service_)
 {
-  typedef typename remove_cv_reference<Handler>::type handler_type;
+  typedef typename detail::decay<Handler>::type handler_type;
   close_signal_.async_wait(make_explicit_context_alloc_handler(
       detail::forward<Handler>(handler),
       detail::bind(&handle_signal<handler_type>, 

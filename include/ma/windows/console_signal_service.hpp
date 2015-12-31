@@ -20,7 +20,7 @@
 #include <boost/asio.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/system/error_code.hpp>
-#include <ma/type_traits.hpp>
+#include <ma/detail/type_traits.hpp>
 #include <ma/bind_handler.hpp>
 #include <ma/detail/memory.hpp>
 #include <ma/detail/functional.hpp>

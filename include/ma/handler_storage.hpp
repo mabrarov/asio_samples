@@ -15,7 +15,7 @@
 #include <boost/asio.hpp>
 #include <boost/noncopyable.hpp>
 #include <ma/config.hpp>
-#include <ma/type_traits.hpp>
+#include <ma/detail/type_traits.hpp>
 #include <ma/handler_storage_service.hpp>
 #include <ma/detail/utility.hpp>
 
@@ -84,8 +84,8 @@ private:
 public:
   typedef handler_storage_service                    service_type;
   typedef typename service_type::implementation_type implementation_type;
-  typedef typename remove_cv_reference<Arg>::type    arg_type;
-  typedef typename remove_cv_reference<Target>::type target_type;
+  typedef typename detail::decay<Arg>::type    arg_type;
+  typedef typename detail::decay<Target>::type target_type;
 
   explicit handler_storage(boost::asio::io_service& io_service);
   ~handler_storage();
@@ -156,7 +156,7 @@ public:
   typedef handler_storage_service                    service_type;
   typedef typename service_type::implementation_type implementation_type;
   typedef void                                       arg_type;
-  typedef typename remove_cv_reference<Target>::type target_type;
+  typedef typename detail::decay<Target>::type target_type;
 
   explicit handler_storage(boost::asio::io_service& io_service);
   ~handler_storage();
@@ -284,7 +284,7 @@ template <typename Arg, typename Target>
 template <typename Handler>
 void handler_storage<Arg, Target>::store(MA_FWD_REF(Handler) handler)
 {
-  typedef typename remove_cv_reference<Handler>::type handler_type;
+  typedef typename detail::decay<Handler>::type handler_type;
   service_.store<handler_type, arg_type, target_type>(
       impl_, detail::forward<Handler>(handler));
 }
@@ -362,7 +362,7 @@ template <typename Target>
 template <typename Handler>
 void handler_storage<void, Target>::store(MA_FWD_REF(Handler) handler)
 {
-  typedef typename remove_cv_reference<Handler>::type handler_type;
+  typedef typename detail::decay<Handler>::type handler_type;
   service_.store<handler_type, void, target_type>(
       impl_, detail::forward<Handler>(handler));
 }

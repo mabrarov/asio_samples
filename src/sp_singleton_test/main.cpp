@@ -431,7 +431,7 @@ foo::~foo()
   destroy_complete_latch.wait();
   if (!data_)
   {
-    boost::this_thread::sleep(boost::posix_time::seconds(1));
+    detail::this_thread::sleep(boost::posix_time::seconds(1));
   }
   --instance_count_;
   instance_guard_ = boost::none;
@@ -488,7 +488,7 @@ void work_func(const random_generator_ptr& rng)
     BOOST_ASSERT_MSG(f, "Instance has to exist");
     if (wait_flag(*rng))
     {
-      boost::this_thread::sleep(boost::posix_time::milliseconds(1));
+      detail::this_thread::sleep(boost::posix_time::milliseconds(1));
     }
     (void) f;
   }

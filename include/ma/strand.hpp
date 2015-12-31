@@ -16,7 +16,7 @@
 #include <boost/noncopyable.hpp>
 #include <ma/config.hpp>
 #include <ma/strand_wrapped_handler.hpp>
-#include <ma/type_traits.hpp>
+#include <ma/detail/type_traits.hpp>
 #include <ma/detail/utility.hpp>
 
 namespace ma {
@@ -37,7 +37,7 @@ public:
   void post(MA_FWD_REF(Handler) handler);
 
   template<typename Handler>
-  strand_wrapped_handler<typename remove_cv_reference<Handler>::type>
+  strand_wrapped_handler<typename detail::decay<Handler>::type>
   wrap(MA_FWD_REF(Handler) handler);
 
 #if BOOST_VERSION >= 105400
@@ -73,10 +73,10 @@ void strand::post(MA_FWD_REF(Handler) handler)
 }
 
 template<typename Handler>
-strand_wrapped_handler<typename remove_cv_reference<Handler>::type>
+strand_wrapped_handler<typename detail::decay<Handler>::type>
 strand::wrap(MA_FWD_REF(Handler) handler)
 {
-  typedef typename remove_cv_reference<Handler>::type handler_type;
+  typedef typename detail::decay<Handler>::type handler_type;
   return strand_wrapped_handler<handler_type>(
       strand_, detail::forward<Handler>(handler));
 }

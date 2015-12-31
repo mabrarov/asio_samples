@@ -18,14 +18,14 @@
 #include <boost/date_time/posix_time/ptime.hpp>
 #include <boost/thread/barrier.hpp>
 
-#if defined(MA_USE_CXX11_THREAD)
+#if defined(MA_USE_CXX11_STDLIB_THREAD)
 
 #include <thread>
 #include <mutex>
 #include <condition_variable>
 #include <chrono>
 
-#else  // defined(MA_USE_CXX11_THREAD)
+#else  // defined(MA_USE_CXX11_STDLIB_THREAD)
 
 #include <boost/thread/thread.hpp>
 #include <boost/thread/mutex.hpp>
@@ -33,12 +33,12 @@
 #include <boost/thread/condition_variable.hpp>
 #include <boost/thread/once.hpp>
 
-#endif // defined(MA_USE_CXX11_THREAD)
+#endif // defined(MA_USE_CXX11_STDLIB_THREAD)
 
 namespace ma {
 namespace detail {
 
-#if defined(MA_USE_CXX11_THREAD)
+#if defined(MA_USE_CXX11_STDLIB_THREAD)
 
 using std::thread;
 using std::mutex;
@@ -100,7 +100,7 @@ inline bool condition_variable::timed_wait(unique_lock<mutex>& lock,
       condition_.wait_for(lock, to_duration(posix_duration));
 }
 
-#else  // defined(MA_USE_CXX11_THREAD)
+#else  // defined(MA_USE_CXX11_STDLIB_THREAD)
 
 using boost::thread;
 using boost::mutex;
@@ -112,7 +112,7 @@ using boost::once_flag;
 using boost::call_once;
 namespace this_thread = boost::this_thread;
 
-#endif // defined(MA_USE_CXX11_THREAD)
+#endif // defined(MA_USE_CXX11_STDLIB_THREAD)
 
 class barrier : private boost::noncopyable
 {

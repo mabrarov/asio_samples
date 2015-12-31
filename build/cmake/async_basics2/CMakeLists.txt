@@ -12,7 +12,7 @@ project(async_basics2)
 find_package(Boost REQUIRED)
 
 # Build list of used Boost libraries depending on Boost version
-# (use chono if available)
+# (use Boost.Chrono if available)
 set(BOOST_COMPONENTS "system;thread;date_time;regex")
 if(NOT(${Boost_VERSION} LESS 104700))
     set(BOOST_COMPONENTS "${BOOST_COMPONENTS};chrono")
@@ -64,7 +64,7 @@ set(CPP_HEADERS
     "${CPP_HEADERS_DIR}/ma/strand.hpp"
     "${CPP_HEADERS_DIR}/ma/strand_wrapped_handler.hpp"
     "${CPP_HEADERS_DIR}/ma/thread_group.hpp"
-    "${CPP_HEADERS_DIR}/ma/type_traits.hpp")
+    "${CPP_HEADERS_DIR}/ma/detail/type_traits.hpp")
 
 set(CPP_SOURCES
     "${SOURCES_DIR}/ma/tutorial2/async_implementation.cpp"
@@ -80,7 +80,7 @@ if(WIN32)
         "mswsock")
 endif()
 
-# Boost chrono requires rt library on *nix
+# Boost.Chrono requires rt library on *nix
 if(UNIX AND BOOST_HAS_CHRONO)
     list(APPEND LIBRARIES
         "rt")

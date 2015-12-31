@@ -17,7 +17,7 @@
 #include <ma/handler_alloc_helpers.hpp>
 #include <ma/handler_invoke_helpers.hpp>
 #include <ma/handler_cont_helpers.hpp>
-#include <ma/type_traits.hpp>
+#include <ma/detail/type_traits.hpp>
 #include <ma/detail/memory.hpp>
 #include <ma/detail/thread.hpp>
 #include <ma/detail/utility.hpp>
@@ -230,10 +230,10 @@ private:
 /// Helper for creation of wrapped handler.
 template <typename Lockable, typename Handler>
 inline lockable_wrapped_handler<
-    Lockable, typename remove_cv_reference<Handler>::type>
+    Lockable, typename detail::decay<Handler>::type>
 make_lockable_wrapped_handler(Lockable& lockable, MA_FWD_REF(Handler) handler)
 {
-  typedef typename remove_cv_reference<Handler>::type handler_type;
+  typedef typename detail::decay<Handler>::type handler_type;
   return lockable_wrapped_handler<Lockable, handler_type>(
       lockable, detail::forward<Handler>(handler));
 }
