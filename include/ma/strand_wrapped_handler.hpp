@@ -18,7 +18,7 @@
 #include <ma/handler_alloc_helpers.hpp>
 #include <ma/handler_cont_helpers.hpp>
 #include <ma/context_wrapped_handler.hpp>
-#include <ma/type_traits.hpp>
+#include <ma/detail/type_traits.hpp>
 #include <ma/detail/memory.hpp>
 #include <ma/detail/utility.hpp>
 
@@ -247,11 +247,11 @@ private:
 #endif // #if defined(_MSC_VER)
 
 template <typename Handler>
-inline strand_wrapped_handler<typename remove_cv_reference<Handler>::type>
+inline strand_wrapped_handler<typename detail::decay<Handler>::type>
 make_strand_wrapped_handler(boost::asio::io_service::strand& strand,
     MA_FWD_REF(Handler) handler)
 {
-  typedef typename remove_cv_reference<Handler>::type handler_type;
+  typedef typename detail::decay<Handler>::type handler_type;
   return strand_wrapped_handler<handler_type>(strand,
       detail::forward<Handler>(handler));
 }

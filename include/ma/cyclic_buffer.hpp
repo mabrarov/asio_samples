@@ -163,14 +163,14 @@ template <typename Buffer>
 typename cyclic_buffer::buffers_2<Buffer>::const_iterator
 cyclic_buffer::buffers_2<Buffer>::begin() const
 {
-  return boost::addressof(buffers_[0]);
+  return detail::addressof(buffers_[0]);
 }
 
 template <typename Buffer>
 typename cyclic_buffer::buffers_2<Buffer>::const_iterator
 cyclic_buffer::buffers_2<Buffer>::end() const
 {
-  return boost::addressof(buffers_[0]) + buffers_count_;
+  return detail::addressof(buffers_[0]) + buffers_count_;
 }
 
 template <typename Buffer>
@@ -277,7 +277,7 @@ cyclic_buffer::data_of_size(std::size_t buffers_size) const
       data_.get() + filled_start_, buffers_size));
 }
 
-inline cyclic_buffer::mutable_buffers_type 
+inline cyclic_buffer::mutable_buffers_type
 cyclic_buffer::prepared_of_size(std::size_t buffers_size) const
 {
   BOOST_ASSERT_MSG(buffers_size <= nonfilled_size_,

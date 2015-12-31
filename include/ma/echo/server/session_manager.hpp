@@ -18,7 +18,7 @@
 #include <boost/noncopyable.hpp>
 #include <boost/system/error_code.hpp>
 #include <ma/config.hpp>
-#include <ma/type_traits.hpp>
+#include <ma/detail/type_traits.hpp>
 #include <ma/handler_storage.hpp>
 #include <ma/handler_allocator.hpp>
 #include <ma/bind_handler.hpp>
@@ -276,7 +276,7 @@ private:
 template <typename Handler>
 void session_manager::async_start(MA_FWD_REF(Handler) handler)
 {
-  typedef typename remove_cv_reference<Handler>::type handler_type;
+  typedef typename detail::decay<Handler>::type handler_type;
   typedef void (this_type::*func_type)(handler_type&);
   func_type func = &this_type::start_extern_start<handler_type>;
 
@@ -298,7 +298,7 @@ void session_manager::async_start(MA_FWD_REF(Handler) handler)
 template <typename Handler>
 void session_manager::async_stop(MA_FWD_REF(Handler) handler)
 {
-  typedef typename remove_cv_reference<Handler>::type handler_type;
+  typedef typename detail::decay<Handler>::type handler_type;
   typedef void (this_type::*func_type)(handler_type&);
   func_type func = &this_type::start_extern_stop<handler_type>;
 
@@ -320,7 +320,7 @@ void session_manager::async_stop(MA_FWD_REF(Handler) handler)
 template <typename Handler>
 void session_manager::async_wait(MA_FWD_REF(Handler) handler)
 {
-  typedef typename remove_cv_reference<Handler>::type handler_type;
+  typedef typename detail::decay<Handler>::type handler_type;
   typedef void (this_type::*func_type)(handler_type&);
   func_type func = &this_type::start_extern_wait<handler_type>;
 

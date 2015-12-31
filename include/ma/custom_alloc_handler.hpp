@@ -17,7 +17,7 @@
 #include <ma/handler_alloc_helpers.hpp>
 #include <ma/handler_invoke_helpers.hpp>
 #include <ma/handler_cont_helpers.hpp>
-#include <ma/type_traits.hpp>
+#include <ma/detail/type_traits.hpp>
 #include <ma/detail/memory.hpp>
 #include <ma/detail/utility.hpp>
 
@@ -264,10 +264,10 @@ private:
 
 template <typename Allocator, typename Handler>
 inline custom_alloc_handler<Allocator,
-    typename remove_cv_reference<Handler>::type>
+    typename detail::decay<Handler>::type>
 make_custom_alloc_handler(Allocator& allocator, MA_FWD_REF(Handler) handler)
 {
-  typedef typename remove_cv_reference<Handler>::type handler_type;
+  typedef typename detail::decay<Handler>::type handler_type;
   return custom_alloc_handler<Allocator, handler_type>(allocator,
       detail::forward<Handler>(handler));
 }

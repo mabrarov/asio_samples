@@ -17,7 +17,7 @@
 #include <ma/handler_alloc_helpers.hpp>
 #include <ma/handler_invoke_helpers.hpp>
 #include <ma/handler_cont_helpers.hpp>
-#include <ma/type_traits.hpp>
+#include <ma/detail/type_traits.hpp>
 #include <ma/detail/utility.hpp>
 
 namespace ma {
