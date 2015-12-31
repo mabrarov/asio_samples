@@ -17,7 +17,7 @@
 #include <ma/detail/functional.hpp>
 #include <ma/detail/utility.hpp>
 
-#if defined(MA_USE_CXX11_THREAD) && defined(MA_HAS_RVALUE_REFS)
+#if defined(MA_USE_CXX11_STDLIB_THREAD) && defined(MA_HAS_RVALUE_REFS)
 #include <thread>
 #include <vector>
 #include <algorithm>
@@ -39,7 +39,7 @@ public:
 
 private:
 
-#if defined(MA_USE_CXX11_THREAD) && defined(MA_HAS_RVALUE_REFS)
+#if defined(MA_USE_CXX11_STDLIB_THREAD) && defined(MA_HAS_RVALUE_REFS)
   std::vector<std::thread> threads_;
 #else
   boost::thread_group      threads_;
@@ -55,7 +55,7 @@ inline thread_group::thread_group()
 template <typename Task>
 void thread_group::create_thread(MA_FWD_REF(Task) task)
 {
-#if defined(MA_USE_CXX11_THREAD) && defined(MA_HAS_RVALUE_REFS)
+#if defined(MA_USE_CXX11_STDLIB_THREAD) && defined(MA_HAS_RVALUE_REFS)
   threads_.emplace_back(detail::forward<Task>(task));
 #else
   threads_.create_thread(detail::forward<Task>(task));
@@ -64,7 +64,7 @@ void thread_group::create_thread(MA_FWD_REF(Task) task)
 
 inline void thread_group::join_all()
 {
-#if defined(MA_USE_CXX11_THREAD) && defined(MA_HAS_RVALUE_REFS)
+#if defined(MA_USE_CXX11_STDLIB_THREAD) && defined(MA_HAS_RVALUE_REFS)
   std::for_each(threads_.begin(), threads_.end(),
       detail::bind(&std::thread::join, detail::placeholders::_1));
 #else

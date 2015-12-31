@@ -258,7 +258,7 @@ inline boost::asio::serial_port& cyclic_read_session::serial_port()
 template <typename Handler>
 void cyclic_read_session::async_start(MA_FWD_REF(Handler) handler)
 {
-  typedef typename remove_cv_reference<Handler>::type handler_type;
+  typedef typename detail::decay<Handler>::type handler_type;
   typedef void (this_type::*func_type)(handler_type&);
 
   func_type func = &this_type::start_extern_start<handler_type>;
@@ -271,7 +271,7 @@ void cyclic_read_session::async_start(MA_FWD_REF(Handler) handler)
 template <typename Handler>
 void cyclic_read_session::async_stop(MA_FWD_REF(Handler) handler)
 {
-  typedef typename remove_cv_reference<Handler>::type handler_type;
+  typedef typename detail::decay<Handler>::type handler_type;
   typedef void (this_type::*func_type)(handler_type&);
 
   func_type func = &this_type::start_extern_stop<handler_type>;
@@ -286,8 +286,8 @@ template <typename Handler, typename Iterator>
 void cyclic_read_session::async_read_some(
     Iterator begin, Iterator end, MA_FWD_REF(Handler) handler)
 {
-  typedef typename remove_cv_reference<Iterator>::type iterator_type;
-  typedef typename remove_cv_reference<Handler>::type  handler_type;
+  typedef typename detail::decay<Iterator>::type iterator_type;
+  typedef typename detail::decay<Handler>::type  handler_type;
   typedef void (this_type::*func_type)(iterator_type&, iterator_type&,
       handler_type&);
 
@@ -304,9 +304,9 @@ template <typename ConstBufferSequence, typename Handler>
 void cyclic_read_session::async_write_some(
     ConstBufferSequence buffers, MA_FWD_REF(Handler) handler)
 {
-  typedef typename remove_cv_reference<ConstBufferSequence>::type
+  typedef typename detail::decay<ConstBufferSequence>::type
       buffers_type;
-  typedef typename remove_cv_reference<Handler>::type handler_type;
+  typedef typename detail::decay<Handler>::type handler_type;
   typedef void (this_type::*func_type)(buffers_type&, handler_type&);
 
   func_type func =
