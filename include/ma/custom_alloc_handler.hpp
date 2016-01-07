@@ -86,6 +86,21 @@ class custom_alloc_handler
 private:
   typedef custom_alloc_handler<Allocator, Handler> this_type;
 
+  struct allocator_noexcept_traits
+  {
+    static void allocate() MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+        static_cast<Allocator*>(0)->allocate(static_cast<std::size_t>(0))))
+    {
+      // do nothing
+    }
+
+    static void deallocate() MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+        static_cast<Allocator*>(0)->deallocate(static_cast<void*>(0))))
+    {
+      // do nothing
+    }
+  }; // struct allocator_noexcept_traits
+
 public:
   typedef void result_type;
 
@@ -126,12 +141,14 @@ public:
 #endif
 
   friend void* asio_handler_allocate(std::size_t size, this_type* context)
+      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(allocator_noexcept_traits::allocate()))
   {
     return context->allocator_->allocate(size);
   }
 
   friend void asio_handler_deallocate(void* pointer, std::size_t /*size*/,
       this_type* context)
+      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(allocator_noexcept_traits::deallocate()))
   {
     context->allocator_->deallocate(pointer);
   }

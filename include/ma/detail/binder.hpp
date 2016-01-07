@@ -28,7 +28,7 @@ namespace detail {
  * Functors created by listed binders forward Asio allocation/execution
  * strategies to the ones provided by source handler.
  *
- * "Alloctaion strategy" means handler related pair of free functions:
+ * "Allocation strategy" means handler related pair of free functions:
  * asio_handler_allocate and asio_handler_deallocate or the default ones
  * defined by Asio.
  * http://www.boost.org/doc/libs/release/doc/html/boost_asio/reference/Handler.html
@@ -38,10 +38,10 @@ namespace detail {
  * http://www.boost.org/doc/libs/release/doc/html/boost_asio/reference/Handler.html
  *
  * The source handler must meet the requirements of Asio handler.
- * The binded arguments must meet the requirements of Asio handler except
- * existance of asio_handler_allocate, asio_handler_deallocate,
+ * The bound arguments must meet the requirements of Asio handler except
+ * existence of asio_handler_allocate, asio_handler_deallocate,
  * asio_handler_invoke and operator() - these functions aren't applied to
- * binded arguments.
+ * bound arguments.
  * The functors created by means of listed binders meet the requirements of
  * Asio handler.
  *
@@ -60,63 +60,68 @@ namespace detail {
 #pragma warning(disable: 4512)
 #endif // #if defined(_MSC_VER)
 
-template <typename Handler, typename Arg1>
-class binder1
+template <typename Handler>
+class binder_base
 {
 private:
-  typedef binder1<Handler, Arg1> this_type;
+  typedef binder_base<Handler> this_type;
+
+  struct handler_noexcept_traits
+  {
+    static void destroy() MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+        static_cast<Handler*>(0)->~Handler()))
+    {
+      // do nothing
+    }
+
+    static void allocate() MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+        ma_handler_alloc_helpers::allocate(static_cast<std::size_t>(0),
+            *(static_cast<Handler*>(0)))))
+    {
+      // do nothing
+    }
+
+    static void deallocate() MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+        ma_handler_alloc_helpers::deallocate(static_cast<void*>(0),
+            static_cast<std::size_t>(0), *(static_cast<Handler*>(0)))))
+    {
+      // do nothing
+    }
+  }; // struct handler_noexcept_traits
 
 public:
   typedef void result_type;
 
-  template <typename H, typename A1>
-  binder1(MA_FWD_REF(H) handler, MA_FWD_REF(A1) arg1)
+  template <typename H>
+  explicit binder_base(MA_FWD_REF(H) handler)
     : handler_(detail::forward<H>(handler))
-    , arg1_(detail::forward<A1>(arg1))
   {
   }
 
-#if defined(MA_HAS_RVALUE_REFS) \
-    && (defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG))
+#if defined(MA_HAS_RVALUE_REFS)
 
-  binder1(this_type&& other)
+  binder_base(this_type&& other)
     : handler_(detail::move(other.handler_))
-    , arg1_(detail::move(other.arg1_))
   {
   }
 
-  binder1(const this_type& other)
+  binder_base(const this_type& other)
     : handler_(other.handler_)
-    , arg1_(other.arg1_)
   {
   }
 
 #endif
-
-#if !defined(NDEBUG)
-  ~binder1()
-  {
-  }
-#endif
-
-  void operator()()
-  {
-    handler_(arg1_);
-  }
-
-  void operator()() const
-  {
-    handler_(arg1_);
-  }
 
   friend void* asio_handler_allocate(std::size_t size, this_type* context)
+      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(handler_noexcept_traits::allocate()))
   {
     // Forward to asio_handler_allocate provided by source handler.
     return ma_handler_alloc_helpers::allocate(size, context->handler_);
   }
 
   friend void asio_handler_deallocate(void* pointer, std::size_t size,
-      this_type* context)
+      this_type* context) MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+      handler_noexcept_traits::deallocate()))
   {
     // Forward to asio_handler_deallocate provided by source handler.
     ma_handler_alloc_helpers::deallocate(pointer, size, context->handler_);
@@ -156,8 +161,77 @@ public:
     return ma_handler_cont_helpers::is_continuation(context->handler_);
   }
 
-private:
+protected:
+
+  ~binder_base() MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+      handler_noexcept_traits::destroy()))
+  {
+    // Just to hide constructor
+  }
+
   Handler handler_;
+};
+
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif // #if defined(_MSC_VER)
+
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable: 4512)
+#endif // #if defined(_MSC_VER)
+
+template <typename Handler, typename Arg1>
+class binder1 : public binder_base<Handler>
+{
+private:
+  typedef binder_base<Handler>   base_type;
+  typedef binder1<Handler, Arg1> this_type;
+
+public:
+  typedef void result_type;
+
+  template <typename H, typename A1>
+  binder1(MA_FWD_REF(H) handler, MA_FWD_REF(A1) arg1)
+    : base_type(detail::forward<H>(handler))
+    , arg1_(detail::forward<A1>(arg1))
+  {
+  }
+
+#if defined(MA_HAS_RVALUE_REFS) \
+    && (defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG))
+
+  binder1(this_type&& other)
+    : base_type(static_cast<base_type&&>(other))
+    , arg1_(detail::move(other.arg1_))
+  {
+  }
+
+  binder1(const this_type& other)
+    : base_type(static_cast<const base_type&>(other))
+    , arg1_(other.arg1_)
+  {
+  }
+
+#endif
+
+#if !defined(NDEBUG)
+  ~binder1()
+  {
+  }
+#endif
+
+  void operator()()
+  {
+    this->handler_(arg1_);
+  }
+
+  void operator()() const
+  {
+    this->handler_(arg1_);
+  }
+
+private:
   Arg1 arg1_;
 }; // class binder1
 
@@ -171,9 +245,10 @@ private:
 #endif // #if defined(_MSC_VER)
 
 template <typename Handler, typename Arg1, typename Arg2>
-class binder2
+class binder2 : public binder_base<Handler>
 {
 private:
+  typedef binder_base<Handler>         base_type;
   typedef binder2<Handler, Arg1, Arg2> this_type;
 
 public:
@@ -181,7 +256,7 @@ public:
 
   template <typename H, typename A1, typename A2>
   binder2(MA_FWD_REF(H) handler, MA_FWD_REF(A1) arg1, MA_FWD_REF(A2) arg2)
-    : handler_(detail::forward<H>(handler))
+    : base_type(detail::forward<H>(handler))
     , arg1_(detail::forward<A1>(arg1))
     , arg2_(detail::forward<A2>(arg2))
   {
@@ -191,14 +266,14 @@ public:
     && (defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG))
 
   binder2(this_type&& other)
-    : handler_(detail::move(other.handler_))
+    : base_type(static_cast<base_type&&>(other))
     , arg1_(detail::move(other.arg1_))
     , arg2_(detail::move(other.arg2_))
   {
   }
 
   binder2(const this_type& other)
-    : handler_(other.handler_)
+    : base_type(static_cast<const base_type&>(other))
     , arg1_(other.arg1_)
     , arg2_(other.arg2_)
   {
@@ -214,58 +289,15 @@ public:
 
   void operator()()
   {
-    handler_(arg1_, arg2_);
+    this->handler_(arg1_, arg2_);
   }
 
   void operator()() const
   {
-    handler_(arg1_, arg2_);
-  }
-
-  friend void* asio_handler_allocate(std::size_t size, this_type* context)
-  {
-    return ma_handler_alloc_helpers::allocate(size, context->handler_);
-  }
-
-  friend void asio_handler_deallocate(void* pointer, std::size_t size,
-      this_type* context)
-  {
-    ma_handler_alloc_helpers::deallocate(pointer, size, context->handler_);
-  }
-
-#if defined(MA_HAS_RVALUE_REFS)
-
-  template <typename Function>
-  friend void asio_handler_invoke(MA_FWD_REF(Function) function,
-      this_type* context)
-  {
-    ma_handler_invoke_helpers::invoke(
-        detail::forward<Function>(function), context->handler_);
-  }
-
-#else // defined(MA_HAS_RVALUE_REFS)
-
-  template <typename Function>
-  friend void asio_handler_invoke(Function& function, this_type* context)
-  {
-    ma_handler_invoke_helpers::invoke(function, context->handler_);
-  }
-
-  template <typename Function>
-  friend void asio_handler_invoke(const Function& function, this_type* context)
-  {
-    ma_handler_invoke_helpers::invoke(function, context->handler_);
-  }
-
-#endif // defined(MA_HAS_RVALUE_REFS)
-
-  friend bool asio_handler_is_continuation(this_type* context)
-  {
-    return ma_handler_cont_helpers::is_continuation(context->handler_);
+    this->handler_(arg1_, arg2_);
   }
 
 private:
-  Handler handler_;
   Arg1 arg1_;
   Arg2 arg2_;
 }; // class binder2
@@ -280,9 +312,10 @@ private:
 #endif // #if defined(_MSC_VER)
 
 template <typename Handler, typename Arg1, typename Arg2, typename Arg3>
-class binder3
+class binder3 : public binder_base<Handler>
 {
 private:
+  typedef binder_base<Handler>               base_type;
   typedef binder3<Handler, Arg1, Arg2, Arg3> this_type;
 
 public:
@@ -291,7 +324,7 @@ public:
   template <typename H, typename A1, typename A2, typename A3>
   binder3(MA_FWD_REF(H) handler, MA_FWD_REF(A1) arg1, MA_FWD_REF(A2) arg2,
       MA_FWD_REF(A3) arg3)
-    : handler_(detail::forward<H>(handler))
+    : base_type(detail::forward<H>(handler))
     , arg1_(detail::forward<A1>(arg1))
     , arg2_(detail::forward<A2>(arg2))
     , arg3_(detail::forward<A3>(arg3))
@@ -302,7 +335,7 @@ public:
     && (defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG))
 
   binder3(this_type&& other)
-    : handler_(detail::move(other.handler_))
+    : base_type(static_cast<base_type&&>(other))
     , arg1_(detail::move(other.arg1_))
     , arg2_(detail::move(other.arg2_))
     , arg3_(detail::move(other.arg3_))
@@ -310,7 +343,7 @@ public:
   }
 
   binder3(const this_type& other)
-    : handler_(other.handler_)
+    : base_type(static_cast<const base_type&>(other))
     , arg1_(other.arg1_)
     , arg2_(other.arg2_)
     , arg3_(other.arg3_)
@@ -327,58 +360,15 @@ public:
 
   void operator()()
   {
-    handler_(arg1_, arg2_, arg3_);
+    this->handler_(arg1_, arg2_, arg3_);
   }
 
   void operator()() const
   {
-    handler_(arg1_, arg2_, arg3_);
-  }
-
-  friend void* asio_handler_allocate(std::size_t size, this_type* context)
-  {
-    return ma_handler_alloc_helpers::allocate(size, context->handler_);
-  }
-
-  friend void asio_handler_deallocate(void* pointer, std::size_t size,
-      this_type* context)
-  {
-    ma_handler_alloc_helpers::deallocate(pointer, size, context->handler_);
-  }
-
-#if defined(MA_HAS_RVALUE_REFS)
-
-  template <typename Function>
-  friend void asio_handler_invoke(MA_FWD_REF(Function) function,
-      this_type* context)
-  {
-    ma_handler_invoke_helpers::invoke(
-        detail::forward<Function>(function), context->handler_);
-  }
-
-#else // defined(MA_HAS_RVALUE_REFS)
-
-  template <typename Function>
-  friend void asio_handler_invoke(Function& function, this_type* context)
-  {
-    ma_handler_invoke_helpers::invoke(function, context->handler_);
-  }
-
-  template <typename Function>
-  friend void asio_handler_invoke(const Function& function, this_type* context)
-  {
-    ma_handler_invoke_helpers::invoke(function, context->handler_);
-  }
-
-#endif // defined(MA_HAS_RVALUE_REFS)
-
-  friend bool asio_handler_is_continuation(this_type* context)
-  {
-    return ma_handler_cont_helpers::is_continuation(context->handler_);
+    this->handler_(arg1_, arg2_, arg3_);
   }
 
 private:
-  Handler handler_;
   Arg1 arg1_;
   Arg2 arg2_;
   Arg3 arg3_;
@@ -395,9 +385,10 @@ private:
 
 template <typename Handler, typename Arg1, typename Arg2, typename Arg3,
     typename Arg4>
-class binder4
+class binder4 : public binder_base<Handler>
 {
 private:
+  typedef binder_base<Handler>                     base_type;
   typedef binder4<Handler, Arg1, Arg2, Arg3, Arg4> this_type;
 
 public:
@@ -406,7 +397,7 @@ public:
   template <typename H, typename A1, typename A2, typename A3, typename A4>
   binder4(MA_FWD_REF(H) handler, MA_FWD_REF(A1) arg1, MA_FWD_REF(A2) arg2,
       MA_FWD_REF(A3) arg3, MA_FWD_REF(A4) arg4)
-    : handler_(detail::forward<H>(handler))
+    : base_type(detail::forward<H>(handler))
     , arg1_(detail::forward<A1>(arg1))
     , arg2_(detail::forward<A2>(arg2))
     , arg3_(detail::forward<A3>(arg3))
@@ -418,7 +409,7 @@ public:
     && (defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG))
 
   binder4(this_type&& other)
-    : handler_(detail::move(other.handler_))
+    : base_type(static_cast<base_type&&>(other))
     , arg1_(detail::move(other.arg1_))
     , arg2_(detail::move(other.arg2_))
     , arg3_(detail::move(other.arg3_))
@@ -427,7 +418,7 @@ public:
   }
 
   binder4(const this_type& other)
-    : handler_(other.handler_)
+    : base_type(static_cast<const base_type&>(other))
     , arg1_(other.arg1_)
     , arg2_(other.arg2_)
     , arg3_(other.arg3_)
@@ -445,58 +436,15 @@ public:
 
   void operator()()
   {
-    handler_(arg1_, arg2_, arg3_, arg4_);
+    this->handler_(arg1_, arg2_, arg3_, arg4_);
   }
 
   void operator()() const
   {
-    handler_(arg1_, arg2_, arg3_, arg4_);
-  }
-
-  friend void* asio_handler_allocate(std::size_t size, this_type* context)
-  {
-    return ma_handler_alloc_helpers::allocate(size, context->handler_);
-  }
-
-  friend void asio_handler_deallocate(void* pointer, std::size_t size,
-      this_type* context)
-  {
-    ma_handler_alloc_helpers::deallocate(pointer, size, context->handler_);
-  }
-
-#if defined(MA_HAS_RVALUE_REFS)
-
-  template <typename Function>
-  friend void asio_handler_invoke(MA_FWD_REF(Function) function,
-      this_type* context)
-  {
-    ma_handler_invoke_helpers::invoke(
-        detail::forward<Function>(function), context->handler_);
-  }
-
-#else //defined(MA_HAS_RVALUE_REFS)
-
-  template <typename Function>
-  friend void asio_handler_invoke(Function& function, this_type* context)
-  {
-    ma_handler_invoke_helpers::invoke(function, context->handler_);
-  }
-
-  template <typename Function>
-  friend void asio_handler_invoke(const Function& function, this_type* context)
-  {
-    ma_handler_invoke_helpers::invoke(function, context->handler_);
-  }
-
-#endif // defined(MA_HAS_RVALUE_REFS)
-
-  friend bool asio_handler_is_continuation(this_type* context)
-  {
-    return ma_handler_cont_helpers::is_continuation(context->handler_);
+    this->handler_(arg1_, arg2_, arg3_, arg4_);
   }
 
 private:
-  Handler handler_;
   Arg1 arg1_;
   Arg2 arg2_;
   Arg3 arg3_;
@@ -514,9 +462,10 @@ private:
 
 template <typename Handler, typename Arg1, typename Arg2, typename Arg3,
     typename Arg4, typename Arg5>
-class binder5
+class binder5 : public binder_base<Handler>
 {
 private:
+  typedef binder_base<Handler>                           base_type;
   typedef binder5<Handler, Arg1, Arg2, Arg3, Arg4, Arg5> this_type;
 
 public:
@@ -526,7 +475,7 @@ public:
       typename A5>
   binder5(MA_FWD_REF(H) handler, MA_FWD_REF(A1) arg1, MA_FWD_REF(A2) arg2,
       MA_FWD_REF(A3) arg3, MA_FWD_REF(A4) arg4, MA_FWD_REF(A5) arg5)
-    : handler_(detail::forward<H>(handler))
+    : base_type(detail::forward<H>(handler))
     , arg1_(detail::forward<A1>(arg1))
     , arg2_(detail::forward<A2>(arg2))
     , arg3_(detail::forward<A3>(arg3))
@@ -539,7 +488,7 @@ public:
     && (defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG))
 
   binder5(this_type&& other)
-    : handler_(detail::move(other.handler_))
+    : base_type(static_cast<base_type&&>(other))
     , arg1_(detail::move(other.arg1_))
     , arg2_(detail::move(other.arg2_))
     , arg3_(detail::move(other.arg3_))
@@ -549,7 +498,7 @@ public:
   }
 
   binder5(const this_type& other)
-    : handler_(other.handler_)
+    : base_type(static_cast<const base_type&>(other))
     , arg1_(other.arg1_)
     , arg2_(other.arg2_)
     , arg3_(other.arg3_)
@@ -568,58 +517,15 @@ public:
 
   void operator()()
   {
-    handler_(arg1_, arg2_, arg3_, arg4_, arg5_);
+    this->handler_(arg1_, arg2_, arg3_, arg4_, arg5_);
   }
 
   void operator()() const
   {
-    handler_(arg1_, arg2_, arg3_, arg4_, arg5_);
-  }
-
-  friend void* asio_handler_allocate(std::size_t size, this_type* context)
-  {
-    return ma_handler_alloc_helpers::allocate(size, context->handler_);
-  }
-
-  friend void asio_handler_deallocate(void* pointer, std::size_t size,
-      this_type* context)
-  {
-    ma_handler_alloc_helpers::deallocate(pointer, size, context->handler_);
-  }
-
-#if defined(MA_HAS_RVALUE_REFS)
-
-  template <typename Function>
-  friend void asio_handler_invoke(MA_FWD_REF(Function) function,
-      this_type* context)
-  {
-    ma_handler_invoke_helpers::invoke(
-        detail::forward<Function>(function), context->handler_);
-  }
-
-#else // defined(MA_HAS_RVALUE_REFS)
-
-  template <typename Function>
-  friend void asio_handler_invoke(Function& function, this_type* context)
-  {
-    ma_handler_invoke_helpers::invoke(function, context->handler_);
-  }
-
-  template <typename Function>
-  friend void asio_handler_invoke(const Function& function, this_type* context)
-  {
-    ma_handler_invoke_helpers::invoke(function, context->handler_);
-  }
-
-#endif // defined(MA_HAS_RVALUE_REFS)
-
-  friend bool asio_handler_is_continuation(this_type* context)
-  {
-    return ma_handler_cont_helpers::is_continuation(context->handler_);
+    this->handler_(arg1_, arg2_, arg3_, arg4_, arg5_);
   }
 
 private:
-  Handler handler_;
   Arg1 arg1_;
   Arg2 arg2_;
   Arg3 arg3_;

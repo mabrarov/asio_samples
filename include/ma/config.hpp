@@ -228,7 +228,7 @@
 #if defined(BOOST_NOEXCEPT_EXPR)
 #define MA_NOEXCEPT_EXPR(Expression) BOOST_NOEXCEPT_EXPR(Expression)
 #else
-#define MA_NOEXCEPT_EXPR(Expression)
+#define MA_NOEXCEPT_EXPR(Expression) false
 #endif
 
 #endif // defined(BOOST_MSVC) && (BOOST_MSVC >= 1900)

@@ -66,6 +66,23 @@ class context_alloc_handler
 private:
   typedef context_alloc_handler<Context, Handler> this_type;
 
+  struct context_noexcept_traits
+  {
+    static void allocate() MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+        ma_handler_alloc_helpers::allocate(static_cast<std::size_t>(0),
+            *(static_cast<Context*>(0)))))
+    {
+      // do nothing
+    }
+
+    static void deallocate() MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+        ma_handler_alloc_helpers::deallocate(static_cast<void*>(0),
+            static_cast<std::size_t>(0), *(static_cast<Context*>(0)))))
+    {
+      // do nothing
+    }
+  }; // struct context_noexcept_traits
+
 public:
   typedef void result_type;
 
@@ -100,6 +117,7 @@ public:
 #endif
 
   friend void* asio_handler_allocate(std::size_t size, this_type* context)
+      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(context_noexcept_traits::allocate()))
   {
     // Forward to asio_handler_allocate provided by the specified allocation
     // context.
@@ -107,7 +125,8 @@ public:
   }
 
   friend void asio_handler_deallocate(void* pointer, std::size_t size,
-      this_type* context)
+      this_type* context) MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+      context_noexcept_traits::deallocate()))
   {
     // Forward to asio_handler_deallocate provided by the specified allocation
     // context.

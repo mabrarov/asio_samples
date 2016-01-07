@@ -22,6 +22,7 @@
 #include <ma/config.hpp>
 #include <ma/handler_allocator.hpp>
 #include <ma/custom_alloc_handler.hpp>
+#include <ma/handler_alloc_helpers.hpp>
 #include <ma/handler_storage.hpp>
 #include <ma/lockable_wrapped_handler.hpp>
 #include <ma/context_alloc_handler.hpp>
@@ -65,6 +66,12 @@ void run_test();
 
 } // namespace handler_move_support
 
+namespace custom_alloc_handler {
+
+void run_test();
+
+} // namespace custom_alloc_handler
+
 } // namespace test
 } // namespace ma
 
@@ -81,6 +88,7 @@ int main(int /*argc*/, char* /*argv*/[])
     ma::test::handler_storage_target::run_test();
     ma::test::handler_storage_arg::run_test();
     ma::test::handler_move_support::run_test();
+    ma::test::custom_alloc_handler::run_test();
     return EXIT_SUCCESS;
   }
   catch (const std::exception& e)
@@ -989,6 +997,51 @@ void run_test()
 }
 
 } // namespace handler_move_support
+
+namespace custom_alloc_handler {
+
+class test_handler
+{
+public:
+  void operator()()
+  {
+    // do nothing
+  }
+}; // class test_handler
+
+void run_test()
+{
+  typedef ma::in_place_handler_allocator<sizeof(std::size_t)> allocator_type;
+  typedef test_handler handler_type;
+  typedef ma::custom_alloc_handler<allocator_type, handler_type>
+      custom_alloc_handler_type;
+
+  allocator_type allocator;
+  bool allocator_deallocate_noexcept =
+      MA_NOEXCEPT_EXPR(allocator.deallocate(0));
+  // Prevent unused variable warning
+  (void) allocator_deallocate_noexcept;
+
+#if !defined(MA_NO_CXX11_NOEXCEPT)
+  BOOST_ASSERT_MSG(allocator_deallocate_noexcept,
+      "in_place_handler_allocator::deallocate should provide nothrow guarantee");
+#endif
+
+  custom_alloc_handler_type wrapped_handler = ma::make_custom_alloc_handler(
+      allocator, test_handler());
+
+  bool wrapped_handler_deallocate_noexcept = MA_NOEXCEPT_EXPR(
+      ma_handler_alloc_helpers::deallocate(0, 0, wrapped_handler));
+  // Prevent unused variable warning
+  (void) wrapped_handler_deallocate_noexcept;
+
+#if !defined(MA_NO_CXX11_NOEXCEPT)
+  BOOST_ASSERT_MSG(wrapped_handler_deallocate_noexcept,
+      "Deallocate for handler wrapped with in_place_handler_allocator should provide nothrow guarantee");
+#endif
+}
+
+} // namespace custom_alloc_handler
 
 } // namespace test
 } // namespace ma

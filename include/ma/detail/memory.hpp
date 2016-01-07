@@ -56,6 +56,15 @@ using boost::static_pointer_cast;
 
 #endif // defined(MA_USE_CXX11_STDLIB_MEMORY)
 
+struct noexcept_traits
+{
+  static void operator_delete_void_ptr() MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+      ::operator delete(static_cast<void*>(0))))
+  {
+    // do nothing
+  }
+}; // struct noexcept_traits
+
 } // namespace detail
 } // namespace ma
 

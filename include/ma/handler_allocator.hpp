@@ -16,6 +16,7 @@
 #include <boost/assert.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/aligned_storage.hpp>
+#include <ma/config.hpp>
 #include <ma/detail/memory.hpp>
 
 namespace ma {
@@ -28,10 +29,10 @@ template <std::size_t alloc_size>
 class in_place_handler_allocator : private boost::noncopyable
 {
 public:
-  in_place_handler_allocator();
+  in_place_handler_allocator() MA_NOEXCEPT;
 
   /// For debug purposes (ability to check destruction order, etc).
-  ~in_place_handler_allocator();
+  ~in_place_handler_allocator() MA_NOEXCEPT;
 
   /// Try to allocate memory from internal memory block if it is free and is
   /// large enough. Elsewhere allocate memory by means of global operator new.
@@ -39,7 +40,8 @@ public:
 
   /// Deallocate memory which had previously been allocated by usage of
   /// allocate method.
-  void deallocate(void* pointer);
+  void deallocate(void* pointer) MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+      detail::noexcept_traits::operator_delete_void_ptr()));
 
 private:
   boost::aligned_storage<alloc_size> storage_;
@@ -66,7 +68,8 @@ public:
 
   /// Deallocate memory which had previously been allocated by usage of
   /// allocate method.
-  void deallocate(void* pointer);
+  void deallocate(void* pointer) MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+      detail::noexcept_traits::operator_delete_void_ptr()));
 
 private:
   typedef char byte_type;
@@ -76,7 +79,7 @@ private:
   byte_type* retrieve_aligned_address();
 
 #if defined(MA_USE_CXX11_STDLIB_MEMORY)
-  detail::unique_ptr<byte_type[]>   storage_;
+  detail::unique_ptr<byte_type[]> storage_;
 #else
   detail::scoped_array<byte_type> storage_;
 #endif
@@ -86,13 +89,14 @@ private:
 }; // class in_heap_handler_allocator
 
 template <std::size_t alloc_size>
-in_place_handler_allocator<alloc_size>::in_place_handler_allocator()
+in_place_handler_allocator<alloc_size>::in_place_handler_allocator() MA_NOEXCEPT
   : in_use_(false)
 {
 }
 
 template <std::size_t alloc_size>
 in_place_handler_allocator<alloc_size>::~in_place_handler_allocator()
+    MA_NOEXCEPT
 {
   BOOST_ASSERT_MSG(!in_use_, "Allocator is still used");
 }
@@ -110,6 +114,8 @@ void* in_place_handler_allocator<alloc_size>::allocate(std::size_t size)
 
 template <std::size_t alloc_size>
 void in_place_handler_allocator<alloc_size>::deallocate(void* pointer)
+    MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+        detail::noexcept_traits::operator_delete_void_ptr()))
 {
   if (storage_.address() == pointer)
   {
@@ -166,6 +172,8 @@ inline void* in_heap_handler_allocator::allocate(std::size_t size)
 }
 
 inline void in_heap_handler_allocator::deallocate(void* pointer)
+    MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+        detail::noexcept_traits::operator_delete_void_ptr()))
 {
   if (storage_initialized())
   {
