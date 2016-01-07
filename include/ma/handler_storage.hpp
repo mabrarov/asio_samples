@@ -84,8 +84,8 @@ private:
 public:
   typedef handler_storage_service                    service_type;
   typedef typename service_type::implementation_type implementation_type;
-  typedef typename detail::decay<Arg>::type    arg_type;
-  typedef typename detail::decay<Target>::type target_type;
+  typedef typename detail::decay<Arg>::type          arg_type;
+  typedef typename detail::decay<Target>::type       target_type;
 
   explicit handler_storage(boost::asio::io_service& io_service);
   ~handler_storage();
@@ -102,10 +102,10 @@ public:
    * should be used. See usage example at "nmea_client" project.
    * If storage doesn't contain any handler then returns null pointer.
    */
-  target_type* target();
+  target_type* target() MA_NOEXCEPT;
 
   /// Get pointer to the stored handler. Const version.
-  const target_type* target() const;
+  const target_type* target() const MA_NOEXCEPT;
 
   /// Check if handler storage is empty (doesn't contain any handler).
   /**
@@ -113,10 +113,10 @@ public:
    * at PVS-Studio site 8) - it's not an advertisement but really interesting
    * reading.
    */
-  bool empty() const;
+  bool empty() const MA_NOEXCEPT;
 
   /// Check if handler storage contains handler.
-  bool has_target() const;
+  bool has_target() const MA_NOEXCEPT;
 
   /// Clear stored handler if it exists.
   void clear();
@@ -173,10 +173,10 @@ public:
    * should be used. See usage example at "nmea_client" project.
    * If storage doesn't contain any handler then returns null pointer.
    */
-  target_type* target();
+  target_type* target() MA_NOEXCEPT;
 
   /// Get pointer to the stored handler. Const version.
-  const target_type* target() const;
+  const target_type* target() const MA_NOEXCEPT;
 
   /// Check if handler storage is empty (doesn't contain any handler).
   /**
@@ -184,10 +184,10 @@ public:
    * at PVS-Studio site 8) - it's not an advertisement but really interesting
    * reading.
    */
-  bool empty() const;
+  bool empty() const MA_NOEXCEPT;
 
   /// Check if handler storage contains handler.
-  bool has_target() const;
+  bool has_target() const MA_NOEXCEPT;
 
   /// Clear stored handler if it exists.
   void clear();
@@ -250,26 +250,26 @@ boost::asio::io_service& handler_storage<Arg, Target>::get_io_service()
 
 template <typename Arg, typename Target>
 typename handler_storage<Arg, Target>::target_type*
-handler_storage<Arg, Target>::target()
+handler_storage<Arg, Target>::target() MA_NOEXCEPT
 {
   return service_.target<arg_type, target_type>(impl_);
 }
 
 template <typename Arg, typename Target>
 const typename handler_storage<Arg, Target>::target_type*
-handler_storage<Arg, Target>::target() const
+handler_storage<Arg, Target>::target() const MA_NOEXCEPT
 {
   return service_.target<arg_type, target_type>(impl_);
 }
 
 template <typename Arg, typename Target>
-bool handler_storage<Arg, Target>::empty() const
+bool handler_storage<Arg, Target>::empty() const MA_NOEXCEPT
 {
   return service_.empty(impl_);
 }
 
 template <typename Arg, typename Target>
-bool handler_storage<Arg, Target>::has_target() const
+bool handler_storage<Arg, Target>::has_target() const MA_NOEXCEPT
 {
   return service_.has_target(impl_);
 }
@@ -328,26 +328,26 @@ boost::asio::io_service& handler_storage<void, Target>::get_io_service()
 
 template <typename Target>
 typename handler_storage<void, Target>::target_type*
-handler_storage<void, Target>::target()
+handler_storage<void, Target>::target() MA_NOEXCEPT
 {
   return service_.target<void, target_type>(impl_);
 }
 
 template <typename Target>
 const typename handler_storage<void, Target>::target_type*
-handler_storage<void, Target>::target() const
+handler_storage<void, Target>::target() const MA_NOEXCEPT
 {
   return service_.target<void, target_type>(impl_);
 }
 
 template <typename Target>
-bool handler_storage<void, Target>::empty() const
+bool handler_storage<void, Target>::empty() const MA_NOEXCEPT
 {
   return service_.empty(impl_);
 }
 
 template <typename Target>
-bool handler_storage<void, Target>::has_target() const
+bool handler_storage<void, Target>::has_target() const MA_NOEXCEPT
 {
   return service_.has_target(impl_);
 }

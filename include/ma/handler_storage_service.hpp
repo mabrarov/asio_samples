@@ -54,10 +54,10 @@ private:
     , private boost::noncopyable
   {
   public:
-    impl_base();
+    impl_base() MA_NOEXCEPT;
 
 #if !defined(NDEBUG)
-    ~impl_base();
+    ~impl_base() MA_NOEXCEPT;
 #endif
 
   private:
@@ -92,10 +92,10 @@ public:
   static void post(implementation_type& impl);
 
   template <typename Arg, typename Target>
-  static Target* target(const implementation_type& impl);
+  static Target* target(const implementation_type& impl) MA_NOEXCEPT;
 
-  static bool empty(const implementation_type& impl);
-  static bool has_target(const implementation_type& impl);
+  static bool empty(const implementation_type& impl) MA_NOEXCEPT;
+  static bool has_target(const implementation_type& impl) MA_NOEXCEPT;
 
 protected:
   virtual ~handler_storage_service();
@@ -191,12 +191,12 @@ public:
 #if !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 
   virtual void post(const Arg&) = 0;
-  virtual target_type* target() = 0;
+  virtual target_type* target() MA_NOEXCEPT = 0 ;
 
 #else
 
   void post(const Arg&);
-  target_type* target();
+  target_type* target() MA_NOEXCEPT;
 
 #endif // !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 
@@ -243,12 +243,12 @@ public:
 #if !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 
   virtual void post() = 0;
-  virtual target_type* target() = 0;
+  virtual target_type* target() MA_NOEXCEPT = 0;
 
 #else
 
   void post();
-  target_type* target();
+  target_type* target() MA_NOEXCEPT;
 
 #endif // !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 
@@ -307,7 +307,7 @@ public:
 
   virtual void destroy();
   virtual void post(const Arg&);
-  virtual target_type* target();
+  virtual target_type* target() MA_NOEXCEPT;
 
 #endif // !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 
@@ -320,7 +320,7 @@ private:
 
   static void do_destroy(stored_base*);
   static void do_post(base_type*, const Arg&);
-  static target_type* do_target(base_type*);
+  static target_type* do_target(base_type*) MA_NOEXCEPT;
 
   boost::asio::io_service::work work_;
   Handler handler_;
@@ -352,7 +352,7 @@ public:
 
   virtual void destroy();
   virtual void post();
-  virtual target_type* target();
+  virtual target_type* target() MA_NOEXCEPT;
 
 #endif // !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 
@@ -365,7 +365,7 @@ private:
 
   static void do_destroy(stored_base*);
   static void do_post(base_type*);
-  static target_type* do_target(base_type*);
+  static target_type* do_target(base_type*) MA_NOEXCEPT;
 
   boost::asio::io_service::work work_;
   Handler handler_;
@@ -424,7 +424,7 @@ void handler_storage_service::handler_base<Arg, Target>::post(
 
 template <typename Arg, typename Target>
 typename handler_storage_service::handler_base<Arg, Target>::target_type*
-handler_storage_service::handler_base<Arg, Target>::target()
+handler_storage_service::handler_base<Arg, Target>::target() MA_NOEXCEPT
 {
   return target_func_(this);
 }
@@ -475,7 +475,7 @@ void handler_storage_service::handler_base<void, Target>::post()
 
 template <typename Target>
 typename handler_storage_service::handler_base<void, Target>::target_type*
-handler_storage_service::handler_base<void, Target>::target()
+handler_storage_service::handler_base<void, Target>::target() MA_NOEXCEPT
 {
   return target_func_(this);
 }
@@ -549,8 +549,8 @@ handler_storage_service::handler_wrapper<Handler, Arg, Target>::handler_wrapper(
 #if !defined(NDEBUG)
 
 template <typename Handler, typename Arg, typename Target>
-handler_storage_service::handler_wrapper<Handler, Arg, Target>::
-    ~handler_wrapper()
+handler_storage_service::handler_wrapper<
+    Handler, Arg, Target>::~handler_wrapper()
 {
 }
 
@@ -572,9 +572,10 @@ void handler_storage_service::handler_wrapper<Handler, Arg, Target>::post(
 }
 
 template <typename Handler, typename Arg, typename Target>
-typename handler_storage_service::handler_wrapper<Handler, Arg, Target>::
-    target_type*
-handler_storage_service::handler_wrapper<Handler, Arg, Target>::target()
+typename handler_storage_service::handler_wrapper<
+    Handler, Arg, Target>::target_type*
+handler_storage_service::handler_wrapper<
+    Handler, Arg, Target>::target() MA_NOEXCEPT
 {
   return do_target(this);
 }
@@ -630,10 +631,10 @@ void handler_storage_service::handler_wrapper<Handler, Arg, Target>::do_post(
 }
 
 template <typename Handler, typename Arg, typename Target>
-typename handler_storage_service::handler_wrapper<Handler, Arg, Target>
-    ::target_type*
+typename handler_storage_service::handler_wrapper<
+    Handler, Arg, Target>::target_type*
 handler_storage_service::handler_wrapper<Handler, Arg, Target>::do_target(
-    base_type* base)
+    base_type* base) MA_NOEXCEPT
 {
   this_type* this_ptr = static_cast<this_type*>(base);
   return static_cast<target_type*>(detail::addressof(this_ptr->handler_));
@@ -641,8 +642,9 @@ handler_storage_service::handler_wrapper<Handler, Arg, Target>::do_target(
 
 template <typename Handler, typename Target>
 template <typename H>
-handler_storage_service::handler_wrapper<Handler, void, Target>::
-    handler_wrapper(boost::asio::io_service& io_service, MA_FWD_REF(H) handler)
+handler_storage_service::handler_wrapper<
+    Handler, void, Target>::handler_wrapper(boost::asio::io_service& io_service,
+        MA_FWD_REF(H) handler)
 #if !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
   : base_type()
 #else
@@ -658,8 +660,8 @@ handler_storage_service::handler_wrapper<Handler, void, Target>::
     && (defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG))
 
 template <typename Handler, typename Target>
-handler_storage_service::handler_wrapper<Handler, void, Target>::
-    handler_wrapper(this_type&& other)
+handler_storage_service::handler_wrapper<
+    Handler, void, Target>::handler_wrapper(this_type&& other)
   : base_type(detail::move(other))
   , work_(detail::move(other.work_))
   , handler_(detail::move(other.handler_))
@@ -667,8 +669,8 @@ handler_storage_service::handler_wrapper<Handler, void, Target>::
 }
 
 template <typename Handler, typename Target>
-handler_storage_service::handler_wrapper<Handler, void, Target>::
-    handler_wrapper(const this_type& other)
+handler_storage_service::handler_wrapper<
+    Handler, void, Target>::handler_wrapper(const this_type& other)
   : base_type(other)
   , work_(other.work_)
   , handler_(other.handler_)
@@ -680,8 +682,8 @@ handler_storage_service::handler_wrapper<Handler, void, Target>::
 #if !defined(NDEBUG)
 
 template <typename Handler, typename Target>
-handler_storage_service::handler_wrapper<Handler, void, Target>::
-    ~handler_wrapper()
+handler_storage_service::handler_wrapper<
+    Handler, void, Target>::~handler_wrapper()
 {
 }
 
@@ -702,9 +704,10 @@ void handler_storage_service::handler_wrapper<Handler, void, Target>::post()
 }
 
 template <typename Handler, typename Target>
-typename handler_storage_service::handler_wrapper<Handler, void, Target>::
-    target_type*
-handler_storage_service::handler_wrapper<Handler, void, Target>::target()
+typename handler_storage_service::handler_wrapper<
+    Handler, void, Target>::target_type*
+handler_storage_service::handler_wrapper<
+    Handler, void, Target>::target() MA_NOEXCEPT
 {
   return do_target(this);
 }
@@ -712,8 +715,8 @@ handler_storage_service::handler_wrapper<Handler, void, Target>::target()
 #endif // !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 
 template <typename Handler, typename Target>
-void handler_storage_service::handler_wrapper<Handler, void, Target>::
-    do_destroy(stored_base* base)
+void handler_storage_service::handler_wrapper<
+    Handler, void, Target>::do_destroy(stored_base* base)
 {
   this_type* this_ptr = static_cast<this_type*>(base);
   // Take ownership of the wrapper object
@@ -760,23 +763,23 @@ void handler_storage_service::handler_wrapper<Handler, void, Target>::do_post(
 }
 
 template <typename Handler, typename Target>
-typename handler_storage_service::handler_wrapper<Handler, void, Target>
-    ::target_type*
+typename handler_storage_service::handler_wrapper<
+    Handler, void, Target>::target_type*
 handler_storage_service::handler_wrapper<Handler, void, Target>::do_target(
-    base_type* base)
+    base_type* base) MA_NOEXCEPT
 {
   this_type* this_ptr = static_cast<this_type*>(base);
   return static_cast<target_type*>(detail::addressof(this_ptr->handler_));
 }
 
-inline handler_storage_service::impl_base::impl_base()
+inline handler_storage_service::impl_base::impl_base() MA_NOEXCEPT
   : handler_(0)
 {
 }
 
 #if !defined(NDEBUG)
 
-inline handler_storage_service::impl_base::~impl_base()
+inline handler_storage_service::impl_base::~impl_base() MA_NOEXCEPT
 {
   BOOST_ASSERT_MSG(!handler_, "The stored handler was not destroyed");
 }
@@ -859,8 +862,8 @@ void handler_storage_service::store(implementation_type& impl, Handler handler)
     return;
   }
 
-  typedef typename detail::decay<Arg>::type           arg_type;
-  typedef typename detail::decay<Target>::type        target_type;
+  typedef typename detail::decay<Arg>::type                 arg_type;
+  typedef typename detail::decay<Target>::type              target_type;
   typedef handler_wrapper<Handler, arg_type, target_type>   value_type;
   typedef detail::handler_alloc_traits<Handler, value_type> alloc_traits;
 
@@ -887,7 +890,7 @@ void handler_storage_service::post(implementation_type& impl, const Arg& arg)
 {
   typedef typename detail::decay<Arg>::type    arg_type;
   typedef typename detail::decay<Target>::type target_type;
-  typedef handler_base<arg_type, target_type>        handler_type;
+  typedef handler_base<arg_type, target_type>  handler_type;
 
   if (handler_type* handler = static_cast<handler_type*>(impl.handler_))
   {
@@ -905,7 +908,7 @@ void handler_storage_service::post(implementation_type& impl)
 {
   typedef void arg_type;
   typedef typename detail::decay<Target>::type target_type;
-  typedef handler_base<arg_type, target_type>        handler_type;
+  typedef handler_base<arg_type, target_type>  handler_type;
 
   if (handler_type* handler = static_cast<handler_type*>(impl.handler_))
   {
@@ -919,7 +922,8 @@ void handler_storage_service::post(implementation_type& impl)
 }
 
 template <typename Arg, typename Target>
-Target* handler_storage_service::target(const implementation_type& impl)
+Target* handler_storage_service::target(
+    const implementation_type& impl) MA_NOEXCEPT
 {
   typedef typename detail::decay<Arg>::type    arg_type;
   typedef typename detail::decay<Target>::type target_type;
@@ -932,12 +936,14 @@ Target* handler_storage_service::target(const implementation_type& impl)
   return 0;
 }
 
-inline bool handler_storage_service::empty(const implementation_type& impl)
+inline bool handler_storage_service::empty(
+    const implementation_type& impl) MA_NOEXCEPT
 {
   return 0 == impl.handler_;
 }
 
-inline bool handler_storage_service::has_target(const implementation_type& impl)
+inline bool handler_storage_service::has_target(
+    const implementation_type& impl) MA_NOEXCEPT
 {
   return 0 != impl.handler_;
 }
