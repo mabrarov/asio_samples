@@ -1024,12 +1024,12 @@ void run_test()
 
 #if !defined(MA_NO_CXX11_NOEXCEPT)
   BOOST_ASSERT_MSG(allocator_deallocate_noexcept,
-      "in_place_handler_allocator::deallocate should provide nothrow guarantee");
+      "ma::in_place_handler_allocator::deallocate should provide"
+          " nothrow guarantee");
 #endif
 
   custom_alloc_handler_type wrapped_handler = ma::make_custom_alloc_handler(
       allocator, test_handler());
-
   bool wrapped_handler_deallocate_noexcept = MA_NOEXCEPT_EXPR(
       ma_handler_alloc_helpers::deallocate(0, 0, wrapped_handler));
   // Prevent unused variable warning
@@ -1037,7 +1037,8 @@ void run_test()
 
 #if !defined(MA_NO_CXX11_NOEXCEPT)
   BOOST_ASSERT_MSG(wrapped_handler_deallocate_noexcept,
-      "Deallocate for handler wrapped with in_place_handler_allocator should provide nothrow guarantee");
+      "asio_handler_deallocate for handler wrapped with"
+          " in_place_handler_allocator should provide nothrow guarantee");
 #endif
 }
 
