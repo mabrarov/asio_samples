@@ -40,8 +40,7 @@ public:
 
   /// Deallocate memory which had previously been allocated by usage of
   /// allocate method.
-  void deallocate(void* pointer)
-      MA_NOEXCEPT_IF(detail::noexcept_traits::delete_ptr);
+  void deallocate(void* pointer) MA_NOEXCEPT;
 
 private:
   boost::aligned_storage<alloc_size> storage_;
@@ -68,8 +67,7 @@ public:
 
   /// Deallocate memory which had previously been allocated by usage of
   /// allocate method.
-  void deallocate(void* pointer)
-      MA_NOEXCEPT_IF(detail::noexcept_traits::delete_ptr);
+  void deallocate(void* pointer) MA_NOEXCEPT;
 
 private:
   typedef char byte_type;
@@ -114,7 +112,7 @@ void* in_place_handler_allocator<alloc_size>::allocate(std::size_t size)
 
 template <std::size_t alloc_size>
 void in_place_handler_allocator<alloc_size>::deallocate(void* pointer)
-    MA_NOEXCEPT_IF(detail::noexcept_traits::delete_ptr)
+    MA_NOEXCEPT
 {
   if (storage_.address() == pointer)
   {
@@ -170,8 +168,7 @@ inline void* in_heap_handler_allocator::allocate(std::size_t size)
   return ::operator new(size);
 }
 
-inline void in_heap_handler_allocator::deallocate(void* pointer)
-    MA_NOEXCEPT_IF(detail::noexcept_traits::delete_ptr)
+inline void in_heap_handler_allocator::deallocate(void* pointer) MA_NOEXCEPT
 {
   if (storage_initialized())
   {
