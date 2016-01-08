@@ -30,28 +30,20 @@ using namespace boost::asio;
 template <typename Context>
 struct noexcept_traits
 {
-  static void allocate()
-      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(asio_handler_allocate(
-          static_cast<std::size_t>(0), static_cast<Context*>(0))))
-  {
-    // do nothing
-  }
+  MA_STATIC_CONSTEXPR bool allocate = MA_NOEXCEPT_EXPR(
+      asio_handler_allocate(static_cast<std::size_t>(0),
+          static_cast<Context*>(0)));
 
-  static void deallocate()
-      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(asio_handler_deallocate(
-          static_cast<void*>(0), static_cast<std::size_t>(0),
-          static_cast<Context*>(0))))
-  {
-    // do nothing
-  }
+  MA_STATIC_CONSTEXPR bool deallocate = MA_NOEXCEPT_EXPR(
+      asio_handler_deallocate(static_cast<void*>(0),
+          static_cast<std::size_t>(0), static_cast<Context*>(0)));
 }; // struct noexcept_traits
 
 } // namespace detail
 
 template <typename Context>
 inline void* allocate(std::size_t size, Context& context)
-    MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
-        detail::noexcept_traits<Context>::allocate()))
+    MA_NOEXCEPT_IF(detail::noexcept_traits<Context>::allocate)
 {
   using namespace boost::asio;
   return asio_handler_allocate(size, ma::detail::addressof(context));
@@ -59,8 +51,7 @@ inline void* allocate(std::size_t size, Context& context)
 
 template <typename Context>
 inline void deallocate(void* pointer, std::size_t size, Context& context)
-    MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
-        detail::noexcept_traits<Context>::deallocate()))
+    MA_NOEXCEPT_IF(detail::noexcept_traits<Context>::deallocate)
 {
   using namespace boost::asio;
   asio_handler_deallocate(pointer, size, ma::detail::addressof(context));
@@ -74,19 +65,13 @@ namespace detail {
 template <typename Context>
 struct context_alloc_noexcept_traits
 {
-  static void allocate() MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+  MA_STATIC_CONSTEXPR bool allocate = MA_NOEXCEPT_EXPR(
       ma_handler_alloc_helpers::allocate(static_cast<std::size_t>(0),
-          *(static_cast<Context*>(0)))))
-  {
-    // do nothing
-  }
+          *(static_cast<Context*>(0))));
 
-  static void deallocate() MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+  MA_STATIC_CONSTEXPR bool deallocate = MA_NOEXCEPT_EXPR(
       ma_handler_alloc_helpers::deallocate(static_cast<void*>(0),
-          static_cast<std::size_t>(0), *(static_cast<Context*>(0)))))
-  {
-    // do nothing
-  }
+          static_cast<std::size_t>(0), *(static_cast<Context*>(0))));
 }; // struct context_alloc_noexcept_traits
 
 } // namespace detail

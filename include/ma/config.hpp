@@ -233,6 +233,12 @@
 
 #endif // defined(BOOST_MSVC) && (BOOST_MSVC >= 1900)
 
+#if defined(BOOST_STATIC_CONSTEXPR)
+#define MA_STATIC_CONSTEXPR BOOST_STATIC_CONSTEXPR
+#else
+#define MA_STATIC_CONSTEXPR static const
+#endif
+
 #if !defined(MA_WIN32_TMAIN) && defined(WIN32) && !defined(__MINGW32__)
 #define MA_WIN32_TMAIN
 #endif

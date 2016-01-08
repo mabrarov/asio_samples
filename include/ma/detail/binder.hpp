@@ -110,16 +110,15 @@ public:
   }
 
   friend void* asio_handler_allocate(std::size_t size, this_type* context)
-      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
-          context_alloc_noexcept_traits<Handler>::allocate()))
+      MA_NOEXCEPT_IF(context_alloc_noexcept_traits<Handler>::allocate)
   {
     // Forward to asio_handler_allocate provided by source handler.
     return ma_handler_alloc_helpers::allocate(size, context->handler_);
   }
 
   friend void asio_handler_deallocate(void* pointer, std::size_t size,
-      this_type* context) MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
-      context_alloc_noexcept_traits<Handler>::deallocate()))
+      this_type* context) MA_NOEXCEPT_IF(
+      context_alloc_noexcept_traits<Handler>::deallocate)
   {
     // Forward to asio_handler_deallocate provided by source handler.
     ma_handler_alloc_helpers::deallocate(pointer, size, context->handler_);
@@ -226,16 +225,15 @@ public:
   }
 
   friend void* asio_handler_allocate(std::size_t size, this_type* context)
-      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
-          context_alloc_noexcept_traits<Handler>::allocate()))
+      MA_NOEXCEPT_IF(context_alloc_noexcept_traits<Handler>::allocate)
   {
     // Forward to asio_handler_allocate provided by source handler.
     return ma_handler_alloc_helpers::allocate(size, context->handler_);
   }
 
   friend void asio_handler_deallocate(void* pointer, std::size_t size,
-      this_type* context) MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
-      context_alloc_noexcept_traits<Handler>::deallocate()))
+      this_type* context) MA_NOEXCEPT_IF(
+      context_alloc_noexcept_traits<Handler>::deallocate)
   {
     // Forward to asio_handler_deallocate provided by source handler.
     ma_handler_alloc_helpers::deallocate(pointer, size, context->handler_);
@@ -344,16 +342,15 @@ public:
   }
 
   friend void* asio_handler_allocate(std::size_t size, this_type* context)
-      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
-          context_alloc_noexcept_traits<Handler>::allocate()))
+      MA_NOEXCEPT_IF(context_alloc_noexcept_traits<Handler>::allocate)
   {
     // Forward to asio_handler_allocate provided by source handler.
     return ma_handler_alloc_helpers::allocate(size, context->handler_);
   }
 
   friend void asio_handler_deallocate(void* pointer, std::size_t size,
-      this_type* context) MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
-      context_alloc_noexcept_traits<Handler>::deallocate()))
+      this_type* context) MA_NOEXCEPT_IF(
+      context_alloc_noexcept_traits<Handler>::deallocate)
   {
     // Forward to asio_handler_deallocate provided by source handler.
     ma_handler_alloc_helpers::deallocate(pointer, size, context->handler_);
@@ -467,16 +464,15 @@ public:
   }
 
   friend void* asio_handler_allocate(std::size_t size, this_type* context)
-      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
-          context_alloc_noexcept_traits<Handler>::allocate()))
+      MA_NOEXCEPT_IF(context_alloc_noexcept_traits<Handler>::allocate)
   {
     // Forward to asio_handler_allocate provided by source handler.
     return ma_handler_alloc_helpers::allocate(size, context->handler_);
   }
 
   friend void asio_handler_deallocate(void* pointer, std::size_t size,
-      this_type* context) MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
-      context_alloc_noexcept_traits<Handler>::deallocate()))
+      this_type* context) MA_NOEXCEPT_IF(
+      context_alloc_noexcept_traits<Handler>::deallocate)
   {
     // Forward to asio_handler_deallocate provided by source handler.
     ma_handler_alloc_helpers::deallocate(pointer, size, context->handler_);
@@ -595,16 +591,15 @@ public:
   }
 
   friend void* asio_handler_allocate(std::size_t size, this_type* context)
-      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
-          context_alloc_noexcept_traits<Handler>::allocate()))
+      MA_NOEXCEPT_IF(context_alloc_noexcept_traits<Handler>::allocate)
   {
     // Forward to asio_handler_allocate provided by source handler.
     return ma_handler_alloc_helpers::allocate(size, context->handler_);
   }
 
   friend void asio_handler_deallocate(void* pointer, std::size_t size,
-      this_type* context) MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
-      context_alloc_noexcept_traits<Handler>::deallocate()))
+      this_type* context) MA_NOEXCEPT_IF(
+      context_alloc_noexcept_traits<Handler>::deallocate)
   {
     // Forward to asio_handler_deallocate provided by source handler.
     ma_handler_alloc_helpers::deallocate(pointer, size, context->handler_);

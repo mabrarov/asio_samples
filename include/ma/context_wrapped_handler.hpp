@@ -104,15 +104,14 @@ public:
 #endif
 
   friend void* asio_handler_allocate(std::size_t size, this_type* context)
-      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
-          detail::context_alloc_noexcept_traits<Context>::allocate()))
+      MA_NOEXCEPT_IF(detail::context_alloc_noexcept_traits<Context>::allocate)
   {
     return ma_handler_alloc_helpers::allocate(size, context->context_);
   }
 
   friend void asio_handler_deallocate(void* pointer, std::size_t size,
-      this_type* context) MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
-      detail::context_alloc_noexcept_traits<Context>::deallocate()))
+      this_type* context) MA_NOEXCEPT_IF(
+      detail::context_alloc_noexcept_traits<Context>::deallocate)
   {
     ma_handler_alloc_helpers::deallocate(pointer, size, context->context_);
   }

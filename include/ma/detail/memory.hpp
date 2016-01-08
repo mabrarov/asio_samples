@@ -58,11 +58,8 @@ using boost::static_pointer_cast;
 
 struct noexcept_traits
 {
-  static void operator_delete_void_ptr() MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
-      ::operator delete(static_cast<void*>(0))))
-  {
-    // do nothing
-  }
+  MA_STATIC_CONSTEXPR bool delete_ptr =
+      MA_NOEXCEPT_EXPR(::operator delete(static_cast<void*>(0)));
 }; // struct noexcept_traits
 
 } // namespace detail

@@ -54,9 +54,8 @@ public:
   BOOST_STATIC_CONSTANT(std::size_t, value_size = Alloc_Traits::value_size);
 
   /// Constructor that allocates the memory. Can throw.
-  raw_handler_ptr(alloc_context_type& alloc_context)
-      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
-          context_alloc_noexcept_traits<alloc_context_type>::allocate()))
+  raw_handler_ptr(alloc_context_type& alloc_context) MA_NOEXCEPT_IF(
+      context_alloc_noexcept_traits<alloc_context_type>::allocate)
     : alloc_context_(alloc_context)
     , pointer_(static_cast<pointer_type>(
           ma_handler_alloc_helpers::allocate(value_size, alloc_context)))
