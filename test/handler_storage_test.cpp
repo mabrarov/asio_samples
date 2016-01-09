@@ -5,11 +5,6 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#if defined(WIN32)
-#include <tchar.h>
-#endif
-
-#include <cstdlib>
 #include <cstddef>
 #include <iostream>
 #include <limits>
@@ -31,16 +26,6 @@
 #include <ma/detail/thread.hpp>
 #include <ma/detail/utility.hpp>
 #include <ma/test/io_service_pool.hpp>
-
-#if defined(MA_WIN32_TMAIN)
-int _tmain(int argc, _TCHAR* argv[])
-#else
-int main(int argc, char* argv[])
-#endif
-{
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}
 
 namespace ma {
 namespace test {

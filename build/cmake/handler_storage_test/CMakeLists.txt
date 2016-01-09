@@ -64,7 +64,7 @@ set(CPP_HEADERS
 
 set(CPP_SOURCES
     "${SOURCES_DIR}/ma/test/io_service_pool.cpp"
-    "${TEST_SOURCES_DIR}/handler_storage_test/main.cpp")
+    "${TEST_SOURCES_DIR}/handler_storage_test.cpp")
 
 set(LIBRARIES
     ${Boost_LIBRARIES}
