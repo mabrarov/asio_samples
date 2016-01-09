@@ -30,8 +30,8 @@ using std::forward;
 
 /// Dummy for std::move
 template <typename T>
-T& move(T& t) 
-{ 
+T& move(T& t)
+{
   return t;
 }
 
