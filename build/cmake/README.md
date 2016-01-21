@@ -28,7 +28,7 @@ cmake -D BOOST_INCLUDEDIR=<Boost headers directory>
       -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX=asio_samples/build/cmake/static_cxx_runtime_overrides.cmake 
       -D ICU_ROOT=<ICU root directory> 
       -D Qt5Widgets_DIR=<Qt directory>/qtbase/lib/cmake/Qt5Widgets
-      -D GTEST_ROOT=<Google Test install directory> -D ICU_ROOT=<ICU root directory>
+      -D GTEST_ROOT=<Google Test install directory>
       -G "Visual Studio 12 2013 Win64" 
       asio_samples/build/cmake
 ```
@@ -41,7 +41,7 @@ cmake -D BOOST_INCLUDEDIR=<Boost headers directory>
       -D Boost_NO_SYSTEM_PATHS=ON
       -D Boost_USE_STATIC_LIBS=ON 
       -D Qt5Widgets_DIR=<Qt directory>/qtbase/lib/cmake/Qt5Widgets
-      -D GTEST_ROOT=<Google Test install directory> -D ICU_ROOT=<ICU root directory>
+      -D GTEST_ROOT=<Google Test install directory>
       -G "Visual Studio 14 2015 Win64" 
       asio_samples/build/cmake
 ```
@@ -56,7 +56,7 @@ cmake -D BOOST_INCLUDEDIR=<Boost headers directory>
       -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX=asio_samples/build/cmake/static_cxx_runtime_overrides.cmake 
       -D ICU_ROOT=<ICU root directory> 
       -D Qt5Widgets_DIR=<Qt directory>/qtbase/lib/cmake/Qt5Widgets
-      -D GTEST_ROOT=<Google Test install directory> -D ICU_ROOT=<ICU root directory>
+      -D GTEST_ROOT=<Google Test install directory>
       -G "Visual Studio 12 2013 Win64" 
       -T "Intel C++ Compiler XE 15.0" 
       -D CMAKE_C_COMPILER=icl 
