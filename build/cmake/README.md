@@ -64,6 +64,24 @@ cmake -D BOOST_INCLUDEDIR=<Boost headers directory>
       asio_samples/build/cmake
 ```
 
+Example of generation of Visual Studio 2015 project (shared C/C++ runtime, static Boost and shared Qt 5, x64) for usage with Intel C++ Compiler 2016:
+
+```
+cmake -D BOOST_INCLUDEDIR=<Boost headers directory> 
+      -D BOOST_LIBRARYDIR=<Boost built libraries directory> 
+      -D Boost_NO_SYSTEM_PATHS=ON
+      -D ICU_ROOT=<ICU root directory> 
+      -D Qt5Widgets_DIR=<Qt directory>/qtbase/lib/cmake/Qt5Widgets
+      -D GTEST_ROOT=<Google Test install directory>
+      -G "Visual Studio 14 2015 Win64" 
+      -T "Intel C++ Compiler 16.0" 
+      -D CMAKE_C_COMPILER=icl 
+      -D CMAKE_CXX_COMPILER=icl
+      asio_samples/build/cmake
+```
+
+Remarks: use [this fix](https://software.intel.com/en-us/articles/limits1120-error-identifier-builtin-nanf-is-undefined) when using Intel C++ Compiler 16.0 with Visual Studio 2015 Update 1.
+
 Example of generation of Visual Studio 2010 project (shared C/C++ runtime, static Boost and shared Qt 4):
 
 ```

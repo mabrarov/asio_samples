@@ -1,4 +1,4 @@
-# 
+#
 # Copyright (c) 2015 Marat Abrarov (abrarov@gmail.com)
 #
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
