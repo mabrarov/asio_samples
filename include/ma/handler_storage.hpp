@@ -84,8 +84,8 @@ private:
 public:
   typedef handler_storage_service                    service_type;
   typedef typename service_type::implementation_type implementation_type;
-  typedef typename detail::decay<Arg>::type    arg_type;
-  typedef typename detail::decay<Target>::type target_type;
+  typedef typename detail::decay<Arg>::type          arg_type;
+  typedef typename detail::decay<Target>::type       target_type;
 
   explicit handler_storage(boost::asio::io_service& io_service);
   ~handler_storage();
@@ -156,7 +156,7 @@ public:
   typedef handler_storage_service                    service_type;
   typedef typename service_type::implementation_type implementation_type;
   typedef void                                       arg_type;
-  typedef typename detail::decay<Target>::type target_type;
+  typedef typename detail::decay<Target>::type       target_type;
 
   explicit handler_storage(boost::asio::io_service& io_service);
   ~handler_storage();
