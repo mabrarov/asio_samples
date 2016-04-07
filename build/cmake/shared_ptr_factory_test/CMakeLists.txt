@@ -10,6 +10,12 @@ project(shared_ptr_factory_test)
 
 find_package(Boost REQUIRED)
 
+# Enforce linkage with shared build of Boost C++ Libraries in case
+# there is no request for linkage with static build
+if(NOT Boost_USE_STATIC_LIBS)
+    add_definitions(-DBOOST_ALL_DYN_LINK)
+endif()
+
 set(PROJECT_BASE_DIR "${PROJECT_SOURCE_DIR}/../../..")
 set(SOURCES_DIR      "${PROJECT_BASE_DIR}/src")
 set(CPP_HEADERS_DIR  "${PROJECT_BASE_DIR}/include")
