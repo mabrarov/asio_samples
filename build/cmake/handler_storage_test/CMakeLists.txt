@@ -11,6 +11,12 @@ project(handler_storage_test)
 # Just determine version of Boost C++ Libraries
 find_package(Boost REQUIRED)
 
+# Enforce linkage with shared build of Boost C++ Libraries in case
+# there is no request for linkage with static build
+if(NOT Boost_USE_STATIC_LIBS)
+    add_definitions(-DBOOST_ALL_DYN_LINK)
+endif()
+
 # Build list of used Boost libraries depending on Boost version
 # (use Boost.Chrono if available)
 set(BOOST_COMPONENTS "system;thread;date_time;regex")

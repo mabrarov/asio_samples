@@ -24,6 +24,7 @@ Example of generation of Visual Studio 2013 project (static C/C++ runtime, stati
 cmake -D BOOST_INCLUDEDIR=<Boost headers directory> 
       -D BOOST_LIBRARYDIR=<Boost built libraries directory> 
       -D Boost_NO_SYSTEM_PATHS=ON
+      -D Boost_USE_STATIC_LIBS=ON
       -D CMAKE_USER_MAKE_RULES_OVERRIDE=asio_samples/build/cmake/static_c_runtime_overrides.cmake 
       -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX=asio_samples/build/cmake/static_cxx_runtime_overrides.cmake 
       -D ICU_ROOT=<ICU root directory> 
@@ -46,12 +47,28 @@ cmake -D BOOST_INCLUDEDIR=<Boost headers directory>
       asio_samples/build/cmake
 ```
 
+Example of generation of Visual Studio 2015 project (shared C/C++ runtime, shared Boost and shared Qt 5, x64):
+
+```
+cmake -D BOOST_INCLUDEDIR=<Boost headers directory>
+      -D BOOST_LIBRARYDIR=<Boost built libraries directory>
+      -D Boost_NO_SYSTEM_PATHS=ON
+      -D Boost_USE_STATIC_LIBS=OFF
+      -D Qt5Widgets_DIR=<Qt directory>/qtbase/lib/cmake/Qt5Widgets
+      -G "Visual Studio 14 2015 Win64"
+      asio_samples/build/cmake
+```
+
+`Boost_USE_STATIC_LIBS` is turned `OFF` by default according to [FindBoost documentation](http://www.cmake.org/cmake/help/v3.1/module/FindBoost.html?highlight=findboost),
+so `-D Boost_USE_STATIC_LIBS=OFF` can be omitted.
+
 Example of generation of Visual Studio 2013 project (static C/C++ runtime, static Boost and static Qt 5, x64) for usage with Intel C++ Compiler XE 2015:
 
 ```
 cmake -D BOOST_INCLUDEDIR=<Boost headers directory> 
       -D BOOST_LIBRARYDIR=<Boost built libraries directory> 
       -D Boost_NO_SYSTEM_PATHS=ON
+      -D Boost_USE_STATIC_LIBS=ON
       -D CMAKE_USER_MAKE_RULES_OVERRIDE=asio_samples/build/cmake/static_c_runtime_overrides.cmake 
       -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX=asio_samples/build/cmake/static_cxx_runtime_overrides.cmake 
       -D ICU_ROOT=<ICU root directory> 
