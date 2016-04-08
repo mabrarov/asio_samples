@@ -41,6 +41,8 @@ public:
   /// allocate method.
   void deallocate(void* pointer);
 
+  bool owns(void* pointer);
+
 private:
   boost::aligned_storage<alloc_size> storage_;
   bool in_use_;
@@ -68,12 +70,12 @@ public:
   /// allocate method.
   void deallocate(void* pointer);
 
+  bool owns(void* pointer);
+
 private:
   typedef char byte_type;
 
   static byte_type* allocate_storage(std::size_t);
-  bool storage_initialized() const;
-  byte_type* retrieve_aligned_address();
 
 #if defined(MA_USE_CXX11_STDLIB_MEMORY)
   detail::unique_ptr<byte_type[]>   storage_;
@@ -100,46 +102,31 @@ in_place_handler_allocator<alloc_size>::~in_place_handler_allocator()
 template <std::size_t alloc_size>
 void* in_place_handler_allocator<alloc_size>::allocate(std::size_t size)
 {
-  if (!in_use_ && (size <= storage_.size))
+  if (in_use_ || (size > storage_.size))
   {
-    in_use_ = true;
-    return storage_.address();
+    return 0;
   }
-  return ::operator new(size);
+  in_use_ = true;
+  return storage_.address();
 }
 
 template <std::size_t alloc_size>
-void in_place_handler_allocator<alloc_size>::deallocate(void* pointer)
+void in_place_handler_allocator<alloc_size>::deallocate(void* /*pointer*/)
 {
-  if (storage_.address() == pointer)
-  {
-    BOOST_ASSERT_MSG(in_use_, "Allocator wasn't marked as used");
+  BOOST_ASSERT_MSG(in_use_, "Allocator wasn't marked as used");
+  in_use_ = false;
+}
 
-    in_use_ = false;
-    return;
-  }
-  ::operator delete(pointer);
+template <std::size_t alloc_size>
+bool in_place_handler_allocator<alloc_size>::owns(void* pointer)
+{
+  return storage_.address() == pointer;
 }
 
 inline in_heap_handler_allocator::byte_type*
 in_heap_handler_allocator::allocate_storage(std::size_t size)
 {
   return new byte_type[size];
-}
-
-inline bool in_heap_handler_allocator::storage_initialized() const
-{
-  return 0 != storage_.get();
-}
-
-inline in_heap_handler_allocator::byte_type*
-in_heap_handler_allocator::retrieve_aligned_address()
-{
-  if (!storage_.get())
-  {
-    storage_.reset(allocate_storage(size_));
-  }
-  return storage_.get();
 }
 
 inline in_heap_handler_allocator::in_heap_handler_allocator(
@@ -157,27 +144,27 @@ inline in_heap_handler_allocator::~in_heap_handler_allocator()
 
 inline void* in_heap_handler_allocator::allocate(std::size_t size)
 {
-  if (!in_use_ && (size <= size_))
+  if (in_use_ || (size > size_))
   {
-    in_use_ = true;
-    return retrieve_aligned_address();
+    return 0;
   }
-  return ::operator new(size);
+  if (!storage_.get())
+  {
+    storage_.reset(allocate_storage(size_));
+  }
+  in_use_ = true;
+  return storage_.get();
 }
 
-inline void in_heap_handler_allocator::deallocate(void* pointer)
+inline void in_heap_handler_allocator::deallocate(void* /*pointer*/)
 {
-  if (storage_initialized())
-  {
-    if (retrieve_aligned_address() == pointer)
-    {
-      BOOST_ASSERT_MSG(in_use_, "Allocator wasn't marked as used");
+  BOOST_ASSERT_MSG(in_use_, "Allocator wasn't marked as used");
+  in_use_ = false;
+}
 
-      in_use_ = false;
-      return;
-    }
-  }
-  ::operator delete(pointer);
+inline bool in_heap_handler_allocator::owns(void* pointer)
+{
+  return storage_.get() == pointer;
 }
 
 } // namespace ma
