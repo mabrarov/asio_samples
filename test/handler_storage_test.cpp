@@ -594,7 +594,7 @@ TEST(CustomAllocationTest, Fallback)
 
   ASSERT_EQ(handler_allocator.alloc_count(), 0U);
   ASSERT_EQ(handler_allocator.dealloc_count(), 0U);
-} // CustomAllocationTest.Target
+} // CustomAllocationTest.Fallback
 
 } // namespace custom_allocation
 
