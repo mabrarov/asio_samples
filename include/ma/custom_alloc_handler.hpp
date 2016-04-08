@@ -127,13 +127,27 @@ public:
 
   friend void* asio_handler_allocate(std::size_t size, this_type* context)
   {
-    return context->allocator_->allocate(size);
+    if (void* ptr = context->allocator_->allocate(size))
+    {
+      return ptr;
+    }
+    else
+    {
+      return boost::asio::asio_handler_allocate(size, context->handler_);
+    }
   }
 
-  friend void asio_handler_deallocate(void* pointer, std::size_t /*size*/,
+  friend void asio_handler_deallocate(void* pointer, std::size_t size,
       this_type* context)
   {
-    context->allocator_->deallocate(pointer);
+    if (context->allocator_->owns(pointer))
+    {
+      context->allocator_->deallocate(pointer);
+    }
+    else
+    {
+      boost::asio::asio_handler_deallocate(pointer, size);
+    }
   }
 
 #if defined(MA_HAS_RVALUE_REFS)
