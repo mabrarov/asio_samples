@@ -596,6 +596,27 @@ TEST(CustomAllocationTest, Fallback)
   ASSERT_EQ(handler_allocator.dealloc_count(), 0U);
 } // CustomAllocationTest.Fallback
 
+TEST(CustomAllocationTest, ContextFallback)
+{
+  std::cout << "*** ma::test::custom_allocation ***" << std::endl;
+  typedef ma::handler_storage<int> handler_storage_type;
+
+  custom_handler_allocator<sizeof(std::size_t) * 8> fallback_handler_allocator;
+  custom_handler_allocator<1> handler_allocator;
+  boost::asio::io_service io_service;
+
+  handler_storage_type handler_storage(io_service);
+  handler_storage.store(make_custom_alloc_handler(handler_allocator,
+      make_custom_alloc_handler(fallback_handler_allocator, handler(value))));
+  handler_storage.post(value + value);
+  io_service.run();
+
+  ASSERT_EQ(fallback_handler_allocator.dealloc_count(),
+            fallback_handler_allocator.alloc_count());
+  ASSERT_GT(fallback_handler_allocator.alloc_count(), 0U);
+  ASSERT_GT(fallback_handler_allocator.dealloc_count(), 0U);
+} // CustomAllocationTest.ContextFallback
+
 } // namespace custom_allocation
 
 namespace handler_storage_arg {
