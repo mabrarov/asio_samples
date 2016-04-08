@@ -482,6 +482,95 @@ TEST(HandlerStorageTest, Target)
 
 } // namespace handler_storage_target
 
+namespace custom_allocation {
+
+template <std::size_t alloc_size>
+class custom_handler_allocator : private in_place_handler_allocator<alloc_size>
+{
+private:
+  typedef in_place_handler_allocator<alloc_size> base_type;
+
+public:
+  custom_handler_allocator()
+    : base_type()
+    , alloc_count_(0)
+    , dealloc_count_(0)
+  {
+  }
+
+  void* allocate(std::size_t size)
+  {
+    ++alloc_count_;
+    return base_type::allocate(size);
+  }
+
+
+  void deallocate(void* pointer)
+  {
+    ++dealloc_count_;
+    base_type::deallocate(pointer);
+  }
+
+  size_t alloc_count() const
+  {
+    return alloc_count_;
+  }
+
+  size_t dealloc_count() const
+  {
+    return dealloc_count_;
+  }
+
+private:
+  std::size_t alloc_count_;
+  std::size_t dealloc_count_;
+}; // class custom_handler_allocator
+
+class handler
+{
+public:
+  explicit handler(int value)
+    : value_(value)
+  {
+  }
+
+  void operator()(int val)
+  {
+    std::cout << value_ << ' ' << val << std::endl;
+  }
+
+  void operator()(void)
+  {
+    std::cout << value_ << std::endl;
+  }
+
+private:
+  int value_;
+}; // class handler
+
+static const int value = 42;
+
+TEST(CustomAllocationTest, Target)
+{
+  std::cout << "*** ma::test::custom_allocation ***" << std::endl;
+  typedef ma::handler_storage<int> handler_storage_type;
+
+  custom_handler_allocator<sizeof(std::size_t) * 8> handler_allocator;
+  boost::asio::io_service io_service;  
+
+  handler_storage_type handler_storage(io_service);
+  handler_storage.store(make_custom_alloc_handler(
+      handler_allocator, handler(value)));
+  handler_storage.post(value + value);
+  io_service.run();
+
+  ASSERT_EQ(handler_allocator.dealloc_count(), handler_allocator.alloc_count());
+  ASSERT_GT(handler_allocator.alloc_count(), 0U);
+  ASSERT_GT(handler_allocator.dealloc_count(), 0U);
+} // CustomAllocationTest.Target
+
+} // namespace custom_allocation
+
 namespace handler_storage_arg {
 
 typedef detail::function<void(void)> continuation;
