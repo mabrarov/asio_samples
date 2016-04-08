@@ -31,7 +31,15 @@ endif()
 find_package(Boost REQUIRED COMPONENTS ${BOOST_COMPONENTS})
 
 # Google test libraries
-find_package(GTest REQUIRED)
+find_package(GTest QUIET)
+
+# Use local copy of Google Test if it wasn't provided
+if(NOT GTEST_FOUND)
+    set(GTEST_LIBRARIES      gtest)
+    set(GTEST_MAIN_LIBRARIES gtest_main)
+    set(GTEST_BOTH_LIBRARIES gtest gtest_main)
+    get_target_property(GTEST_INCLUDE_DIRS gtest INTERFACE_INCLUDE_DIRECTORIES)
+endif()
 
 set(PROJECT_BASE_DIR "${PROJECT_SOURCE_DIR}/../../..")
 set(SOURCES_DIR      "${PROJECT_BASE_DIR}/src")
