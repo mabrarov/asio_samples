@@ -7,8 +7,6 @@ on the top of Boost.Asio.
 A code-based guide for client/server creation with usage of active object
 pattern by means of Boost C++ Libraries.
 
-Refer to [build/cmake/README.md](build/cmake/README.md) for build instructions.
-
 CMake project
 -------------
 
@@ -66,6 +64,7 @@ cmake -D BOOST_INCLUDEDIR=<Boost headers directory>
       -D Boost_NO_SYSTEM_PATHS=ON
       -D Boost_USE_STATIC_LIBS=OFF
       -D Qt5Widgets_DIR=<Qt directory>/qtbase/lib/cmake/Qt5Widgets
+      -D GTEST_ROOT=<Google Test install directory>
       -G "Visual Studio 14 2015 Win64"
       asio_samples/build/cmake
 ```
@@ -153,4 +152,7 @@ cmake -D BOOST_INCLUDEDIR=<Boost headers directory>
 
 Note that if Google Test was built with CMake and MS Visual Studio then you have to "install" it somehow -
 just copying results of build (add "d" postfix into the name of debug artifacts) into Google Test root folder
-(or into "lib" sub-folder) would be enough for FindGTest.
+(or into "lib" sub-folder) would be enough for [FindGTest](https://cmake.org/cmake/help/v3.1/module/FindGTest.html).
+
+There is a copy of Google Test shipped as part of CMake project (refer to `3rdparty/gtest` folder).
+It will be used in case [FindGTest](https://cmake.org/cmake/help/v3.1/module/FindGTest.html) fails to find Google Test (so `GTEST_ROOT` is optional).
