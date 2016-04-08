@@ -500,8 +500,12 @@ public:
 
   void* allocate(std::size_t size)
   {
-    ++alloc_count_;
-    return base_type::allocate(size);
+    void* ptr = base_type::allocate(size);
+    if (ptr)
+    {
+      ++alloc_count_;
+    }
+    return ptr;
   }
 
 
@@ -509,6 +513,11 @@ public:
   {
     ++dealloc_count_;
     base_type::deallocate(pointer);
+  }
+
+  bool owns(void* pointer)
+  {
+    return base_type::owns(pointer);
   }
 
   size_t alloc_count() const
@@ -550,7 +559,7 @@ private:
 
 static const int value = 42;
 
-TEST(CustomAllocationTest, Target)
+TEST(CustomAllocationTest, Normal)
 {
   std::cout << "*** ma::test::custom_allocation ***" << std::endl;
   typedef ma::handler_storage<int> handler_storage_type;
@@ -567,6 +576,24 @@ TEST(CustomAllocationTest, Target)
   ASSERT_EQ(handler_allocator.dealloc_count(), handler_allocator.alloc_count());
   ASSERT_GT(handler_allocator.alloc_count(), 0U);
   ASSERT_GT(handler_allocator.dealloc_count(), 0U);
+} // CustomAllocationTest.Normal
+
+TEST(CustomAllocationTest, Fallback)
+{
+  std::cout << "*** ma::test::custom_allocation ***" << std::endl;
+  typedef ma::handler_storage<int> handler_storage_type;
+
+  custom_handler_allocator<1> handler_allocator;
+  boost::asio::io_service io_service;
+
+  handler_storage_type handler_storage(io_service);
+  handler_storage.store(make_custom_alloc_handler(
+      handler_allocator, handler(value)));
+  handler_storage.post(value + value);
+  io_service.run();
+
+  ASSERT_EQ(handler_allocator.alloc_count(), 0U);
+  ASSERT_EQ(handler_allocator.dealloc_count(), 0U);
 } // CustomAllocationTest.Target
 
 } // namespace custom_allocation
