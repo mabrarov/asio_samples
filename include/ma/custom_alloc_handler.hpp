@@ -133,7 +133,7 @@ public:
     }
     else
     {
-      return boost::asio::asio_handler_allocate(size, context->handler_);
+      return ma_handler_alloc_helpers::allocate(size, context->handler_);
     }
   }
 
@@ -146,7 +146,7 @@ public:
     }
     else
     {
-      boost::asio::asio_handler_deallocate(pointer, size);
+      ma_handler_alloc_helpers::deallocate(pointer, size, context->handler_);
     }
   }
 
