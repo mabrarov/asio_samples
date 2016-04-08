@@ -39,6 +39,10 @@ if(NOT GTEST_FOUND)
     set(GTEST_MAIN_LIBRARIES gtest_main)
     set(GTEST_BOTH_LIBRARIES gtest gtest_main)
     get_target_property(GTEST_INCLUDE_DIRS gtest INTERFACE_INCLUDE_DIRECTORIES)
+    # Workaround for old version of Google Test
+    if(NOT GTEST_INCLUDE_DIRS)
+        set(GTEST_INCLUDE_DIRS ${gtest_SOURCE_DIR}/include)
+    endif()
 endif()
 
 set(PROJECT_BASE_DIR "${PROJECT_SOURCE_DIR}/../../..")
