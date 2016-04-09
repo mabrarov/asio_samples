@@ -46,8 +46,6 @@ TEST(LockableWrapperTest, Simple)
   typedef detail::mutex                  mutex_type;
   typedef detail::lock_guard<mutex_type> lock_guard_type;
 
-  std::cout << "*** ma::test::lockable_wrapper ***" << std::endl;
-
   std::size_t cpu_count = detail::thread::hardware_concurrency();
   std::size_t work_thread_count = cpu_count > 1 ? cpu_count : 2;
   boost::asio::io_service io_service(work_thread_count);
@@ -393,9 +391,6 @@ void run_test()
 
 TEST(HandlerStorageTest, Destruction)
 {
-  std::cout << "*** ma::test::handler_storage_service_destruction ***"
-      << std::endl;
-
   simple::run_test();
   cyclic_references::run_test();
   reenterable_call::run_test();
@@ -463,8 +458,6 @@ static const int value4 = 4;
 
 TEST(HandlerStorageTest, Target)
 {
-  std::cout << "*** ma::test::handler_storage_target ***" << std::endl;
-
   std::size_t cpu_count = detail::thread::hardware_concurrency();
   std::size_t work_thread_count = cpu_count > 1 ? cpu_count : 2;
   boost::asio::io_service io_service(work_thread_count);
@@ -559,9 +552,8 @@ private:
 
 static const int value = 42;
 
-TEST(CustomAllocationTest, Normal)
+TEST(HandlerStorageTest, CustomAllocation)
 {
-  std::cout << "*** ma::test::custom_allocation ***" << std::endl;
   typedef ma::handler_storage<int> handler_storage_type;
 
   custom_handler_allocator<sizeof(std::size_t) * 8> handler_allocator;
@@ -578,9 +570,8 @@ TEST(CustomAllocationTest, Normal)
   ASSERT_GT(handler_allocator.dealloc_count(), 0U);
 } // CustomAllocationTest.Normal
 
-TEST(CustomAllocationTest, Fallback)
+TEST(HandlerStorageTest, CustomAllocationFallback)
 {
-  std::cout << "*** ma::test::custom_allocation ***" << std::endl;
   typedef ma::handler_storage<int> handler_storage_type;
 
   custom_handler_allocator<1> handler_allocator;
@@ -596,9 +587,8 @@ TEST(CustomAllocationTest, Fallback)
   ASSERT_EQ(handler_allocator.dealloc_count(), 0U);
 } // CustomAllocationTest.Fallback
 
-TEST(CustomAllocationTest, ContextFallback)
+TEST(HandlerStorageTest, CustomAllocationContextFallback)
 {
-  std::cout << "*** ma::test::custom_allocation ***" << std::endl;
   typedef ma::handler_storage<int> handler_storage_type;
 
   custom_handler_allocator<sizeof(std::size_t) * 8> fallback_handler_allocator;
@@ -737,8 +727,6 @@ static const int value2 = 2;
 
 TEST(HandlerStorageTest, Arg)
 {
-  std::cout << "*** ma::test::handler_storage_arg ***" << std::endl;
-
   std::size_t cpu_count = detail::thread::hardware_concurrency();
   std::size_t work_thread_count = cpu_count > 1 ? cpu_count : 2;
   boost::asio::io_service io_service(work_thread_count);
@@ -959,8 +947,6 @@ private:
 
 TEST(HandlerStorageTest, MoveSupport)
 {
-  std::cout << "*** ma::test::handler_move_support ***\n";
-
   ma::detail::latch done_latch;
   ma::detail::latch copy_latch;
 
