@@ -41,7 +41,7 @@ void mutating_func1(data_type& d, const continuation& cont)
   cont();
 }
 
-TEST(LockableWrapperTest, Simple)
+TEST(lockable_wrapper, simple)
 {
   typedef detail::mutex                  mutex_type;
   typedef detail::lock_guard<mutex_type> lock_guard_type;
@@ -280,9 +280,7 @@ private:
 #pragma warning(pop)
 #endif // #if defined(_MSC_VER)
 
-namespace simple {
-
-void run_test()
+TEST(handler_storage, destruction_simple)
 {
   std::size_t counter = 0;
   boost::asio::io_service io_service;
@@ -296,8 +294,6 @@ void run_test()
   ASSERT_EQ(0U, counter);
 }
 
-} // namespace simple
-
 void store_simple_handler(const handler_storage_ptr& storage,
     std::size_t counter)
 {
@@ -310,9 +306,7 @@ void store_hooked_handler(const handler_storage_ptr& storage,
   storage->store(hooked_handler(hooked_storage, counter));
 }
 
-namespace cyclic_references {
-
-void run_test()
+TEST(handler_storage, destruction_cyclic_references)
 {
   std::size_t counter = 0;
   {
@@ -334,11 +328,7 @@ void run_test()
   ASSERT_EQ(0U, counter);
 }
 
-} // namespace cyclic_references
-
-namespace reenterable_call {
-
-void run_test()
+TEST(handler_storage, destruction_reenterable_call)
 {
   std::size_t counter = 0;
   {
@@ -386,15 +376,6 @@ void run_test()
   }
   ASSERT_EQ(0U, counter);
 }
-
-} // namespace reenterable_call
-
-TEST(HandlerStorageTest, Destruction)
-{
-  simple::run_test();
-  cyclic_references::run_test();
-  reenterable_call::run_test();
-} // HandlerStorageTest.Destruction
 
 } // namespace handler_storage_service_destruction
 
@@ -456,7 +437,7 @@ private:
 
 static const int value4 = 4;
 
-TEST(HandlerStorageTest, Target)
+TEST(handler_storage, target)
 {
   std::size_t cpu_count = detail::thread::hardware_concurrency();
   std::size_t work_thread_count = cpu_count > 1 ? cpu_count : 2;
@@ -552,7 +533,7 @@ private:
 
 static const int value = 42;
 
-TEST(HandlerStorageTest, CustomAllocation)
+TEST(handler_storage, custom_allocation)
 {
   typedef ma::handler_storage<int> handler_storage_type;
 
@@ -570,7 +551,7 @@ TEST(HandlerStorageTest, CustomAllocation)
   ASSERT_GT(handler_allocator.dealloc_count(), 0U);
 } // CustomAllocationTest.Normal
 
-TEST(HandlerStorageTest, CustomAllocationFallback)
+TEST(handler_storage, custom_allocation_fallback)
 {
   typedef ma::handler_storage<int> handler_storage_type;
 
@@ -587,7 +568,7 @@ TEST(HandlerStorageTest, CustomAllocationFallback)
   ASSERT_EQ(handler_allocator.dealloc_count(), 0U);
 } // CustomAllocationTest.Fallback
 
-TEST(HandlerStorageTest, CustomAllocationContextFallback)
+TEST(handler_storage, custom_allocation_context_fallback)
 {
   typedef ma::handler_storage<int> handler_storage_type;
 
@@ -725,7 +706,7 @@ static const int value4 = 4;
 static const int value1 = 1;
 static const int value2 = 2;
 
-TEST(HandlerStorageTest, Arg)
+TEST(handler_storage, arg)
 {
   std::size_t cpu_count = detail::thread::hardware_concurrency();
   std::size_t work_thread_count = cpu_count > 1 ? cpu_count : 2;
@@ -945,7 +926,7 @@ private:
   handler_storage_type& storage_;
 }; // class context_handler
 
-TEST(HandlerStorageTest, MoveSupport)
+TEST(handler_storage, move_support)
 {
   ma::detail::latch done_latch;
   ma::detail::latch copy_latch;

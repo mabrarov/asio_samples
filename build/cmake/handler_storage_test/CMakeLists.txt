@@ -30,7 +30,7 @@ endif()
 # Attach used Boost libraries
 find_package(Boost REQUIRED COMPONENTS ${BOOST_COMPONENTS})
 
-# Google test libraries
+# Google Test libraries
 find_package(GTest QUIET)
 
 # Use local copy of Google Test if it wasn't provided
