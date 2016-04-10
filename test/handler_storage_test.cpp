@@ -30,6 +30,11 @@
 namespace ma {
 namespace test {
 
+void count_down(detail::latch& latch)
+{
+  latch.count_down();
+}
+
 namespace handler_storage_service_destruction {
 
 typedef int                                      arg_type;
@@ -730,7 +735,7 @@ TEST(handler_storage, post_no_arg)
   ma::detail::latch done_latch(1);
 
   handler_storage.store(void_handler_without_target(out, test_value,
-      detail::bind(&detail::latch::count_down, detail::ref(done_latch))));
+      detail::bind(count_down, detail::ref(done_latch))));
 
   ASSERT_FALSE(!handler_storage.target());
 
@@ -755,7 +760,7 @@ TEST(handler_storage, post_no_arg_with_target)
   ma::detail::latch done_latch(1);
 
   handler_storage.store(void_handler_with_target(out, test_value,
-      detail::bind(&detail::latch::count_down, detail::ref(done_latch))));
+      detail::bind(count_down, detail::ref(done_latch))));
 
   ASSERT_FALSE(!handler_storage.target());
   ASSERT_EQ(test_value, handler_storage.target()->get_value());
@@ -781,7 +786,7 @@ TEST(handler_storage, post_with_arg)
   ma::detail::latch done_latch(1);
 
   handler_storage.store(int_handler_without_target(out,
-      detail::bind(&detail::latch::count_down, detail::ref(done_latch))));
+      detail::bind(count_down, detail::ref(done_latch))));
 
   ASSERT_FALSE(!handler_storage.target());
 
@@ -807,7 +812,7 @@ TEST(handler_storage, post_with_arg_with_target)
   ma::detail::latch done_latch(1);
 
   handler_storage.store(int_handler_with_target(out, test_value,
-      detail::bind(&detail::latch::count_down, detail::ref(done_latch))));
+      detail::bind(count_down, detail::ref(done_latch))));
 
   ASSERT_FALSE(!handler_storage.target());
   ASSERT_EQ(test_value, handler_storage.target()->get_value());
