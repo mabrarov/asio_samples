@@ -138,7 +138,7 @@ TEST(shared_ptr_factory, simple)
     ASSERT_EQ(j, c->get_j());
     ASSERT_EQ(d, c->get_d());
   }
-}
+} // TEST(shared_ptr_factory, simple)
 
 } // namespace shared_ptr_factory
 } // namespace test

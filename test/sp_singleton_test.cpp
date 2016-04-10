@@ -93,7 +93,7 @@ TEST(sp_singleton, construction)
     data.push_back(foo0->data());
   }
   ASSERT_NE(data[0], data[1]);
-}
+} // TEST(sp_singleton, construction)
 
 struct foo::factory
 {
@@ -226,7 +226,7 @@ TEST(sp_singleton, thread)
     }
     t->join();
   }
-}
+} // TEST(sp_singleton, thread)
 
 struct foo::factory
 {
@@ -329,7 +329,7 @@ TEST(sp_singleton, sync)
     }
     t.join();
   }
-}
+} // TEST(sp_singleton, sync)
 
 struct foo::factory
 {
@@ -466,7 +466,7 @@ TEST(sp_singleton, sync2)
 
   const foo_ptr f = foo::get_instance();
   std::cout << "Init counter: " << to_string(f->init_count()) << std::endl;
-}
+} // TEST(sp_singleton, sync2)
 
 struct foo::factory
 {

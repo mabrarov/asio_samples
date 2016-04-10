@@ -144,7 +144,7 @@ TEST(windows_console_signal, simple)
     }
   }
 #endif // defined(MA_HAS_WINDOWS_CONSOLE_SIGNAL)
-}
+} // TEST(windows_console_signal, simple)
 
 } // namespace windows_console_signal_destruction
 } // namespace test

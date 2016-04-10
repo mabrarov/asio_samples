@@ -30,57 +30,6 @@
 namespace ma {
 namespace test {
 
-namespace lockable_wrapper {
-
-typedef std::string data_type;
-typedef detail::function<void(void)> continuation;
-
-void mutating_func1(data_type& d, const continuation& cont)
-{
-  d += " 1 ";
-  cont();
-}
-
-TEST(lockable_wrapper, simple)
-{
-  typedef detail::mutex                  mutex_type;
-  typedef detail::lock_guard<mutex_type> lock_guard_type;
-
-  std::size_t cpu_count = detail::thread::hardware_concurrency();
-  std::size_t work_thread_count = cpu_count > 1 ? cpu_count : 2;
-  boost::asio::io_service io_service(work_thread_count);
-  io_service_pool work_threads(io_service, work_thread_count);
-
-
-  mutex_type mutex;
-  std::string data;
-  {
-    lock_guard_type lock_guard(mutex);
-    data = "0";
-  }
-
-  detail::latch done_latch(1);
-  {
-    lock_guard_type data_guard(mutex);
-
-    io_service.post(ma::make_lockable_wrapped_handler(mutex, detail::bind(
-        mutating_func1, detail::ref(data), continuation(
-            detail::bind(&detail::latch::count_down,
-                detail::ref(done_latch))))));
-
-    detail::this_thread::sleep(boost::posix_time::seconds(5));
-    data = "Zero";
-  }
-  done_latch.wait();
-
-  {
-    lock_guard_type lock_guard(mutex);
-    ASSERT_EQ("Zero 1 ", data);
-  }
-} // LockableWrapperTest.Simple
-
-} // namespace lockable_wrapper
-
 namespace handler_storage_service_destruction {
 
 typedef int                                      arg_type;
@@ -292,7 +241,7 @@ TEST(handler_storage, destruction_simple)
     handler_storage2.store(simple_handler(counter));
   }
   ASSERT_EQ(0U, counter);
-}
+} // TEST(handler_storage, destruction_simple)
 
 void store_simple_handler(const handler_storage_ptr& storage,
     std::size_t counter)
@@ -326,7 +275,7 @@ TEST(handler_storage, destruction_cyclic_references)
         counter));
   }
   ASSERT_EQ(0U, counter);
-}
+} // TEST(handler_storage, destruction_cyclic_references)
 
 TEST(handler_storage, destruction_reenterable_call)
 {
@@ -375,7 +324,7 @@ TEST(handler_storage, destruction_reenterable_call)
         counter));
   }
   ASSERT_EQ(0U, counter);
-}
+} // TEST(handler_storage, destruction_reenterable_call)
 
 } // namespace handler_storage_service_destruction
 
@@ -452,7 +401,7 @@ TEST(handler_storage, target)
 
     ASSERT_EQ(value4, handler_storage.target()->get_value());
   }
-} // HandlerStorageTest.Target
+} // TEST(handler_storage, target)
 
 } // namespace handler_storage_target
 
@@ -549,7 +498,7 @@ TEST(handler_storage, custom_allocation)
   ASSERT_EQ(handler_allocator.dealloc_count(), handler_allocator.alloc_count());
   ASSERT_GT(handler_allocator.alloc_count(), 0U);
   ASSERT_GT(handler_allocator.dealloc_count(), 0U);
-} // CustomAllocationTest.Normal
+} // TEST(handler_storage, custom_allocation)
 
 TEST(handler_storage, custom_allocation_fallback)
 {
@@ -566,7 +515,7 @@ TEST(handler_storage, custom_allocation_fallback)
 
   ASSERT_EQ(handler_allocator.alloc_count(), 0U);
   ASSERT_EQ(handler_allocator.dealloc_count(), 0U);
-} // CustomAllocationTest.Fallback
+} // TEST(handler_storage, custom_allocation_fallback)
 
 TEST(handler_storage, custom_allocation_context_fallback)
 {
@@ -586,7 +535,7 @@ TEST(handler_storage, custom_allocation_context_fallback)
             fallback_handler_allocator.alloc_count());
   ASSERT_GT(fallback_handler_allocator.alloc_count(), 0U);
   ASSERT_GT(fallback_handler_allocator.dealloc_count(), 0U);
-} // CustomAllocationTest.ContextFallback
+} // TEST(handler_storage, custom_allocation_context_fallback)
 
 } // namespace custom_allocation
 
@@ -782,7 +731,7 @@ TEST(handler_storage, arg)
   }
 
   done_latch.wait();
-} // HandlerStorageTest.Arg
+} // TEST(handler_storage, arg)
 
 } // namespace handler_storage_arg
 
@@ -970,7 +919,7 @@ TEST(handler_storage, move_support)
 #if defined(MA_HAS_RVALUE_REFS) && defined(BOOST_ASIO_HAS_MOVE)
   ASSERT_EQ(0U, copy_latch.value());
 #endif
-} // HandlerStorageTest.MoveSupport
+} // TEST(handler_storage, move_support)
 
 } // namespace handler_move_support
 
