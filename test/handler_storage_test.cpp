@@ -17,7 +17,6 @@
 #include <ma/handler_allocator.hpp>
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/handler_storage.hpp>
-#include <ma/lockable_wrapped_handler.hpp>
 #include <ma/context_alloc_handler.hpp>
 #include <ma/thread_group.hpp>
 #include <ma/detail/memory.hpp>
@@ -360,19 +359,20 @@ protected:
 class handler : public handler_base
 {
 public:
-  explicit handler(int value)
-    : value_(value)
+  explicit handler(int& out, int value)
+    : out_(out)
+    , value_(value)
   {
   }
 
-  void operator()(int val)
+  void operator()(int value)
   {
-    std::cout << value_ << val << std::endl;
+    out_ = value;
   }
 
   void operator()(void)
   {
-    std::cout << value_ << std::endl;
+    out_ = value_;
   }
 
   int get_value() const
@@ -381,31 +381,33 @@ public:
   }
 
 private:
-  int value_;
+  int& out_;
+  int  value_;
 }; // class handler
-
-static const int value4 = 4;
 
 TEST(handler_storage, target)
 {
-  std::size_t cpu_count = detail::thread::hardware_concurrency();
-  std::size_t work_thread_count = cpu_count > 1 ? cpu_count : 2;
-  boost::asio::io_service io_service(work_thread_count);
-  io_service_pool work_threads(io_service, work_thread_count);
+  typedef ma::handler_storage<int, handler_base> handler_storage_type;
 
-  {
-    typedef ma::handler_storage<int, handler_base> handler_storage_type;
+  const int test_value = 42;
+  const int test_post_value = 43;
+  int out = 0;
 
-    handler_storage_type handler_storage(io_service);
-    handler_storage.store(handler(value4));
+  boost::asio::io_service io_service;
+  handler_storage_type handler_storage(io_service);
+  handler_storage.store(handler(out, test_value));
 
-    ASSERT_EQ(value4, handler_storage.target()->get_value());
-  }
+  ASSERT_EQ(test_value, handler_storage.target()->get_value());
+
+  handler_storage.post(test_post_value);
+  io_service.run();
+
+  ASSERT_EQ(test_post_value, out);
 } // TEST(handler_storage, target)
 
 } // namespace handler_storage_target
 
-namespace custom_allocation {
+namespace handler_storage_custom_allocation {
 
 template <std::size_t alloc_size>
 class custom_handler_allocator : private in_place_handler_allocator<alloc_size>
@@ -461,65 +463,79 @@ private:
 class handler
 {
 public:
-  explicit handler(int value)
-    : value_(value)
+  explicit handler(int& out, int value)
+    : out_(out)
+    , value_(value)
   {
   }
 
-  void operator()(int val)
+  void operator()(int value)
   {
-    std::cout << value_ << ' ' << val << std::endl;
+    out_ = value;
   }
 
   void operator()(void)
   {
-    std::cout << value_ << std::endl;
+    out_ = value_;
   }
 
 private:
-  int value_;
+  int& out_;
+  int  value_;
 }; // class handler
-
-static const int value = 42;
 
 TEST(handler_storage, custom_allocation)
 {
   typedef ma::handler_storage<int> handler_storage_type;
 
-  custom_handler_allocator<sizeof(std::size_t) * 8> handler_allocator;
-  boost::asio::io_service io_service;  
+  const int stored_value = 42;
+  const int test_post_value = 43;
+  int out = 0;
 
+  custom_handler_allocator<sizeof(std::size_t) * 8> handler_allocator;
+  boost::asio::io_service io_service;
   handler_storage_type handler_storage(io_service);
+
   handler_storage.store(make_custom_alloc_handler(
-      handler_allocator, handler(value)));
-  handler_storage.post(value + value);
+      handler_allocator, handler(out, stored_value)));
+  handler_storage.post(test_post_value);
   io_service.run();
 
   ASSERT_EQ(handler_allocator.dealloc_count(), handler_allocator.alloc_count());
   ASSERT_GT(handler_allocator.alloc_count(), 0U);
   ASSERT_GT(handler_allocator.dealloc_count(), 0U);
+  ASSERT_EQ(test_post_value, out);
 } // TEST(handler_storage, custom_allocation)
 
 TEST(handler_storage, custom_allocation_fallback)
 {
   typedef ma::handler_storage<int> handler_storage_type;
 
+  const int stored_value = 42;
+  const int test_post_value = 43;
+  int out = 0;
+
   custom_handler_allocator<1> handler_allocator;
   boost::asio::io_service io_service;
 
   handler_storage_type handler_storage(io_service);
   handler_storage.store(make_custom_alloc_handler(
-      handler_allocator, handler(value)));
-  handler_storage.post(value + value);
+      handler_allocator, handler(out, stored_value)));
+  handler_storage.post(test_post_value);
   io_service.run();
 
   ASSERT_EQ(handler_allocator.alloc_count(), 0U);
   ASSERT_EQ(handler_allocator.dealloc_count(), 0U);
+  ASSERT_EQ(test_post_value, out);
 } // TEST(handler_storage, custom_allocation_fallback)
 
 TEST(handler_storage, custom_allocation_context_fallback)
 {
   typedef ma::handler_storage<int> handler_storage_type;
+
+  const int stored_value = 42;
+  const int test_post_value = 43;
+  int out = 0;
 
   custom_handler_allocator<sizeof(std::size_t) * 8> fallback_handler_allocator;
   custom_handler_allocator<1> handler_allocator;
@@ -527,19 +543,21 @@ TEST(handler_storage, custom_allocation_context_fallback)
 
   handler_storage_type handler_storage(io_service);
   handler_storage.store(make_custom_alloc_handler(handler_allocator,
-      make_custom_alloc_handler(fallback_handler_allocator, handler(value))));
-  handler_storage.post(value + value);
+      make_custom_alloc_handler(fallback_handler_allocator,
+          handler(out, stored_value))));
+  handler_storage.post(test_post_value);
   io_service.run();
 
   ASSERT_EQ(fallback_handler_allocator.dealloc_count(),
-            fallback_handler_allocator.alloc_count());
+      fallback_handler_allocator.alloc_count());
   ASSERT_GT(fallback_handler_allocator.alloc_count(), 0U);
   ASSERT_GT(fallback_handler_allocator.dealloc_count(), 0U);
+  ASSERT_EQ(test_post_value, out);
 } // TEST(handler_storage, custom_allocation_context_fallback)
 
-} // namespace custom_allocation
+} // namespace handler_storage_custom_allocation
 
-namespace handler_storage_arg {
+namespace handler_storage_post {
 
 typedef detail::function<void(void)> continuation;
 
@@ -564,35 +582,38 @@ protected:
 class void_handler_without_target
 {
 public:
-  void_handler_without_target(int value, const continuation& cont)
-    : value_(value)
+  void_handler_without_target(int& out, int value, const continuation& cont)
+    : out_(out)
+    , value_(value)
     , cont_(cont)
   {
   }
 
   void operator()()
   {
-    std::cout << value_ << std::endl;
+    out_ = value_;
     cont_();
   }
 
 private:
-  int value_;
+  int&         out_;
+  int          value_;
   continuation cont_;
 }; // class void_handler_without_target
 
 class void_handler_with_target : public test_handler_base
 {
 public:
-  void_handler_with_target(int value, const continuation& cont)
-    : value_(value)
+  void_handler_with_target(int& out, int value, const continuation& cont)
+    : out_(out)
+    , value_(value)
     , cont_(cont)
   {
   }
 
   void operator()()
   {
-    std::cout << value_ << std::endl;
+    out_ = value_;
     cont_();
   }
 
@@ -602,42 +623,44 @@ public:
   }
 
 private:
-  int value_;
+  int&         out_;
+  int          value_;
   continuation cont_;
 }; // class void_handler_with_target
 
 class int_handler_without_target
 {
 public:
-  int_handler_without_target(int value, const continuation& cont)
-    : value_(value)
+  int_handler_without_target(int& out, const continuation& cont)
+    : out_(out)
     , cont_(cont)
   {
   }
 
   void operator()(int value)
   {
-    std::cout << value << " : " << value_ << std::endl;
+    out_ = value;
     cont_();
   }
 
 private:
-  int value_;
+  int&         out_;
   continuation cont_;
 }; // class int_handler_without_target
 
 class int_handler_with_target : public test_handler_base
 {
 public:
-  int_handler_with_target(int value, const continuation& cont)
-    : value_(value)
+  int_handler_with_target(int& out, int value, const continuation& cont)
+    : out_(out)
+    , value_(value)
     , cont_(cont)
   {
   }
 
   void operator()(int value)
   {
-    std::cout << value << " : " << value_ << std::endl;
+    out_ = value;
     cont_();
   }
 
@@ -647,95 +670,117 @@ public:
   }
 
 private:
-  int value_;
+  int&         out_;
+  int          value_;
   continuation cont_;
 }; // class int_handler_with_target
 
-static const int value4 = 4;
-static const int value1 = 1;
-static const int value2 = 2;
-
-TEST(handler_storage, arg)
+TEST(handler_storage, post_no_arg)
 {
+  typedef ma::handler_storage<void> handler_storage_type;
+
+  const int test_value = 42;
+  int out = 0;
+
   std::size_t cpu_count = detail::thread::hardware_concurrency();
   std::size_t work_thread_count = cpu_count > 1 ? cpu_count : 2;
   boost::asio::io_service io_service(work_thread_count);
   io_service_pool work_threads(io_service, work_thread_count);
-  ma::detail::latch done_latch;
+  handler_storage_type handler_storage(io_service);
+  ma::detail::latch done_latch(1);
 
-  {
-    typedef ma::handler_storage<void> handler_storage_type;
+  handler_storage.store(void_handler_without_target(out, test_value,
+      detail::bind(&detail::latch::count_down, detail::ref(done_latch))));
 
-    handler_storage_type handler_storage(io_service);
-    handler_storage.store(void_handler_without_target(value4,
-        detail::bind(&detail::latch::count_down, detail::ref(done_latch))));
+  ASSERT_FALSE(!handler_storage.target());
 
-    std::cout << handler_storage.target() << std::endl;
-    done_latch.count_up();
-    handler_storage.post();
-  }
-
-  {
-    typedef ma::handler_storage<int> handler_storage_type;
-
-    handler_storage_type handler_storage(io_service);
-    handler_storage.store(int_handler_without_target(value4,
-        detail::bind(&detail::latch::count_down, detail::ref(done_latch))));
-
-    std::cout << handler_storage.target() << std::endl;
-    done_latch.count_up();
-    handler_storage.post(value2);
-  }
-
-  {
-    typedef ma::handler_storage<void, test_handler_base> handler_storage_type;
-
-    handler_storage_type handler_storage(io_service);
-    handler_storage.store(void_handler_with_target(value4,
-        detail::bind(&detail::latch::count_down, detail::ref(done_latch))));
-
-    ASSERT_EQ(value4, handler_storage.target()->get_value());
-
-    std::cout << handler_storage.target()->get_value() << std::endl;
-    done_latch.count_up();
-    handler_storage.post();
-  }
-
-  {
-    typedef ma::handler_storage<int, test_handler_base> handler_storage_type;
-
-    handler_storage_type handler_storage(io_service);
-    handler_storage.store(int_handler_with_target(value4,
-        detail::bind(&detail::latch::count_down, detail::ref(done_latch))));
-
-    ASSERT_EQ(value4, handler_storage.target()->get_value());
-
-    std::cout << handler_storage.target()->get_value() << std::endl;
-    done_latch.count_up();
-    handler_storage.post(value2);
-  }
-
-  {
-    boost::asio::io_service another_io_service;
-
-    ma::handler_storage<int, test_handler_base> handler_storage1(
-        another_io_service);
-    handler_storage1.store(int_handler_with_target(value1,
-        detail::bind(&detail::latch::count_down, detail::ref(done_latch))));
-
-    ASSERT_EQ(value1, handler_storage1.target()->get_value());
-
-    ma::handler_storage<void> handler_storage2(another_io_service);
-    handler_storage2.store(void_handler_without_target(value2,
-        detail::bind(&detail::latch::count_down, detail::ref(done_latch))));
-  }
-
+  handler_storage.post();
   done_latch.wait();
+
+  ASSERT_EQ(test_value, out);
+}
+
+TEST(handler_storage, post_no_arg_with_target)
+{
+  typedef ma::handler_storage<void, test_handler_base> handler_storage_type;
+
+  const int test_value = 42;
+  int out = 0;
+
+  std::size_t cpu_count = detail::thread::hardware_concurrency();
+  std::size_t work_thread_count = cpu_count > 1 ? cpu_count : 2;
+  boost::asio::io_service io_service(work_thread_count);
+  io_service_pool work_threads(io_service, work_thread_count);
+  handler_storage_type handler_storage(io_service);
+  ma::detail::latch done_latch(1);
+
+  handler_storage.store(void_handler_with_target(out, test_value,
+      detail::bind(&detail::latch::count_down, detail::ref(done_latch))));
+
+  ASSERT_FALSE(!handler_storage.target());
+  ASSERT_EQ(test_value, handler_storage.target()->get_value());
+
+  handler_storage.post();
+  done_latch.wait();
+
+  ASSERT_EQ(test_value, out);
+}
+
+TEST(handler_storage, post_with_arg)
+{
+  typedef ma::handler_storage<int> handler_storage_type;
+
+  const int test_value = 43;
+  int out = 0;
+
+  std::size_t cpu_count = detail::thread::hardware_concurrency();
+  std::size_t work_thread_count = cpu_count > 1 ? cpu_count : 2;
+  boost::asio::io_service io_service(work_thread_count);
+  io_service_pool work_threads(io_service, work_thread_count);
+  handler_storage_type handler_storage(io_service);
+  ma::detail::latch done_latch(1);
+
+  handler_storage.store(int_handler_without_target(out,
+      detail::bind(&detail::latch::count_down, detail::ref(done_latch))));
+
+  ASSERT_FALSE(!handler_storage.target());
+
+  handler_storage.post(test_value);
+  done_latch.wait();
+
+  ASSERT_EQ(test_value, out);
+}
+
+TEST(handler_storage, post_with_arg_with_target)
+{
+  typedef ma::handler_storage<int, test_handler_base> handler_storage_type;
+
+  const int test_value = 43;
+  const int test_post_value = 43;
+  int out = 0;
+
+  std::size_t cpu_count = detail::thread::hardware_concurrency();
+  std::size_t work_thread_count = cpu_count > 1 ? cpu_count : 2;
+  boost::asio::io_service io_service(work_thread_count);
+  io_service_pool work_threads(io_service, work_thread_count);
+  handler_storage_type handler_storage(io_service);
+  ma::detail::latch done_latch(1);
+
+  handler_storage.store(int_handler_with_target(out, test_value,
+      detail::bind(&detail::latch::count_down, detail::ref(done_latch))));
+
+  ASSERT_FALSE(!handler_storage.target());
+  ASSERT_EQ(test_value, handler_storage.target()->get_value());
+
+  handler_storage.post(test_post_value);
+  done_latch.wait();
+
+  ASSERT_EQ(test_post_value, out);
 } // TEST(handler_storage, arg)
 
-} // namespace handler_storage_arg
+} // namespace handler_storage_post
 
-namespace handler_move_support {
+namespace handler_storage_move_support {
 
 class trackable
 {
@@ -921,7 +966,7 @@ TEST(handler_storage, move_support)
 #endif
 } // TEST(handler_storage, move_support)
 
-} // namespace handler_move_support
+} // namespace handler_storage_move_support
 
 } // namespace test
 } // namespace ma
