@@ -18,6 +18,7 @@
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/handler_storage.hpp>
 #include <ma/context_alloc_handler.hpp>
+#include <ma/handler_alloc_helpers.hpp>
 #include <ma/thread_group.hpp>
 #include <ma/detail/memory.hpp>
 #include <ma/detail/functional.hpp>
@@ -462,6 +463,9 @@ private:
 
 class handler
 {
+private:
+  typedef handler this_type;
+
 public:
   explicit handler(int& out, int value)
     : out_(out)
@@ -484,6 +488,34 @@ private:
   int  value_;
 }; // class handler
 
+class no_default_allocation_handler : public handler
+{
+private:
+  typedef no_default_allocation_handler this_type;
+  typedef handler                       base_type;
+
+public:
+  explicit no_default_allocation_handler(int& out, int value)
+    : base_type(out, value)
+  {
+  }
+
+  friend void* asio_handler_allocate(std::size_t size, this_type* /*context*/)
+  {
+    ADD_FAILURE() << "Custom allocator should be called instead";
+    // Forward to default implementation
+    return boost::asio::asio_handler_allocate(size);
+  }
+
+  friend void asio_handler_deallocate(void* pointer, std::size_t size,
+      this_type* /*context*/)
+  {
+    ADD_FAILURE() << "Custom allocator should be called instead";
+    // Forward to default implementation
+    boost::asio::asio_handler_deallocate(pointer, size);
+  }
+}; // class no_default_allocation_handler
+
 TEST(handler_storage, custom_allocation)
 {
   typedef ma::handler_storage<int> handler_storage_type;
@@ -492,12 +524,12 @@ TEST(handler_storage, custom_allocation)
   const int test_post_value = 43;
   int out = 0;
 
-  custom_handler_allocator<sizeof(std::size_t) * 8> handler_allocator;
+  custom_handler_allocator<sizeof(std::size_t) * 16> handler_allocator;
   boost::asio::io_service io_service;
   handler_storage_type handler_storage(io_service);
 
   handler_storage.store(make_custom_alloc_handler(
-      handler_allocator, handler(out, stored_value)));
+      handler_allocator, no_default_allocation_handler(out, stored_value)));
   handler_storage.post(test_post_value);
   io_service.run();
 
@@ -537,14 +569,14 @@ TEST(handler_storage, custom_allocation_context_fallback)
   const int test_post_value = 43;
   int out = 0;
 
-  custom_handler_allocator<sizeof(std::size_t) * 8> fallback_handler_allocator;
+  custom_handler_allocator<sizeof(std::size_t) * 16> fallback_handler_allocator;
   custom_handler_allocator<1> handler_allocator;
   boost::asio::io_service io_service;
 
   handler_storage_type handler_storage(io_service);
   handler_storage.store(make_custom_alloc_handler(handler_allocator,
       make_custom_alloc_handler(fallback_handler_allocator,
-          handler(out, stored_value))));
+          no_default_allocation_handler(out, stored_value))));
   handler_storage.post(test_post_value);
   io_service.run();
 
