@@ -360,7 +360,7 @@ foo::foo(const instance_guard_type& instance_guard, int data)
   : instance_guard_(instance_guard)
   , data_(data)
 {
-  //ASSERT_EQ(0U, instance_count_);
+  EXPECT_EQ(0U, instance_count_);
   ++instance_count_;
 }
 
@@ -498,13 +498,13 @@ foo::foo(const instance_guard_type& instance_guard, const counter& init_counter)
   : instance_guard_(instance_guard)
   , init_counter_(init_counter)
 {
-  //ASSERT_EQ(0U, instance_count_);
+  EXPECT_EQ(0U, instance_count_);
   ++instance_count_;
 }
 
 foo::~foo()
 {
-  //ASSERT_EQ(1U, instance_count_);
+  EXPECT_EQ(1U, instance_count_);
   --instance_count_;
   instance_guard_ = boost::none;
 }
