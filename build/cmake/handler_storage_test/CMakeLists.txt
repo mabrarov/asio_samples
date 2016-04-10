@@ -30,8 +30,24 @@ endif()
 # Attach used Boost libraries
 find_package(Boost REQUIRED COMPONENTS ${BOOST_COMPONENTS})
 
+# Google Test libraries
+find_package(GTest QUIET)
+
+# Use local copy of Google Test if it wasn't provided
+if(NOT GTEST_FOUND)
+    set(GTEST_LIBRARIES      gtest)
+    set(GTEST_MAIN_LIBRARIES gtest_main)
+    set(GTEST_BOTH_LIBRARIES gtest gtest_main)
+    get_target_property(GTEST_INCLUDE_DIRS gtest INTERFACE_INCLUDE_DIRECTORIES)
+    # Workaround for old version of Google Test
+    if(NOT GTEST_INCLUDE_DIRS)
+        set(GTEST_INCLUDE_DIRS ${gtest_SOURCE_DIR}/include)
+    endif()
+endif()
+
 set(PROJECT_BASE_DIR "${PROJECT_SOURCE_DIR}/../../..")
 set(SOURCES_DIR      "${PROJECT_BASE_DIR}/src")
+set(TEST_SOURCES_DIR "${PROJECT_BASE_DIR}/test")
 set(CPP_HEADERS_DIR  "${PROJECT_BASE_DIR}/include")
 
 set(CPP_HEADERS
@@ -44,6 +60,7 @@ set(CPP_HEADERS
     "${CPP_HEADERS_DIR}/ma/detail/service_base.hpp"
     "${CPP_HEADERS_DIR}/ma/detail/thread.hpp"
     "${CPP_HEADERS_DIR}/ma/detail/utility.hpp"
+    "${CPP_HEADERS_DIR}/ma/test/io_service_pool.hpp"
     "${CPP_HEADERS_DIR}/ma/bind_handler.hpp"
     "${CPP_HEADERS_DIR}/ma/config.hpp"
     "${CPP_HEADERS_DIR}/ma/console_close_signal.hpp"
@@ -64,9 +81,12 @@ set(CPP_HEADERS
     "${CPP_HEADERS_DIR}/ma/detail/type_traits.hpp")
 
 set(CPP_SOURCES
-    "${SOURCES_DIR}/handler_storage_test/main.cpp")
+    "${SOURCES_DIR}/ma/test/io_service_pool.cpp"
+    "${TEST_SOURCES_DIR}/handler_storage_test.cpp")
 
-set(LIBRARIES ${Boost_LIBRARIES})
+set(LIBRARIES
+    ${Boost_LIBRARIES}
+    ${GTEST_BOTH_LIBRARIES})
 
 # Required Winsock libraries
 if(WIN32)
@@ -82,6 +102,7 @@ if(UNIX AND BOOST_HAS_CHRONO)
 endif()
 
 include_directories(${Boost_INCLUDE_DIRS})
+include_directories(${GTEST_INCLUDE_DIRS})
 include_directories(${CPP_HEADERS_DIR})
 add_executable(${PROJECT_NAME} ${CPP_HEADERS} ${CPP_SOURCES})
 target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
@@ -90,4 +111,5 @@ if(NOT NO_CMAKE_DIR_SOURCE_GROUP)
     # Group files according to file path
     ma_dir_source_group("Header Files" "${CPP_HEADERS_DIR}" "${CPP_HEADERS}")
     ma_dir_source_group("Source Files" "${SOURCES_DIR}" "${CPP_SOURCES}")
+    ma_dir_source_group("Source Files" "${TEST_SOURCES_DIR}" "${CPP_SOURCES}")
 endif()
