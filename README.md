@@ -10,7 +10,13 @@ pattern by means of Boost C++ Libraries.
 CMake project
 -------------
 
-Uses:
+Use `ASIO_SAMPLES_BUILD_TESTS` to exclude tests from build (tests are included by default):
+
+```
+cmake -D ASIO_SAMPLES_BUILD_TESTS=OFF ...
+```
+
+CMake project uses:
 
 * [FindBoost CMake module](http://www.cmake.org/cmake/help/v3.1/module/FindBoost.html?highlight=findboost)
 * [cmake-qt CMake module](http://www.cmake.org/cmake/help/v3.1/manual/cmake-qt.7.html) (refer to [Qt cmake manual](http://doc.qt.io/qt-5/cmake-manual.html) also)
