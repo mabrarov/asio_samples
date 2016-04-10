@@ -39,11 +39,22 @@ if(WIN32)
         -D_WINSOCK_DEPRECATED_NO_WARNINGS)
 endif()
 
+# Google Test framework
 if(ASIO_SAMPLES_BUILD_TESTS)
-    # Google Test libraries
-    find_package(GTest QUIET)
-    if(NOT GTEST_FOUND)
+    if(NOT ASIO_SAMPLES_USE_OWN_GTEST)
+        find_package(GTest QUIET)
+    endif()
+    if(ASIO_SAMPLES_USE_OWN_GTEST OR NOT GTEST_FOUND)
         add_subdirectory(3rdparty/gtest)
+        set(ASIO_SAMPLES_OWN_GTEST ON)
+        set(GTEST_LIBRARIES        gtest)
+        set(GTEST_MAIN_LIBRARIES   gtest_main)
+        set(GTEST_BOTH_LIBRARIES   gtest gtest_main)
+        get_target_property(GTEST_INCLUDE_DIRS gtest INTERFACE_INCLUDE_DIRECTORIES)
+        # Workaround for old version of Google Test
+        if(NOT GTEST_INCLUDE_DIRS)
+            set(GTEST_INCLUDE_DIRS ${gtest_SOURCE_DIR}/include)
+        endif()
     endif()
 endif()
 

@@ -68,6 +68,13 @@ macro(config_compiler_and_linker)
     endif()
     set(cxx_base_flags "${cxx_base_flags} -D_UNICODE -DUNICODE -DWIN32 -D_WIN32")
     set(cxx_base_flags "${cxx_base_flags} -DSTRICT -DWIN32_LEAN_AND_MEAN")
+
+    # MSVC 2012 doesn't provide standard conforming tuple and
+    # can't work with GTest own tuple implementation
+    if (MSVC_VERSION GREATER 1600 AND MSVC_VERSION LESS 1800)
+      set(cxx_base_flags "${cxx_base_flags} -DGTEST_HAS_TR1_TUPLE=0")
+    endif()
+
     set(cxx_exception_flags "-EHsc -D_HAS_EXCEPTIONS=1")
     set(cxx_no_exception_flags "-D_HAS_EXCEPTIONS=0")
     set(cxx_no_rtti_flags "-GR-")
