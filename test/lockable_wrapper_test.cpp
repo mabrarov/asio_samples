@@ -55,7 +55,6 @@ TEST(lockable_wrapper, simple)
             detail::bind(&detail::latch::count_down,
                 detail::ref(done_latch))))));
 
-    detail::this_thread::sleep(boost::posix_time::seconds(5));
     data = "Zero";
   }
   done_latch.wait();
