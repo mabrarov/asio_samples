@@ -15,7 +15,8 @@ set(cxx_sources_dir  "${project_base_dir}/src")
 set(cxx_compile_definitions )
 set(cxx_headers )
 set(cxx_sources )
-set(cxx_libraries )
+set(cxx_public_libraries )
+set(cxx_private_libraries )
 set(boost_components )
 
 # Select used Boost libraries
@@ -38,23 +39,27 @@ list(APPEND cxx_headers
 list(APPEND cxx_sources
     "${cxx_sources_dir}/console_signal_service.cpp")
 
-list(APPEND cxx_libraries
+list(APPEND cxx_public_libraries
     ${Boost_LIBRARIES}
     ma_config
     ma_compat
     ma_bind_handler
     ma_handler_ptr
     ma_service_base
-    ma_intrusive_list
+    ma_intrusive_list)
+
+list(APPEND cxx_private_libraries
     ma_shared_ptr_factory
     ma_sp_singleton)
 
 add_library(${PROJECT_NAME}
     ${cxx_headers}
     ${cxx_sources})
-target_compile_definitions(${PROJECT_NAME} PUBLIC
+target_compile_definitions(${PROJECT_NAME}
+    PUBLIC
     ${cxx_compile_definitions})
-target_include_directories(${PROJECT_NAME} PUBLIC
+target_include_directories(${PROJECT_NAME}
+    PUBLIC
     ${Boost_INCLUDE_DIRS}
     $<TARGET_PROPERTY:ma_config,INTERFACE_INCLUDE_DIRECTORIES>
     $<TARGET_PROPERTY:ma_compat,INTERFACE_INCLUDE_DIRECTORIES>
@@ -62,11 +67,16 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     $<TARGET_PROPERTY:ma_handler_ptr,INTERFACE_INCLUDE_DIRECTORIES>
     $<TARGET_PROPERTY:ma_service_base,INTERFACE_INCLUDE_DIRECTORIES>
     $<TARGET_PROPERTY:ma_intrusive_list,INTERFACE_INCLUDE_DIRECTORIES>
+    PRIVATE
     $<TARGET_PROPERTY:ma_shared_ptr_factory,INTERFACE_INCLUDE_DIRECTORIES>
     $<TARGET_PROPERTY:ma_sp_singleton,INTERFACE_INCLUDE_DIRECTORIES>
+    PUBLIC
     ${cxx_headers_dir})
-target_link_libraries(${PROJECT_NAME} PUBLIC
-    ${cxx_libraries})
+target_link_libraries(${PROJECT_NAME}
+    PUBLIC
+    ${cxx_public_libraries}
+    PRIVATE
+    ${cxx_private_libraries})
 
 if(NOT ma_no_cmake_dir_source_group)
     # Group files according to file path
