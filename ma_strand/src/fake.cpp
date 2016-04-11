@@ -1,0 +1,1 @@
+// Fake source file to build C++ library
