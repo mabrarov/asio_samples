@@ -90,7 +90,7 @@ add_subdirectory(ma_sp_singleton)
 add_subdirectory(ma_steady_deadline_timer)
 add_subdirectory(ma_strand)
 add_subdirectory(ma_thread_group)
-#add_subdirectory(ma_windows_console_signal)
+add_subdirectory(ma_windows_console_signal)
 
 #if(ma_build_tests)
 #    add_subdirectory(test)
