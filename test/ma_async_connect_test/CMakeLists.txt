@@ -22,22 +22,22 @@ find_package(Boost REQUIRED)
 
 # Build list of used Boost libraries depending on Boost version
 # (use Boost.Chrono and Boost.Timer if available)
-set(BOOST_COMPONENTS "system;thread;date_time;program_options;regex")
+set(boost_components "system;thread;date_time;program_options;regex")
 if(NOT(${Boost_VERSION} LESS 104700))
-    set(BOOST_COMPONENTS "${BOOST_COMPONENTS};chrono")
+    set(boost_components "${boost_components};chrono")
     set(ma_boost_has_chrono TRUE)
 else()
     set(ma_boost_has_chrono FALSE)
 endif()
 if(NOT(${Boost_VERSION} LESS 104800))
-    set(BOOST_COMPONENTS "${BOOST_COMPONENTS};timer")
+    set(boost_components "${boost_components};timer")
     set(ma_boost_has_timer TRUE)
 else()
     set(ma_boost_has_timer FALSE)
 endif()
 
 # Attach used Boost libraries
-find_package(Boost REQUIRED COMPONENTS ${BOOST_COMPONENTS})
+find_package(Boost REQUIRED COMPONENTS ${boost_components})
 
 # Enforce linkage with shared build of Boost C++ Libraries in case
 # there is no request for linkage with static build

@@ -17,14 +17,8 @@ set(cxx_headers )
 set(cxx_sources )
 set(cxx_libraries )
 
-# Just determine version of Boost C++ Libraries
+# Attach header only Boost libraries
 find_package(Boost REQUIRED)
-
-# Enforce linkage with shared build of Boost C++ Libraries in case
-# there is no request for linkage with static build
-if(NOT Boost_USE_STATIC_LIBS)
-    list(APPEND cxx_compile_definitions "BOOST_ALL_DYN_LINK")
-endif()
 
 list(APPEND cxx_headers
     "${cxx_headers_dir}/ma/bind_handler.hpp"
@@ -42,9 +36,9 @@ list(APPEND cxx_libraries
 add_library(${PROJECT_NAME}
     ${cxx_headers}
     ${cxx_sources})
-target_compile_definitions(${PROJECT_NAME} INTERFACE
+target_compile_definitions(${PROJECT_NAME} PUBLIC
     ${cxx_compile_definitions})
-target_include_directories(${PROJECT_NAME} INTERFACE
+target_include_directories(${PROJECT_NAME} PUBLIC
     ${Boost_INCLUDE_DIRS}
     $<TARGET_PROPERTY:ma_config,INTERFACE_INCLUDE_DIRECTORIES>
     $<TARGET_PROPERTY:ma_compat,INTERFACE_INCLUDE_DIRECTORIES>

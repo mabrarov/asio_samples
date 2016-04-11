@@ -6,7 +6,7 @@
 #
 
 cmake_minimum_required(VERSION 2.8.11)
-project(ma_async_connect)
+project(ma_codecvt_cast)
 
 set(project_base_dir "${PROJECT_SOURCE_DIR}")
 set(cxx_headers_dir  "${project_base_dir}/include")
@@ -16,47 +16,41 @@ set(cxx_compile_definitions )
 set(cxx_headers )
 set(cxx_sources )
 set(cxx_libraries )
+set(boost_components )
 
-# Attach header only Boost libraries
-find_package(Boost REQUIRED)
+# Select used Boost libraries
+list(APPEND boost_components
+    exception)
+
+# Attach used Boost libraries
+find_package(Boost REQUIRED COMPONENTS ${boost_components})
+
+# Enforce linkage with shared build of Boost C++ Libraries in case
+# there is no request for linkage with static build
+if(NOT Boost_USE_STATIC_LIBS)
+    list(APPEND cxx_compile_definitions "BOOST_ALL_DYN_LINK")
+endif()
 
 list(APPEND cxx_headers
-    "${cxx_headers_dir}/ma/async_connect.hpp")
+    "${cxx_headers_dir}/ma/codecvt_cast.hpp")
 
 list(APPEND cxx_sources
     "${cxx_sources_dir}/fake.cpp")
 
 list(APPEND cxx_libraries
     ${Boost_LIBRARIES}
-    ma_config
-    ma_compat
-    ma_bind_handler
-    ma_helpers)
+    ma_compat)
 
-# Required Winsock libraries
-if(WIN32)
-    list(APPEND cxx_libraries
-        "ws2_32"
-        "mswsock")
-endif()
-
-# Boost.Chrono requires rt library on *nix
-if(UNIX AND ma_boost_has_chrono)
-    list(APPEND cxx_libraries
-        "rt")
-endif()
-
-add_executable(${PROJECT_NAME} ${cxx_headers} ${cxx_sources})
-target_compile_definitions(${PROJECT_NAME} PRIVATE
+add_library(${PROJECT_NAME}
+    ${cxx_headers}
+    ${cxx_sources})
+target_compile_definitions(${PROJECT_NAME} PUBLIC
     ${cxx_compile_definitions})
-target_include_directories(${PROJECT_NAME} PRIVATE
+target_include_directories(${PROJECT_NAME} PUBLIC
     ${Boost_INCLUDE_DIRS}
-    $<TARGET_PROPERTY:ma_config,INTERFACE_INCLUDE_DIRECTORIES>
     $<TARGET_PROPERTY:ma_compat,INTERFACE_INCLUDE_DIRECTORIES>
-    $<TARGET_PROPERTY:ma_bind_handler,INTERFACE_INCLUDE_DIRECTORIES>
-    $<TARGET_PROPERTY:ma_helpers,INTERFACE_INCLUDE_DIRECTORIES>
     ${cxx_headers_dir})
-target_link_libraries(${PROJECT_NAME} PUBLIC
+target_link_libraries(${PROJECT_NAME}
     ${cxx_libraries})
 
 if(NOT ma_no_cmake_dir_source_group)

@@ -32,16 +32,16 @@ find_package(Boost REQUIRED)
 
 # Build list of used Boost libraries depending on Boost version
 # (use Boost.Chrono if available)
-set(BOOST_COMPONENTS "system;thread;date_time;regex")
+set(boost_components "system;thread;date_time;regex")
 if(NOT(${Boost_VERSION} LESS 104700))
-    set(BOOST_COMPONENTS "${BOOST_COMPONENTS};chrono")
+    set(boost_components "${boost_components};chrono")
     set(ma_boost_has_chrono TRUE)
 else()
     set(ma_boost_has_chrono FALSE)
 endif()
 
 # Attach used Boost libraries
-find_package(Boost REQUIRED COMPONENTS ${BOOST_COMPONENTS})
+find_package(Boost REQUIRED COMPONENTS ${boost_components})
 
 # Determine major version of Qt to use (Qt 5 is predeferred)
 if(NOT DEFINED ma_qt_echo_server_use_qt5)

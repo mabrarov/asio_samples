@@ -17,7 +17,14 @@ set(cxx_headers )
 set(cxx_sources )
 set(cxx_libraries )
 
-find_package(Boost REQUIRED)
+set(boost_components )
+
+# Select used Boost libraries
+list(APPEND boost_components
+    thread)
+
+# Attach used Boost libraries
+find_package(Boost REQUIRED COMPONENTS ${boost_components})
 
 # Enforce linkage with shared build of Boost C++ Libraries in case
 # there is no request for linkage with static build
@@ -44,13 +51,13 @@ list(APPEND cxx_libraries
 add_library(${PROJECT_NAME}
     ${cxx_headers}
     ${cxx_sources})
-target_compile_definitions(${PROJECT_NAME} INTERFACE
+target_compile_definitions(${PROJECT_NAME} PUBLIC
     ${cxx_compile_definitions})
-target_include_directories(${PROJECT_NAME} INTERFACE
+target_include_directories(${PROJECT_NAME} PUBLIC
     ${Boost_INCLUDE_DIRS}
     $<TARGET_PROPERTY:ma_config,INTERFACE_INCLUDE_DIRECTORIES>
     ${cxx_headers_dir})
-target_link_libraries(${PROJECT_NAME}
+target_link_libraries(${PROJECT_NAME} PUBLIC
     ${cxx_libraries})
 
 if(NOT ma_no_cmake_dir_source_group)
