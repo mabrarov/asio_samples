@@ -1,0 +1,54 @@
+#
+# Copyright (c) 2015 Marat Abrarov (abrarov@gmail.com)
+#
+# Distributed under the Boost Software License, Version 1.0. (See accompanying
+# file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+#
+
+cmake_minimum_required(VERSION 2.8.11)
+project(ma_custom_alloc_handler)
+
+set(project_base_dir "${PROJECT_SOURCE_DIR}")
+set(cxx_sources_dir  "${project_base_dir}/src")
+set(cxx_headers_dir  "${project_base_dir}/include")
+
+set(cxx_compile_definitions )
+set(cxx_headers )
+set(cxx_sources )
+set(cxx_libraries )
+
+# Attach header only Boost libraries
+find_package(Boost REQUIRED)
+
+list(APPEND cxx_headers
+    "${cxx_headers_dir}/ma/custom_alloc_handler.hpp"
+    "${cxx_headers_dir}/ma/handler_allocator.hpp")
+
+list(APPEND cxx_sources
+    "${cxx_sources_dir}/fake.cpp")
+
+list(APPEND cxx_libraries
+    ${Boost_LIBRARIES}
+    ma_config
+    ma_compat
+    ma_helpers)
+
+add_library(${PROJECT_NAME}
+    ${cxx_headers}
+    ${cxx_sources})
+target_compile_definitions(${PROJECT_NAME} PUBLIC
+    ${cxx_compile_definitions})
+target_include_directories(${PROJECT_NAME} PUBLIC
+    ${Boost_INCLUDE_DIRS}
+    $<TARGET_PROPERTY:ma_config,INTERFACE_INCLUDE_DIRECTORIES>
+    $<TARGET_PROPERTY:ma_compat,INTERFACE_INCLUDE_DIRECTORIES>
+    $<TARGET_PROPERTY:ma_helpers,INTERFACE_INCLUDE_DIRECTORIES>
+    ${cxx_headers_dir})
+target_link_libraries(${PROJECT_NAME} PUBLIC
+    ${cxx_libraries})
+
+if(NOT ma_no_cmake_dir_source_group)
+    # Group files according to file path
+    ma_dir_source_group("Header Files" "${cxx_headers_dir}" "${cxx_headers}")
+    ma_dir_source_group("Source Files" "${cxx_sources_dir}" "${cxx_sources}")
+endif()
