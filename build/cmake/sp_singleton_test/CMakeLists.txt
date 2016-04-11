@@ -30,19 +30,9 @@ endif()
 # Attach used Boost libraries
 find_package(Boost REQUIRED COMPONENTS ${BOOST_COMPONENTS})
 
-# Google Test libraries
-find_package(GTest QUIET)
-
-# Use local copy of Google Test if it wasn't provided
-if(NOT GTEST_FOUND)
-    set(GTEST_LIBRARIES      gtest)
-    set(GTEST_MAIN_LIBRARIES gtest_main)
-    set(GTEST_BOTH_LIBRARIES gtest gtest_main)
-    get_target_property(GTEST_INCLUDE_DIRS gtest INTERFACE_INCLUDE_DIRECTORIES)
-    # Workaround for old version of Google Test
-    if(NOT GTEST_INCLUDE_DIRS)
-        set(GTEST_INCLUDE_DIRS ${gtest_SOURCE_DIR}/include)
-    endif()
+# Google Test framework
+if(NOT ASIO_SAMPLES_OWN_GTEST)
+    find_package(GTest QUIET)
 endif()
 
 set(PROJECT_BASE_DIR "${PROJECT_SOURCE_DIR}/../../..")
@@ -80,13 +70,19 @@ if(UNIX AND BOOST_HAS_CHRONO)
         "rt")
 endif()
 
+# MSVC 2012 doesn't work with Google Test and tuple
+# (even with GTest own tuple implementation)
+if (MSVC AND MSVC_VERSION GREATER 1600 AND MSVC_VERSION LESS 1800)
+    add_definitions(-DGTEST_HAS_TR1_TUPLE=0)
+endif()
+
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${GTEST_INCLUDE_DIRS})
 include_directories(${CPP_HEADERS_DIR})
 add_executable(${PROJECT_NAME} ${CPP_HEADERS} ${CPP_SOURCES})
 target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
 
-if(NOT NO_CMAKE_DIR_SOURCE_GROUP)
+if(NOT ASIO_SAMPLES_NO_CMAKE_DIR_SOURCE_GROUP)
     # Group files according to file path
     ma_dir_source_group("Header Files" "${CPP_HEADERS_DIR}" "${CPP_HEADERS}")
     ma_dir_source_group("Source Files" "${SOURCES_DIR}" "${CPP_SOURCES}")

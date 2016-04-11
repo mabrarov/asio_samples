@@ -18,6 +18,7 @@
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/handler_storage.hpp>
 #include <ma/context_alloc_handler.hpp>
+#include <ma/handler_alloc_helpers.hpp>
 #include <ma/thread_group.hpp>
 #include <ma/detail/memory.hpp>
 #include <ma/detail/functional.hpp>
@@ -28,6 +29,11 @@
 
 namespace ma {
 namespace test {
+
+void count_down(detail::latch& latch)
+{
+  latch.count_down();
+}
 
 namespace handler_storage_service_destruction {
 
@@ -55,15 +61,12 @@ private:
   std::size_t& counter_;
 }; // testable_handler_storage
 
-#if defined(_MSC_VER)
-#pragma warning(push)
-#pragma warning(disable: 4512)
-#endif // #if defined(_MSC_VER)
-
 class simple_handler
 {
 private:
   typedef simple_handler this_type;
+
+  this_type& operator=(const this_type&);
 
 public:
   explicit simple_handler(std::size_t& counter)
@@ -99,19 +102,12 @@ private:
   std::size_t& counter_;
 }; // class simple_handler
 
-#if defined(_MSC_VER)
-#pragma warning(pop)
-#endif // #if defined(_MSC_VER)
-
-#if defined(_MSC_VER)
-#pragma warning(push)
-#pragma warning(disable: 4512)
-#endif // #if defined(_MSC_VER)
-
 class hooked_handler
 {
 private:
   typedef hooked_handler this_type;
+
+  this_type& operator=(const this_type&);
 
 public:
   hooked_handler(const handler_storage_ptr& handler_storage,
@@ -152,19 +148,12 @@ private:
   std::size_t& counter_;
 }; // class hooked_handler
 
-#if defined(_MSC_VER)
-#pragma warning(pop)
-#endif // #if defined(_MSC_VER)
-
-#if defined(_MSC_VER)
-#pragma warning(push)
-#pragma warning(disable: 4512)
-#endif // #if defined(_MSC_VER)
-
 class active_destructing_handler
 {
 private:
   typedef active_destructing_handler this_type;
+
+  this_type& operator=(const this_type&);
 
 public:
   typedef detail::function<void(void)> continuation;
@@ -223,10 +212,6 @@ private:
   continuation_holder_ptr cont_;
   std::size_t& counter_;
 }; // class active_destructing_handler
-
-#if defined(_MSC_VER)
-#pragma warning(pop)
-#endif // #if defined(_MSC_VER)
 
 TEST(handler_storage, destruction_simple)
 {
@@ -358,6 +343,11 @@ protected:
 
 class handler : public handler_base
 {
+private:
+  typedef handler this_type;
+
+  this_type& operator=(const this_type&);
+
 public:
   explicit handler(int& out, int value)
     : out_(out)
@@ -462,6 +452,11 @@ private:
 
 class handler
 {
+private:
+  typedef handler this_type;
+
+  this_type& operator=(const this_type&);
+
 public:
   explicit handler(int& out, int value)
     : out_(out)
@@ -484,6 +479,36 @@ private:
   int  value_;
 }; // class handler
 
+class no_default_allocation_handler : public handler
+{
+private:
+  typedef no_default_allocation_handler this_type;
+  typedef handler                       base_type;
+
+  this_type& operator=(const this_type&);
+
+public:
+  explicit no_default_allocation_handler(int& out, int value)
+    : base_type(out, value)
+  {
+  }
+
+  friend void* asio_handler_allocate(std::size_t size, this_type* /*context*/)
+  {
+    ADD_FAILURE() << "Custom allocator should be called instead";
+    // Forward to default implementation
+    return boost::asio::asio_handler_allocate(size);
+  }
+
+  friend void asio_handler_deallocate(void* pointer, std::size_t size,
+      this_type* /*context*/)
+  {
+    ADD_FAILURE() << "Custom allocator should be called instead";
+    // Forward to default implementation
+    boost::asio::asio_handler_deallocate(pointer, size);
+  }
+}; // class no_default_allocation_handler
+
 TEST(handler_storage, custom_allocation)
 {
   typedef ma::handler_storage<int> handler_storage_type;
@@ -492,12 +517,12 @@ TEST(handler_storage, custom_allocation)
   const int test_post_value = 43;
   int out = 0;
 
-  custom_handler_allocator<sizeof(std::size_t) * 8> handler_allocator;
+  custom_handler_allocator<sizeof(std::size_t) * 16> handler_allocator;
   boost::asio::io_service io_service;
   handler_storage_type handler_storage(io_service);
 
   handler_storage.store(make_custom_alloc_handler(
-      handler_allocator, handler(out, stored_value)));
+      handler_allocator, no_default_allocation_handler(out, stored_value)));
   handler_storage.post(test_post_value);
   io_service.run();
 
@@ -537,14 +562,14 @@ TEST(handler_storage, custom_allocation_context_fallback)
   const int test_post_value = 43;
   int out = 0;
 
-  custom_handler_allocator<sizeof(std::size_t) * 8> fallback_handler_allocator;
+  custom_handler_allocator<sizeof(std::size_t) * 16> fallback_handler_allocator;
   custom_handler_allocator<1> handler_allocator;
   boost::asio::io_service io_service;
 
   handler_storage_type handler_storage(io_service);
   handler_storage.store(make_custom_alloc_handler(handler_allocator,
       make_custom_alloc_handler(fallback_handler_allocator,
-          handler(out, stored_value))));
+          no_default_allocation_handler(out, stored_value))));
   handler_storage.post(test_post_value);
   io_service.run();
 
@@ -581,6 +606,11 @@ protected:
 
 class void_handler_without_target
 {
+private:
+  typedef void_handler_without_target this_type;
+
+  this_type& operator=(const this_type&);
+
 public:
   void_handler_without_target(int& out, int value, const continuation& cont)
     : out_(out)
@@ -603,6 +633,11 @@ private:
 
 class void_handler_with_target : public test_handler_base
 {
+private:
+  typedef void_handler_with_target this_type;
+
+  this_type& operator=(const this_type&);
+
 public:
   void_handler_with_target(int& out, int value, const continuation& cont)
     : out_(out)
@@ -630,6 +665,11 @@ private:
 
 class int_handler_without_target
 {
+private:
+  typedef int_handler_without_target this_type;
+
+  this_type& operator=(const this_type&);
+
 public:
   int_handler_without_target(int& out, const continuation& cont)
     : out_(out)
@@ -650,6 +690,11 @@ private:
 
 class int_handler_with_target : public test_handler_base
 {
+private:
+  typedef int_handler_with_target this_type;
+
+  this_type& operator=(const this_type&);
+
 public:
   int_handler_with_target(int& out, int value, const continuation& cont)
     : out_(out)
@@ -690,7 +735,7 @@ TEST(handler_storage, post_no_arg)
   ma::detail::latch done_latch(1);
 
   handler_storage.store(void_handler_without_target(out, test_value,
-      detail::bind(&detail::latch::count_down, detail::ref(done_latch))));
+      detail::bind(count_down, detail::ref(done_latch))));
 
   ASSERT_FALSE(!handler_storage.target());
 
@@ -715,7 +760,7 @@ TEST(handler_storage, post_no_arg_with_target)
   ma::detail::latch done_latch(1);
 
   handler_storage.store(void_handler_with_target(out, test_value,
-      detail::bind(&detail::latch::count_down, detail::ref(done_latch))));
+      detail::bind(count_down, detail::ref(done_latch))));
 
   ASSERT_FALSE(!handler_storage.target());
   ASSERT_EQ(test_value, handler_storage.target()->get_value());
@@ -741,7 +786,7 @@ TEST(handler_storage, post_with_arg)
   ma::detail::latch done_latch(1);
 
   handler_storage.store(int_handler_without_target(out,
-      detail::bind(&detail::latch::count_down, detail::ref(done_latch))));
+      detail::bind(count_down, detail::ref(done_latch))));
 
   ASSERT_FALSE(!handler_storage.target());
 
@@ -767,7 +812,7 @@ TEST(handler_storage, post_with_arg_with_target)
   ma::detail::latch done_latch(1);
 
   handler_storage.store(int_handler_with_target(out, test_value,
-      detail::bind(&detail::latch::count_down, detail::ref(done_latch))));
+      detail::bind(count_down, detail::ref(done_latch))));
 
   ASSERT_FALSE(!handler_storage.target());
   ASSERT_EQ(test_value, handler_storage.target()->get_value());
@@ -935,7 +980,8 @@ TEST(handler_storage, move_support)
   std::cout << "Copy ctr is called (times): "
       << copy_latch.value() << std::endl;
 
-#if defined(MA_HAS_RVALUE_REFS) && defined(BOOST_ASIO_HAS_MOVE)
+#if defined(MA_HAS_RVALUE_REFS) && (BOOST_ASIO_VERSION >= 101001) \
+  && defined(BOOST_ASIO_HAS_MOVE)
   ASSERT_EQ(0U, copy_latch.value());
 #endif
 
@@ -947,7 +993,8 @@ TEST(handler_storage, move_support)
   std::cout << "Copy ctr is called (times): "
       << copy_latch.value() << std::endl;
 
-#if defined(MA_HAS_RVALUE_REFS) && defined(BOOST_ASIO_HAS_MOVE)
+#if defined(MA_HAS_RVALUE_REFS) && (BOOST_ASIO_VERSION >= 101001) \
+  && defined(BOOST_ASIO_HAS_MOVE)
   ASSERT_EQ(0U, copy_latch.value());
 #endif
 
@@ -961,7 +1008,8 @@ TEST(handler_storage, move_support)
   std::cout << "Copy ctr is called (times): "
       << copy_latch.value() << std::endl;
 
-#if defined(MA_HAS_RVALUE_REFS) && defined(BOOST_ASIO_HAS_MOVE)
+#if defined(MA_HAS_RVALUE_REFS) && (BOOST_ASIO_VERSION >= 101001) \
+  && defined(BOOST_ASIO_HAS_MOVE)
   ASSERT_EQ(0U, copy_latch.value());
 #endif
 } // TEST(handler_storage, move_support)

@@ -100,7 +100,7 @@ include_directories(${CPP_HEADERS_DIR})
 add_executable(${PROJECT_NAME} ${CPP_HEADERS} ${CPP_SOURCES})
 target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
 
-if(NOT NO_CMAKE_DIR_SOURCE_GROUP)
+if(NOT ASIO_SAMPLES_NO_CMAKE_DIR_SOURCE_GROUP)
     # Group files according to file path
     ma_dir_source_group("Header Files" "${CPP_HEADERS_DIR}" "${CPP_HEADERS}")
     ma_dir_source_group("Source Files" "${SOURCES_DIR}" "${CPP_SOURCES}")

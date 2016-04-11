@@ -17,6 +17,12 @@
 
 namespace ma {
 namespace test {
+
+void count_down(detail::latch& latch)
+{
+  latch.count_down();
+}
+
 namespace lockable_wrapper {
 
 typedef std::string data_type;
@@ -52,8 +58,7 @@ TEST(lockable_wrapper, simple)
 
     io_service.post(ma::make_lockable_wrapped_handler(mutex, detail::bind(
         mutating_func1, detail::ref(data), continuation(
-            detail::bind(&detail::latch::count_down,
-                detail::ref(done_latch))))));
+            detail::bind(count_down, detail::ref(done_latch))))));
 
     data = "Zero";
   }
