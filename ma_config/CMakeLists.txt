@@ -6,7 +6,7 @@
 #
 
 cmake_minimum_required(VERSION 2.8.11)
-project(shared_ptr_factory_test)
+project(ma_config)
 
 find_package(Boost REQUIRED)
 
@@ -16,39 +16,24 @@ if(NOT Boost_USE_STATIC_LIBS)
     add_definitions(-DBOOST_ALL_DYN_LINK)
 endif()
 
-# Google Test framework
-if(NOT MA_OWN_GTEST)
-    find_package(GTest QUIET)
-endif()
-
-set(PROJECT_BASE_DIR "${PROJECT_SOURCE_DIR}/../../..")
+set(PROJECT_BASE_DIR "${PROJECT_SOURCE_DIR}")
 set(SOURCES_DIR      "${PROJECT_BASE_DIR}/src")
-set(TEST_SOURCES_DIR "${PROJECT_BASE_DIR}/test")
 set(CPP_HEADERS_DIR  "${PROJECT_BASE_DIR}/include")
 
 set(CPP_HEADERS
-    "${CPP_HEADERS_DIR}/ma/detail/memory.hpp"
-    "${CPP_HEADERS_DIR}/ma/shared_ptr_factory.hpp")
+    "${CPP_HEADERS_DIR}/ma/config.hpp")
 
 set(CPP_SOURCES
-    "${TEST_SOURCES_DIR}/shared_ptr_factory_test.cpp")
+    "${SOURCES_DIR}/fake.cpp")
 
-set(LIBRARIES
-    ${Boost_LIBRARIES}
-    ${GTEST_BOTH_LIBRARIES}
-    ma_config)
+set(LIBRARIES ${Boost_LIBRARIES})
 
-# MSVC 2012 doesn't work with Google Test and tuple
-# (even with GTest own tuple implementation)
-if (MSVC AND MSVC_VERSION GREATER 1600 AND MSVC_VERSION LESS 1800)
-    add_definitions(-DGTEST_HAS_TR1_TUPLE=0)
-endif()
+include_directories(${Boost_INCLUDE_DIRS})
+include_directories(${CPP_HEADERS_DIR})
 
-add_executable(${PROJECT_NAME} ${CPP_HEADERS} ${CPP_SOURCES})
-target_include_directories(${PROJECT_NAME} PRIVATE
+add_library(${PROJECT_NAME} ${CPP_HEADERS} ${CPP_SOURCES})
+target_include_directories(${PROJECT_NAME} INTERFACE
     ${Boost_INCLUDE_DIRS}
-    ${GTEST_INCLUDE_DIRS}
-    $<TARGET_PROPERTY:ma_config,INTERFACE_INCLUDE_DIRECTORIES>
     ${CPP_HEADERS_DIR})
 target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
 

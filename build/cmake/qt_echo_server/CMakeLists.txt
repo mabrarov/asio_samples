@@ -101,7 +101,6 @@ set(CPP_HEADERS
     "${CPP_HEADERS_DIR}/ma/detail/tuple.hpp"
     "${CPP_HEADERS_DIR}/ma/detail/utility.hpp"
     "${CPP_HEADERS_DIR}/ma/bind_handler.hpp"
-    "${CPP_HEADERS_DIR}/ma/config.hpp"
     "${CPP_HEADERS_DIR}/ma/context_alloc_handler.hpp"
     "${CPP_HEADERS_DIR}/ma/context_wrapped_handler.hpp"
     "${CPP_HEADERS_DIR}/ma/custom_alloc_handler.hpp"
@@ -141,7 +140,8 @@ endif()
 
 set(LIBRARIES
     "${Boost_LIBRARIES}"
-    "${Qt_LIBRARIES}")
+    "${Qt_LIBRARIES}"
+    ma_config)
 
 if(QT_ECHO_SERVER_USE_QT5)
     # Determine linkage type of Qt libraries (via linkage type of Qt Core library)
@@ -239,9 +239,6 @@ if(UNIX AND BOOST_HAS_CHRONO)
         "rt")
 endif()
 
-include_directories(${Boost_INCLUDE_DIRS})
-include_directories(${CPP_HEADERS_DIR})
-
 # Required for Qt UIC
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -260,6 +257,10 @@ add_executable(${PROJECT_NAME} WIN32
     ${CPP_HEADERS} ${CPP_SOURCES}
     ${NATIVE_RESOURCES} ${NATIVE_RESOURCE_HEADERS}
     ${MOC_GENERATED_SOURCES} ${QRC_GENERATED_SOURCES} ${UIC_GENERATED_HEADERS})
+target_include_directories(${PROJECT_NAME} PRIVATE
+    ${Boost_INCLUDE_DIRS}
+    $<TARGET_PROPERTY:ma_config,INTERFACE_INCLUDE_DIRECTORIES>
+    ${CPP_HEADERS_DIR})
 target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
 
 source_group("Form Files" FILES
@@ -273,7 +274,7 @@ source_group("Resource Files" FILES
     ${NATIVE_RESOURCE_HEADERS}
     ${QRC_RESOURCES})
 
-if(NOT ASIO_SAMPLES_NO_CMAKE_DIR_SOURCE_GROUP)
+if(NOT MA_NO_CMAKE_DIR_SOURCE_GROUP)
     # Group files according to file path
     ma_dir_source_group("Header Files" "${CPP_HEADERS_DIR}" "${CPP_HEADERS}")
     ma_dir_source_group("Source Files" "${SOURCES_DIR}" "${CPP_SOURCES}")

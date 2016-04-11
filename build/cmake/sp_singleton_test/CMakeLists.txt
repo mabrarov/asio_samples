@@ -31,7 +31,7 @@ endif()
 find_package(Boost REQUIRED COMPONENTS ${BOOST_COMPONENTS})
 
 # Google Test framework
-if(NOT ASIO_SAMPLES_OWN_GTEST)
+if(NOT MA_OWN_GTEST)
     find_package(GTest QUIET)
 endif()
 
@@ -46,7 +46,6 @@ set(CPP_HEADERS
     "${CPP_HEADERS_DIR}/ma/detail/memory.hpp"
     "${CPP_HEADERS_DIR}/ma/detail/sp_singleton.hpp"
     "${CPP_HEADERS_DIR}/ma/detail/thread.hpp"
-    "${CPP_HEADERS_DIR}/ma/config.hpp"
     "${CPP_HEADERS_DIR}/ma/limited_int.hpp"
     "${CPP_HEADERS_DIR}/ma/shared_ptr_factory.hpp")
 
@@ -55,7 +54,8 @@ set(CPP_SOURCES
 
 set(LIBRARIES
     ${Boost_LIBRARIES}
-    ${GTEST_BOTH_LIBRARIES})
+    ${GTEST_BOTH_LIBRARIES}
+    ma_config)
 
 # Required Winsock libraries
 if(WIN32)
@@ -76,13 +76,15 @@ if (MSVC AND MSVC_VERSION GREATER 1600 AND MSVC_VERSION LESS 1800)
     add_definitions(-DGTEST_HAS_TR1_TUPLE=0)
 endif()
 
-include_directories(${Boost_INCLUDE_DIRS})
-include_directories(${GTEST_INCLUDE_DIRS})
-include_directories(${CPP_HEADERS_DIR})
 add_executable(${PROJECT_NAME} ${CPP_HEADERS} ${CPP_SOURCES})
+target_include_directories(${PROJECT_NAME} PRIVATE
+    ${Boost_INCLUDE_DIRS}
+    ${GTEST_INCLUDE_DIRS}
+    $<TARGET_PROPERTY:ma_config,INTERFACE_INCLUDE_DIRECTORIES>
+    ${CPP_HEADERS_DIR})
 target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
 
-if(NOT ASIO_SAMPLES_NO_CMAKE_DIR_SOURCE_GROUP)
+if(NOT MA_NO_CMAKE_DIR_SOURCE_GROUP)
     # Group files according to file path
     ma_dir_source_group("Header Files" "${CPP_HEADERS_DIR}" "${CPP_HEADERS}")
     ma_dir_source_group("Source Files" "${SOURCES_DIR}" "${CPP_SOURCES}")
