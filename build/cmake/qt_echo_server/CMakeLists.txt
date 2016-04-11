@@ -8,39 +8,52 @@
 cmake_minimum_required(VERSION 2.8.11)
 project(qt_echo_server)
 
+set(project_base_dir "${PROJECT_SOURCE_DIR}/../../..")
+set(cxx_headers_dir  "${project_base_dir}/include")
+set(cxx_sources_dir  "${project_base_dir}/src")
+
+set(cxx_compile_definitions )
+set(cxx_headers )
+set(cxx_sources )
+set(cxx_libraries )
+
+set(uic_forms )
+set(qrc_resources )
+set(moc_headers )
+set(native_resources )
+set(native_resource_headers )
+
+set(moc_headers )
+set(uic_generated_headers )
+set(qrc_generated_sources )
+
 # Just determine version of Boost C++ Libraries
 find_package(Boost REQUIRED)
-
-# Enforce linkage with shared build of Boost C++ Libraries in case
-# there is no request for linkage with static build
-if(NOT Boost_USE_STATIC_LIBS)
-    add_definitions(-DBOOST_ALL_DYN_LINK)
-endif()
 
 # Build list of used Boost libraries depending on Boost version
 # (use Boost.Chrono if available)
 set(BOOST_COMPONENTS "system;thread;date_time;regex")
 if(NOT(${Boost_VERSION} LESS 104700))
     set(BOOST_COMPONENTS "${BOOST_COMPONENTS};chrono")
-    set(BOOST_HAS_CHRONO TRUE)
+    set(ma_boost_has_chrono TRUE)
 else()
-    set(BOOST_HAS_CHRONO FALSE)
+    set(ma_boost_has_chrono FALSE)
 endif()
 
 # Attach used Boost libraries
 find_package(Boost REQUIRED COMPONENTS ${BOOST_COMPONENTS})
 
 # Determine major version of Qt to use (Qt 5 is predeferred)
-if(NOT DEFINED QT_ECHO_SERVER_USE_QT5)
-    set(QT_ECHO_SERVER_USE_QT5 TRUE)
+if(NOT DEFINED ma_qt_echo_server_use_qt5)
+    set(ma_qt_echo_server_use_qt5 TRUE)
     find_package(Qt5Widgets QUIET)
     if(NOT Qt5Widgets_FOUND)
-        set(QT_ECHO_SERVER_USE_QT5 FALSE)
+        set(ma_qt_echo_server_use_qt5 FALSE)
     endif()
 endif()
 
 # Find required Qt libraries
-if(QT_ECHO_SERVER_USE_QT5)
+if(ma_qt_echo_server_use_qt5)
     find_package(Qt5Widgets REQUIRED)
     find_package(Qt5Gui     REQUIRED)
     find_package(Qt5Core    REQUIRED)
@@ -50,125 +63,119 @@ else()
     set(Qt_LIBRARIES "Qt4::QtCore;Qt4::QtGui")
 endif()
 
-set(PROJECT_BASE_DIR "${PROJECT_SOURCE_DIR}/../../..")
-set(SOURCES_DIR      "${PROJECT_BASE_DIR}/src")
-set(CPP_HEADERS_DIR  "${PROJECT_BASE_DIR}/include")
-
-set(UIC_FORMS
-    "${SOURCES_DIR}/ma/echo/server/qt/mainform.ui")
-
-set(QRC_RESOURCES )
-
-set(MOC_HEADERS
-    "${CPP_HEADERS_DIR}/ma/echo/server/qt/mainform.h"
-    "${CPP_HEADERS_DIR}/ma/echo/server/qt/service.h"
-    "${CPP_HEADERS_DIR}/ma/echo/server/qt/serviceforwardsignal.h"
-    "${CPP_HEADERS_DIR}/ma/echo/server/qt/serviceservantsignal.h")
-
-set(CPP_HEADERS
-    "${CPP_HEADERS_DIR}/ma/echo/server/qt/custommetatypes.h"
-    "${CPP_HEADERS_DIR}/ma/echo/server/qt/execution_config.h"
-    "${CPP_HEADERS_DIR}/ma/echo/server/qt/execution_config_fwd.h"
-    "${CPP_HEADERS_DIR}/ma/echo/server/qt/serviceforwardsignal_fwd.h"
-    "${CPP_HEADERS_DIR}/ma/echo/server/qt/serviceservantsignal_fwd.h"
-    "${CPP_HEADERS_DIR}/ma/echo/server/qt/servicestate.h"
-    "${CPP_HEADERS_DIR}/ma/echo/server/qt/service_fwd.h"
-    "${CPP_HEADERS_DIR}/ma/echo/server/qt/meta_type_register_error.h"
-    "${CPP_HEADERS_DIR}/ma/echo/server/qt/signal_connect_error.h"
-    "${CPP_HEADERS_DIR}/ma/echo/server/session_config_fwd.hpp"
-    "${CPP_HEADERS_DIR}/ma/echo/server/session_manager_config_fwd.hpp"
-    "${CPP_HEADERS_DIR}/ma/echo/server/session_manager_stats.hpp"
-    "${CPP_HEADERS_DIR}/ma/echo/server/session_manager_stats_fwd.hpp"
-    "${CPP_HEADERS_DIR}/ma/echo/server/session_config.hpp"
-    "${CPP_HEADERS_DIR}/ma/echo/server/session_manager_config.hpp"
-    "${CPP_HEADERS_DIR}/ma/echo/server/session_fwd.hpp"
-    "${CPP_HEADERS_DIR}/ma/echo/server/session_manager_fwd.hpp"
-    "${CPP_HEADERS_DIR}/ma/echo/server/error.hpp"
-    "${CPP_HEADERS_DIR}/ma/echo/server/session.hpp"
-    "${CPP_HEADERS_DIR}/ma/echo/server/session_manager.hpp"
-    "${CPP_HEADERS_DIR}/ma/echo/server/session_manager_fwd.hpp"
-    "${CPP_HEADERS_DIR}/ma/echo/server/pooled_session_factory.hpp"
-    "${CPP_HEADERS_DIR}/ma/echo/server/session_factory.hpp"
-    "${CPP_HEADERS_DIR}/ma/echo/server/session_factory_fwd.hpp"
-    "${CPP_HEADERS_DIR}/ma/echo/server/simple_session_factory.hpp"
-    "${CPP_HEADERS_DIR}/ma/detail/binder.hpp"
-    "${CPP_HEADERS_DIR}/ma/detail/functional.hpp"
-    "${CPP_HEADERS_DIR}/ma/detail/handler_ptr.hpp"
-    "${CPP_HEADERS_DIR}/ma/detail/intrusive_list.hpp"
-    "${CPP_HEADERS_DIR}/ma/detail/memory.hpp"
-    "${CPP_HEADERS_DIR}/ma/detail/service_base.hpp"
-    "${CPP_HEADERS_DIR}/ma/detail/thread.hpp"
-    "${CPP_HEADERS_DIR}/ma/detail/tuple.hpp"
-    "${CPP_HEADERS_DIR}/ma/detail/utility.hpp"
-    "${CPP_HEADERS_DIR}/ma/bind_handler.hpp"
-    "${CPP_HEADERS_DIR}/ma/context_alloc_handler.hpp"
-    "${CPP_HEADERS_DIR}/ma/context_wrapped_handler.hpp"
-    "${CPP_HEADERS_DIR}/ma/custom_alloc_handler.hpp"
-    "${CPP_HEADERS_DIR}/ma/cyclic_buffer.hpp"
-    "${CPP_HEADERS_DIR}/ma/handler_alloc_helpers.hpp"
-    "${CPP_HEADERS_DIR}/ma/handler_allocator.hpp"
-    "${CPP_HEADERS_DIR}/ma/handler_cont_helpers.hpp"
-    "${CPP_HEADERS_DIR}/ma/handler_invoke_helpers.hpp"
-    "${CPP_HEADERS_DIR}/ma/handler_storage.hpp"
-    "${CPP_HEADERS_DIR}/ma/handler_storage_service.hpp"
-    "${CPP_HEADERS_DIR}/ma/limited_int.hpp"
-    "${CPP_HEADERS_DIR}/ma/shared_ptr_factory.hpp"
-    "${CPP_HEADERS_DIR}/ma/sp_intrusive_list.hpp"
-    "${CPP_HEADERS_DIR}/ma/steady_deadline_timer.hpp"
-    "${CPP_HEADERS_DIR}/ma/strand.hpp"
-    "${CPP_HEADERS_DIR}/ma/strand_wrapped_handler.hpp"
-    "${CPP_HEADERS_DIR}/ma/thread_group.hpp"
-    "${CPP_HEADERS_DIR}/ma/detail/type_traits.hpp"
-    ${MOC_HEADERS})
-
-set(CPP_SOURCES
-    "${SOURCES_DIR}/ma/echo/server/qt/custommetatypes.cpp"
-    "${SOURCES_DIR}/ma/echo/server/qt/service.cpp"
-    "${SOURCES_DIR}/ma/echo/server/qt/mainform.cpp"
-    "${SOURCES_DIR}/ma/echo/server/error.cpp"
-    "${SOURCES_DIR}/ma/echo/server/session.cpp"
-    "${SOURCES_DIR}/ma/echo/server/session_manager.cpp"
-    "${SOURCES_DIR}/ma/echo/server/pooled_session_factory.cpp"
-    "${SOURCES_DIR}/ma/echo/server/simple_session_factory.cpp"
-    "${SOURCES_DIR}/qt_echo_server/main.cpp")
-
-set(NATIVE_RESOURCES )
-set(NATIVE_RESOURCE_HEADERS )
-if(WIN32)
-    list(APPEND NATIVE_RESOURCES "${SOURCES_DIR}/qt_echo_server/qt_echo_server.rc")
+# Enforce linkage with shared build of Boost C++ Libraries in case
+# there is no request for linkage with static build
+if(NOT Boost_USE_STATIC_LIBS)
+    list(APPEND cxx_compile_definitions "BOOST_ALL_DYN_LINK")
 endif()
 
-set(LIBRARIES
+list(APPEND uic_forms
+    "${cxx_sources_dir}/ma/echo/server/qt/mainform.ui")
+
+list(APPEND moc_headers
+    "${cxx_headers_dir}/ma/echo/server/qt/mainform.h"
+    "${cxx_headers_dir}/ma/echo/server/qt/service.h"
+    "${cxx_headers_dir}/ma/echo/server/qt/serviceforwardsignal.h"
+    "${cxx_headers_dir}/ma/echo/server/qt/serviceservantsignal.h")
+
+list(APPEND cxx_headers
+    "${cxx_headers_dir}/ma/echo/server/qt/custommetatypes.h"
+    "${cxx_headers_dir}/ma/echo/server/qt/execution_config.h"
+    "${cxx_headers_dir}/ma/echo/server/qt/execution_config_fwd.h"
+    "${cxx_headers_dir}/ma/echo/server/qt/serviceforwardsignal_fwd.h"
+    "${cxx_headers_dir}/ma/echo/server/qt/serviceservantsignal_fwd.h"
+    "${cxx_headers_dir}/ma/echo/server/qt/servicestate.h"
+    "${cxx_headers_dir}/ma/echo/server/qt/service_fwd.h"
+    "${cxx_headers_dir}/ma/echo/server/qt/meta_type_register_error.h"
+    "${cxx_headers_dir}/ma/echo/server/qt/signal_connect_error.h"
+    "${cxx_headers_dir}/ma/echo/server/session_config_fwd.hpp"
+    "${cxx_headers_dir}/ma/echo/server/session_manager_config_fwd.hpp"
+    "${cxx_headers_dir}/ma/echo/server/session_manager_stats.hpp"
+    "${cxx_headers_dir}/ma/echo/server/session_manager_stats_fwd.hpp"
+    "${cxx_headers_dir}/ma/echo/server/session_config.hpp"
+    "${cxx_headers_dir}/ma/echo/server/session_manager_config.hpp"
+    "${cxx_headers_dir}/ma/echo/server/session_fwd.hpp"
+    "${cxx_headers_dir}/ma/echo/server/session_manager_fwd.hpp"
+    "${cxx_headers_dir}/ma/echo/server/error.hpp"
+    "${cxx_headers_dir}/ma/echo/server/session.hpp"
+    "${cxx_headers_dir}/ma/echo/server/session_manager.hpp"
+    "${cxx_headers_dir}/ma/echo/server/session_manager_fwd.hpp"
+    "${cxx_headers_dir}/ma/echo/server/pooled_session_factory.hpp"
+    "${cxx_headers_dir}/ma/echo/server/session_factory.hpp"
+    "${cxx_headers_dir}/ma/echo/server/session_factory_fwd.hpp"
+    "${cxx_headers_dir}/ma/echo/server/simple_session_factory.hpp"
+    "${cxx_headers_dir}/ma/detail/binder.hpp"
+    "${cxx_headers_dir}/ma/detail/handler_ptr.hpp"
+    "${cxx_headers_dir}/ma/detail/intrusive_list.hpp"
+    "${cxx_headers_dir}/ma/detail/service_base.hpp"
+    "${cxx_headers_dir}/ma/bind_handler.hpp"
+    "${cxx_headers_dir}/ma/context_alloc_handler.hpp"
+    "${cxx_headers_dir}/ma/context_wrapped_handler.hpp"
+    "${cxx_headers_dir}/ma/custom_alloc_handler.hpp"
+    "${cxx_headers_dir}/ma/cyclic_buffer.hpp"
+    "${cxx_headers_dir}/ma/handler_alloc_helpers.hpp"
+    "${cxx_headers_dir}/ma/handler_allocator.hpp"
+    "${cxx_headers_dir}/ma/handler_cont_helpers.hpp"
+    "${cxx_headers_dir}/ma/handler_invoke_helpers.hpp"
+    "${cxx_headers_dir}/ma/handler_storage.hpp"
+    "${cxx_headers_dir}/ma/handler_storage_service.hpp"
+    "${cxx_headers_dir}/ma/limited_int.hpp"
+    "${cxx_headers_dir}/ma/shared_ptr_factory.hpp"
+    "${cxx_headers_dir}/ma/sp_intrusive_list.hpp"
+    "${cxx_headers_dir}/ma/steady_deadline_timer.hpp"
+    "${cxx_headers_dir}/ma/strand.hpp"
+    "${cxx_headers_dir}/ma/strand_wrapped_handler.hpp"
+    "${cxx_headers_dir}/ma/thread_group.hpp"
+    ${moc_headers})
+
+list(APPEND cxx_sources
+    "${cxx_sources_dir}/ma/echo/server/qt/custommetatypes.cpp"
+    "${cxx_sources_dir}/ma/echo/server/qt/service.cpp"
+    "${cxx_sources_dir}/ma/echo/server/qt/mainform.cpp"
+    "${cxx_sources_dir}/ma/echo/server/error.cpp"
+    "${cxx_sources_dir}/ma/echo/server/session.cpp"
+    "${cxx_sources_dir}/ma/echo/server/session_manager.cpp"
+    "${cxx_sources_dir}/ma/echo/server/pooled_session_factory.cpp"
+    "${cxx_sources_dir}/ma/echo/server/simple_session_factory.cpp"
+    "${cxx_sources_dir}/qt_echo_server/main.cpp")
+
+if(WIN32)
+    list(APPEND native_resources
+        "${cxx_sources_dir}/qt_echo_server/qt_echo_server.rc")
+endif()
+
+list(APPEND cxx_libraries
     "${Boost_LIBRARIES}"
     "${Qt_LIBRARIES}"
-    ma_config)
+    ma_config
+    ma_compat)
 
-if(QT_ECHO_SERVER_USE_QT5)
+set(ma_qt_static FALSE)
+if(ma_qt_echo_server_use_qt5)
     # Determine linkage type of Qt libraries (via linkage type of Qt Core library)
     get_property(Qt5_Core_TYPE TARGET Qt5::Core PROPERTY TYPE)
-    set(QT5_IS_STATIC false)
     if(${Qt5_Core_TYPE} STREQUAL "STATIC_LIBRARY")
-        set(QT5_IS_STATIC true)
+        set(ma_qt_static TRUE)
     endif()
 
     # Statically linked Qt requires:
     #     All libraries used by Qt internally to be linked explicitly to the target.
     #     Used Qt plugins to be linked explicitly to the target.
-    if(QT5_IS_STATIC)
+    if(ma_qt_static)
         # Qt CMake files use IMPORTED_LINK_DEPENDENT_LIBRARIES instead of INTERFACE_LINK_LIBRARIES for OpenGL dependencies.
         # So we need to add those transitive (in case of static linkage) dependencies explicitly.
-        list(APPEND LIBRARIES
+        list(APPEND cxx_libraries
             "${Qt5Gui_EGL_LIBRARIES}"
             "${Qt5Gui_OPENGL_LIBRARIES}")
 
         # Add required platform integration plugins
         if(WIN32)
-            list(APPEND LIBRARIES "Qt5::QWindowsIntegrationPlugin")
+            list(APPEND cxx_libraries "Qt5::QWindowsIntegrationPlugin")
         else()
             # todo:
             # add support for the rest of platforms supported by Qt
             # by linking with platform specific plugin
-            # (add platfrom integration plugin to LIBRARIES)
+            # (add platfrom integration plugin to cxx_libraries)
         endif()
 
         # Some Qt libraries have no cmake files so wee need to search them ourselves
@@ -180,16 +187,16 @@ if(QT_ECHO_SERVER_USE_QT5)
         #     FindQt5PCRE.cmake
 
         find_package(Qt5PlatformSupport REQUIRED)
-        list(APPEND LIBRARIES "Qt5::PlatformSupport")
+        list(APPEND cxx_libraries "Qt5::PlatformSupport")
 
         find_package(ICU REQUIRED COMPONENTS i18n uc data)
-        list(APPEND LIBRARIES "${ICU_LIBRARIES}")
+        list(APPEND cxx_libraries "${ICU_LIBRARIES}")
 
         # Starting from Qt 5.4.0 HarfBuzz-NG library is included (at least Windows version of Qt 5.4.0)
         if(WIN32 AND NOT(${Qt5Gui_VERSION} VERSION_LESS "5.4.0"))
             find_package(Qt5HarfBuzzNG QUIET)
             if(Qt5HarfBuzzNG_FOUND)
-                list(APPEND LIBRARIES "Qt5::HarfBuzzNG")
+                list(APPEND cxx_libraries "Qt5::HarfBuzzNG")
             endif()
         endif()
 
@@ -197,7 +204,7 @@ if(QT_ECHO_SERVER_USE_QT5)
         if(WIN32 AND NOT(${Qt5Gui_VERSION} VERSION_LESS "5.5.0"))
             find_package(Qt5FreeType QUIET)
             if(Qt5FreeType_FOUND)
-                list(APPEND LIBRARIES "Qt5::FreeType")
+                list(APPEND cxx_libraries "Qt5::FreeType")
             endif()
         endif()
 
@@ -205,7 +212,7 @@ if(QT_ECHO_SERVER_USE_QT5)
         if(WIN32 AND NOT(${Qt5Core_VERSION} VERSION_LESS "5.5.0"))
             find_package(Qt5PCRE QUIET)
             if(Qt5PCRE_FOUND)
-                list(APPEND LIBRARIES "Qt5::PCRE")
+                list(APPEND cxx_libraries "Qt5::PCRE")
             endif()
         endif()
     endif()
@@ -215,12 +222,13 @@ else()
     #     Used Qt plugins to be linked explicitly to the target.
     if(QT_IS_STATIC)
         # Nothing to add as no Qt 4 plugins are used.
+        set(ma_qt_static TRUE)
     endif()
 endif()
 
 # Required Windows libraries
 if(WIN32)
-    list(APPEND LIBRARIES
+    list(APPEND cxx_libraries
         "ws2_32"
         "mswsock"
         "comdlg32"
@@ -234,8 +242,8 @@ if(WIN32)
 endif()
 
 # Boost.Chrono requires rt library on *nix
-if(UNIX AND BOOST_HAS_CHRONO)
-    list(APPEND LIBRARIES
+if(UNIX AND ma_boost_has_chrono)
+    list(APPEND cxx_libraries
         "rt")
 endif()
 
@@ -243,39 +251,47 @@ endif()
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # Wrap Qt generated sources.
-if(QT_ECHO_SERVER_USE_QT5)
-    qt5_wrap_cpp(MOC_GENERATED_SOURCES ${MOC_HEADERS})
-    qt5_wrap_ui(UIC_GENERATED_HEADERS ${UIC_FORMS})
-    qt5_add_resources(QRC_GENERATED_SOURCES ${QRC_RESOURCES})
+if(ma_qt_echo_server_use_qt5)
+    qt5_wrap_cpp(moc_generated_sources ${moc_headers})
+    qt5_wrap_ui(uic_generated_headers ${uic_forms})
+    qt5_add_resources(qrc_generated_sources ${qrc_resources})
 else()
-    qt4_wrap_cpp(MOC_GENERATED_SOURCES ${MOC_HEADERS})
-    qt4_wrap_ui(UIC_GENERATED_HEADERS ${UIC_FORMS})
-    qt4_add_resources(QRC_GENERATED_SOURCES ${QRC_RESOURCES})
+    qt4_wrap_cpp(moc_generated_sources ${moc_headers})
+    qt4_wrap_ui(uic_generated_headers ${uic_forms})
+    qt4_add_resources(qrc_generated_sources ${qrc_resources})
 endif()
 
 add_executable(${PROJECT_NAME} WIN32
-    ${CPP_HEADERS} ${CPP_SOURCES}
-    ${NATIVE_RESOURCES} ${NATIVE_RESOURCE_HEADERS}
-    ${MOC_GENERATED_SOURCES} ${QRC_GENERATED_SOURCES} ${UIC_GENERATED_HEADERS})
+    ${cxx_headers}
+    ${cxx_sources}
+    ${native_resources}
+    ${native_resource_headers}
+    ${moc_generated_sources}
+    ${qrc_generated_sources}
+    ${uic_generated_headers})
+target_compile_definitions(${PROJECT_NAME} PRIVATE
+    ${cxx_compile_definitions})
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${Boost_INCLUDE_DIRS}
     $<TARGET_PROPERTY:ma_config,INTERFACE_INCLUDE_DIRECTORIES>
-    ${CPP_HEADERS_DIR})
-target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
+    $<TARGET_PROPERTY:ma_compat,INTERFACE_INCLUDE_DIRECTORIES>
+    ${cxx_headers_dir})
+target_link_libraries(${PROJECT_NAME}
+    ${cxx_libraries})
 
 source_group("Form Files" FILES
-    ${UIC_FORMS})
+    ${uic_forms})
 source_group("Generated Files" FILES
-    ${MOC_GENERATED_SOURCES}
-    ${QRC_GENERATED_SOURCES}
-    ${UIC_GENERATED_HEADERS})
+    ${moc_generated_sources}
+    ${qrc_generated_sources}
+    ${uic_generated_headers})
 source_group("Resource Files" FILES
-    ${NATIVE_RESOURCES}
-    ${NATIVE_RESOURCE_HEADERS}
-    ${QRC_RESOURCES})
+    ${native_resources}
+    ${native_resource_headers}
+    ${qrc_resources})
 
-if(NOT MA_NO_CMAKE_DIR_SOURCE_GROUP)
+if(NOT ma_no_cmake_dir_source_group)
     # Group files according to file path
-    ma_dir_source_group("Header Files" "${CPP_HEADERS_DIR}" "${CPP_HEADERS}")
-    ma_dir_source_group("Source Files" "${SOURCES_DIR}" "${CPP_SOURCES}")
+    ma_dir_source_group("Header Files" "${cxx_headers_dir}" "${cxx_headers}")
+    ma_dir_source_group("Source Files" "${cxx_sources_dir}" "${cxx_sources}")
 endif()

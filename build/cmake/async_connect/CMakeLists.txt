@@ -8,87 +8,93 @@
 cmake_minimum_required(VERSION 2.8.11)
 project(async_connect)
 
+set(project_base_dir "${PROJECT_SOURCE_DIR}/../../..")
+set(cxx_headers_dir  "${project_base_dir}/include")
+set(cxx_sources_dir  "${project_base_dir}/src")
+
+set(cxx_compile_definitions )
+set(cxx_headers )
+set(cxx_sources )
+set(cxx_libraries )
+
 # Just determine version of Boost C++ Libraries
 find_package(Boost REQUIRED)
-
-# Enforce linkage with shared build of Boost C++ Libraries in case
-# there is no request for linkage with static build
-if(NOT Boost_USE_STATIC_LIBS)
-    add_definitions(-DBOOST_ALL_DYN_LINK)
-endif()
 
 # Build list of used Boost libraries depending on Boost version
 # (use Boost.Chrono and Boost.Timer if available)
 set(BOOST_COMPONENTS "system;thread;date_time;program_options;regex")
 if(NOT(${Boost_VERSION} LESS 104700))
     set(BOOST_COMPONENTS "${BOOST_COMPONENTS};chrono")
-    set(BOOST_HAS_CHRONO TRUE)
+    set(ma_boost_has_chrono TRUE)
 else()
-    set(BOOST_HAS_CHRONO FALSE)
+    set(ma_boost_has_chrono FALSE)
 endif()
 if(NOT(${Boost_VERSION} LESS 104800))
     set(BOOST_COMPONENTS "${BOOST_COMPONENTS};timer")
-    set(BOOST_HAS_TIMER TRUE)
+    set(ma_boost_has_timer TRUE)
 else()
-    set(BOOST_HAS_TIMER FALSE)
+    set(ma_boost_has_timer FALSE)
 endif()
 
 # Attach used Boost libraries
 find_package(Boost REQUIRED COMPONENTS ${BOOST_COMPONENTS})
 
-set(PROJECT_BASE_DIR "${PROJECT_SOURCE_DIR}/../../..")
-set(SOURCES_DIR      "${PROJECT_BASE_DIR}/src")
-set(CPP_HEADERS_DIR  "${PROJECT_BASE_DIR}/include")
+# Enforce linkage with shared build of Boost C++ Libraries in case
+# there is no request for linkage with static build
+if(NOT Boost_USE_STATIC_LIBS)
+    list(APPEND cxx_compile_definitions "BOOST_ALL_DYN_LINK")
+endif()
 
-set(CPP_HEADERS
-    "${CPP_HEADERS_DIR}/ma/detail/binder.hpp"
-    "${CPP_HEADERS_DIR}/ma/detail/functional.hpp"
-    "${CPP_HEADERS_DIR}/ma/detail/memory.hpp"
-    "${CPP_HEADERS_DIR}/ma/detail/thread.hpp"
-    "${CPP_HEADERS_DIR}/ma/async_connect.hpp"
-    "${CPP_HEADERS_DIR}/ma/bind_handler.hpp"
-    "${CPP_HEADERS_DIR}/ma/context_wrapped_handler.hpp"
-    "${CPP_HEADERS_DIR}/ma/custom_alloc_handler.hpp"
-    "${CPP_HEADERS_DIR}/ma/handler_alloc_helpers.hpp"
-    "${CPP_HEADERS_DIR}/ma/handler_allocator.hpp"
-    "${CPP_HEADERS_DIR}/ma/handler_cont_helpers.hpp"
-    "${CPP_HEADERS_DIR}/ma/handler_invoke_helpers.hpp"
-    "${CPP_HEADERS_DIR}/ma/limited_int.hpp"
-    "${CPP_HEADERS_DIR}/ma/steady_deadline_timer.hpp"
-    "${CPP_HEADERS_DIR}/ma/strand.hpp"
-    "${CPP_HEADERS_DIR}/ma/strand_wrapped_handler.hpp"
-    "${CPP_HEADERS_DIR}/ma/thread_group.hpp"
-    "${CPP_HEADERS_DIR}/ma/detail/type_traits.hpp")
+list(APPEND cxx_headers
+    "${cxx_headers_dir}/ma/detail/binder.hpp"
+    "${cxx_headers_dir}/ma/async_connect.hpp"
+    "${cxx_headers_dir}/ma/bind_handler.hpp"
+    "${cxx_headers_dir}/ma/context_wrapped_handler.hpp"
+    "${cxx_headers_dir}/ma/custom_alloc_handler.hpp"
+    "${cxx_headers_dir}/ma/handler_alloc_helpers.hpp"
+    "${cxx_headers_dir}/ma/handler_allocator.hpp"
+    "${cxx_headers_dir}/ma/handler_cont_helpers.hpp"
+    "${cxx_headers_dir}/ma/handler_invoke_helpers.hpp"
+    "${cxx_headers_dir}/ma/limited_int.hpp"
+    "${cxx_headers_dir}/ma/steady_deadline_timer.hpp"
+    "${cxx_headers_dir}/ma/strand.hpp"
+    "${cxx_headers_dir}/ma/strand_wrapped_handler.hpp"
+    "${cxx_headers_dir}/ma/thread_group.hpp")
 
-set(CPP_SOURCES
-    "${SOURCES_DIR}/async_connect/main.cpp")
+list(APPEND cxx_sources
+    "${cxx_sources_dir}/async_connect/main.cpp")
 
-set(LIBRARIES
+list(APPEND cxx_libraries
     ${Boost_LIBRARIES}
-    ma_config)
+    ma_config
+    ma_compat)
 
 # Required Winsock libraries
 if(WIN32)
-    list(APPEND LIBRARIES
+    list(APPEND cxx_libraries
         "ws2_32"
         "mswsock")
 endif()
 
 # Boost.Chrono requires rt library on *nix
-if(UNIX AND BOOST_HAS_CHRONO)
-    list(APPEND LIBRARIES
+if(UNIX AND ma_boost_has_chrono)
+    list(APPEND cxx_libraries
         "rt")
 endif()
 
-add_executable(${PROJECT_NAME} ${CPP_HEADERS} ${CPP_SOURCES})
+add_executable(${PROJECT_NAME} ${cxx_headers} ${cxx_sources})
+target_compile_definitions(${PROJECT_NAME} PRIVATE
+    ${cxx_compile_definitions})
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${Boost_INCLUDE_DIRS}
     $<TARGET_PROPERTY:ma_config,INTERFACE_INCLUDE_DIRECTORIES>
-    ${CPP_HEADERS_DIR})
-target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
+    $<TARGET_PROPERTY:ma_compat,INTERFACE_INCLUDE_DIRECTORIES>
+    ${cxx_headers_dir})
+target_link_libraries(${PROJECT_NAME}
+    ${cxx_libraries})
 
-if(NOT MA_NO_CMAKE_DIR_SOURCE_GROUP)
+if(NOT ma_no_cmake_dir_source_group)
     # Group files according to file path
-    ma_dir_source_group("Header Files" "${CPP_HEADERS_DIR}" "${CPP_HEADERS}")
-    ma_dir_source_group("Source Files" "${SOURCES_DIR}" "${CPP_SOURCES}")
+    ma_dir_source_group("Header Files" "${cxx_headers_dir}" "${cxx_headers}")
+    ma_dir_source_group("Source Files" "${cxx_sources_dir}" "${cxx_sources}")
 endif()

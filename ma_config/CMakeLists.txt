@@ -15,7 +15,7 @@ set(cxx_headers_dir  "${project_base_dir}/include")
 set(cxx_compile_definitions )
 set(cxx_headers )
 set(cxx_sources )
-set(cxx_libraries ${Boost_LIBRARIES})
+set(cxx_libraries )
 
 find_package(Boost REQUIRED)
 
@@ -34,7 +34,9 @@ list(APPEND cxx_sources
 list(APPEND cxx_libraries
     ${Boost_LIBRARIES})
 
-add_library(${PROJECT_NAME} ${cxx_headers} ${cxx_sources})
+add_library(${PROJECT_NAME}
+    ${cxx_headers}
+    ${cxx_sources})
 target_compile_definitions(${PROJECT_NAME} INTERFACE
     ${cxx_compile_definitions})
 target_include_directories(${PROJECT_NAME} INTERFACE
@@ -43,7 +45,7 @@ target_include_directories(${PROJECT_NAME} INTERFACE
 target_link_libraries(${PROJECT_NAME}
     ${cxx_libraries})
 
-if(NOT MA_NO_CMAKE_DIR_SOURCE_GROUP)
+if(NOT ma_no_cmake_dir_source_group)
     # Group files according to file path
     ma_dir_source_group("Header Files" "${cxx_headers_dir}" "${cxx_headers}")
     ma_dir_source_group("Source Files" "${cxx_sources_dir}" "${cxx_sources}")
