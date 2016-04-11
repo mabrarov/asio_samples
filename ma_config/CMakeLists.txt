@@ -8,37 +8,43 @@
 cmake_minimum_required(VERSION 2.8.11)
 project(ma_config)
 
+set(project_base_dir "${PROJECT_SOURCE_DIR}")
+set(cxx_sources_dir  "${project_base_dir}/src")
+set(cxx_headers_dir  "${project_base_dir}/include")
+
+set(cxx_compile_definitions )
+set(cxx_headers )
+set(cxx_sources )
+set(cxx_libraries ${Boost_LIBRARIES})
+
 find_package(Boost REQUIRED)
 
 # Enforce linkage with shared build of Boost C++ Libraries in case
 # there is no request for linkage with static build
 if(NOT Boost_USE_STATIC_LIBS)
-    add_definitions(-DBOOST_ALL_DYN_LINK)
+    list(APPEND cxx_compile_definitions "BOOST_ALL_DYN_LINK")
 endif()
 
-set(PROJECT_BASE_DIR "${PROJECT_SOURCE_DIR}")
-set(SOURCES_DIR      "${PROJECT_BASE_DIR}/src")
-set(CPP_HEADERS_DIR  "${PROJECT_BASE_DIR}/include")
+list(APPEND cxx_headers
+    "${cxx_headers_dir}/ma/config.hpp")
 
-set(CPP_HEADERS
-    "${CPP_HEADERS_DIR}/ma/config.hpp")
+list(APPEND cxx_sources
+    "${cxx_sources_dir}/fake.cpp")
 
-set(CPP_SOURCES
-    "${SOURCES_DIR}/fake.cpp")
+list(APPEND cxx_libraries
+    ${Boost_LIBRARIES})
 
-set(LIBRARIES ${Boost_LIBRARIES})
-
-include_directories(${Boost_INCLUDE_DIRS})
-include_directories(${CPP_HEADERS_DIR})
-
-add_library(${PROJECT_NAME} ${CPP_HEADERS} ${CPP_SOURCES})
+add_library(${PROJECT_NAME} ${cxx_headers} ${cxx_sources})
+target_compile_definitions(${PROJECT_NAME} INTERFACE
+    ${cxx_compile_definitions})
 target_include_directories(${PROJECT_NAME} INTERFACE
     ${Boost_INCLUDE_DIRS}
-    ${CPP_HEADERS_DIR})
-target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
+    ${cxx_headers_dir})
+target_link_libraries(${PROJECT_NAME}
+    ${cxx_libraries})
 
 if(NOT MA_NO_CMAKE_DIR_SOURCE_GROUP)
     # Group files according to file path
-    ma_dir_source_group("Header Files" "${CPP_HEADERS_DIR}" "${CPP_HEADERS}")
-    ma_dir_source_group("Source Files" "${SOURCES_DIR}" "${CPP_SOURCES}")
+    ma_dir_source_group("Header Files" "${cxx_headers_dir}" "${cxx_headers}")
+    ma_dir_source_group("Source Files" "${cxx_sources_dir}" "${cxx_sources}")
 endif()
