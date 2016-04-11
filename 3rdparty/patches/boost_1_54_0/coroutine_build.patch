@@ -1,0 +1,11 @@
+--- libs/coroutine/build/Jamfile.v2	—р май 22 20:10:52 2013
++++ libs/coroutine/build/Jamfile.v2	—р июл  3 10:35:23 2013
+@@ -40,7 +40,7 @@
+     : detail/standard_stack_allocator_posix.cpp
+     ;
+ 
+-explicit yield_sources ;
++explicit allocator_sources ;
+ 
+ lib boost_coroutine
+     : allocator_sources

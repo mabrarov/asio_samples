@@ -1,0 +1,89 @@
+--- boost/program_options/errors.hpp	Âñ ìàé  6 22:13:25 2012
++++ boost/program_options/errors.hpp	Ïò èþí 29 23:42:14 2012
+@@ -250,7 +250,7 @@
+         }
+ 
+         /** Does NOT set option name, because no option name makes sense */
+-        virtual void set_option_name(const std::string& option_name){}
++        virtual void set_option_name(const std::string& /*option_name*/){}
+ 
+         ~error_with_no_option_name() throw() {}
+     };
+
+--- boost/utility/in_place_factory.hpp	Ïò èþë 16 01:19:14 2010
++++ boost/utility/in_place_factory.hpp	Ïò èþí 29 23:44:49 2012
+@@ -31,6 +31,11 @@
+ #else
+ #define N BOOST_PP_ITERATION()
+ 
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4512)
++#endif // #if defined(_MSC_VER)
++
+ #if N
+ template< BOOST_PP_ENUM_PARAMS(N, class A) >
+ #endif
+@@ -67,6 +72,10 @@
+   BOOST_PP_REPEAT(N, BOOST_DEFINE_INPLACE_FACTORY_CLASS_MEMBER_DECL, _)
+ };
+ 
++#if defined(_MSC_VER)
++#pragma warning(pop)
++#endif // #if defined(_MSC_VER)
++
+ #if N > 0
+ template< BOOST_PP_ENUM_PARAMS(N, class A) >
+ inline BOOST_PP_CAT(in_place_factory,N)< BOOST_PP_ENUM_PARAMS(N, A) >
+
+--- boost/utility/base_from_member.hpp	Âñ íîÿ 28 06:27:25 2004
++++ boost/utility/base_from_member.hpp	Ïò èþí 29 23:45:45 2012
+@@ -62,6 +62,11 @@
+ 
+ // Contributed by Daryle Walker
+ 
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4512)
++#endif // #if defined(_MSC_VER)
++
+ template < typename MemberType, int UniqueID = 0 >
+ class base_from_member
+ {
+@@ -77,6 +82,10 @@
+ 
+ };  // boost::base_from_member
+ 
++#if defined(_MSC_VER)
++#pragma warning(pop)
++#endif // #if defined(_MSC_VER)
++
+ }  // namespace boost
+ 
+ 
+--- boost/program_options/options_description.hpp	Âñ àïð  8 14:02:26 2012
++++ boost/program_options/options_description.hpp	Ïò èþí 29 23:45:03 2012
+@@ -170,6 +170,12 @@
+         See @ref a_adding_options "here" for option adding interface discussion.
+         @sa option_description
+     */
++
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4512)
++#endif // #if defined(_MSC_VER)
++
+     class BOOST_PROGRAM_OPTIONS_DECL options_description {
+     public:
+         static const unsigned m_default_line_length;
+@@ -260,6 +266,10 @@
+ 
+     };
+ 
++#if defined(_MSC_VER)
++#pragma warning(pop)
++#endif // #if defined(_MSC_VER)
++
+     /** Class thrown when duplicate option description is found. */
+     class BOOST_PROGRAM_OPTIONS_DECL duplicate_option_error : public error {
+     public:
