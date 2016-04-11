@@ -6,7 +6,7 @@
 #
 
 cmake_minimum_required(VERSION 2.8.11)
-project(ma_sp_intrusive_list)
+project(ma_service_base)
 
 set(project_base_dir "${PROJECT_SOURCE_DIR}")
 set(cxx_headers_dir  "${project_base_dir}/include")
@@ -21,15 +21,13 @@ set(cxx_libraries )
 find_package(Boost REQUIRED)
 
 list(APPEND cxx_headers
-    "${cxx_headers_dir}/ma/sp_intrusive_list.hpp")
+    "${cxx_headers_dir}/ma/detail/service_base.hpp")
 
 list(APPEND cxx_sources
     "${cxx_sources_dir}/fake.cpp")
 
 list(APPEND cxx_libraries
-    ${Boost_LIBRARIES}
-    ma_config
-    ma_compat)
+    ${Boost_LIBRARIES})
 
 add_library(${PROJECT_NAME}
     ${cxx_headers}
@@ -38,8 +36,6 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC
     ${cxx_compile_definitions})
 target_include_directories(${PROJECT_NAME} PUBLIC
     ${Boost_INCLUDE_DIRS}
-    $<TARGET_PROPERTY:ma_config,INTERFACE_INCLUDE_DIRECTORIES>
-    $<TARGET_PROPERTY:ma_compat,INTERFACE_INCLUDE_DIRECTORIES>
     ${cxx_headers_dir})
 target_link_libraries(${PROJECT_NAME} PUBLIC
     ${cxx_libraries})

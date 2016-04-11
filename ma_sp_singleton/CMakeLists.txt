@@ -9,8 +9,8 @@ cmake_minimum_required(VERSION 2.8.11)
 project(ma_sp_singleton)
 
 set(project_base_dir "${PROJECT_SOURCE_DIR}")
-set(cxx_sources_dir  "${project_base_dir}/src")
 set(cxx_headers_dir  "${project_base_dir}/include")
+set(cxx_sources_dir  "${project_base_dir}/src")
 
 set(cxx_compile_definitions )
 set(cxx_headers )
