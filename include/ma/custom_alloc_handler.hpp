@@ -127,13 +127,27 @@ public:
 
   friend void* asio_handler_allocate(std::size_t size, this_type* context)
   {
-    return context->allocator_->allocate(size);
+    if (void* ptr = context->allocator_->allocate(size))
+    {
+      return ptr;
+    }
+    else
+    {
+      return ma_handler_alloc_helpers::allocate(size, context->handler_);
+    }
   }
 
-  friend void asio_handler_deallocate(void* pointer, std::size_t /*size*/,
+  friend void asio_handler_deallocate(void* pointer, std::size_t size,
       this_type* context)
   {
-    context->allocator_->deallocate(pointer);
+    if (context->allocator_->owns(pointer))
+    {
+      context->allocator_->deallocate(pointer);
+    }
+    else
+    {
+      ma_handler_alloc_helpers::deallocate(pointer, size, context->handler_);
+    }
   }
 
 #if defined(MA_HAS_RVALUE_REFS)

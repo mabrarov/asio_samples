@@ -1,4 +1,4 @@
-# 
+#
 # Copyright (c) 2010-2015 Marat Abrarov (abrarov@gmail.com)
 #
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
@@ -24,3 +24,7 @@ set(Boost_USE_STATIC_LIBS    ON)
 set(Boost_USE_STATIC_RUNTIME ON)
 
 set(ICU_USE_STATIC_LIBS      ON)
+
+if(MSVC)
+    set(GTEST_MSVC_SEARCH    "MT")
+endif()

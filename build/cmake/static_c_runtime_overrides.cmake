@@ -21,3 +21,7 @@ if(MINGW)
 endif()
 
 set(ICU_USE_STATIC_LIBS ON)
+
+if(MSVC)
+    set(GTEST_MSVC_SEARCH "MT")
+endif()

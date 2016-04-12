@@ -11,6 +11,12 @@ project(echo_server)
 # Just determine version of Boost C++ Libraries
 find_package(Boost REQUIRED)
 
+# Enforce linkage with shared build of Boost C++ Libraries in case
+# there is no request for linkage with static build
+if(NOT Boost_USE_STATIC_LIBS)
+    add_definitions(-DBOOST_ALL_DYN_LINK)
+endif()
+
 # Build list of used Boost libraries depending on Boost version
 # (use Boost.Chrono if available)
 set(BOOST_COMPONENTS "system;thread;date_time;program_options;regex")
@@ -112,7 +118,7 @@ include_directories(${CPP_HEADERS_DIR})
 add_executable(${PROJECT_NAME} ${CPP_HEADERS} ${CPP_SOURCES})
 target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
 
-if(NOT NO_CMAKE_DIR_SOURCE_GROUP)
+if(NOT ASIO_SAMPLES_NO_CMAKE_DIR_SOURCE_GROUP)
     # Group files according to file path
     ma_dir_source_group("Header Files" "${CPP_HEADERS_DIR}" "${CPP_HEADERS}")
     ma_dir_source_group("Source Files" "${SOURCES_DIR}" "${CPP_SOURCES}")

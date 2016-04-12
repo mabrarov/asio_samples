@@ -1,0 +1,12 @@
+--- src/gtest-death-test.cc	2013-09-18 18:29:48
++++ src/gtest-death-test.cc	2016-04-09 12:40:35
+@@ -130,6 +130,9 @@
+ bool InDeathTestChild() {
+ # if GTEST_OS_WINDOWS
+ 
++  // Avoid unused variable warning with MinGW
++  (void) g_in_fast_death_test_child;
++
+   // On Windows, death tests are thread-safe regardless of the value of the
+   // death_test_style flag.
+   return !GTEST_FLAG(internal_run_death_test).empty();
