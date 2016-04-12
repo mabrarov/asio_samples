@@ -34,14 +34,14 @@ list(APPEND cxx_libraries
 add_library(${PROJECT_NAME}
     ${cxx_headers}
     ${cxx_sources})
-target_compile_definitions(${PROJECT_NAME} PUBLIC
+target_compile_definitions(${PROJECT_NAME}
+    PUBLIC
     ${cxx_compile_definitions})
-target_include_directories(${PROJECT_NAME} PUBLIC
-    ${Boost_INCLUDE_DIRS}
-    $<TARGET_PROPERTY:ma_config,INTERFACE_INCLUDE_DIRECTORIES>
-    $<TARGET_PROPERTY:ma_compat,INTERFACE_INCLUDE_DIRECTORIES>
-    ${cxx_headers_dir})
-target_link_libraries(${PROJECT_NAME} PUBLIC
+target_include_directories(${PROJECT_NAME}
+    PUBLIC
+    ${Boost_INCLUDE_DIRS} ${cxx_headers_dir})
+target_link_libraries(${PROJECT_NAME}
+    PUBLIC
     ${cxx_libraries})
 
 if(NOT ma_no_cmake_dir_source_group)
