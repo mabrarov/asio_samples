@@ -6,43 +6,34 @@
 #
 
 cmake_minimum_required(VERSION 2.8.11)
-project(sp_singleton_test)
+project(ma_sp_singleton_test)
 
 set(project_base_dir     "${PROJECT_SOURCE_DIR}")
 set(cxx_headers_dir      "${project_base_dir}/include")
 set(cxx_sources_dir      "${project_base_dir}/src")
-set(cxx_test_sources_dir "${project_base_dir}/test")
 
 set(cxx_compile_definitions )
 set(cxx_headers )
 set(cxx_sources )
 set(cxx_libraries )
+set(boost_components )
 
-# Just determine version of Boost C++ Libraries
-find_package(Boost REQUIRED)
-
-# Build list of used Boost libraries depending on Boost version
-# (use Boost.Chrono if available)
-set(boost_components "system;thread;date_time")
-if(NOT(${Boost_VERSION} LESS 104700))
-    set(boost_components "${boost_components};chrono")
-    set(ma_boost_has_chrono TRUE)
-else()
-    set(ma_boost_has_chrono FALSE)
-endif()
+# Select used Boost libraries
+list(APPEND boost_components
+    date_time)
 
 # Attach used Boost libraries
 find_package(Boost REQUIRED COMPONENTS ${boost_components})
-
-# Google Test framework
-if(NOT ma_own_gtest)
-    find_package(GTest QUIET)
-endif()
 
 # Enforce linkage with shared build of Boost C++ Libraries in case
 # there is no request for linkage with static build
 if(NOT Boost_USE_STATIC_LIBS)
     list(APPEND cxx_compile_definitions "BOOST_ALL_DYN_LINK")
+endif()
+
+# Google Test framework
+if(NOT ma_own_gtest)
+    find_package(GTest QUIET)
 endif()
 
 # MSVC 2012 doesn't work with Google Test and tuple
@@ -51,45 +42,32 @@ if (MSVC AND MSVC_VERSION GREATER 1600 AND MSVC_VERSION LESS 1800)
     list(APPEND cxx_compile_definitions GTEST_HAS_TR1_TUPLE=0)
 endif()
 
-list(APPEND cxx_headers
-    "${cxx_headers_dir}/ma/detail/sp_singleton.hpp"
-    "${cxx_headers_dir}/ma/limited_int.hpp"
-    "${cxx_headers_dir}/ma/shared_ptr_factory.hpp")
-
 list(APPEND cxx_sources
-    "${cxx_test_sources_dir}/sp_singleton_test.cpp")
+    "${cxx_sources_dir}/sp_singleton_test.cpp")
 
 list(APPEND cxx_libraries
     ${Boost_LIBRARIES}
     ${GTEST_BOTH_LIBRARIES}
     ma_config
-    ma_compat)
-
-# Required Winsock libraries
-if(WIN32)
-    list(APPEND cxx_libraries
-        "ws2_32"
-        "mswsock")
-endif()
-
-# Boost.Chrono requires rt library on *nix
-if(UNIX AND ma_boost_has_chrono)
-    list(APPEND cxx_libraries
-        "rt")
-endif()
+    ma_compat
+    ma_limited_int
+    ma_thread_group
+    ma_shared_ptr_factory
+    ma_sp_singleton)
 
 add_executable(${PROJECT_NAME}
     ${cxx_headers}
     ${cxx_sources})
-target_compile_definitions(${PROJECT_NAME} PRIVATE
+target_compile_definitions(${PROJECT_NAME}
+    PRIVATE
     ${cxx_compile_definitions})
-target_include_directories(${PROJECT_NAME} PRIVATE
+target_include_directories(${PROJECT_NAME}
+    PRIVATE
     ${Boost_INCLUDE_DIRS}
     ${GTEST_INCLUDE_DIRS}
-    $<TARGET_PROPERTY:ma_config,INTERFACE_INCLUDE_DIRECTORIES>
-    $<TARGET_PROPERTY:ma_compat,INTERFACE_INCLUDE_DIRECTORIES>
     ${cxx_headers_dir})
 target_link_libraries(${PROJECT_NAME}
+    PRIVATE
     ${cxx_libraries})
 
 if(NOT ma_no_cmake_dir_source_group)
