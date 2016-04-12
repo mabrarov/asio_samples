@@ -1,41 +1,27 @@
 #
-# Copyright (c) 2015-2016 Marat Abrarov (abrarov@gmail.com)
+# Copyright (c) 2016 Marat Abrarov (abrarov@gmail.com)
 #
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
 cmake_minimum_required(VERSION 2.8.11)
-project(ma_console_close_signal)
+project(ma_async_connect)
 
 set(project_base_dir "${PROJECT_SOURCE_DIR}")
 set(cxx_headers_dir  "${project_base_dir}/include")
 set(cxx_sources_dir  "${project_base_dir}/src")
-set(boost_components )
 
 set(cxx_compile_definitions )
 set(cxx_headers )
 set(cxx_sources )
 set(cxx_libraries )
 
-# Select used Boost libraries
-list(APPEND boost_components
-    exception
-    system)
-
-# Attach used Boost libraries
-find_package(Boost REQUIRED COMPONENTS ${boost_components})
-
-# Enforce linkage with shared build of Boost C++ Libraries in case
-# there is no request for linkage with static build
-if(NOT Boost_USE_STATIC_LIBS)
-    list(APPEND cxx_compile_definitions "BOOST_ALL_DYN_LINK")
-endif()
+# Attach header only Boost libraries
+find_package(Boost REQUIRED)
 
 list(APPEND cxx_headers
-    "${cxx_headers_dir}/ma/console_close_guard.hpp"
-    "${cxx_headers_dir}/ma/console_close_signal.hpp"
-    "${cxx_headers_dir}/ma/console_close_signal_service.hpp")
+    "${cxx_headers_dir}/ma/async_connect.hpp")
 
 list(APPEND cxx_sources
     "${cxx_sources_dir}/fake.cpp")
@@ -44,11 +30,17 @@ list(APPEND cxx_libraries
     ${Boost_LIBRARIES}
     ma_config
     ma_compat
-    ma_context_alloc_handler
-    ma_windows_console_signal
-    ma_service_base)
+    ma_bind_handler
+    ma_helpers)
 
-add_library(${PROJECT_NAME}
+# Required Winsock libraries
+if(WIN32)
+    list(APPEND cxx_libraries
+        "ws2_32"
+        "mswsock")
+endif()
+
+add_executable(${PROJECT_NAME}
     ${cxx_headers}
     ${cxx_sources})
 target_compile_definitions(${PROJECT_NAME}

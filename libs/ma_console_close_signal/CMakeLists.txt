@@ -6,7 +6,7 @@
 #
 
 cmake_minimum_required(VERSION 2.8.11)
-project(ma_compat)
+project(ma_console_close_signal)
 
 set(project_base_dir "${PROJECT_SOURCE_DIR}")
 set(cxx_headers_dir  "${project_base_dir}/include")
@@ -16,12 +16,12 @@ set(cxx_compile_definitions )
 set(cxx_headers )
 set(cxx_sources )
 set(cxx_libraries )
-
 set(boost_components )
 
 # Select used Boost libraries
 list(APPEND boost_components
-    thread)
+    exception
+    system)
 
 # Attach used Boost libraries
 find_package(Boost REQUIRED COMPONENTS ${boost_components})
@@ -33,20 +33,20 @@ if(NOT Boost_USE_STATIC_LIBS)
 endif()
 
 list(APPEND cxx_headers
-    "${cxx_headers_dir}/ma/detail/functional.hpp"
-    "${cxx_headers_dir}/ma/detail/latch.hpp"
-    "${cxx_headers_dir}/ma/detail/memory.hpp"
-    "${cxx_headers_dir}/ma/detail/thread.hpp"
-    "${cxx_headers_dir}/ma/detail/tuple.hpp"
-    "${cxx_headers_dir}/ma/detail/type_traits.hpp"
-    "${cxx_headers_dir}/ma/detail/utility.hpp")
+    "${cxx_headers_dir}/ma/console_close_guard.hpp"
+    "${cxx_headers_dir}/ma/console_close_signal.hpp"
+    "${cxx_headers_dir}/ma/console_close_signal_service.hpp")
 
 list(APPEND cxx_sources
     "${cxx_sources_dir}/fake.cpp")
 
 list(APPEND cxx_libraries
     ${Boost_LIBRARIES}
-    ma_config)
+    ma_config
+    ma_compat
+    ma_context_alloc_handler
+    ma_windows_console_signal
+    ma_service_base)
 
 add_library(${PROJECT_NAME}
     ${cxx_headers}
