@@ -1,26 +1,27 @@
 #
-# Copyright (c) 2016 Marat Abrarov (abrarov@gmail.com)
+# Copyright (c) 2015-2016 Marat Abrarov (abrarov@gmail.com)
 #
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
 cmake_minimum_required(VERSION 2.8.11)
-project(ma_codecvt_cast)
+project(ma_console_close_signal)
 
 set(project_base_dir "${PROJECT_SOURCE_DIR}")
 set(cxx_headers_dir  "${project_base_dir}/include")
 set(cxx_sources_dir  "${project_base_dir}/src")
+set(boost_components )
 
 set(cxx_compile_definitions )
 set(cxx_headers )
 set(cxx_sources )
 set(cxx_libraries )
-set(boost_components )
 
 # Select used Boost libraries
 list(APPEND boost_components
-    exception)
+    exception
+    system)
 
 # Attach used Boost libraries
 find_package(Boost REQUIRED COMPONENTS ${boost_components})
@@ -32,24 +33,33 @@ if(NOT Boost_USE_STATIC_LIBS)
 endif()
 
 list(APPEND cxx_headers
-    "${cxx_headers_dir}/ma/codecvt_cast.hpp")
+    "${cxx_headers_dir}/ma/console_close_guard.hpp"
+    "${cxx_headers_dir}/ma/console_close_signal.hpp"
+    "${cxx_headers_dir}/ma/console_close_signal_service.hpp")
 
 list(APPEND cxx_sources
     "${cxx_sources_dir}/fake.cpp")
 
 list(APPEND cxx_libraries
     ${Boost_LIBRARIES}
-    ma_compat)
+    ma_config
+    ma_compat
+    ma_context_alloc_handler
+    ma_windows_console_signal
+    ma_service_base)
 
 add_library(${PROJECT_NAME}
     ${cxx_headers}
     ${cxx_sources})
-target_compile_definitions(${PROJECT_NAME} PUBLIC
+target_compile_definitions(${PROJECT_NAME}
+    PUBLIC
     ${cxx_compile_definitions})
-target_include_directories(${PROJECT_NAME} PUBLIC
+target_include_directories(${PROJECT_NAME}
+    PUBLIC
     ${Boost_INCLUDE_DIRS}
     ${cxx_headers_dir})
 target_link_libraries(${PROJECT_NAME}
+    PUBLIC
     ${cxx_libraries})
 
 if(NOT ma_no_cmake_dir_source_group)
