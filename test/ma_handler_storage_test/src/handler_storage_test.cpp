@@ -14,6 +14,7 @@
 #include <boost/utility/in_place_factory.hpp>
 #include <gtest/gtest.h>
 #include <ma/config.hpp>
+#include <ma/bind_handler.hpp>
 #include <ma/handler_allocator.hpp>
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/handler_storage.hpp>

@@ -40,7 +40,7 @@ if(WIN32)
         "mswsock")
 endif()
 
-add_executable(${PROJECT_NAME}
+add_library(${PROJECT_NAME}
     ${cxx_headers}
     ${cxx_sources})
 target_compile_definitions(${PROJECT_NAME}
