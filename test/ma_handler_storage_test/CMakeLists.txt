@@ -67,6 +67,19 @@ list(APPEND cxx_libraries
     ma_thread_group
     ma_io_service_pool)
 
+# Required Winsock libraries
+if(WIN32)
+    list(APPEND cxx_libraries
+        "ws2_32"
+        "mswsock")
+endif()
+
+# Boost.Chrono requires rt library on *nix
+if(UNIX AND ma_boost_has_chrono)
+    list(APPEND cxx_libraries
+        "rt")
+endif()
+
 add_executable(${PROJECT_NAME}
     ${cxx_headers}
     ${cxx_sources})

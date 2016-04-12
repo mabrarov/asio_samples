@@ -10,7 +10,7 @@ project(test)
 
 #add_subdirectory(ma_async_connect_test)
 add_subdirectory(ma_handler_storage_test)
-#add_subdirectory(ma_lockable_wrapper_test)
+add_subdirectory(ma_lockable_wrapper_test)
 #add_subdirectory(ma_shared_ptr_factory_test)
 #add_subdirectory(ma_sp_singleton_test)
 if(WIN32)
