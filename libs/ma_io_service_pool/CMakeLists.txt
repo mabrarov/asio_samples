@@ -6,7 +6,7 @@
 #
 
 cmake_minimum_required(VERSION 2.8.11)
-project(ma_intrusive_list)
+project(ma_io_service_pool)
 
 set(project_base_dir "${PROJECT_SOURCE_DIR}")
 set(cxx_headers_dir  "${project_base_dir}/include")
@@ -15,20 +15,23 @@ set(cxx_sources_dir  "${project_base_dir}/src")
 set(cxx_compile_definitions )
 set(cxx_headers )
 set(cxx_sources )
-set(cxx_libraries )
+set(cxx_public_libraries )
+set(cxx_private_libraries )
 
 # Attach header only Boost libraries
 find_package(Boost REQUIRED)
 
 list(APPEND cxx_headers
-    "${cxx_headers_dir}/ma/detail/intrusive_list.hpp")
+    "${cxx_headers_dir}/ma/test/io_service_pool.hpp")
 
 list(APPEND cxx_sources
-    "${cxx_sources_dir}/fake.cpp")
+    "${cxx_sources_dir}/io_service_pool.cpp")
 
-list(APPEND cxx_libraries
+list(APPEND cxx_public_libraries
     ${Boost_LIBRARIES}
-    ma_config
+    ma_thread_group)
+
+list(APPEND cxx_private_libraries
     ma_compat)
 
 add_library(${PROJECT_NAME}
@@ -43,7 +46,9 @@ target_include_directories(${PROJECT_NAME}
     ${cxx_headers_dir})
 target_link_libraries(${PROJECT_NAME}
     PUBLIC
-    ${cxx_libraries})
+    ${cxx_public_libraries}
+    PRIVATE
+    ${cxx_private_libraries})
 
 if(NOT ma_no_cmake_dir_source_group)
     # Group files according to file path

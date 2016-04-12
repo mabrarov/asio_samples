@@ -6,7 +6,7 @@
 #
 
 cmake_minimum_required(VERSION 2.8.11)
-project(ma_intrusive_list)
+project(ma_limited_int)
 
 set(project_base_dir "${PROJECT_SOURCE_DIR}")
 set(cxx_headers_dir  "${project_base_dir}/include")
@@ -21,15 +21,13 @@ set(cxx_libraries )
 find_package(Boost REQUIRED)
 
 list(APPEND cxx_headers
-    "${cxx_headers_dir}/ma/detail/intrusive_list.hpp")
+    "${cxx_headers_dir}/ma/limited_int.hpp")
 
 list(APPEND cxx_sources
     "${cxx_sources_dir}/fake.cpp")
 
 list(APPEND cxx_libraries
-    ${Boost_LIBRARIES}
-    ma_config
-    ma_compat)
+    ${Boost_LIBRARIES})
 
 add_library(${PROJECT_NAME}
     ${cxx_headers}
