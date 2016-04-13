@@ -19,8 +19,17 @@ set(cxx_libraries )
 set(boost_components )
 
 # Select used Boost libraries
+find_package(Boost REQUIRED)
 list(APPEND boost_components
+    system
     date_time)
+if(NOT(${Boost_VERSION} LESS 104700))
+    list(APPEND boost_components
+        chrono)
+    set(ma_boost_has_chrono TRUE)
+else()
+    set(ma_boost_has_chrono FALSE)
+endif()
 
 # Attach used Boost libraries
 find_package(Boost REQUIRED COMPONENTS ${boost_components})
