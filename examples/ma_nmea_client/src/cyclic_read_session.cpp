@@ -7,9 +7,9 @@
 
 #include <stdexcept>
 #include <ma/shared_ptr_factory.hpp>
-#include <ma/nmea/cyclic_read_session.hpp>
 #include <ma/detail/memory.hpp>
 #include <ma/detail/functional.hpp>
+#include "cyclic_read_session.hpp"
 
 namespace ma {
 namespace nmea {

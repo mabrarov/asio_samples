@@ -5,7 +5,7 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include <ma/nmea/error.hpp>
+#include "error.hpp"
 
 namespace ma {
 namespace nmea {

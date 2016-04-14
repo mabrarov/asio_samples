@@ -31,13 +31,13 @@
 #include <ma/handler_invoke_helpers.hpp>
 #include <ma/handler_cont_helpers.hpp>
 #include <ma/strand_wrapped_handler.hpp>
-#include <ma/nmea/frame.hpp>
-#include <ma/nmea/error.hpp>
-#include <ma/nmea/cyclic_read_session_fwd.hpp>
 #include <ma/detail/tuple.hpp>
 #include <ma/detail/memory.hpp>
 #include <ma/detail/functional.hpp>
 #include <ma/detail/utility.hpp>
+#include "frame.hpp"
+#include "error.hpp"
+#include "cyclic_read_session_fwd.hpp"
 
 namespace ma {
 namespace nmea {

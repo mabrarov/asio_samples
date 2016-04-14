@@ -24,12 +24,12 @@
 #include <ma/handler_allocator.hpp>
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/thread_group.hpp>
-#include <ma/nmea/frame.hpp>
-#include <ma/nmea/cyclic_read_session.hpp>
 #include <ma/console_close_guard.hpp>
 #include <ma/detail/memory.hpp>
 #include <ma/detail/functional.hpp>
 #include <ma/detail/thread.hpp>
+#include "frame.hpp"
+#include "cyclic_read_session.hpp"
 
 typedef std::codecvt<wchar_t, char, mbstate_t>    wcodecvt_type;
 typedef ma::nmea::cyclic_read_session             session;
