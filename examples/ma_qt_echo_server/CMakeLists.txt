@@ -73,7 +73,7 @@ if(ma_qt_echo_server_use_qt5)
 else()
     find_package(Qt4 REQUIRED QtCore QtGui)
     set(qt_libraries
-        Qt4::QtCor
+        Qt4::QtCore
         Qt4::QtGui)
 endif()
 
