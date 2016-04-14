@@ -21,6 +21,7 @@ set(boost_components )
 # Select used Boost libraries
 find_package(Boost REQUIRED)
 list(APPEND boost_components
+    thread
     system
     date_time)
 if(NOT(${Boost_VERSION} LESS 104700))
@@ -63,6 +64,12 @@ list(APPEND cxx_libraries
     ma_config
     ${Boost_LIBRARIES}
     ${GTEST_BOTH_LIBRARIES})
+
+# Boost.Chrono requires rt library on *nix
+if(UNIX AND ma_boost_has_chrono)
+    list(APPEND cxx_libraries
+        rt)
+endif()
 
 add_executable(${PROJECT_NAME}
     ${cxx_headers}
