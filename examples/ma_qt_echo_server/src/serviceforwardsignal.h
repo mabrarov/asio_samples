@@ -14,7 +14,7 @@
 
 #include <boost/system/error_code.hpp>
 #include <QObject>
-#include <ma/echo/server/qt/serviceforwardsignal_fwd.h>
+#include "serviceforwardsignal_fwd.h"
 
 namespace ma {
 namespace echo {

@@ -8,8 +8,8 @@
 #include <boost/throw_exception.hpp>
 #include <boost/system/error_code.hpp>
 #include <QMetaType>
-#include <ma/echo/server/qt/meta_type_register_error.h>
-#include <ma/echo/server/qt/custommetatypes.h>
+#include "meta_type_register_error.h"
+#include "custommetatypes.h"
 
 namespace ma {
 namespace echo {

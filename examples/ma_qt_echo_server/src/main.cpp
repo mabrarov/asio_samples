@@ -15,9 +15,9 @@
 #endif
 #endif
 
-#include <ma/echo/server/qt/service.h>
-#include <ma/echo/server/qt/custommetatypes.h>
-#include <ma/echo/server/qt/mainform.h>
+#include "service.h"
+#include "custommetatypes.h"
+#include "mainform.h"
 
 #if defined(QT_STATIC) || !(defined(QT_DLL) || defined(QT_SHARED))
 #if QT_VERSION >= 0x050000

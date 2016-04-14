@@ -18,11 +18,11 @@
 #include <ma/echo/server/session_config.hpp>
 #include <ma/echo/server/session_manager_config.hpp>
 #include <ma/echo/server/session_manager_stats_fwd.hpp>
-#include <ma/echo/server/qt/service_fwd.h>
-#include <ma/echo/server/qt/servicestate.h>
-#include <ma/echo/server/qt/execution_config.h>
 #include <ma/detail/tuple.hpp>
 #include <ui_mainform.h>
+#include "service_fwd.h"
+#include "servicestate.h"
+#include "execution_config.h"
 
 QT_BEGIN_NAMESPACE
 class QTimer;

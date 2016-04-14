@@ -14,7 +14,7 @@
 
 #include <cstddef>
 #include <boost/assert.hpp>
-#include <ma/echo/server/qt/execution_config_fwd.h>
+#include "execution_config_fwd.h"
 
 namespace ma {
 namespace echo {

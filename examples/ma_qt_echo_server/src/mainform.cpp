@@ -24,10 +24,10 @@ TRANSLATOR ma::echo::server::qt::MainForm
 #include <QSpinBox>
 #include <ma/echo/server/error.hpp>
 #include <ma/echo/server/session_manager_stats.hpp>
-#include <ma/echo/server/qt/service.h>
-#include <ma/echo/server/qt/signal_connect_error.h>
-#include <ma/echo/server/qt/mainform.h>
 #include <ma/detail/thread.hpp>
+#include "service.h"
+#include "signal_connect_error.h"
+#include "mainform.h"
 
 namespace ma {
 namespace echo {

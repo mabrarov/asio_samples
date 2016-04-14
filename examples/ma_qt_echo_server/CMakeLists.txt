@@ -81,21 +81,21 @@ list(APPEND uic_forms
     "${cxx_sources_dir}/mainform.ui")
 
 list(APPEND moc_headers
-    "${cxx_headers_dir}/ma/echo/server/qt/mainform.h"
-    "${cxx_headers_dir}/ma/echo/server/qt/service.h"
-    "${cxx_headers_dir}/ma/echo/server/qt/serviceforwardsignal.h"
-    "${cxx_headers_dir}/ma/echo/server/qt/serviceservantsignal.h")
+    "${cxx_sources_dir}/mainform.h"
+    "${cxx_sources_dir}/service.h"
+    "${cxx_sources_dir}/serviceforwardsignal.h"
+    "${cxx_sources_dir}/serviceservantsignal.h")
 
 list(APPEND cxx_headers
-    "${cxx_headers_dir}/ma/echo/server/qt/custommetatypes.h"
-    "${cxx_headers_dir}/ma/echo/server/qt/execution_config.h"
-    "${cxx_headers_dir}/ma/echo/server/qt/execution_config_fwd.h"
-    "${cxx_headers_dir}/ma/echo/server/qt/serviceforwardsignal_fwd.h"
-    "${cxx_headers_dir}/ma/echo/server/qt/serviceservantsignal_fwd.h"
-    "${cxx_headers_dir}/ma/echo/server/qt/servicestate.h"
-    "${cxx_headers_dir}/ma/echo/server/qt/service_fwd.h"
-    "${cxx_headers_dir}/ma/echo/server/qt/meta_type_register_error.h"
-    "${cxx_headers_dir}/ma/echo/server/qt/signal_connect_error.h"
+    "${cxx_sources_dir}/custommetatypes.h"
+    "${cxx_sources_dir}/execution_config.h"
+    "${cxx_sources_dir}/execution_config_fwd.h"
+    "${cxx_sources_dir}/serviceforwardsignal_fwd.h"
+    "${cxx_sources_dir}/serviceservantsignal_fwd.h"
+    "${cxx_sources_dir}/servicestate.h"
+    "${cxx_sources_dir}/service_fwd.h"
+    "${cxx_sources_dir}/meta_type_register_error.h"
+    "${cxx_sources_dir}/signal_connect_error.h"
     ${moc_headers})
 
 list(APPEND cxx_sources

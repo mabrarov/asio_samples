@@ -19,14 +19,14 @@ TRANSLATOR ma::echo::server::qt::Service
 #include <ma/echo/server/simple_session_factory.hpp>
 #include <ma/echo/server/pooled_session_factory.hpp>
 #include <ma/echo/server/session_manager.hpp>
-#include <ma/echo/server/qt/execution_config.h>
-#include <ma/echo/server/qt/signal_connect_error.h>
-#include <ma/echo/server/qt/serviceforwardsignal.h>
-#include <ma/echo/server/qt/serviceservantsignal.h>
-#include <ma/echo/server/qt/service.h>
 #include <ma/detail/tuple.hpp>
 #include <ma/detail/memory.hpp>
 #include <ma/detail/functional.hpp>
+#include "execution_config.h"
+#include "signal_connect_error.h"
+#include "serviceforwardsignal.h"
+#include "serviceservantsignal.h"
+#include "service.h"
 
 namespace ma {
 namespace echo {

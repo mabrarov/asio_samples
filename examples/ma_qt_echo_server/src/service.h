@@ -16,12 +16,12 @@
 #include <QObject>
 #include <ma/echo/server/session_manager_config_fwd.hpp>
 #include <ma/echo/server/session_manager_stats.hpp>
-#include <ma/echo/server/qt/servicestate.h>
-#include <ma/echo/server/qt/execution_config_fwd.h>
-#include <ma/echo/server/qt/serviceforwardsignal_fwd.h>
-#include <ma/echo/server/qt/serviceservantsignal_fwd.h>
-#include <ma/echo/server/qt/service_fwd.h>
 #include <ma/detail/memory.hpp>
+#include "servicestate.h"
+#include "execution_config_fwd.h"
+#include "serviceforwardsignal_fwd.h"
+#include "serviceservantsignal_fwd.h"
+#include "service_fwd.h"
 
 namespace ma {
 namespace echo {
