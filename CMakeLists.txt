@@ -84,7 +84,7 @@ add_subdirectory(libs/ma_thread_group)
 add_subdirectory(libs/ma_windows_console_signal)
 
 if(ma_build_tests)
-    #add_subdirectory(ma_async_connect_test)
+    add_subdirectory(test/ma_async_connect_test)
     add_subdirectory(test/ma_handler_storage_test)
     add_subdirectory(test/ma_lockable_wrapper_test)
     add_subdirectory(test/ma_shared_ptr_factory_test)
