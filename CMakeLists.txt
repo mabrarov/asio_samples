@@ -94,7 +94,7 @@ if(ma_build_tests)
     endif()
 endif()
 
-#add_subdirectory(examples/ma_asio_performance_test_client)
+add_subdirectory(examples/ma_asio_performance_test_client)
 #add_subdirectory(examples/ma_async_basics)
 #add_subdirectory(examples/ma_async_basics2)
 add_subdirectory(examples/ma_echo_server)

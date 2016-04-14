@@ -16,21 +16,26 @@ set(cxx_compile_definitions )
 set(cxx_headers )
 set(cxx_sources )
 set(cxx_libraries )
+set(boost_components )
 
-# Just determine version of Boost C++ Libraries
+# Select used Boost libraries
 find_package(Boost REQUIRED)
-
-# Build list of used Boost libraries depending on Boost version
-# (use Boost.Chrono and Boost.Timer if available)
-set(boost_components "system;thread;date_time;program_options;regex")
+list(APPEND boost_components
+    thread
+    system
+    date_time
+    regex
+    program_options)
 if(NOT(${Boost_VERSION} LESS 104700))
-    set(boost_components "${boost_components};chrono")
+    list(APPEND boost_components
+        chrono)
     set(ma_boost_has_chrono TRUE)
 else()
     set(ma_boost_has_chrono FALSE)
 endif()
 if(NOT(${Boost_VERSION} LESS 104800))
-    set(boost_components "${boost_components};timer")
+    list(APPEND boost_components
+        timer)
     set(ma_boost_has_timer TRUE)
 else()
     set(ma_boost_has_timer FALSE)
@@ -45,30 +50,20 @@ if(NOT Boost_USE_STATIC_LIBS)
     list(APPEND cxx_compile_definitions "BOOST_ALL_DYN_LINK")
 endif()
 
-list(APPEND cxx_headers
-    "${cxx_headers_dir}/ma/detail/binder.hpp"
-    "${cxx_headers_dir}/ma/async_connect.hpp"
-    "${cxx_headers_dir}/ma/bind_handler.hpp"
-    "${cxx_headers_dir}/ma/context_wrapped_handler.hpp"
-    "${cxx_headers_dir}/ma/custom_alloc_handler.hpp"
-    "${cxx_headers_dir}/ma/cyclic_buffer.hpp"
-    "${cxx_headers_dir}/ma/handler_alloc_helpers.hpp"
-    "${cxx_headers_dir}/ma/handler_allocator.hpp"
-    "${cxx_headers_dir}/ma/handler_invoke_helpers.hpp"
-    "${cxx_headers_dir}/ma/handler_cont_helpers.hpp"
-    "${cxx_headers_dir}/ma/limited_int.hpp"
-    "${cxx_headers_dir}/ma/steady_deadline_timer.hpp"
-    "${cxx_headers_dir}/ma/strand.hpp"
-    "${cxx_headers_dir}/ma/strand_wrapped_handler.hpp"
-    "${cxx_headers_dir}/ma/thread_group.hpp")
-
 list(APPEND cxx_sources
-    "${cxx_sources_dir}/asio_performance_test_client/main.cpp")
+    "${cxx_sources_dir}/main.cpp")
 
 list(APPEND cxx_libraries
-    ${Boost_LIBRARIES}
+    ma_strand
+    ma_thread_group
+    ma_limited_int
+    ma_custom_alloc_handler
+    ma_steady_deadline_timer
+    ma_async_connect
+    ma_cyclic_buffer
+    ma_compat
     ma_config
-    ma_compat)
+    ${Boost_LIBRARIES})
 
 # Required Winsock libraries
 if(WIN32)
@@ -86,14 +81,15 @@ endif()
 add_executable(${PROJECT_NAME}
     ${cxx_headers}
     ${cxx_sources})
-target_compile_definitions(${PROJECT_NAME} PRIVATE
+target_compile_definitions(${PROJECT_NAME}
+    PRIVATE
     ${cxx_compile_definitions})
-target_include_directories(${PROJECT_NAME} PRIVATE
+target_include_directories(${PROJECT_NAME}
+    PRIVATE
     ${Boost_INCLUDE_DIRS}
-    $<TARGET_PROPERTY:ma_config,INTERFACE_INCLUDE_DIRECTORIES>
-    $<TARGET_PROPERTY:ma_compat,INTERFACE_INCLUDE_DIRECTORIES>
     ${cxx_headers_dir})
 target_link_libraries(${PROJECT_NAME}
+    PRIVATE
     ${cxx_libraries})
 
 if(NOT ma_no_cmake_dir_source_group)
