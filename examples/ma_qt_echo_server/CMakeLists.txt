@@ -192,12 +192,12 @@ else()
 endif()
 
 list(APPEND cxx_libraries
-    "${Boost_LIBRARIES}"
-    "${qt_libraries}"
-    ma_compat
-    ma_helpers
+    ma_echo_server_core
     ma_thread_group
-    ma_echo_server_core)
+    ma_helpers
+    ma_compat
+    "${Boost_LIBRARIES}"
+    "${qt_libraries}")
 
 # Required Windows libraries
 if(WIN32)

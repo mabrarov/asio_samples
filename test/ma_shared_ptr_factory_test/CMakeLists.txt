@@ -56,10 +56,10 @@ list(APPEND cxx_sources
     "${cxx_sources_dir}/shared_ptr_factory_test.cpp")
 
 list(APPEND cxx_libraries
-    ${Boost_LIBRARIES}
-    ${GTEST_BOTH_LIBRARIES}
+    ma_shared_ptr_factory
     ma_compat
-    ma_shared_ptr_factory)
+    ${Boost_LIBRARIES}
+    ${GTEST_BOTH_LIBRARIES})
 
 # Required Winsock libraries
 if(WIN32)

@@ -28,8 +28,8 @@ list(APPEND cxx_sources
     "${cxx_sources_dir}/io_service_pool.cpp")
 
 list(APPEND cxx_public_libraries
-    ${Boost_LIBRARIES}
-    ma_thread_group)
+    ma_thread_group
+    ${Boost_LIBRARIES})
 
 list(APPEND cxx_private_libraries
     ma_compat)

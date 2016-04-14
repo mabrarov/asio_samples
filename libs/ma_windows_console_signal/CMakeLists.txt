@@ -40,13 +40,13 @@ list(APPEND cxx_sources
     "${cxx_sources_dir}/console_signal_service.cpp")
 
 list(APPEND cxx_public_libraries
-    ${Boost_LIBRARIES}
-    ma_config
-    ma_compat
-    ma_bind_handler
-    ma_handler_ptr
+    ma_intrusive_list
     ma_service_base
-    ma_intrusive_list)
+    ma_handler_ptr
+    ma_bind_handler
+    ma_compat
+    ma_config
+    ${Boost_LIBRARIES})
 
 list(APPEND cxx_private_libraries
     ma_shared_ptr_factory

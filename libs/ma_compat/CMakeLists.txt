@@ -44,8 +44,8 @@ list(APPEND cxx_sources
     "${cxx_sources_dir}/fake.cpp")
 
 list(APPEND cxx_libraries
-    ${Boost_LIBRARIES}
-    ma_config)
+    ma_config
+    ${Boost_LIBRARIES})
 
 add_library(${PROJECT_NAME}
     ${cxx_headers}

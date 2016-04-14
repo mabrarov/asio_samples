@@ -56,16 +56,16 @@ list(APPEND cxx_sources
     "${cxx_sources_dir}/handler_storage_test.cpp")
 
 list(APPEND cxx_libraries
-    ${Boost_LIBRARIES}
-    ${GTEST_BOTH_LIBRARIES}
-    ma_config
-    ma_compat
-    ma_helpers
-    ma_custom_alloc_handler
-    ma_context_alloc_handler
-    ma_handler_storage
+    ma_io_service_pool
     ma_thread_group
-    ma_io_service_pool)
+    ma_handler_storage
+    ma_context_alloc_handler
+    ma_custom_alloc_handler
+    ma_helpers
+    ma_compat
+    ma_config
+    ${Boost_LIBRARIES}
+    ${GTEST_BOTH_LIBRARIES})
 
 # Required Winsock libraries
 if(WIN32)

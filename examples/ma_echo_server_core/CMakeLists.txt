@@ -68,19 +68,19 @@ list(APPEND cxx_sources
     "${cxx_sources_dir}/simple_session_factory.cpp")
 
 list(APPEND cxx_public_libraries
-    ${Boost_LIBRARIES}
-    ma_config
-    ma_compat
-    ma_bind_handler
-    ma_custom_alloc_handler
-    ma_context_alloc_handler
-    ma_cyclic_buffer
-    ma_intrusive_list
-    ma_sp_intrusive_list
-    ma_limited_int
-    ma_handler_storage
+    ma_steady_deadline_timer
     ma_strand
-    ma_steady_deadline_timer)
+    ma_handler_storage
+    ma_limited_int
+    ma_sp_intrusive_list
+    ma_intrusive_list
+    ma_cyclic_buffer
+    ma_context_alloc_handler
+    ma_custom_alloc_handler
+    ma_bind_handler
+    ma_compat
+    ma_config
+    ${Boost_LIBRARIES})
 
 list(APPEND cxx_private_libraries
     ma_shared_ptr_factory)

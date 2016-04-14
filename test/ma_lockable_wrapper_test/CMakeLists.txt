@@ -56,11 +56,11 @@ list(APPEND cxx_sources
     "${cxx_sources_dir}/lockable_wrapper_test.cpp")
 
 list(APPEND cxx_libraries
-    ${Boost_LIBRARIES}
-    ${GTEST_BOTH_LIBRARIES}
-    ma_compat
+    ma_io_service_pool
     ma_lockable_wrapped_handler
-    ma_io_service_pool)
+    ma_compat
+    ${Boost_LIBRARIES}
+    ${GTEST_BOTH_LIBRARIES})
 
 # Required Winsock libraries
 if(WIN32)

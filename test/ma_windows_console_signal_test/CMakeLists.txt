@@ -56,13 +56,13 @@ list(APPEND cxx_sources
     "${cxx_sources_dir}/windows_console_signal_test.cpp")
 
 list(APPEND cxx_libraries
-    ${Boost_LIBRARIES}
-    ${GTEST_BOTH_LIBRARIES}
-    ma_config
-    ma_compat
-    ma_custom_alloc_handler
+    ma_windows_console_signal
     ma_context_alloc_handler
-    ma_windows_console_signal)
+    ma_custom_alloc_handler
+    ma_compat
+    ma_config
+    ${Boost_LIBRARIES}
+    ${GTEST_BOTH_LIBRARIES})
 
 # Required Winsock libraries
 if(WIN32)

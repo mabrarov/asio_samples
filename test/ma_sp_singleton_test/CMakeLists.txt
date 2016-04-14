@@ -55,14 +55,14 @@ list(APPEND cxx_sources
     "${cxx_sources_dir}/sp_singleton_test.cpp")
 
 list(APPEND cxx_libraries
-    ${Boost_LIBRARIES}
-    ${GTEST_BOTH_LIBRARIES}
-    ma_config
-    ma_compat
-    ma_limited_int
-    ma_thread_group
+    ma_sp_singleton
     ma_shared_ptr_factory
-    ma_sp_singleton)
+    ma_thread_group
+    ma_limited_int
+    ma_compat
+    ma_config
+    ${Boost_LIBRARIES}
+    ${GTEST_BOTH_LIBRARIES})
 
 add_executable(${PROJECT_NAME}
     ${cxx_headers}

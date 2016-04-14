@@ -51,15 +51,15 @@ list(APPEND cxx_sources
     "${cxx_sources_dir}/main.cpp")
 
 list(APPEND cxx_libraries
-    ${Boost_LIBRARIES}
-    ma_config
-    ma_compat
-    ma_custom_alloc_handler
-    ma_helpers
-    ma_thread_group
-    ma_steady_deadline_timer
+    ma_echo_server_core
     ma_console_close_signal
-    ma_echo_server_core)
+    ma_steady_deadline_timer
+    ma_thread_group
+    ma_helpers
+    ma_custom_alloc_handler
+    ma_compat
+    ma_config
+    ${Boost_LIBRARIES})
 
 # Required Winsock libraries
 if(WIN32)
