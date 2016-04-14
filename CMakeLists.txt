@@ -8,10 +8,8 @@
 cmake_minimum_required(VERSION 3.0)
 project(asio_samples)
 
-# Assume ma_build_tests=ON by default
-if(NOT DEFINED ma_build_tests)
-    set(ma_build_tests ON)
-endif()
+option(ma_build_tests "Build tests" ON)
+option(ma_force_own_gtest_usage "Use own (embedded) version of Google Test framework" OFF)
 
 set(cmake_module_dir "${PROJECT_SOURCE_DIR}/cmake")
 
@@ -41,10 +39,10 @@ endif()
 
 # Google Test framework
 if(ma_build_tests)
-    if(NOT ma_use_own_gtest)
+    if(NOT ma_force_own_gtest_usage)
         find_package(GTest QUIET)
     endif()
-    if(ma_use_own_gtest OR NOT GTEST_FOUND)
+    if(ma_force_own_gtest_usage OR NOT GTEST_FOUND)
         add_subdirectory(3rdparty/gtest)
         set(ma_own_gtest ON)
         set(GTEST_LIBRARIES        gtest)
