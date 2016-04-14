@@ -10,10 +10,10 @@
 #include <ma/shared_ptr_factory.hpp>
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/strand_wrapped_handler.hpp>
-#include <ma/tutorial/async_implementation.hpp>
 #include <ma/detail/memory.hpp>
 #include <ma/detail/functional.hpp>
 #include <ma/detail/utility.hpp>
+#include "async_implementation.hpp"
 
 namespace ma {
 namespace tutorial {

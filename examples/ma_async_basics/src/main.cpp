@@ -22,11 +22,11 @@
 #include <ma/console_close_guard.hpp>
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/thread_group.hpp>
-#include <ma/tutorial/async_interface.hpp>
-#include <ma/tutorial/async_implementation.hpp>
 #include <ma/detail/memory.hpp>
 #include <ma/detail/functional.hpp>
 #include <ma/detail/thread.hpp>
+#include "async_interface.hpp"
+#include "async_implementation.hpp"
 
 namespace {
 

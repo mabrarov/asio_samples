@@ -18,8 +18,8 @@
 #include <boost/format.hpp>
 #include <ma/handler_allocator.hpp>
 #include <ma/steady_deadline_timer.hpp>
-#include <ma/tutorial/async_interface.hpp>
 #include <ma/detail/memory.hpp>
+#include "async_interface.hpp"
 
 namespace ma {
 namespace tutorial {
