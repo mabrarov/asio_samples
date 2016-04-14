@@ -11,11 +11,11 @@
 #include <ma/shared_ptr_factory.hpp>
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/strand_wrapped_handler.hpp>
-#include <ma/tutorial2/do_something_handler.hpp>
-#include <ma/tutorial2/async_implementation.hpp>
 #include <ma/detail/memory.hpp>
 #include <ma/detail/functional.hpp>
 #include <ma/detail/utility.hpp>
+#include "do_something_handler.hpp"
+#include "async_implementation.hpp"
 
 namespace ma {
 namespace tutorial2 {

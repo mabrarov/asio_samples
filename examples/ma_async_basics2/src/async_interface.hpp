@@ -12,8 +12,8 @@
 #pragma once
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
-#include <ma/tutorial2/do_something_handler_fwd.hpp>
 #include <ma/detail/memory.hpp>
+#include "do_something_handler_fwd.hpp"
 
 namespace ma {
 namespace tutorial2 {

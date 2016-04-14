@@ -21,12 +21,12 @@
 #include <ma/handler_allocator.hpp>
 #include <ma/console_close_guard.hpp>
 #include <ma/thread_group.hpp>
-#include <ma/tutorial2/async_interface.hpp>
-#include <ma/tutorial2/async_implementation.hpp>
-#include <ma/tutorial2/do_something_handler.hpp>
 #include <ma/detail/memory.hpp>
 #include <ma/detail/functional.hpp>
 #include <ma/detail/thread.hpp>
+#include "async_interface.hpp"
+#include "async_implementation.hpp"
+#include "do_something_handler.hpp"
 
 namespace {
 
