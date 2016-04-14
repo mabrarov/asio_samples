@@ -5,7 +5,7 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
-cmake_minimum_required(VERSION 2.8.11)
+cmake_minimum_required(VERSION 3.0)
 project(ma_asio_performance_test_client)
 
 set(project_base_dir "${PROJECT_SOURCE_DIR}")
@@ -80,7 +80,7 @@ endif()
 # Boost.Chrono requires rt library on *nix
 if(UNIX AND ma_boost_has_chrono)
     list(APPEND cxx_libraries
-        "rt")
+        rt)
 endif()
 
 add_executable(${PROJECT_NAME}
