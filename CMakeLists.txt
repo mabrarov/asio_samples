@@ -41,10 +41,10 @@ endif()
 
 # Google Test framework
 if(ma_build_tests)
-    if(NOT MA_USE_OWN_GTEST)
+    if(NOT ma_use_own_gtest)
         find_package(GTest QUIET)
     endif()
-    if(MA_USE_OWN_GTEST OR NOT GTEST_FOUND)
+    if(ma_use_own_gtest OR NOT GTEST_FOUND)
         add_subdirectory(3rdparty/gtest)
         set(ma_own_gtest ON)
         set(GTEST_LIBRARIES        gtest)

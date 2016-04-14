@@ -10,10 +10,10 @@ pattern by means of Boost C++ Libraries.
 CMake project
 -------------
 
-Use `ASIO_SAMPLES_BUILD_TESTS` to exclude tests from build (tests are included by default):
+Use `ma_build_tests` to exclude tests from build (tests are included by default):
 
 ```
-cmake -D ASIO_SAMPLES_BUILD_TESTS=OFF ...
+cmake -D ma_build_tests=OFF ...
 ```
 
 CMake project uses:
