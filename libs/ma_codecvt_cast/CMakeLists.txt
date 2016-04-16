@@ -50,6 +50,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     ${Boost_INCLUDE_DIRS}
     ${cxx_headers_dir})
 target_link_libraries(${PROJECT_NAME}
+    PUBLIC
     ${cxx_libraries})
 
 if(NOT ma_no_cmake_dir_source_group)
