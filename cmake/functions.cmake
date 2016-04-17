@@ -12,7 +12,7 @@ cmake_minimum_required(VERSION 2.8.11)
 #   files    - files or directories to scan (list).
 #   base_dir - directory being considered as a base for sub-directories which need to be found.
 #   results  - name of variable to store list of sub-directories.
-function(MA_LIST_SUBDIRS files base_dir results)
+function(ma_list_subdirs files base_dir results)
     get_filename_component(cmake_base_dir "${base_dir}" ABSOLUTE)
     file(TO_CMAKE_PATH "${cmake_base_dir}" cmake_base_dir)
 
@@ -60,7 +60,7 @@ endfunction()
 #   filter_dir - directory which is used to filter souce list. 
 #                Only files located directly in this directory are returned.
 #   results    - name of variable to store filtered list.
-function(MA_FILTER_FILES files base_dir filter_dir results)
+function(ma_filter_files files base_dir filter_dir results)
     get_filename_component(cmake_base_dir "${base_dir}" ABSOLUTE)
     get_filename_component(cmake_filter_dir "${filter_dir}" ABSOLUTE)
     file(TO_CMAKE_PATH "${cmake_base_dir}"   cmake_base_dir)
@@ -97,7 +97,7 @@ endfunction()
 #                     with base source group name. 
 #   files           - files (list) to associate with source groups built according to relative 
 #                     (comparing with base_dir) paths.
-function(MA_DIR_SOURCE_GROUP base_group_name base_dir files)
+function(ma_dir_source_group base_group_name base_dir files)
     ma_list_subdirs("${files}" "${base_dir}" subdirs)
     foreach(subdir IN LISTS subdirs)
         string(REPLACE "/" "\\" subdir_group_name "${base_group_name}/${subdir}")
