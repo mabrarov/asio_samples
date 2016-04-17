@@ -152,11 +152,10 @@ function(config_additional_compile_options result)
         endif()
     endif()
     # Turn on more strict warning mode
-    if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
-        list(APPEND compile_options
-            "-Wall"
-            "-Wno-long-long"
-            "-pedantic")
+    if(MSVC)
+        list(APPEND compile_options "/W4")
+    elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
+        list(APPEND compile_options "-Wall" "-Wno-long-long" "-pedantic")
     endif()
     set(${result} "${compile_options}" PARENT_SCOPE)
 endfunction()

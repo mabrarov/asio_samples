@@ -16,8 +16,8 @@ if(MSVC)
     set(CMAKE_C_FLAGS_RELWITHDEBINFO_INIT "/MT /Zi /O2 /Ob1 /D NDEBUG")
 endif()
 
-if(MINGW)
-    set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static ${CMAKE_EXE_LINKER_FLAGS}")
+if(CMAKE_COMPILER_IS_GNUCC)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
 endif()
 
 set(ICU_USE_STATIC_LIBS ON)
