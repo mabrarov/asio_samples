@@ -12,7 +12,8 @@ set(project_base_dir "${PROJECT_SOURCE_DIR}")
 set(cxx_headers_dir  "${project_base_dir}/include")
 set(cxx_sources_dir  "${project_base_dir}/src")
 
-set(cxx_compile_definitions )
+set(cxx_compile_options     ${cxx_base_compile_options})
+set(cxx_compile_definitions ${cxx_base_compile_definitions})
 set(cxx_headers )
 set(cxx_sources )
 set(cxx_libraries )
@@ -83,6 +84,9 @@ endif()
 add_executable(${PROJECT_NAME}
     ${cxx_headers}
     ${cxx_sources})
+target_compile_options(${PROJECT_NAME}
+    PRIVATE
+    ${cxx_compile_options})
 target_compile_definitions(${PROJECT_NAME}
     PRIVATE
     ${cxx_compile_definitions})

@@ -16,26 +16,24 @@ set(cmake_module_dir "${PROJECT_SOURCE_DIR}/cmake")
 # Setup path for additional CMake modules
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${cmake_module_dir})
 
-# Setup compiler & linker options
-include(${cmake_module_dir}/compiler_options.cmake)
-include(${cmake_module_dir}/linker_options.cmake)
-
 # Additional helpers
-include(${cmake_module_dir}/functions.cmake)
+include(${cmake_module_dir}/internal_utils.cmake)
 
-# Additional preprocessor definitions for Windows target
-if(WIN32)
-    add_definitions(
-        -DWIN32
-        -DWIN32_LEAN_AND_MEAN
-        -DWINVER=0x0501
-        -D_WIN32_WINNT=0x0501
-        -D_WIN32_WINDOWS=0x0501
-        -D_WIN32_IE=0x0600
-        -D_UNICODE
-        -DUNICODE
-        -D_WINSOCK_DEPRECATED_NO_WARNINGS)
+# Common target properties
+#   CMAKE_CXX_FLAGS
+set(configuration_types ${CMAKE_CONFIGURATION_TYPES})
+if(NOT configuration_types AND DEFINED CMAKE_BUILD_TYPE)
+    list(APPEND configuration_types ${CMAKE_BUILD_TYPE})
 endif()
+change_default_compile_options("${CMAKE_CXX_FLAGS}" CMAKE_CXX_FLAGS)
+foreach(configuration_type IN LISTS configuration_types)
+    string(TOUPPER ${configuration_type} configuration_type_upper_case)
+    set(configuration_cxx_flags CMAKE_CXX_FLAGS_${configuration_type_upper_case})
+    change_default_compile_options("${${configuration_cxx_flags}}" ${configuration_cxx_flags})
+endforeach(configuration_type)
+#   Additional properties
+config_additional_compile_options(cxx_base_compile_options)
+config_additional_compile_definitions(cxx_base_compile_definitions)
 
 # Google Test framework
 if(ma_build_tests)

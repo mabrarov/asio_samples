@@ -105,3 +105,79 @@ function(ma_dir_source_group base_group_name base_dir files)
         source_group("${subdir_group_name}" FILES ${subdir_files})
     endforeach()
 endfunction()
+
+# Changes existing (default) compiler options.
+# Parameters:
+#   result - name of list to store compile options.
+function(change_default_compile_options orignal_compile_options result)
+    set(compile_options ${orignal_compile_options})
+    # Turn on more strict warning mode
+    if(MSVC)
+        if(compile_options MATCHES "/W[0-4]")
+            string(REGEX REPLACE "/W[0-4]" "/W4" compile_options "${compile_options}")
+        else()
+            set(compile_options "${compile_options} /W4")
+        endif()
+    endif()
+    set(${result} "${compile_options}" PARENT_SCOPE)
+endfunction()
+
+# Builds list of additional compiler options.
+# Parameters:
+#   result - name of list to store compile options.
+function(config_additional_compile_options result)
+    set(compile_options )
+    # Turn on thread support for GCC
+    if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
+        if(MINGW)
+            list(APPEND compile_options "-mthreads")
+        else()
+            list(APPEND compile_options "-pthread")
+        endif()
+    endif()
+    # Turn on support of C++11 if it's available
+    if(CMAKE_COMPILER_IS_GNUCXX)
+        if(NOT (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "4.7"))
+            list(APPEND compile_options "-std=c++11")
+        elseif(NOT (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "4.3"))
+            list(APPEND compile_options "-std=c++0x")
+        endif()
+    elseif(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+        list(APPEND compile_options "-std=c++11")
+    elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "Intel")
+        if(NOT (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "14"))
+            list(APPEND compile_options "/Qstd=c++11")
+        elseif(NOT (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "12"))
+            list(APPEND compile_options "/Qstd=c++0x")
+        endif()
+    endif()
+    # Turn on more strict warning mode
+    if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
+        list(APPEND compile_options
+            "-Wall"
+            "-Wno-long-long"
+            "-pedantic")
+    endif()
+    set(${result} "${compile_options}" PARENT_SCOPE)
+endfunction()
+
+# Builds list of additional compiler definitions.
+# Parameters:
+#   result - name of list to store compile definitions.
+function(config_additional_compile_definitions result)
+    set(compile_definitions )
+    # Additional preprocessor definitions for Windows target
+    if(WIN32)
+        list(APPEND compile_definitions
+            WIN32
+            WIN32_LEAN_AND_MEAN
+            WINVER=0x0501
+            _WIN32_WINNT=0x0501
+            _WIN32_WINDOWS=0x0501
+            _WIN32_IE=0x0600
+            _UNICODE
+            UNICODE
+            _WINSOCK_DEPRECATED_NO_WARNINGS)
+    endif()
+    set(${result} "${compile_definitions}" PARENT_SCOPE)
+endfunction()
