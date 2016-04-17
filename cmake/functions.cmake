@@ -10,7 +10,7 @@ cmake_minimum_required(VERSION 2.8.11)
 # Builds list of sub-directories (relative paths).
 # Parameters:
 #   files    - files or directories to scan (list).
-#   base_dir - directory being considered as a base for sub-directories which need to be found.
+#   base_dir - directory being considered as a base if file name is relative.
 #   results  - name of variable to store list of sub-directories.
 function(ma_list_subdirs files base_dir results)
     get_filename_component(cmake_base_dir "${base_dir}" ABSOLUTE)
