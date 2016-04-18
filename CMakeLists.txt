@@ -11,13 +11,11 @@ project(asio_samples)
 option(ma_build_tests "Build tests" ON)
 option(ma_force_own_gtest "Use own (embedded) version of Google Test framework" OFF)
 
-set(cmake_module_dir "${PROJECT_SOURCE_DIR}/cmake")
-
 # Setup path for additional CMake modules
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${cmake_module_dir})
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake")
 
 # Additional helpers
-include(${cmake_module_dir}/internal_utils.cmake)
+include(cmake/internal_utils.cmake)
 
 # Common target properties
 #   CMAKE_CXX_FLAGS
@@ -31,9 +29,6 @@ foreach(configuration_type IN LISTS configuration_types)
     set(configuration_cxx_flags CMAKE_CXX_FLAGS_${configuration_type_upper_case})
     change_default_compile_options("${${configuration_cxx_flags}}" ${configuration_cxx_flags})
 endforeach(configuration_type)
-#   Additional properties
-config_additional_compile_options(cxx_base_compile_options)
-config_additional_compile_definitions(cxx_base_compile_definitions)
 
 # Google Test framework
 if(ma_build_tests)
@@ -54,6 +49,20 @@ if(ma_build_tests)
     endif()
 endif()
 
+# Interface-only targets to simplify support of Boost
+add_subdirectory(cmake/ma_boost_link)
+add_subdirectory(cmake/ma_boost_header_only)
+add_subdirectory(cmake/ma_boost_exception)
+add_subdirectory(cmake/ma_boost_system)
+add_subdirectory(cmake/ma_boost_date_time)
+add_subdirectory(cmake/ma_boost_chrono)
+add_subdirectory(cmake/ma_boost_thread)
+add_subdirectory(cmake/ma_boost_asio)
+
+# Interface-only targets to simplify support of Google Test
+add_subdirectory(cmake/ma_gtest)
+
+# Libraries
 add_subdirectory(libs/ma_async_connect)
 add_subdirectory(libs/ma_bind_handler)
 add_subdirectory(libs/ma_codecvt_cast)
@@ -81,21 +90,23 @@ add_subdirectory(libs/ma_strand)
 add_subdirectory(libs/ma_thread_group)
 add_subdirectory(libs/ma_windows_console_signal)
 
+# Tests
 if(ma_build_tests)
-    add_subdirectory(test/ma_async_connect_test)
+    #add_subdirectory(test/ma_async_connect_test)
     add_subdirectory(test/ma_handler_storage_test)
-    add_subdirectory(test/ma_lockable_wrapper_test)
-    add_subdirectory(test/ma_shared_ptr_factory_test)
-    add_subdirectory(test/ma_sp_singleton_test)
+    #add_subdirectory(test/ma_lockable_wrapper_test)
+    #add_subdirectory(test/ma_shared_ptr_factory_test)
+    #add_subdirectory(test/ma_sp_singleton_test)
     if(WIN32)
-        add_subdirectory(test/ma_windows_console_signal_test)
+        #add_subdirectory(test/ma_windows_console_signal_test)
     endif()
 endif()
 
-add_subdirectory(examples/ma_asio_performance_test_client)
-add_subdirectory(examples/ma_async_basics)
-add_subdirectory(examples/ma_async_basics2)
-add_subdirectory(examples/ma_echo_server)
-add_subdirectory(examples/ma_echo_server_core)
-add_subdirectory(examples/ma_nmea_client)
-add_subdirectory(examples/ma_qt_echo_server)
+# Examples using libraries
+#add_subdirectory(examples/ma_asio_performance_test_client)
+#add_subdirectory(examples/ma_async_basics)
+#add_subdirectory(examples/ma_async_basics2)
+#add_subdirectory(examples/ma_echo_server)
+#add_subdirectory(examples/ma_echo_server_core)
+#add_subdirectory(examples/ma_nmea_client)
+#add_subdirectory(examples/ma_qt_echo_server)

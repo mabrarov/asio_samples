@@ -12,26 +12,16 @@ set(project_base_dir "${PROJECT_SOURCE_DIR}")
 set(cxx_headers_dir  "${project_base_dir}/include")
 set(cxx_sources_dir  "${project_base_dir}/src")
 
-set(cxx_compile_options     ${cxx_base_compile_options})
-set(cxx_compile_definitions ${cxx_base_compile_definitions})
 set(cxx_headers )
 set(cxx_sources )
+
+config_public_compile_options(cxx_public_compile_options)
+config_public_compile_definitions(cxx_public_compile_definitions)
 set(cxx_public_libraries )
+
+config_private_compile_options(cxx_private_compile_options)
+config_private_compile_definitions(cxx_private_compile_definitions)
 set(cxx_private_libraries )
-set(boost_components )
-
-# Select used Boost libraries
-list(APPEND boost_components
-    system)
-
-# Attach used Boost libraries
-find_package(Boost REQUIRED COMPONENTS ${boost_components})
-
-# Enforce linkage with shared build of Boost C++ Libraries in case
-# there is no request for linkage with static build
-if(NOT Boost_USE_STATIC_LIBS)
-    list(APPEND cxx_compile_definitions "BOOST_ALL_DYN_LINK")
-endif()
 
 list(APPEND cxx_headers
     "${cxx_headers_dir}/ma/windows/console_signal.hpp"
@@ -41,15 +31,18 @@ list(APPEND cxx_sources
     "${cxx_sources_dir}/console_signal_service.cpp")
 
 list(APPEND cxx_public_libraries
-    ma_intrusive_list
-    ma_service_base
-    ma_handler_ptr
-    ma_bind_handler
-    ma_compat
+    ma_boost_header_only
+    ma_boost_system
+    ma_boost_asio
     ma_config
-    ${Boost_LIBRARIES})
+    ma_compat
+    ma_bind_handler
+    ma_intrusive_list
+    ma_handler_ptr
+    ma_service_base)
 
 list(APPEND cxx_private_libraries
+    ma_boost_exception
     ma_shared_ptr_factory
     ma_sp_singleton)
 
@@ -58,13 +51,16 @@ add_library(${PROJECT_NAME}
     ${cxx_sources})
 target_compile_options(${PROJECT_NAME}
     PUBLIC
-    ${cxx_compile_options})
+    ${cxx_public_compile_options}
+    PRIVATE
+    ${cxx_private_compile_options})
 target_compile_definitions(${PROJECT_NAME}
     PUBLIC
-    ${cxx_compile_definitions})
+    ${cxx_public_compile_definitions}
+    PRIVATE
+    ${cxx_private_compile_definitions})
 target_include_directories(${PROJECT_NAME}
     PUBLIC
-    ${Boost_INCLUDE_DIRS}
     ${cxx_headers_dir})
 target_link_libraries(${PROJECT_NAME}
     PUBLIC

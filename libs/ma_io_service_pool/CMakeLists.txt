@@ -12,15 +12,16 @@ set(project_base_dir "${PROJECT_SOURCE_DIR}")
 set(cxx_headers_dir  "${project_base_dir}/include")
 set(cxx_sources_dir  "${project_base_dir}/src")
 
-set(cxx_compile_options     ${cxx_base_compile_options})
-set(cxx_compile_definitions ${cxx_base_compile_definitions})
 set(cxx_headers )
 set(cxx_sources )
-set(cxx_public_libraries )
-set(cxx_private_libraries )
 
-# Attach header only Boost libraries
-find_package(Boost REQUIRED)
+config_public_compile_options(cxx_public_compile_options)
+config_public_compile_definitions(cxx_public_compile_definitions)
+set(cxx_public_libraries )
+
+config_private_compile_options(cxx_private_compile_options)
+config_private_compile_definitions(cxx_private_compile_definitions)
+set(cxx_private_libraries )
 
 list(APPEND cxx_headers
     "${cxx_headers_dir}/ma/test/io_service_pool.hpp")
@@ -29,8 +30,9 @@ list(APPEND cxx_sources
     "${cxx_sources_dir}/io_service_pool.cpp")
 
 list(APPEND cxx_public_libraries
-    ma_thread_group
-    ${Boost_LIBRARIES})
+    ma_boost_header_only
+    ma_boost_asio
+    ma_thread_group)
 
 list(APPEND cxx_private_libraries
     ma_compat)
@@ -40,13 +42,16 @@ add_library(${PROJECT_NAME}
     ${cxx_sources})
 target_compile_options(${PROJECT_NAME}
     PUBLIC
-    ${cxx_compile_options})
+    ${cxx_public_compile_options}
+    PRIVATE
+    ${cxx_private_compile_options})
 target_compile_definitions(${PROJECT_NAME}
     PUBLIC
-    ${cxx_compile_definitions})
+    ${cxx_public_compile_definitions}
+    PRIVATE
+    ${cxx_private_compile_definitions})
 target_include_directories(${PROJECT_NAME}
     PUBLIC
-    ${Boost_INCLUDE_DIRS}
     ${cxx_headers_dir})
 target_link_libraries(${PROJECT_NAME}
     PUBLIC

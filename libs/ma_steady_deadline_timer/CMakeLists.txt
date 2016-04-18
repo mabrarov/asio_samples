@@ -12,33 +12,16 @@ set(project_base_dir "${PROJECT_SOURCE_DIR}")
 set(cxx_headers_dir  "${project_base_dir}/include")
 set(cxx_sources_dir  "${project_base_dir}/src")
 
-set(cxx_compile_options     ${cxx_base_compile_options})
-set(cxx_compile_definitions ${cxx_base_compile_definitions})
 set(cxx_headers )
 set(cxx_sources )
-set(cxx_libraries )
-set(boost_components )
 
-# Select used Boost libraries
-find_package(Boost REQUIRED)
-list(APPEND boost_components
-    date_time)
-if(NOT(${Boost_VERSION} LESS 104700))
-    list(APPEND boost_components
-        chrono)
-    set(ma_boost_has_chrono TRUE)
-else()
-    set(ma_boost_has_chrono FALSE)
-endif()
+config_public_compile_options(cxx_public_compile_options)
+config_public_compile_definitions(cxx_public_compile_definitions)
+set(cxx_public_libraries )
 
-# Attach used Boost libraries
-find_package(Boost REQUIRED COMPONENTS ${boost_components})
-
-# Enforce linkage with shared build of Boost C++ Libraries in case
-# there is no request for linkage with static build
-if(NOT Boost_USE_STATIC_LIBS)
-    list(APPEND cxx_compile_definitions "BOOST_ALL_DYN_LINK")
-endif()
+config_private_compile_options(cxx_private_compile_options)
+config_private_compile_definitions(cxx_private_compile_definitions)
+set(cxx_private_libraries )
 
 list(APPEND cxx_headers
     "${cxx_headers_dir}/ma/steady_deadline_timer.hpp")
@@ -46,27 +29,34 @@ list(APPEND cxx_headers
 list(APPEND cxx_sources
     "${cxx_sources_dir}/fake.cpp")
 
-list(APPEND cxx_libraries
-    ma_compat
+list(APPEND cxx_public_libraries
+    ma_boost_asio
+    ma_boost_date_time
+    ma_boost_chrono
     ma_config
-    ${Boost_LIBRARIES})
+    ma_compat)
 
 add_library(${PROJECT_NAME}
     ${cxx_headers}
     ${cxx_sources})
 target_compile_options(${PROJECT_NAME}
     PUBLIC
-    ${cxx_compile_options})
+    ${cxx_public_compile_options}
+    PRIVATE
+    ${cxx_private_compile_options})
 target_compile_definitions(${PROJECT_NAME}
     PUBLIC
-    ${cxx_compile_definitions})
+    ${cxx_public_compile_definitions}
+    PRIVATE
+    ${cxx_private_compile_definitions})
 target_include_directories(${PROJECT_NAME}
     PUBLIC
-    ${Boost_INCLUDE_DIRS}
     ${cxx_headers_dir})
 target_link_libraries(${PROJECT_NAME}
     PUBLIC
-    ${cxx_libraries})
+    ${cxx_public_libraries}
+    PRIVATE
+    ${cxx_private_libraries})
 
 if(NOT ma_no_cmake_dir_source_group)
     # Group files according to file path
