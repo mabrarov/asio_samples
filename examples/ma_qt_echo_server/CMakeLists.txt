@@ -12,58 +12,36 @@ set(project_base_dir "${PROJECT_SOURCE_DIR}")
 set(cxx_headers_dir  "${project_base_dir}/include")
 set(cxx_sources_dir  "${project_base_dir}/src")
 
-set(cxx_compile_options     ${cxx_base_compile_options})
-set(cxx_compile_definitions ${cxx_base_compile_definitions})
 set(cxx_headers )
 set(cxx_sources )
-set(cxx_libraries )
-set(boost_components )
-
 set(uic_forms )
 set(qrc_resources )
 set(moc_headers )
 set(native_resources )
 set(native_resource_headers )
 
-set(moc_headers )
-set(uic_generated_headers )
-set(qrc_generated_sources )
+config_public_compile_options(cxx_public_compile_options)
+config_public_compile_definitions(cxx_public_compile_definitions)
+set(cxx_public_libraries )
 
-# Select used Boost libraries
-find_package(Boost REQUIRED)
-list(APPEND boost_components
-    exception
-    system
-    date_time
-    regex)
-if(NOT(${Boost_VERSION} LESS 104700))
-    list(APPEND boost_components
-        chrono)
-    set(ma_boost_has_chrono TRUE)
+config_private_compile_options(cxx_private_compile_options)
+config_private_compile_definitions(cxx_private_compile_definitions)
+set(cxx_private_libraries )
+
+# Determine major version of Qt to use (Qt 5 is preferred)
+set(ma_qt_echo_server_qt5 FALSE)
+if(ma_force_qt5)
+    set(ma_qt_echo_server_qt5 TRUE)
 else()
-    set(ma_boost_has_chrono FALSE)
-endif()
-
-# Attach used Boost libraries
-find_package(Boost REQUIRED COMPONENTS ${boost_components})
-
-# Enforce linkage with shared build of Boost C++ Libraries in case
-# there is no request for linkage with static build
-if(NOT Boost_USE_STATIC_LIBS)
-    list(APPEND cxx_compile_definitions "BOOST_ALL_DYN_LINK")
-endif()
-
-# Determine major version of Qt to use (Qt 5 is predeferred)
-if(NOT DEFINED ma_qt_echo_server_use_qt5)
-    set(ma_qt_echo_server_use_qt5 TRUE)
     find_package(Qt5Widgets QUIET)
-    if(NOT Qt5Widgets_FOUND)
-        set(ma_qt_echo_server_use_qt5 FALSE)
+    if(Qt5Widgets_FOUND)
+        set(ma_qt_echo_server_qt5 TRUE)
     endif()
 endif()
 
 # Find required Qt libraries
-if(ma_qt_echo_server_use_qt5)
+set(qt_libraries )
+if(ma_qt_echo_server_qt5)
     find_package(Qt5Widgets REQUIRED)
     find_package(Qt5Gui     REQUIRED)
     find_package(Qt5Core    REQUIRED)
@@ -76,6 +54,33 @@ else()
     set(qt_libraries
         Qt4::QtCore
         Qt4::QtGui)
+endif()
+
+# Support statically linked Qt
+set(ma_qt_static FALSE)
+if(ma_qt_echo_server_qt5)
+    # Determine linkage type of Qt libraries (via linkage type of Qt Core library)
+    get_property(Qt5_Core_TYPE TARGET Qt5::Core PROPERTY TYPE)
+    if(${Qt5_Core_TYPE} STREQUAL "STATIC_LIBRARY")
+        set(ma_qt_static TRUE)
+    endif()
+
+    if(ma_qt_static)
+        # Statically linked Qt requires:
+        #     All libraries used by Qt internally to be linked explicitly to the target.
+        #     Used Qt plugins to be linked explicitly to the target.
+        list(APPEND qt_libraries
+            ma_qt5_core_static
+            ma_qt5_gui_static)
+    endif()
+else()
+    if(QT_IS_STATIC)
+        # Statically linked Qt requires:
+        #     All libraries used by Qt internally to be linked explicitly to the target.
+        #     Used Qt plugins to be linked explicitly to the target.
+        # Nothing to add as no Qt 4 plugins are used.
+        set(ma_qt_static TRUE)
+    endif()
 endif()
 
 list(APPEND uic_forms
@@ -110,122 +115,24 @@ if(WIN32)
         "${cxx_sources_dir}/qt_echo_server.rc")
 endif()
 
-set(ma_qt_static FALSE)
-if(ma_qt_echo_server_use_qt5)
-    # Determine linkage type of Qt libraries (via linkage type of Qt Core library)
-    get_property(Qt5_Core_TYPE TARGET Qt5::Core PROPERTY TYPE)
-    if(${Qt5_Core_TYPE} STREQUAL "STATIC_LIBRARY")
-        set(ma_qt_static TRUE)
-    endif()
-
-    # Statically linked Qt requires:
-    #     All libraries used by Qt internally to be linked explicitly to the target.
-    #     Used Qt plugins to be linked explicitly to the target.
-    if(ma_qt_static)
-        # Qt CMake files use IMPORTED_LINK_DEPENDENT_LIBRARIES instead of INTERFACE_LINK_LIBRARIES for OpenGL dependencies.
-        # So we need to add those transitive (in case of static linkage) dependencies explicitly.
-        list(APPEND qt_libraries
-            ${Qt5Gui_EGL_LIBRARIES}
-            ${Qt5Gui_OPENGL_LIBRARIES})
-
-        # Add required platform integration plugins
-        if(WIN32)
-            list(APPEND qt_libraries
-                Qt5::QWindowsIntegrationPlugin)
-        else()
-            # todo:
-            # add support for the rest of platforms supported by Qt
-            # by linking with platform specific plugin
-            # (add platfrom integration plugin to cxx_libraries)
-        endif()
-
-        # Some Qt libraries have no cmake files so wee need to search them ourselves
-        # Refer to custom CMake modules:
-        #     FindICU.cmake
-        #     FindQt5PlatformSupport.cmake
-        #     FindQt5HarfBuzzNG.cmake
-        #     FindQt5FreeType.cmake
-        #     FindQt5PCRE.cmake
-
-        find_package(Qt5PlatformSupport REQUIRED)
-        list(APPEND qt_libraries
-            Qt5::PlatformSupport)
-
-        find_package(ICU REQUIRED COMPONENTS i18n uc data)
-        list(APPEND qt_libraries
-            ${ICU_LIBRARIES})
-
-        # Starting from Qt 5.4.0 HarfBuzz-NG library is included (at least Windows version of Qt 5.4.0)
-        if(WIN32 AND NOT(${Qt5Gui_VERSION} VERSION_LESS "5.4.0"))
-            find_package(Qt5HarfBuzzNG QUIET)
-            if(Qt5HarfBuzzNG_FOUND)
-                list(APPEND qt_libraries
-                    Qt5::HarfBuzzNG)
-            endif()
-        endif()
-
-        # Starting from Qt 5.5.0 FreeType library is used by QtGui
-        if(WIN32 AND NOT(${Qt5Gui_VERSION} VERSION_LESS "5.5.0"))
-            find_package(Qt5FreeType QUIET)
-            if(Qt5FreeType_FOUND)
-                list(APPEND qt_libraries
-                    Qt5::FreeType)
-            endif()
-        endif()
-
-        # Starting from Qt 5.5.0 PCRE library is used by QtCore
-        if(WIN32 AND NOT(${Qt5Core_VERSION} VERSION_LESS "5.5.0"))
-            find_package(Qt5PCRE QUIET)
-            if(Qt5PCRE_FOUND)
-                list(APPEND qt_libraries
-                    Qt5::PCRE)
-            endif()
-        endif()
-    endif()
-else()
-    # Statically linked Qt requires:
-    #     All libraries used by Qt internally to be linked explicitly to the target.
-    #     Used Qt plugins to be linked explicitly to the target.
-    if(QT_IS_STATIC)
-        # Nothing to add as no Qt 4 plugins are used.
-        set(ma_qt_static TRUE)
-    endif()
-endif()
-
-list(APPEND cxx_libraries
-    ma_echo_server_core
-    ma_thread_group
-    ma_helpers
+list(APPEND cxx_private_libraries
+    ma_boost_header_only
+    ma_boost_exception
+    ma_boost_system
+    ma_boost_asio
+    ${qt_libraries}
     ma_compat
-    "${Boost_LIBRARIES}"
-    "${qt_libraries}")
-
-# Required Windows libraries
-if(WIN32)
-    list(APPEND cxx_libraries
-        "ws2_32"
-        "mswsock"
-        "comdlg32"
-        "uuid"
-        "ole32"
-        "oleaut32"
-        "advapi32"
-        "imm32"
-        "winmm"
-        "winspool")
-endif()
-
-# Boost.Chrono requires rt library on *nix
-if(UNIX AND ma_boost_has_chrono)
-    list(APPEND cxx_libraries
-        rt)
-endif()
-
-# Required for Qt UIC
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
+    ma_helpers
+    ma_thread_group
+    ma_echo_server_core)
 
 # Wrap Qt generated sources.
-if(ma_qt_echo_server_use_qt5)
+set(moc_generated_sources )
+set(uic_generated_headers )
+set(qrc_generated_sources )
+# Required for Qt UIC
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+if(ma_qt_echo_server_qt5)
     qt5_wrap_cpp(moc_generated_sources ${moc_headers})
     qt5_wrap_ui(uic_generated_headers ${uic_forms})
     qt5_add_resources(qrc_generated_sources ${qrc_resources})
@@ -244,18 +151,23 @@ add_executable(${PROJECT_NAME} WIN32
     ${qrc_generated_sources}
     ${uic_generated_headers})
 target_compile_options(${PROJECT_NAME}
+    PUBLIC
+    ${cxx_public_compile_options}
     PRIVATE
-    ${cxx_compile_options})
+    ${cxx_private_compile_options})
 target_compile_definitions(${PROJECT_NAME}
+    PUBLIC
+    ${cxx_public_compile_definitions}
     PRIVATE
-    ${cxx_compile_definitions})
+    ${cxx_private_compile_definitions})
 target_include_directories(${PROJECT_NAME}
-    PRIVATE
-    ${Boost_INCLUDE_DIRS}
+    PUBLIC
     ${cxx_headers_dir})
 target_link_libraries(${PROJECT_NAME}
+    PUBLIC
+    ${cxx_public_libraries}
     PRIVATE
-    ${cxx_libraries})
+    ${cxx_private_libraries})
 
 source_group("Form Files" FILES
     ${uic_forms})

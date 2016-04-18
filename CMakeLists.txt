@@ -10,15 +10,12 @@ project(asio_samples)
 
 option(ma_build_tests "Build tests" ON)
 option(ma_force_own_gtest "Use own (embedded) version of Google Test framework" OFF)
-
-# Setup path for additional CMake modules
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake")
+option(ma_force_qt5 "Always use Qt 5 instead of Qt 4" OFF)
 
 # Additional helpers
 include(cmake/internal_utils.cmake)
 
-# Common target properties
-#   CMAKE_CXX_FLAGS
+# Common target properties (CMAKE_CXX_FLAGS)
 set(configuration_types ${CMAKE_CONFIGURATION_TYPES})
 if(NOT configuration_types AND DEFINED CMAKE_BUILD_TYPE)
     list(APPEND configuration_types ${CMAKE_BUILD_TYPE})
@@ -61,6 +58,10 @@ add_subdirectory(cmake/ma_boost_asio)
 add_subdirectory(cmake/ma_boost_program_options)
 add_subdirectory(cmake/ma_boost_timer)
 add_subdirectory(cmake/ma_boost_regex)
+
+# Interface-only targets to simplify support of statically linked Qt 5
+add_subdirectory(cmake/ma_qt5_core_static)
+add_subdirectory(cmake/ma_qt5_gui_static)
 
 if(ma_build_tests)
     # Interface-only target to simplify support of Google Test
@@ -114,4 +115,4 @@ endif()
 add_subdirectory(examples/ma_echo_server)
 add_subdirectory(examples/ma_echo_server_core)
 #add_subdirectory(examples/ma_nmea_client)
-#add_subdirectory(examples/ma_qt_echo_server)
+add_subdirectory(examples/ma_qt_echo_server)

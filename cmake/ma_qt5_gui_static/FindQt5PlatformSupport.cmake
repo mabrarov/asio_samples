@@ -20,27 +20,27 @@ endif()
 set(${QT5_PLATFORM_SUPPORT_PUBLIC_VAR_NS}_FOUND FALSE)
 set(${QT5_PLATFORM_SUPPORT_PUBLIC_VAR_NS}_LIBRARIES )
 
-find_package(Qt5Core)
+find_package(Qt5Gui)
 
-if(Qt5Core_FOUND)
-    # Extract directory of Qt Core library
-    get_target_property(${QT5_PLATFORM_SUPPORT_PRIVATE_VAR_NS}_QT_CORE_LOCATION 
-        Qt5::Core
+if(Qt5Gui_FOUND)
+    # Extract directory of Qt Gui library
+    get_target_property(${QT5_PLATFORM_SUPPORT_PRIVATE_VAR_NS}_QT_GUI_LOCATION 
+        Qt5::Gui
         LOCATION)
-    get_filename_component(${QT5_PLATFORM_SUPPORT_PRIVATE_VAR_NS}_QT_CORE_DIR 
-        "${${QT5_PLATFORM_SUPPORT_PRIVATE_VAR_NS}_QT_CORE_LOCATION}" 
+    get_filename_component(${QT5_PLATFORM_SUPPORT_PRIVATE_VAR_NS}_QT_GUI_DIR 
+        "${${QT5_PLATFORM_SUPPORT_PRIVATE_VAR_NS}_QT_GUI_LOCATION}" 
         PATH)
 
     set(${QT5_PLATFORM_SUPPORT_PRIVATE_VAR_NS}_LIBRARIES )
 
     find_library(${QT5_PLATFORM_SUPPORT_PRIVATE_VAR_NS}_LIB_RELEASE 
         "Qt5PlatformSupport"
-        HINTS "${${QT5_PLATFORM_SUPPORT_PRIVATE_VAR_NS}_QT_CORE_DIR}"
+        HINTS "${${QT5_PLATFORM_SUPPORT_PRIVATE_VAR_NS}_QT_GUI_DIR}"
         DOC "Release library of Qt5::PlatformSupport")
 
     find_library(${QT5_PLATFORM_SUPPORT_PRIVATE_VAR_NS}_LIB_DEBUG 
         "Qt5PlatformSupportd" 
-        HINTS "${${QT5_PLATFORM_SUPPORT_PRIVATE_VAR_NS}_QT_CORE_DIR}"
+        HINTS "${${QT5_PLATFORM_SUPPORT_PRIVATE_VAR_NS}_QT_GUI_DIR}"
         DOC "Debug library of Qt5::PlatformSupport")
 
     if(${QT5_PLATFORM_SUPPORT_PRIVATE_VAR_NS}_LIB_RELEASE OR ${QT5_PLATFORM_SUPPORT_PRIVATE_VAR_NS}_LIB_DEBUG)
@@ -48,11 +48,11 @@ if(Qt5Core_FOUND)
     endif()
 
     if(${QT5_PLATFORM_SUPPORT_PUBLIC_VAR_NS}_FOUND)   
-        # Determine linkage type of imported Qt5::PlatformSupport (via linkage type of Qt5::Core library)
-        get_property(${QT5_PLATFORM_SUPPORT_PRIVATE_VAR_NS}_QT_CORE_TARGET_TYPE 
-            TARGET Qt5::Core PROPERTY TYPE)
+        # Determine linkage type of imported Qt5::PlatformSupport (via linkage type of Qt5::Gui library)
+        get_property(${QT5_PLATFORM_SUPPORT_PRIVATE_VAR_NS}_QT_GUI_TARGET_TYPE 
+            TARGET Qt5::Gui PROPERTY TYPE)
         set(${QT5_PLATFORM_SUPPORT_PRIVATE_VAR_NS}_LINKAGE_TYPE "SHARED")
-        if(${${QT5_PLATFORM_SUPPORT_PRIVATE_VAR_NS}_QT_CORE_TARGET_TYPE} STREQUAL "STATIC_LIBRARY")
+        if(${${QT5_PLATFORM_SUPPORT_PRIVATE_VAR_NS}_QT_GUI_TARGET_TYPE} STREQUAL "STATIC_LIBRARY")
             set(${QT5_PLATFORM_SUPPORT_PRIVATE_VAR_NS}_LINKAGE_TYPE "STATIC")
         endif()
 
