@@ -21,10 +21,6 @@ list(APPEND cxx_include_directories
     ${Boost_INCLUDE_DIRS})
 list(APPEND cxx_libraries
     ${Boost_LIBRARIES}
-    ma_boost_system
-    ma_boost_date_time
-    ma_boost_chrono
-    ma_boost_regex
     ma_boost_link)
 
 add_library(${PROJECT_NAME} INTERFACE)
