@@ -59,8 +59,10 @@ add_subdirectory(cmake/ma_boost_chrono)
 add_subdirectory(cmake/ma_boost_thread)
 add_subdirectory(cmake/ma_boost_asio)
 
-# Interface-only targets to simplify support of Google Test
-add_subdirectory(cmake/ma_gtest)
+if(ma_build_tests)
+    # Interface-only target to simplify support of Google Test
+    add_subdirectory(cmake/ma_gtest)
+endif()
 
 # Libraries
 add_subdirectory(libs/ma_async_connect)
