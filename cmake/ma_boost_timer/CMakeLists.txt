@@ -6,26 +6,31 @@
 #
 
 cmake_minimum_required(VERSION 3.0)
-project(ma_boost_thread)
+project(ma_boost_timer)
 
 set(cxx_include_directories )
 set(cxx_libraries )
 set(boost_components )
+set(boost_has_timer FALSE)
 
 # Select used Boost libraries
-list(APPEND boost_components thread)
+find_package(Boost REQUIRED)
+if(NOT(${Boost_VERSION} LESS 104800))
+    list(APPEND boost_components timer)
+    set(boost_has_timer TRUE)
+endif()
 
-# Attach used Boost libraries
-find_package(Boost REQUIRED COMPONENTS ${boost_components})
-list(APPEND cxx_include_directories
-    ${Boost_INCLUDE_DIRS})
-list(APPEND cxx_libraries
-    ${Boost_LIBRARIES}
-    ma_boost_system
-    ma_boost_date_time
-    ma_boost_chrono
-    ma_boost_regex
-    ma_boost_link)
+if(boost_has_timer)
+    # Attach used Boost libraries
+    find_package(Boost REQUIRED COMPONENTS ${boost_components})
+    list(APPEND cxx_include_directories
+        ${Boost_INCLUDE_DIRS})
+    list(APPEND cxx_libraries
+        ${Boost_LIBRARIES}
+        ma_boost_chrono
+        ma_boost_system
+        ma_boost_link)
+endif()
 
 add_library(${PROJECT_NAME} INTERFACE)
 target_include_directories(${PROJECT_NAME} INTERFACE ${cxx_include_directories})

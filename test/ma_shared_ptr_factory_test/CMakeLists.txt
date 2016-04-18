@@ -8,90 +8,51 @@
 cmake_minimum_required(VERSION 3.0)
 project(ma_shared_ptr_factory_test)
 
-set(project_base_dir     "${PROJECT_SOURCE_DIR}")
-set(cxx_headers_dir      "${project_base_dir}/include")
-set(cxx_sources_dir      "${project_base_dir}/src")
+set(project_base_dir "${PROJECT_SOURCE_DIR}")
+set(cxx_headers_dir  "${project_base_dir}/include")
+set(cxx_sources_dir  "${project_base_dir}/src")
 
-set(cxx_compile_options     ${cxx_base_compile_options})
-set(cxx_compile_definitions ${cxx_base_compile_definitions})
 set(cxx_headers )
 set(cxx_sources )
-set(cxx_libraries )
-set(boost_components )
 
-# Select used Boost libraries
-find_package(Boost REQUIRED)
-list(APPEND boost_components
-    system
-    date_time
-    regex)
-if(NOT(${Boost_VERSION} LESS 104700))
-    list(APPEND boost_components
-        chrono)
-    set(ma_boost_has_chrono TRUE)
-else()
-    set(ma_boost_has_chrono FALSE)
-endif()
+config_public_compile_options(cxx_public_compile_options)
+config_public_compile_definitions(cxx_public_compile_definitions)
+set(cxx_public_libraries )
 
-# Attach used Boost libraries
-find_package(Boost REQUIRED COMPONENTS ${boost_components})
-
-# Enforce linkage with shared build of Boost C++ Libraries in case
-# there is no request for linkage with static build
-if(NOT Boost_USE_STATIC_LIBS)
-    list(APPEND cxx_compile_definitions "BOOST_ALL_DYN_LINK")
-endif()
-
-# Google Test framework
-if(NOT ma_own_gtest)
-    find_package(GTest QUIET)
-endif()
-
-# MSVC 2012 doesn't work with Google Test and tuple
-# (even with GTest own tuple implementation)
-if (MSVC AND MSVC_VERSION GREATER 1600 AND MSVC_VERSION LESS 1800)
-    list(APPEND cxx_compile_definitions GTEST_HAS_TR1_TUPLE=0)
-endif()
+config_private_compile_options(cxx_private_compile_options)
+config_private_compile_definitions(cxx_private_compile_definitions)
+set(cxx_private_libraries )
 
 list(APPEND cxx_sources
     "${cxx_sources_dir}/shared_ptr_factory_test.cpp")
 
-list(APPEND cxx_libraries
-    ma_shared_ptr_factory
+list(APPEND cxx_private_libraries
+    ma_boost_header_only
+    ma_gtest
     ma_compat
-    ${Boost_LIBRARIES}
-    ${GTEST_BOTH_LIBRARIES})
-
-# Required Winsock libraries
-if(WIN32)
-    list(APPEND cxx_libraries
-        "ws2_32"
-        "mswsock")
-endif()
-
-# Boost.Chrono requires rt library on *nix
-if(UNIX AND ma_boost_has_chrono)
-    list(APPEND cxx_libraries
-        rt)
-endif()
+    ma_shared_ptr_factory)
 
 add_executable(${PROJECT_NAME}
     ${cxx_headers}
     ${cxx_sources})
 target_compile_options(${PROJECT_NAME}
+    PUBLIC
+    ${cxx_public_compile_options}
     PRIVATE
-    ${cxx_compile_options})
+    ${cxx_private_compile_options})
 target_compile_definitions(${PROJECT_NAME}
+    PUBLIC
+    ${cxx_public_compile_definitions}
     PRIVATE
-    ${cxx_compile_definitions})
+    ${cxx_private_compile_definitions})
 target_include_directories(${PROJECT_NAME}
-    PRIVATE
-    ${Boost_INCLUDE_DIRS}
-    ${GTEST_INCLUDE_DIRS}
+    PUBLIC
     ${cxx_headers_dir})
 target_link_libraries(${PROJECT_NAME}
+    PUBLIC
+    ${cxx_public_libraries}
     PRIVATE
-    ${cxx_libraries})
+    ${cxx_private_libraries})
 
 if(NOT ma_no_cmake_dir_source_group)
     # Group files according to file path

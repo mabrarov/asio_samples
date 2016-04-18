@@ -58,6 +58,9 @@ add_subdirectory(cmake/ma_boost_date_time)
 add_subdirectory(cmake/ma_boost_chrono)
 add_subdirectory(cmake/ma_boost_thread)
 add_subdirectory(cmake/ma_boost_asio)
+add_subdirectory(cmake/ma_boost_program_options)
+add_subdirectory(cmake/ma_boost_timer)
+add_subdirectory(cmake/ma_boost_regex)
 
 if(ma_build_tests)
     # Interface-only target to simplify support of Google Test
@@ -94,13 +97,13 @@ add_subdirectory(libs/ma_windows_console_signal)
 
 # Tests
 if(ma_build_tests)
-    #add_subdirectory(test/ma_async_connect_test)
+    add_subdirectory(test/ma_async_connect_test)
     add_subdirectory(test/ma_handler_storage_test)
-    #add_subdirectory(test/ma_lockable_wrapper_test)
-    #add_subdirectory(test/ma_shared_ptr_factory_test)
-    #add_subdirectory(test/ma_sp_singleton_test)
+    add_subdirectory(test/ma_lockable_wrapper_test)
+    add_subdirectory(test/ma_shared_ptr_factory_test)
+    add_subdirectory(test/ma_sp_singleton_test)
     if(WIN32)
-        #add_subdirectory(test/ma_windows_console_signal_test)
+        add_subdirectory(test/ma_windows_console_signal_test)
     endif()
 endif()
 

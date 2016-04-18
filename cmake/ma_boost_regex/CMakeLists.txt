@@ -6,14 +6,14 @@
 #
 
 cmake_minimum_required(VERSION 3.0)
-project(ma_boost_thread)
+project(ma_boost_regex)
 
 set(cxx_include_directories )
 set(cxx_libraries )
 set(boost_components )
 
 # Select used Boost libraries
-list(APPEND boost_components thread)
+list(APPEND boost_components regex)
 
 # Attach used Boost libraries
 find_package(Boost REQUIRED COMPONENTS ${boost_components})
@@ -21,10 +21,6 @@ list(APPEND cxx_include_directories
     ${Boost_INCLUDE_DIRS})
 list(APPEND cxx_libraries
     ${Boost_LIBRARIES}
-    ma_boost_system
-    ma_boost_date_time
-    ma_boost_chrono
-    ma_boost_regex
     ma_boost_link)
 
 add_library(${PROJECT_NAME} INTERFACE)
