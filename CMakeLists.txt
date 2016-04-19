@@ -60,8 +60,8 @@ add_subdirectory(cmake/ma_boost_timer)
 add_subdirectory(cmake/ma_boost_regex)
 
 # Interface-only targets to simplify support of statically linked Qt 5
-add_subdirectory(cmake/ma_qt5_core_static)
-add_subdirectory(cmake/ma_qt5_gui_static)
+#add_subdirectory(cmake/ma_qt5_core_static)
+#add_subdirectory(cmake/ma_qt5_gui_static)
 
 if(ma_build_tests)
     # Interface-only target to simplify support of Google Test
