@@ -11,9 +11,15 @@ project(ma_boost_thread)
 set(cxx_include_directories )
 set(cxx_libraries )
 set(boost_components )
+set(boost_has_atomic FALSE)
 
 # Select used Boost libraries
 list(APPEND boost_components thread)
+find_package(Boost REQUIRED)
+if(NOT(${Boost_VERSION} LESS 105300))
+    list(APPEND boost_components atomic)
+    set(boost_has_atomic TRUE)
+endif()
 
 # Attach used Boost libraries
 find_package(Boost REQUIRED COMPONENTS ${boost_components})
@@ -21,6 +27,10 @@ list(APPEND cxx_include_directories
     ${Boost_INCLUDE_DIRS})
 list(APPEND cxx_libraries
     ${Boost_LIBRARIES}
+    ma_boost_system
+    ma_boost_date_time
+    ma_boost_chrono
+    ma_boost_regex
     ma_boost_link)
 
 add_library(${PROJECT_NAME} INTERFACE)

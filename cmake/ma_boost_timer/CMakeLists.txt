@@ -27,6 +27,8 @@ if(boost_has_timer)
         ${Boost_INCLUDE_DIRS})
     list(APPEND cxx_libraries
         ${Boost_LIBRARIES}
+        ma_boost_chrono
+        ma_boost_system
         ma_boost_link)
 endif()
 
