@@ -63,6 +63,8 @@ if(Qt5Gui_FOUND)
             set_property(TARGET Qt5::PlatformSupport APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
             set_target_properties(Qt5::PlatformSupport PROPERTIES IMPORTED_LOCATION_RELEASE 
                 "${${QT5_PLATFORM_SUPPORT_PRIVATE_VAR_NS}_LIB_RELEASE}")
+            set_target_properties(Qt5::PlatformSupport PROPERTIES INTERFACE_LINK_LIBRARIES
+                "Qt5::Core;Qt5::Gui")
             list(APPEND ${QT5_PLATFORM_SUPPORT_PUBLIC_VAR_NS}_LIBRARIES 
                 optimized ${${QT5_PLATFORM_SUPPORT_PRIVATE_VAR_NS}_LIB_RELEASE})
         endif()
@@ -71,6 +73,8 @@ if(Qt5Gui_FOUND)
             set_property(TARGET Qt5::PlatformSupport APPEND PROPERTY IMPORTED_CONFIGURATIONS DEBUG)
             set_target_properties(Qt5::PlatformSupport PROPERTIES IMPORTED_LOCATION_DEBUG 
                 "${${QT5_PLATFORM_SUPPORT_PRIVATE_VAR_NS}_LIB_DEBUG}")
+            set_target_properties(Qt5::PlatformSupport PROPERTIES INTERFACE_LINK_LIBRARIES
+                "Qt5::Core;Qt5::Gui")
             list(APPEND ${QT5_PLATFORM_SUPPORT_PUBLIC_VAR_NS}_LIBRARIES 
                 debug ${${QT5_PLATFORM_SUPPORT_PRIVATE_VAR_NS}_LIB_DEBUG})
         endif()
