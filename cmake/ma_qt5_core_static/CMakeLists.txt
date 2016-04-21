@@ -10,7 +10,7 @@ project(ma_qt5_core_static)
 
 set(cxx_libraries )
 
-find_package(Qt5Core)
+find_package(Qt5Core QUIET)
 if(Qt5Core_FOUND)
     # Determine linkage type of Qt Core
     get_target_property(qt5_core_type Qt5::Core TYPE)
