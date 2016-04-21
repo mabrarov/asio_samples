@@ -23,5 +23,9 @@ if(WIN32)
     list(APPEND cxx_libraries "ws2_32" "mswsock")
 endif()
 
+# Boost.Asio uses platform threads internally
+find_package(Threads REQUIRED)
+list(APPEND cxx_libraries ${CMAKE_THREAD_LIBS_INIT})
+
 add_library(${PROJECT_NAME} INTERFACE)
 target_link_libraries(${PROJECT_NAME} INTERFACE ${cxx_libraries})

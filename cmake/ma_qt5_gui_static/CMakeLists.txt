@@ -10,7 +10,7 @@ project(ma_qt5_gui_static)
 
 set(cxx_libraries )
 
-find_package(Qt5Gui QUIET)
+find_package(Qt5Gui)
 if(Qt5Gui_FOUND)
     # Determine linkage type of Qt Gui
     get_target_property(qt5_gui_type Qt5::Gui TYPE)
