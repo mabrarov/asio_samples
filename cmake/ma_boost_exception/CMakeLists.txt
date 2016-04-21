@@ -16,6 +16,8 @@ set(boost_components )
 list(APPEND boost_components exception)
 
 # Attach used Boost libraries
+# Boost.Exception is a static library always
+set(Boost_USE_STATIC_LIBS ON)
 find_package(Boost REQUIRED COMPONENTS ${boost_components})
 list(APPEND cxx_include_directories
     ${Boost_INCLUDE_DIRS})
