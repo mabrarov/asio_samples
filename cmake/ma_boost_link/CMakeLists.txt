@@ -10,8 +10,14 @@ project(ma_boost_link)
 
 set(cxx_compile_definitions )
 
-# Turn off Boost autolinking
-list(APPEND cxx_compile_definitions "BOOST_ALL_NO_LIB")
+# For Boost_USE_STATIC_LIBS only
+find_package(Boost REQUIRED)
+
+# Enforce linkage with shared build of Boost C++ Libraries in case
+# there is no request for linkage with static build
+if(NOT Boost_USE_STATIC_LIBS)
+    list(APPEND cxx_compile_definitions "BOOST_ALL_DYN_LINK")
+endif()
 
 add_library(${PROJECT_NAME} INTERFACE)
 target_compile_definitions(${PROJECT_NAME} INTERFACE ${cxx_compile_definitions})
