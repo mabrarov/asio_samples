@@ -63,3 +63,5 @@ if(NOT ma_no_cmake_dir_source_group)
     ma_dir_source_group("Header Files" "${cxx_headers_dir}" "${cxx_headers}")
     ma_dir_source_group("Source Files" "${cxx_sources_dir}" "${cxx_sources}")
 endif()
+
+add_test(NAME ${PROJECT_NAME} COMMAND ${PROJECT_NAME})

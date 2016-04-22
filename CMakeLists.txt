@@ -44,6 +44,7 @@ if(ma_build_tests)
             set(GTEST_INCLUDE_DIRS ${gtest_SOURCE_DIR}/include)
         endif()
     endif()
+    enable_testing()
 endif()
 
 # Interface-only targets to simplify support of Boost
