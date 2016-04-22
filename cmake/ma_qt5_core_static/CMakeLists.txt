@@ -37,12 +37,13 @@ if(Qt5Core_FOUND)
         # Required platform libraries
         if(WIN32)
             list(APPEND cxx_libraries
-                "ws2_32"
-                "mswsock"
+                "kernel32"
+                "user32"
+                "shell32"
                 "uuid"
                 "ole32"
-                "oleaut32"
-                "advapi32")
+                "advapi32"
+                "ws2_32")
         endif()
     endif()
 endif()

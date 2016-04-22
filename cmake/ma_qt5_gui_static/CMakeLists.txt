@@ -66,10 +66,15 @@ if(Qt5Gui_FOUND)
         # Required platform libraries
         if(WIN32)
             list(APPEND cxx_libraries
+                "gdi32"
                 "comdlg32"
+                "oleaut32"
                 "imm32"
                 "winmm"
-                "winspool")
+                "ws2_32"
+                "ole32"
+                "user32"
+                "advapi32")
         endif()
     endif()
 endif()

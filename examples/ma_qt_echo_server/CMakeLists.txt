@@ -78,7 +78,9 @@ else()
         # Statically linked Qt requires:
         #     All libraries used by Qt internally to be linked explicitly to the target.
         #     Used Qt plugins to be linked explicitly to the target.
-        # Nothing to add as no Qt 4 plugins are used.
+        list(APPEND qt_libraries
+            ma_qt4_core_static
+            ma_qt4_gui_static)
         set(ma_qt_static TRUE)
     endif()
 endif()
