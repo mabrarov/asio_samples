@@ -30,18 +30,18 @@ matrix:
             - libboost1.55-all-dev
           sources: &boost1.55-sources
             - boost-latest
-        apt: &qt5
-          packages:
-            - qtbase5-dev
-          sources: &qt5-sources
-            - ubuntu-sdk-team
+#        apt: &qt5
+#          packages:
+#            - qtbase5-dev
+#          sources: &qt5-sources
+#            - ubuntu-sdk-team
     - env: COMPILER=g++-5 BUILD_TYPE=RELEASE
       compiler: gcc
       addons:
         apt: *gcc5
         apt: *cmake3
         apt: *boost1.55
-        apt: *qt5
+#        apt: *qt5
 
 script:
   - mkdir build
