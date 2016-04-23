@@ -12,7 +12,7 @@ matrix:
   include:
     - env: COMPILER=g++-5 BUILD_TYPE=DEBUG
       compiler: gcc
-      addons: &gcc5-boost155-qt5
+      addons: &gcc5-boost155-qt4
         apt:
           packages:
             - cmake
@@ -20,16 +20,15 @@ matrix:
             - gcc-5
             - g++-5
             - libboost1.55-all-dev
-            - qtbase5-dev
+            - libqt4-dev
           sources: &sources
             - ubuntu-toolchain-r-test
             - llvm-toolchain-precise-3.6
             - george-edison55-precise-backports
             - boost-latest
-            - ubuntu-sdk-team
     - env: COMPILER=g++-5 BUILD_TYPE=RELEASE
       compiler: gcc
-      addons: *gcc5-boost155-qt5
+      addons: *gcc5-boost155-qt4
 
 script:
   - mkdir build
