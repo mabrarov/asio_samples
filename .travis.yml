@@ -10,7 +10,10 @@ sudo: false
 
 matrix:
   include:
-    - env: COMPILER=g++-5 BUILD_TYPE=DEBUG
+    #
+    # GCC 5.x, Boost 1.55, Qt 4.x
+    #
+    - env: COMPILER=g++-5 BOOST_VERSION=1.55 QT_VERSION=4 BUILD_TYPE=DEBUG
       compiler: gcc
       addons: &gcc5-boost155-qt4
         apt:
@@ -26,13 +29,35 @@ matrix:
             - llvm-toolchain-precise-3.6
             - george-edison55-precise-backports
             - boost-latest
-    - env: COMPILER=g++-5 BUILD_TYPE=RELEASE
+    - env: COMPILER=g++-5 BOOST_VERSION=1.55 QT_VERSION=4 BUILD_TYPE=RELEASE
       compiler: gcc
       addons: *gcc5-boost155-qt4
+    #
+    # GCC 5.x, Boost 1.60, Qt 4.x
+    #
+    - env: COMPILER=g++-5 BOOST_VERSION=1.60 QT_VERSION=4 BUILD_TYPE=DEBUG
+          compiler: gcc
+          addons: &gcc5-boost160-qt4
+            apt:
+              packages:
+                - cmake
+                - cmake-data
+                - gcc-5
+                - g++-5
+                - libboost1.60-all-dev
+                - libqt4-dev
+              sources: &sources
+                - ubuntu-toolchain-r-test
+                - llvm-toolchain-precise-3.6
+                - george-edison55-precise-backports
+                - boost-latest
+        - env: COMPILER=g++-5 BOOST_VERSION=1.60 QT_VERSION=4 BUILD_TYPE=RELEASE
+          compiler: gcc
+          addons: *gcc5-boost160-qt4
 
 script:
   - mkdir build
   - cd build
-  - cmake -D CMAKE_CXX_COMPILER=$COMPILER -D CMAKE_BUILD_TYPE=$BUILD_TYPE -D ma_force_qt4=ON ..
+  - cmake -D CMAKE_CXX_COMPILER=$COMPILER -D CMAKE_BUILD_TYPE=$BUILD_TYPE -D ma_force_qt$QT_VERSION=ON ..
   - cmake --build . --config $BUILD_TYPE --clean-first
   - ctest --build-config $BUILD_TYPE --verbose
