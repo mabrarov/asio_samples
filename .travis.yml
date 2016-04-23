@@ -33,6 +33,6 @@ matrix:
 script:
   - mkdir build
   - cd build
-  - cmake -D CMAKE_CXX_COMPILER=$COMPILER -D CMAKE_BUILD_TYPE=$BUILD_TYPE -D ma_force_qt5=ON ..
+  - cmake -D CMAKE_CXX_COMPILER=$COMPILER -D CMAKE_BUILD_TYPE=$BUILD_TYPE -D ma_force_qt4=ON ..
   - cmake --build . --config $BUILD_TYPE --clean-first
   - ctest --build-config $BUILD_TYPE --verbose

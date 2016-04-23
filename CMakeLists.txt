@@ -11,6 +11,7 @@ project(asio_samples)
 option(ma_build_tests "Build tests" ON)
 option(ma_force_own_gtest "Use own (embedded) version of Google Test framework" OFF)
 option(ma_force_qt5 "Always use Qt 5 instead of Qt 4" OFF)
+option(ma_force_qt4 "Always use Qt 4 instead of Qt 5" OFF)
 
 # Additional helpers
 include(cmake/internal_utils.cmake)
