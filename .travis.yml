@@ -18,7 +18,7 @@ matrix:
             - cmake
             - cmake-data
             - g++-5
-            - libboost-all-dev
+            - libboost1.55-all-dev
             - qtbase5-dev
           sources: &sources
             - ubuntu-toolchain-r-test
