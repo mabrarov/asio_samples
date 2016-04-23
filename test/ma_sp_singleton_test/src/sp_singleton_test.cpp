@@ -412,8 +412,8 @@ private:
 }; // class foo
 
 std::size_t foo::instance_count_   = 0;
-const std::size_t iteration_count  = 100;
-const std::size_t work_cycle_count = 100;
+const std::size_t iteration_count  = 1;
+const std::size_t work_cycle_count = 1;
 
 typedef boost::random::mt19937 random_generator;
 typedef detail::shared_ptr<random_generator> random_generator_ptr;
@@ -441,8 +441,7 @@ void thread_func(detail::barrier& work_barrier, const random_generator_ptr& rng)
 
 TEST(sp_singleton, sync2)
 {
-  const std::size_t thread_count = static_cast<std::size_t>(
-      std::max<unsigned>(detail::thread::hardware_concurrency(), 16));
+  const std::size_t thread_count = 2;
 
   std::vector<random_generator_ptr> rngs;
   for (std::size_t i = 0; i != thread_count; ++i)
