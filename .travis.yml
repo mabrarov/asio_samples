@@ -20,7 +20,7 @@ matrix:
             - gcc-5
             - g++-5
             - libboost1.55-all-dev
-            - qtbase54-dev
+            - qtbase5-dev
           sources: &sources
             - ubuntu-toolchain-r-test
             - llvm-toolchain-precise-3.6
