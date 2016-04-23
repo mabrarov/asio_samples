@@ -35,6 +35,7 @@ addons:
       - qtbase5-dev
 
 script:
-  - cmake -D CMAKE_CXX_COMPILER=$COMPILER -D CMAKE_BUILD_TYPE=$BUILD_TYPE .
-#  - cmake --build . --clean-first
-#  - ctest --build-config $BUILD_TYPE --verbose
+  - mkdir build
+  - cmake -H . -B build -D CMAKE_CXX_COMPILER=$COMPILER -D CMAKE_BUILD_TYPE=$BUILD_TYPE
+  - cmake --build build --clean-first
+  - ctest -B build --build-config $BUILD_TYPE --verbose
