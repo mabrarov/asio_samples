@@ -25,7 +25,11 @@ matrix:
           sources: &package-sources
             - george-edison55-precise-backports
             - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.5
             - llvm-toolchain-precise-3.6
+            - llvm-toolchain-precise-3.7
+            - llvm-toolchain-precise-3.8
+            - llvm-toolchain-precise
             - boost-latest
             - ubuntu-sdk-team
     - env: COMPILER=g++-5 BOOST_VERSION=1.55 QT_VERSION=4 BUILD_TYPE=RELEASE
@@ -79,6 +83,51 @@ matrix:
     - env: COMPILER=g++-4.6 BOOST_VERSION=1.55 QT_VERSION=4 BUILD_TYPE=RELEASE
       compiler: gcc
       addons: *addons-gcc46-boost155-qt4
+    # Clang 3.6, Boost 1.55. Qt 4.x
+    - env: COMPILER=clang++-3.6 BOOST_VERSION=1.55 QT_VERSION=4 BUILD_TYPE=DEBUG
+      compiler: clang
+      addons: &addons-clang36-boost155-qt4
+        apt:
+          packages:
+            - cmake
+            - cmake-data
+            - clang-3.6
+            - libboost1.55-all-dev
+            - libqt4-dev
+          sources: *package-sources
+    - env: COMPILER=clang++-3.6 BOOST_VERSION=1.55 QT_VERSION=4 BUILD_TYPE=RELEASE
+      compiler: gcc
+      addons: *addons-clang36-boost155-qt4
+    # Clang 3.7, Boost 1.55. Qt 4.x
+    - env: COMPILER=clang++-3.7 BOOST_VERSION=1.55 QT_VERSION=4 BUILD_TYPE=DEBUG
+      compiler: clang
+      addons: &addons-clang37-boost155-qt4
+        apt:
+          packages:
+            - cmake
+            - cmake-data
+            - clang-3.7
+            - libboost1.55-all-dev
+            - libqt4-dev
+          sources: *package-sources
+    - env: COMPILER=clang++-3.7 BOOST_VERSION=1.55 QT_VERSION=4 BUILD_TYPE=RELEASE
+      compiler: gcc
+      addons: *addons-clang37-boost155-qt4
+    # Clang 3.8, Boost 1.55. Qt 4.x
+    - env: COMPILER=clang++-3.8 BOOST_VERSION=1.55 QT_VERSION=4 BUILD_TYPE=DEBUG
+      compiler: clang
+      addons: &addons-clang38-boost155-qt4
+        apt:
+          packages:
+            - cmake
+            - cmake-data
+            - clang-3.8
+            - libboost1.55-all-dev
+            - libqt4-dev
+          sources: *package-sources
+    - env: COMPILER=clang++-3.8 BOOST_VERSION=1.55 QT_VERSION=4 BUILD_TYPE=RELEASE
+      compiler: gcc
+      addons: *addons-clang38-boost155-qt4
 
 script:
   - mkdir build
