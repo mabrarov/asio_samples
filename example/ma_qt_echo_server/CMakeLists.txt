@@ -49,13 +49,11 @@ if(ma_qt_echo_server_qt5)
         Qt5::Core
         Qt5::Gui
         Qt5::Widgets)
-    message("Using Qt 5")
 else()
     find_package(Qt4 REQUIRED QtCore QtGui)
     set(qt_libraries
         Qt4::QtCore
         Qt4::QtGui)
-    message("Using Qt 4")
 endif()
 
 # Support statically linked Qt
