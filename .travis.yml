@@ -1,0 +1,40 @@
+#
+# Copyright (c) 2016 Marat Abrarov (abrarov@gmail.com)
+#
+# Distributed under the Boost Software License, Version 1.0. (See accompanying
+# file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+#
+
+language: cpp
+sudo: false
+
+matrix:
+  include:
+    - env: COMPILER=g++-5 BUILD_TYPE=Debug
+      compiler: gcc
+      addons: &gcc5
+        apt:
+          packages:
+            - cmake
+            - g++-5
+            - libboost-all-dev
+            - qtbase5-dev
+          sources: &sources
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.6
+            - kalakris-cmake
+    - env: COMPILER=g++-5 BUILD_TYPE=Release
+      compiler: gcc
+      addons: *gcc5
+addons:
+  apt:
+    packages:
+      - cmake
+      - libboost-all-dev
+      - qtbase5-dev
+
+script:
+  - cd ${TRAVIS_BUILD_DIR}
+  - cmake -B b -D CMAKE_CXX_COMPILER=$COMPILER -D CMAKE_BUILD_TYPE=$BUILD_TYPE
+  - cmake --build b
+  - ctest
