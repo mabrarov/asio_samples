@@ -36,6 +36,7 @@ addons:
 
 script:
   - cd ${TRAVIS_BUILD_DIR}
-  - cmake -B b -D CMAKE_CXX_COMPILER=$COMPILER -D CMAKE_BUILD_TYPE=$BUILD_TYPE
-  - cmake --build b
+  - cmake -D CMAKE_CXX_COMPILER=$COMPILER -D CMAKE_BUILD_TYPE=$BUILD_TYPE
+  - cmake --build . --clean-first
   - ctest
+
