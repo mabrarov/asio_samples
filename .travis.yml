@@ -36,5 +36,5 @@ addons:
 
 script:
   - cmake -D CMAKE_CXX_COMPILER=$COMPILER -D CMAKE_BUILD_TYPE=$BUILD_TYPE
-  - cmake --build . --clean-first
-  - ctest --build-config $BUILD_TYPE --verbose
+#  - cmake --build . --clean-first
+#  - ctest --build-config $BUILD_TYPE --verbose
