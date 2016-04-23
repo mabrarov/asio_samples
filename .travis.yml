@@ -10,9 +10,6 @@ sudo: false
 
 matrix:
   include:
-    #
-    # GCC 5.x, Boost 1.55, Qt 4.x
-    #
     - env: COMPILER=g++-5 BOOST_VERSION=1.55 QT_VERSION=4 BUILD_TYPE=DEBUG
       compiler: gcc
       addons: &gcc5-boost155-qt4
@@ -32,9 +29,6 @@ matrix:
     - env: COMPILER=g++-5 BOOST_VERSION=1.55 QT_VERSION=4 BUILD_TYPE=RELEASE
       compiler: gcc
       addons: *gcc5-boost155-qt4
-    #
-    # GCC 5.x, Boost 1.60, Qt 4.x
-    #
     - env: COMPILER=g++-5 BOOST_VERSION=1.60 QT_VERSION=4 BUILD_TYPE=DEBUG
           compiler: gcc
           addons: &gcc5-boost160-qt4
@@ -58,6 +52,6 @@ matrix:
 script:
   - mkdir build
   - cd build
-  - cmake -D CMAKE_CXX_COMPILER=$COMPILER -D CMAKE_BUILD_TYPE=$BUILD_TYPE -D ma_force_qt$QT_VERSION=ON ..
+  - cmake -D CMAKE_CXX_COMPILER=$COMPILER -D CMAKE_BUILD_TYPE=$BUILD_TYPE -D ma_force_qt_version=$QT_VERSION ..
   - cmake --build . --config $BUILD_TYPE --clean-first
   - ctest --build-config $BUILD_TYPE --verbose
