@@ -11,19 +11,26 @@ project(ma_boost_exception)
 set(cxx_include_directories )
 set(cxx_libraries )
 set(boost_components )
+set(boost_has_exception FALSE)
 
 # Select used Boost libraries
-list(APPEND boost_components exception)
+find_package(Boost REQUIRED)
+if(NOT(${Boost_VERSION} LESS 104700))
+    list(APPEND boost_components exception)
+    set(boost_has_exception TRUE)
+endif()
 
-# Attach used Boost libraries
-# Boost.Exception is a static library always
-set(Boost_USE_STATIC_LIBS ON)
-find_package(Boost REQUIRED COMPONENTS ${boost_components})
-list(APPEND cxx_include_directories
-    ${Boost_INCLUDE_DIRS})
-list(APPEND cxx_libraries
-    ${Boost_LIBRARIES}
-    ma_boost_link)
+if(boost_has_exception)
+    # Attach used Boost libraries
+    # Boost.Exception is a static library always
+    set(Boost_USE_STATIC_LIBS ON)
+    find_package(Boost REQUIRED COMPONENTS ${boost_components})
+    list(APPEND cxx_include_directories
+        ${Boost_INCLUDE_DIRS})
+    list(APPEND cxx_libraries
+        ${Boost_LIBRARIES}
+        ma_boost_link)
+endif()
 
 add_library(${PROJECT_NAME} INTERFACE)
 target_include_directories(${PROJECT_NAME} INTERFACE ${cxx_include_directories})
