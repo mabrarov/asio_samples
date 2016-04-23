@@ -13,35 +13,35 @@ matrix:
     - env: COMPILER=g++-5 BUILD_TYPE=DEBUG
       compiler: gcc
       addons:
-        - apt: &gcc5
+        apt: &gcc5
           packages:
             - gcc-5
             - g++-5
           sources: &gcc5-sources
             - ubuntu-toolchain-r-test
-        - apt: &cmake3
+        apt: &cmake3
           packages:
             - cmake
             - cmake-data
           sources: &cmake3-sources
             - george-edison55-precise-backports
-        - apt: &boost1.55
-            packages:
-              - libboost1.55-all-dev
-            sources: &boost1.55-sources
-              - boost-latest
-        - apt: &qt5
-            packages:
-              - qtbase5-dev
-            sources: &qt5-sources
-              - ubuntu-sdk-team
+        apt: &boost1.55
+          packages:
+            - libboost1.55-all-dev
+          sources: &boost1.55-sources
+            - boost-latest
+        apt: &qt5
+          packages:
+            - qtbase5-dev
+          sources: &qt5-sources
+            - ubuntu-sdk-team
     - env: COMPILER=g++-5 BUILD_TYPE=RELEASE
       compiler: gcc
       addons:
-        - apt: *gcc5
-        - apt: *cmake3
-        - apt: *boost1.55
-        - apt: *qt5
+        apt: *gcc5
+        apt: *cmake3
+        apt: *boost1.55
+        apt: *qt5
 
 script:
   - mkdir build
