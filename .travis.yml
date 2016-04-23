@@ -16,13 +16,14 @@ matrix:
         apt:
           packages:
             - cmake
+            - cmake-data
             - g++-5
             - libboost-all-dev
             - qtbase5-dev
           sources: &sources
             - ubuntu-toolchain-r-test
             - llvm-toolchain-precise-3.6
-            - kalakris-cmake
+            - george-edison55-precise-backports
             - ubuntu-sdk-team
     - env: COMPILER=g++-5 BUILD_TYPE=Release
       compiler: gcc
@@ -36,6 +37,7 @@ addons:
 
 script:
   - mkdir build
-  - cmake -H . -B build -D CMAKE_CXX_COMPILER=$COMPILER -D CMAKE_BUILD_TYPE=$BUILD_TYPE
-  - cmake --build build --clean-first
-  - ctest -B build --build-config $BUILD_TYPE --verbose
+  - cmake --version
+#  - cmake -Bbuild -D CMAKE_CXX_COMPILER=$COMPILER -D CMAKE_BUILD_TYPE=$BUILD_TYPE .
+#  - cmake --build build --clean-first
+#  - ctest -Bbuild --build-config $BUILD_TYPE --verbose
