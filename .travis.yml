@@ -24,6 +24,7 @@ matrix:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-precise-3.6
             - george-edison55-precise-backports
+            - boost-latest
             - ubuntu-sdk-team
     - env: COMPILER=g++-5 BUILD_TYPE=RELEASE
       compiler: gcc
