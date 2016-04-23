@@ -31,7 +31,7 @@ if(Qt5Gui_FOUND)
         #     FindQt5HarfBuzzNG.cmake
         #     FindQt5FreeType.cmake
 
-        set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}")
+        list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
 
         find_package(Qt5PlatformSupport REQUIRED)
         list(APPEND cxx_libraries Qt5::PlatformSupport)

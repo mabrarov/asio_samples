@@ -21,7 +21,7 @@ if(Qt5Core_FOUND)
         #     FindICU.cmake
         #     FindQt5PCRE.cmake
 
-        set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}")
+        list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
 
         find_package(ICU REQUIRED COMPONENTS i18n uc data)
         list(APPEND cxx_libraries ${ICU_LIBRARIES})
