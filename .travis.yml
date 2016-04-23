@@ -28,7 +28,7 @@ matrix:
         apt: &boost155
           packages:
             - libboost1.55-all-dev
-          sources: &boost1.55-sources
+          sources: &boost155-sources
             - boost-latest
 #        apt: &qt5
 #          packages:
