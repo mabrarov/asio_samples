@@ -30,24 +30,24 @@ matrix:
       compiler: gcc
       addons: *gcc5-boost155-qt4
     - env: COMPILER=g++-5 BOOST_VERSION=1.60 QT_VERSION=4 BUILD_TYPE=DEBUG
-          compiler: gcc
-          addons: &gcc5-boost160-qt4
-            apt:
-              packages:
-                - cmake
-                - cmake-data
-                - gcc-5
-                - g++-5
-                - libboost1.60-all-dev
-                - libqt4-dev
-              sources: &sources
-                - ubuntu-toolchain-r-test
-                - llvm-toolchain-precise-3.6
-                - george-edison55-precise-backports
-                - boost-latest
-        - env: COMPILER=g++-5 BOOST_VERSION=1.60 QT_VERSION=4 BUILD_TYPE=RELEASE
-          compiler: gcc
-          addons: *gcc5-boost160-qt4
+      compiler: gcc
+      addons: &gcc5-boost160-qt4
+        apt:
+          packages:
+            - cmake
+            - cmake-data
+            - gcc-5
+            - g++-5
+            - libboost1.60-all-dev
+            - libqt4-dev
+          sources: &sources
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.6
+            - george-edison55-precise-backports
+            - boost-latest
+    - env: COMPILER=g++-5 BOOST_VERSION=1.60 QT_VERSION=4 BUILD_TYPE=RELEASE
+      compiler: gcc
+      addons: *gcc5-boost160-qt4
 
 script:
   - mkdir build
