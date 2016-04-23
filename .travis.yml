@@ -25,7 +25,7 @@ matrix:
             - cmake-data
           sources: &cmake3-sources
             - george-edison55-precise-backports
-        apt: &boost1.55
+        apt: &boost155
           packages:
             - libboost1.55-all-dev
           sources: &boost1.55-sources
@@ -40,7 +40,7 @@ matrix:
       addons:
         apt: *gcc5
         apt: *cmake3
-        apt: *boost1.55
+        apt: *boost155
 #        apt: *qt5
 
 script:
