@@ -26,7 +26,7 @@ matrix:
             - george-edison55-precise-backports
             - ubuntu-toolchain-r-test
             - boost-latest
-            - beineri/opt-qt551-trusty
+            - beineri
 #    - env: COMPILER=g++-5 BOOST_VERSION=1.55 QT_VERSION=5 BUILD_TYPE=RELEASE
 #      compiler: gcc
 #      addons: *addons-gcc5-boost155-qt5
