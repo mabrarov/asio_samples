@@ -23,6 +23,7 @@ matrix:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-precise-3.6
             - kalakris-cmake
+            - ubuntu-sdk-team
     - env: COMPILER=g++-5 BUILD_TYPE=Release
       compiler: gcc
       addons: *gcc5
