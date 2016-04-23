@@ -120,4 +120,5 @@ add_subdirectory(example/ma_async_basics2)
 add_subdirectory(example/ma_echo_server)
 add_subdirectory(example/ma_echo_server_core)
 add_subdirectory(example/ma_nmea_client)
-add_subdirectory(example/ma_qt_echo_server)
+# Fix Travis CI configuration
+#add_subdirectory(example/ma_qt_echo_server)
