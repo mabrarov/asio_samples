@@ -6,7 +6,7 @@
 #
 
 cmake_minimum_required(VERSION 3.0)
-project(ma_qt4_gui_static)
+project(ma_qt4_gui)
 
 set(cxx_libraries )
 

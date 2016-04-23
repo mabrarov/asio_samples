@@ -50,43 +50,19 @@ if(ma_qt_echo_server_qt_version EQUAL 5)
     set(qt_libraries
         Qt5::Core
         Qt5::Gui
-        Qt5::Widgets)
+        Qt5::Widgets
+        ma_qt5_core
+        ma_qt5_gui
+        ma_qt5_widgets)
 elseif(ma_qt_echo_server_qt_version EQUAL 4)
     find_package(Qt4 REQUIRED QtCore QtGui)
     set(qt_libraries
         Qt4::QtCore
-        Qt4::QtGui)
+        Qt4::QtGui
+        ma_qt4_core
+        ma_qt4_gui)
 else()
     message(FATAL_ERROR "Unknown version of Qt: " ${ma_qt_echo_server_qt_version})
-endif()
-
-# Support statically linked Qt
-set(ma_qt_static FALSE)
-if(ma_qt_echo_server_qt_version EQUAL 5)
-    # Determine linkage type of Qt libraries (via linkage type of Qt Core library)
-    get_target_property(qt5_core_type Qt5::Core TYPE)
-    if(${qt5_core_type} STREQUAL "STATIC_LIBRARY")
-        set(ma_qt_static TRUE)
-    endif()
-
-    if(ma_qt_static)
-        # Statically linked Qt requires:
-        #     All libraries used by Qt internally to be linked explicitly to the target.
-        #     Used Qt plugins to be linked explicitly to the target.
-        list(APPEND qt_libraries
-            ma_qt5_core_static
-            ma_qt5_gui_static)
-    endif()
-elseif(ma_qt_echo_server_qt_version EQUAL 4)
-    if(QT_IS_STATIC)
-        # Statically linked Qt requires:
-        #     All libraries used by Qt internally to be linked explicitly to the target.
-        #     Used Qt plugins to be linked explicitly to the target.
-        list(APPEND qt_libraries
-            ma_qt4_core_static
-            ma_qt4_gui_static)
-        set(ma_qt_static TRUE)
-    endif()
 endif()
 
 list(APPEND uic_forms

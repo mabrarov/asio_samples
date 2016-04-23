@@ -6,9 +6,11 @@
 #
 
 cmake_minimum_required(VERSION 3.0)
-project(ma_qt4_core_static)
+project(ma_qt4_core)
 
 set(cxx_libraries )
+
+list(APPEND cxx_libraries ma_qt5_core)
 
 # Required platform libraries
 if(WIN32)

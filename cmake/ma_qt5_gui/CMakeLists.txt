@@ -6,12 +6,22 @@
 #
 
 cmake_minimum_required(VERSION 3.0)
-project(ma_qt5_gui_static)
+project(ma_qt5_gui)
 
 set(cxx_libraries )
+set(cxx_compile_options )
+set(cxx_compile_definitions )
+set(cxx_include_directories )
 
 find_package(Qt5Gui QUIET)
 if(Qt5Gui_FOUND)
+    # Fix bug with FindQt and include directories
+    if(${Qt5Gui_VERSION} VERSION_LESS "5.2")
+        list(APPEND cxx_compile_definitions ${Qt5Gui_DEFINITIONS})
+        list(APPEND cxx_include_directories ${Qt5Gui_INCLUDE_DIRS})
+        list(APPEND cxx_libraries ma_pic_on)
+    endif()
+
     # Determine linkage type of Qt Gui
     get_target_property(qt5_gui_type Qt5::Gui TYPE)
     if(${qt5_gui_type} STREQUAL "STATIC_LIBRARY")
@@ -53,7 +63,7 @@ if(Qt5Gui_FOUND)
             endif()
         endif()
 
-        list(APPEND cxx_libraries ma_qt5_core_static)
+        list(APPEND cxx_libraries ma_qt5_core)
 
         # Qt CMake files use IMPORTED_LINK_DEPENDENT_LIBRARIES instead of
         # INTERFACE_LINK_LIBRARIES for OpenGL dependencies.
@@ -81,3 +91,6 @@ endif()
 
 add_library(${PROJECT_NAME} INTERFACE)
 target_link_libraries(${PROJECT_NAME} INTERFACE ${cxx_libraries})
+target_compile_options(${PROJECT_NAME} INTERFACE ${cxx_compile_options})
+target_compile_definitions(${PROJECT_NAME} INTERFACE ${cxx_compile_definitions})
+target_include_directories(${PROJECT_NAME} INTERFACE ${cxx_include_directories})

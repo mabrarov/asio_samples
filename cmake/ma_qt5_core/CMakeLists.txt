@@ -6,12 +6,22 @@
 #
 
 cmake_minimum_required(VERSION 3.0)
-project(ma_qt5_core_static)
+project(ma_qt5_core)
 
 set(cxx_libraries )
+set(cxx_compile_options )
+set(cxx_compile_definitions )
+set(cxx_include_directories )
 
 find_package(Qt5Core QUIET)
 if(Qt5Core_FOUND)
+    # Fix bug with FindQt and include directories
+    if(${Qt5Core_VERSION} VERSION_LESS "5.2")
+        list(APPEND cxx_compile_definitions ${Qt5Core_DEFINITIONS})
+        list(APPEND cxx_include_directories ${Qt5Core_INCLUDE_DIRS})
+        list(APPEND cxx_libraries ma_pic_on)
+    endif()
+
     # Determine linkage type of Qt Core
     get_target_property(qt5_core_type Qt5::Core TYPE)
     if(${qt5_core_type} STREQUAL "STATIC_LIBRARY")
@@ -50,3 +60,6 @@ endif()
 
 add_library(${PROJECT_NAME} INTERFACE)
 target_link_libraries(${PROJECT_NAME} INTERFACE ${cxx_libraries})
+target_compile_options(${PROJECT_NAME} INTERFACE ${cxx_compile_options})
+target_compile_definitions(${PROJECT_NAME} INTERFACE ${cxx_compile_definitions})
+target_include_directories(${PROJECT_NAME} INTERFACE ${cxx_include_directories})

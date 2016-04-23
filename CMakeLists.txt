@@ -47,6 +47,9 @@ if(ma_build_tests)
     enable_testing()
 endif()
 
+# Interface-only target for turning on position idependent code compiler flag
+add_subdirectory(cmake/ma_pic_on)
+
 # Interface-only targets to simplify support of Boost
 add_subdirectory(cmake/ma_boost_link)
 add_subdirectory(cmake/ma_boost_header_only)
@@ -60,13 +63,14 @@ add_subdirectory(cmake/ma_boost_program_options)
 add_subdirectory(cmake/ma_boost_timer)
 add_subdirectory(cmake/ma_boost_regex)
 
-# Interface-only targets to simplify support of statically linked Qt 5
-add_subdirectory(cmake/ma_qt5_core_static)
-add_subdirectory(cmake/ma_qt5_gui_static)
+# Interface-only targets to simplify support of Qt 5
+add_subdirectory(cmake/ma_qt5_core)
+add_subdirectory(cmake/ma_qt5_gui)
+add_subdirectory(cmake/ma_qt5_widgets)
 
-# Interface-only targets to simplify support of statically linked Qt 4
-add_subdirectory(cmake/ma_qt4_core_static)
-add_subdirectory(cmake/ma_qt4_gui_static)
+# Interface-only targets to simplify support of Qt 4
+add_subdirectory(cmake/ma_qt4_core)
+add_subdirectory(cmake/ma_qt4_gui)
 
 if(ma_build_tests)
     # Interface-only target to simplify support of Google Test
