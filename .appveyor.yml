@@ -32,11 +32,13 @@ install:
       switch ($env:PLATFORM) {
         "x86" {
           $env:VCVARS_PLATFORM="x86"
+          $env:BOOST_LIBRARY_DIR_PLATFORM_SUFFIX="lib32"
           $env:QT_DIR_PLATFORM_SUFFIX=""
           $env:CMAKE_GENERATOR_PLATFORM_SUFFIX=""
         }
         "x64" {
           $env:VCVARS_PLATFORM="amd64"
+          $env:BOOST_LIBRARY_DIR_PLATFORM_SUFFIX="lib64"
           $env:QT_DIR_PLATFORM_SUFFIX="_x64"
           $env:CMAKE_GENERATOR_PLATFORM_SUFFIX=" Win64"
         }
@@ -44,26 +46,31 @@ install:
       switch ($env:MSVC_VERSION) {
         "14.0" {
           $env:MSVS_HOME="%ProgramFiles(x86)%\Microsoft Visual Studio 14.0"
+          $env:BOOST_LIBRARY_DIR_TOOLCHAIN_SUFFIX="-msvc-14.0"
           $env:QT_DIR_TOOLCHAIN_SUFFIX="msvc2015"
           $env:CMAKE_GENERATOR_TOOLCHAIN="Visual Studio 14"
         }
         "12.0" {
           $env:MSVS_HOME="%ProgramFiles(x86)%\Microsoft Visual Studio 12.0"
+          $env:BOOST_LIBRARY_DIR_TOOLCHAIN_SUFFIX="-msvc-12.0"
           $env:QT_DIR_TOOLCHAIN_SUFFIX="msvc2013"
           $env:CMAKE_GENERATOR_TOOLCHAIN="Visual Studio 12"
         }
         "11.0" {
           $env:MSVS_HOME="%ProgramFiles(x86)%\Microsoft Visual Studio 11.0"
+          $env:BOOST_LIBRARY_DIR_TOOLCHAIN_SUFFIX="-msvc-11.0"
           $env:QT_DIR_TOOLCHAIN_SUFFIX="msvc2012"
           $env:CMAKE_GENERATOR_TOOLCHAIN="Visual Studio 11"
         }
         "10.0" {
           $env:MSVS_HOME="%ProgramFiles(x86)%\Microsoft Visual Studio 10.0"
+          $env:BOOST_LIBRARY_DIR_TOOLCHAIN_SUFFIX="-msvc-10.0"
           $env:QT_DIR_TOOLCHAIN_SUFFIX="msvc2010"
           $env:CMAKE_GENERATOR_TOOLCHAIN="Visual Studio 10"
         }
         "9.0" {
           $env:MSVS_HOME="%ProgramFiles(x86)%\Microsoft Visual Studio 9.0"
+          $env:BOOST_LIBRARY_DIR_TOOLCHAIN_SUFFIX="-msvc-9.0"
           $env:QT_DIR_TOOLCHAIN_SUFFIX="msvc2008"
           $env:CMAKE_GENERATOR_TOOLCHAIN="Visual Studio 9"
         }
@@ -93,31 +100,32 @@ install:
           $env:QT_HOME_VERSION_PATH="C:\Qt\5.3"
         }
       }
+      $env:BOOST_LIBRARY_DIR="$env:BOOST_HOME\$env:BOOST_LIBRARY_DIR_PLATFORM_SUFFIX$env:BOOST_LIBRARY_DIR_TOOLCHAIN_SUFFIX"
       $env:QT_HOME="$env:QT_HOME_VERSION_PATH\$env:QT_DIR_TOOLCHAIN_SUFFIX$env:QT_DIR_PLATFORM_SUFFIX"
       $env:QT_BASE_DIR="$env:QT_HOME\qtbase"
       $env:QT_BIN_DIR="$env:QT_BASE_DIR\bin"
       $env:CMAKE_GENERATOR="$env:CMAKE_GENERATOR_TOOLCHAIN$env:CMAKE_GENERATOR_PLATFORM_SUFFIX"
 
 before_build:
-  - cmd: echo PLATFORM        %PLATFORM%
-  - cmd: echo CONFIGURATION   %CONFIGURATION%
-  - cmd: echo MSVC_VERSION    %MSVC_VERSION%
-  - cmd: echo BOOST_VERSION   %BOOST_VERSION%
-  - cmd: echo QT_VERSION      %QT_VERSION%
-  - cmd: echo VCVARS_PLATFORM %VCVARS_PLATFORM%
-  - cmd: echo MSVS_HOME       %MSVS_HOME%
-  - cmd: echo BOOST_HOME      %BOOST_HOME%
-  - cmd: echo QT_HOME         %QT_HOME%
-  - cmd: echo QT_BIN_DIR      %QT_BIN_DIR%
+  - cmd: echo PLATFORM          %PLATFORM%
+  - cmd: echo CONFIGURATION     %CONFIGURATION%
+  - cmd: echo MSVC_VERSION      %MSVC_VERSION%
+  - cmd: echo BOOST_VERSION     %BOOST_VERSION%
+  - cmd: echo QT_VERSION        %QT_VERSION%
+  - cmd: echo VCVARS_PLATFORM   %VCVARS_PLATFORM%
+  - cmd: echo MSVS_HOME         %MSVS_HOME%
+  - cmd: echo BOOST_HOME        %BOOST_HOME%
+  - cmd: echo BOOST_LIBRARY_DIR %BOOST_LIBRARY_DIR%
+  - cmd: echo QT_HOME           %QT_HOME%
+  - cmd: echo QT_BIN_DIR        %QT_BIN_DIR%
   - cmd: echo CMAKE_GENERATOR %CMAKE_GENERATOR%
   - cmd: call "%MSVS_HOME%\VC\vcvarsall.bat" %VCVARS_PLATFORM%
   - cmd: set PATH=%PATH%;%QT_BIN_DIR%
-#  - cmake -D CMAKE_BUILD_TYPE=%CONFIGURATION% -D gtest_force_shared_crt=ON -G "%CMAKE_GENERATOR%" ..
-#  - cmake --build . --config $BUILD_TYPE --clean-first
-#  - ctest --build-config $BUILD_TYPE --verbose
 
 build_script:
   - cmd: cd /d "%APPVEYOR_BUILD_FOLDER%"
   - cmd: mkdir build
   - cmd: cd build
-  - cmd: cmake -D BOOST_ROOT=%BOOST_HOME% -D Boost_USE_STATIC_LIBS=ON -D Boost_NO_SYSTEM_PATHS=ON -D Qt5Core_DIR=$env:QT_BASE_DIR\lib\cmake\Qt5Core -D Qt5Gui_DIR=$env:QT_BASE_DIR\lib\cmake\Qt5Gui -D Qt5Widgets_DIR=$env:QT_BASE_DIR\lib\cmake\Qt5Widgets -D gtest_force_shared_crt=ON -G "%CMAKE_GENERATOR%" ..
+  - cmd: cmake -D BOOST_INCLUDEDIR=%BOOST_HOME% -D BOOST_LIBRARYDIR=%BOOST_LIBRARY_DIR% -D Boost_USE_STATIC_LIBS=ON -D Boost_NO_SYSTEM_PATHS=ON -D Qt5Core_DIR=$env:QT_BASE_DIR\lib\cmake\Qt5Core -D Qt5Gui_DIR=$env:QT_BASE_DIR\lib\cmake\Qt5Gui -D Qt5Widgets_DIR=$env:QT_BASE_DIR\lib\cmake\Qt5Widgets -D gtest_force_shared_crt=ON -G "%CMAKE_GENERATOR%" ..
+#  - cmd: cmake --build . --config %CONFIGURATION% --clean-first
+#  - cmd: ctest --build-config %CONFIGURATION% --verbose
