@@ -26,28 +26,33 @@ install:
       switch ($env:PLATFORM) {
         "x86" {
           $env:VCVARS_PLATFORM="x86"
-          $env:QT_DIR_SUFFIX=""
+          $env:QT_DIR_PLATFORM_SUFFIX=""
         }
         "x64" {
           $env:VCVARS_PLATFORM="amd64"
-          $env:QT_DIR_SUFFIX="-x64"
+          $env:QT_DIR_PLATFORM_SUFFIX="-x64"
         }
       }
       switch ($env:MSVC_VERSION) {
         "14.0" {
           $env:MSVS_HOME="%ProgramFiles(x86)%\Microsoft Visual Studio 14.0"
+          $env:QT_DIR_TOOLCHAIN_SUFFIX="msvc2015"
         }
         "12.0" {
           $env:MSVS_HOME="%ProgramFiles(x86)%\Microsoft Visual Studio 12.0"
+          $env:QT_DIR_TOOLCHAIN_SUFFIX="msvc2013"
         }
         "11.0" {
           $env:MSVS_HOME="%ProgramFiles(x86)%\Microsoft Visual Studio 11.0"
+          $env:QT_DIR_TOOLCHAIN_SUFFIX="msvc2012"
         }
         "10.0" {
           $env:MSVS_HOME="%ProgramFiles(x86)%\Microsoft Visual Studio 10.0"
+          $env:QT_DIR_TOOLCHAIN_SUFFIX="msvc2010"
         }
         "9.0" {
           $env:MSVS_HOME="%ProgramFiles(x86)%\Microsoft Visual Studio 9.0"
+          $env:QT_DIR_TOOLCHAIN_SUFFIX="msvc2008"
         }
       }
       switch ($env:BOOST_VERSION) {
@@ -63,13 +68,16 @@ install:
       }
       switch ($env:QT_VERSION) {
         "5.6" {
-          $env:QT_HOME="C:\Qt\5.6"
+          $env:QT_HOME="C:\Qt\5.6\$env:QT_DIR_TOOLCHAIN_SUFFIX$env:QT_DIR_PLATFORM_SUFFIX"
         }
         "5.5" {
-          $env:QT_HOME="C:\Qt\5.5"
+          $env:QT_HOME="C:\Qt\5.5\$env:QT_DIR_TOOLCHAIN_SUFFIX$env:QT_DIR_PLATFORM_SUFFIX"
         }
-        "1.56.0" {
-          $env:BOOST_HOME="C:\Libraries\boost"
+        "5.4" {
+          $env:QT_HOME="C:\Qt\5.4\$env:QT_DIR_TOOLCHAIN_SUFFIX$env:QT_DIR_PLATFORM_SUFFIX"
+        }
+        "5.3" {
+          $env:QT_HOME="C:\Qt\5.3\$env:QT_DIR_TOOLCHAIN_SUFFIX$env:QT_DIR_PLATFORM_SUFFIX"
         }
       }
 
@@ -82,10 +90,10 @@ before_build:
   - cmd: echo MSVS_HOME           %MSVS_HOME%
   - cmd: echo BOOST_HOME          %BOOST_HOME%
   - cmd: echo QT_HOME             %QT_HOME%
-#  - call "%MSVS_HOME%\VC\vcvarsall.bat" "%VCVARS_PLATFORM%"
-#  - cd /d "%APPVEYOR_BUILD_FOLDER%"
-#  - mkdir build
-#  - cd build
+  - cmd: call "%MSVS_HOME%\VC\vcvarsall.bat" "%VCVARS_PLATFORM%"
+  - cd /d "%APPVEYOR_BUILD_FOLDER%"
+  - mkdir build
+  - cd build
 #  - cmake -D CMAKE_BUILD_TYPE=%CONFIGURATION% -D gtest_force_shared_crt=ON -G "%CMAKE_GENERATOR%" ..
 #  - cmake --build . --config $BUILD_TYPE --clean-first
 #  - ctest --build-config $BUILD_TYPE --verbose
