@@ -50,6 +50,14 @@ install:
           $env:CMAKE_GENERATOR_PLATFORM_SUFFIX=" Win64"
         }
       }
+      switch ($env:CONFIGURATION) {
+        "Debug" {
+          $env:CMAKE_BUILD_CONFIGURATION="DEBUG"
+        }
+        "Release" {
+          $env:CMAKE_BUILD_CONFIGURATION="RELEASE"
+        }
+      }
       switch ($env:MSVC_VERSION) {
         "14.0" {
           $env:MSVS_HOME="%ProgramFiles(x86)%\Microsoft Visual Studio 14.0"
@@ -129,5 +137,5 @@ build_script:
   - cmd: mkdir build
   - cmd: cd build
   - cmd: cmake -D BOOST_INCLUDEDIR=%BOOST_HOME% -D BOOST_LIBRARYDIR=%BOOST_LIBRARY_DIR% -D Boost_USE_STATIC_LIBS=%BOOST_USE_STATIC_LIBS% -D Boost_NO_SYSTEM_PATHS=ON -D ma_force_qt_version=5 -D Qt5Core_DIR=$env:QT_HOME\lib\cmake\Qt5Core -D Qt5Gui_DIR=$env:QT_HOME\lib\cmake\Qt5Gui -D Qt5Widgets_DIR=$env:QT_HOME\lib\cmake\Qt5Widgets -D gtest_force_shared_crt=ON -G "%CMAKE_GENERATOR%" ..
-  - cmd: cmake --build . --config %CONFIGURATION% --clean-first
-#  - cmd: ctest --build-config %CONFIGURATION% --verbose
+  - cmd: cmake --build . --config %CMAKE_BUILD_CONFIGURATION% --clean-first
+#  - cmd: ctest --build-config %CMAKE_BUILD_CONFIGURATION% --verbose

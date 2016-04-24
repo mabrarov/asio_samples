@@ -1,4 +1,4 @@
-Asio samples [![Build Status](https://travis-ci.org/mabrarov/asio_samples.svg?branch=feature%2Fwin_ci)](https://travis-ci.org/mabrarov/asio_samples?branch=feature%2Fwin_ci) [![Build status](https://ci.appveyor.com/api/projects/status/m3m15b3wxkyhqfj2?svg=true)](https://ci.appveyor.com/project/mabrarov/asio-samples)
+Asio samples [![Build Status](https://travis-ci.org/mabrarov/asio_samples.svg?branch=feature%2Fwin_ci)](https://travis-ci.org/mabrarov/asio_samples?branch=feature%2Fwin_ci) [![Build status](https://ci.appveyor.com/api/projects/status/m3m15b3wxkyhqfj2/branch/feature/win_ci?svg=true)](https://ci.appveyor.com/project/mabrarov/asio-samplesbranch/feature/win_ci)
 ============
 
 Examples (code samples) describing the construction of active objects 
