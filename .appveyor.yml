@@ -12,7 +12,7 @@ build:
 
 platform:
   - x64
-  - x86
+  - Win32
 
 configuration:
   - Debug
@@ -41,6 +41,12 @@ install:
   - ps: |
       switch ($env:PLATFORM) {
         "x86" {
+          $env:VCVARS_PLATFORM="x86"
+          $env:BOOST_LIBRARY_DIR_PLATFORM_SUFFIX="lib32"
+          $env:QT_DIR_PLATFORM_SUFFIX=""
+          $env:CMAKE_GENERATOR_PLATFORM_SUFFIX=""
+        }
+        "Win32" {
           $env:VCVARS_PLATFORM="x86"
           $env:BOOST_LIBRARY_DIR_PLATFORM_SUFFIX="lib32"
           $env:QT_DIR_PLATFORM_SUFFIX=""
