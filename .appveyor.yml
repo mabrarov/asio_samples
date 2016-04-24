@@ -10,86 +10,78 @@ os: Visual Studio 2015
 build:
   verbosity: detailed
 
-#platform:
-#  - x64
-#  - x86
-
-#configuration:
-#  - Debug
-#  - Release
-
-configuration:
-  - Release
-
 environment:
   matrix:
     - MSVC_VERSION: 14.0
       BOOST_VERSION: 1.59.0
       QT_VERSION: 5.6
+      BUILD_CONFIGURATION: Release
     - MSVC_VERSION: 14.0
       BOOST_VERSION: 1.59.0
       QT_VERSION: 5.6
+      BUILD_CONFIGURATION: Debug
 
 install:
-  - cmd: echo MSVC_VERSION %MSVC_VERSION%
-#  - ps: >-
-#      switch ($env:PLATFORM) {
-#        "x86" {
-#          $env:VCVARS_PLATFORM="x86"
-#          $env:QT_DIR_SUFFIX=""
-#        }
-#        "x64" {
-#          $env:VCVARS_PLATFORM="amd64"
-#          $env:QT_DIR_SUFFIX="-x64"
-#        }
-#      }
-#  - ps: >-
-#      switch ($env:MSVC_VERSION) {
-#        "14.0" {
-#          $env:MSVS_HOME="%ProgramFiles(x86)%\Microsoft Visual Studio 14.0"
-#        }
-#        "12.0" {
-#          $env:MSVS_HOME="%ProgramFiles(x86)%\Microsoft Visual Studio 12.0"
-#        }
-#        "11.0" {
-#          $env:MSVS_HOME="%ProgramFiles(x86)%\Microsoft Visual Studio 11.0"
-#        }
-#        "10.0" {
-#          $env:MSVS_HOME="%ProgramFiles(x86)%\Microsoft Visual Studio 10.0"
-#        }
-#        "9.0" {
-#          $env:MSVS_HOME="%ProgramFiles(x86)%\Microsoft Visual Studio 9.0"
-#        }
-#      }
-#  - ps: >-
-#      switch ($env:BOOST_VERSION) {
-#        "1.59.0" {
-#          $env:BOOST_HOME="C:\Libraries\boost_1_59_0"
-#        }
-#        "1.58.0" {
-#          $env:BOOST_HOME="C:\Libraries\boost_1_58_0"
-#        }
-#        "1.56.0" {
-#          $env:BOOST_HOME="C:\Libraries\boost"
-#        }
-#      }
-#  - ps: >-
-#      switch ($env:QT_VERSION) {
-#        "5.6" {
-#          $env:QT_HOME="C:\Qt\5.6"
-#        }
-#        "5.5" {
-#          $env:QT_HOME="C:\Qt\5.5"
-#        }
-#        "1.56.0" {
-#          $env:BOOST_HOME="C:\Libraries\boost"
-#        }
-#      }
-
-#  - set PATH=%PATH%;%QTDIR%\bin
+  - ps: |
+      switch ($env:PLATFORM) {
+        "x86" {
+          $env:VCVARS_PLATFORM="x86"
+          $env:QT_DIR_SUFFIX=""
+        }
+        "x64" {
+          $env:VCVARS_PLATFORM="amd64"
+          $env:QT_DIR_SUFFIX="-x64"
+        }
+      }
+      switch ($env:MSVC_VERSION) {
+        "14.0" {
+          $env:MSVS_HOME="%ProgramFiles(x86)%\Microsoft Visual Studio 14.0"
+        }
+        "12.0" {
+          $env:MSVS_HOME="%ProgramFiles(x86)%\Microsoft Visual Studio 12.0"
+        }
+        "11.0" {
+          $env:MSVS_HOME="%ProgramFiles(x86)%\Microsoft Visual Studio 11.0"
+        }
+        "10.0" {
+          $env:MSVS_HOME="%ProgramFiles(x86)%\Microsoft Visual Studio 10.0"
+        }
+        "9.0" {
+          $env:MSVS_HOME="%ProgramFiles(x86)%\Microsoft Visual Studio 9.0"
+        }
+      }
+      switch ($env:BOOST_VERSION) {
+        "1.59.0" {
+          $env:BOOST_HOME="C:\Libraries\boost_1_59_0"
+        }
+        "1.58.0" {
+          $env:BOOST_HOME="C:\Libraries\boost_1_58_0"
+        }
+        "1.56.0" {
+          $env:BOOST_HOME="C:\Libraries\boost"
+        }
+      }
+      switch ($env:QT_VERSION) {
+        "5.6" {
+          $env:QT_HOME="C:\Qt\5.6"
+        }
+        "5.5" {
+          $env:QT_HOME="C:\Qt\5.5"
+        }
+        "1.56.0" {
+          $env:BOOST_HOME="C:\Libraries\boost"
+        }
+      }
 
 before_build:
-  - cmd: echo BOOST_VERSION %BOOST_VERSION%
+  - cmd: echo MSVC_VERSION        %MSVC_VERSION%
+  - cmd: echo BOOST_VERSION       %BOOST_VERSION%
+  - cmd: echo QT_VERSION          %QT_VERSION%
+  - cmd: echo BUILD_CONFIGURATION %BUILD_CONFIGURATION%
+  - cmd: echo VCVARS_PLATFORM     %VCVARS_PLATFORM%
+  - cmd: echo MSVS_HOME           %MSVS_HOME%
+  - cmd: echo BOOST_HOME          %BOOST_HOME%
+  - cmd: echo QT_HOME             %QT_HOME%
 #  - call "%MSVS_HOME%\VC\vcvarsall.bat" "%VCVARS_PLATFORM%"
 #  - cd /d "%APPVEYOR_BUILD_FOLDER%"
 #  - mkdir build
