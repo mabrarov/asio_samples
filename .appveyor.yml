@@ -90,7 +90,6 @@ install:
 
 before_build:
   - cmd: echo BOOST_VERSION %BOOST_VERSION%
-  - cmd: cmake --version
 #  - call "%MSVS_HOME%\VC\vcvarsall.bat" "%VCVARS_PLATFORM%"
 #  - cd /d "%APPVEYOR_BUILD_FOLDER%"
 #  - mkdir build
@@ -98,3 +97,6 @@ before_build:
 #  - cmake -D CMAKE_BUILD_TYPE=%CONFIGURATION% -D gtest_force_shared_crt=ON -G "%CMAKE_GENERATOR%" ..
 #  - cmake --build . --config $BUILD_TYPE --clean-first
 #  - ctest --build-config $BUILD_TYPE --verbose
+
+build_script:
+  - cmd: cmake --version
