@@ -36,13 +36,13 @@ CMake should be executed after Windows SDK environment was set up (even if `Visu
 Example of generation of Visual Studio 2013 project (static C/C++ runtime, static Boost and static Qt 5, x64):
 
 ```
-cmake -D BOOST_INCLUDEDIR=<Boost headers directory>
+cmake -D CMAKE_USER_MAKE_RULES_OVERRIDE=<asio_samples directory>/cmake/static_c_runtime_overrides.cmake
+      -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX=<asio_samples directory>/cmake/static_cxx_runtime_overrides.cmake
+      -D ICU_ROOT=<ICU root directory>
+      -D BOOST_INCLUDEDIR=<Boost headers directory>
       -D BOOST_LIBRARYDIR=<Boost built libraries directory>
       -D Boost_NO_SYSTEM_PATHS=ON
       -D Boost_USE_STATIC_LIBS=ON
-      -D CMAKE_USER_MAKE_RULES_OVERRIDE=<asio_samples directory>/cmake/static_c_runtime_overrides.cmake
-      -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX=<asio_samples directory>/cmake/static_cxx_runtime_overrides.cmake
-      -D ICU_ROOT=<ICU root directory>
       -D Qt5Core_DIR=<Qt directory>/qtbase/lib/cmake/Qt5Core
       -D Qt5Gui_DIR=<Qt directory>/qtbase/lib/cmake/Qt5Gui
       -D Qt5Widgets_DIR=<Qt directory>/qtbase/lib/cmake/Qt5Widgets
@@ -87,39 +87,39 @@ so `-D Boost_USE_STATIC_LIBS=OFF` can be omitted.
 Example of generation of Visual Studio 2013 project (static C/C++ runtime, static Boost and static Qt 5, x64) for usage with Intel C++ Compiler XE 2015:
 
 ```
-cmake -D BOOST_INCLUDEDIR=<Boost headers directory>
+cmake -D CMAKE_USER_MAKE_RULES_OVERRIDE=<asio_samples directory>/cmake/static_c_runtime_overrides.cmake
+      -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX=<asio_samples directory>/cmake/static_cxx_runtime_overrides.cmake
+      -D ICU_ROOT=<ICU root directory>
+      -D BOOST_INCLUDEDIR=<Boost headers directory>
       -D BOOST_LIBRARYDIR=<Boost built libraries directory>
       -D Boost_NO_SYSTEM_PATHS=ON
       -D Boost_USE_STATIC_LIBS=ON
-      -D CMAKE_USER_MAKE_RULES_OVERRIDE=<asio_samples directory>/cmake/static_c_runtime_overrides.cmake
-      -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX=<asio_samples directory>/cmake/static_cxx_runtime_overrides.cmake
-      -D ICU_ROOT=<ICU root directory>
       -D Qt5Core_DIR=<Qt directory>/qtbase/lib/cmake/Qt5Core
       -D Qt5Gui_DIR=<Qt directory>/qtbase/lib/cmake/Qt5Gui
       -D Qt5Widgets_DIR=<Qt directory>/qtbase/lib/cmake/Qt5Widgets
       -D GTEST_ROOT=<Google Test install directory>
-      -G "Visual Studio 12 2013 Win64"
-      -T "Intel C++ Compiler XE 15.0"
       -D CMAKE_C_COMPILER=icl
       -D CMAKE_CXX_COMPILER=icl
+      -T "Intel C++ Compiler XE 15.0"
+      -G "Visual Studio 12 2013 Win64"
       <asio_samples directory>
 ```
 
 Example of generation of Visual Studio 2015 project (shared C/C++ runtime, static Boost and shared Qt 5, x64) for usage with Intel C++ Compiler 2016:
 
 ```
-cmake -D BOOST_INCLUDEDIR=<Boost headers directory>
+cmake -D ICU_ROOT=<ICU root directory>
+      -D BOOST_INCLUDEDIR=<Boost headers directory>
       -D BOOST_LIBRARYDIR=<Boost built libraries directory>
       -D Boost_NO_SYSTEM_PATHS=ON
-      -D ICU_ROOT=<ICU root directory>
       -D Qt5Core_DIR=<Qt directory>/qtbase/lib/cmake/Qt5Core
       -D Qt5Gui_DIR=<Qt directory>/qtbase/lib/cmake/Qt5Gui
       -D Qt5Widgets_DIR=<Qt directory>/qtbase/lib/cmake/Qt5Widgets
       -D GTEST_ROOT=<Google Test install directory>
-      -G "Visual Studio 14 2015 Win64"
-      -T "Intel C++ Compiler 16.0"
       -D CMAKE_C_COMPILER=icl
       -D CMAKE_CXX_COMPILER=icl
+      -T "Intel C++ Compiler 16.0"
+      -G "Visual Studio 14 2015 Win64"
       <asio_samples directory>
 ```
 
@@ -141,11 +141,11 @@ cmake -D BOOST_INCLUDEDIR=<Boost headers directory>
 Example of generation of Visual Studio 2008 project (static C/C++ runtime, static Boost and static Qt 4):
 
 ```
-cmake -D BOOST_INCLUDEDIR=<Boost headers directory>
+cmake -D CMAKE_USER_MAKE_RULES_OVERRIDE=<asio_samples directory>/cmake/static_c_runtime_overrides.cmake
+      -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX=<asio_samples directory>/cmake/static_cxx_runtime_overrides.cmake
+      -D BOOST_INCLUDEDIR=<Boost headers directory>
       -D BOOST_LIBRARYDIR=<Boost built libraries directory>
       -D Boost_NO_SYSTEM_PATHS=ON
-      -D CMAKE_USER_MAKE_RULES_OVERRIDE=<asio_samples directory>/cmake/static_c_runtime_overrides.cmake
-      -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX=<asio_samples directory>/cmake/static_cxx_runtime_overrides.cmake
       -D QT_QMAKE_EXECUTABLE=<Qt directory>/bin/qmake.exe
       -D GTEST_ROOT=<Google Test install directory>
       -G "Visual Studio 9 2008"
