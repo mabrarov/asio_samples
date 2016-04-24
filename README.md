@@ -1,4 +1,4 @@
-Asio samples [![Build Status](https://travis-ci.org/mabrarov/asio_samples.svg?branch=feature%2Fgranular_cmake_project)](https://travis-ci.org/mabrarov/asio_samples?branch=feature%2Fgranular_cmake_project)
+Asio samples [![Build Status](https://travis-ci.org/mabrarov/asio_samples.svg?branch=develop)](https://travis-ci.org/mabrarov/asio_samples?branch=feature%2Fgranular_cmake_project)
 ============
 
 Examples (code samples) describing the construction of active objects 
