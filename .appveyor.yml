@@ -12,14 +12,6 @@ environment:
     - BOOST_VERSION: 1.59.0
       QT_VERSION: 5.6
 
-platform:
-  - x64
-  - x86
-
-configuration:
-  - Debug
-  - Release
-
 matrix:
   fast_finish: true
 
