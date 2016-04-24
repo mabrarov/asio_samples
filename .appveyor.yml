@@ -12,11 +12,11 @@ build:
 
 platform:
   - x64
-#  - x86
+  - x86
 
 configuration:
   - Debug
-#  - Release
+  - Release
 
 environment:
   matrix:
@@ -24,18 +24,18 @@ environment:
       BOOST_VERSION: 1.59.0
       BOOST_LINKAGE: static
       QT_VERSION: 5.6
-#    - MSVC_VERSION: 14.0
-#      BOOST_VERSION: 1.59.0
-#      BOOST_LINKAGE: shared
-#      QT_VERSION: 5.6
-#    - MSVC_VERSION: 12.0
-#      BOOST_VERSION: 1.58.0
-#      BOOST_LINKAGE: static
-#      QT_VERSION: 5.5
-#    - MSVC_VERSION: 12.0
-#      BOOST_VERSION: 1.58.0
-#      BOOST_LINKAGE: shared
-#      QT_VERSION: 5.5
+    - MSVC_VERSION: 14.0
+      BOOST_VERSION: 1.59.0
+      BOOST_LINKAGE: shared
+      QT_VERSION: 5.6
+    - MSVC_VERSION: 12.0
+      BOOST_VERSION: 1.58.0
+      BOOST_LINKAGE: static
+      QT_VERSION: 5.5
+    - MSVC_VERSION: 12.0
+      BOOST_VERSION: 1.58.0
+      BOOST_LINKAGE: shared
+      QT_VERSION: 5.5
 
 install:
   - ps: |
@@ -141,4 +141,4 @@ build_script:
   - cmd: cd build
   - cmd: cmake -D BOOST_INCLUDEDIR=%BOOST_HOME% -D BOOST_LIBRARYDIR=%BOOST_LIBRARY_DIR% -D Boost_USE_STATIC_LIBS=%BOOST_USE_STATIC_LIBS% -D Boost_NO_SYSTEM_PATHS=ON -D ma_force_qt_version=5 -D Qt5Core_DIR=$env:QT_HOME\lib\cmake\Qt5Core -D Qt5Gui_DIR=$env:QT_HOME\lib\cmake\Qt5Gui -D Qt5Widgets_DIR=$env:QT_HOME\lib\cmake\Qt5Widgets -D gtest_force_shared_crt=ON -G "%CMAKE_GENERATOR%" ..
   - cmd: cmake --build . --config %CMAKE_BUILD_CONFIG% --clean-first -- /maxcpucount
-#  - cmd: ctest --build-config %CMAKE_BUILD_CONFIG% --verbose
+  - cmd: ctest --build-config %CMAKE_BUILD_CONFIG% --verbose
