@@ -1011,7 +1011,7 @@ TEST(handler_storage, move_support)
 
 #if defined(MA_HAS_RVALUE_REFS) && (BOOST_ASIO_VERSION >= 101001) \
   && defined(BOOST_ASIO_HAS_MOVE)
-  ASSERT_EQ(0U, copy_latch.value());
+  ASSERT_EQ(1U, copy_latch.value());
 #endif
 } // TEST(handler_storage, move_support)
 
