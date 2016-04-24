@@ -9,7 +9,7 @@ os: Visual Studio 2015
 
 build:
   parallel: true
-  project: build\asio_samples.sln
+  project: %APPVEYOR_BUILD_FOLDER%\build\asio_samples.sln
   verbosity: normal
 
 platform:
