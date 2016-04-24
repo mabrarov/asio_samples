@@ -133,7 +133,7 @@ install:
 
 before_build:
   - cmd: call "%MSVS_HOME%\VC\vcvarsall.bat" %VCVARS_PLATFORM%
-  - cmd: set PATH=%PATH%;%QT_BIN_DIR%
+  - cmd: set PATH=%BOOST_LIBRARY_DIR%;%QT_BIN_DIR%;%PATH%
 
 build_script:
   - cmd: cd /d "%APPVEYOR_BUILD_FOLDER%"
