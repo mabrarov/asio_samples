@@ -40,7 +40,7 @@ namespace detail {
 
 #if defined(MA_USE_CXX11_STDLIB_THREAD)
 
-using std::missing_thread;
+using std::thread;
 using std::mutex;
 using std::recursive_mutex;
 using std::unique_lock;
@@ -102,7 +102,7 @@ inline bool condition_variable::timed_wait(unique_lock<mutex>& lock,
 
 #else  // defined(MA_USE_CXX11_STDLIB_THREAD)
 
-using boost::missing_thread;
+using boost::thread;
 using boost::mutex;
 using boost::recursive_mutex;
 using boost::unique_lock;
