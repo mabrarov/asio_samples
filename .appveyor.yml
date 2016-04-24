@@ -22,9 +22,19 @@ environment:
   matrix:
     - MSVC_VERSION: 14.0
       BOOST_VERSION: 1.59.0
+      BOOST_LINKAGE: static
       QT_VERSION: 5.6
     - MSVC_VERSION: 14.0
       BOOST_VERSION: 1.59.0
+      BOOST_LINKAGE: shared
+      QT_VERSION: 5.6
+    - MSVC_VERSION: 12.0
+      BOOST_VERSION: 1.59.0
+      BOOST_LINKAGE: static
+      QT_VERSION: 5.5
+    - MSVC_VERSION: 12.0
+      BOOST_VERSION: 1.59.0
+      BOOST_LINKAGE: shared
       QT_VERSION: 5.5
 
 install:
@@ -39,7 +49,7 @@ install:
         "x64" {
           $env:VCVARS_PLATFORM="amd64"
           $env:BOOST_LIBRARY_DIR_PLATFORM_SUFFIX="lib64"
-          $env:QT_DIR_PLATFORM_SUFFIX="_x64"
+          $env:QT_DIR_PLATFORM_SUFFIX="_64"
           $env:CMAKE_GENERATOR_PLATFORM_SUFFIX=" Win64"
         }
       }
@@ -86,6 +96,14 @@ install:
           $env:BOOST_HOME="C:\Libraries\boost"
         }
       }
+      switch ($env:BOOST_LINKAGE) {
+        "static" {
+          $env:BOOST_USE_STATIC_LIBS="ON"
+        }
+        "shared" {
+          $env:BOOST_USE_STATIC_LIBS="OFF"
+        }
+      }
       switch ($env:QT_VERSION) {
         "5.6" {
           $env:QT_HOME_VERSION_PATH="C:\Qt\5.6"
@@ -117,7 +135,7 @@ before_build:
   - cmd: echo BOOST_LIBRARY_DIR %BOOST_LIBRARY_DIR%
   - cmd: echo QT_HOME           %QT_HOME%
   - cmd: echo QT_BIN_DIR        %QT_BIN_DIR%
-  - cmd: echo CMAKE_GENERATOR %CMAKE_GENERATOR%
+  - cmd: echo CMAKE_GENERATOR   %CMAKE_GENERATOR%
   - cmd: call "%MSVS_HOME%\VC\vcvarsall.bat" %VCVARS_PLATFORM%
   - cmd: set PATH=%PATH%;%QT_BIN_DIR%
 
@@ -125,6 +143,6 @@ build_script:
   - cmd: cd /d "%APPVEYOR_BUILD_FOLDER%"
   - cmd: mkdir build
   - cmd: cd build
-  - cmd: cmake -D BOOST_INCLUDEDIR=%BOOST_HOME% -D BOOST_LIBRARYDIR=%BOOST_LIBRARY_DIR% -D Boost_USE_STATIC_LIBS=ON -D Boost_NO_SYSTEM_PATHS=ON -D ma_force_qt_version=5 -D Qt5Core_DIR=$env:QT_HOME\lib\cmake\Qt5Core -D Qt5Gui_DIR=$env:QT_HOME\lib\cmake\Qt5Gui -D Qt5Widgets_DIR=$env:QT_HOME\lib\cmake\Qt5Widgets -D gtest_force_shared_crt=ON -G "%CMAKE_GENERATOR%" ..
+  - cmd: cmake -D BOOST_INCLUDEDIR=%BOOST_HOME% -D BOOST_LIBRARYDIR=%BOOST_LIBRARY_DIR% -D Boost_USE_STATIC_LIBS=%BOOST_USE_STATIC_LIBS% -D Boost_NO_SYSTEM_PATHS=ON -D ma_force_qt_version=5 -D Qt5Core_DIR=$env:QT_HOME\lib\cmake\Qt5Core -D Qt5Gui_DIR=$env:QT_HOME\lib\cmake\Qt5Gui -D Qt5Widgets_DIR=$env:QT_HOME\lib\cmake\Qt5Widgets -D gtest_force_shared_crt=ON -G "%CMAKE_GENERATOR%" ..
 #  - cmd: cmake --build . --config %CONFIGURATION% --clean-first
 #  - cmd: ctest --build-config %CONFIGURATION% --verbose
