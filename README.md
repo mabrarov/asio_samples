@@ -1,4 +1,4 @@
-Asio samples [![Build Status](https://travis-ci.org/mabrarov/asio_samples.svg?branch=develop)](https://travis-ci.org/mabrarov/asio_samples?branch=develop)
+Asio samples [![Build Status](https://travis-ci.org/mabrarov/asio_samples.svg?branch=feature%2Fwin_ci)](https://travis-ci.org/mabrarov/asio_samples?branch=feature%2Fwin_ci)
 ============
 
 Examples (code samples) describing the construction of active objects 
