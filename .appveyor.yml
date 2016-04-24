@@ -36,7 +36,7 @@ install:
         }
         "x64" {
           $env:VCVARS_PLATFORM="amd64"
-          $env:QT_DIR_PLATFORM_SUFFIX="-x64"
+          $env:QT_DIR_PLATFORM_SUFFIX="_x64"
         }
       }
       switch ($env:MSVC_VERSION) {
@@ -102,7 +102,7 @@ before_build:
   - cmd: echo BOOST_HOME      %BOOST_HOME%
   - cmd: echo QT_HOME         %QT_HOME%
   - cmd: echo QT_BIN_DIR      %QT_BIN_DIR%
-  - cmd: call "%MSVS_HOME%\VC\vcvarsall.bat" "%VCVARS_PLATFORM%"
+  - cmd: call "%MSVS_HOME%\VC\vcvarsall.bat" %VCVARS_PLATFORM%
   - cmd: set PATH=%PATH%;%QT_BIN_DIR%
 #  - cmake -D CMAKE_BUILD_TYPE=%CONFIGURATION% -D gtest_force_shared_crt=ON -G "%CMAKE_GENERATOR%" ..
 #  - cmake --build . --config $BUILD_TYPE --clean-first
