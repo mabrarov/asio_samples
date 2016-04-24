@@ -7,9 +7,6 @@
 
 os: Visual Studio 2015
 
-build:
-  verbosity: detailed
-
 platform:
   - x64
   - x86
@@ -124,18 +121,6 @@ install:
       $env:CMAKE_GENERATOR="$env:CMAKE_GENERATOR_TOOLCHAIN$env:CMAKE_GENERATOR_PLATFORM_SUFFIX"
 
 before_build:
-  - cmd: echo PLATFORM          %PLATFORM%
-  - cmd: echo CONFIGURATION     %CONFIGURATION%
-  - cmd: echo MSVC_VERSION      %MSVC_VERSION%
-  - cmd: echo BOOST_VERSION     %BOOST_VERSION%
-  - cmd: echo QT_VERSION        %QT_VERSION%
-  - cmd: echo VCVARS_PLATFORM   %VCVARS_PLATFORM%
-  - cmd: echo MSVS_HOME         %MSVS_HOME%
-  - cmd: echo BOOST_HOME        %BOOST_HOME%
-  - cmd: echo BOOST_LIBRARY_DIR %BOOST_LIBRARY_DIR%
-  - cmd: echo QT_HOME           %QT_HOME%
-  - cmd: echo QT_BIN_DIR        %QT_BIN_DIR%
-  - cmd: echo CMAKE_GENERATOR   %CMAKE_GENERATOR%
   - cmd: call "%MSVS_HOME%\VC\vcvarsall.bat" %VCVARS_PLATFORM%
   - cmd: set PATH=%PATH%;%QT_BIN_DIR%
 
@@ -144,5 +129,5 @@ build_script:
   - cmd: mkdir build
   - cmd: cd build
   - cmd: cmake -D BOOST_INCLUDEDIR=%BOOST_HOME% -D BOOST_LIBRARYDIR=%BOOST_LIBRARY_DIR% -D Boost_USE_STATIC_LIBS=%BOOST_USE_STATIC_LIBS% -D Boost_NO_SYSTEM_PATHS=ON -D ma_force_qt_version=5 -D Qt5Core_DIR=$env:QT_HOME\lib\cmake\Qt5Core -D Qt5Gui_DIR=$env:QT_HOME\lib\cmake\Qt5Gui -D Qt5Widgets_DIR=$env:QT_HOME\lib\cmake\Qt5Widgets -D gtest_force_shared_crt=ON -G "%CMAKE_GENERATOR%" ..
-#  - cmd: cmake --build . --config %CONFIGURATION% --clean-first
+  - cmd: cmake --build . --config %CONFIGURATION% --clean-first
 #  - cmd: ctest --build-config %CONFIGURATION% --verbose
