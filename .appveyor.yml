@@ -24,18 +24,18 @@ environment:
       BOOST_VERSION: 1.59.0
       BOOST_LINKAGE: static
       QT_VERSION: 5.6
-    - MSVC_VERSION: 14.0
-      BOOST_VERSION: 1.59.0
-      BOOST_LINKAGE: shared
-      QT_VERSION: 5.6
-    - MSVC_VERSION: 12.0
-      BOOST_VERSION: 1.58.0
-      BOOST_LINKAGE: static
-      QT_VERSION: 5.5
-    - MSVC_VERSION: 12.0
-      BOOST_VERSION: 1.58.0
-      BOOST_LINKAGE: shared
-      QT_VERSION: 5.5
+#    - MSVC_VERSION: 14.0
+#      BOOST_VERSION: 1.59.0
+#      BOOST_LINKAGE: shared
+#      QT_VERSION: 5.6
+#    - MSVC_VERSION: 12.0
+#      BOOST_VERSION: 1.58.0
+#      BOOST_LINKAGE: static
+#      QT_VERSION: 5.5
+#    - MSVC_VERSION: 12.0
+#      BOOST_VERSION: 1.58.0
+#      BOOST_LINKAGE: shared
+#      QT_VERSION: 5.5
 
 install:
   - ps: |
@@ -134,6 +134,7 @@ install:
 before_build:
   - cmd: call "%MSVS_HOME%\VC\vcvarsall.bat" %VCVARS_PLATFORM%
   - cmd: set PATH=%PATH%;%QT_BIN_DIR%
+  - cmd: echo CMAKE_GENERATOR           %CMAKE_GENERATOR%
   - cmd: echo CMAKE_BUILD_CONFIGURATION %CMAKE_BUILD_CONFIGURATION%
 
 build_script:
