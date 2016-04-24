@@ -5,8 +5,6 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
-shallow_clone: true
-
 os: Visual Studio 2015
 
 build:
@@ -21,7 +19,7 @@ build:
 #  - Release
 
 configuration:
-  - Debug
+  - Release
 
 environment:
   matrix:
