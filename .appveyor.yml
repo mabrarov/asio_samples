@@ -1,0 +1,36 @@
+#
+# Copyright (c) 2016 Marat Abrarov (abrarov@gmail.com)
+#
+# Distributed under the Boost Software License, Version 1.0. (See accompanying
+# file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+#
+
+os: Visual Studio 2015
+
+environment:
+  matrix:
+    - BOOST_VERSION: 1.59.0
+      QT_VERSION: 5.6
+
+platform:
+  - x64
+  - x86
+
+configuration:
+  - Debug
+  - Release
+
+matrix:
+  fast_finish: true
+
+install:
+  - set PATH=%PATH%;%QTDIR%\bin
+
+build_script:
+#  - call "%MSVS_HOME%\VC\vcvarsall.bat" "%MSVC_PLATFORM%"
+  - cd /d "%APPVEYOR_BUILD_FOLDER%"
+  - mkdir build
+#  - cd build
+#  - cmake -D CMAKE_BUILD_TYPE=%CONFIGURATION% -D gtest_force_shared_crt=ON -G "%CMAKE_GENERATOR%" ..
+#  - cmake --build . --config $BUILD_TYPE --clean-first
+#  - ctest --build-config $BUILD_TYPE --verbose
