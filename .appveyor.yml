@@ -10,16 +10,22 @@ os: Visual Studio 2015
 build:
   verbosity: detailed
 
+platform:
+  - x64
+  - x86
+
+configuration:
+  - Debug
+  - Release
+
 environment:
   matrix:
     - MSVC_VERSION: 14.0
       BOOST_VERSION: 1.59.0
       QT_VERSION: 5.6
-      BUILD_CONFIGURATION: Release
     - MSVC_VERSION: 14.0
       BOOST_VERSION: 1.59.0
-      QT_VERSION: 5.6
-      BUILD_CONFIGURATION: Debug
+      QT_VERSION: 5.5
 
 install:
   - ps: |
@@ -69,34 +75,41 @@ install:
       switch ($env:QT_VERSION) {
         "5.6" {
           $env:QT_HOME="C:\Qt\5.6\$env:QT_DIR_TOOLCHAIN_SUFFIX$env:QT_DIR_PLATFORM_SUFFIX"
+          $env:QT_BIN_DIR="$env:QT_HOME\qtbase\bin"
         }
         "5.5" {
           $env:QT_HOME="C:\Qt\5.5\$env:QT_DIR_TOOLCHAIN_SUFFIX$env:QT_DIR_PLATFORM_SUFFIX"
+          $env:QT_BIN_DIR="$env:QT_HOME\qtbase\bin"
         }
         "5.4" {
           $env:QT_HOME="C:\Qt\5.4\$env:QT_DIR_TOOLCHAIN_SUFFIX$env:QT_DIR_PLATFORM_SUFFIX"
+          $env:QT_BIN_DIR="$env:QT_HOME\qtbase\bin"
         }
         "5.3" {
           $env:QT_HOME="C:\Qt\5.3\$env:QT_DIR_TOOLCHAIN_SUFFIX$env:QT_DIR_PLATFORM_SUFFIX"
+          $env:QT_BIN_DIR="$env:QT_HOME\qtbase\bin"
         }
       }
 
 before_build:
-  - cmd: echo MSVC_VERSION        %MSVC_VERSION%
-  - cmd: echo BOOST_VERSION       %BOOST_VERSION%
-  - cmd: echo QT_VERSION          %QT_VERSION%
-  - cmd: echo BUILD_CONFIGURATION %BUILD_CONFIGURATION%
-  - cmd: echo VCVARS_PLATFORM     %VCVARS_PLATFORM%
-  - cmd: echo MSVS_HOME           %MSVS_HOME%
-  - cmd: echo BOOST_HOME          %BOOST_HOME%
-  - cmd: echo QT_HOME             %QT_HOME%
+  - cmd: echo PLATFORM        %PLATFORM%
+  - cmd: echo CONFIGURATION   %CONFIGURATION%
+  - cmd: echo MSVC_VERSION    %MSVC_VERSION%
+  - cmd: echo BOOST_VERSION   %BOOST_VERSION%
+  - cmd: echo QT_VERSION      %QT_VERSION%
+  - cmd: echo VCVARS_PLATFORM %VCVARS_PLATFORM%
+  - cmd: echo MSVS_HOME       %MSVS_HOME%
+  - cmd: echo BOOST_HOME      %BOOST_HOME%
+  - cmd: echo QT_HOME         %QT_HOME%
+  - cmd: echo QT_BIN_DIR      %QT_BIN_DIR%
   - cmd: call "%MSVS_HOME%\VC\vcvarsall.bat" "%VCVARS_PLATFORM%"
-  - cd /d "%APPVEYOR_BUILD_FOLDER%"
-  - mkdir build
-  - cd build
+  - cmd: set PATH=%PATH%;%QT_BIN_DIR%
 #  - cmake -D CMAKE_BUILD_TYPE=%CONFIGURATION% -D gtest_force_shared_crt=ON -G "%CMAKE_GENERATOR%" ..
 #  - cmake --build . --config $BUILD_TYPE --clean-first
 #  - ctest --build-config $BUILD_TYPE --verbose
 
 build_script:
+  - cmd: cd /d "%APPVEYOR_BUILD_FOLDER%"
+  - cmd: mkdir build
+  - cmd: cd build
   - cmd: cmake --version
