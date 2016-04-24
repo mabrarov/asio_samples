@@ -28,42 +28,68 @@ matrix:
   fast_finish: true
 
 install:
-  - ps: >-
-      switch ($env:PLATFORM) {
-        "x86" {
-          $env:VCVARS_PLATFORM="x86"
-          $env:QT_DIR_SUFFIX=""
-        }
-        "x64" {
-          $env:VCVARS_PLATFORM="amd64"
-          $env:QT_DIR_SUFFIX="-x64"
-        }
-      }
-  - ps: >-
-      switch ($env:MSVC_VERSION) {
-        "14.0" {
-          $env:MSVS_HOME="%ProgramFiles(x86)%\Microsoft Visual Studio 14.0"
-        }
-        "12.0" {
-          $env:MSVS_HOME="%ProgramFiles(x86)%\Microsoft Visual Studio 12.0"
-        }
-        "11.0" {
-          $env:MSVS_HOME="%ProgramFiles(x86)%\Microsoft Visual Studio 11.0"
-        }
-        "10.0" {
-          $env:MSVS_HOME="%ProgramFiles(x86)%\Microsoft Visual Studio 2010"
-        }
-        "9.0" {
-          $env:MSVS_HOME="%ProgramFiles(x86)%\Microsoft Visual Studio 2008"
-        }
-      }
+  - echo MSVC_VERSION %MSVC_VERSION%
+#  - ps: >-
+#      switch ($env:PLATFORM) {
+#        "x86" {
+#          $env:VCVARS_PLATFORM="x86"
+#          $env:QT_DIR_SUFFIX=""
+#        }
+#        "x64" {
+#          $env:VCVARS_PLATFORM="amd64"
+#          $env:QT_DIR_SUFFIX="-x64"
+#        }
+#      }
+#  - ps: >-
+#      switch ($env:MSVC_VERSION) {
+#        "14.0" {
+#          $env:MSVS_HOME="%ProgramFiles(x86)%\Microsoft Visual Studio 14.0"
+#        }
+#        "12.0" {
+#          $env:MSVS_HOME="%ProgramFiles(x86)%\Microsoft Visual Studio 12.0"
+#        }
+#        "11.0" {
+#          $env:MSVS_HOME="%ProgramFiles(x86)%\Microsoft Visual Studio 11.0"
+#        }
+#        "10.0" {
+#          $env:MSVS_HOME="%ProgramFiles(x86)%\Microsoft Visual Studio 10.0"
+#        }
+#        "9.0" {
+#          $env:MSVS_HOME="%ProgramFiles(x86)%\Microsoft Visual Studio 9.0"
+#        }
+#      }
+#  - ps: >-
+#      switch ($env:BOOST_VERSION) {
+#        "1.59.0" {
+#          $env:BOOST_HOME="C:\Libraries\boost_1_59_0"
+#        }
+#        "1.58.0" {
+#          $env:BOOST_HOME="C:\Libraries\boost_1_58_0"
+#        }
+#        "1.56.0" {
+#          $env:BOOST_HOME="C:\Libraries\boost"
+#        }
+#      }
+#  - ps: >-
+#      switch ($env:QT_VERSION) {
+#        "5.6" {
+#          $env:QT_HOME="C:\Qt\5.6"
+#        }
+#        "5.5" {
+#          $env:QT_HOME="C:\Qt\5.5"
+#        }
+#        "1.56.0" {
+#          $env:BOOST_HOME="C:\Libraries\boost"
+#        }
+#      }
 
 #  - set PATH=%PATH%;%QTDIR%\bin
 
 before_build:
-  - call "%MSVS_HOME%\VC\vcvarsall.bat" "%VCVARS_PLATFORM%"
-  - cd /d "%APPVEYOR_BUILD_FOLDER%"
-  - mkdir build
+  - echo BOOST_VERSION %BOOST_VERSION%
+#  - call "%MSVS_HOME%\VC\vcvarsall.bat" "%VCVARS_PLATFORM%"
+#  - cd /d "%APPVEYOR_BUILD_FOLDER%"
+#  - mkdir build
 #  - cd build
 #  - cmake -D CMAKE_BUILD_TYPE=%CONFIGURATION% -D gtest_force_shared_crt=ON -G "%CMAKE_GENERATOR%" ..
 #  - cmake --build . --config $BUILD_TYPE --clean-first
