@@ -5,30 +5,35 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
+shallow_clone: true
+
 os: Visual Studio 2015
 
 build:
   verbosity: detailed
 
-platform:
-  - x64
-  - x86
+#platform:
+#  - x64
+#  - x86
+
+#configuration:
+#  - Debug
+#  - Release
 
 configuration:
   - Debug
-  - Release
 
 environment:
   matrix:
     - MSVC_VERSION: 14.0
       BOOST_VERSION: 1.59.0
       QT_VERSION: 5.6
-
-matrix:
-  fast_finish: true
+    - MSVC_VERSION: 14.0
+      BOOST_VERSION: 1.59.0
+      QT_VERSION: 5.6
 
 install:
-  - echo MSVC_VERSION %MSVC_VERSION%
+  - cmd: echo MSVC_VERSION %MSVC_VERSION%
 #  - ps: >-
 #      switch ($env:PLATFORM) {
 #        "x86" {
@@ -86,7 +91,8 @@ install:
 #  - set PATH=%PATH%;%QTDIR%\bin
 
 before_build:
-  - echo BOOST_VERSION %BOOST_VERSION%
+  - cmd: echo BOOST_VERSION %BOOST_VERSION%
+  - cmd: cmake --version
 #  - call "%MSVS_HOME%\VC\vcvarsall.bat" "%VCVARS_PLATFORM%"
 #  - cd /d "%APPVEYOR_BUILD_FOLDER%"
 #  - mkdir build
