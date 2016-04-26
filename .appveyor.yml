@@ -186,7 +186,7 @@ install:
             $qt_dir_toolchain_suffix="msvc2008"
           }
         }
-        $qt_home_version_path=""C:\Qt\$env:QT_VERSION"
+        $qt_home_version_path="C:\Qt\$env:QT_VERSION"
         $env:QT_HOME="$qt_home_version_path\$qt_dir_toolchain_suffix$qt_dir_platform_suffix"
         $env:QT_BIN_DIR="$env:QT_HOME\bin"
       }
