@@ -43,8 +43,9 @@ install:
       if ((($env:MSVC_VERSION -Eq "14.0") -and ($env:BOOST_VERSION -eq "1.59.0")) -or (($env:MSVC_VERSION -eq "12.0") -and ($env:BOOST_VERSION -eq "1.58.0"))) {
         $boost_installed="true"
       }
+      Write-Host "boost_installed: $boost_installed"
       if(-not $boost_installed) {
-        Write-Host "boost_installed: $boost_installed"
+
       }
       switch ($env:PLATFORM) {
         "x86" {
