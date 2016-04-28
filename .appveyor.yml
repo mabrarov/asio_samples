@@ -1,0 +1,159 @@
+#
+# Copyright (c) 2016 Marat Abrarov (abrarov@gmail.com)
+#
+# Distributed under the Boost Software License, Version 1.0. (See accompanying
+# file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+#
+
+os: Visual Studio 2015
+
+build:
+  verbosity: detailed
+
+platform:
+  - x64
+  - Win32
+
+configuration:
+  - Debug
+  - Release
+
+environment:
+  matrix:
+    - MSVC_VERSION: 14.0
+      BOOST_VERSION: 1.59.0
+      BOOST_LINKAGE: static
+      QT_VERSION: 5.6
+    - MSVC_VERSION: 14.0
+      BOOST_VERSION: 1.59.0
+      BOOST_LINKAGE: shared
+      QT_VERSION: 5.6
+    - MSVC_VERSION: 12.0
+      BOOST_VERSION: 1.58.0
+      BOOST_LINKAGE: static
+      QT_VERSION: 5.5
+    - MSVC_VERSION: 12.0
+      BOOST_VERSION: 1.58.0
+      BOOST_LINKAGE: shared
+      QT_VERSION: 5.5
+
+install:
+  - ps: |
+      $env:MSVS_HOME="%ProgramFiles(x86)%\Microsoft Visual Studio $env:MSVC_VERSION"
+      switch ($env:PLATFORM) {
+        "x86" {
+          $env:VCVARS_PLATFORM="x86"
+        }
+        "Win32" {
+          $env:VCVARS_PLATFORM="x86"
+        }
+        "x64" {
+          $env:VCVARS_PLATFORM="amd64"
+        }
+      }
+      $boost_home=""
+      switch ($env:BOOST_VERSION) {
+        "1.59.0" {
+          $boost_home="C:\Libraries\boost_1_59_0"
+        }
+        "1.58.0" {
+          $boost_home="C:\Libraries\boost_1_58_0"
+        }
+        "1.56.0" {
+          $boost_home="C:\Libraries\boost"
+        }
+      }
+      $boost_library_dir_platform_suffix=""
+      switch ($env:PLATFORM) {
+        "x86" {
+          $boost_library_dir_platform_suffix="lib32"
+        }
+        "Win32" {
+          $boost_library_dir_platform_suffix="lib32"
+        }
+        "x64" {
+          $boost_library_dir_platform_suffix="lib64"
+        }
+      }
+      $boost_library_dir_toolchain_suffix="-msvc-$env:MSVC_VERSION"
+      $env:BOOST_INCLUDE_DIR="$boost_home"
+      $env:BOOST_LIBRARY_DIR="$boost_home\$boost_library_dir_platform_suffix$boost_library_dir_toolchain_suffix"
+      switch ($env:BOOST_LINKAGE) {
+        "static" {
+          $env:BOOST_USE_STATIC_LIBS="ON"
+        }
+        "shared" {
+          $env:BOOST_USE_STATIC_LIBS="OFF"
+        }
+      }
+      $qt_dir_platform_suffix=""
+      switch ($env:PLATFORM) {
+        "x86" {
+          $qt_dir_platform_suffix=""
+        }
+        "Win32" {
+          $qt_dir_platform_suffix=""
+        }
+        "x64" {
+          $qt_dir_platform_suffix="_64"
+        }
+      }
+      $qt_dir_toolchain_suffix=""
+      switch ($env:MSVC_VERSION) {
+        "14.0" {
+          $qt_dir_toolchain_suffix="msvc2015"
+        }
+        "12.0" {
+          $qt_dir_toolchain_suffix="msvc2013"
+        }
+        "11.0" {
+          $qt_dir_toolchain_suffix="msvc2012"
+        }
+        "10.0" {
+          $qt_dir_toolchain_suffix="msvc2010"
+        }
+        "9.0" {
+          $qt_dir_toolchain_suffix="msvc2008"
+        }
+      }
+      $qt_home_version_path="C:\Qt\$env:QT_VERSION"
+      $env:QT_HOME="$qt_home_version_path\$qt_dir_toolchain_suffix$qt_dir_platform_suffix"
+      $env:QT_BIN_DIR="$env:QT_HOME\bin"
+      switch ($env:CONFIGURATION) {
+        "Debug" {
+          $env:CMAKE_BUILD_CONFIG="DEBUG"
+        }
+        "Release" {
+          $env:CMAKE_BUILD_CONFIG="RELEASE"
+        }
+      }
+      $cmake_generator_msvc_version_suffx=" $env:MSVC_VERSION" -replace "([\d]+)\.([\d]+)", '$1'
+      $cmake_generator_toolchain="Visual Studio$cmake_generator_msvc_version_suffx"
+      $cmake_generator_platform_suffix=""
+      switch ($env:PLATFORM) {
+        "x86" {
+          $cmake_generator_platform_suffix=""
+        }
+        "Win32" {
+          $cmake_generator_platform_suffix=""
+        }
+        "x64" {
+          $cmake_generator_platform_suffix=" Win64"
+        }
+      }
+      $env:CMAKE_GENERATOR="$cmake_generator_toolchain$cmake_generator_platform_suffix"
+
+before_build:
+  - cmd: call "%MSVS_HOME%\VC\vcvarsall.bat" %VCVARS_PLATFORM%
+  - cmd: set PATH=%BOOST_LIBRARY_DIR%;%QT_BIN_DIR%;%PATH%
+
+build_script:
+  - cmd: cd /d "%APPVEYOR_BUILD_FOLDER%"
+  - cmd: mkdir build
+  - cmd: cd build
+  - cmd: cmake -D BOOST_INCLUDEDIR=%BOOST_INCLUDE_DIR% -D BOOST_LIBRARYDIR=%BOOST_LIBRARY_DIR% -D Boost_USE_STATIC_LIBS=%BOOST_USE_STATIC_LIBS% -D Boost_NO_SYSTEM_PATHS=ON -D ma_force_qt_version=5 -D Qt5Core_DIR=%QT_HOME%\lib\cmake\Qt5Core -D Qt5Gui_DIR=%QT_HOME%\lib\cmake\Qt5Gui -D Qt5Widgets_DIR=%QT_HOME%\lib\cmake\Qt5Widgets -D gtest_force_shared_crt=ON -G "%CMAKE_GENERATOR%" ..
+  - cmd: cmake --build . --config %CONFIGURATION% --clean-first
+
+test_script:
+  - cmd: cd /d "%APPVEYOR_BUILD_FOLDER%\build"
+  - cmd: ctest --build-config %CONFIGURATION% --verbose
