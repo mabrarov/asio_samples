@@ -117,6 +117,9 @@ install:
           }
         }
         7z x "$downloaded_boost_location" -o"$dependencies_install_dir" -aoa -y | out-null
+        if ($LastExitCode -ne 0) {
+          throw "File extraction failed with exit code $LastExitCode."
+        }
         $boost_install_dir="$dependencies_install_dir\boost$boost_install_dir_platform_suffix$boost_build_url_version_suffix$boost_build_url_toolchain_suffix"
         $boost_install_include_dir_version_suffix="-$env:BOOST_VERSION" -replace "([\d]+)\.([\d]+)(\.[\d]+)*", '$1_$2'
         $env:BOOST_INCLUDE_DIR="$boost_install_dir\include\boost$boost_install_include_dir_version_suffix"
