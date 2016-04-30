@@ -118,7 +118,7 @@ if(ma_build_tests)
     endif()
 endif()
 
-# example using libraries
+# Examples of using of libraries
 add_subdirectory(example/ma_asio_performance_test_client)
 add_subdirectory(example/ma_async_basics)
 add_subdirectory(example/ma_async_basics2)
