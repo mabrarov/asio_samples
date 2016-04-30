@@ -238,11 +238,24 @@ before_build:
   - cmd: set PATH=%BOOST_LIBRARY_DIR%;%QT_BIN_DIR%;%PATH%
 
 build_script:
-  - cmd: cd /d "%APPVEYOR_BUILD_FOLDER%"
-  - cmd: mkdir build
-  - cmd: cd build
-  - cmd: cmake -D BOOST_INCLUDEDIR=%BOOST_INCLUDE_DIR% -D BOOST_LIBRARYDIR=%BOOST_LIBRARY_DIR% -D Boost_USE_STATIC_LIBS=%BOOST_USE_STATIC_LIBS% -D Boost_NO_SYSTEM_PATHS=ON -D Qt5Core_DIR=%QT_HOME%\lib\cmake\Qt5Core -D Qt5Gui_DIR=%QT_HOME%\lib\cmake\Qt5Gui -D Qt5Widgets_DIR=%QT_HOME%\lib\cmake\Qt5Widgets -D gtest_force_shared_crt=ON -G "%CMAKE_GENERATOR%" ..
-  - cmd: cmake --build . --config %CONFIGURATION% --clean-first
+  - ps: |
+      Set-Location -Path "$env:APPVEYOR_BUILD_FOLDER"
+      New-Item "build" -type directory
+      Set-Location -Path "build"
+      if ($env:QT_VERSION -match "5\.*") {
+        cmake -D BOOST_INCLUDEDIR=$env:BOOST_INCLUDE_DIR -D BOOST_LIBRARYDIR=$env:BOOST_LIBRARY_DIR -D Boost_USE_STATIC_LIBS=$env:BOOST_USE_STATIC_LIBS -D Boost_NO_SYSTEM_PATHS=ON -D Qt5Core_DIR=$env:QT_HOME\lib\cmake\Qt5Core -D Qt5Gui_DIR=$env:QT_HOME\lib\cmake\Qt5Gui -D Qt5Widgets_DIR=$env:QT_HOME\lib\cmake\Qt5Widgets -D gtest_force_shared_crt=ON -G "$env:CMAKE_GENERATOR" ..
+      } elseif ($env:QT_VERSION -match "4\.*") {
+        cmake -D BOOST_INCLUDEDIR=$env:BOOST_INCLUDE_DIR -D BOOST_LIBRARYDIR=$env:BOOST_LIBRARY_DIR -D Boost_USE_STATIC_LIBS=$env:BOOST_USE_STATIC_LIBS -D Boost_NO_SYSTEM_PATHS=ON -D QT_QMAKE_EXECUTABLE=$env:QT_QMAKE_EXECUTABLE -D gtest_force_shared_crt=ON -G "$env:CMAKE_GENERATOR" ..
+      } else {
+        throw "Unsupported version of Qt: $env:QT_VERSION."
+      }
+      if ($LastExitCode -ne 0) {
+        throw "Generation of project failed with exit code $LastExitCode."
+      }
+      cmake --build . --config $env:CONFIGURATION --clean-first
+      if ($LastExitCode -ne 0) {
+        throw "Build failed with exit code $LastExitCode."
+      }
 
 test_script:
   - cmd: cd /d "%APPVEYOR_BUILD_FOLDER%\build"
