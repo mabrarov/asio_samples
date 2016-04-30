@@ -20,64 +20,64 @@ configuration:
 
 environment:
   matrix:
-    - MSVC_VERSION: 14.0
-      BOOST_VERSION: 1.60.0
-      BOOST_LINKAGE: shared
-      MA_QT: ON
-      QT_VERSION: 5.6
-    - MSVC_VERSION: 14.0
-      BOOST_VERSION: 1.59.0
-      BOOST_LINKAGE: static
-      MA_QT: ON
-      QT_VERSION: 5.6
-    - MSVC_VERSION: 14.0
-      BOOST_VERSION: 1.59.0
-      BOOST_LINKAGE: shared
-      MA_QT: ON
-      QT_VERSION: 5.6
-    - MSVC_VERSION: 12.0
-      BOOST_VERSION: 1.60.0
-      BOOST_LINKAGE: shared
-      MA_QT: ON
-      QT_VERSION: 5.5
-    - MSVC_VERSION: 12.0
-      BOOST_VERSION: 1.58.0
-      BOOST_LINKAGE: static
-      MA_QT: ON
-      QT_VERSION: 5.5
-    - MSVC_VERSION: 12.0
-      BOOST_VERSION: 1.58.0
-      BOOST_LINKAGE: shared
-      MA_QT: ON
-      QT_VERSION: 5.5
-    - MSVC_VERSION: 12.0
-      BOOST_VERSION: 1.58.0
-      BOOST_LINKAGE: shared
-      MA_QT: ON
-      QT_VERSION: 5.5
+#    - MSVC_VERSION: 14.0
+#      BOOST_VERSION: 1.60.0
+#      BOOST_LINKAGE: shared
+#      MA_QT: ON
+#      QT_VERSION: 5.6
+#    - MSVC_VERSION: 14.0
+#      BOOST_VERSION: 1.59.0
+#      BOOST_LINKAGE: static
+#      MA_QT: ON
+#      QT_VERSION: 5.6
+#    - MSVC_VERSION: 14.0
+#      BOOST_VERSION: 1.59.0
+#      BOOST_LINKAGE: shared
+#      MA_QT: ON
+#      QT_VERSION: 5.6
+#    - MSVC_VERSION: 12.0
+#      BOOST_VERSION: 1.60.0
+#      BOOST_LINKAGE: shared
+#      MA_QT: ON
+#      QT_VERSION: 5.5
+#    - MSVC_VERSION: 12.0
+#      BOOST_VERSION: 1.58.0
+#      BOOST_LINKAGE: static
+#      MA_QT: ON
+#      QT_VERSION: 5.5
+#    - MSVC_VERSION: 12.0
+#      BOOST_VERSION: 1.58.0
+#      BOOST_LINKAGE: shared
+#      MA_QT: ON
+#      QT_VERSION: 5.5
+#    - MSVC_VERSION: 12.0
+#      BOOST_VERSION: 1.58.0
+#      BOOST_LINKAGE: shared
+#      MA_QT: ON
+#      QT_VERSION: 5.5
+#    - MSVC_VERSION: 12.0
+#      BOOST_VERSION: 1.56.0
+#      BOOST_LINKAGE: shared
+#      MA_QT: ON
+#      QT_VERSION: 5.5
     - MSVC_VERSION: 12.0
       BOOST_VERSION: 1.56.0
       BOOST_LINKAGE: shared
-      MA_QT: ON
-      QT_VERSION: 5.5
-    - MSVC_VERSION: 12.0
-      BOOST_VERSION: 1.56.0
-      BOOST_LINKAGE: static
       MA_QT: OFF
       QT_VERSION: 5.5
     - MSVC_VERSION: 11.0
       BOOST_VERSION: 1.55.0
-      BOOST_LINKAGE: static
+      BOOST_LINKAGE: shared
       MA_QT: OFF
       QT_VERSION: 5.5
     - MSVC_VERSION: 10.0
       BOOST_VERSION: 1.55.0
-      BOOST_LINKAGE: static
+      BOOST_LINKAGE: shared
       MA_QT: OFF
       QT_VERSION: 4.8.7
     - MSVC_VERSION: 9.0
       BOOST_VERSION: 1.55.0
-      BOOST_LINKAGE: static
+      BOOST_LINKAGE: shared
       MA_QT: OFF
       QT_VERSION: 4.8.7
 
