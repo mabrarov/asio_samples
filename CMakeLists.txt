@@ -64,14 +64,15 @@ add_subdirectory(cmake/ma_boost_program_options)
 add_subdirectory(cmake/ma_boost_timer)
 add_subdirectory(cmake/ma_boost_regex)
 
-# Interface-only targets to simplify support of Qt 5
-add_subdirectory(cmake/ma_qt5_core)
-add_subdirectory(cmake/ma_qt5_gui)
-add_subdirectory(cmake/ma_qt5_widgets)
-
-# Interface-only targets to simplify support of Qt 4
-add_subdirectory(cmake/ma_qt4_core)
-add_subdirectory(cmake/ma_qt4_gui)
+if(ma_qt)
+    # Interface-only targets to simplify support of Qt 5
+    add_subdirectory(cmake/ma_qt5_core)
+    add_subdirectory(cmake/ma_qt5_gui)
+    add_subdirectory(cmake/ma_qt5_widgets)
+    # Interface-only targets to simplify support of Qt 4
+    add_subdirectory(cmake/ma_qt4_core)
+    add_subdirectory(cmake/ma_qt4_gui)
+endif()
 
 if(ma_build_tests)
     # Interface-only target to simplify support of Google Test
