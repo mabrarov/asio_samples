@@ -56,7 +56,7 @@ environment:
       QT_VERSION: 5.5
 
 cache:
-  - %DEPENDENCIES_DIR% -> .appveyor.yml
+  - '%DEPENDENCIES_DIR% -> .appveyor.yml'
 
 install:
   - ps: |
