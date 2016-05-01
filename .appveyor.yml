@@ -261,7 +261,7 @@ before_build:
 
 build:
   parallel: true
-  project: asio_samples.sln
+  project: 'C:\projects\asio-samples\build\asio_samples.sln'
   verbosity: detailed
 
 test_script:
