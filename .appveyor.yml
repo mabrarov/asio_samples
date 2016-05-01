@@ -7,9 +7,6 @@
 
 os: Visual Studio 2015
 
-build:
-  verbosity: detailed
-
 platform:
   - x64
   - Win32
@@ -248,8 +245,6 @@ install:
 before_build:
   - cmd: call "%MSVS_HOME%\VC\vcvarsall.bat" %VCVARS_PLATFORM%
   - cmd: set PATH=%BOOST_LIBRARY_FOLDER%;%QT_BIN_FOLDER%;%PATH%
-
-build_script:
   - ps: |
       New-Item "$env:APPVEYOR_BUILD_FOLDER\build" -type directory
       Set-Location -Path "$env:APPVEYOR_BUILD_FOLDER\build"
@@ -263,10 +258,11 @@ build_script:
       if ($LastExitCode -ne 0) {
         throw "Generation of project failed with exit code $LastExitCode."
       }
-      cmake --build . --config $env:CONFIGURATION --clean-first
-      if ($LastExitCode -ne 0) {
-        throw "Build failed with exit code $LastExitCode."
-      }
+
+build:
+  parallel: true
+  project: '%APPVEYOR_BUILD_FOLDER%\build\asio_samples.sln'
+  verbosity: detailed
 
 test_script:
   - cmd: cd /d "%APPVEYOR_BUILD_FOLDER%\build"
