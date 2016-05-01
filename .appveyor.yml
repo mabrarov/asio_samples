@@ -24,10 +24,6 @@ environment:
 
   matrix:
     - MSVC_VERSION: 14.0
-      BOOST_VERSION: 1.60.0
-      BOOST_LINKAGE: shared
-      QT_VERSION: 5.6
-    - MSVC_VERSION: 14.0
       BOOST_VERSION: 1.59.0
       BOOST_LINKAGE: static
       QT_VERSION: 5.6
@@ -36,10 +32,6 @@ environment:
       BOOST_LINKAGE: shared
       QT_VERSION: 5.6
     - MSVC_VERSION: 12.0
-      BOOST_VERSION: 1.60.0
-      BOOST_LINKAGE: shared
-      QT_VERSION: 5.5
-    - MSVC_VERSION: 12.0
       BOOST_VERSION: 1.58.0
       BOOST_LINKAGE: static
       QT_VERSION: 5.5
@@ -47,96 +39,9 @@ environment:
       BOOST_VERSION: 1.58.0
       BOOST_LINKAGE: shared
       QT_VERSION: 5.5
-    - MSVC_VERSION: 12.0
-      BOOST_VERSION: 1.58.0
-      BOOST_LINKAGE: shared
-      QT_VERSION: 5.5
-    - MSVC_VERSION: 12.0
-      BOOST_VERSION: 1.56.0
-      BOOST_LINKAGE: shared
-      QT_VERSION: 5.5
-
-# Archived cache should not exceed 100 MB (https://www.appveyor.com/docs/build-cache#save-update-cache-before-build-finishes)
-# so we are out of this limit and there is no need to spend time on trying to save cache.
-#cache:
-#  - '%DEPENDENCIES_FOLDER% -> .appveyor.yml'
-#  - '%DOWNLOADS_FOLDER% -> .appveyor.yml'
 
 install:
   - ps: |
-      $pre_installed_boost=""
-      if ((($env:MSVC_VERSION -Eq "14.0") -and ($env:BOOST_VERSION -eq "1.59.0")) -or (($env:MSVC_VERSION -eq "12.0") -and ($env:BOOST_VERSION -eq "1.58.0"))) {
-        $pre_installed_boost="true"
-      }
-      $pre_installed_qt="true"
-      if (-not $pre_installed_boost) {
-        $boost_install_folder_platform_suffix=""
-        switch ($env:PLATFORM) {
-          "x86" {
-            $boost_install_folder_platform_suffix=""
-          }
-          "Win32" {
-            $boost_install_folder_platform_suffix=""
-          }
-          "x64" {
-            $boost_install_folder_platform_suffix="64"
-          }
-        }
-        $boost_version_suffix="-$env:BOOST_VERSION"
-        $boost_toolchain_suffix=""
-        switch ($env:MSVC_VERSION) {
-          "14.0" {
-            $boost_toolchain_suffix="-vs2015"
-          }
-          "12.0" {
-            $boost_toolchain_suffix="-vs2013"
-          }
-          "11.0" {
-            $boost_toolchain_suffix="-vs2012"
-          }
-          "10.0" {
-            $boost_toolchain_suffix="-vs2010"
-          }
-          "9.0" {
-            $boost_toolchain_suffix="-vs2008"
-          }
-        }
-        $boost_install_folder="$env:DEPENDENCIES_FOLDER\boost$boost_install_folder_platform_suffix$boost_version_suffix$boost_toolchain_suffix"
-        if(!(Test-Path -Path $boost_install_folder)) {
-          Write-Host "Built boost libraries are absent for the selected toolchain (msvc-$env:MSVC_VERSION) and Boost version ($env:BOOST_VERSION)"
-          $boost_url_platform_suffix=""
-          switch ($env:PLATFORM) {
-            "x86" {
-              $boost_url_platform_suffix="-x86"
-            }
-            "Win32" {
-              $boost_url_platform_suffix="-x86"
-            }
-            "x64" {
-              $boost_url_platform_suffix="-x64"
-            }
-          }
-          $boost_url_file_extension_suffix=".7z"
-          $downloaded_boost_location="$env:DOWNLOADS_FOLDER\boost$boost_version_suffix$boost_url_platform_suffix$boost_toolchain_suffix$boost_url_file_extension_suffix"
-          if(!(Test-Path -Path $downloaded_boost_location)) {
-            $boost_url_base="http://www.npcglib.org/~stathis/downloads/boost"
-            $boost_url="$boost_url_base$boost_version_suffix$boost_url_platform_suffix$boost_toolchain_suffix$boost_url_file_extension_suffix"
-            if(!(Test-Path -Path $env:DOWNLOADS_FOLDER)) {
-              New-Item $env:DOWNLOADS_FOLDER -type directory
-            }
-            Write-Host "Going to download pre-built Boost libraries from: $boost_url to: $downloaded_boost_location"
-            Invoke-WebRequest $boost_url -OutFile $downloaded_boost_location
-          }
-          Write-Host "Extracting pre-built Boost libraries from: $downloaded_boost_location to: $env:DEPENDENCIES_FOLDER"
-          7z x "$downloaded_boost_location" -o"$env:DEPENDENCIES_FOLDER" -aoa -y | out-null
-          if ($LastExitCode -ne 0) {
-            throw "File extraction failed with exit code $LastExitCode."
-          }
-        }
-        $boost_install_include_folder_version_suffix="-$env:BOOST_VERSION" -replace "([\d]+)\.([\d]+)(\.[\d]+)*", '$1_$2'
-        $env:BOOST_INCLUDE_FOLDER="$boost_install_folder\include\boost$boost_install_include_folder_version_suffix"
-        $env:BOOST_LIBRARY_FOLDER="$boost_install_folder\lib"
-      }
       $env:MSVS_HOME="%ProgramFiles(x86)%\Microsoft Visual Studio $env:MSVC_VERSION"
       switch ($env:PLATFORM) {
         "x86" {
@@ -149,35 +54,33 @@ install:
           $env:VCVARS_PLATFORM="amd64"
         }
       }
-      if ($pre_installed_boost) {
-        $boost_home=""
-        switch ($env:BOOST_VERSION) {
-          "1.59.0" {
-            $boost_home="C:\Libraries\boost_1_59_0"
-          }
-          "1.58.0" {
-            $boost_home="C:\Libraries\boost_1_58_0"
-          }
-          "1.56.0" {
-            $boost_home="C:\Libraries\boost"
-          }
+      $boost_home=""
+      switch ($env:BOOST_VERSION) {
+        "1.59.0" {
+          $boost_home="C:\Libraries\boost_1_59_0"
         }
-        $boost_library_folder_platform_suffix=""
-        switch ($env:PLATFORM) {
-          "x86" {
-            $boost_library_folder_platform_suffix="lib32"
-          }
-          "Win32" {
-            $boost_library_folder_platform_suffix="lib32"
-          }
-          "x64" {
-            $boost_library_folder_platform_suffix="lib64"
-          }
+        "1.58.0" {
+          $boost_home="C:\Libraries\boost_1_58_0"
         }
-        $boost_library_folder_toolchain_suffix="-msvc-$env:MSVC_VERSION"
-        $env:BOOST_INCLUDE_FOLDER="$boost_home"
-        $env:BOOST_LIBRARY_FOLDER="$boost_home\$boost_library_folder_platform_suffix$boost_library_folder_toolchain_suffix"
+        "1.56.0" {
+          $boost_home="C:\Libraries\boost"
+        }
       }
+      $boost_library_folder_platform_suffix=""
+      switch ($env:PLATFORM) {
+        "x86" {
+          $boost_library_folder_platform_suffix="lib32"
+        }
+        "Win32" {
+          $boost_library_folder_platform_suffix="lib32"
+        }
+        "x64" {
+          $boost_library_folder_platform_suffix="lib64"
+        }
+      }
+      $boost_library_folder_toolchain_suffix="-msvc-$env:MSVC_VERSION"
+      $env:BOOST_INCLUDE_FOLDER="$boost_home"
+      $env:BOOST_LIBRARY_FOLDER="$boost_home\$boost_library_folder_platform_suffix$boost_library_folder_toolchain_suffix"
       switch ($env:BOOST_LINKAGE) {
         "static" {
           $env:BOOST_USE_STATIC_LIBS="ON"
@@ -186,41 +89,39 @@ install:
           $env:BOOST_USE_STATIC_LIBS="OFF"
         }
       }
-      if ($pre_installed_qt) {
-        $qt_folder_platform_suffix=""
-        switch ($env:PLATFORM) {
-          "x86" {
-            $qt_folder_platform_suffix=""
-          }
-          "Win32" {
-            $qt_folder_platform_suffix=""
-          }
-          "x64" {
-            $qt_folder_platform_suffix="_64"
-          }
+      $qt_folder_platform_suffix=""
+      switch ($env:PLATFORM) {
+        "x86" {
+          $qt_folder_platform_suffix=""
         }
-        $qt_folder_toolchain_suffix=""
-        switch ($env:MSVC_VERSION) {
-          "14.0" {
-            $qt_folder_toolchain_suffix="msvc2015"
-          }
-          "12.0" {
-            $qt_folder_toolchain_suffix="msvc2013"
-          }
-          "11.0" {
-            $qt_folder_toolchain_suffix="msvc2012"
-          }
-          "10.0" {
-            $qt_folder_toolchain_suffix="msvc2010"
-          }
-          "9.0" {
-            $qt_folder_toolchain_suffix="msvc2008"
-          }
+        "Win32" {
+          $qt_folder_platform_suffix=""
         }
-        $qt_home_version_path="C:\Qt\$env:QT_VERSION"
-        $env:QT_HOME="$qt_home_version_path\$qt_folder_toolchain_suffix$qt_folder_platform_suffix"
-        $env:QT_BIN_FOLDER="$env:QT_HOME\bin"
+        "x64" {
+          $qt_folder_platform_suffix="_64"
+        }
       }
+      $qt_folder_toolchain_suffix=""
+      switch ($env:MSVC_VERSION) {
+        "14.0" {
+          $qt_folder_toolchain_suffix="msvc2015"
+        }
+        "12.0" {
+          $qt_folder_toolchain_suffix="msvc2013"
+        }
+        "11.0" {
+          $qt_folder_toolchain_suffix="msvc2012"
+        }
+        "10.0" {
+          $qt_folder_toolchain_suffix="msvc2010"
+        }
+        "9.0" {
+          $qt_folder_toolchain_suffix="msvc2008"
+        }
+      }
+      $qt_home_version_path="C:\Qt\$env:QT_VERSION"
+      $env:QT_HOME="$qt_home_version_path\$qt_folder_toolchain_suffix$qt_folder_platform_suffix"
+      $env:QT_BIN_FOLDER="$env:QT_HOME\bin"
       switch ($env:CONFIGURATION) {
         "Debug" {
           $env:CMAKE_BUILD_CONFIG="DEBUG"
