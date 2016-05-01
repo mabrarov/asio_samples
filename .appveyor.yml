@@ -261,7 +261,7 @@ before_build:
 
 build:
   parallel: true
-  project: %APPVEYOR_BUILD_FOLDER%\build\asio_samples.sln
+  'project: %APPVEYOR_BUILD_FOLDER%\build\asio_samples.sln'
   verbosity: detailed
 
 test_script:
