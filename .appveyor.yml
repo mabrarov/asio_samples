@@ -19,6 +19,8 @@ configuration:
   - Release
 
 environment:
+  DEPENDENCIES_DIR: C:\projects\dependencies
+  DOWNLOADS_DIR: C:\projects\downloads
   matrix:
     - MSVC_VERSION: 14.0
       BOOST_VERSION: 1.60.0
@@ -53,58 +55,18 @@ environment:
       BOOST_LINKAGE: shared
       QT_VERSION: 5.5
 
+cache:
+  - %DEPENDENCIES_DIR% -> .appveyor.yml
+
 install:
   - ps: |
-      $dependencies_download_dir="C:\Projects\Dependencies\Download"
-      $dependencies_install_dir="C:\Projects\Dependencies\Installed"
       $pre_installed_boost=""
       if ((($env:MSVC_VERSION -Eq "14.0") -and ($env:BOOST_VERSION -eq "1.59.0")) -or (($env:MSVC_VERSION -eq "12.0") -and ($env:BOOST_VERSION -eq "1.58.0"))) {
         $pre_installed_boost="true"
       }
       $pre_installed_qt="true"
       if (-not $pre_installed_boost) {
-        Write-Host "Built boost libraries are absent for the selected toolchain (msvc-$env:MSVC_VERSION) and Boost version ($env:BOOST_VERSION)"
-        $boost_build_url_base="http://www.npcglib.org/~stathis/downloads/boost"
-        $boost_build_url_file_extension_suffix=".7z"
-        $boost_build_url_version_suffix="-$env:BOOST_VERSION"
-        $boost_build_url_platform_suffix=""
-        switch ($env:PLATFORM) {
-          "x86" {
-            $boost_build_url_platform_suffix="-x86"
-          }
-          "Win32" {
-            $boost_build_url_platform_suffix="-x86"
-          }
-          "x64" {
-            $boost_build_url_platform_suffix="-x64"
-          }
-        }
-        $boost_build_url_toolchain_suffix=""
-        switch ($env:MSVC_VERSION) {
-          "14.0" {
-            $boost_build_url_toolchain_suffix="-vs2015"
-          }
-          "12.0" {
-            $boost_build_url_toolchain_suffix="-vs2013"
-          }
-          "11.0" {
-            $boost_build_url_toolchain_suffix="-vs2012"
-          }
-          "10.0" {
-            $boost_build_url_toolchain_suffix="-vs2010"
-          }
-          "9.0" {
-            $boost_build_url_toolchain_suffix="-vs2008"
-          }
-        }
-        $boost_build_url="$boost_build_url_base$boost_build_url_version_suffix$boost_build_url_platform_suffix$boost_build_url_toolchain_suffix$boost_build_url_file_extension_suffix"
-        Write-Host "Going to download pre-built Boost libraries from: $boost_build_url"
-        $downloaded_boost_location="$dependencies_download_dir\boost$boost_build_url_version_suffix$boost_build_url_platform_suffix$boost_build_url_toolchain_suffix$boost_build_url_file_extension_suffix"
-        if(!(Test-Path -Path $dependencies_download_dir)) {
-          New-Item $dependencies_download_dir -type directory
-        }
-        Invoke-WebRequest $boost_build_url -OutFile $downloaded_boost_location
-        $boost_install_dir_suffix=""
+        $boost_install_dir_platform_suffix=""
         switch ($env:PLATFORM) {
           "x86" {
             $boost_install_dir_platform_suffix=""
@@ -116,11 +78,57 @@ install:
             $boost_install_dir_platform_suffix="64"
           }
         }
-        7z x "$downloaded_boost_location" -o"$dependencies_install_dir" -aoa -y | out-null
-        if ($LastExitCode -ne 0) {
-          throw "File extraction failed with exit code $LastExitCode."
+        $boost_version_suffix="-$env:BOOST_VERSION"
+        $boost_toolchain_suffix=""
+        switch ($env:MSVC_VERSION) {
+          "14.0" {
+            $boost_toolchain_suffix="-vs2015"
+          }
+          "12.0" {
+            $boost_toolchain_suffix="-vs2013"
+          }
+          "11.0" {
+            $boost_toolchain_suffix="-vs2012"
+          }
+          "10.0" {
+            $boost_toolchain_suffix="-vs2010"
+          }
+          "9.0" {
+            $boost_toolchain_suffix="-vs2008"
+          }
         }
-        $boost_install_dir="$dependencies_install_dir\boost$boost_install_dir_platform_suffix$boost_build_url_version_suffix$boost_build_url_toolchain_suffix"
+        $boost_install_dir="$env:DEPENDENCIES_DIR\boost$boost_install_dir_platform_suffix$boost_version_suffix$boost_toolchain_suffix"
+        if(!(Test-Path -Path $boost_install_dir)) {
+          Write-Host "Built boost libraries are absent for the selected toolchain (msvc-$env:MSVC_VERSION) and Boost version ($env:BOOST_VERSION)"
+          $boost_url_platform_suffix=""
+          switch ($env:PLATFORM) {
+            "x86" {
+              $boost_url_platform_suffix="-x86"
+            }
+            "Win32" {
+              $boost_url_platform_suffix="-x86"
+            }
+            "x64" {
+              $boost_url_platform_suffix="-x64"
+            }
+          }
+          $boost_url_file_extension_suffix=".7z"
+          $downloaded_boost_location="$env:DOWNLOADS_DIR\boost$boost_version_suffix$boost_url_platform_suffix$boost_toolchain_suffix$boost_url_file_extension_suffix"
+          if(!(Test-Path -Path $downloaded_boost_location)) {
+            $boost_url_base="http://www.npcglib.org/~stathis/downloads/boost"
+            $boost_url="$boost_url_base$boost_version_suffix$boost_url_platform_suffix$boost_toolchain_suffix$boost_url_file_extension_suffix"
+            if(!(Test-Path -Path $env:DOWNLOADS_DIR)) {
+              New-Item $env:DOWNLOADS_DIR -type directory
+            }
+            Write-Host "Going to download pre-built Boost libraries from: $boost_url to: $downloaded_boost_location"
+            Invoke-WebRequest $boost_url -OutFile $downloaded_boost_location
+          }
+          Write-Host "Extracting pre-built Boost libraries from: $downloaded_boost_location to: $env:DEPENDENCIES_DIR"
+          7z x "$downloaded_boost_location" -o"$env:DEPENDENCIES_DIR" -aoa -y | out-null
+          if ($LastExitCode -ne 0) {
+            throw "File extraction failed with exit code $LastExitCode."
+          }
+        }
         $boost_install_include_dir_version_suffix="-$env:BOOST_VERSION" -replace "([\d]+)\.([\d]+)(\.[\d]+)*", '$1_$2'
         $env:BOOST_INCLUDE_DIR="$boost_install_dir\include\boost$boost_install_include_dir_version_suffix"
         $env:BOOST_LIBRARY_DIR="$boost_install_dir\lib"
