@@ -263,7 +263,7 @@ build_script:
       if ($LastExitCode -ne 0) {
         throw "Generation of project failed with exit code $LastExitCode."
       }
-      cmake --build . --config $env:CONFIGURATION --clean-first
+      cmake --build . --config $env:CONFIGURATION -- /maxcpucount
       if ($LastExitCode -ne 0) {
         throw "Build failed with exit code $LastExitCode."
       }
