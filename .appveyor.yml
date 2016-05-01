@@ -63,21 +63,21 @@ install:
           $boost_home="C:\Libraries\boost"
         }
       }
-      $boost_library_dir_platform_suffix=""
+      $boost_library_folder_platform_suffix=""
       switch ($env:PLATFORM) {
         "x86" {
-          $boost_library_dir_platform_suffix="lib32"
+          $boost_library_folder_platform_suffix="lib32"
         }
         "Win32" {
-          $boost_library_dir_platform_suffix="lib32"
+          $boost_library_folder_platform_suffix="lib32"
         }
         "x64" {
-          $boost_library_dir_platform_suffix="lib64"
+          $boost_library_folder_platform_suffix="lib64"
         }
       }
-      $boost_library_dir_toolchain_suffix="-msvc-$env:MSVC_VERSION"
-      $env:BOOST_INCLUDE_DIR="$boost_home"
-      $env:BOOST_LIBRARY_DIR="$boost_home\$boost_library_dir_platform_suffix$boost_library_dir_toolchain_suffix"
+      $boost_library_folder_toolchain_suffix="-msvc-$env:MSVC_VERSION"
+      $env:BOOST_INCLUDE_FOLDER="$boost_home"
+      $env:BOOST_LIBRARY_FOLDER="$boost_home\$boost_library_folder_platform_suffix$boost_library_folder_toolchain_suffix"
       switch ($env:BOOST_LINKAGE) {
         "static" {
           $env:BOOST_USE_STATIC_LIBS="ON"
@@ -86,39 +86,39 @@ install:
           $env:BOOST_USE_STATIC_LIBS="OFF"
         }
       }
-      $qt_dir_platform_suffix=""
+      $qt_folder_platform_suffix=""
       switch ($env:PLATFORM) {
         "x86" {
-          $qt_dir_platform_suffix=""
+          $qt_folder_platform_suffix=""
         }
         "Win32" {
-          $qt_dir_platform_suffix=""
+          $qt_folder_platform_suffix=""
         }
         "x64" {
-          $qt_dir_platform_suffix="_64"
+          $qt_folder_platform_suffix="_64"
         }
       }
-      $qt_dir_toolchain_suffix=""
+      $qt_folder_toolchain_suffix=""
       switch ($env:MSVC_VERSION) {
         "14.0" {
-          $qt_dir_toolchain_suffix="msvc2015"
+          $qt_folder_toolchain_suffix="msvc2015"
         }
         "12.0" {
-          $qt_dir_toolchain_suffix="msvc2013"
+          $qt_folder_toolchain_suffix="msvc2013"
         }
         "11.0" {
-          $qt_dir_toolchain_suffix="msvc2012"
+          $qt_folder_toolchain_suffix="msvc2012"
         }
         "10.0" {
-          $qt_dir_toolchain_suffix="msvc2010"
+          $qt_folder_toolchain_suffix="msvc2010"
         }
         "9.0" {
-          $qt_dir_toolchain_suffix="msvc2008"
+          $qt_folder_toolchain_suffix="msvc2008"
         }
       }
       $qt_home_version_path="C:\Qt\$env:QT_VERSION"
-      $env:QT_HOME="$qt_home_version_path\$qt_dir_toolchain_suffix$qt_dir_platform_suffix"
-      $env:QT_BIN_DIR="$env:QT_HOME\bin"
+      $env:QT_HOME="$qt_home_version_path\$qt_folder_toolchain_suffix$qt_folder_platform_suffix"
+      $env:QT_BIN_FOLDER="$env:QT_HOME\bin"
       switch ($env:CONFIGURATION) {
         "Debug" {
           $env:CMAKE_BUILD_CONFIG="DEBUG"
@@ -145,15 +145,41 @@ install:
 
 before_build:
   - cmd: call "%MSVS_HOME%\VC\vcvarsall.bat" %VCVARS_PLATFORM%
-  - cmd: set PATH=%BOOST_LIBRARY_DIR%;%QT_BIN_DIR%;%PATH%
+  - cmd: set PATH=%BOOST_LIBRARY_FOLDER%;%QT_BIN_FOLDER%;%PATH%
 
 build_script:
-  - cmd: cd /d "%APPVEYOR_BUILD_FOLDER%"
-  - cmd: mkdir build
-  - cmd: cd build
-  - cmd: cmake -D BOOST_INCLUDEDIR=%BOOST_INCLUDE_DIR% -D BOOST_LIBRARYDIR=%BOOST_LIBRARY_DIR% -D Boost_USE_STATIC_LIBS=%BOOST_USE_STATIC_LIBS% -D Boost_NO_SYSTEM_PATHS=ON -D ma_force_qt_version=5 -D Qt5Core_DIR=%QT_HOME%\lib\cmake\Qt5Core -D Qt5Gui_DIR=%QT_HOME%\lib\cmake\Qt5Gui -D Qt5Widgets_DIR=%QT_HOME%\lib\cmake\Qt5Widgets -D gtest_force_shared_crt=ON -G "%CMAKE_GENERATOR%" ..
-  - cmd: cmake --build . --config %CONFIGURATION% --clean-first
+  - ps: |
+      New-Item "$env:APPVEYOR_BUILD_FOLDER\build" -type directory
+      Set-Location -Path "$env:APPVEYOR_BUILD_FOLDER\build"
+      if ($env:QT_VERSION -match "5\.*") {
+        cmake -D BOOST_INCLUDEDIR=$env:BOOST_INCLUDE_FOLDER -D BOOST_LIBRARYDIR=$env:BOOST_LIBRARY_FOLDER -D Boost_USE_STATIC_LIBS=$env:BOOST_USE_STATIC_LIBS -D Boost_NO_SYSTEM_PATHS=ON -D Qt5Core_DIR=$env:QT_HOME\lib\cmake\Qt5Core -D Qt5Gui_DIR=$env:QT_HOME\lib\cmake\Qt5Gui -D Qt5Widgets_DIR=$env:QT_HOME\lib\cmake\Qt5Widgets -D gtest_force_shared_crt=ON -G "$env:CMAKE_GENERATOR" $env:APPVEYOR_BUILD_FOLDER
+      } elseif ($env:QT_VERSION -match "4\.*") {
+        cmake -D BOOST_INCLUDEDIR=$env:BOOST_INCLUDE_FOLDER -D BOOST_LIBRARYDIR=$env:BOOST_LIBRARY_FOLDER -D Boost_USE_STATIC_LIBS=$env:BOOST_USE_STATIC_LIBS -D Boost_NO_SYSTEM_PATHS=ON -D QT_QMAKE_EXECUTABLE=$env:QT_QMAKE_EXECUTABLE -D gtest_force_shared_crt=ON -G "$env:CMAKE_GENERATOR" $env:APPVEYOR_BUILD_FOLDER
+      } else {
+        throw "Unsupported version of Qt: $env:QT_VERSION."
+      }
+      if ($LastExitCode -ne 0) {
+        throw "Generation of project failed with exit code $LastExitCode."
+      }
+      cmake --build . --config $env:CONFIGURATION -- /maxcpucount
+      if ($LastExitCode -ne 0) {
+        throw "Build failed with exit code $LastExitCode."
+      }
 
 test_script:
   - cmd: cd /d "%APPVEYOR_BUILD_FOLDER%\build"
   - cmd: ctest --build-config %CONFIGURATION% --verbose
+
+artifacts:
+  - path: build\example\ma_asio_performance_test_client\$(configuration)\*.exe
+    name: ma_asio_performance_test_client
+  - path: build\example\ma_async_basics\$(configuration)\*.exe
+    name: ma_async_basics
+  - path: build\example\ma_async_basics2\$(configuration)\*.exe
+    name: ma_async_basics2
+  - path: build\example\ma_echo_server\$(configuration)\*.exe
+    name: ma_echo_server
+  - path: build\example\ma_nmea_client\$(configuration)\*.exe
+    name: ma_nmea_client
+  - path: build\example\ma_qt_echo_server\$(configuration)\*.exe
+    name: ma_qt_echo_server
