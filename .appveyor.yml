@@ -19,9 +19,6 @@ configuration:
   - Release
 
 environment:
-  DEPENDENCIES_FOLDER: C:\projects\dependencies
-  DOWNLOADS_FOLDER: C:\projects\downloads
-
   matrix:
     - MSVC_VERSION: 14.0
       BOOST_VERSION: 1.59.0
