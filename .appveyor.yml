@@ -55,8 +55,11 @@ environment:
       BOOST_LINKAGE: shared
       QT_VERSION: 5.5
 
-cache:
-  - '%DOWNLOADS_DIR% -> .appveyor.yml'
+# Archived cache should not exceed 100 MB (https://www.appveyor.com/docs/build-cache#save-update-cache-before-build-finishes)
+# so we are out of this limit and there is no need to spend time on trying to save cache.
+#cache:
+#  - '%DEPENDENCIES_DIR% -> .appveyor.yml'
+#  - '%DOWNLOADS_DIR% -> .appveyor.yml'
 
 install:
   - ps: |
