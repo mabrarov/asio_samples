@@ -21,8 +21,6 @@ configuration:
 environment:
   DEPENDENCIES_FOLDER: C:\projects\dependencies
   DOWNLOADS_FOLDER: C:\projects\downloads
-  CMAKE_REPOSITORY_ROOT_RELATIVE_BUILD_FOLDER: build
-  CMAKE_BUILD_FOLDER: '%APPVEYOR_BUILD_FOLDER%\%CMAKE_REPOSITORY_ROOT_RELATIVE_BUILD_FOLDER%'
 
   matrix:
     - MSVC_VERSION: 14.0
@@ -253,8 +251,8 @@ before_build:
 
 build_script:
   - ps: |
-      New-Item "$env:CMAKE_BUILD_FOLDER" -type directory
-      Set-Location -Path "$env:CMAKE_BUILD_FOLDER"
+      New-Item "$env:APPVEYOR_BUILD_FOLDER\build" -type directory
+      Set-Location -Path "$env:APPVEYOR_BUILD_FOLDER\build"
       if ($env:QT_VERSION -match "5\.*") {
         cmake -D BOOST_INCLUDEDIR=$env:BOOST_INCLUDE_FOLDER -D BOOST_LIBRARYDIR=$env:BOOST_LIBRARY_FOLDER -D Boost_USE_STATIC_LIBS=$env:BOOST_USE_STATIC_LIBS -D Boost_NO_SYSTEM_PATHS=ON -D Qt5Core_DIR=$env:QT_HOME\lib\cmake\Qt5Core -D Qt5Gui_DIR=$env:QT_HOME\lib\cmake\Qt5Gui -D Qt5Widgets_DIR=$env:QT_HOME\lib\cmake\Qt5Widgets -D gtest_force_shared_crt=ON -G "$env:CMAKE_GENERATOR" $env:APPVEYOR_BUILD_FOLDER
       } elseif ($env:QT_VERSION -match "4\.*") {
@@ -271,19 +269,19 @@ build_script:
       }
 
 test_script:
-  - cmd: cd /d "%CMAKE_BUILD_FOLDER%"
+  - cmd: cd /d "%APPVEYOR_BUILD_FOLDER%\build"
   - cmd: ctest --build-config %CONFIGURATION% --verbose
 
 artifacts:
-  - path: '%CMAKE_REPOSITORY_ROOT_RELATIVE_BUILD_FOLDER%\example\ma_asio_performance_test_client\$(configuration)\*.exe'
+  - path: build\example\ma_asio_performance_test_client\$(configuration)\*.exe
     name: ma_asio_performance_test_client
-  - path: '%CMAKE_REPOSITORY_ROOT_RELATIVE_BUILD_FOLDER%\example\ma_async_basics\$(configuration)\*.exe'
+  - path: build\example\ma_async_basics\$(configuration)\*.exe
     name: ma_async_basics
-  - path: '%CMAKE_REPOSITORY_ROOT_RELATIVE_BUILD_FOLDER%\example\ma_async_basics2\$(configuration)\*.exe'
+  - path: build\example\ma_async_basics2\$(configuration)\*.exe
     name: ma_async_basics2
-  - path: '%CMAKE_REPOSITORY_ROOT_RELATIVE_BUILD_FOLDER%\example\ma_echo_server\$(configuration)\*.exe'
+  - path: build\example\ma_echo_server\$(configuration)\*.exe
     name: ma_echo_server
-  - path: '%CMAKE_REPOSITORY_ROOT_RELATIVE_BUILD_FOLDER%\example\ma_nmea_client\$(configuration)\*.exe'
+  - path: build\example\ma_nmea_client\$(configuration)\*.exe
     name: ma_nmea_client
-  - path: '%CMAKE_REPOSITORY_ROOT_RELATIVE_BUILD_FOLDER%\example\ma_qt_echo_server\$(configuration)\*.exe'
+  - path: build\example\ma_qt_echo_server\$(configuration)\*.exe
     name: ma_qt_echo_server
