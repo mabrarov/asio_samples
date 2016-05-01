@@ -146,7 +146,11 @@ install:
           $env:VCVARS_PLATFORM="x86"
         }
         "x64" {
-          $env:VCVARS_PLATFORM="amd64"
+          if ($env:MSVC_VERSION -eq "9.0") {
+            $env:VCVARS_PLATFORM="x86_amd64"
+          } else {
+            $env:VCVARS_PLATFORM="amd64"
+          }
         }
       }
       if ($pre_installed_boost) {
