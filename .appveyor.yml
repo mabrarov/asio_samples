@@ -7,9 +7,6 @@
 
 os: Visual Studio 2015
 
-build:
-  verbosity: detailed
-
 platform:
   - x64
   - Win32
@@ -321,7 +318,7 @@ build_script:
       if ($LastExitCode -ne 0) {
         throw "Generation of project failed with exit code $LastExitCode."
       }
-      cmake --build . --config $env:CONFIGURATION -- /maxcpucount
+      cmake --build . --config $env:CONFIGURATION -- /maxcpucount /verbosity:normal /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
       if ($LastExitCode -ne 0) {
         throw "Build failed with exit code $LastExitCode."
       }
