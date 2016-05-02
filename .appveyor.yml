@@ -20,6 +20,11 @@ environment:
   DOWNLOADS_FOLDER: C:\projects\downloads
 
   matrix:
+    - MSVC_VERSION: 9.0
+      RUNTIME_LINKAGE: shared
+      BOOST_VERSION: 1.60.0
+      BOOST_LINKAGE: static
+      QT_VERSION: none
     - MSVC_VERSION: 14.0
       RUNTIME_LINKAGE: shared
       BOOST_VERSION: 1.59.0
@@ -109,16 +114,16 @@ install:
                   "Win32" {
                     switch ($env:MSVC_VERSION) {
                       "14.0" {
-                        $boost_download_url_file_id="166647600C1002F5!336&authkey=!AOZaFcXATaZqakc&ithint=file%2c7z"
+                        $boost_download_url_file_id="166647600C1002F5!336&authkey=!AFGYYm3z6xdou2A&ithint=file%2c7z"
                       }
                       "11.0" {
-                        $boost_download_url_file_id="166647600C1002F5!340&authkey=!AJlt0yGafEfYHB8&ithint=file%2c7z"
+                        $boost_download_url_file_id="166647600C1002F5!340&authkey=!AFwtmw0Ai1W5YE8&ithint=file%2c7z"
                       }
                       "10.0" {
-                        $boost_download_url_file_id="166647600C1002F5!334&authkey=!ADWuSgBa35ju5PI&ithint=file%2c7z"
+                        $boost_download_url_file_id="166647600C1002F5!334&authkey=!AI-Q0UA2QBQuEJk&ithint=file%2c7z"
                       }
                       "9.0" {
-                        $boost_download_url_file_id="166647600C1002F5!335&authkey=!AEFLfA4yz_2mesg&ithint=file%2c7z"
+                        $boost_download_url_file_id="166647600C1002F5!335&authkey=!AIF0rCOlLfXVi5o&ithint=file%2c7z"
                       }
                       default {
                         throw "Unsupported MSVS version: $env:MSVC_VERSION"
@@ -128,16 +133,16 @@ install:
                   "x64" {
                     switch ($env:MSVC_VERSION) {
                       "14.0" {
-                        $boost_download_url_file_id="166647600C1002F5!339&authkey=!AO9l1TVL1dIHjK8&ithint=file%2c7z"
+                        $boost_download_url_file_id="166647600C1002F5!339&authkey=!ALvDr64oQETUJQg&ithint=file%2c7z"
                       }
                       "11.0" {
-                        $boost_download_url_file_id="166647600C1002F5!338&authkey=!AOiDvs87Ho30yzI&ithint=file%2c7z"
+                        $boost_download_url_file_id="166647600C1002F5!338&authkey=!ADjmmkN_Vucxwqc&ithint=file%2c7z"
                       }
                       "10.0" {
-                        $boost_download_url_file_id="166647600C1002F5!333&authkey=!AKGEXi9tDekftig&ithint=file%2c7z"
+                        $boost_download_url_file_id="166647600C1002F5!333&authkey=!AL7oKBxNQncEBK4&ithint=file%2c7z"
                       }
                       "9.0" {
-                        $boost_download_url_file_id="166647600C1002F5!337&authkey=!AMN2vNTkVRN67s8&ithint=file%2c7z"
+                        $boost_download_url_file_id="166647600C1002F5!337&authkey=!AMBtcaUWpyPjqog&ithint=file%2c7z"
                       }
                       default {
                         throw "Unsupported MSVS version: $env:MSVC_VERSION"
