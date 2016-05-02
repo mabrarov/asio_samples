@@ -367,3 +367,15 @@ artifacts:
     name: ma_nmea_client
   - path: build\example\ma_qt_echo_server\$(configuration)\*.exe
     name: ma_qt_echo_server
+  - path: build\test\ma_async_connect_test\$(configuration)\*.exe
+    name: ma_async_connect_test
+  - path: build\test\ma_handler_storage_test\$(configuration)\*.exe
+    name: ma_handler_storage_test
+  - path: build\test\ma_lockable_wrapper_test\$(configuration)\*.exe
+    name: ma_lockable_wrapper_test
+  - path: build\test\ma_shared_ptr_factory_test\$(configuration)\*.exe
+    name: ma_shared_ptr_factory_test
+  - path: build\test\ma_sp_singleton_test\$(configuration)\*.exe
+    name: ma_sp_singleton_test
+  - path: build\test\ma_windows_console_signal_test\$(configuration)\*.exe
+    name: ma_windows_console_signal_test
