@@ -67,10 +67,10 @@ install:
         $boost_platform_suffix=""
         switch ($env:PLATFORM) {
           "Win32" {
-            $boost_platform_suffix="x86"
+            $boost_platform_suffix="-x86"
           }
           "x64" {
-            $boost_platform_suffix="x64"
+            $boost_platform_suffix="-x64"
           }
           default {
             throw "Unsupported platform: $env:PLATFORM"
@@ -101,20 +101,7 @@ install:
         $boost_install_folder="$env:DEPENDENCIES_FOLDER\boost$boost_version_suffix$boost_platform_suffix$boost_toolchain_suffix"
         if (!(Test-Path -Path $boost_install_folder)) {
           Write-Host "Built boost libraries are absent for the selected toolchain (msvc-$env:MSVC_VERSION) and Boost version ($env:BOOST_VERSION)"
-          $boost_url_platform_suffix=""
-          switch ($env:PLATFORM) {
-            "Win32" {
-              $boost_url_platform_suffix="-x86"
-            }
-            "x64" {
-              $boost_url_platform_suffix="-x64"
-            }
-            default {
-              throw "Unsupported platform: $env:PLATFORM"
-            }
-          }
-          $boost_url_file_extension_suffix=".7z"
-          $boost_archive_file="$env:DOWNLOADS_FOLDER\boost$boost_version_suffix$boost_url_platform_suffix$boost_toolchain_suffix.7z"
+          $boost_archive_file="$env:DOWNLOADS_FOLDER\boost$boost_version_suffix$boost_platform_suffix$boost_toolchain_suffix.7z"
           if (!(Test-Path -Path $boost_archive_file)) {
             $boost_download_url_base="https://onedrive.live.com/download?resid="
             $boost_download_url_file_id=""
