@@ -226,7 +226,7 @@ install:
         $env:BOOST_INCLUDE_FOLDER="$boost_home"
         $env:BOOST_LIBRARY_FOLDER="$boost_home\$boost_library_folder_platform_suffix$boost_library_folder_toolchain_suffix"
       }
-      if ($env:RUNTIME_LINKAGE -eq "static" and -not ($env:BOOST_LINKAGE -eq "static")) {
+      if ($env:RUNTIME_LINKAGE -eq "static" -and -not ($env:BOOST_LINKAGE -eq "static")) {
         throw "Incompatible type of linkage of Boost: $env:BOOST_LINKAGE for the specified type of linkage of C/C++ runtime: $env:RUNTIME_LINKAGE"
       }
       switch ($env:BOOST_LINKAGE) {
