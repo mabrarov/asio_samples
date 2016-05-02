@@ -299,10 +299,10 @@ before_build:
   - cmd: call "%MSVS_HOME%\VC\vcvarsall.bat" %VCVARS_PLATFORM%
   - ps: |
       if (!($env:QT_VERSION -eq "none")) {
-        $env:PATH=$env:QT_BIN_FOLDER;$env:PATH
+        $env:PATH="$env:QT_BIN_FOLDER;$env:PATH"
       }
       if ($env:BOOST_LINKAGE -eq "shared") {
-        $env:PATH=$env:BOOST_LIBRARY_FOLDER;$env:PATH
+        $env:PATH="$env:BOOST_LIBRARY_FOLDER;$env:PATH"
       }
 
 build_script:
