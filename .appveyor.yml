@@ -24,10 +24,6 @@ environment:
 
   matrix:
     - MSVC_VERSION: 14.0
-      BOOST_VERSION: 1.60.0
-      BOOST_LINKAGE: shared
-      QT_VERSION: 5.6
-    - MSVC_VERSION: 14.0
       BOOST_VERSION: 1.59.0
       BOOST_LINKAGE: static
       QT_VERSION: 5.6
@@ -36,10 +32,6 @@ environment:
       BOOST_LINKAGE: shared
       QT_VERSION: 5.6
     - MSVC_VERSION: 12.0
-      BOOST_VERSION: 1.60.0
-      BOOST_LINKAGE: shared
-      QT_VERSION: 5.5
-    - MSVC_VERSION: 12.0
       BOOST_VERSION: 1.58.0
       BOOST_LINKAGE: static
       QT_VERSION: 5.5
@@ -47,20 +39,6 @@ environment:
       BOOST_VERSION: 1.58.0
       BOOST_LINKAGE: shared
       QT_VERSION: 5.5
-    - MSVC_VERSION: 12.0
-      BOOST_VERSION: 1.58.0
-      BOOST_LINKAGE: shared
-      QT_VERSION: 5.5
-    - MSVC_VERSION: 12.0
-      BOOST_VERSION: 1.56.0
-      BOOST_LINKAGE: shared
-      QT_VERSION: 5.5
-
-# Archived cache should not exceed 100 MB (https://www.appveyor.com/docs/build-cache#save-update-cache-before-build-finishes)
-# so we are out of this limit and there is no need to spend time on trying to save cache.
-#cache:
-#  - '%DEPENDENCIES_FOLDER% -> .appveyor.yml'
-#  - '%DOWNLOADS_FOLDER% -> .appveyor.yml'
 
 install:
   - ps: |
@@ -70,16 +48,16 @@ install:
       }
       $pre_installed_qt="true"
       if (-not $pre_installed_boost) {
-        $boost_install_folder_platform_suffix=""
+        $boost_platform_suffix=""
         switch ($env:PLATFORM) {
-          "x86" {
-            $boost_install_folder_platform_suffix=""
-          }
           "Win32" {
-            $boost_install_folder_platform_suffix=""
+            $boost_platform_suffix="x86"
           }
           "x64" {
-            $boost_install_folder_platform_suffix="64"
+            $boost_platform_suffix="x64"
+          }
+          default {
+            throw "Unsupported platform: $env:PLATFORM"
           }
         }
         $boost_version_suffix="-$env:BOOST_VERSION"
@@ -100,48 +78,102 @@ install:
           "9.0" {
             $boost_toolchain_suffix="-vs2008"
           }
+          default {
+            throw "Unsupported MSVS version: $env:MSVC_VERSION"
+          }
         }
-        $boost_install_folder="$env:DEPENDENCIES_FOLDER\boost$boost_install_folder_platform_suffix$boost_version_suffix$boost_toolchain_suffix"
-        if(!(Test-Path -Path $boost_install_folder)) {
+        $boost_install_folder="$env:DEPENDENCIES_FOLDER\boost$boost_version_suffix$boost_platform_suffix$boost_toolchain_suffix"
+        if (!(Test-Path -Path $boost_install_folder)) {
           Write-Host "Built boost libraries are absent for the selected toolchain (msvc-$env:MSVC_VERSION) and Boost version ($env:BOOST_VERSION)"
           $boost_url_platform_suffix=""
           switch ($env:PLATFORM) {
-            "x86" {
-              $boost_url_platform_suffix="-x86"
-            }
             "Win32" {
               $boost_url_platform_suffix="-x86"
             }
             "x64" {
               $boost_url_platform_suffix="-x64"
             }
+            default {
+              throw "Unsupported platform: $env:PLATFORM"
+            }
           }
           $boost_url_file_extension_suffix=".7z"
-          $downloaded_boost_location="$env:DOWNLOADS_FOLDER\boost$boost_version_suffix$boost_url_platform_suffix$boost_toolchain_suffix$boost_url_file_extension_suffix"
-          if(!(Test-Path -Path $downloaded_boost_location)) {
-            $boost_url_base="http://www.npcglib.org/~stathis/downloads/boost"
-            $boost_url="$boost_url_base$boost_version_suffix$boost_url_platform_suffix$boost_toolchain_suffix$boost_url_file_extension_suffix"
-            if(!(Test-Path -Path $env:DOWNLOADS_FOLDER)) {
-              New-Item $env:DOWNLOADS_FOLDER -type directory
+          $boost_archive_file="$env:DOWNLOADS_FOLDER\boost$boost_version_suffix$boost_url_platform_suffix$boost_toolchain_suffix.7z"
+          if (!(Test-Path -Path $boost_archive_file)) {
+            $boost_download_url_base="https://onedrive.live.com/download?resid="
+            $boost_download_url_file_id=""
+            switch ($env:BOOST_VERSION) {
+              "1.60.0" {
+                switch ($env:PLATFORM) {
+                  "Win32" {
+                    switch ($env:MSVC_VERSION) {
+                      "14.0" {
+                        $boost_download_url_file_id="166647600C1002F5!336&authkey=!AOZaFcXATaZqakc&ithint=file%2c7z"
+                      }
+                      "11.0" {
+                        $boost_download_url_file_id="166647600C1002F5!340&authkey=!AJlt0yGafEfYHB8&ithint=file%2c7z"
+                      }
+                      "10.0" {
+                        $boost_download_url_file_id="166647600C1002F5!334&authkey=!ADWuSgBa35ju5PI&ithint=file%2c7z"
+                      }
+                      "9.0" {
+                        $boost_download_url_file_id="166647600C1002F5!335&authkey=!AEFLfA4yz_2mesg&ithint=file%2c7z"
+                      }
+                      default {
+                        throw "Unsupported MSVS version: $env:MSVC_VERSION"
+                      }
+                    }
+                  }
+                  "x64" {
+                    switch ($env:MSVC_VERSION) {
+                      "14.0" {
+                        $boost_download_url_file_id="166647600C1002F5!339&authkey=!AO9l1TVL1dIHjK8&ithint=file%2c7z"
+                      }
+                      "11.0" {
+                        $boost_download_url_file_id="166647600C1002F5!338&authkey=!AOiDvs87Ho30yzI&ithint=file%2c7z"
+                      }
+                      "10.0" {
+                        $boost_download_url_file_id="166647600C1002F5!333&authkey=!AKGEXi9tDekftig&ithint=file%2c7z"
+                      }
+                      "9.0" {
+                        $boost_download_url_file_id="166647600C1002F5!337&authkey=!AMN2vNTkVRN67s8&ithint=file%2c7z"
+                      }
+                      default {
+                        throw "Unsupported MSVS version: $env:MSVC_VERSION"
+                      }
+                    }
+                  }
+                  default {
+                    throw "Unsupported platform: $env:PLATFORM"
+                  }
+                }
+              }
+              default {
+                throw "Unsupported version of Boost: $env:BOOST_VERSION"
+              }
             }
-            Write-Host "Going to download pre-built Boost libraries from: $boost_url to: $downloaded_boost_location"
-            Invoke-WebRequest $boost_url -OutFile $downloaded_boost_location
+            $boost_download_url="$boost_download_url_base$boost_download_url_file_id"
+            if (!(Test-Path -Path $env:DOWNLOADS_FOLDER)) {
+              New-Item $env:DOWNLOADS_FOLDER -type directory | out-null
+            }
+            Write-Host "Going to download pre-built Boost libraries from: $boost_download_url to: $boost_archive_file"
+            Invoke-WebRequest $boost_download_url -OutFile $boost_archive_file
           }
-          Write-Host "Extracting pre-built Boost libraries from: $downloaded_boost_location to: $env:DEPENDENCIES_FOLDER"
-          7z x "$downloaded_boost_location" -o"$env:DEPENDENCIES_FOLDER" -aoa -y | out-null
+          Write-Host "Extracting pre-built Boost libraries from: $boost_archive_file to: $env:DEPENDENCIES_FOLDER"
+          if (!(Test-Path -Path $env:DEPENDENCIES_FOLDER)) {
+            New-Item $env:DEPENDENCIES_FOLDER -type directory | out-null
+          }
+          7z x "$boost_archive_file" -o"$env:DEPENDENCIES_FOLDER" -aoa -y | out-null
           if ($LastExitCode -ne 0) {
             throw "File extraction failed with exit code $LastExitCode."
           }
         }
-        $boost_install_include_folder_version_suffix="-$env:BOOST_VERSION" -replace "([\d]+)\.([\d]+)(\.[\d]+)*", '$1_$2'
-        $env:BOOST_INCLUDE_FOLDER="$boost_install_folder\include\boost$boost_install_include_folder_version_suffix"
+        $boost_include_folder_version_suffix="-$env:BOOST_VERSION" -replace "([\d]+)\.([\d]+)(\.[\d]+)*", '$1_$2'
+        $env:BOOST_INCLUDE_FOLDER="$boost_install_folder\include\boost$boost_include_folder_version_suffix"
         $env:BOOST_LIBRARY_FOLDER="$boost_install_folder\lib"
       }
       $env:MSVS_HOME="%ProgramFiles(x86)%\Microsoft Visual Studio $env:MSVC_VERSION"
       switch ($env:PLATFORM) {
-        "x86" {
-          $env:VCVARS_PLATFORM="x86"
-        }
         "Win32" {
           $env:VCVARS_PLATFORM="x86"
         }
@@ -151,6 +183,9 @@ install:
           } else {
             $env:VCVARS_PLATFORM="amd64"
           }
+        }
+        default {
+          throw "Unsupported platform: $env:PLATFORM"
         }
       }
       if ($pre_installed_boost) {
@@ -165,17 +200,20 @@ install:
           "1.56.0" {
             $boost_home="C:\Libraries\boost"
           }
+          default {
+            throw "Unsupported version of Boost: $env:BOOST_VERSION"
+          }
         }
         $boost_library_folder_platform_suffix=""
         switch ($env:PLATFORM) {
-          "x86" {
-            $boost_library_folder_platform_suffix="lib32"
-          }
           "Win32" {
             $boost_library_folder_platform_suffix="lib32"
           }
           "x64" {
             $boost_library_folder_platform_suffix="lib64"
+          }
+          default {
+            throw "Unsupported platform: $env:PLATFORM"
           }
         }
         $boost_library_folder_toolchain_suffix="-msvc-$env:MSVC_VERSION"
@@ -189,18 +227,21 @@ install:
         "shared" {
           $env:BOOST_USE_STATIC_LIBS="OFF"
         }
+        default {
+          throw "Unsupported type of linkage of Boost: $env:BOOST_LINKAGE"
+        }
       }
       if ($pre_installed_qt) {
         $qt_folder_platform_suffix=""
         switch ($env:PLATFORM) {
-          "x86" {
-            $qt_folder_platform_suffix=""
-          }
           "Win32" {
             $qt_folder_platform_suffix=""
           }
           "x64" {
             $qt_folder_platform_suffix="_64"
+          }
+          default {
+            throw "Unsupported platform: $env:PLATFORM"
           }
         }
         $qt_folder_toolchain_suffix=""
@@ -220,9 +261,11 @@ install:
           "9.0" {
             $qt_folder_toolchain_suffix="msvc2008"
           }
+          default {
+            throw "Unsupported MSVS version: $env:MSVC_VERSION"
+          }
         }
-        $qt_home_version_path="C:\Qt\$env:QT_VERSION"
-        $env:QT_HOME="$qt_home_version_path\$qt_folder_toolchain_suffix$qt_folder_platform_suffix"
+        $env:QT_HOME="C:\Qt\$env:QT_VERSION\$qt_folder_toolchain_suffix$qt_folder_platform_suffix"
         $env:QT_BIN_FOLDER="$env:QT_HOME\bin"
       }
       switch ($env:CONFIGURATION) {
@@ -232,35 +275,46 @@ install:
         "Release" {
           $env:CMAKE_BUILD_CONFIG="RELEASE"
         }
+        default {
+          throw "Unsupported build configuration: $env:CONFIGURATION"
+        }
       }
       $cmake_generator_msvc_version_suffx=" $env:MSVC_VERSION" -replace "([\d]+)\.([\d]+)", '$1'
       $cmake_generator_toolchain="Visual Studio$cmake_generator_msvc_version_suffx"
       $cmake_generator_platform_suffix=""
       switch ($env:PLATFORM) {
-        "x86" {
-          $cmake_generator_platform_suffix=""
-        }
         "Win32" {
           $cmake_generator_platform_suffix=""
         }
         "x64" {
           $cmake_generator_platform_suffix=" Win64"
         }
+        default {
+          throw "Unsupported platform: $env:PLATFORM"
+        }
       }
       $env:CMAKE_GENERATOR="$cmake_generator_toolchain$cmake_generator_platform_suffix"
 
 before_build:
   - cmd: call "%MSVS_HOME%\VC\vcvarsall.bat" %VCVARS_PLATFORM%
-  - cmd: set PATH=%BOOST_LIBRARY_FOLDER%;%QT_BIN_FOLDER%;%PATH%
+  - ps: |
+      if (!($env:QT_VERSION -eq "none")) {
+        $env:PATH=$env:QT_BIN_FOLDER;$env:PATH
+      }
+      if ($env:BOOST_LINKAGE -eq "shared") {
+        $env:PATH=$env:BOOST_LIBRARY_FOLDER;$env:PATH
+      }
 
 build_script:
   - ps: |
-      New-Item "$env:APPVEYOR_BUILD_FOLDER\build" -type directory
+      New-Item "$env:APPVEYOR_BUILD_FOLDER\build" -type directory | out-null
       Set-Location -Path "$env:APPVEYOR_BUILD_FOLDER\build"
       if ($env:QT_VERSION -match "5\.*") {
         cmake -D BOOST_INCLUDEDIR=$env:BOOST_INCLUDE_FOLDER -D BOOST_LIBRARYDIR=$env:BOOST_LIBRARY_FOLDER -D Boost_USE_STATIC_LIBS=$env:BOOST_USE_STATIC_LIBS -D Boost_NO_SYSTEM_PATHS=ON -D Qt5Core_DIR=$env:QT_HOME\lib\cmake\Qt5Core -D Qt5Gui_DIR=$env:QT_HOME\lib\cmake\Qt5Gui -D Qt5Widgets_DIR=$env:QT_HOME\lib\cmake\Qt5Widgets -D gtest_force_shared_crt=ON -G "$env:CMAKE_GENERATOR" $env:APPVEYOR_BUILD_FOLDER
       } elseif ($env:QT_VERSION -match "4\.*") {
         cmake -D BOOST_INCLUDEDIR=$env:BOOST_INCLUDE_FOLDER -D BOOST_LIBRARYDIR=$env:BOOST_LIBRARY_FOLDER -D Boost_USE_STATIC_LIBS=$env:BOOST_USE_STATIC_LIBS -D Boost_NO_SYSTEM_PATHS=ON -D QT_QMAKE_EXECUTABLE=$env:QT_QMAKE_EXECUTABLE -D gtest_force_shared_crt=ON -G "$env:CMAKE_GENERATOR" $env:APPVEYOR_BUILD_FOLDER
+      } elseif ($env:QT_VERSION -eq "none") {
+        cmake -D BOOST_INCLUDEDIR=$env:BOOST_INCLUDE_FOLDER -D BOOST_LIBRARYDIR=$env:BOOST_LIBRARY_FOLDER -D Boost_USE_STATIC_LIBS=$env:BOOST_USE_STATIC_LIBS -D Boost_NO_SYSTEM_PATHS=ON -D gtest_force_shared_crt=ON -D ma_qt=OFF -G "$env:CMAKE_GENERATOR" $env:APPVEYOR_BUILD_FOLDER
       } else {
         throw "Unsupported version of Qt: $env:QT_VERSION."
       }
