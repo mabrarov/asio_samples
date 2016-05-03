@@ -186,7 +186,10 @@ install:
         $env:BOOST_INCLUDE_FOLDER="$boost_install_folder\include\boost$boost_include_folder_version_suffix"
         $env:BOOST_LIBRARY_FOLDER="$boost_install_folder\lib"
       }
+      $env:WINDOWS_SDK_ENV_BATCH_FILE=""
+      $env:WINDOWS_SDK_ENV_PARAMETERS=""
       $env:MSVS_HOME="%ProgramFiles(x86)%\Microsoft Visual Studio $env:MSVC_VERSION"
+      $env:VCVARS_BATCH_FILE="$env:MSVS_HOME\VC\vcvarsall.bat"
       switch ($env:PLATFORM) {
         "Win32" {
           $env:VCVARS_PLATFORM="x86"
@@ -203,7 +206,9 @@ install:
               $env:VCVARS_PLATFORM="x86_amd64"
             }
             "10.0" {
-              $env:VCVARS_PLATFORM="x86_amd64"
+              $env:VCVARS_BATCH_FILE=""
+              $env:WINDOWS_SDK_ENV_BATCH_FILE="C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd"
+              $env:WINDOWS_SDK_ENV_PARAMETERS="/x64 /$env:CONFIGURATION"
             }
             "9.0" {
               $env:VCVARS_PLATFORM="x86_amd64"
@@ -347,7 +352,8 @@ install:
       $env:CMAKE_GENERATOR="Visual Studio$cmake_generator_msvc_version_suffx$cmake_generator_platform_suffix"
 
 before_build:
-  - cmd: call "%MSVS_HOME%\VC\vcvarsall.bat" %VCVARS_PLATFORM%
+  - cmd: if not "%WINDOWS_SDK_ENV_BATCH_FILE%"=="" call "%WINDOWS_SDK_ENV_BATCH_FILE%" %WINDOWS_SDK_ENV_PARAMETERS%
+  - cmd: if not "%VCVARS_BATCH_FILE%"=="" call "%VCVARS_BATCH_FILE%" %VCVARS_PLATFORM%
   - ps: |
       if (!($env:QT_VERSION -eq "none")) {
         $env:PATH="$env:QT_BIN_FOLDER;$env:PATH"
