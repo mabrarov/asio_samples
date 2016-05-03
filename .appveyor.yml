@@ -30,6 +30,11 @@ environment:
       BOOST_VERSION: 1.60.0
       BOOST_LINKAGE: static
       QT_VERSION: none
+    - MSVC_VERSION: 12.0
+      RUNTIME_LINKAGE: static
+      BOOST_VERSION: 1.60.0
+      BOOST_LINKAGE: static
+      QT_VERSION: none
     - MSVC_VERSION: 14.0
       RUNTIME_LINKAGE: static
       BOOST_VERSION: 1.60.0
@@ -113,6 +118,9 @@ install:
                       "14.0" {
                         $boost_download_url_file_id="166647600C1002F5!336&authkey=!AFGYYm3z6xdou2A&ithint=file%2c7z"
                       }
+                      "12.0" {
+                        $boost_download_url_file_id="166647600C1002F5!341&authkey=!APP3kmIzQXoNmMY&ithint=file%2c7z"
+                      }
                       "11.0" {
                         $boost_download_url_file_id="166647600C1002F5!340&authkey=!AFwtmw0Ai1W5YE8&ithint=file%2c7z"
                       }
@@ -131,6 +139,9 @@ install:
                     switch ($env:MSVC_VERSION) {
                       "14.0" {
                         $boost_download_url_file_id="166647600C1002F5!339&authkey=!ALvDr64oQETUJQg&ithint=file%2c7z"
+                      }
+                      "12.0" {
+                        $boost_download_url_file_id="166647600C1002F5!342&authkey=!ACDxp2cFsv7Mi-E&ithint=file%2c7z"
                       }
                       "11.0" {
                         $boost_download_url_file_id="166647600C1002F5!338&authkey=!ADjmmkN_Vucxwqc&ithint=file%2c7z"
