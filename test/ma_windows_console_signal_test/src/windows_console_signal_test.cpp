@@ -25,49 +25,53 @@
 namespace ma {
 namespace test {
 
-namespace windows_console_signal_ctrl_c_handling {
+//todo: Change smth in CTest parameters - current implementation breaks CTest.
+//      CTest handles Ctrl+C instead of the test application
+//namespace windows_console_signal_ctrl_c_handling {
+//
+//void handle_ctrl_c(detail::latch& latch)
+//{
+//  latch.count_down();
+//}
+//
+//TEST(windows_console_signal, ctrl_c_handling)
+//{
+//  detail::latch done_latch(1);
+//  boost::asio::io_service io_service;
+//  ma::windows::console_signal console_signal(io_service);
+//  console_signal.async_wait(
+//      detail::bind(&handle_ctrl_c, detail::ref(done_latch)));
+//  BOOL success = ::GenerateConsoleCtrlEvent(CTRL_C_EVENT, 0);
+//  ASSERT_NE(0, success);
+//  io_service.run();
+//  ASSERT_EQ(0U, done_latch.value());
+//}
+//
+//} // namespace windows_console_signal_ctrl_c_handling
 
-void handle_ctrl_c(detail::latch& latch)
-{
-  latch.count_down();
-}
-
-TEST(windows_console_signal, ctrl_c_handling)
-{
-  detail::latch done_latch(1);
-  boost::asio::io_service io_service;
-  ma::windows::console_signal console_signal(io_service);
-  console_signal.async_wait(
-      detail::bind(&handle_ctrl_c, detail::ref(done_latch)));
-  BOOL success = ::GenerateConsoleCtrlEvent(CTRL_C_EVENT, 0);
-  ASSERT_NE(0, success);
-  io_service.run();
-  ASSERT_EQ(0U, done_latch.value());
-}
-
-} // namespace windows_console_signal_ctrl_c_handling
-
-namespace windows_console_signal_ctrl_break_handling {
-
-void handle_ctrl_c(detail::latch& latch)
-{
-  latch.count_down();
-}
-
-TEST(windows_console_signal, ctrl_break_handling)
-{
-  detail::latch done_latch(1);
-  boost::asio::io_service io_service;
-  ma::windows::console_signal console_signal(io_service);
-  console_signal.async_wait(
-      detail::bind(&handle_ctrl_c, detail::ref(done_latch)));
-  BOOL success = ::GenerateConsoleCtrlEvent(CTRL_BREAK_EVENT, 0);
-  ASSERT_NE(0, success);
-  io_service.run();
-  ASSERT_EQ(0U, done_latch.value());
-}
-
-} // namespace windows_console_signal_ctrl_break_handling
+//todo: Change smth in CTest parameters - current implementation breaks CTest.
+//      CTest handles Ctrl+Break instead of the test application
+//namespace windows_console_signal_ctrl_break_handling {
+//
+//void handle_ctrl_c(detail::latch& latch)
+//{
+//  latch.count_down();
+//}
+//
+//TEST(windows_console_signal, ctrl_break_handling)
+//{
+//  detail::latch done_latch(1);
+//  boost::asio::io_service io_service;
+//  ma::windows::console_signal console_signal(io_service);
+//  console_signal.async_wait(
+//      detail::bind(&handle_ctrl_c, detail::ref(done_latch)));
+//  BOOL success = ::GenerateConsoleCtrlEvent(CTRL_BREAK_EVENT, 0);
+//  ASSERT_NE(0, success);
+//  io_service.run();
+//  ASSERT_EQ(0U, done_latch.value());
+//}
+//
+//} // namespace windows_console_signal_ctrl_break_handling
 
 namespace windows_console_signal_destruction {
 
