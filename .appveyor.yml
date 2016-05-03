@@ -20,6 +20,11 @@ environment:
   DOWNLOADS_FOLDER: C:\projects\downloads
 
   matrix:
+    - MSVC_VERSION: 9.0
+      RUNTIME_LINKAGE: static
+      BOOST_VERSION: 1.60.0
+      BOOST_LINKAGE: static
+      QT_VERSION: none
     - MSVC_VERSION: 10.0
       RUNTIME_LINKAGE: static
       BOOST_VERSION: 1.60.0
@@ -190,6 +195,8 @@ install:
       $env:WINDOWS_SDK_ENV_PARAMETERS=""
       $env:MSVS_HOME="%ProgramFiles(x86)%\Microsoft Visual Studio $env:MSVC_VERSION"
       $env:VCVARS_BATCH_FILE="$env:MSVS_HOME\VC\vcvarsall.bat"
+      $env:MSVS_PATCH_FOLDER=""
+      $env:MSVS_PATCH_BATCH_FILE=""
       switch ($env:PLATFORM) {
         "Win32" {
           $env:VCVARS_PLATFORM="x86"
@@ -211,6 +218,20 @@ install:
               $env:WINDOWS_SDK_ENV_PARAMETERS="/x64 /$env:CONFIGURATION"
             }
             "9.0" {
+              Write-Host "Selected MSVS version: $env:MSVC_VERSION and platform: $env:PLATFORM require patching"
+              $env:MSVS_PATCH_FOLDER="$env:DEPENDENCIES_FOLDER\vs2008_patch"
+              if (!(Test-Path -Path $env:MSVS_PATCH_FOLDER)) {
+                $msvs2008_patch_file="$env:DOWNLOADS_FOLDER\vs2008_patch.zip"
+                if (!(Test-Path -Path $msvs2008_patch_file)) {
+                  $msvs2008_patch_url="https://github.com/menpo/condaci/blob/master/vs2008_patch.zip?raw=true"
+                  Write-Host "Going to download MSVS patch from: $msvs2008_patch_url to: $msvs2008_patch_file"
+                  Invoke-WebRequest $msvs2008_patch_url -OutFile $msvs2008_patch_file
+                }
+                Write-Host "Extracting MSVS patch from: $msvs2008_patch_file to: $env:MSVS_PATCH_FOLDER"
+                New-Item $env:MSVS_PATCH_FOLDER -type directory | out-null
+                7z x "$msvs2008_patch_file" -o"$env:MSVS_PATCH_FOLDER" -aoa -y | out-null
+              }
+              $env:MSVS_PATCH_BATCH_FILE="$env:MSVS_PATCH_FOLDER\setup_x64.bat"
               $env:VCVARS_PLATFORM="x86_amd64"
             }
             default {
@@ -352,6 +373,9 @@ install:
       $env:CMAKE_GENERATOR="Visual Studio$cmake_generator_msvc_version_suffx$cmake_generator_platform_suffix"
 
 before_build:
+  - cmd: if not "%MSVS_PATCH_FOLDER%"=="" cd /d "%MSVS_PATCH_FOLDER%"
+  - cmd: if not "%MSVS_PATCH_BATCH_FILE%"=="" call "%MSVS_PATCH_BATCH_FILE%"
+  - cmd: cd /d "%APPVEYOR_BUILD_FOLDER"
   - cmd: if not "%WINDOWS_SDK_ENV_BATCH_FILE%"=="" call "%WINDOWS_SDK_ENV_BATCH_FILE%" %WINDOWS_SDK_ENV_PARAMETERS%
   - cmd: if not "%VCVARS_BATCH_FILE%"=="" call "%VCVARS_BATCH_FILE%" %VCVARS_PLATFORM%
   - ps: |
