@@ -14,7 +14,6 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
 #include <boost/noncopyable.hpp>
-#include <boost/random.hpp>
 #include <boost/date_time/posix_time/ptime.hpp>
 #include <gtest/gtest.h>
 #include <ma/config.hpp>
@@ -25,6 +24,7 @@
 #include <ma/detail/functional.hpp>
 #include <ma/detail/thread.hpp>
 #include <ma/detail/sp_singleton.hpp>
+#include <ma/detail/random.hpp>
 
 namespace ma {
 namespace test {
@@ -415,12 +415,12 @@ std::size_t foo::instance_count_   = 0;
 const std::size_t iteration_count  = 1;
 const std::size_t work_cycle_count = 1;
 
-typedef boost::random::mt19937 random_generator;
+typedef detail::mt19937 random_generator;
 typedef detail::shared_ptr<random_generator> random_generator_ptr;
 
 void work_func(const random_generator_ptr& rng)
 {
-  boost::random::uniform_int_distribution<> wait_flag(0, 1);
+  detail::uniform_int_distribution<> wait_flag(0, 1);
   for (std::size_t i = 0; i != work_cycle_count; ++i)
   {
     const foo_ptr f = foo::get_instance();
