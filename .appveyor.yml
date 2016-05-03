@@ -181,10 +181,25 @@ install:
           $env:VCVARS_PLATFORM="x86"
         }
         "x64" {
-          if ($env:MSVC_VERSION -eq "9.0") {
-            $env:VCVARS_PLATFORM="x86_amd64"
-          } else {
-            $env:VCVARS_PLATFORM="amd64"
+          switch ($env:MSVC_VERSION) {
+            "14.0" {
+              $env:VCVARS_PLATFORM="amd64"
+            }
+            "12.0" {
+              $env:VCVARS_PLATFORM="amd64"
+            }
+            "11.0" {
+              $env:VCVARS_PLATFORM="x86_amd64"
+            }
+            "10.0" {
+              $env:VCVARS_PLATFORM="x86_amd64"
+            }
+            "9.0" {
+              $env:VCVARS_PLATFORM="x86_amd64"
+            }
+            default {
+              throw "Unsupported MSVS version: $env:MSVC_VERSION"
+            }
           }
         }
         default {
@@ -286,7 +301,26 @@ install:
         }
       }
       $cmake_generator_msvc_version_suffx=" $env:MSVC_VERSION" -replace "([\d]+)\.([\d]+)", '$1'
-      $cmake_generator_toolchain="Visual Studio$cmake_generator_msvc_version_suffx"
+      switch ($env:MSVC_VERSION) {
+        "14.0" {
+          $cmake_generator_msvc_version_suffx="$cmake_generator_msvc_version_suffx 2015"
+        }
+        "12.0" {
+          $cmake_generator_msvc_version_suffx="$cmake_generator_msvc_version_suffx 2013"
+        }
+        "11.0" {
+          $cmake_generator_msvc_version_suffx="$cmake_generator_msvc_version_suffx 2012"
+        }
+        "10.0" {
+          $cmake_generator_msvc_version_suffx="$cmake_generator_msvc_version_suffx 2010"
+        }
+        "9.0" {
+          $cmake_generator_msvc_version_suffx="$cmake_generator_msvc_version_suffx 2008"
+        }
+        default {
+          throw "Unsupported MSVS version: $env:MSVC_VERSION"
+        }
+      }
       $cmake_generator_platform_suffix=""
       switch ($env:PLATFORM) {
         "Win32" {
@@ -299,7 +333,7 @@ install:
           throw "Unsupported platform: $env:PLATFORM"
         }
       }
-      $env:CMAKE_GENERATOR="$cmake_generator_toolchain$cmake_generator_platform_suffix"
+      $env:CMAKE_GENERATOR="Visual Studio$cmake_generator_msvc_version_suffx$cmake_generator_platform_suffix"
 
 before_build:
   - cmd: call "%MSVS_HOME%\VC\vcvarsall.bat" %VCVARS_PLATFORM%
