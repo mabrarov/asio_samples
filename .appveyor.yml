@@ -177,6 +177,7 @@ install:
             }
             Write-Host "Going to download pre-built Boost libraries from: $boost_download_url to: $boost_archive_file"
             Invoke-WebRequest $boost_download_url -OutFile $boost_archive_file
+            Write-Host "Downloaded: $boost_archive_file"
           }
           Write-Host "Extracting pre-built Boost libraries from: $boost_archive_file to: $env:DEPENDENCIES_FOLDER"
           if (!(Test-Path -Path $env:DEPENDENCIES_FOLDER)) {
@@ -186,6 +187,7 @@ install:
           if ($LastExitCode -ne 0) {
             throw "File extraction failed with exit code $LastExitCode."
           }
+          Write-Host "Extracted: $boost_install_folder"
         }
         $boost_include_folder_version_suffix="-$env:BOOST_VERSION" -replace "([\d]+)\.([\d]+)(\.[\d]+)*", '$1_$2'
         $env:BOOST_INCLUDE_FOLDER="$boost_install_folder\include\boost$boost_include_folder_version_suffix"
@@ -226,10 +228,15 @@ install:
                   $msvs2008_patch_url="https://github.com/menpo/condaci/blob/master/vs2008_patch.zip?raw=true"
                   Write-Host "Going to download MSVS patch from: $msvs2008_patch_url to: $msvs2008_patch_file"
                   Invoke-WebRequest $msvs2008_patch_url -OutFile $msvs2008_patch_file
+                  Write-Host "Downloaded: $msvs2008_patch_file"
                 }
                 Write-Host "Extracting MSVS patch from: $msvs2008_patch_file to: $env:MSVS_PATCH_FOLDER"
                 New-Item $env:MSVS_PATCH_FOLDER -type directory | out-null
                 7z x "$msvs2008_patch_file" -o"$env:MSVS_PATCH_FOLDER" -aoa -y | out-null
+                if ($LastExitCode -ne 0) {
+                  throw "File extraction failed with exit code $LastExitCode."
+                }
+                Write-Host "Extracted: $env:MSVS_PATCH_FOLDER"
               }
               $env:MSVS_PATCH_BATCH_FILE="$env:MSVS_PATCH_FOLDER\setup_x64.bat"
               $env:VCVARS_PLATFORM="x86_amd64"
