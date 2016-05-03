@@ -371,7 +371,7 @@ install:
         }
       }
       $env:CMAKE_GENERATOR="Visual Studio$cmake_generator_msvc_version_suffx$cmake_generator_platform_suffix"
-      $env:CMAKE_NATIVE_BUILD_TOOL_PARAMETERS="-- /maxcpucount /verbosity:normal /logger:""C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"""
+      $env:CMAKE_NATIVE_BUILD_TOOL_PARAMETERS="-- /maxcpucount /verbosity:normal /logger:\"\"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll\"\""
       switch ($env:MSVC_VERSION) {
         "14.0" { }
         "12.0" { }
