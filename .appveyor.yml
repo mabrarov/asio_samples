@@ -20,17 +20,7 @@ environment:
   DOWNLOADS_FOLDER: C:\projects\downloads
 
   matrix:
-    - MSVC_VERSION: 9.0
-      RUNTIME_LINKAGE: static
-      BOOST_VERSION: 1.60.0
-      BOOST_LINKAGE: static
-      QT_VERSION: none
-    - MSVC_VERSION: 10.0
-      RUNTIME_LINKAGE: static
-      BOOST_VERSION: 1.60.0
-      BOOST_LINKAGE: static
-      QT_VERSION: none
-    - MSVC_VERSION: 11.0
+    - MSVC_VERSION: 14.0
       RUNTIME_LINKAGE: static
       BOOST_VERSION: 1.60.0
       BOOST_LINKAGE: static
@@ -40,7 +30,17 @@ environment:
       BOOST_VERSION: 1.60.0
       BOOST_LINKAGE: static
       QT_VERSION: none
-    - MSVC_VERSION: 14.0
+    - MSVC_VERSION: 11.0
+      RUNTIME_LINKAGE: static
+      BOOST_VERSION: 1.60.0
+      BOOST_LINKAGE: static
+      QT_VERSION: none
+    - MSVC_VERSION: 10.0
+      RUNTIME_LINKAGE: static
+      BOOST_VERSION: 1.60.0
+      BOOST_LINKAGE: static
+      QT_VERSION: none
+    - MSVC_VERSION: 9.0
       RUNTIME_LINKAGE: static
       BOOST_VERSION: 1.60.0
       BOOST_LINKAGE: static
@@ -371,16 +371,6 @@ install:
         }
       }
       $env:CMAKE_GENERATOR="Visual Studio$cmake_generator_msvc_version_suffx$cmake_generator_platform_suffix"
-      $env:CMAKE_NATIVE_BUILD_TOOL_PARAMETERS="-- /maxcpucount /verbosity:normal /logger:$([char]34)C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll$([char]34)"
-      switch ($env:MSVC_VERSION) {
-        "14.0" { }
-        "12.0" { }
-        "11.0" { }
-        "10.0" { }
-        "9.0" {
-          $env:CMAKE_NATIVE_BUILD_TOOL_PARAMETERS=""
-        }
-      }
 
 before_build:
   - cmd: if not "%MSVS_PATCH_FOLDER%"=="" cd /d "%MSVS_PATCH_FOLDER%"
@@ -429,7 +419,14 @@ build_script:
       if ($LastExitCode -ne 0) {
         throw "Generation of project failed with exit code $LastExitCode."
       }
-      cmake --build . --config $env:CONFIGURATION $env:CMAKE_NATIVE_BUILD_TOOL_PARAMETERS
+      switch ($env:MSVC_VERSION) {
+        "9.0" {
+          cmake --build . --config $env:CONFIGURATION
+        }
+        default {
+          cmake --build . --config $env:CONFIGURATION -- /maxcpucount /verbosity:normal /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
+        }
+      }
       if ($LastExitCode -ne 0) {
         throw "Build failed with exit code $LastExitCode."
       }
