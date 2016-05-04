@@ -25,26 +25,6 @@ environment:
       BOOST_VERSION: 1.60.0
       BOOST_LINKAGE: static
       QT_VERSION: none
-    - MSVC_VERSION: 12.0
-      RUNTIME_LINKAGE: static
-      BOOST_VERSION: 1.60.0
-      BOOST_LINKAGE: static
-      QT_VERSION: none
-    - MSVC_VERSION: 11.0
-      RUNTIME_LINKAGE: static
-      BOOST_VERSION: 1.60.0
-      BOOST_LINKAGE: static
-      QT_VERSION: none
-    - MSVC_VERSION: 10.0
-      RUNTIME_LINKAGE: static
-      BOOST_VERSION: 1.60.0
-      BOOST_LINKAGE: static
-      QT_VERSION: none
-    - MSVC_VERSION: 9.0
-      RUNTIME_LINKAGE: static
-      BOOST_VERSION: 1.60.0
-      BOOST_LINKAGE: static
-      QT_VERSION: none
     - MSVC_VERSION: 14.0
       RUNTIME_LINKAGE: shared
       BOOST_VERSION: 1.59.0
@@ -111,67 +91,10 @@ install:
         $boost_install_folder="$env:DEPENDENCIES_FOLDER\boost$boost_version_suffix$boost_platform_suffix$boost_toolchain_suffix"
         if (!(Test-Path -Path $boost_install_folder)) {
           Write-Host "Built boost libraries are absent for the selected toolchain (msvc-$env:MSVC_VERSION) and Boost version ($env:BOOST_VERSION)"
-          $boost_archive_file="$env:DOWNLOADS_FOLDER\boost$boost_version_suffix$boost_platform_suffix$boost_toolchain_suffix.7z"
+          $boost_archive_name="boost$boost_version_suffix$boost_platform_suffix$boost_toolchain_suffix.7z"
+          $boost_archive_file="$env:DOWNLOADS_FOLDER\$boost_archive_name"
           if (!(Test-Path -Path $boost_archive_file)) {
-            $boost_download_url_base="https://onedrive.live.com/download?resid="
-            $boost_download_url_file_id=""
-            switch ($env:BOOST_VERSION) {
-              "1.60.0" {
-                switch ($env:PLATFORM) {
-                  "Win32" {
-                    switch ($env:MSVC_VERSION) {
-                      "14.0" {
-                        $boost_download_url_file_id="166647600C1002F5!336&authkey=!AFGYYm3z6xdou2A&ithint=file%2c7z"
-                      }
-                      "12.0" {
-                        $boost_download_url_file_id="166647600C1002F5!341&authkey=!APP3kmIzQXoNmMY&ithint=file%2c7z"
-                      }
-                      "11.0" {
-                        $boost_download_url_file_id="166647600C1002F5!340&authkey=!AFwtmw0Ai1W5YE8&ithint=file%2c7z"
-                      }
-                      "10.0" {
-                        $boost_download_url_file_id="166647600C1002F5!334&authkey=!AI-Q0UA2QBQuEJk&ithint=file%2c7z"
-                      }
-                      "9.0" {
-                        $boost_download_url_file_id="166647600C1002F5!335&authkey=!AIF0rCOlLfXVi5o&ithint=file%2c7z"
-                      }
-                      default {
-                        throw "Unsupported MSVS version: $env:MSVC_VERSION"
-                      }
-                    }
-                  }
-                  "x64" {
-                    switch ($env:MSVC_VERSION) {
-                      "14.0" {
-                        $boost_download_url_file_id="166647600C1002F5!339&authkey=!ALvDr64oQETUJQg&ithint=file%2c7z"
-                      }
-                      "12.0" {
-                        $boost_download_url_file_id="166647600C1002F5!342&authkey=!ACDxp2cFsv7Mi-E&ithint=file%2c7z"
-                      }
-                      "11.0" {
-                        $boost_download_url_file_id="166647600C1002F5!338&authkey=!ADjmmkN_Vucxwqc&ithint=file%2c7z"
-                      }
-                      "10.0" {
-                        $boost_download_url_file_id="166647600C1002F5!333&authkey=!AL7oKBxNQncEBK4&ithint=file%2c7z"
-                      }
-                      "9.0" {
-                        $boost_download_url_file_id="166647600C1002F5!337&authkey=!AMBtcaUWpyPjqog&ithint=file%2c7z"
-                      }
-                      default {
-                        throw "Unsupported MSVS version: $env:MSVC_VERSION"
-                      }
-                    }
-                  }
-                  default {
-                    throw "Unsupported platform: $env:PLATFORM"
-                  }
-                }
-              }
-              default {
-                throw "Unsupported version of Boost: $env:BOOST_VERSION"
-              }
-            }
-            $boost_download_url="$boost_download_url_base$boost_download_url_file_id"
+            $boost_download_url="https://dl.bintray.com/mabrarov/generic/boost/$env:BOOST_VERSION/$boost_archive_name"
             if (!(Test-Path -Path $env:DOWNLOADS_FOLDER)) {
               New-Item $env:DOWNLOADS_FOLDER -type directory | out-null
             }
