@@ -25,6 +25,16 @@ environment:
       BOOST_VERSION: 1.60.0
       BOOST_LINKAGE: static
       QT_VERSION: none
+    - MSVC_VERSION: 10.0
+      RUNTIME_LINKAGE: static
+      BOOST_VERSION: 1.60.0
+      BOOST_LINKAGE: static
+      QT_VERSION: none
+    - MSVC_VERSION: 9.0
+      RUNTIME_LINKAGE: static
+      BOOST_VERSION: 1.60.0
+      BOOST_LINKAGE: static
+      QT_VERSION: none
     - MSVC_VERSION: 14.0
       RUNTIME_LINKAGE: shared
       BOOST_VERSION: 1.59.0
