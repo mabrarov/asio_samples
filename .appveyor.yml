@@ -82,7 +82,7 @@ install:
         "1.56.0" {
           $pre_installed_boost="true"
         }
-      }}
+      }
       $pre_installed_qt="true"
       if (-not $pre_installed_boost) {
         $boost_platform_suffix=""
