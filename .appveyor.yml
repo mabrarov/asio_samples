@@ -21,21 +21,21 @@ configuration:
 environment:
   matrix:
     - MSVC_VERSION: 14.0
-      BOOST_VERSION: 1.59.0
+      BOOST_VERSION: 1.60.0
       BOOST_LINKAGE: static
       QT_VERSION: 5.6
     - MSVC_VERSION: 14.0
-      BOOST_VERSION: 1.59.0
+      BOOST_VERSION: 1.60.0
       BOOST_LINKAGE: shared
       QT_VERSION: 5.6
     - MSVC_VERSION: 12.0
       BOOST_VERSION: 1.58.0
       BOOST_LINKAGE: static
-      QT_VERSION: 5.5
+      QT_VERSION: 5.6
     - MSVC_VERSION: 12.0
       BOOST_VERSION: 1.58.0
       BOOST_LINKAGE: shared
-      QT_VERSION: 5.5
+      QT_VERSION: 5.6
 
 install:
   - ps: |
@@ -51,17 +51,10 @@ install:
           $env:VCVARS_PLATFORM="amd64"
         }
       }
-      $boost_home=""
-      switch ($env:BOOST_VERSION) {
-        "1.59.0" {
-          $boost_home="C:\Libraries\boost_1_59_0"
-        }
-        "1.58.0" {
-          $boost_home="C:\Libraries\boost_1_58_0"
-        }
-        "1.56.0" {
-          $boost_home="C:\Libraries\boost"
-        }
+      $boost_home="C:\Libraries\boost"
+      if (!($env:BOOST_VERSION -eq "1.56.0")) {
+        $boost_home_version_suffix="_$env:BOOST_VERSION" -replace "\.", '_'
+        $boost_home="$boost_home$boost_home_version_suffix"
       }
       $boost_library_folder_platform_suffix=""
       switch ($env:PLATFORM) {
@@ -161,7 +154,7 @@ build_script:
       if ($LastExitCode -ne 0) {
         throw "Generation of project failed with exit code $LastExitCode."
       }
-      cmake --build . --config $env:CONFIGURATION -- /maxcpucount
+      cmake --build . --config $env:CONFIGURATION -- /maxcpucount /verbosity:normal /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
       if ($LastExitCode -ne 0) {
         throw "Build failed with exit code $LastExitCode."
       }
@@ -183,3 +176,16 @@ artifacts:
     name: ma_nmea_client
   - path: build\example\ma_qt_echo_server\$(configuration)\*.exe
     name: ma_qt_echo_server
+  - path: build\test\ma_async_connect_test\$(configuration)\*.exe
+    name: ma_async_connect_test
+  - path: build\test\ma_handler_storage_test\$(configuration)\*.exe
+    name: ma_handler_storage_test
+  - path: build\test\ma_lockable_wrapper_test\$(configuration)\*.exe
+    name: ma_lockable_wrapper_test
+  - path: build\test\ma_shared_ptr_factory_test\$(configuration)\*.exe
+    name: ma_shared_ptr_factory_test
+  - path: build\test\ma_sp_singleton_test\$(configuration)\*.exe
+    name: ma_sp_singleton_test
+  - path: build\test\ma_windows_console_signal_test\$(configuration)\*.exe
+    name: ma_windows_console_signal_test
+
