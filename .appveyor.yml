@@ -69,18 +69,16 @@ environment:
 install:
   - ps: |
       $pre_installed_boost=""
-      switch ($env:BOOST_VERSION) {
-        "1.60.0" {
-          $pre_installed_boost="true"
+      switch ($env:MSVC_VERSION) {
+        "14.0" {
+          if ($env:BOOST_VERSION -eq "1.59.0" -or $env:BOOST_VERSION -eq "1.60.0") {
+            $pre_installed_boost="true"
+          }
         }
-        "1.59.0" {
-          $pre_installed_boost="true"
-        }
-        "1.58.0" {
-          $pre_installed_boost="true"
-        }
-        "1.56.0" {
-          $pre_installed_boost="true"
+        "12.0" {
+          if ($env:BOOST_VERSION -eq "1.58.0") {
+            $pre_installed_boost="true"
+          }
         }
       }
       $pre_installed_qt="true"
