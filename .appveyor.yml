@@ -128,7 +128,7 @@ install:
               New-Item $env:DOWNLOADS_FOLDER -type directory | out-null
             }
             Write-Host "Going to download pre-built Boost libraries from: $boost_download_url to: $boost_archive_file"
-            Invoke-WebRequest $boost_download_url -OutFile $boost_archive_file
+            (New-Object System.Net.WebClient).DownloadFile($boost_download_url, $boost_archive_file)
             Write-Host "Downloaded: $boost_archive_file"
           }
           Write-Host "Extracting pre-built Boost libraries from: $boost_archive_file to: $env:DEPENDENCIES_FOLDER"
@@ -179,7 +179,7 @@ install:
                 if (!(Test-Path -Path $msvs2008_patch_file)) {
                   $msvs2008_patch_url="https://github.com/menpo/condaci/blob/master/vs2008_patch.zip?raw=true"
                   Write-Host "Going to download MSVS patch from: $msvs2008_patch_url to: $msvs2008_patch_file"
-                  Invoke-WebRequest $msvs2008_patch_url -OutFile $msvs2008_patch_file
+                  (New-Object System.Net.WebClient).DownloadFile($msvs2008_patch_url, $msvs2008_patch_file)
                   Write-Host "Downloaded: $msvs2008_patch_file"
                 }
                 Write-Host "Extracting MSVS patch from: $msvs2008_patch_file to: $env:MSVS_PATCH_FOLDER"
@@ -210,14 +210,14 @@ install:
         }
         $boost_library_folder_platform_suffix=""
         switch ($env:PLATFORM) {
-          "x86" {
-            $boost_library_folder_platform_suffix="lib32"
-          }
           "Win32" {
             $boost_library_folder_platform_suffix="lib32"
           }
           "x64" {
             $boost_library_folder_platform_suffix="lib64"
+          }
+          default {
+            throw "Unsupported platform: $env:PLATFORM"
           }
         }
         $boost_library_folder_toolchain_suffix="-msvc-$env:MSVC_VERSION"
