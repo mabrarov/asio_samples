@@ -98,12 +98,12 @@ install:
             "9.0" {
               Write-Host "Selected MSVS version: $env:MSVC_VERSION and platform: $env:PLATFORM require patching"
               $env:MSVS_PATCH_FOLDER="$env:DEPENDENCIES_FOLDER\vs2008_patch"
-              if (!(Test-Path -Path $env:MSVS_PATCH_FOLDER)) {
+              if (!(Test-Path -Path "$env:MSVS_PATCH_FOLDER")) {
                 $msvs2008_patch_file="$env:DOWNLOADS_FOLDER\vs2008_patch.zip"
-                if (!(Test-Path -Path $msvs2008_patch_file)) {
+                if (!(Test-Path -Path "$msvs2008_patch_file")) {
                   $msvs2008_patch_url="https://github.com/menpo/condaci/blob/master/vs2008_patch.zip?raw=true"
                   Write-Host "Going to download MSVS patch from: $msvs2008_patch_url to: $msvs2008_patch_file"
-                  Start-FileDownload $msvs2008_patch_url -FileName $msvs2008_patch_file
+                  Start-FileDownload "$msvs2008_patch_url" -FileName "$msvs2008_patch_file"
                   Write-Host "Downloaded: $msvs2008_patch_file"
                 }
                 Write-Host "Extracting MSVS patch from: $msvs2008_patch_file to: $env:MSVS_PATCH_FOLDER"
@@ -197,21 +197,21 @@ install:
             }
           }
           $boost_install_folder="$env:DEPENDENCIES_FOLDER\boost$boost_version_suffix$boost_platform_suffix$boost_toolchain_suffix"
-          if (!(Test-Path -Path $boost_install_folder)) {
+          if (!(Test-Path -Path "$boost_install_folder")) {
             Write-Host "Built Boost libraries are absent for the selected toolchain (msvc-$env:MSVC_VERSION) and Boost version ($env:BOOST_VERSION)"
             $boost_archive_name="boost$boost_version_suffix$boost_platform_suffix$boost_toolchain_suffix.7z"
             $boost_archive_file="$env:DOWNLOADS_FOLDER\$boost_archive_name"
-            if (!(Test-Path -Path $boost_archive_file)) {
+            if (!(Test-Path -Path "$boost_archive_file")) {
               $boost_download_url="https://dl.bintray.com/mabrarov/generic/boost/$env:BOOST_VERSION/$boost_archive_name"
-              if (!(Test-Path -Path $env:DOWNLOADS_FOLDER)) {
+              if (!(Test-Path -Path "$env:DOWNLOADS_FOLDER")) {
                 New-Item $env:DOWNLOADS_FOLDER -type directory | out-null
               }
               Write-Host "Going to download pre-built Boost libraries from: $boost_download_url to: $boost_archive_file"
-              Start-FileDownload $boost_download_url -FileName $boost_archive_file
+              Start-FileDownload "$boost_download_url" -FileName "$boost_archive_file"
               Write-Host "Downloaded: $boost_archive_file"
             }
             Write-Host "Extracting pre-built Boost libraries from: $boost_archive_file to: $env:DEPENDENCIES_FOLDER"
-            if (!(Test-Path -Path $env:DEPENDENCIES_FOLDER)) {
+            if (!(Test-Path -Path "$env:DEPENDENCIES_FOLDER")) {
               New-Item $env:DEPENDENCIES_FOLDER -type directory | out-null
             }
             7z x "$boost_archive_file" -o"$env:DEPENDENCIES_FOLDER" -aoa -y | out-null
@@ -360,21 +360,21 @@ install:
             }
           }
           $qt_install_folder="$env:DEPENDENCIES_FOLDER\qt$qt_version_suffix$qt_platform_suffix$qt_toolchain_suffix$qt_linkage_suffix"
-          if (!(Test-Path -Path $qt_install_folder)) {
+          if (!(Test-Path -Path "$qt_install_folder")) {
             Write-Host "Built Qt libraries are absent for the selected toolchain (msvc-$env:MSVC_VERSION) and Qt version ($env:QT_VERSION)"
             $qt_archive_name="qt$qt_version_suffix$qt_platform_suffix$qt_toolchain_suffix$qt_linkage_suffix.7z"
             $qt_archive_file="$env:DOWNLOADS_FOLDER\$qt_archive_name"
-            if (!(Test-Path -Path $qt_archive_file)) {
+            if (!(Test-Path -Path "$qt_archive_file")) {
               $qt_download_url="https://dl.bintray.com/mabrarov/generic/qt/$env:QT_VERSION/$qt_archive_name"
-              if (!(Test-Path -Path $env:DOWNLOADS_FOLDER)) {
+              if (!(Test-Path -Path "$env:DOWNLOADS_FOLDER")) {
                 New-Item $env:DOWNLOADS_FOLDER -type directory | out-null
               }
               Write-Host "Going to download pre-built Qt libraries from: $qt_download_url to: $qt_archive_file"
-              Start-FileDownload $qt_download_url -FileName $qt_archive_file
+              Start-FileDownload "$qt_download_url" -FileName "$qt_archive_file"
               Write-Host "Downloaded: $qt_archive_file"
             }
             Write-Host "Extracting pre-built Qt libraries from: $qt_archive_file to: $env:DEPENDENCIES_FOLDER"
-            if (!(Test-Path -Path $env:DEPENDENCIES_FOLDER)) {
+            if (!(Test-Path -Path "$env:DEPENDENCIES_FOLDER")) {
               New-Item $env:DEPENDENCIES_FOLDER -type directory | out-null
             }
             7z x "$qt_archive_file" -o"$env:DEPENDENCIES_FOLDER" -aoa -y | out-null
