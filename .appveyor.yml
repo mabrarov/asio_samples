@@ -20,66 +20,51 @@ environment:
   DOWNLOADS_FOLDER: C:\projects\downloads
 
   matrix:
-#    - MSVC_VERSION: 14.0
-#      RUNTIME_LINKAGE: static
-#      BOOST_VERSION: 1.60.0
-#      BOOST_LINKAGE: static
-#      QT_VERSION: none
-#    - MSVC_VERSION: 12.0
-#      RUNTIME_LINKAGE: static
-#      BOOST_VERSION: 1.60.0
-#      BOOST_LINKAGE: static
-#      QT_VERSION: none
-#    - MSVC_VERSION: 11.0
-#      RUNTIME_LINKAGE: static
-#      BOOST_VERSION: 1.60.0
-#      BOOST_LINKAGE: static
-#      QT_VERSION: none
-#    - MSVC_VERSION: 10.0
-#      RUNTIME_LINKAGE: static
-#      BOOST_VERSION: 1.60.0
-#      BOOST_LINKAGE: static
-#      QT_VERSION: none
-#    - MSVC_VERSION: 9.0
-#      RUNTIME_LINKAGE: static
-#      BOOST_VERSION: 1.60.0
-#      BOOST_LINKAGE: static
-#      QT_VERSION: none
+    - MSVC_VERSION: 14.0
+      RUNTIME_LINKAGE: static
+      BOOST_VERSION: 1.60.0
+      BOOST_LINKAGE: static
+      QT_VERSION: none
+    - MSVC_VERSION: 12.0
+      RUNTIME_LINKAGE: static
+      BOOST_VERSION: 1.60.0
+      BOOST_LINKAGE: static
+      QT_VERSION: none
+    - MSVC_VERSION: 11.0
+      RUNTIME_LINKAGE: static
+      BOOST_VERSION: 1.60.0
+      BOOST_LINKAGE: static
+      QT_VERSION: none
+    - MSVC_VERSION: 10.0
+      RUNTIME_LINKAGE: static
+      BOOST_VERSION: 1.60.0
+      BOOST_LINKAGE: static
+      QT_VERSION: none
+    - MSVC_VERSION: 9.0
+      RUNTIME_LINKAGE: static
+      BOOST_VERSION: 1.60.0
+      BOOST_LINKAGE: static
+      QT_VERSION: none
     - MSVC_VERSION: 14.0
       RUNTIME_LINKAGE: shared
       BOOST_VERSION: 1.60.0
       BOOST_LINKAGE: static
       QT_VERSION: 5.6
-#    - MSVC_VERSION: 14.0
-#      RUNTIME_LINKAGE: shared
-#      BOOST_VERSION: 1.60.0
-#      BOOST_LINKAGE: shared
-#      QT_VERSION: 5.6
+    - MSVC_VERSION: 14.0
+      RUNTIME_LINKAGE: shared
+      BOOST_VERSION: 1.60.0
+      BOOST_LINKAGE: shared
+      QT_VERSION: 5.6
     - MSVC_VERSION: 12.0
       RUNTIME_LINKAGE: shared
       BOOST_VERSION: 1.58.0
       BOOST_LINKAGE: static
       QT_VERSION: 5.6
-#    - MSVC_VERSION: 12.0
-#      RUNTIME_LINKAGE: shared
-#      BOOST_VERSION: 1.58.0
-#      BOOST_LINKAGE: shared
-#      QT_VERSION: 5.6
     - MSVC_VERSION: 12.0
       RUNTIME_LINKAGE: shared
       BOOST_VERSION: 1.58.0
-      BOOST_LINKAGE: static
-      QT_VERSION: 5.5
-    - MSVC_VERSION: 12.0
-      RUNTIME_LINKAGE: shared
-      BOOST_VERSION: 1.58.0
-      BOOST_LINKAGE: static
-      QT_VERSION: 5.4
-    - MSVC_VERSION: 12.0
-      RUNTIME_LINKAGE: shared
-      BOOST_VERSION: 1.58.0
-      BOOST_LINKAGE: static
-      QT_VERSION: 5.3
+      BOOST_LINKAGE: shared
+      QT_VERSION: 5.6
 
 install:
   - ps: |
@@ -321,6 +306,7 @@ install:
           }
           $env:QT_HOME="C:\Qt\$env:QT_VERSION\$qt_folder_toolchain_suffix$qt_folder_platform_suffix$qt_opengl_suffix"
           $env:QT_BIN_FOLDER="$env:QT_HOME\bin"
+          $env:QT_QMAKE_EXECUTABLE="$env:QT_BIN_FOLDER\qmake.exe"
         } else {
           throw "Todo: downloading of prebuilt Qt is not iplemented yet"
         }
