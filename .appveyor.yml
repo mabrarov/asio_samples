@@ -20,51 +20,66 @@ environment:
   DOWNLOADS_FOLDER: C:\projects\downloads
 
   matrix:
+#    - MSVC_VERSION: 14.0
+#      RUNTIME_LINKAGE: static
+#      BOOST_VERSION: 1.60.0
+#      BOOST_LINKAGE: static
+#      QT_VERSION: none
+#    - MSVC_VERSION: 12.0
+#      RUNTIME_LINKAGE: static
+#      BOOST_VERSION: 1.60.0
+#      BOOST_LINKAGE: static
+#      QT_VERSION: none
+#    - MSVC_VERSION: 11.0
+#      RUNTIME_LINKAGE: static
+#      BOOST_VERSION: 1.60.0
+#      BOOST_LINKAGE: static
+#      QT_VERSION: none
+#    - MSVC_VERSION: 10.0
+#      RUNTIME_LINKAGE: static
+#      BOOST_VERSION: 1.60.0
+#      BOOST_LINKAGE: static
+#      QT_VERSION: none
+#    - MSVC_VERSION: 9.0
+#      RUNTIME_LINKAGE: static
+#      BOOST_VERSION: 1.60.0
+#      BOOST_LINKAGE: static
+#      QT_VERSION: none
     - MSVC_VERSION: 14.0
-      RUNTIME_LINKAGE: static
+      RUNTIME_LINKAGE: shared
       BOOST_VERSION: 1.60.0
       BOOST_LINKAGE: static
-      QT_VERSION: none
+      QT_VERSION: 5.6
+#    - MSVC_VERSION: 14.0
+#      RUNTIME_LINKAGE: shared
+#      BOOST_VERSION: 1.60.0
+#      BOOST_LINKAGE: shared
+#      QT_VERSION: 5.6
     - MSVC_VERSION: 12.0
-      RUNTIME_LINKAGE: static
-      BOOST_VERSION: 1.60.0
-      BOOST_LINKAGE: static
-      QT_VERSION: none
-    - MSVC_VERSION: 11.0
-      RUNTIME_LINKAGE: static
-      BOOST_VERSION: 1.60.0
-      BOOST_LINKAGE: static
-      QT_VERSION: none
-    - MSVC_VERSION: 10.0
-      RUNTIME_LINKAGE: static
-      BOOST_VERSION: 1.60.0
-      BOOST_LINKAGE: static
-      QT_VERSION: none
-    - MSVC_VERSION: 9.0
-      RUNTIME_LINKAGE: static
-      BOOST_VERSION: 1.60.0
-      BOOST_LINKAGE: static
-      QT_VERSION: none
-    - MSVC_VERSION: 14.0
       RUNTIME_LINKAGE: shared
-      BOOST_VERSION: 1.60.0
+      BOOST_VERSION: 1.58.0
       BOOST_LINKAGE: static
       QT_VERSION: 5.6
-    - MSVC_VERSION: 14.0
-      RUNTIME_LINKAGE: shared
-      BOOST_VERSION: 1.60.0
-      BOOST_LINKAGE: shared
-      QT_VERSION: 5.6
+#    - MSVC_VERSION: 12.0
+#      RUNTIME_LINKAGE: shared
+#      BOOST_VERSION: 1.58.0
+#      BOOST_LINKAGE: shared
+#      QT_VERSION: 5.6
     - MSVC_VERSION: 12.0
       RUNTIME_LINKAGE: shared
       BOOST_VERSION: 1.58.0
       BOOST_LINKAGE: static
-      QT_VERSION: 5.6
+      QT_VERSION: 5.5
     - MSVC_VERSION: 12.0
       RUNTIME_LINKAGE: shared
       BOOST_VERSION: 1.58.0
-      BOOST_LINKAGE: shared
-      QT_VERSION: 5.6
+      BOOST_LINKAGE: static
+      QT_VERSION: 5.4
+    - MSVC_VERSION: 12.0
+      RUNTIME_LINKAGE: shared
+      BOOST_VERSION: 1.58.0
+      BOOST_LINKAGE: static
+      QT_VERSION: 5.3
 
 install:
   - ps: |
@@ -81,7 +96,30 @@ install:
           }
         }
       }
-      $pre_installed_qt="true"
+      $pre_installed_qt=""
+      switch ($env:MSVC_VERSION) {
+        "14.0" {
+          if ($env:QT_VERSION -eq "5.6") {
+            $pre_installed_qt="true"
+          }
+        }
+        "12.0" {
+          switch ($env:QT_VERSION) {
+            "5.6" {
+              $pre_installed_qt="true"
+            }
+            "5.5" {
+              $pre_installed_qt="true"
+            }
+            "5.4" {
+              $pre_installed_qt="true"
+            }
+            "5.3" {
+              $pre_installed_qt="true"
+            }
+          }
+        }
+      }
       if (-not $pre_installed_boost) {
         $boost_platform_suffix=""
         switch ($env:PLATFORM) {
@@ -239,18 +277,6 @@ install:
         }
       }
       if ($pre_installed_qt) {
-        $qt_folder_platform_suffix=""
-        switch ($env:PLATFORM) {
-          "Win32" {
-            $qt_folder_platform_suffix=""
-          }
-          "x64" {
-            $qt_folder_platform_suffix="_64"
-          }
-          default {
-            throw "Unsupported platform: $env:PLATFORM"
-          }
-        }
         $qt_folder_toolchain_suffix=""
         switch ($env:MSVC_VERSION) {
           "14.0" {
@@ -272,7 +298,28 @@ install:
             throw "Unsupported MSVS version: $env:MSVC_VERSION"
           }
         }
-        $env:QT_HOME="C:\Qt\$env:QT_VERSION\$qt_folder_toolchain_suffix$qt_folder_platform_suffix"
+        $qt_folder_platform_suffix=""
+        switch ($env:PLATFORM) {
+          "Win32" {
+            $qt_folder_platform_suffix=""
+          }
+          "x64" {
+            $qt_folder_platform_suffix="_64"
+          }
+          default {
+            throw "Unsupported platform: $env:PLATFORM"
+          }
+        }
+        $qt_opengl_suffix=""
+        switch ($env:QT_VERSION) {
+          "5.4" {
+            $qt_opengl_suffix="_opengl"
+          }
+          "5.3" {
+            $qt_opengl_suffix="_opengl"
+          }
+        }
+        $env:QT_HOME="C:\Qt\$env:QT_VERSION\$qt_folder_toolchain_suffix$qt_folder_platform_suffix$qt_opengl_suffix"
         $env:QT_BIN_FOLDER="$env:QT_HOME\bin"
       }
       switch ($env:CONFIGURATION) {
