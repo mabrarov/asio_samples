@@ -372,6 +372,22 @@ install:
       $env:CMAKE_GENERATOR="Visual Studio$cmake_generator_msvc_version_suffx$cmake_generator_platform_suffix"
 
 before_build:
+  - ps: |
+      Write-Host "MSVS_PATCH_FOLDER         : $env:MSVS_PATCH_FOLDER"
+      Write-Host "MSVS_PATCH_BATCH_FILE     : $env:MSVS_PATCH_BATCH_FILE"
+      Write-Host "WINDOWS_SDK_ENV_BATCH_FILE: $env:WINDOWS_SDK_ENV_BATCH_FILE"
+      Write-Host "WINDOWS_SDK_ENV_PARAMETERS: $env:WINDOWS_SDK_ENV_PARAMETERS"
+      Write-Host "VCVARS_BATCH_FILE         : $env:VCVARS_BATCH_FILE"
+      Write-Host "VCVARS_PLATFORM           : $env:VCVARS_PLATFORM"
+      Write-Host "APPVEYOR_BUILD_FOLDER     : $env:APPVEYOR_BUILD_FOLDER"
+      Write-Host "BOOST_INCLUDE_FOLDER      : $env:BOOST_INCLUDE_FOLDER"
+      Write-Host "BOOST_LIBRARY_FOLDER      : $env:BOOST_LIBRARY_FOLDER"
+      Write-Host "BOOST_USE_STATIC_LIBS     : $env:BOOST_USE_STATIC_LIBS"
+      Write-Host "QT_HOME                   : $env:QT_HOME"
+      Write-Host "QT_BIN_FOLDER             : $env:QT_BIN_FOLDER"
+      Write-Host "QT_QMAKE_EXECUTABLE       : $env:QT_QMAKE_EXECUTABLE"
+      Write-Host "CMAKE_GENERATOR           : $env:CMAKE_GENERATOR"
+      Write-Host "CONFIGURATION             : $env:CONFIGURATION"
   - cmd: if not "%MSVS_PATCH_FOLDER%"=="" cd /d "%MSVS_PATCH_FOLDER%"
   - cmd: if not "%MSVS_PATCH_BATCH_FILE%"=="" call "%MSVS_PATCH_BATCH_FILE%"
   - cmd: if not "%WINDOWS_SDK_ENV_BATCH_FILE%"=="" call "%WINDOWS_SDK_ENV_BATCH_FILE%" %WINDOWS_SDK_ENV_PARAMETERS%
