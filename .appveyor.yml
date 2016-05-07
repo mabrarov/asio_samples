@@ -36,10 +36,10 @@ environment:
       BOOST_LINKAGE: static
       QT_VERSION: none
     - MSVC_VERSION: 10.0
-      RUNTIME_LINKAGE: static
+      RUNTIME_LINKAGE: shared
       BOOST_VERSION: 1.60.0
       BOOST_LINKAGE: static
-      QT_VERSION: none
+      QT_VERSION: 4.8.7
     - MSVC_VERSION: 9.0
       RUNTIME_LINKAGE: static
       BOOST_VERSION: 1.60.0
@@ -433,6 +433,8 @@ install:
 
 before_build:
   - ps: |
+      Write-Host "PLATFORM                  : $env:PLATFORM"
+      Write-Host "CONFIGURATION             : $env:CONFIGURATION"
       Write-Host "MSVS_PATCH_FOLDER         : $env:MSVS_PATCH_FOLDER"
       Write-Host "MSVS_PATCH_BATCH_FILE     : $env:MSVS_PATCH_BATCH_FILE"
       Write-Host "WINDOWS_SDK_ENV_BATCH_FILE: $env:WINDOWS_SDK_ENV_BATCH_FILE"
@@ -447,7 +449,6 @@ before_build:
       Write-Host "QT_BIN_FOLDER             : $env:QT_BIN_FOLDER"
       Write-Host "QT_QMAKE_EXECUTABLE       : $env:QT_QMAKE_EXECUTABLE"
       Write-Host "CMAKE_GENERATOR           : $env:CMAKE_GENERATOR"
-      Write-Host "CONFIGURATION             : $env:CONFIGURATION"
   - cmd: if not "%MSVS_PATCH_FOLDER%"=="" cd /d "%MSVS_PATCH_FOLDER%"
   - cmd: if not "%MSVS_PATCH_BATCH_FILE%"=="" call "%MSVS_PATCH_BATCH_FILE%"
   - cmd: if not "%WINDOWS_SDK_ENV_BATCH_FILE%"=="" call "%WINDOWS_SDK_ENV_BATCH_FILE%" %WINDOWS_SDK_ENV_PARAMETERS%
