@@ -83,6 +83,63 @@ environment:
 
 install:
   - ps: |
+      $env:WINDOWS_SDK_ENV_BATCH_FILE=""
+      $env:WINDOWS_SDK_ENV_PARAMETERS=""
+      $env:MSVS_HOME="%ProgramFiles(x86)%\Microsoft Visual Studio $env:MSVC_VERSION"
+      $env:VCVARS_BATCH_FILE="$env:MSVS_HOME\VC\vcvarsall.bat"
+      $env:MSVS_PATCH_FOLDER=""
+      $env:MSVS_PATCH_BATCH_FILE=""
+      switch ($env:PLATFORM) {
+        "Win32" {
+          $env:VCVARS_PLATFORM="x86"
+        }
+        "x64" {
+          switch ($env:MSVC_VERSION) {
+            "14.0" {
+              $env:VCVARS_PLATFORM="amd64"
+            }
+            "12.0" {
+              $env:VCVARS_PLATFORM="amd64"
+            }
+            "11.0" {
+              $env:VCVARS_PLATFORM="x86_amd64"
+            }
+            "10.0" {
+              $env:VCVARS_BATCH_FILE=""
+              $env:WINDOWS_SDK_ENV_BATCH_FILE="%ProgramFiles%\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd"
+              $env:WINDOWS_SDK_ENV_PARAMETERS="/x64 /$env:CONFIGURATION"
+            }
+            "9.0" {
+              Write-Host "Selected MSVS version: $env:MSVC_VERSION and platform: $env:PLATFORM require patching"
+              $env:MSVS_PATCH_FOLDER="$env:DEPENDENCIES_FOLDER\vs2008_patch"
+              if (!(Test-Path -Path $env:MSVS_PATCH_FOLDER)) {
+                $msvs2008_patch_file="$env:DOWNLOADS_FOLDER\vs2008_patch.zip"
+                if (!(Test-Path -Path $msvs2008_patch_file)) {
+                  $msvs2008_patch_url="https://github.com/menpo/condaci/blob/master/vs2008_patch.zip?raw=true"
+                  Write-Host "Going to download MSVS patch from: $msvs2008_patch_url to: $msvs2008_patch_file"
+                  (New-Object System.Net.WebClient).DownloadFile($msvs2008_patch_url, $msvs2008_patch_file)
+                  Write-Host "Downloaded: $msvs2008_patch_file"
+                }
+                Write-Host "Extracting MSVS patch from: $msvs2008_patch_file to: $env:MSVS_PATCH_FOLDER"
+                New-Item $env:MSVS_PATCH_FOLDER -type directory | out-null
+                7z x "$msvs2008_patch_file" -o"$env:MSVS_PATCH_FOLDER" -aoa -y | out-null
+                if ($LastExitCode -ne 0) {
+                  throw "File extraction failed with exit code $LastExitCode."
+                }
+                Write-Host "Extracted: $env:MSVS_PATCH_FOLDER"
+              }
+              $env:MSVS_PATCH_BATCH_FILE="$env:MSVS_PATCH_FOLDER\setup_x64.bat"
+              $env:VCVARS_PLATFORM="x86_amd64"
+            }
+            default {
+              throw "Unsupported MSVS version: $env:MSVC_VERSION"
+            }
+          }
+        }
+        default {
+          throw "Unsupported platform: $env:PLATFORM"
+        }
+      }
       $pre_installed_boost=""
       switch ($env:MSVC_VERSION) {
         "14.0" {
@@ -96,31 +153,28 @@ install:
           }
         }
       }
-      $pre_installed_qt=""
-      switch ($env:MSVC_VERSION) {
-        "14.0" {
-          if ($env:QT_VERSION -eq "5.6") {
-            $pre_installed_qt="true"
+      if ($pre_installed_boost) {
+        $boost_home="C:\Libraries\boost"
+        if (!($env:BOOST_VERSION -eq "1.56.0")) {
+          $boost_home_version_suffix="_$env:BOOST_VERSION" -replace "\.", '_'
+          $boost_home="$boost_home$boost_home_version_suffix"
+        }
+        $boost_library_folder_platform_suffix=""
+        switch ($env:PLATFORM) {
+          "Win32" {
+            $boost_library_folder_platform_suffix="lib32"
+          }
+          "x64" {
+            $boost_library_folder_platform_suffix="lib64"
+          }
+          default {
+            throw "Unsupported platform: $env:PLATFORM"
           }
         }
-        "12.0" {
-          switch ($env:QT_VERSION) {
-            "5.6" {
-              $pre_installed_qt="true"
-            }
-            "5.5" {
-              $pre_installed_qt="true"
-            }
-            "5.4" {
-              $pre_installed_qt="true"
-            }
-            "5.3" {
-              $pre_installed_qt="true"
-            }
-          }
-        }
-      }
-      if (-not $pre_installed_boost) {
+        $boost_library_folder_toolchain_suffix="-msvc-$env:MSVC_VERSION"
+        $env:BOOST_INCLUDE_FOLDER="$boost_home"
+        $env:BOOST_LIBRARY_FOLDER="$boost_home\$boost_library_folder_platform_suffix$boost_library_folder_toolchain_suffix"
+      } else {
         $boost_platform_suffix=""
         switch ($env:PLATFORM) {
           "Win32" {
@@ -183,85 +237,6 @@ install:
         $env:BOOST_INCLUDE_FOLDER="$boost_install_folder\include\boost$boost_include_folder_version_suffix"
         $env:BOOST_LIBRARY_FOLDER="$boost_install_folder\lib"
       }
-      $env:WINDOWS_SDK_ENV_BATCH_FILE=""
-      $env:WINDOWS_SDK_ENV_PARAMETERS=""
-      $env:MSVS_HOME="%ProgramFiles(x86)%\Microsoft Visual Studio $env:MSVC_VERSION"
-      $env:VCVARS_BATCH_FILE="$env:MSVS_HOME\VC\vcvarsall.bat"
-      $env:MSVS_PATCH_FOLDER=""
-      $env:MSVS_PATCH_BATCH_FILE=""
-      switch ($env:PLATFORM) {
-        "Win32" {
-          $env:VCVARS_PLATFORM="x86"
-        }
-        "x64" {
-          switch ($env:MSVC_VERSION) {
-            "14.0" {
-              $env:VCVARS_PLATFORM="amd64"
-            }
-            "12.0" {
-              $env:VCVARS_PLATFORM="amd64"
-            }
-            "11.0" {
-              $env:VCVARS_PLATFORM="x86_amd64"
-            }
-            "10.0" {
-              $env:VCVARS_BATCH_FILE=""
-              $env:WINDOWS_SDK_ENV_BATCH_FILE="%ProgramFiles%\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd"
-              $env:WINDOWS_SDK_ENV_PARAMETERS="/x64 /$env:CONFIGURATION"
-            }
-            "9.0" {
-              Write-Host "Selected MSVS version: $env:MSVC_VERSION and platform: $env:PLATFORM require patching"
-              $env:MSVS_PATCH_FOLDER="$env:DEPENDENCIES_FOLDER\vs2008_patch"
-              if (!(Test-Path -Path $env:MSVS_PATCH_FOLDER)) {
-                $msvs2008_patch_file="$env:DOWNLOADS_FOLDER\vs2008_patch.zip"
-                if (!(Test-Path -Path $msvs2008_patch_file)) {
-                  $msvs2008_patch_url="https://github.com/menpo/condaci/blob/master/vs2008_patch.zip?raw=true"
-                  Write-Host "Going to download MSVS patch from: $msvs2008_patch_url to: $msvs2008_patch_file"
-                  (New-Object System.Net.WebClient).DownloadFile($msvs2008_patch_url, $msvs2008_patch_file)
-                  Write-Host "Downloaded: $msvs2008_patch_file"
-                }
-                Write-Host "Extracting MSVS patch from: $msvs2008_patch_file to: $env:MSVS_PATCH_FOLDER"
-                New-Item $env:MSVS_PATCH_FOLDER -type directory | out-null
-                7z x "$msvs2008_patch_file" -o"$env:MSVS_PATCH_FOLDER" -aoa -y | out-null
-                if ($LastExitCode -ne 0) {
-                  throw "File extraction failed with exit code $LastExitCode."
-                }
-                Write-Host "Extracted: $env:MSVS_PATCH_FOLDER"
-              }
-              $env:MSVS_PATCH_BATCH_FILE="$env:MSVS_PATCH_FOLDER\setup_x64.bat"
-              $env:VCVARS_PLATFORM="x86_amd64"
-            }
-            default {
-              throw "Unsupported MSVS version: $env:MSVC_VERSION"
-            }
-          }
-        }
-        default {
-          throw "Unsupported platform: $env:PLATFORM"
-        }
-      }
-      if ($pre_installed_boost) {
-        $boost_home="C:\Libraries\boost"
-        if (!($env:BOOST_VERSION -eq "1.56.0")) {
-          $boost_home_version_suffix="_$env:BOOST_VERSION" -replace "\.", '_'
-          $boost_home="$boost_home$boost_home_version_suffix"
-        }
-        $boost_library_folder_platform_suffix=""
-        switch ($env:PLATFORM) {
-          "Win32" {
-            $boost_library_folder_platform_suffix="lib32"
-          }
-          "x64" {
-            $boost_library_folder_platform_suffix="lib64"
-          }
-          default {
-            throw "Unsupported platform: $env:PLATFORM"
-          }
-        }
-        $boost_library_folder_toolchain_suffix="-msvc-$env:MSVC_VERSION"
-        $env:BOOST_INCLUDE_FOLDER="$boost_home"
-        $env:BOOST_LIBRARY_FOLDER="$boost_home\$boost_library_folder_platform_suffix$boost_library_folder_toolchain_suffix"
-      }
       if ($env:RUNTIME_LINKAGE -eq "static" -and -not ($env:BOOST_LINKAGE -eq "static")) {
         throw "Incompatible type of linkage of Boost: $env:BOOST_LINKAGE for the specified type of linkage of C/C++ runtime: $env:RUNTIME_LINKAGE"
       }
@@ -276,51 +251,79 @@ install:
           throw "Unsupported type of linkage of Boost: $env:BOOST_LINKAGE"
         }
       }
-      if ($pre_installed_qt) {
-        $qt_folder_toolchain_suffix=""
+      if (!($env:QT_VERSION -eq "none")) {
+        $pre_installed_qt=""
         switch ($env:MSVC_VERSION) {
           "14.0" {
-            $qt_folder_toolchain_suffix="msvc2015"
+            if ($env:QT_VERSION -eq "5.6") {
+              $pre_installed_qt="true"
+            }
           }
           "12.0" {
-            $qt_folder_toolchain_suffix="msvc2013"
-          }
-          "11.0" {
-            $qt_folder_toolchain_suffix="msvc2012"
-          }
-          "10.0" {
-            $qt_folder_toolchain_suffix="msvc2010"
-          }
-          "9.0" {
-            $qt_folder_toolchain_suffix="msvc2008"
-          }
-          default {
-            throw "Unsupported MSVS version: $env:MSVC_VERSION"
-          }
-        }
-        $qt_folder_platform_suffix=""
-        switch ($env:PLATFORM) {
-          "Win32" {
-            $qt_folder_platform_suffix=""
-          }
-          "x64" {
-            $qt_folder_platform_suffix="_64"
-          }
-          default {
-            throw "Unsupported platform: $env:PLATFORM"
+            switch ($env:QT_VERSION) {
+              "5.6" {
+                $pre_installed_qt="true"
+              }
+              "5.5" {
+                $pre_installed_qt="true"
+              }
+              "5.4" {
+                $pre_installed_qt="true"
+              }
+              "5.3" {
+                $pre_installed_qt="true"
+              }
+            }
           }
         }
-        $qt_opengl_suffix=""
-        switch ($env:QT_VERSION) {
-          "5.4" {
-            $qt_opengl_suffix="_opengl"
+        if ($pre_installed_qt) {
+          $qt_folder_toolchain_suffix=""
+          switch ($env:MSVC_VERSION) {
+            "14.0" {
+              $qt_folder_toolchain_suffix="msvc2015"
+            }
+            "12.0" {
+              $qt_folder_toolchain_suffix="msvc2013"
+            }
+            "11.0" {
+              $qt_folder_toolchain_suffix="msvc2012"
+            }
+            "10.0" {
+              $qt_folder_toolchain_suffix="msvc2010"
+            }
+            "9.0" {
+              $qt_folder_toolchain_suffix="msvc2008"
+            }
+            default {
+              throw "Unsupported MSVS version: $env:MSVC_VERSION"
+            }
           }
-          "5.3" {
-            $qt_opengl_suffix="_opengl"
+          $qt_folder_platform_suffix=""
+          switch ($env:PLATFORM) {
+            "Win32" {
+              $qt_folder_platform_suffix=""
+            }
+            "x64" {
+              $qt_folder_platform_suffix="_64"
+            }
+            default {
+              throw "Unsupported platform: $env:PLATFORM"
+            }
           }
+          $qt_opengl_suffix=""
+          switch ($env:QT_VERSION) {
+            "5.4" {
+              $qt_opengl_suffix="_opengl"
+            }
+            "5.3" {
+              $qt_opengl_suffix="_opengl"
+            }
+          }
+          $env:QT_HOME="C:\Qt\$env:QT_VERSION\$qt_folder_toolchain_suffix$qt_folder_platform_suffix$qt_opengl_suffix"
+          $env:QT_BIN_FOLDER="$env:QT_HOME\bin"
+        } else {
+          throw "Todo: downloading of prebuilt Qt is not iplemented yet"
         }
-        $env:QT_HOME="C:\Qt\$env:QT_VERSION\$qt_folder_toolchain_suffix$qt_folder_platform_suffix$qt_opengl_suffix"
-        $env:QT_BIN_FOLDER="$env:QT_HOME\bin"
       }
       switch ($env:CONFIGURATION) {
         "Debug" {
