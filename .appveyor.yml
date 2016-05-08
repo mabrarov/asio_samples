@@ -20,24 +20,24 @@ environment:
   DOWNLOADS_FOLDER: C:\projects\downloads
 
   matrix:
-#    - MSVC_VERSION: 14.0
-#      RUNTIME_LINKAGE: shared
-#      BOOST_VERSION: 1.60.0
-#      BOOST_LINKAGE: static
-#      QT_VERSION: 5.6
-#      QT_LINKAGE: shared
-#    - MSVC_VERSION: 14.0
-#      RUNTIME_LINKAGE: shared
-#      BOOST_VERSION: 1.60.0
-#      BOOST_LINKAGE: shared
-#      QT_VERSION: 5.6
-#      QT_LINKAGE: shared
-#    - MSVC_VERSION: 12.0
-#      RUNTIME_LINKAGE: shared
-#      BOOST_VERSION: 1.58.0
-#      BOOST_LINKAGE: static
-#      QT_VERSION: 5.6
-#      QT_LINKAGE: shared
+    - MSVC_VERSION: 14.0
+      RUNTIME_LINKAGE: shared
+      BOOST_VERSION: 1.60.0
+      BOOST_LINKAGE: static
+      QT_VERSION: 5.6
+      QT_LINKAGE: shared
+    - MSVC_VERSION: 14.0
+      RUNTIME_LINKAGE: shared
+      BOOST_VERSION: 1.60.0
+      BOOST_LINKAGE: shared
+      QT_VERSION: 5.6
+      QT_LINKAGE: shared
+    - MSVC_VERSION: 12.0
+      RUNTIME_LINKAGE: shared
+      BOOST_VERSION: 1.58.0
+      BOOST_LINKAGE: static
+      QT_VERSION: 5.6
+      QT_LINKAGE: shared
     - MSVC_VERSION: 11.0
       RUNTIME_LINKAGE: static
       BOOST_VERSION: 1.60.0
@@ -89,7 +89,7 @@ install:
                 if (!(Test-Path -Path "$msvs2008_patch_file")) {
                   $msvs2008_patch_url="https://raw.githubusercontent.com/menpo/condaci/master/vs2008_patch.zip"
                   Write-Host "Going to download MSVS patch from: $msvs2008_patch_url to: $msvs2008_patch_file"
-                  curl -m 300 -S -s -L -o "$msvs2008_patch_file" "$msvs2008_patch_url"
+                  curl.exe --max-time 300 --show-error --silent --location --output "$msvs2008_patch_file" "$msvs2008_patch_url"
                   if ($LastExitCode -ne 0) {
                     throw "File downloading failed with exit code $LastExitCode."
                   }
@@ -97,7 +97,7 @@ install:
                 }
                 Write-Host "Extracting MSVS patch from: $msvs2008_patch_file to: $env:MSVS_PATCH_FOLDER"
                 New-Item $env:MSVS_PATCH_FOLDER -type directory | out-null
-                7z x "$msvs2008_patch_file" -o"$env:MSVS_PATCH_FOLDER" -aoa -y | out-null
+                7z.exe x "$msvs2008_patch_file" -o"$env:MSVS_PATCH_FOLDER" -aoa -y | out-null
                 if ($LastExitCode -ne 0) {
                   throw "File extraction failed with exit code $LastExitCode."
                 }
@@ -196,7 +196,7 @@ install:
                 New-Item $env:DOWNLOADS_FOLDER -type directory | out-null
               }
               Write-Host "Going to download pre-built Boost libraries from: $boost_download_url to: $boost_archive_file"
-              curl -m 600 -S -s -L -o "$boost_archive_file" "$boost_download_url"
+              curl.exe --max-time 600 --show-error --silent --location --output "$boost_archive_file" "$boost_download_url"
               if ($LastExitCode -ne 0) {
                 throw "File downloading failed with exit code $LastExitCode."
               }
@@ -206,7 +206,7 @@ install:
             if (!(Test-Path -Path "$env:DEPENDENCIES_FOLDER")) {
               New-Item $env:DEPENDENCIES_FOLDER -type directory | out-null
             }
-            7z x "$boost_archive_file" -o"$env:DEPENDENCIES_FOLDER" -aoa -y | out-null
+            7z.exe x "$boost_archive_file" -o"$env:DEPENDENCIES_FOLDER" -aoa -y | out-null
             if ($LastExitCode -ne 0) {
               throw "File extraction failed with exit code $LastExitCode."
             }
@@ -362,7 +362,7 @@ install:
                 New-Item $env:DOWNLOADS_FOLDER -type directory | out-null
               }
               Write-Host "Going to download pre-built Qt libraries from: $qt_download_url to: $qt_archive_file"
-              curl -m 600 -S -s -L -o "$qt_archive_file" "$qt_download_url"
+              curl.exe --max-time 600 --show-error --silent --location --output "$qt_archive_file" "$qt_download_url"
               if ($LastExitCode -ne 0) {
                 throw "File downloading failed with exit code $LastExitCode."
               }
@@ -372,7 +372,7 @@ install:
             if (!(Test-Path -Path "$env:DEPENDENCIES_FOLDER")) {
               New-Item $env:DEPENDENCIES_FOLDER -type directory | out-null
             }
-            7z x "$qt_archive_file" -o"$env:DEPENDENCIES_FOLDER" -aoa -y | out-null
+            7z.exe x "$qt_archive_file" -o"$env:DEPENDENCIES_FOLDER" -aoa -y | out-null
             if ($LastExitCode -ne 0) {
               throw "File extraction failed with exit code $LastExitCode."
             }
