@@ -85,19 +85,21 @@ install:
               Write-Host "Selected MSVS version: $env:MSVC_VERSION and platform: $env:PLATFORM require patching"
               $env:MSVS_PATCH_FOLDER="$env:DEPENDENCIES_FOLDER\vs2008_patch"
               if (!(Test-Path -Path "$env:MSVS_PATCH_FOLDER")) {
-                $msvs2008_patch_file="$env:DOWNLOADS_FOLDER\vs2008_patch.zip"
-                if (!(Test-Path -Path "$msvs2008_patch_file")) {
-                  $msvs2008_patch_url="https://github.com/menpo/condaci/blob/master/vs2008_patch.zip?raw=true"
-                  Write-Host "Going to download MSVS patch from: $msvs2008_patch_url to: $msvs2008_patch_file"
-                  curl.exe --max-time 300 --show-error --silent --location --output "$msvs2008_patch_file" "$msvs2008_patch_url"
+                $msvs_patch_download_folder="$env:DOWNLOADS_FOLDER\condaci"
+                $msvs_patch_download_file="$msvs_patch_download_folder\vs2008_patch.zip"
+                if (!(Test-Path -Path "$msvs_patch_download_file")) {
+                  $msvs2008_patch_url="https://github.com/menpo/condaci.git"
+                  $msvs_patch_download_folder_nix="$msvs_patch_download_folder" -replace "\\", "/"
+                  Write-Host "Going to download MSVS patch from: $msvs2008_patch_url to: $msvs_patch_download_folder_nix"
+                  git clone --depth 2 "$msvs2008_patch_url" "$msvs_patch_download_folder_nix"
                   if ($LastExitCode -ne 0) {
                     throw "File downloading failed with exit code $LastExitCode."
                   }
-                  Write-Host "Downloaded: $msvs2008_patch_file"
+                  Write-Host "Downloaded: $msvs_patch_download_file"
                 }
-                Write-Host "Extracting MSVS patch from: $msvs2008_patch_file to: $env:MSVS_PATCH_FOLDER"
-                New-Item $env:MSVS_PATCH_FOLDER -type directory | out-null
-                7z.exe x "$msvs2008_patch_file" -o"$env:MSVS_PATCH_FOLDER" -aoa -y | out-null
+                Write-Host "Extracting MSVS patch from: $msvs_patch_download_file to: $env:MSVS_PATCH_FOLDER"
+                New-Item "$env:MSVS_PATCH_FOLDER" -type directory | out-null
+                7z.exe x "$msvs_patch_download_file" -o"$env:MSVS_PATCH_FOLDER" -aoa -y | out-null
                 if ($LastExitCode -ne 0) {
                   throw "File extraction failed with exit code $LastExitCode."
                 }
@@ -193,7 +195,7 @@ install:
             if (!(Test-Path -Path "$boost_archive_file")) {
               $boost_download_url="https://dl.bintray.com/mabrarov/generic/boost/$env:BOOST_VERSION/$boost_archive_name"
               if (!(Test-Path -Path "$env:DOWNLOADS_FOLDER")) {
-                New-Item $env:DOWNLOADS_FOLDER -type directory | out-null
+                New-Item "$env:DOWNLOADS_FOLDER" -type directory | out-null
               }
               Write-Host "Going to download pre-built Boost libraries from: $boost_download_url to: $boost_archive_file"
               curl.exe --max-time 600 --show-error --silent --location --output "$boost_archive_file" "$boost_download_url"
@@ -204,7 +206,7 @@ install:
             }
             Write-Host "Extracting pre-built Boost libraries from: $boost_archive_file to: $env:DEPENDENCIES_FOLDER"
             if (!(Test-Path -Path "$env:DEPENDENCIES_FOLDER")) {
-              New-Item $env:DEPENDENCIES_FOLDER -type directory | out-null
+              New-Item "$env:DEPENDENCIES_FOLDER" -type directory | out-null
             }
             7z.exe x "$boost_archive_file" -o"$env:DEPENDENCIES_FOLDER" -aoa -y | out-null
             if ($LastExitCode -ne 0) {
@@ -359,7 +361,7 @@ install:
             if (!(Test-Path -Path "$qt_archive_file")) {
               $qt_download_url="https://dl.bintray.com/mabrarov/generic/qt/$env:QT_VERSION/$qt_archive_name"
               if (!(Test-Path -Path "$env:DOWNLOADS_FOLDER")) {
-                New-Item $env:DOWNLOADS_FOLDER -type directory | out-null
+                New-Item "$env:DOWNLOADS_FOLDER" -type directory | out-null
               }
               Write-Host "Going to download pre-built Qt libraries from: $qt_download_url to: $qt_archive_file"
               curl.exe --max-time 600 --show-error --silent --location --output "$qt_archive_file" "$qt_download_url"
@@ -370,7 +372,7 @@ install:
             }
             Write-Host "Extracting pre-built Qt libraries from: $qt_archive_file to: $env:DEPENDENCIES_FOLDER"
             if (!(Test-Path -Path "$env:DEPENDENCIES_FOLDER")) {
-              New-Item $env:DEPENDENCIES_FOLDER -type directory | out-null
+              New-Item "$env:DEPENDENCIES_FOLDER" -type directory | out-null
             }
             7z.exe x "$qt_archive_file" -o"$env:DEPENDENCIES_FOLDER" -aoa -y | out-null
             if ($LastExitCode -ne 0) {
