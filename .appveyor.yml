@@ -89,7 +89,7 @@ install:
                 if (!(Test-Path -Path "$msvs2008_patch_file")) {
                   $msvs2008_patch_url="https://raw.githubusercontent.com/menpo/condaci/master/vs2008_patch.zip"
                   Write-Host "Going to download MSVS patch from: $msvs2008_patch_url to: $msvs2008_patch_file"
-                  curl --show-error --silent --location --output "$msvs2008_patch_file" --max-time 300 "$msvs2008_patch_url"
+                  curl -m 300 -S -s -L -o "$msvs2008_patch_file" "$msvs2008_patch_url"
                   if ($LastExitCode -ne 0) {
                     throw "File downloading failed with exit code $LastExitCode."
                   }
@@ -196,7 +196,7 @@ install:
                 New-Item $env:DOWNLOADS_FOLDER -type directory | out-null
               }
               Write-Host "Going to download pre-built Boost libraries from: $boost_download_url to: $boost_archive_file"
-              curl --show-error --silent --location --output "$boost_archive_file" --max-time 600 "$boost_download_url"
+              curl -m 600 -S -s -L -o "$boost_archive_file" "$boost_download_url"
               if ($LastExitCode -ne 0) {
                 throw "File downloading failed with exit code $LastExitCode."
               }
@@ -362,7 +362,7 @@ install:
                 New-Item $env:DOWNLOADS_FOLDER -type directory | out-null
               }
               Write-Host "Going to download pre-built Qt libraries from: $qt_download_url to: $qt_archive_file"
-              curl --show-error --silent --location --output "$qt_archive_file" --max-time 600 "$qt_download_url"
+              curl -m 600 -S -s -L -o "$qt_archive_file" "$qt_download_url"
               if ($LastExitCode -ne 0) {
                 throw "File downloading failed with exit code $LastExitCode."
               }
