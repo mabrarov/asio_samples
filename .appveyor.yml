@@ -87,7 +87,7 @@ install:
               if (!(Test-Path -Path "$env:MSVS_PATCH_FOLDER")) {
                 $msvs2008_patch_file="$env:DOWNLOADS_FOLDER\vs2008_patch.zip"
                 if (!(Test-Path -Path "$msvs2008_patch_file")) {
-                  $msvs2008_patch_url="https://github.com/menpo/condaci/blob/master/vs2008_patch.zip?raw=true"
+                  $msvs2008_patch_url="https://raw.githubusercontent.com/menpo/condaci/master/vs2008_patch.zip"
                   Write-Host "Going to download MSVS patch from: $msvs2008_patch_url to: $msvs2008_patch_file"
                   Start-FileDownload "$msvs2008_patch_url" -FileName "$msvs2008_patch_file"
                   Write-Host "Downloaded: $msvs2008_patch_file"
