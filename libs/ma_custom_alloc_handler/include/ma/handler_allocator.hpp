@@ -33,17 +33,20 @@ public:
   /// For debug purposes (ability to check destruction order, etc).
   ~in_place_handler_allocator();
 
-  /// Try to allocate memory from internal memory block if it is free and is
-  /// large enough. Elsewhere allocate memory by means of global operator new.
+  /// Allocates memory from internal memory block if it is free and is
+  /// large enough. Elsewhere return null pointer.
   void* allocate(std::size_t size);
 
   /// Deallocate memory which had previously been allocated by usage of
   /// allocate method.
   void deallocate(void* pointer);
 
-  bool owns(void* pointer);
+  /// Checks if memory block is owned by (was allocated by) allocator.
+  bool owns(void* pointer) const;
 
 private:
+  typedef char byte_type;
+
   boost::aligned_storage<alloc_size> storage_;
   bool in_use_;
 }; // class in_place_handler_allocator
@@ -62,15 +65,16 @@ public:
   /// For debug purposes (ability to check destruction order, etc).
   ~in_heap_handler_allocator();
 
-  /// Try to allocate memory from internal memory block if it is free and is
-  /// large enough. Elsewhere allocate memory by means of global operator new.
+  /// Allocates memory from internal memory block if it is free and is
+  /// large enough. Elsewhere returns null pointer.
   void* allocate(std::size_t size);
 
   /// Deallocate memory which had previously been allocated by usage of
   /// allocate method.
   void deallocate(void* pointer);
 
-  bool owns(void* pointer);
+  /// Checks if memory block is owned by (was allocated by) allocator.
+  bool owns(void* pointer) const;
 
 private:
   typedef char byte_type;
@@ -78,7 +82,7 @@ private:
   static byte_type* allocate_storage(std::size_t);
 
 #if defined(MA_USE_CXX11_STDLIB_MEMORY)
-  detail::unique_ptr<byte_type[]>   storage_;
+  detail::unique_ptr<byte_type[]> storage_;
 #else
   detail::scoped_array<byte_type> storage_;
 #endif
@@ -118,9 +122,12 @@ void in_place_handler_allocator<alloc_size>::deallocate(void* /*pointer*/)
 }
 
 template <std::size_t alloc_size>
-bool in_place_handler_allocator<alloc_size>::owns(void* pointer)
+bool in_place_handler_allocator<alloc_size>::owns(void* pointer) const
 {
-  return storage_.address() == pointer;
+  const byte_type* begin = static_cast<const byte_type*>(storage_.address());
+  const byte_type* end = begin + alloc_size;
+  const byte_type* p = static_cast<const byte_type*>(pointer);
+  return (p >= begin) && (p < end) && in_use_;
 }
 
 inline in_heap_handler_allocator::byte_type*
@@ -162,9 +169,12 @@ inline void in_heap_handler_allocator::deallocate(void* /*pointer*/)
   in_use_ = false;
 }
 
-inline bool in_heap_handler_allocator::owns(void* pointer)
+inline bool in_heap_handler_allocator::owns(void* pointer) const
 {
-  return storage_.get() == pointer;
+  const byte_type* begin = storage_.get();
+  const byte_type* end = begin + size_;
+  const byte_type* p = static_cast<const byte_type*>(pointer);
+  return (p >= begin) && (p < end) && begin && in_use_;
 }
 
 } // namespace ma
