@@ -28,7 +28,10 @@ public:
 
   ~alloc_guard()
   {
-    allocator_.deallocate(ptr_);
+    if (ptr_)
+    {
+      allocator_.deallocate(ptr_);
+    }
   }
 
 private:
@@ -58,7 +61,9 @@ template <typename Allocator>
 void test_failed_allocation(Allocator& allocator)
 {
   void* ptr = allocator.allocate(allocator.size() + 1);
+  alloc_guard<Allocator> guard(ptr, allocator);
   ASSERT_EQ(static_cast<void*>(0), ptr);
+  (void) guard;
 }
 
 TEST(in_place_handler_allocator, allocation_of_max_size)
@@ -113,6 +118,47 @@ TEST(lazy_in_heap_handler_allocator, failed_allocation)
 {
   in_heap_handler_allocator allocator(16, true);
   test_failed_allocation(allocator);
+}
+
+template <typename Allocator>
+void test_deallocation(Allocator& allocator)
+{
+  {
+    // Ensure that after allocation we can not allocate one more time because
+    // allocator is fully loaded
+    void* ptr1 = allocator.allocate(allocator.size());
+    alloc_guard<Allocator> guard1(ptr1, allocator);
+    void* ptr2 = allocator.allocate(allocator.size());
+    alloc_guard<Allocator> guard2(ptr2, allocator);
+    ASSERT_EQ(static_cast<void*>(0), ptr2);
+    (void) guard2;
+    (void) guard1;
+  }
+  {
+    // Ensure that after deallocation we can allocate one more time
+    void* ptr = allocator.allocate(allocator.size());
+    alloc_guard<Allocator> guard(ptr, allocator);
+    ASSERT_NE(static_cast<void*>(0), ptr);
+    (void) guard;
+  }
+}
+
+TEST(in_place_handler_allocator, deallocation)
+{
+  in_place_handler_allocator<32> allocator;
+  test_deallocation(allocator);
+}
+
+TEST(in_heap_handler_allocator, deallocation)
+{
+  in_heap_handler_allocator allocator(16, false);
+  test_deallocation(allocator);
+}
+
+TEST(lazy_in_heap_handler_allocator, deallocation)
+{
+  in_heap_handler_allocator allocator(8, true);
+  test_deallocation(allocator);
 }
 
 template<typename Allocator>

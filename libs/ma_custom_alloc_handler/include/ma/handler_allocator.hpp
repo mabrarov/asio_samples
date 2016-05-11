@@ -123,9 +123,11 @@ void* in_place_handler_allocator<alloc_size>::allocate(std::size_t size)
 }
 
 template <std::size_t alloc_size>
-void in_place_handler_allocator<alloc_size>::deallocate(void* /*pointer*/)
+void in_place_handler_allocator<alloc_size>::deallocate(void* pointer)
 {
   BOOST_ASSERT_MSG(in_use_, "Allocator wasn't marked as used");
+  BOOST_ASSERT_MSG(owns(pointer), "Pointer is not owned by this allocator");
+  (void) pointer;
   in_use_ = false;
 }
 
@@ -177,9 +179,11 @@ inline void* in_heap_handler_allocator::allocate(std::size_t size)
   return storage_.get();
 }
 
-inline void in_heap_handler_allocator::deallocate(void* /*pointer*/)
+inline void in_heap_handler_allocator::deallocate(void* pointer)
 {
   BOOST_ASSERT_MSG(in_use_, "Allocator wasn't marked as used");
+  BOOST_ASSERT_MSG(owns(pointer), "Pointer is not owned by this allocator");
+  (void) pointer;
   in_use_ = false;
 }
 
