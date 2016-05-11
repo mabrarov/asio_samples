@@ -125,10 +125,14 @@ void* in_place_handler_allocator<alloc_size>::allocate(std::size_t size)
 template <std::size_t alloc_size>
 void in_place_handler_allocator<alloc_size>::deallocate(void* pointer)
 {
-  BOOST_ASSERT_MSG(in_use_, "Allocator wasn't marked as used");
-  BOOST_ASSERT_MSG(owns(pointer), "Pointer is not owned by this allocator");
-  (void) pointer;
-  in_use_ = false;
+  BOOST_ASSERT_MSG(
+      !pointer || in_use_, "Allocator wasn't marked as used");
+  BOOST_ASSERT_MSG(
+      !pointer || owns(pointer), "Pointer is not owned by this allocator");
+  if (pointer)
+  {
+    in_use_ = false;
+  }
 }
 
 template <std::size_t alloc_size>
@@ -181,10 +185,14 @@ inline void* in_heap_handler_allocator::allocate(std::size_t size)
 
 inline void in_heap_handler_allocator::deallocate(void* pointer)
 {
-  BOOST_ASSERT_MSG(in_use_, "Allocator wasn't marked as used");
-  BOOST_ASSERT_MSG(owns(pointer), "Pointer is not owned by this allocator");
-  (void) pointer;
-  in_use_ = false;
+  BOOST_ASSERT_MSG(
+      !pointer || in_use_, "Allocator wasn't marked as used");
+  BOOST_ASSERT_MSG(
+      !pointer || owns(pointer), "Pointer is not owned by this allocator");
+  if (pointer)
+  {
+    in_use_ = false;
+  }
 }
 
 inline bool in_heap_handler_allocator::owns(void* pointer) const

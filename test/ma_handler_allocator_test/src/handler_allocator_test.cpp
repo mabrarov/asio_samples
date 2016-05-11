@@ -28,10 +28,7 @@ public:
 
   ~alloc_guard()
   {
-    if (ptr_)
-    {
-      allocator_.deallocate(ptr_);
-    }
+    allocator_.deallocate(ptr_);
   }
 
 private:
@@ -118,6 +115,39 @@ TEST(lazy_in_heap_handler_allocator, failed_allocation)
 {
   in_heap_handler_allocator allocator(16, true);
   test_failed_allocation(allocator);
+}
+
+template <typename Allocator>
+void test_null_ptr_deallocation(Allocator& allocator)
+{
+  void* ptr1 = allocator.allocate(allocator.size());
+  alloc_guard<Allocator> guard1(ptr1, allocator);
+  // Just check that no exception is thrown
+  allocator.deallocate(0);
+  // Check that deallocation of null ptr doesn't change state of allocator
+  void* ptr2 = allocator.allocate(allocator.size());
+  alloc_guard<Allocator> guard2(ptr2, allocator);
+  ASSERT_EQ(static_cast<void*>(0), ptr2);
+  (void) guard2;
+  (void) guard1;
+}
+
+TEST(in_place_handler_allocator, null_ptr_deallocation)
+{
+  in_place_handler_allocator<32> allocator;
+  test_null_ptr_deallocation(allocator);
+}
+
+TEST(in_heap_handler_allocator, null_ptr_deallocation)
+{
+  in_heap_handler_allocator allocator(16, false);
+  test_null_ptr_deallocation(allocator);
+}
+
+TEST(lazy_in_heap_handler_allocator, null_ptr_deallocation)
+{
+  in_heap_handler_allocator allocator(8, true);
+  test_null_ptr_deallocation(allocator);
 }
 
 template <typename Allocator>
