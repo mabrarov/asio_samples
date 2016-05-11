@@ -37,44 +37,85 @@ private:
 
 namespace handler_allocator_ownership {
 
-template <typename Allocator>
-void test_ownership(Allocator& allocator)
+template<typename Allocator>
+void test_ownership_range(Allocator& allocator, void* ptr)
 {
-  // Explicitly check correct handing of null pointer
-  ASSERT_FALSE(allocator.owns(0));
-  void* ptr = allocator.allocate(allocator.size());
-  {
-    alloc_guard<Allocator> guard(ptr, allocator);
-    // Check ownership of allocated memory block
-    ASSERT_TRUE(allocator.owns(ptr));
-    ASSERT_FALSE(allocator.owns(static_cast<char*>(ptr) - 1));
-    ASSERT_TRUE(allocator.owns(static_cast<char*>(ptr) + 1));
-    ASSERT_FALSE(allocator.owns(static_cast<char*>(ptr) + allocator.size()));
-    (void) guard;
-  }
-  // Check ownership of free memory block
   ASSERT_TRUE(allocator.owns(ptr));
   ASSERT_FALSE(allocator.owns(static_cast<char*>(ptr) - 1));
   ASSERT_TRUE(allocator.owns(static_cast<char*>(ptr) + 1));
   ASSERT_FALSE(allocator.owns(static_cast<char*>(ptr) + allocator.size()));
 }
 
-TEST(in_place_handler_allocator, ownership)
+TEST(in_place_handler_allocator, ownership_of_null)
 {
   in_place_handler_allocator<32> allocator;
-  test_ownership(allocator);
+  ASSERT_FALSE(allocator.owns(0));
 }
 
-TEST(in_heap_handler_allocator, ownership)
+TEST(in_place_handler_allocator, ownership_of_allocated)
+{
+  typedef in_place_handler_allocator<32> allocator_type;
+  allocator_type allocator;
+  void* ptr = allocator.allocate(allocator.size());
+  alloc_guard<allocator_type> guard(ptr, allocator);
+  test_ownership_range(allocator, ptr);
+  (void) guard;
+}
+
+TEST(in_place_handler_allocator, ownership_of_free)
+{
+  in_place_handler_allocator<32> allocator;
+  void* ptr = allocator.allocate(allocator.size());
+  allocator.deallocate(ptr);
+  test_ownership_range(allocator, ptr);
+}
+
+TEST(in_heap_handler_allocator, ownership_of_null)
 {
   in_heap_handler_allocator allocator(64, false);
-  test_ownership(allocator);
+  ASSERT_FALSE(allocator.owns(0));
 }
 
-TEST(lazy_in_heap_handler_allocator, ownership)
+TEST(in_heap_handler_allocator, ownership_of_allocated)
+{
+  typedef in_heap_handler_allocator allocator_type;
+  allocator_type allocator(64, false);
+  void* ptr = allocator.allocate(allocator.size());
+  alloc_guard<allocator_type> guard(ptr, allocator);
+  test_ownership_range(allocator, ptr);
+  (void) guard;
+}
+
+TEST(in_heap_handler_allocator, ownership_of_free)
+{
+  in_heap_handler_allocator allocator(64, false);
+  void* ptr = allocator.allocate(allocator.size());
+  allocator.deallocate(ptr);
+  test_ownership_range(allocator, ptr);
+}
+
+TEST(lazy_in_heap_handler_allocator, ownership_of_null)
 {
   in_heap_handler_allocator allocator(128, true);
-  test_ownership(allocator);
+  ASSERT_FALSE(allocator.owns(0));
+}
+
+TEST(lazy_in_heap_handler_allocator, ownership_of_allocated)
+{
+  typedef in_heap_handler_allocator allocator_type;
+  allocator_type allocator(128, true);
+  void* ptr = allocator.allocate(allocator.size());
+  alloc_guard<allocator_type> guard(ptr, allocator);
+  test_ownership_range(allocator, ptr);
+  (void) guard;
+}
+
+TEST(lazy_in_heap_handler_allocator, ownership_of_free)
+{
+  in_heap_handler_allocator allocator(128, true);
+  void* ptr = allocator.allocate(allocator.size());
+  allocator.deallocate(ptr);
+  test_ownership_range(allocator, ptr);
 }
 
 } // namespace handler_allocator_ownership
