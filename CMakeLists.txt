@@ -117,6 +117,7 @@ if(ma_build_tests)
     if(WIN32)
         add_subdirectory(test/ma_windows_console_signal_test)
     endif()
+    add_subdirectory(test/ma_handler_allocator_test)
 endif()
 
 # Examples of using of libraries

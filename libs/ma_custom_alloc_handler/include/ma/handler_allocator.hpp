@@ -44,6 +44,9 @@ public:
   /// Checks if memory block is owned by (was allocated by) allocator.
   bool owns(void* pointer) const;
 
+  /// Returns max size allocator can allocate
+  std::size_t size() const;
+
 private:
   typedef char byte_type;
 
@@ -75,6 +78,9 @@ public:
 
   /// Checks if memory block is owned by (was allocated by) allocator.
   bool owns(void* pointer) const;
+
+  /// Returns max size allocator can allocate
+  std::size_t size() const;
 
 private:
   typedef char byte_type;
@@ -130,6 +136,12 @@ bool in_place_handler_allocator<alloc_size>::owns(void* pointer) const
   return (p >= begin) && (p < end) && in_use_;
 }
 
+template <std::size_t alloc_size>
+std::size_t in_place_handler_allocator<alloc_size>::size() const
+{
+  return alloc_size;
+}
+
 inline in_heap_handler_allocator::byte_type*
 in_heap_handler_allocator::allocate_storage(std::size_t size)
 {
@@ -175,6 +187,11 @@ inline bool in_heap_handler_allocator::owns(void* pointer) const
   const byte_type* end = begin + size_;
   const byte_type* p = static_cast<const byte_type*>(pointer);
   return (p >= begin) && (p < end) && begin && in_use_;
+}
+
+inline std::size_t in_heap_handler_allocator::size() const
+{
+  return size_;
 }
 
 } // namespace ma
