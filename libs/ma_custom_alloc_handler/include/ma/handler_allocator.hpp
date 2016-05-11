@@ -41,7 +41,8 @@ public:
   /// allocate method.
   void deallocate(void* pointer);
 
-  /// Checks if memory block is owned by (was allocated by) allocator.
+  /// Checks if memory block of size 1 is owned by allocator - as allocated or
+  /// as free.
   bool owns(void* pointer) const;
 
   /// Returns max size allocator can allocate
@@ -76,7 +77,8 @@ public:
   /// allocate method.
   void deallocate(void* pointer);
 
-  /// Checks if memory block is owned by (was allocated by) allocator.
+  /// Checks if memory block of size 1 is owned by allocator - as allocated or
+  /// as free.
   bool owns(void* pointer) const;
 
   /// Returns max size allocator can allocate
@@ -133,7 +135,7 @@ bool in_place_handler_allocator<alloc_size>::owns(void* pointer) const
   const byte_type* begin = static_cast<const byte_type*>(storage_.address());
   const byte_type* end = begin + alloc_size;
   const byte_type* p = static_cast<const byte_type*>(pointer);
-  return (p >= begin) && (p < end) && in_use_;
+  return (p >= begin) && (p < end);
 }
 
 template <std::size_t alloc_size>
@@ -186,7 +188,7 @@ inline bool in_heap_handler_allocator::owns(void* pointer) const
   const byte_type* begin = storage_.get();
   const byte_type* end = begin + size_;
   const byte_type* p = static_cast<const byte_type*>(pointer);
-  return (p >= begin) && (p < end) && begin && in_use_;
+  return (p >= begin) && (p < end) && begin;
 }
 
 inline std::size_t in_heap_handler_allocator::size() const

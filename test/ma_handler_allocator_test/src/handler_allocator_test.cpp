@@ -40,17 +40,23 @@ namespace handler_allocator_ownership {
 template <typename Allocator>
 void test_ownership(Allocator& allocator)
 {
+  // Explicitly check correct handing of null pointer
   ASSERT_FALSE(allocator.owns(0));
   void* ptr = allocator.allocate(allocator.size());
   {
     alloc_guard<Allocator> guard(ptr, allocator);
+    // Check ownership of allocated memory block
     ASSERT_TRUE(allocator.owns(ptr));
     ASSERT_FALSE(allocator.owns(static_cast<char*>(ptr) - 1));
     ASSERT_TRUE(allocator.owns(static_cast<char*>(ptr) + 1));
     ASSERT_FALSE(allocator.owns(static_cast<char*>(ptr) + allocator.size()));
     (void) guard;
   }
-  ASSERT_FALSE(allocator.owns(ptr));
+  // Check ownership of free memory block
+  ASSERT_TRUE(allocator.owns(ptr));
+  ASSERT_FALSE(allocator.owns(static_cast<char*>(ptr) - 1));
+  ASSERT_TRUE(allocator.owns(static_cast<char*>(ptr) + 1));
+  ASSERT_FALSE(allocator.owns(static_cast<char*>(ptr) + allocator.size()));
 }
 
 TEST(in_place_handler_allocator, ownership)
