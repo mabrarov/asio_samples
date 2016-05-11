@@ -12,6 +12,7 @@
 
 namespace ma {
 namespace test {
+namespace handler_allocator {
 
 template <typename Allocator>
 class alloc_guard : private boost::noncopyable
@@ -35,7 +36,84 @@ private:
   allocator_type& allocator_;
 }; // class alloc_guard
 
-namespace handler_allocator_ownership {
+template <typename Allocator>
+void test_max_size_allocation(Allocator& allocator)
+{
+  void* ptr = allocator.allocate(allocator.size());
+  alloc_guard<Allocator> guard(ptr, allocator);
+  ASSERT_NE(static_cast<void*>(0), ptr);
+  (void) guard;
+}
+
+template <typename Allocator>
+void test_min_size_allocation(Allocator& allocator)
+{
+  void* ptr = allocator.allocate(1);
+  alloc_guard<Allocator> guard(ptr, allocator);
+  ASSERT_NE(static_cast<void*>(0), ptr);
+  (void) guard;
+}
+
+template <typename Allocator>
+void test_failed_allocation(Allocator& allocator)
+{
+  void* ptr = allocator.allocate(allocator.size() + 1);
+  ASSERT_EQ(static_cast<void*>(0), ptr);
+}
+
+TEST(in_place_handler_allocator, allocation_of_max_size)
+{
+  in_place_handler_allocator<32> allocator;
+  test_max_size_allocation(allocator);
+}
+
+TEST(in_place_handler_allocator, allocation_of_min_size)
+{
+  in_place_handler_allocator<32> allocator;
+  test_min_size_allocation(allocator);
+}
+
+TEST(in_place_handler_allocator, failed_allocation)
+{
+  in_place_handler_allocator<32> allocator;
+  test_failed_allocation(allocator);
+}
+
+TEST(in_heap_handler_allocator, allocation_of_max_size)
+{
+  in_heap_handler_allocator allocator(128, false);
+  test_max_size_allocation(allocator);
+}
+
+TEST(in_heap_handler_allocator, allocation_of_min_size)
+{
+  in_heap_handler_allocator allocator(128, false);
+  test_min_size_allocation(allocator);
+}
+
+TEST(in_heap_handler_allocator, failed_allocation)
+{
+  in_heap_handler_allocator allocator(128, false);
+  test_failed_allocation(allocator);
+}
+
+TEST(lazy_in_heap_handler_allocator, allocation_of_max_size)
+{
+  in_heap_handler_allocator allocator(16, true);
+  test_max_size_allocation(allocator);
+}
+
+TEST(lazy_in_heap_handler_allocator, allocation_of_min_size)
+{
+  in_heap_handler_allocator allocator(16, true);
+  test_min_size_allocation(allocator);
+}
+
+TEST(lazy_in_heap_handler_allocator, failed_allocation)
+{
+  in_heap_handler_allocator allocator(16, true);
+  test_failed_allocation(allocator);
+}
 
 template<typename Allocator>
 void test_ownership_range(Allocator& allocator, void* ptr)
@@ -43,6 +121,7 @@ void test_ownership_range(Allocator& allocator, void* ptr)
   ASSERT_TRUE(allocator.owns(ptr));
   ASSERT_FALSE(allocator.owns(static_cast<char*>(ptr) - 1));
   ASSERT_TRUE(allocator.owns(static_cast<char*>(ptr) + 1));
+  ASSERT_TRUE(allocator.owns(static_cast<char*>(ptr) + allocator.size() - 1));
   ASSERT_FALSE(allocator.owns(static_cast<char*>(ptr) + allocator.size()));
 }
 
@@ -118,7 +197,6 @@ TEST(lazy_in_heap_handler_allocator, ownership_of_free)
   test_ownership_range(allocator, ptr);
 }
 
-} // namespace handler_allocator_ownership
-
+} // namespace handler_allocator
 } // namespace test
 } // namespace ma
