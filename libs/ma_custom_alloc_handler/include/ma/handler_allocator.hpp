@@ -33,17 +33,24 @@ public:
   /// For debug purposes (ability to check destruction order, etc).
   ~in_place_handler_allocator();
 
-  /// Try to allocate memory from internal memory block if it is free and is
-  /// large enough. Elsewhere allocate memory by means of global operator new.
+  /// Allocates memory from internal memory block if it is free and is
+  /// large enough. Elsewhere return null pointer.
   void* allocate(std::size_t size);
 
   /// Deallocate memory which had previously been allocated by usage of
   /// allocate method.
   void deallocate(void* pointer);
 
-  bool owns(void* pointer);
+  /// Checks if memory block of size 1 is owned by allocator - as allocated or
+  /// as free.
+  bool owns(void* pointer) const;
+
+  /// Returns max size allocator can allocate
+  std::size_t size() const;
 
 private:
+  typedef char byte_type;
+
   boost::aligned_storage<alloc_size> storage_;
   bool in_use_;
 }; // class in_place_handler_allocator
@@ -62,15 +69,20 @@ public:
   /// For debug purposes (ability to check destruction order, etc).
   ~in_heap_handler_allocator();
 
-  /// Try to allocate memory from internal memory block if it is free and is
-  /// large enough. Elsewhere allocate memory by means of global operator new.
+  /// Allocates memory from internal memory block if it is free and is
+  /// large enough. Elsewhere returns null pointer.
   void* allocate(std::size_t size);
 
   /// Deallocate memory which had previously been allocated by usage of
   /// allocate method.
   void deallocate(void* pointer);
 
-  bool owns(void* pointer);
+  /// Checks if memory block of size 1 is owned by allocator - as allocated or
+  /// as free.
+  bool owns(void* pointer) const;
+
+  /// Returns max size allocator can allocate
+  std::size_t size() const;
 
 private:
   typedef char byte_type;
@@ -78,7 +90,7 @@ private:
   static byte_type* allocate_storage(std::size_t);
 
 #if defined(MA_USE_CXX11_STDLIB_MEMORY)
-  detail::unique_ptr<byte_type[]>   storage_;
+  detail::unique_ptr<byte_type[]> storage_;
 #else
   detail::scoped_array<byte_type> storage_;
 #endif
@@ -111,16 +123,31 @@ void* in_place_handler_allocator<alloc_size>::allocate(std::size_t size)
 }
 
 template <std::size_t alloc_size>
-void in_place_handler_allocator<alloc_size>::deallocate(void* /*pointer*/)
+void in_place_handler_allocator<alloc_size>::deallocate(void* pointer)
 {
-  BOOST_ASSERT_MSG(in_use_, "Allocator wasn't marked as used");
-  in_use_ = false;
+  BOOST_ASSERT_MSG(
+      !pointer || in_use_, "Allocator wasn't marked as used");
+  BOOST_ASSERT_MSG(
+      !pointer || owns(pointer), "Pointer is not owned by this allocator");
+  if (pointer)
+  {
+    in_use_ = false;
+  }
 }
 
 template <std::size_t alloc_size>
-bool in_place_handler_allocator<alloc_size>::owns(void* pointer)
+bool in_place_handler_allocator<alloc_size>::owns(void* pointer) const
 {
-  return storage_.address() == pointer;
+  const byte_type* begin = static_cast<const byte_type*>(storage_.address());
+  const byte_type* end = begin + alloc_size;
+  const byte_type* p = static_cast<const byte_type*>(pointer);
+  return (p >= begin) && (p < end);
+}
+
+template <std::size_t alloc_size>
+std::size_t in_place_handler_allocator<alloc_size>::size() const
+{
+  return alloc_size;
 }
 
 inline in_heap_handler_allocator::byte_type*
@@ -156,15 +183,29 @@ inline void* in_heap_handler_allocator::allocate(std::size_t size)
   return storage_.get();
 }
 
-inline void in_heap_handler_allocator::deallocate(void* /*pointer*/)
+inline void in_heap_handler_allocator::deallocate(void* pointer)
 {
-  BOOST_ASSERT_MSG(in_use_, "Allocator wasn't marked as used");
-  in_use_ = false;
+  BOOST_ASSERT_MSG(
+      !pointer || in_use_, "Allocator wasn't marked as used");
+  BOOST_ASSERT_MSG(
+      !pointer || owns(pointer), "Pointer is not owned by this allocator");
+  if (pointer)
+  {
+    in_use_ = false;
+  }
 }
 
-inline bool in_heap_handler_allocator::owns(void* pointer)
+inline bool in_heap_handler_allocator::owns(void* pointer) const
 {
-  return storage_.get() == pointer;
+  const byte_type* begin = storage_.get();
+  const byte_type* end = begin + size_;
+  const byte_type* p = static_cast<const byte_type*>(pointer);
+  return (p >= begin) && (p < end) && begin;
+}
+
+inline std::size_t in_heap_handler_allocator::size() const
+{
+  return size_;
 }
 
 } // namespace ma
