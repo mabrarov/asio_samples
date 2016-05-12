@@ -489,7 +489,7 @@ private:
   this_type& operator=(const this_type&);
 
 public:
-  explicit no_default_allocation_handler(int& out, int value)
+  no_default_allocation_handler(int& out, int value)
     : base_type(out, value)
   {
   }
