@@ -186,19 +186,10 @@ TEST(custom_alloc_handler, allocation_fallback)
   ASSERT_EQ(2U, alloc_counter.value());
 }
 
-template <typename Handler>
-void test_no_context_allocation(Handler handler, std::size_t size)
-{
-  void* ptr = ma_handler_alloc_helpers::allocate(size, handler);
-  alloc_guard<Handler> guard(ptr, size, handler);
-  ASSERT_NE(static_cast<void*>(0), ptr);
-  (void) guard;
-}
-
-TEST(custom_alloc_handler, allocation)
+TEST(custom_alloc_handler, success_allocation)
 {
   in_place_handler_allocator<512> allocator;
-  test_no_context_allocation(
+  test_allocation_succeded(
       make_custom_alloc_handler(allocator, no_default_allocation_handler()), 1);
 }
 
@@ -259,7 +250,7 @@ void test_allocation_and_invocation(Handler handler, std::size_t size)
   ma_handler_invoke_helpers::invoke(handler, handler);
 }
 
-TEST(custom_alloc_handler, invocation)
+TEST(custom_alloc_handler, preserving_invocation_strategy)
 {
   detail::latch invoke_counter;
   in_place_handler_allocator<512> allocator;
