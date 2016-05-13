@@ -35,7 +35,7 @@ list(APPEND cxx_public_libraries
     ma_boost_exception
     ma_compat)
 
-add_library(${PROJECT_NAME}
+add_library(${PROJECT_NAME} STATIC
     ${cxx_headers}
     ${cxx_sources})
 target_compile_options(${PROJECT_NAME}
