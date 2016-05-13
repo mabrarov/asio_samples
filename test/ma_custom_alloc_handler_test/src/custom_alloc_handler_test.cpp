@@ -115,7 +115,7 @@ public:
 }; // class no_default_allocation_handler
 
 template <typename Handler>
-void test_allocation_succeded(Handler handler, std::size_t size)
+void test_allocation_succeeded(Handler handler, std::size_t size)
 {
   void* ptr = ma_handler_alloc_helpers::allocate(size, handler);
   alloc_guard<Handler> guard(ptr, size, handler);
@@ -123,24 +123,28 @@ void test_allocation_succeded(Handler handler, std::size_t size)
   (void) guard;
 }
 
-TEST(custom_alloc_handler, in_place_allocator_is_used)
+TEST(custom_alloc_handler, allocator_is_used)
 {
   detail::latch alloc_counter;
   alloc_counting_allocator<in_place_handler_allocator<512>>
       allocator(alloc_counter);
-  test_allocation_succeded(
+  test_allocation_succeeded(
       make_custom_alloc_handler(allocator, no_default_allocation_handler()), 1);
   ASSERT_EQ(2U, alloc_counter.value());
 }
 
-TEST(custom_alloc_handler, in_heap_allocator_is_used)
+TEST(custom_alloc_handler, in_place_allocator)
 {
-  detail::latch alloc_counter;
-  alloc_counting_allocator<in_heap_handler_allocator>
-      allocator(alloc_counter, 512);
-  test_allocation_succeded(
+  in_place_handler_allocator<512> allocator;
+  test_allocation_succeeded(
       make_custom_alloc_handler(allocator, no_default_allocation_handler()), 1);
-  ASSERT_EQ(2U, alloc_counter.value());
+}
+
+TEST(custom_alloc_handler, in_heap_allocator)
+{
+  in_heap_handler_allocator allocator(512);
+  test_allocation_succeeded(
+      make_custom_alloc_handler(allocator, no_default_allocation_handler()), 1);
 }
 
 class alloc_counting_handler
@@ -181,7 +185,7 @@ TEST(custom_alloc_handler, allocation_fallback)
 {
   in_place_handler_allocator<16> allocator;
   detail::latch alloc_counter;
-  test_allocation_succeded(make_custom_alloc_handler(allocator,
+  test_allocation_succeeded(make_custom_alloc_handler(allocator,
       alloc_counting_handler(alloc_counter)), 17);
   ASSERT_EQ(2U, alloc_counter.value());
 }
@@ -189,7 +193,7 @@ TEST(custom_alloc_handler, allocation_fallback)
 TEST(custom_alloc_handler, success_allocation)
 {
   in_place_handler_allocator<512> allocator;
-  test_allocation_succeded(
+  test_allocation_succeeded(
       make_custom_alloc_handler(allocator, no_default_allocation_handler()), 1);
 }
 
