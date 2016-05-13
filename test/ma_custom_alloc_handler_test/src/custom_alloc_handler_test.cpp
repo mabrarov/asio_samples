@@ -13,6 +13,7 @@
 #include <ma/handler_allocator.hpp>
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/handler_alloc_helpers.hpp>
+#include <ma/handler_invoke_helpers.hpp>
 #include <ma/detail/latch.hpp>
 
 namespace ma {
@@ -199,6 +200,72 @@ TEST(custom_alloc_handler, allocation)
   in_place_handler_allocator<512> allocator;
   test_no_context_allocation(
       make_custom_alloc_handler(allocator, no_default_allocation_handler()), 1);
+}
+
+class invoke_counting_handler : public no_default_allocation_handler
+{
+private:
+  typedef invoke_counting_handler this_type;
+
+  this_type& operator=(const this_type&);
+
+public:
+  explicit invoke_counting_handler(detail::latch& counter)
+    : counter_(counter)
+  {
+  }
+
+#if defined(MA_HAS_RVALUE_REFS)
+
+  template <typename Function>
+  friend void asio_handler_invoke(MA_FWD_REF(Function) function,
+      this_type* context)
+  {
+    context->counter_.count_up();
+    boost::asio::asio_handler_invoke(function, context);
+  }
+
+#else // defined(MA_HAS_RVALUE_REFS)
+
+  template <typename Function>
+  friend void asio_handler_invoke(Function& function, this_type* context)
+  {
+    context->counter_.count_up();
+    boost::asio::asio_handler_invoke(function, context);
+  }
+
+  template <typename Function>
+  friend void asio_handler_invoke(const Function& function, this_type* context)
+  {
+    context->counter_.count_up();
+    boost::asio::asio_handler_invoke(function, context);
+  }
+
+#endif // defined(MA_HAS_RVALUE_REFS)
+
+private:
+  detail::latch& counter_;
+}; // class invoke_counting_handler
+
+template <typename Handler>
+void test_allocation_and_invocation(Handler handler, std::size_t size)
+{
+  {
+    void* ptr = ma_handler_alloc_helpers::allocate(size, handler);
+    alloc_guard<Handler> guard(ptr, size, handler);
+    ASSERT_NE(static_cast<void*>(0), ptr);
+    (void) guard;
+  }
+  ma_handler_invoke_helpers::invoke(handler, handler);
+}
+
+TEST(custom_alloc_handler, invocation)
+{
+  detail::latch invoke_counter;
+  in_place_handler_allocator<512> allocator;
+  test_allocation_and_invocation(make_custom_alloc_handler(allocator,
+      invoke_counting_handler(invoke_counter)), 511);
+  ASSERT_EQ(1U, invoke_counter.value());
 }
 
 } // namespace custom_alloc_handler
