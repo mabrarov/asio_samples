@@ -6,7 +6,7 @@
 #
 
 cmake_minimum_required(VERSION 3.0)
-project(ma_qt5_widgets)
+project(ma_qt5_widgets_support)
 
 set(cxx_libraries )
 set(cxx_compile_options )
@@ -23,8 +23,8 @@ if(Qt5Widgets_FOUND)
     endif()
 
     list(APPEND cxx_libraries
-        ma_qt5_core
-        ma_qt5_gui)
+        ma_qt5_core_support
+        ma_qt5_gui_support)
 endif()
 
 add_library(${PROJECT_NAME} INTERFACE)

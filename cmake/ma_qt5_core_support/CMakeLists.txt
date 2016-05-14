@@ -6,7 +6,7 @@
 #
 
 cmake_minimum_required(VERSION 3.0)
-project(ma_qt5_core)
+project(ma_qt5_core_support)
 
 set(cxx_libraries )
 set(cxx_compile_options )
