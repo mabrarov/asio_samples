@@ -10,6 +10,9 @@ project(ma_boost_asio)
 
 set(cxx_libraries )
 
+# Enforce minimum supported version of Boost.Asio (of Boost)
+find_package(Boost 1.47.0 REQUIRED)
+
 list(APPEND cxx_libraries
     ma_boost_header_only
     ma_boost_system

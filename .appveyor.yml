@@ -536,3 +536,7 @@ artifacts:
     name: ma_sp_singleton_test
   - path: build\test\ma_windows_console_signal_test\$(configuration)\*.exe
     name: ma_windows_console_signal_test
+  - path: build\test\ma_handler_allocator_test\$(configuration)\*.exe
+    name: ma_handler_allocator_test
+  - path: build\test\ma_custom_alloc_handler_test\$(configuration)\*.exe
+    name: ma_custom_alloc_handler_test

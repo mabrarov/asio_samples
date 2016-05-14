@@ -41,7 +41,7 @@ list(APPEND cxx_public_libraries
     ma_context_alloc_handler
     ma_windows_console_signal)
 
-add_library(${PROJECT_NAME}
+add_library(${PROJECT_NAME} STATIC
     ${cxx_headers}
     ${cxx_sources})
 target_compile_options(${PROJECT_NAME}
