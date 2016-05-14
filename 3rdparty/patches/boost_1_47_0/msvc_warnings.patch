@@ -1,0 +1,51 @@
+--- boost/utility/in_place_factory.hpp	2010-07-16 01:19:14
++++ boost/utility/in_place_factory.hpp	2016-05-14 11:01:54
+@@ -31,6 +31,11 @@
+ #else
+ #define N BOOST_PP_ITERATION()
+ 
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4512)
++#endif
++
+ #if N
+ template< BOOST_PP_ENUM_PARAMS(N, class A) >
+ #endif
+@@ -67,6 +72,10 @@
+   BOOST_PP_REPEAT(N, BOOST_DEFINE_INPLACE_FACTORY_CLASS_MEMBER_DECL, _)
+ };
+ 
++#if defined(_MSC_VER)
++#pragma warning(pop)
++#endif
++
+ #if N > 0
+ template< BOOST_PP_ENUM_PARAMS(N, class A) >
+ inline BOOST_PP_CAT(in_place_factory,N)< BOOST_PP_ENUM_PARAMS(N, A) >
+
+--- boost/program_options/options_description.hpp	2010-09-07 09:52:45
++++ boost/program_options/options_description.hpp	2016-05-14 11:03:36
+@@ -153,6 +153,11 @@
+     };
+
+
++#if defined(_MSC_VER)
++#pragma warning(push)
++#pragma warning(disable: 4512)
++#endif
++
+     /** A set of option descriptions. This provides convenient interface for
+         adding new option (the add_options) method, and facilities to search
+         for options by name.
+@@ -250,6 +255,10 @@
+
+     };
+
++#if defined(_MSC_VER)
++#pragma warning(pop)
++#endif
++
+     /** Class thrown when duplicate option description is found. */
+     class BOOST_PROGRAM_OPTIONS_DECL duplicate_option_error : public error {
+     public:
