@@ -118,6 +118,7 @@ if(ma_build_tests)
         add_subdirectory(test/ma_windows_console_signal_test)
     endif()
     add_subdirectory(test/ma_handler_allocator_test)
+    add_subdirectory(test/ma_custom_alloc_handler_test)
 endif()
 
 # Examples of using of libraries

@@ -34,7 +34,7 @@ public:
   ~in_place_handler_allocator();
 
   /// Allocates memory from internal memory block if it is free and is
-  /// large enough. Elsewhere return null pointer.
+  /// large enough. Elsewhere returns null pointer.
   void* allocate(std::size_t size);
 
   /// Deallocate memory which had previously been allocated by usage of
@@ -200,7 +200,7 @@ inline bool in_heap_handler_allocator::owns(void* pointer) const
   const byte_type* begin = storage_.get();
   const byte_type* end = begin + size_;
   const byte_type* p = static_cast<const byte_type*>(pointer);
-  return (p >= begin) && (p < end) && begin;
+  return (p >= begin) && (p < end) && p;
 }
 
 inline std::size_t in_heap_handler_allocator::size() const
