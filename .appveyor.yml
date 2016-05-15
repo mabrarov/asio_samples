@@ -48,9 +48,19 @@ environment:
       BOOST_LINKAGE: static
       QT_VERSION: 4.8.7
       QT_LINKAGE: shared
+    - MSVC_VERSION: 10.0
+      RUNTIME_LINKAGE: shared
+      BOOST_VERSION: 1.47.0
+      BOOST_LINKAGE: static
+      QT_VERSION: 4.8.7
+      QT_LINKAGE: shared
     - MSVC_VERSION: 9.0
       RUNTIME_LINKAGE: static
       BOOST_VERSION: 1.60.0
+      BOOST_LINKAGE: static
+    - MSVC_VERSION: 9.0
+      RUNTIME_LINKAGE: static
+      BOOST_VERSION: 1.47.0
       BOOST_LINKAGE: static
 
 install:
