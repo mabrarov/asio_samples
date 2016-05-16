@@ -6,7 +6,7 @@
 #
 
 cmake_minimum_required(VERSION 3.0)
-project(ma_context_alloc_handler)
+project(ma_handler_allocator_test)
 
 set(project_base_dir "${PROJECT_SOURCE_DIR}")
 set(cxx_headers_dir  "${project_base_dir}/include")
@@ -23,18 +23,15 @@ config_private_compile_options(cxx_private_compile_options)
 config_private_compile_definitions(cxx_private_compile_definitions)
 set(cxx_private_libraries )
 
-list(APPEND cxx_headers
-    "${cxx_headers_dir}/ma/context_alloc_handler.hpp")
-
 list(APPEND cxx_sources
-    "${cxx_sources_dir}/fake.cpp")
+    "${cxx_sources_dir}/handler_allocator_test.cpp")
 
-list(APPEND cxx_public_libraries
-    ma_config
-    ma_helpers
-    ma_compat)
+list(APPEND cxx_private_libraries
+    ma_boost_header_only
+    ma_gtest
+    ma_custom_alloc_handler)
 
-add_library(${PROJECT_NAME} STATIC
+add_executable(${PROJECT_NAME}
     ${cxx_headers}
     ${cxx_sources})
 target_compile_options(${PROJECT_NAME}
@@ -61,3 +58,5 @@ if(NOT ma_no_cmake_dir_source_group)
     ma_dir_source_group("Header Files" "${cxx_headers_dir}" "${cxx_headers}")
     ma_dir_source_group("Source Files" "${cxx_sources_dir}" "${cxx_sources}")
 endif()
+
+add_test(NAME ${PROJECT_NAME} COMMAND ${PROJECT_NAME})

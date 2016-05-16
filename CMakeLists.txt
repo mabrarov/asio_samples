@@ -51,7 +51,7 @@ endif()
 # Interface-only target for turning on position idependent code compiler flag
 add_subdirectory(cmake/ma_pic_on)
 
-# Interface-only targets to simplify support of Boost
+# Interface-only targets (wrappers) to simplify support of Boost
 add_subdirectory(cmake/ma_boost_link)
 add_subdirectory(cmake/ma_boost_header_only)
 add_subdirectory(cmake/ma_boost_exception)
@@ -66,12 +66,12 @@ add_subdirectory(cmake/ma_boost_regex)
 
 if(ma_qt)
     # Interface-only targets to simplify support of Qt 5
-    add_subdirectory(cmake/ma_qt5_core)
-    add_subdirectory(cmake/ma_qt5_gui)
-    add_subdirectory(cmake/ma_qt5_widgets)
+    add_subdirectory(cmake/ma_qt5_core_support)
+    add_subdirectory(cmake/ma_qt5_gui_support)
+    add_subdirectory(cmake/ma_qt5_widgets_support)
     # Interface-only targets to simplify support of Qt 4
-    add_subdirectory(cmake/ma_qt4_core)
-    add_subdirectory(cmake/ma_qt4_gui)
+    add_subdirectory(cmake/ma_qt4_core_support)
+    add_subdirectory(cmake/ma_qt4_gui_support)
 endif()
 
 if(ma_build_tests)
@@ -117,6 +117,8 @@ if(ma_build_tests)
     if(WIN32)
         add_subdirectory(test/ma_windows_console_signal_test)
     endif()
+    add_subdirectory(test/ma_handler_allocator_test)
+    add_subdirectory(test/ma_custom_alloc_handler_test)
 endif()
 
 # Examples of using of libraries

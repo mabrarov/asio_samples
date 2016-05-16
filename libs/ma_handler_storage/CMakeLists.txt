@@ -42,7 +42,7 @@ list(APPEND cxx_public_libraries
     ma_service_base
     ${Boost_LIBRARIES})
 
-add_library(${PROJECT_NAME}
+add_library(${PROJECT_NAME} STATIC
     ${cxx_headers}
     ${cxx_sources})
 target_compile_options(${PROJECT_NAME}

@@ -46,7 +46,7 @@ list(APPEND cxx_private_libraries
     ma_shared_ptr_factory
     ma_sp_singleton)
 
-add_library(${PROJECT_NAME}
+add_library(${PROJECT_NAME} STATIC
     ${cxx_headers}
     ${cxx_sources})
 target_compile_options(${PROJECT_NAME}

@@ -6,7 +6,7 @@
 #
 
 cmake_minimum_required(VERSION 3.0)
-project(ma_qt5_gui)
+project(ma_qt5_gui_support)
 
 set(cxx_libraries )
 set(cxx_compile_options )
@@ -63,7 +63,7 @@ if(Qt5Gui_FOUND)
             endif()
         endif()
 
-        list(APPEND cxx_libraries ma_qt5_core)
+        list(APPEND cxx_libraries ma_qt5_core_support)
 
         # Qt CMake files use IMPORTED_LINK_DEPENDENT_LIBRARIES instead of
         # INTERFACE_LINK_LIBRARIES for OpenGL dependencies.
