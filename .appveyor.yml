@@ -92,7 +92,7 @@ install:
               $env:WINDOWS_SDK_ENV_PARAMETERS="/x64 /$env:CONFIGURATION"
             }
             "9.0" {
-              Write-Host "Selected MSVS version: $env:MSVC_VERSION and platform: $env:PLATFORM require patching"
+              Write-Host "Selected MSVS version ($env:MSVC_VERSION) and platform ($env:PLATFORM) require patching"
               $env:MSVS_PATCH_FOLDER="$env:DEPENDENCIES_FOLDER\vs2008_patch"
               if (!(Test-Path -Path "$env:MSVS_PATCH_FOLDER")) {
                 $msvs_patch_download_folder="$env:DOWNLOADS_FOLDER\condaci"
