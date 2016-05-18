@@ -103,7 +103,7 @@ install:
                   $msvs_patch_download_folder_nix="$msvs_patch_download_folder" -replace "\\", "/"
                   Write-Host "Going to download MSVS patch from: $msvs2008_patch_url to: $msvs_patch_download_folder_nix"
                   git clone --quiet "$msvs2008_patch_url" "$msvs_patch_download_folder_nix"
-                  git checkout --quiet "$msvs2008_patch_revision"
+                  git -C "$msvs_patch_download_folder_nix" checkout --quiet "$msvs2008_patch_revision"
                   if ($LastExitCode -ne 0) {
                     throw "File downloading failed with exit code $LastExitCode."
                   }
