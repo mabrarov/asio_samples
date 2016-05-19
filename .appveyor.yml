@@ -92,16 +92,18 @@ install:
               $env:WINDOWS_SDK_ENV_PARAMETERS="/x64 /$env:CONFIGURATION"
             }
             "9.0" {
-              Write-Host "Selected MSVS version: $env:MSVC_VERSION and platform: $env:PLATFORM require patching"
+              Write-Host "Selected MSVS version ($env:MSVC_VERSION) and platform ($env:PLATFORM) require patching"
               $env:MSVS_PATCH_FOLDER="$env:DEPENDENCIES_FOLDER\vs2008_patch"
               if (!(Test-Path -Path "$env:MSVS_PATCH_FOLDER")) {
                 $msvs_patch_download_folder="$env:DOWNLOADS_FOLDER\condaci"
                 $msvs_patch_download_file="$msvs_patch_download_folder\vs2008_patch.zip"
                 if (!(Test-Path -Path "$msvs_patch_download_file")) {
                   $msvs2008_patch_url="https://github.com/menpo/condaci.git"
+                  $msvs2008_patch_revision="98d76b2089d494433ac2e3abd920123088a95a6d"
                   $msvs_patch_download_folder_nix="$msvs_patch_download_folder" -replace "\\", "/"
                   Write-Host "Going to download MSVS patch from: $msvs2008_patch_url to: $msvs_patch_download_folder_nix"
-                  git clone --quiet --depth 2 "$msvs2008_patch_url" "$msvs_patch_download_folder_nix"
+                  git clone --quiet "$msvs2008_patch_url" "$msvs_patch_download_folder_nix"
+                  git -C "$msvs_patch_download_folder_nix" checkout --quiet "$msvs2008_patch_revision"
                   if ($LastExitCode -ne 0) {
                     throw "File downloading failed with exit code $LastExitCode."
                   }
