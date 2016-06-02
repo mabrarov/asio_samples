@@ -255,6 +255,12 @@ TEST(lazy_in_heap_handler_allocator, ownership_of_null)
   ASSERT_FALSE(allocator.owns(0));
 }
 
+TEST(lazy_in_heap_handler_allocator, ownership_of_near_null)
+{
+  in_heap_handler_allocator allocator(128, true);
+  ASSERT_FALSE(allocator.owns(static_cast<char*>(0) + 1));
+}
+
 TEST(lazy_in_heap_handler_allocator, ownership_of_allocated)
 {
   typedef in_heap_handler_allocator allocator_type;
