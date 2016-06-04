@@ -93,7 +93,6 @@ matrix:
             - george-edison55-precise-backports
             - ubuntu-toolchain-r-test
             - llvm-toolchain-precise-3.6
-            - llvm-toolchain-precise
             - boost-latest
     - env: COMPILER=clang++-3.6 BOOST_VERSION=1.55 QT_VERSION=5 BUILD_TYPE=RELEASE
       compiler: clang
@@ -113,7 +112,6 @@ matrix:
             - george-edison55-precise-backports
             - ubuntu-toolchain-r-test
             - llvm-toolchain-precise-3.7
-            - llvm-toolchain-precise
             - boost-latest
     - env: COMPILER=clang++-3.7 BOOST_VERSION=1.55 QT_VERSION=5 BUILD_TYPE=RELEASE
       compiler: clang
@@ -133,7 +131,6 @@ matrix:
             - george-edison55-precise-backports
             - ubuntu-toolchain-r-test
             - llvm-toolchain-precise-3.8
-            - llvm-toolchain-precise
             - boost-latest
     - env: COMPILER=clang++-3.8 BOOST_VERSION=1.55 QT_VERSION=5 BUILD_TYPE=RELEASE
       compiler: clang
