@@ -259,3 +259,6 @@ addons:
     build_command_prepend: "mkdir build; cd build; cmake -D CMAKE_CXX_COMPILER=$COMPILER -D CMAKE_BUILD_TYPE=$BUILD_TYPE -D ma_force_qt_version=$QT_VERSION .."
     build_command: "cmake --build . --config $BUILD_TYPE"
     branch_pattern: coverity_scan
+
+script:
+  - echo Building step is skipped as not needed for Coverity scan
