@@ -9,6 +9,10 @@ language: cpp
 sudo: required
 dist: trusty
 
+env:
+  global:
+    - secure: "XIrLiwzUWvYOcJRa5c4rtPWEm9tBtjtzH2DqiAhfYZJftDrJkPFJg3YTb2qrNTSVNAXxbkkA56qUX3V3XFh+kU3EYtt4alsrsC7UnLI+axzLRK1ZTGT0AOUVnEKRkMExnLUIJYBnIvwhXLjQnmdYyxAtq2sApsDoGZbUEEhO2+x8s3vGS+/YxoN6lpWm0CHwa/Nv6YqfKhzkQW1GTYEBQSrZPX5j3FL/I/3+caf6uydgM7kxzlmuBjVhnb4f9AGcbDCpJw/mgdKyEuau781xzEz8myiZFyprfjVGHdLjqof2qILrPrbdM1h39NCX+WB7ulrC5lXWWf64OijEI5rpSWAzjxgHUmxDadwrsVjW6c7DXYB99CJ7WhT8S4kbaPsh3zTBzM/fmo3iXxy3s+waFbb4ZjtlGt5s7KOP4USrerHj1c3MHOFuuZDeZiw7h9D+PvILlkbfffnZzr3DTnFmz3Fh1rBLwDSQC0Y/H3o4IO17SBzQStK7vHlFKg8QgM6oiR6TF2B4jSrSHmNLYvuyzcAjwy2cyZs9anyK30SOi7YhRp9pP3rOj94Wbt/NfjwELeJBrNuaumPS4KlKPaI1yvsGTgXekiE8RKq6p2I+HhsZm67hpmSjfPUW4A4eP9tE0v7FqFvJAOtNX/bdWMJ3CH/oSm0g5yr1qLw2qDQrZP8="
+
 matrix:
   include:
     # GCC 5, Boost 1.55. Qt 5.x
@@ -27,6 +31,14 @@ matrix:
             - george-edison55-precise-backports
             - ubuntu-toolchain-r-test
             - boost-latest
+      addons:
+        coverity_scan:
+          project:
+            name: "mabrarov/asio_samples"
+          notification_email: abrarov@gmail.com
+          build_command_prepend: "mkdir build; cd build; cmake -D CMAKE_CXX_COMPILER=$COMPILER -D CMAKE_BUILD_TYPE=$BUILD_TYPE -D ma_force_qt_version=$QT_VERSION .."
+          build_command: "cmake --build . --config $BUILD_TYPE"
+          branch_pattern: coverity_scan
     - env: COMPILER=g++-5 BOOST_VERSION=1.55 QT_VERSION=5 BUILD_TYPE=RELEASE
       compiler: gcc
       addons: *addons-gcc5-boost155-qt5
