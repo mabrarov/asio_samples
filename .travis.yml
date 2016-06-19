@@ -31,6 +31,13 @@ matrix:
             - george-edison55-precise-backports
             - ubuntu-toolchain-r-test
             - boost-latest
+        coverity_scan:
+          project:
+            name: "mabrarov/asio_samples"
+          notification_email: abrarov@gmail.com
+          build_command_prepend: "cd $TRAVIS_BUILD_DIR && mkdir build && cd build && cmake -D CMAKE_CXX_COMPILER=$COMPILER -D CMAKE_BUILD_TYPE=$BUILD_TYPE -D ma_force_qt_version=$QT_VERSION .."
+          build_command: "cd $TRAVIS_BUILD_DIR && cmake --build build --config $BUILD_TYPE"
+          branch_pattern: coverity_scan
     - env: COMPILER=g++-5 BOOST_VERSION=1.55 QT_VERSION=5 BUILD_TYPE=RELEASE
       compiler: gcc
       addons: *addons-gcc5-boost155-qt5
@@ -250,15 +257,6 @@ matrix:
 #    - env: COMPILER=clang++-3.8 BOOST_VERSION=1.55 QT_VERSION=4 BUILD_TYPE=RELEASE
 #      compiler: clang
 #      addons: *addons-clang38-boost155-qt4
-
-addons:
-  coverity_scan:
-    project:
-      name: "mabrarov/asio_samples"
-    notification_email: abrarov@gmail.com
-    build_command_prepend: "cd $TRAVIS_BUILD_DIR && mkdir build && cd build && cmake -D CMAKE_CXX_COMPILER=$COMPILER -D CMAKE_BUILD_TYPE=$BUILD_TYPE -D ma_force_qt_version=$QT_VERSION .."
-    build_command: "cd $TRAVIS_BUILD_DIR && cmake --build build --config $BUILD_TYPE"
-    branch_pattern: coverity_scan
 
 script:
   - cd $TRAVIS_BUILD_DIR
