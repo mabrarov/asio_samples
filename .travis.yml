@@ -261,12 +261,8 @@ addons:
     branch_pattern: coverity_scan
 
 script:
-  - if ["${COVERITY_SCAN_BRANCH}" == 1]; then
-      echo Building step is skipped as not needed for Coverity scan ;
-    else
-      mkdir build &&
-      cd build &&
-      cmake -D CMAKE_CXX_COMPILER=$COMPILER -D CMAKE_BUILD_TYPE=$BUILD_TYPE -D ma_force_qt_version=$QT_VERSION .. &&
-      cmake --build . --config $BUILD_TYPE &&
-      ctest --build-config $BUILD_TYPE --verbose ;
-    fi
+  - mkdir build
+  - cd build
+  - cmake -D CMAKE_CXX_COMPILER=$COMPILER -D CMAKE_BUILD_TYPE=$BUILD_TYPE -D ma_force_qt_version=$QT_VERSION ..
+  - cmake --build . --config $BUILD_TYPE
+  - ctest --build-config $BUILD_TYPE --verbose
