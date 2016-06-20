@@ -18,6 +18,28 @@ before_install:
 
 matrix:
   include:
+    # Default GCC, Boost 1.55. Qt 5.x
+    - env: COMPILER=g++ BOOST_VERSION=1.55 QT_VERSION=5 BUILD_TYPE=RELEASE
+      compiler: gcc
+      addons:
+        apt:
+          packages:
+            - cmake
+            - cmake-data
+            - libboost1.55-all-dev
+            - qtbase5-dev
+          sources:
+            - george-edison55-precise-backports
+            - ubuntu-toolchain-r-test
+            - boost-latest
+        coverity_scan:
+          project:
+            name: "mabrarov/asio_samples"
+            description: "Build submitted via Travis CI"
+          notification_email: abrarov@gmail.com
+          build_command_prepend: "cd $TRAVIS_BUILD_DIR && rm -rf build && mkdir build && cd build && cmake -D CMAKE_CXX_COMPILER=$COMPILER -D CMAKE_BUILD_TYPE=$BUILD_TYPE -D ma_force_qt_version=$QT_VERSION .."
+          build_command: make
+          branch_pattern: coverity_scan
     # GCC 5, Boost 1.55. Qt 5.x
     - env: COMPILER=g++-5 BOOST_VERSION=1.55 QT_VERSION=5 BUILD_TYPE=DEBUG
       compiler: gcc
@@ -34,14 +56,6 @@ matrix:
             - george-edison55-precise-backports
             - ubuntu-toolchain-r-test
             - boost-latest
-        coverity_scan:
-          project:
-            name: "mabrarov/asio_samples"
-            description: "Build submitted via Travis CI"
-          notification_email: abrarov@gmail.com
-          build_command_prepend: "cd $TRAVIS_BUILD_DIR && rm -rf build && mkdir build && cd build && cmake -D CMAKE_CXX_COMPILER=$COMPILER -D CMAKE_BUILD_TYPE=$BUILD_TYPE -D ma_force_qt_version=$QT_VERSION .."
-          build_command: make
-          branch_pattern: coverity_scan
     - env: COMPILER=g++-5 BOOST_VERSION=1.55 QT_VERSION=5 BUILD_TYPE=RELEASE
       compiler: gcc
       addons: *addons-gcc5-boost155-qt5
