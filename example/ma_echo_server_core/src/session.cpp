@@ -228,7 +228,7 @@ session::optional_error_code session::do_start_extern_stop()
   }
 
   // Park stop handler for the late call
-  return optional_error_code();
+  return boost::none;
 }
 
 session::optional_error_code session::do_start_extern_wait()
@@ -247,7 +247,7 @@ session::optional_error_code session::do_start_extern_wait()
   }
 
   // Park wait handler for the late call
-  return optional_error_code();
+  return boost::none;
 }
 
 void session::complete_extern_stop(const boost::system::error_code& error)
@@ -1042,7 +1042,7 @@ session::optional_duration session::to_optional_duration(
   {
     return to_steady_deadline_timer_duration(duration.get());
   }
-  return optional_duration();
+  return boost::none;
 }
 
 #else // defined (MA_HAS_STEADY_DEADLINE_TIMER)
