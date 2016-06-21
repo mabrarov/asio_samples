@@ -85,6 +85,7 @@ async_implementation::async_implementation(boost::asio::io_service& io_service,
   : strand_(io_service)
   , do_something_handler_(io_service)
   , timer_(io_service)
+  , counter_(0)
   , name_(name)
   , start_message_fmt_("%s started. counter = %07d\n")
   , cycle_message_fmt_("%s is working. counter = %07d\n")
