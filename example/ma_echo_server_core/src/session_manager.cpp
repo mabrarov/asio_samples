@@ -636,7 +636,7 @@ session_manager::optional_error_code session_manager::do_start_extern_stop()
   }
 
   // Park stop handler for the late call
-  return optional_error_code();
+  return boost::none;
 }
 
 session_manager::optional_error_code session_manager::do_start_extern_wait()
@@ -654,7 +654,7 @@ session_manager::optional_error_code session_manager::do_start_extern_wait()
   }
 
   // Park wait handler for the late call
-  return optional_error_code();
+  return boost::none;
 }
 
 void session_manager::complete_extern_stop(

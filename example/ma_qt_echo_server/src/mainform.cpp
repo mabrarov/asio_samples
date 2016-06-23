@@ -95,7 +95,7 @@ boost::optional<int> readOptionalValue(const QCheckBox& checkBox,
   {
     return spinBox.value();
   }
-  return boost::optional<int>();
+  return boost::none;
 }
 
 class option_read_error : public std::runtime_error

@@ -334,7 +334,7 @@ async_implementation::do_start_do_something()
 
 #endif
 
-  return boost::optional<boost::system::error_code>();
+  return boost::none;
 }
 
 void async_implementation::handle_timer(const boost::system::error_code& error)
