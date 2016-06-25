@@ -145,7 +145,7 @@ async_implementation::start_do_something()
 
 #endif
 
-  return optional_do_something_result();
+  return boost::none;
 }
 
 void async_implementation::complete_do_something(

@@ -85,7 +85,7 @@ boost::optional<int> read_socket_buffer_size(
 {
   if (!options_values.count(option_name))
   {
-    return boost::optional<int>();
+    return boost::none;
   }
   int buffer_size = options_values[option_name].as<int>();
   validate_option<int>(option_name, buffer_size, 0);

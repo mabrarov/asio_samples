@@ -34,11 +34,10 @@ public:
   explicit session_config(
       std::size_t buffer_size,
       std::size_t max_transfer_size,
-      const optional_int& socket_recv_buffer_size = optional_int(),
-      const optional_int& socket_send_buffer_size = optional_int(),
+      const optional_int& socket_recv_buffer_size = boost::none,
+      const optional_int& socket_send_buffer_size = boost::none,
       const tribool& no_delay = boost::logic::indeterminate,
-      const optional_time_duration& inactivity_timeout =
-          optional_time_duration());
+      const optional_time_duration& inactivity_timeout = boost::none);
 
   tribool       no_delay;
   optional_int  socket_recv_buffer_size;
