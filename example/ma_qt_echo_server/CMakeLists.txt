@@ -19,6 +19,7 @@ set(qrc_resources )
 set(moc_headers )
 set(native_resources )
 set(native_resource_headers )
+set(qt_msvs_project_support_files )
 
 config_public_compile_options(cxx_public_compile_options)
 config_public_compile_definitions(cxx_public_compile_definitions)
@@ -124,6 +125,14 @@ elseif(ma_qt_echo_server_qt_version EQUAL 4)
     qt4_add_resources(qrc_generated_sources ${qrc_resources})
 endif()
 
+if(ma_qt_echo_server_qt_version EQUAL 5)
+    list(APPEND qt_msvs_project_support_files
+        ${ma_qt5_msvs_project_support_files})
+elseif(ma_qt_echo_server_qt_version EQUAL 4)
+    list(APPEND qt_msvs_project_support_files
+        ${ma_qt4_msvs_project_support_files})
+endif()
+
 add_executable(${PROJECT_NAME} WIN32
     ${cxx_headers}
     ${cxx_sources}
@@ -131,7 +140,8 @@ add_executable(${PROJECT_NAME} WIN32
     ${native_resource_headers}
     ${moc_generated_sources}
     ${qrc_generated_sources}
-    ${uic_generated_headers})
+    ${uic_generated_headers}
+    ${qt_msvs_project_support_files})
 target_compile_options(${PROJECT_NAME}
     PUBLIC
     ${cxx_public_compile_options}
@@ -161,6 +171,8 @@ source_group("Resource Files" FILES
     ${native_resources}
     ${native_resource_headers}
     ${qrc_resources})
+source_group("Project Support Files" FILES
+    ${qt_msvs_project_support_files})
 
 if(NOT ma_no_cmake_dir_source_group)
     # Group files according to file path

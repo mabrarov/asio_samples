@@ -613,13 +613,12 @@ private:
 
 optional_duration to_optional_duration(long milliseconds)
 {
-  optional_duration duration;
   if (milliseconds)
   {
-    duration = ma::to_steady_deadline_timer_duration(
+    return ma::to_steady_deadline_timer_duration(
         boost::posix_time::milliseconds(milliseconds));
   }
-  return duration;
+  return boost::none;
 }
 
 struct client_config

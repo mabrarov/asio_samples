@@ -1,4 +1,4 @@
-Asio samples [![Build Status](https://travis-ci.org/mabrarov/asio_samples.svg?branch=develop)](https://travis-ci.org/mabrarov/asio_samples?branch=develop) [![Build status](https://ci.appveyor.com/api/projects/status/m3m15b3wxkyhqfj2/branch/develop?svg=true)](https://ci.appveyor.com/project/mabrarov/asio-samples)
+Asio samples [![Travis CI Build Status](https://travis-ci.org/mabrarov/asio_samples.svg?branch=develop)](https://travis-ci.org/mabrarov/asio_samples?branch=develop) [![AppVeyor CI Build Status](https://ci.appveyor.com/api/projects/status/m3m15b3wxkyhqfj2/branch/develop?svg=true)](https://ci.appveyor.com/project/mabrarov/asio-samples) [![Coverity Scan Build Status](https://scan.coverity.com/projects/9191/badge.svg)](https://scan.coverity.com/projects/mabrarov-asio_samples)
 ============
 
 Examples (code samples) describing the construction of active objects 
@@ -43,9 +43,9 @@ cmake -D CMAKE_USER_MAKE_RULES_OVERRIDE=<asio_samples directory>/cmake/static_c_
       -D BOOST_LIBRARYDIR=<Boost built libraries directory>
       -D Boost_NO_SYSTEM_PATHS=ON
       -D Boost_USE_STATIC_LIBS=ON
-      -D Qt5Core_DIR=<Qt directory>/qtbase/lib/cmake/Qt5Core
-      -D Qt5Gui_DIR=<Qt directory>/qtbase/lib/cmake/Qt5Gui
-      -D Qt5Widgets_DIR=<Qt directory>/qtbase/lib/cmake/Qt5Widgets
+      -D Qt5Core_DIR=<Qt directory>/lib/cmake/Qt5Core
+      -D Qt5Gui_DIR=<Qt directory>/lib/cmake/Qt5Gui
+      -D Qt5Widgets_DIR=<Qt directory>/lib/cmake/Qt5Widgets
       -D GTEST_ROOT=<Google Test install directory>
       -G "Visual Studio 12 2013 Win64"
       <asio_samples directory>
@@ -58,9 +58,9 @@ cmake -D BOOST_INCLUDEDIR=<Boost headers directory>
       -D BOOST_LIBRARYDIR=<Boost built libraries directory>
       -D Boost_NO_SYSTEM_PATHS=ON
       -D Boost_USE_STATIC_LIBS=ON
-      -D Qt5Core_DIR=<Qt directory>/qtbase/lib/cmake/Qt5Core
-      -D Qt5Gui_DIR=<Qt directory>/qtbase/lib/cmake/Qt5Gui
-      -D Qt5Widgets_DIR=<Qt directory>/qtbase/lib/cmake/Qt5Widgets
+      -D Qt5Core_DIR=<Qt directory>/lib/cmake/Qt5Core
+      -D Qt5Gui_DIR=<Qt directory>/lib/cmake/Qt5Gui
+      -D Qt5Widgets_DIR=<Qt directory>/lib/cmake/Qt5Widgets
       -D GTEST_ROOT=<Google Test install directory>
       -G "Visual Studio 14 2015 Win64"
       <asio_samples directory>
@@ -73,9 +73,9 @@ cmake -D BOOST_INCLUDEDIR=<Boost headers directory>
       -D BOOST_LIBRARYDIR=<Boost built libraries directory>
       -D Boost_NO_SYSTEM_PATHS=ON
       -D Boost_USE_STATIC_LIBS=OFF
-      -D Qt5Core_DIR=<Qt directory>/qtbase/lib/cmake/Qt5Core
-      -D Qt5Gui_DIR=<Qt directory>/qtbase/lib/cmake/Qt5Gui
-      -D Qt5Widgets_DIR=<Qt directory>/qtbase/lib/cmake/Qt5Widgets
+      -D Qt5Core_DIR=<Qt directory>/lib/cmake/Qt5Core
+      -D Qt5Gui_DIR=<Qt directory>/lib/cmake/Qt5Gui
+      -D Qt5Widgets_DIR=<Qt directory>/lib/cmake/Qt5Widgets
       -D GTEST_ROOT=<Google Test install directory>
       -G "Visual Studio 14 2015 Win64"
       <asio_samples directory>
@@ -94,9 +94,9 @@ cmake -D CMAKE_USER_MAKE_RULES_OVERRIDE=<asio_samples directory>/cmake/static_c_
       -D BOOST_LIBRARYDIR=<Boost built libraries directory>
       -D Boost_NO_SYSTEM_PATHS=ON
       -D Boost_USE_STATIC_LIBS=ON
-      -D Qt5Core_DIR=<Qt directory>/qtbase/lib/cmake/Qt5Core
-      -D Qt5Gui_DIR=<Qt directory>/qtbase/lib/cmake/Qt5Gui
-      -D Qt5Widgets_DIR=<Qt directory>/qtbase/lib/cmake/Qt5Widgets
+      -D Qt5Core_DIR=<Qt directory>/lib/cmake/Qt5Core
+      -D Qt5Gui_DIR=<Qt directory>/lib/cmake/Qt5Gui
+      -D Qt5Widgets_DIR=<Qt directory>/lib/cmake/Qt5Widgets
       -D GTEST_ROOT=<Google Test install directory>
       -D CMAKE_C_COMPILER=icl
       -D CMAKE_CXX_COMPILER=icl
@@ -112,9 +112,9 @@ cmake -D ICU_ROOT=<ICU root directory>
       -D BOOST_INCLUDEDIR=<Boost headers directory>
       -D BOOST_LIBRARYDIR=<Boost built libraries directory>
       -D Boost_NO_SYSTEM_PATHS=ON
-      -D Qt5Core_DIR=<Qt directory>/qtbase/lib/cmake/Qt5Core
-      -D Qt5Gui_DIR=<Qt directory>/qtbase/lib/cmake/Qt5Gui
-      -D Qt5Widgets_DIR=<Qt directory>/qtbase/lib/cmake/Qt5Widgets
+      -D Qt5Core_DIR=<Qt directory>/lib/cmake/Qt5Core
+      -D Qt5Gui_DIR=<Qt directory>/lib/cmake/Qt5Gui
+      -D Qt5Widgets_DIR=<Qt directory>/lib/cmake/Qt5Widgets
       -D GTEST_ROOT=<Google Test install directory>
       -D CMAKE_C_COMPILER=icl
       -D CMAKE_CXX_COMPILER=icl
@@ -159,9 +159,9 @@ cmake -D BOOST_INCLUDEDIR=<Boost headers directory>
       -D BOOST_LIBRARYDIR=<Boost built libraries directory>
       -D Boost_NO_SYSTEM_PATHS=ON
       -D Boost_USE_STATIC_LIBS=ON
-      -D Qt5Core_DIR=<Qt directory>/qtbase/lib/cmake/Qt5Core
-      -D Qt5Gui_DIR=<Qt directory>/qtbase/lib/cmake/Qt5Gui
-      -D Qt5Widgets_DIR=<Qt directory>/qtbase/lib/cmake/Qt5Widgets
+      -D Qt5Core_DIR=<Qt directory>/lib/cmake/Qt5Core
+      -D Qt5Gui_DIR=<Qt directory>/lib/cmake/Qt5Gui
+      -D Qt5Widgets_DIR=<Qt directory>/lib/cmake/Qt5Widgets
       -D GTEST_ROOT=<Google Test install directory>
       -G "NMake Makefiles"
       -D CMAKE_BUILD_TYPE=RELEASE

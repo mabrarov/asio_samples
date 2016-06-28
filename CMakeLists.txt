@@ -63,6 +63,8 @@ add_subdirectory(cmake/ma_boost_program_options)
 add_subdirectory(cmake/ma_boost_timer)
 add_subdirectory(cmake/ma_boost_regex)
 
+set(ma_qt4_msvs_project_support_files )
+set(ma_qt5_msvs_project_support_files )
 if(ma_qt)
     # Interface-only targets to simplify support of Qt 5
     add_subdirectory(cmake/ma_qt5_core_support)
@@ -71,6 +73,15 @@ if(ma_qt)
     # Interface-only targets to simplify support of Qt 4
     add_subdirectory(cmake/ma_qt4_core_support)
     add_subdirectory(cmake/ma_qt4_gui_support)
+
+    # MSVS project support files for Qt.
+    # Starting from MSVS 2015 these files can be included into MSVS project.
+    if(${CMAKE_GENERATOR} MATCHES "Visual Studio 14")
+        list(APPEND ma_qt4_msvs_project_support_files
+            "${CMAKE_SOURCE_DIR}/cmake/qt_msvs_tools/qt4.natvis")
+        list(APPEND ma_qt5_msvs_project_support_files
+            "${CMAKE_SOURCE_DIR}/cmake/qt_msvs_tools/qt5.natvis")
+    endif()
 endif()
 
 if(ma_build_tests)

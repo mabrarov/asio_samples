@@ -127,7 +127,7 @@ cyclic_read_session::do_start_extern_stop()
     return stop_error_;
   }
 
-  return optional_error_code();
+  return boost::none;
 }
 
 cyclic_read_session::optional_error_code
@@ -158,7 +158,7 @@ cyclic_read_session::do_start_extern_read_some()
   {
     read_until_head();
   }
-  return optional_error_code();
+  return boost::none;
 }
 
 bool cyclic_read_session::may_complete_stop() const
