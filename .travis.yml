@@ -107,64 +107,63 @@ matrix:
     - env: COMPILER=g++-4.6 BOOST_VERSION=1.55 QT_VERSION=5 BUILD_TYPE=RELEASE
       compiler: gcc
       addons: *addons-gcc46-boost155-qt5
-# Removed because of LLVM servers (packages) are inaccessible
-#    # Clang 3.6, Boost 1.55. Qt 5.x
-#    - env: COMPILER=clang++-3.6 BOOST_VERSION=1.55 QT_VERSION=5 BUILD_TYPE=DEBUG
-#      compiler: clang
-#      addons: &addons-clang36-boost155-qt5
-#        apt:
-#          packages:
-#            - cmake
-#            - cmake-data
-#            - clang-3.6
-#            - libboost1.55-all-dev
-#            - qtbase5-dev
-#          sources: &llvm36-package-sources
-#            - george-edison55-precise-backports
-#            - ubuntu-toolchain-r-test
-#            - llvm-toolchain-precise-3.6
-#            - boost-latest
-#    - env: COMPILER=clang++-3.6 BOOST_VERSION=1.55 QT_VERSION=5 BUILD_TYPE=RELEASE
-#      compiler: clang
-#      addons: *addons-clang36-boost155-qt5
-#    # Clang 3.7, Boost 1.55. Qt 5.x
-#    - env: COMPILER=clang++-3.7 BOOST_VERSION=1.55 QT_VERSION=5 BUILD_TYPE=DEBUG
-#      compiler: clang
-#      addons: &addons-clang37-boost155-qt5
-#        apt:
-#          packages:
-#            - cmake
-#            - cmake-data
-#            - clang-3.7
-#            - libboost1.55-all-dev
-#            - qtbase5-dev
-#          sources: &llvm37-package-sources
-#            - george-edison55-precise-backports
-#            - ubuntu-toolchain-r-test
-#            - llvm-toolchain-precise-3.7
-#            - boost-latest
-#    - env: COMPILER=clang++-3.7 BOOST_VERSION=1.55 QT_VERSION=5 BUILD_TYPE=RELEASE
-#      compiler: clang
-#      addons: *addons-clang37-boost155-qt5
-#    # Clang 3.8, Boost 1.55. Qt 5.x
-#    - env: COMPILER=clang++-3.8 BOOST_VERSION=1.55 QT_VERSION=5 BUILD_TYPE=DEBUG
-#      compiler: clang
-#      addons: &addons-clang38-boost155-qt5
-#        apt:
-#          packages:
-#            - cmake
-#            - cmake-data
-#            - clang-3.8
-#            - libboost1.55-all-dev
-#            - qtbase5-dev
-#          sources: &llvm38-package-sources
-#            - george-edison55-precise-backports
-#            - ubuntu-toolchain-r-test
-#            - llvm-toolchain-precise-3.8
-#            - boost-latest
-#    - env: COMPILER=clang++-3.8 BOOST_VERSION=1.55 QT_VERSION=5 BUILD_TYPE=RELEASE
-#      compiler: clang
-#      addons: *addons-clang38-boost155-qt5
+    # Clang 3.6, Boost 1.55. Qt 5.x
+    - env: COMPILER=clang++-3.6 BOOST_VERSION=1.55 QT_VERSION=5 BUILD_TYPE=DEBUG
+      compiler: clang
+      addons: &addons-clang36-boost155-qt5
+        apt:
+          packages:
+            - cmake
+            - cmake-data
+            - clang-3.6
+            - libboost1.55-all-dev
+            - qtbase5-dev
+          sources: &llvm36-package-sources
+            - george-edison55-precise-backports
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.6
+            - boost-latest
+    - env: COMPILER=clang++-3.6 BOOST_VERSION=1.55 QT_VERSION=5 BUILD_TYPE=RELEASE
+      compiler: clang
+      addons: *addons-clang36-boost155-qt5
+    # Clang 3.7, Boost 1.55. Qt 5.x
+    - env: COMPILER=clang++-3.7 BOOST_VERSION=1.55 QT_VERSION=5 BUILD_TYPE=DEBUG
+      compiler: clang
+      addons: &addons-clang37-boost155-qt5
+        apt:
+          packages:
+            - cmake
+            - cmake-data
+            - clang-3.7
+            - libboost1.55-all-dev
+            - qtbase5-dev
+          sources: &llvm37-package-sources
+            - george-edison55-precise-backports
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.7
+            - boost-latest
+    - env: COMPILER=clang++-3.7 BOOST_VERSION=1.55 QT_VERSION=5 BUILD_TYPE=RELEASE
+      compiler: clang
+      addons: *addons-clang37-boost155-qt5
+    # Clang 3.8, Boost 1.55. Qt 5.x
+    - env: COMPILER=clang++-3.8 BOOST_VERSION=1.55 QT_VERSION=5 BUILD_TYPE=DEBUG
+      compiler: clang
+      addons: &addons-clang38-boost155-qt5
+        apt:
+          packages:
+            - cmake
+            - cmake-data
+            - clang-3.8
+            - libboost1.55-all-dev
+            - qtbase5-dev
+          sources: &llvm38-package-sources
+            - george-edison55-precise-backports
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-precise-3.8
+            - boost-latest
+    - env: COMPILER=clang++-3.8 BOOST_VERSION=1.55 QT_VERSION=5 BUILD_TYPE=RELEASE
+      compiler: clang
+      addons: *addons-clang38-boost155-qt5
     # GCC 5, Boost 1.55. Qt 4.x
     - env: COMPILER=g++-5 BOOST_VERSION=1.55 QT_VERSION=4 BUILD_TYPE=DEBUG
       compiler: gcc
@@ -229,52 +228,51 @@ matrix:
     - env: COMPILER=g++-4.6 BOOST_VERSION=1.55 QT_VERSION=4 BUILD_TYPE=RELEASE
       compiler: gcc
       addons: *addons-gcc46-boost155-qt4
-# Removed because of LLVM servers (packages) are inaccessible
-#    # Clang 3.6, Boost 1.55. Qt 4.x
-#    - env: COMPILER=clang++-3.6 BOOST_VERSION=1.55 QT_VERSION=4 BUILD_TYPE=DEBUG
-#      compiler: clang
-#      addons: &addons-clang36-boost155-qt4
-#        apt:
-#          packages:
-#            - cmake
-#            - cmake-data
-#            - clang-3.6
-#            - libboost1.55-all-dev
-#            - libqt4-dev
-#          sources: *llvm36-package-sources
-#    - env: COMPILER=clang++-3.6 BOOST_VERSION=1.55 QT_VERSION=4 BUILD_TYPE=RELEASE
-#      compiler: clang
-#      addons: *addons-clang36-boost155-qt4
-#    # Clang 3.7, Boost 1.55. Qt 4.x
-#    - env: COMPILER=clang++-3.7 BOOST_VERSION=1.55 QT_VERSION=4 BUILD_TYPE=DEBUG
-#      compiler: clang
-#      addons: &addons-clang37-boost155-qt4
-#        apt:
-#          packages:
-#            - cmake
-#            - cmake-data
-#            - clang-3.7
-#            - libboost1.55-all-dev
-#            - libqt4-dev
-#          sources: *llvm37-package-sources
-#    - env: COMPILER=clang++-3.7 BOOST_VERSION=1.55 QT_VERSION=4 BUILD_TYPE=RELEASE
-#      compiler: clang
-#      addons: *addons-clang37-boost155-qt4
-#    # Clang 3.8, Boost 1.55. Qt 4.x
-#    - env: COMPILER=clang++-3.8 BOOST_VERSION=1.55 QT_VERSION=4 BUILD_TYPE=DEBUG
-#      compiler: clang
-#      addons: &addons-clang38-boost155-qt4
-#        apt:
-#          packages:
-#            - cmake
-#            - cmake-data
-#            - clang-3.8
-#            - libboost1.55-all-dev
-#            - libqt4-dev
-#          sources: *llvm38-package-sources
-#    - env: COMPILER=clang++-3.8 BOOST_VERSION=1.55 QT_VERSION=4 BUILD_TYPE=RELEASE
-#      compiler: clang
-#      addons: *addons-clang38-boost155-qt4
+    # Clang 3.6, Boost 1.55. Qt 4.x
+    - env: COMPILER=clang++-3.6 BOOST_VERSION=1.55 QT_VERSION=4 BUILD_TYPE=DEBUG
+      compiler: clang
+      addons: &addons-clang36-boost155-qt4
+        apt:
+          packages:
+            - cmake
+            - cmake-data
+            - clang-3.6
+            - libboost1.55-all-dev
+            - libqt4-dev
+          sources: *llvm36-package-sources
+    - env: COMPILER=clang++-3.6 BOOST_VERSION=1.55 QT_VERSION=4 BUILD_TYPE=RELEASE
+      compiler: clang
+      addons: *addons-clang36-boost155-qt4
+    # Clang 3.7, Boost 1.55. Qt 4.x
+    - env: COMPILER=clang++-3.7 BOOST_VERSION=1.55 QT_VERSION=4 BUILD_TYPE=DEBUG
+      compiler: clang
+      addons: &addons-clang37-boost155-qt4
+        apt:
+          packages:
+            - cmake
+            - cmake-data
+            - clang-3.7
+            - libboost1.55-all-dev
+            - libqt4-dev
+          sources: *llvm37-package-sources
+    - env: COMPILER=clang++-3.7 BOOST_VERSION=1.55 QT_VERSION=4 BUILD_TYPE=RELEASE
+      compiler: clang
+      addons: *addons-clang37-boost155-qt4
+    # Clang 3.8, Boost 1.55. Qt 4.x
+    - env: COMPILER=clang++-3.8 BOOST_VERSION=1.55 QT_VERSION=4 BUILD_TYPE=DEBUG
+      compiler: clang
+      addons: &addons-clang38-boost155-qt4
+        apt:
+          packages:
+            - cmake
+            - cmake-data
+            - clang-3.8
+            - libboost1.55-all-dev
+            - libqt4-dev
+          sources: *llvm38-package-sources
+    - env: COMPILER=clang++-3.8 BOOST_VERSION=1.55 QT_VERSION=4 BUILD_TYPE=RELEASE
+      compiler: clang
+      addons: *addons-clang38-boost155-qt4
 
 script:
   - cd $TRAVIS_BUILD_DIR
