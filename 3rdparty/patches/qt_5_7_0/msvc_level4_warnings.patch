@@ -1,0 +1,43 @@
+--- qtbase/src/corelib/global/qglobal.h	2016-06-10 09:48:56
++++ qtbase/src/corelib/global/qglobal.h	2016-06-26 01:01:20
+@@ -717,7 +717,15 @@
+ 
+ #if !defined(Q_ASSERT)
+ #  if defined(QT_NO_DEBUG) && !defined(QT_FORCE_ASSERTS)
+-#    define Q_ASSERT(cond) do { } while ((false) && (cond))
++#    if defined(Q_CC_MSVC)
++#      define Q_ASSERT(cond) do { \
++__pragma(warning(push)) \
++__pragma(warning(disable:4127)) \
++} while ((false) && (cond)) \
++__pragma(warning(pop))
++#    else
++#      define Q_ASSERT(cond) do { } while ((false) && (cond))
++#    endif
+ #  else
+ #    define Q_ASSERT(cond) ((!(cond)) ? qt_assert(#cond,__FILE__,__LINE__) : qt_noop())
+ #  endif
+@@ -734,7 +742,15 @@
+ 
+ #if !defined(Q_ASSERT_X)
+ #  if defined(QT_NO_DEBUG) && !defined(QT_FORCE_ASSERTS)
+-#    define Q_ASSERT_X(cond, where, what) do { } while ((false) && (cond))
++#    if defined(Q_CC_MSVC)
++#      define Q_ASSERT_X(cond, where, what) do { \
++__pragma(warning(push)) \
++__pragma(warning(disable:4127)) \
++} while ((false) && (cond)) \
++__pragma(warning(pop))
++#    else
++#      define Q_ASSERT_X(cond, where, what) do { } while ((false) && (cond))
++#    endif
+ #  else
+ #    define Q_ASSERT_X(cond, where, what) ((!(cond)) ? qt_assert_x(where, what,__FILE__,__LINE__) : qt_noop())
+ #  endif
+@@ -1149,4 +1165,4 @@
+ 
+ #endif /* __cplusplus */
+ 
+-#endif /* QGLOBAL_H */
++#endif /* QGLOBAL_H */
+\ No newline at end of file
