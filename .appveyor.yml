@@ -24,7 +24,7 @@ environment:
       RUNTIME_LINKAGE: static
       BOOST_VERSION: 1.61.0
       BOOST_LINKAGE: static
-      QT_VERSION: 5.7
+      QT_VERSION: 5.7.0
       QT_LINKAGE: static
       ICU_VERSION: 57.1
       ICU_LINKAGE: static
