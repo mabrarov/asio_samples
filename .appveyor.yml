@@ -578,6 +578,7 @@ build_script:
               default {
                 cmake -D CMAKE_USER_MAKE_RULES_OVERRIDE=$env:APPVEYOR_BUILD_FOLDER\cmake\static_c_runtime_overrides.cmake -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX=$env:APPVEYOR_BUILD_FOLDER\cmake\static_cxx_runtime_overrides.cmake -D BOOST_INCLUDEDIR=$env:BOOST_INCLUDE_FOLDER -D BOOST_LIBRARYDIR=$env:BOOST_LIBRARY_FOLDER -D Boost_USE_STATIC_LIBS=$env:BOOST_USE_STATIC_LIBS -D Boost_NO_SYSTEM_PATHS=ON -D Qt5Core_DIR=$env:QT_HOME\lib\cmake\Qt5Core -D Qt5Gui_DIR=$env:QT_HOME\lib\cmake\Qt5Gui -D Qt5Widgets_DIR=$env:QT_HOME\lib\cmake\Qt5Widgets -G "$env:CMAKE_GENERATOR" $env:APPVEYOR_BUILD_FOLDER
               }
+            }
           } elseif ($env:QT_VERSION -match "4\.*") {
             cmake -D CMAKE_USER_MAKE_RULES_OVERRIDE=$env:APPVEYOR_BUILD_FOLDER\cmake\static_c_runtime_overrides.cmake -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX=$env:APPVEYOR_BUILD_FOLDER\cmake\static_cxx_runtime_overrides.cmake -D BOOST_INCLUDEDIR=$env:BOOST_INCLUDE_FOLDER -D BOOST_LIBRARYDIR=$env:BOOST_LIBRARY_FOLDER -D Boost_USE_STATIC_LIBS=$env:BOOST_USE_STATIC_LIBS -D Boost_NO_SYSTEM_PATHS=ON -D QT_QMAKE_EXECUTABLE=$env:QT_QMAKE_EXECUTABLE -G "$env:CMAKE_GENERATOR" $env:APPVEYOR_BUILD_FOLDER
           } else {
