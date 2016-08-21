@@ -543,6 +543,7 @@ before_build:
       Write-Host "APPVEYOR_BUILD_FOLDER     : $env:APPVEYOR_BUILD_FOLDER"
       if ($env:ICU_ROOT) {
         Write-Host "ICU_ROOT                  : $env:ICU_ROOT"
+        Write-Host "ICU_LIBRARY_FOLDER        : $env:ICU_LIBRARY_FOLDER"
       }
       Write-Host "BOOST_INCLUDE_FOLDER      : $env:BOOST_INCLUDE_FOLDER"
       Write-Host "BOOST_LIBRARY_FOLDER      : $env:BOOST_LIBRARY_FOLDER"
