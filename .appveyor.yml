@@ -21,6 +21,14 @@ environment:
 
   matrix:
     - MSVC_VERSION: 14.0
+      RUNTIME_LINKAGE: static
+      BOOST_VERSION: 1.61.0
+      BOOST_LINKAGE: static
+      QT_VERSION: 5.7
+      QT_LINKAGE: static
+      ICU_VERSION: 57.1
+      ICU_LINKAGE: static
+    - MSVC_VERSION: 14.0
       RUNTIME_LINKAGE: shared
       BOOST_VERSION: 1.61.0
       BOOST_LINKAGE: static
@@ -127,6 +135,82 @@ install:
         }
         default {
           throw "Unsupported platform: $env:PLATFORM"
+        }
+      }
+      $pre_installed_icu=""
+      if ($env:ICU_VERSION) {
+        if ($pre_installed_icu) {
+          throw "Pre-installed ICU is missing"
+        } else {
+          $icu_platform_suffix=""
+          switch ($env:PLATFORM) {
+            "Win32" {
+              $boost_platform_suffix="-x86"
+            }
+            "x64" {
+              $boost_platform_suffix="-x64"
+            }
+            default {
+              throw "Unsupported platform: $env:PLATFORM"
+            }
+          }
+          $icu_version_suffix="-$env:ICU_VERSION"
+          $icu_toolchain_suffix=""
+          switch ($env:MSVC_VERSION) {
+            "14.0" {
+              $icu_toolchain_suffix="-vs2015"
+            }
+            "12.0" {
+              $icu_toolchain_suffix="-vs2013"
+            }
+            default {
+              throw "Unsupported MSVS version: $env:MSVC_VERSION"
+            }
+          }
+          $icu_linkage_suffix=""
+          switch ($env:ICU_LINKAGE) {
+            "shared" {
+              $icu_linkage_suffix="-shared"
+            }
+            "static" {
+              $icu_linkage_suffix="-static"
+            }
+            default {
+              $icu_linkage_suffix="-shared"
+            }
+          }
+          $icu_install_folder="$env:DEPENDENCIES_FOLDER\icu4c$icu_version_suffix$icu_platform_suffix$icu_toolchain_suffix$icu_linkage_suffix"
+          if (!(Test-Path -Path "$icu_install_folder")) {
+            Write-Host "Built ICU libraries are absent for the selected toolchain (msvc-$env:MSVC_VERSION) and ICU version ($env:ICU_VERSION)"
+            $icu_archive_name="icu4c$icu_version_suffix$icu_platform_suffix$icu_toolchain_suffix$icu_linkage_suffix.7z"
+            $icu_archive_file="$env:DOWNLOADS_FOLDER\$icu_archive_name"
+            if (!(Test-Path -Path "$icu_archive_file")) {
+              $icu_download_url="https://dl.bintray.com/mabrarov/generic/icu/$env:ICU_VERSION/$icu_archive_name"
+              if (!(Test-Path -Path "$env:DOWNLOADS_FOLDER")) {
+                New-Item "$env:DOWNLOADS_FOLDER" -type directory | out-null
+              }
+              Write-Host "Going to download pre-built ICU libraries from: $icu_download_url to: $icu_archive_file"
+              curl.exe --max-time 600 --show-error --silent --location --output "$icu_archive_file" "$icu_download_url"
+              if ($LastExitCode -ne 0) {
+                throw "File downloading failed with exit code $LastExitCode."
+              }
+              Write-Host "Downloaded: $icu_archive_file"
+            }
+            Write-Host "Extracting pre-built ICU libraries from: $icu_archive_file to: $env:DEPENDENCIES_FOLDER"
+            if (!(Test-Path -Path "$env:DEPENDENCIES_FOLDER")) {
+              New-Item "$env:DEPENDENCIES_FOLDER" -type directory | out-null
+            }
+            7z.exe x "$icu_archive_file" -o"$env:DEPENDENCIES_FOLDER" -aoa -y | out-null
+            if ($LastExitCode -ne 0) {
+              throw "File extraction failed with exit code $LastExitCode."
+            }
+            Write-Host "Extracted: $icu_install_folder"
+          }
+          $env:ICU_ROOT="$icu_install_folder"
+          $env:ICU_LIBRARY_FOLDER="$icu_install_folder\lib"
+        }
+        if ($env:RUNTIME_LINKAGE -eq "static" -and -not ($env:ICU_LINKAGE -eq "static")) {
+          throw "Incompatible type of linkage of ICU: $env:ICU_LINKAGE for the specified type of linkage of C/C++ runtime: $env:RUNTIME_LINKAGE"
         }
       }
       $pre_installed_boost=""
@@ -477,8 +561,11 @@ before_build:
       if ($env:QT_VERSION) {
         $env:PATH="$env:QT_BIN_FOLDER;$env:PATH"
       }
-      if ($env:BOOST_VERSION -and ($env:BOOST_LINKAGE -eq "shared")) {
+      if ($env:BOOST_VERSION -and -not ($env:BOOST_LINKAGE -eq "static")) {
         $env:PATH="$env:BOOST_LIBRARY_FOLDER;$env:PATH"
+      }
+      if ($env:ICU_VERSION -and -not ($env:ICU_LINKAGE -eq "static")) {
+        $env:PATH="$env:ICU_LIBRARY_FOLDER;$env:PATH"        
       }
 
 build_script:
@@ -501,7 +588,16 @@ build_script:
           if (!($env:QT_VERSION)) {
             cmake -D CMAKE_USER_MAKE_RULES_OVERRIDE=$env:APPVEYOR_BUILD_FOLDER\cmake\static_c_runtime_overrides.cmake -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX=$env:APPVEYOR_BUILD_FOLDER\cmake\static_cxx_runtime_overrides.cmake -D BOOST_INCLUDEDIR=$env:BOOST_INCLUDE_FOLDER -D BOOST_LIBRARYDIR=$env:BOOST_LIBRARY_FOLDER -D Boost_USE_STATIC_LIBS=$env:BOOST_USE_STATIC_LIBS -D Boost_NO_SYSTEM_PATHS=ON -D ma_qt=OFF -G "$env:CMAKE_GENERATOR" $env:APPVEYOR_BUILD_FOLDER
           } elseif ($env:QT_VERSION -match "5\.*") {
-            cmake -D CMAKE_USER_MAKE_RULES_OVERRIDE=$env:APPVEYOR_BUILD_FOLDER\cmake\static_c_runtime_overrides.cmake -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX=$env:APPVEYOR_BUILD_FOLDER\cmake\static_cxx_runtime_overrides.cmake -D BOOST_INCLUDEDIR=$env:BOOST_INCLUDE_FOLDER -D BOOST_LIBRARYDIR=$env:BOOST_LIBRARY_FOLDER -D Boost_USE_STATIC_LIBS=$env:BOOST_USE_STATIC_LIBS -D Boost_NO_SYSTEM_PATHS=ON -D Qt5Core_DIR=$env:QT_HOME\lib\cmake\Qt5Core -D Qt5Gui_DIR=$env:QT_HOME\lib\cmake\Qt5Gui -D Qt5Widgets_DIR=$env:QT_HOME\lib\cmake\Qt5Widgets -G "$env:CMAKE_GENERATOR" $env:APPVEYOR_BUILD_FOLDER
+            switch ($env:QT_LINKAGE) {
+              "static" {
+                if (!($env:ICU_ROOT)) {
+                  throw "ICU location is unspecified. Static Qt 5.x requires static ICU"
+                }
+                cmake -D CMAKE_USER_MAKE_RULES_OVERRIDE=$env:APPVEYOR_BUILD_FOLDER\cmake\static_c_runtime_overrides.cmake -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX=$env:APPVEYOR_BUILD_FOLDER\cmake\static_cxx_runtime_overrides.cmake -D ICU_ROOT=$env:ICU_ROOT -D BOOST_INCLUDEDIR=$env:BOOST_INCLUDE_FOLDER -D BOOST_LIBRARYDIR=$env:BOOST_LIBRARY_FOLDER -D Boost_USE_STATIC_LIBS=$env:BOOST_USE_STATIC_LIBS -D Boost_NO_SYSTEM_PATHS=ON -D Qt5Core_DIR=$env:QT_HOME\lib\cmake\Qt5Core -D Qt5Gui_DIR=$env:QT_HOME\lib\cmake\Qt5Gui -D Qt5Widgets_DIR=$env:QT_HOME\lib\cmake\Qt5Widgets -G "$env:CMAKE_GENERATOR" $env:APPVEYOR_BUILD_FOLDER
+              }
+              default {
+                cmake -D CMAKE_USER_MAKE_RULES_OVERRIDE=$env:APPVEYOR_BUILD_FOLDER\cmake\static_c_runtime_overrides.cmake -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX=$env:APPVEYOR_BUILD_FOLDER\cmake\static_cxx_runtime_overrides.cmake -D BOOST_INCLUDEDIR=$env:BOOST_INCLUDE_FOLDER -D BOOST_LIBRARYDIR=$env:BOOST_LIBRARY_FOLDER -D Boost_USE_STATIC_LIBS=$env:BOOST_USE_STATIC_LIBS -D Boost_NO_SYSTEM_PATHS=ON -D Qt5Core_DIR=$env:QT_HOME\lib\cmake\Qt5Core -D Qt5Gui_DIR=$env:QT_HOME\lib\cmake\Qt5Gui -D Qt5Widgets_DIR=$env:QT_HOME\lib\cmake\Qt5Widgets -G "$env:CMAKE_GENERATOR" $env:APPVEYOR_BUILD_FOLDER
+              }
           } elseif ($env:QT_VERSION -match "4\.*") {
             cmake -D CMAKE_USER_MAKE_RULES_OVERRIDE=$env:APPVEYOR_BUILD_FOLDER\cmake\static_c_runtime_overrides.cmake -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX=$env:APPVEYOR_BUILD_FOLDER\cmake\static_cxx_runtime_overrides.cmake -D BOOST_INCLUDEDIR=$env:BOOST_INCLUDE_FOLDER -D BOOST_LIBRARYDIR=$env:BOOST_LIBRARY_FOLDER -D Boost_USE_STATIC_LIBS=$env:BOOST_USE_STATIC_LIBS -D Boost_NO_SYSTEM_PATHS=ON -D QT_QMAKE_EXECUTABLE=$env:QT_QMAKE_EXECUTABLE -G "$env:CMAKE_GENERATOR" $env:APPVEYOR_BUILD_FOLDER
           } else {
