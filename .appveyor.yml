@@ -9,9 +9,7 @@ os: Visual Studio 2015
 
 platform:
   - x64
-
-# Temporal. Uncomment after x86 build of static Qt 5.7 will be provided
-#  - Win32
+  - Win32
 
 configuration:
   - Debug
