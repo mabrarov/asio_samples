@@ -417,6 +417,7 @@ install:
               throw "Unsupported platform: $env:PLATFORM"
             }
           }
+          $qt_version_suffix=""
           if (!($env:QT_VERSION -match "[\d]+\.[\d]+\.[\d]+")) {
             $qt_version_suffix="-$env:QT_VERSION.0"
           } else {
@@ -458,7 +459,13 @@ install:
             $qt_archive_name="qt$qt_version_suffix$qt_platform_suffix$qt_toolchain_suffix$qt_linkage_suffix.7z"
             $qt_archive_file="$env:DOWNLOADS_FOLDER\$qt_archive_name"
             if (!(Test-Path -Path "$qt_archive_file")) {
-              $qt_download_url="https://dl.bintray.com/mabrarov/generic/qt/$env:QT_VERSION/$qt_archive_name"
+              $qt_version_url_suffix=""
+              if (!($env:QT_VERSION -match "[\d]+\.[\d]+\.[\d]+")) {
+                $qt_version_url_suffix="/$env:QT_VERSION.0"
+              } else {
+                $qt_version_url_suffix="/$env:QT_VERSION"
+              }
+              $qt_download_url="https://dl.bintray.com/mabrarov/generic/qt$qt_version_url_suffix/$qt_archive_name"
               if (!(Test-Path -Path "$env:DOWNLOADS_FOLDER")) {
                 New-Item "$env:DOWNLOADS_FOLDER" -type directory | out-null
               }
