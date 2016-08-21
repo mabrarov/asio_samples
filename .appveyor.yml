@@ -24,7 +24,7 @@ environment:
       RUNTIME_LINKAGE: static
       BOOST_VERSION: 1.61.0
       BOOST_LINKAGE: static
-      QT_VERSION: 5.7.0
+      QT_VERSION: 5.7
       QT_LINKAGE: static
       ICU_VERSION: 57.1
       ICU_LINKAGE: static
@@ -417,7 +417,11 @@ install:
               throw "Unsupported platform: $env:PLATFORM"
             }
           }
-          $qt_version_suffix="-$env:QT_VERSION"
+          if (!($env:QT_VERSION -match "[\d]+\.[\d]+\.[\d]+")) {
+            $qt_version_suffix="-$env:QT_VERSION.0"
+          } else {
+            $qt_version_suffix="-$env:QT_VERSION"
+          }
           $qt_toolchain_suffix=""
           switch ($env:MSVC_VERSION) {
             "14.0" {
@@ -537,6 +541,9 @@ before_build:
       Write-Host "VCVARS_BATCH_FILE         : $env:VCVARS_BATCH_FILE"
       Write-Host "VCVARS_PLATFORM           : $env:VCVARS_PLATFORM"
       Write-Host "APPVEYOR_BUILD_FOLDER     : $env:APPVEYOR_BUILD_FOLDER"
+      if ($env:ICU_ROOT) {
+        Write-Host "ICU_ROOT                  : $env:ICU_ROOT"
+      }
       Write-Host "BOOST_INCLUDE_FOLDER      : $env:BOOST_INCLUDE_FOLDER"
       Write-Host "BOOST_LIBRARY_FOLDER      : $env:BOOST_LIBRARY_FOLDER"
       Write-Host "BOOST_USE_STATIC_LIBS     : $env:BOOST_USE_STATIC_LIBS"
