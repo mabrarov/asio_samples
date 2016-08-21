@@ -145,10 +145,10 @@ install:
           $icu_platform_suffix=""
           switch ($env:PLATFORM) {
             "Win32" {
-              $boost_platform_suffix="-x86"
+              $icu_platform_suffix="-x86"
             }
             "x64" {
-              $boost_platform_suffix="-x64"
+              $icu_platform_suffix="-x64"
             }
             default {
               throw "Unsupported platform: $env:PLATFORM"
