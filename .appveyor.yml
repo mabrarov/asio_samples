@@ -171,9 +171,6 @@ install:
           }
           $icu_linkage_suffix=""
           switch ($env:ICU_LINKAGE) {
-            "shared" {
-              $icu_linkage_suffix="-shared"
-            }
             "static" {
               $icu_linkage_suffix="-static"
             }
@@ -323,17 +320,14 @@ install:
           "static" {
             $env:BOOST_USE_STATIC_LIBS="ON"
           }
-          "shared" {
-            $env:BOOST_USE_STATIC_LIBS="OFF"
-          }
           default {
-            throw "Unsupported type of linkage of Boost: $env:BOOST_LINKAGE"
+            $env:BOOST_USE_STATIC_LIBS="OFF"
           }
         }
       }
       if ($env:QT_VERSION) {
         $pre_installed_qt=""
-        if ($env:QT_LINKAGE -eq "shared") {
+        if (!($env:QT_LINKAGE -eq "static")) {
           switch ($env:MSVC_VERSION) {
             "14.0" {
               switch ($env:QT_VERSION) {
@@ -449,9 +443,6 @@ install:
           }
           $qt_linkage_suffix=""
           switch ($env:QT_LINKAGE) {
-            "shared" {
-              $qt_linkage_suffix="-shared"
-            }
             "static" {
               $qt_linkage_suffix="-static"
             }
@@ -575,17 +566,6 @@ build_script:
       New-Item "$env:APPVEYOR_BUILD_FOLDER\build" -type directory | out-null
       Set-Location -Path "$env:APPVEYOR_BUILD_FOLDER\build"
       switch ($env:RUNTIME_LINKAGE) {
-        "shared" {
-          if (!($env:QT_VERSION)) {
-            cmake -D BOOST_INCLUDEDIR=$env:BOOST_INCLUDE_FOLDER -D BOOST_LIBRARYDIR=$env:BOOST_LIBRARY_FOLDER -D Boost_USE_STATIC_LIBS=$env:BOOST_USE_STATIC_LIBS -D Boost_NO_SYSTEM_PATHS=ON -D gtest_force_shared_crt=ON -D ma_qt=OFF -G "$env:CMAKE_GENERATOR" $env:APPVEYOR_BUILD_FOLDER
-          } elseif ($env:QT_VERSION -match "5\.*") {
-            cmake -D BOOST_INCLUDEDIR=$env:BOOST_INCLUDE_FOLDER -D BOOST_LIBRARYDIR=$env:BOOST_LIBRARY_FOLDER -D Boost_USE_STATIC_LIBS=$env:BOOST_USE_STATIC_LIBS -D Boost_NO_SYSTEM_PATHS=ON -D Qt5Core_DIR=$env:QT_HOME\lib\cmake\Qt5Core -D Qt5Gui_DIR=$env:QT_HOME\lib\cmake\Qt5Gui -D Qt5Widgets_DIR=$env:QT_HOME\lib\cmake\Qt5Widgets -D gtest_force_shared_crt=ON -G "$env:CMAKE_GENERATOR" $env:APPVEYOR_BUILD_FOLDER
-          } elseif ($env:QT_VERSION -match "4\.*") {
-            cmake -D BOOST_INCLUDEDIR=$env:BOOST_INCLUDE_FOLDER -D BOOST_LIBRARYDIR=$env:BOOST_LIBRARY_FOLDER -D Boost_USE_STATIC_LIBS=$env:BOOST_USE_STATIC_LIBS -D Boost_NO_SYSTEM_PATHS=ON -D QT_QMAKE_EXECUTABLE=$env:QT_QMAKE_EXECUTABLE -D gtest_force_shared_crt=ON -G "$env:CMAKE_GENERATOR" $env:APPVEYOR_BUILD_FOLDER
-          } else {
-            throw "Unsupported version of Qt: $env:QT_VERSION."
-          }
-        }
         "static" {
           if (!($env:QT_VERSION)) {
             cmake -D CMAKE_USER_MAKE_RULES_OVERRIDE=$env:APPVEYOR_BUILD_FOLDER\cmake\static_c_runtime_overrides.cmake -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX=$env:APPVEYOR_BUILD_FOLDER\cmake\static_cxx_runtime_overrides.cmake -D BOOST_INCLUDEDIR=$env:BOOST_INCLUDE_FOLDER -D BOOST_LIBRARYDIR=$env:BOOST_LIBRARY_FOLDER -D Boost_USE_STATIC_LIBS=$env:BOOST_USE_STATIC_LIBS -D Boost_NO_SYSTEM_PATHS=ON -D ma_qt=OFF -G "$env:CMAKE_GENERATOR" $env:APPVEYOR_BUILD_FOLDER
@@ -607,7 +587,15 @@ build_script:
           }
         }
         default {
-          throw "Unsupported type of linkage of C/C++ runtime: $env:RUNTIME_LINKAGE"
+          if (!($env:QT_VERSION)) {
+            cmake -D BOOST_INCLUDEDIR=$env:BOOST_INCLUDE_FOLDER -D BOOST_LIBRARYDIR=$env:BOOST_LIBRARY_FOLDER -D Boost_USE_STATIC_LIBS=$env:BOOST_USE_STATIC_LIBS -D Boost_NO_SYSTEM_PATHS=ON -D gtest_force_shared_crt=ON -D ma_qt=OFF -G "$env:CMAKE_GENERATOR" $env:APPVEYOR_BUILD_FOLDER
+          } elseif ($env:QT_VERSION -match "5\.*") {
+            cmake -D BOOST_INCLUDEDIR=$env:BOOST_INCLUDE_FOLDER -D BOOST_LIBRARYDIR=$env:BOOST_LIBRARY_FOLDER -D Boost_USE_STATIC_LIBS=$env:BOOST_USE_STATIC_LIBS -D Boost_NO_SYSTEM_PATHS=ON -D Qt5Core_DIR=$env:QT_HOME\lib\cmake\Qt5Core -D Qt5Gui_DIR=$env:QT_HOME\lib\cmake\Qt5Gui -D Qt5Widgets_DIR=$env:QT_HOME\lib\cmake\Qt5Widgets -D gtest_force_shared_crt=ON -G "$env:CMAKE_GENERATOR" $env:APPVEYOR_BUILD_FOLDER
+          } elseif ($env:QT_VERSION -match "4\.*") {
+            cmake -D BOOST_INCLUDEDIR=$env:BOOST_INCLUDE_FOLDER -D BOOST_LIBRARYDIR=$env:BOOST_LIBRARY_FOLDER -D Boost_USE_STATIC_LIBS=$env:BOOST_USE_STATIC_LIBS -D Boost_NO_SYSTEM_PATHS=ON -D QT_QMAKE_EXECUTABLE=$env:QT_QMAKE_EXECUTABLE -D gtest_force_shared_crt=ON -G "$env:CMAKE_GENERATOR" $env:APPVEYOR_BUILD_FOLDER
+          } else {
+            throw "Unsupported version of Qt: $env:QT_VERSION."
+          }
         }
       }
       if ($LastExitCode -ne 0) {
