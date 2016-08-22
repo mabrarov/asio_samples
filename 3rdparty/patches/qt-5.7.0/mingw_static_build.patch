@@ -1,0 +1,11 @@
+--- qtbase/mkspecs/win32-g++/qmake.conf	2016-06-10 09:48:56
++++ qtbase/mkspecs/win32-g++/qmake.conf	2016-08-03 08:04:35
+@@ -74,7 +74,7 @@
+ 
+ QMAKE_LINK              = $${CROSS_COMPILE}g++
+ QMAKE_LINK_C            = $${CROSS_COMPILE}gcc
+-QMAKE_LFLAGS            =
++QMAKE_LFLAGS            = -static -static-libgcc -static-libstdc++
+ QMAKE_LFLAGS_EXCEPTIONS_ON = -mthreads
+ QMAKE_LFLAGS_EXCEPTIONS_OFF =
+ QMAKE_LFLAGS_RELEASE    = -Wl,-s
