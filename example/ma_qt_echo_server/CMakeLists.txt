@@ -49,19 +49,19 @@ if(ma_qt_echo_server_qt_version EQUAL 5)
     find_package(Qt5Gui     REQUIRED)
     find_package(Qt5Core    REQUIRED)
     set(qt_libraries
-        Qt5::Core
-        Qt5::Gui
         Qt5::Widgets
-        ma_qt5_core_support
+        Qt5::Gui
+        Qt5::Core
+        ma_qt5_widgets_support
         ma_qt5_gui_support
-        ma_qt5_widgets_support)
+        ma_qt5_core_support)
 elseif(ma_qt_echo_server_qt_version EQUAL 4)
     find_package(Qt4 REQUIRED QtCore QtGui)
     set(qt_libraries
-        Qt4::QtCore
         Qt4::QtGui
-        ma_qt4_core_support
-        ma_qt4_gui_support)
+        Qt4::QtCore
+        ma_qt4_gui_support
+        ma_qt4_core_support)
 else()
     message(FATAL_ERROR "Unknown version of Qt: " ${ma_qt_echo_server_qt_version})
 endif()
