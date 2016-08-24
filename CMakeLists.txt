@@ -129,6 +129,7 @@ if(ma_build_tests)
     endif()
     add_subdirectory(test/ma_handler_allocator_test)
     add_subdirectory(test/ma_custom_alloc_handler_test)
+    add_subdirectory(test/ma_cyclic_buffer_test)
 endif()
 
 # Examples of using of libraries
