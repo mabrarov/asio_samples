@@ -29,6 +29,22 @@ void test_filled_size_of_empty(const ma::cyclic_buffer& buffer)
   ASSERT_EQ(0U, boost::asio::buffer_size(filled_space));
 }
 
+void test_free_size_of_full(ma::cyclic_buffer& buffer)
+{
+  typedef ma::cyclic_buffer::mutable_buffers_type mutable_buffers_type;
+  buffer.consume(buffer.size());
+  const mutable_buffers_type free_space = buffer.prepared();
+  ASSERT_EQ(0U, boost::asio::buffer_size(free_space));
+}
+
+void test_filled_size_of_full(ma::cyclic_buffer& buffer)
+{
+  typedef ma::cyclic_buffer::const_buffers_type const_buffers_type;
+  buffer.consume(buffer.size());
+  const const_buffers_type filled_space = buffer.data();
+  ASSERT_EQ(buffer.size(), boost::asio::buffer_size(filled_space));
+}
+
 } // anonymous namespace
 
 TEST(zero_size_cyclic_buffer, no_free_space)
@@ -59,6 +75,18 @@ TEST(one_size_cyclic_buffer, filled_size_of_empty)
   test_filled_size_of_empty(test_buffer);
 }
 
+TEST(one_size_cyclic_buffer, test_free_size_of_full)
+{
+  ma::cyclic_buffer test_buffer(1);
+  test_free_size_of_full(test_buffer);
+}
+
+TEST(one_size_cyclic_buffer, test_filled_size_of_full)
+{
+  ma::cyclic_buffer test_buffer(1);
+  test_filled_size_of_full(test_buffer);
+}
+
 TEST(generic_size_cyclic_buffer, free_size_of_empty)
 {
   ma::cyclic_buffer test_buffer(128);
@@ -69,6 +97,18 @@ TEST(generic_size_cyclic_buffer, filled_size_of_empty)
 {
   ma::cyclic_buffer test_buffer(256);
   test_filled_size_of_empty(test_buffer);
+}
+
+TEST(generic_size_cyclic_buffer, test_free_size_of_full)
+{
+  ma::cyclic_buffer test_buffer(128);
+  test_free_size_of_full(test_buffer);
+}
+
+TEST(generic_size_cyclic_buffer, test_filled_size_of_full)
+{
+  ma::cyclic_buffer test_buffer(256);
+  test_filled_size_of_full(test_buffer);
 }
 
 } // namespace cyclic_buffer_test
