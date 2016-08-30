@@ -19,7 +19,7 @@ before_install:
 matrix:
   include:
     # Default GCC, Boost 1.55. Qt 5.x
-    - env: COMPILER=g++-4.8.4 BOOST_VERSION=1.55 QT_VERSION=5 BUILD_TYPE=RELEASE
+    - env: COMPILER=g++ BOOST_VERSION=1.55 QT_VERSION=5 BUILD_TYPE=RELEASE
       compiler: gcc
       addons:
         apt:
