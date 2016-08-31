@@ -30,21 +30,21 @@ config_private_compile_definitions(cxx_private_compile_definitions)
 set(cxx_private_libraries )
 
 # Determine major version of Qt to use (Qt 5 is preferred)
-set(ma_qt_echo_server_qt_version )
-if(ma_force_qt_version)
-    set(ma_qt_echo_server_qt_version ${ma_force_qt_version})
+set(ma_qt_echo_server_qt_major_version )
+if(ma_force_qt_major_version)
+    set(ma_qt_echo_server_qt_major_version ${ma_force_qt_major_version})
 else()
     find_package(Qt5Widgets QUIET)
     if(Qt5Widgets_FOUND)
-        set(ma_qt_echo_server_qt_version 5)
+        set(ma_qt_echo_server_qt_major_version 5)
     else()
-        set(ma_qt_echo_server_qt_version 4)
+        set(ma_qt_echo_server_qt_major_version 4)
     endif()
 endif()
 
 # Find required Qt libraries
 set(qt_libraries )
-if(ma_qt_echo_server_qt_version EQUAL 5)
+if(ma_qt_echo_server_qt_major_version EQUAL 5)
     find_package(Qt5Widgets REQUIRED)
     find_package(Qt5Gui     REQUIRED)
     find_package(Qt5Core    REQUIRED)
@@ -55,7 +55,7 @@ if(ma_qt_echo_server_qt_version EQUAL 5)
         ma_qt5_widgets_support
         ma_qt5_gui_support
         ma_qt5_core_support)
-elseif(ma_qt_echo_server_qt_version EQUAL 4)
+elseif(ma_qt_echo_server_qt_major_version EQUAL 4)
     find_package(Qt4 REQUIRED QtCore QtGui)
     set(qt_libraries
         Qt4::QtGui
@@ -63,7 +63,7 @@ elseif(ma_qt_echo_server_qt_version EQUAL 4)
         ma_qt4_gui_support
         ma_qt4_core_support)
 else()
-    message(FATAL_ERROR "Unknown version of Qt: " ${ma_qt_echo_server_qt_version})
+    message(FATAL_ERROR "Unknown version of Qt: " ${ma_qt_echo_server_qt_major_version})
 endif()
 
 list(APPEND uic_forms
@@ -115,20 +115,20 @@ set(uic_generated_headers )
 set(qrc_generated_sources )
 # Required for Qt UIC
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-if(ma_qt_echo_server_qt_version EQUAL 5)
+if(ma_qt_echo_server_qt_major_version EQUAL 5)
     qt5_wrap_cpp(moc_generated_sources ${moc_headers})
     qt5_wrap_ui(uic_generated_headers ${uic_forms})
     qt5_add_resources(qrc_generated_sources ${qrc_resources})
-elseif(ma_qt_echo_server_qt_version EQUAL 4)
+elseif(ma_qt_echo_server_qt_major_version EQUAL 4)
     qt4_wrap_cpp(moc_generated_sources ${moc_headers})
     qt4_wrap_ui(uic_generated_headers ${uic_forms})
     qt4_add_resources(qrc_generated_sources ${qrc_resources})
 endif()
 
-if(ma_qt_echo_server_qt_version EQUAL 5)
+if(ma_qt_echo_server_qt_major_version EQUAL 5)
     list(APPEND qt_msvs_project_support_files
         ${ma_qt5_msvs_project_support_files})
-elseif(ma_qt_echo_server_qt_version EQUAL 4)
+elseif(ma_qt_echo_server_qt_major_version EQUAL 4)
     list(APPEND qt_msvs_project_support_files
         ${ma_qt4_msvs_project_support_files})
 endif()

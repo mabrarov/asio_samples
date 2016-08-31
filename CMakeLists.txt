@@ -12,6 +12,11 @@ option(ma_build_tests "Build tests" ON)
 option(ma_force_own_gtest "Use own (embedded) version of Google Test framework" OFF)
 option(ma_qt "Use Qt and do not skip all the code requiring Qt" ON)
 
+# Use ma_force_qt_major_version to force usage of Qt 5.x or Qt 4.x:
+# -D ma_force_qt_major_version=4
+# or
+# -D ma_force_qt_major_version=5
+
 # Additional helpers
 include(cmake/internal_utils.cmake)
 
