@@ -455,7 +455,7 @@ install:
           }
           $qt_install_folder="$env:DEPENDENCIES_FOLDER\qt$qt_version_suffix$qt_platform_suffix$qt_toolchain_suffix$qt_linkage_suffix"
           if (!(Test-Path -Path "$qt_install_folder")) {
-            Write-Host "Built Qt libraries are absent for the selected toolchain (msvc-$env:MSVC_VERSION) and Qt version ($env:QT_VERSION)"
+            Write-Host "Built Qt libraries are absent for the selected toolchain (msvc-$env:MSVC_VERSION) and Qt version ($env:QT_VERSION) and Qt linkage ($env:QT_LINKAGE)"
             $qt_archive_name="qt$qt_version_suffix$qt_platform_suffix$qt_toolchain_suffix$qt_linkage_suffix.7z"
             $qt_archive_file="$env:DOWNLOADS_FOLDER\$qt_archive_name"
             if (!(Test-Path -Path "$qt_archive_file")) {
