@@ -16,7 +16,7 @@ ignore:
   - "3rdparty/*"
   - "cmake/*"
   - "doc/*"
-  - "test/*"
+  - "tests/*"
 
 comment:
   layout: "header, diff, changes, suggestions"
