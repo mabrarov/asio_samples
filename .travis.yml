@@ -292,12 +292,11 @@ script:
   - cmake -D CMAKE_C_COMPILER=$C_COMPILER -D CMAKE_CXX_COMPILER=$CXX_COMPILER -D CMAKE_BUILD_TYPE=$BUILD_TYPE -D ma_force_qt_major_version=$QT_MAJOR_VERSION -D ma_coverage_build=$COVERAGE_BUILD ..
   - cmake --build . --config $BUILD_TYPE
   - if [[ "$COVERAGE_BUILD" == "ON" ]]; then
-      lcov --directory . --zerocounters;
+      lcov -z -d . && lcov -c -d . -i -o lcov-base.info;
     fi
   - ctest --build-config $BUILD_TYPE --verbose
   - if [[ "$COVERAGE_BUILD" == "ON" ]]; then
-      lcov --directory . --capture --output-file lcov.info;
-      lcov --remove lcov.info 'tests/*' '/usr/*' 'boost/*' 'gtest/*' --output-file lcov.info;
+      lcov -c -d . -o lcov-test.info && lcov -a lcov-base.info -a lcov-test.info -o lcov.info && lcov -r lcov.info 'tests/*' 'build/*' '/usr/*' 'boost/*' 'gtest/*' -o lcov.info;
     fi
 
 after_success:
