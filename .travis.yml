@@ -296,7 +296,8 @@ script:
     fi
   - ctest --build-config $BUILD_TYPE --verbose
   - if [[ "$COVERAGE_BUILD" == "ON" ]]; then
-      lcov --directory . --capture --output-file lcov.info && lcov --remove lcov.info 'tests/*' '/usr/*' 'boost/*' 'gtest/*' --output-file lcov.info
+      lcov --directory . --capture --output-file lcov.info;
+      lcov --remove lcov.info 'tests/*' '/usr/*' 'boost/*' 'gtest/*' --output-file lcov.info
     fi
 
 after_success:
