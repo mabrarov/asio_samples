@@ -298,6 +298,7 @@ script:
   - if [[ "$COVERAGE_BUILD" == "ON" ]]; then
       lcov -c -d . -o lcov-test.info && lcov -a lcov-base.info -a lcov-test.info -o lcov.info && lcov -r lcov.info 'tests/*' 'ui_*.h*' 'moc_*.c*' '/usr/*' 'boost/*' 'gtest/*' -o lcov.info;
     fi
+  - cd $TRAVIS_BUILD_DIR
 
 after_success:
-  - bash <(curl -s https://codecov.io/bash) -f lcov.info
+  - bash <(curl -s https://codecov.io/bash) -f $TRAVIS_BUILD_DIR/build/lcov.info -R $TRAVIS_BUILD_DIR
