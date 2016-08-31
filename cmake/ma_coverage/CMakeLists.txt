@@ -13,7 +13,7 @@ set(cxx_libraries )
 
 if(ma_coverage_build)
     if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
-        list(APPEND compile_options "--coverage" "-fprofile-arcs" "-ftest-coverage")
+        list(APPEND compile_options "-O0" "--coverage" "-fprofile-arcs" "-ftest-coverage")
         #todo: find gcov library and add it into cxx_libraries
         list(APPEND cxx_libraries gcov)
     endif()
