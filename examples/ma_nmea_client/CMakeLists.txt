@@ -49,7 +49,8 @@ list(APPEND cxx_private_libraries
     ma_strand
     ma_thread_group
     ma_console_close_signal
-    ma_codecvt_cast)
+    ma_codecvt_cast
+    ma_coverage)
 
 add_executable(${PROJECT_NAME}
     ${cxx_headers}

@@ -43,7 +43,8 @@ list(APPEND cxx_private_libraries
     ma_thread_group
     ma_steady_deadline_timer
     ma_console_close_signal
-    ma_echo_server_core)
+    ma_echo_server_core
+    ma_coverage)
 
 add_executable(${PROJECT_NAME}
     ${cxx_headers}

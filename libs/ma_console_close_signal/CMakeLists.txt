@@ -39,7 +39,8 @@ list(APPEND cxx_public_libraries
     ma_config
     ma_compat
     ma_context_alloc_handler
-    ma_windows_console_signal)
+    ma_windows_console_signal
+    ma_coverage)
 
 add_library(${PROJECT_NAME} STATIC
     ${cxx_headers}

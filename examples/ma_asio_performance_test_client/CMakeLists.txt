@@ -39,7 +39,8 @@ list(APPEND cxx_private_libraries
     ma_steady_deadline_timer
     ma_strand
     ma_thread_group
-    ma_async_connect)
+    ma_async_connect
+    ma_coverage)
 
 add_executable(${PROJECT_NAME}
     ${cxx_headers}

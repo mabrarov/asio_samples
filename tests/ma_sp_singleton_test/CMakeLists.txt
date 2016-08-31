@@ -35,7 +35,8 @@ list(APPEND cxx_private_libraries
     ma_limited_int
     ma_shared_ptr_factory
     ma_thread_group
-    ma_sp_singleton)
+    ma_sp_singleton
+    ma_coverage)
 
 add_executable(${PROJECT_NAME}
     ${cxx_headers}

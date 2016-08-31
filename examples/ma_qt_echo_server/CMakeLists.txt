@@ -107,7 +107,8 @@ list(APPEND cxx_private_libraries
     ma_compat
     ma_helpers
     ma_thread_group
-    ma_echo_server_core)
+    ma_echo_server_core
+    ma_coverage)
 
 # Wrap Qt generated sources.
 set(moc_generated_sources )

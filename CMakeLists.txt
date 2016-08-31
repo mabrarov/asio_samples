@@ -11,6 +11,7 @@ project(asio_samples)
 option(ma_build_tests "Build tests" ON)
 option(ma_force_own_gtest "Use own (embedded) version of Google Test framework" OFF)
 option(ma_qt "Use Qt and do not skip all the code requiring Qt" ON)
+option(ma_coverage_build "Add coverage flags for compiler and linker" OFF)
 
 # Use ma_force_qt_major_version to force usage of Qt 5.x or Qt 4.x:
 # -D ma_force_qt_major_version=4
@@ -31,6 +32,9 @@ foreach(configuration_type IN LISTS configuration_types)
     set(configuration_cxx_flags CMAKE_CXX_FLAGS_${configuration_type_upper_case})
     change_default_compile_options("${${configuration_cxx_flags}}" ${configuration_cxx_flags})
 endforeach(configuration_type)
+
+# Interface-only target for turning on code coverage
+add_subdirectory(cmake/ma_coverage)
 
 # Google Test framework
 if(ma_build_tests)

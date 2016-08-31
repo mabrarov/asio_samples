@@ -33,7 +33,8 @@ list(APPEND cxx_private_libraries
     ma_config
     ma_compat
     ma_custom_alloc_handler
-    ma_helpers)
+    ma_helpers
+    ma_coverage)
 
 add_executable(${PROJECT_NAME}
     ${cxx_headers}

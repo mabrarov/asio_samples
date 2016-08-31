@@ -67,7 +67,8 @@ list(APPEND cxx_public_libraries
     ma_steady_deadline_timer)
 
 list(APPEND cxx_private_libraries
-    ma_shared_ptr_factory)
+    ma_shared_ptr_factory
+    ma_coverage)
 
 add_library(${PROJECT_NAME}
     ${cxx_headers}
