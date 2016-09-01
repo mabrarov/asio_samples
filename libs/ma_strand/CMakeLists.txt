@@ -36,7 +36,8 @@ list(APPEND cxx_public_libraries
     ma_config
     ma_compat
     ma_helpers
-    ma_context_wrapped_handler)
+    ma_context_wrapped_handler
+    ma_coverage)
 
 add_library(${PROJECT_NAME} STATIC
     ${cxx_headers}
