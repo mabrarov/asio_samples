@@ -35,7 +35,8 @@ list(APPEND cxx_public_libraries
     ma_thread_group)
 
 list(APPEND cxx_private_libraries
-    ma_compat)
+    ma_compat
+    ma_coverage)
 
 add_library(${PROJECT_NAME} STATIC
     ${cxx_headers}
