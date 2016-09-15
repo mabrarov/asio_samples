@@ -631,9 +631,6 @@ test_script:
   - cmd: cd /d "%APPVEYOR_BUILD_FOLDER%\build"
   - cmd: ctest --build-config %CONFIGURATION% --verbose
 
-after_test:
-  - bash <(curl -s https://codecov.io/bash)
-
 artifacts:
   - path: build\examples\ma_asio_performance_test_client\$(configuration)\*.exe
     name: ma_asio_performance_test_client

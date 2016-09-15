@@ -30,7 +30,8 @@ list(APPEND cxx_private_libraries
     ma_boost_header_only
     ma_boost_asio
     ma_gtest
-    ma_cyclic_buffer)
+    ma_cyclic_buffer
+    ma_coverage)
 
 add_executable(${PROJECT_NAME}
     ${cxx_headers}

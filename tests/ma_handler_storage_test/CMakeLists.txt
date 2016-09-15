@@ -38,7 +38,8 @@ list(APPEND cxx_private_libraries
     ma_helpers
     ma_thread_group
     ma_handler_storage
-    ma_io_service_pool)
+    ma_io_service_pool
+    ma_coverage)
 
 add_executable(${PROJECT_NAME}
     ${cxx_headers}

@@ -30,7 +30,8 @@ list(APPEND cxx_sources
     "${cxx_sources_dir}/fake.cpp")
 
 list(APPEND cxx_public_libraries
-    ma_boost_header_only)
+    ma_boost_header_only
+    ma_coverage)
 
 add_library(${PROJECT_NAME} STATIC
     ${cxx_headers}

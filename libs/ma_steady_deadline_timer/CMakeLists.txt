@@ -34,7 +34,8 @@ list(APPEND cxx_public_libraries
     ma_boost_date_time
     ma_boost_chrono
     ma_config
-    ma_compat)
+    ma_compat
+    ma_coverage)
 
 add_library(${PROJECT_NAME} STATIC
     ${cxx_headers}

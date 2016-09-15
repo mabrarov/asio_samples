@@ -30,7 +30,8 @@ list(APPEND cxx_private_libraries
     ma_boost_header_only
     ma_gtest
     ma_compat
-    ma_shared_ptr_factory)
+    ma_shared_ptr_factory
+    ma_coverage)
 
 add_executable(${PROJECT_NAME}
     ${cxx_headers}

@@ -21,20 +21,20 @@ namespace {
 
 const char* help_option_name = "help";
 const char* port_option_name = "port";
-const char* session_manager_threads_option_name = "session_manager_threads";
-const char* session_threads_option_name         = "session_threads";
-const char* stop_timeout_option_name            = "stop_timeout";
-const char* max_sessions_option_name            = "max_sessions";
-const char* recycled_sessions_option_name       = "recycled_sessions";
+const char* session_manager_threads_option_name = "session-manager-threads";
+const char* session_threads_option_name         = "session-threads";
+const char* stop_timeout_option_name            = "stop-timeout";
+const char* max_sessions_option_name            = "max-sessions";
+const char* recycled_sessions_option_name       = "recycled-sessions";
 const char* listen_address_option_name          = "address";
-const char* listen_backlog_option_name          = "listen_backlog";
+const char* listen_backlog_option_name          = "listen-backlog";
 const char* buffer_size_option_name             = "buffer";
-const char* inactivity_timeout_option_name      = "inactivity_timeout";
-const char* max_transfer_size_option_name       = "max_transfer";
-const char* socket_recv_buffer_size_option_name = "sock_recv_buffer";
-const char* socket_send_buffer_size_option_name = "sock_send_buffer";
-const char* socket_no_delay_option_name         = "sock_no_delay";
-const char* demux_option_name                   = "demux_per_work_thread";
+const char* inactivity_timeout_option_name      = "inactivity-timeout";
+const char* max_transfer_size_option_name       = "max-transfer";
+const char* socket_recv_buffer_size_option_name = "sock-recv-buffer";
+const char* socket_send_buffer_size_option_name = "sock-send-buffer";
+const char* socket_no_delay_option_name         = "sock-no-delay";
+const char* demux_option_name                   = "demux-per-work-thread";
 const std::string default_system_value          = "system default";
 
 template <typename Value>
