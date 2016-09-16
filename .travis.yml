@@ -31,6 +31,7 @@ matrix:
             - qtbase5-dev
           sources: &gcc-package-sources
             - george-edison55-precise-backports
+            - ubuntu-toolchain-r-test
             - boost-latest
         coverity_scan:
           project:
