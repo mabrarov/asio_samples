@@ -286,12 +286,14 @@ matrix:
 
 script:
   - if [ "${COVERITY_SCAN_BRANCH}" == 1 ]; then
-      echo "Coverity scan log:" && cat $TRAVIS_BUILD_DIR/build/cov-int/scm_log.txt && echo "Build was already perfomed with Coverity scan." && exit 0;
+      echo "Coverity scan log:" && cat $TRAVIS_BUILD_DIR/build/cov-int/scm_log.txt && echo "Build was already perfomed with Coverity scan.";
+    else
+      rm -rf $TRAVIS_BUILD_DIR/build && mkdir -p $TRAVIS_BUILD_DIR/build;
     fi
-  - rm -rf $TRAVIS_BUILD_DIR/build && mkdir -p $TRAVIS_BUILD_DIR/build
   - cd $TRAVIS_BUILD_DIR/build
-  - cmake -D CMAKE_C_COMPILER=$C_COMPILER -D CMAKE_CXX_COMPILER=$CXX_COMPILER -D CMAKE_BUILD_TYPE=$BUILD_TYPE -D ma_force_qt_major_version=$QT_MAJOR_VERSION -D ma_coverage_build=$COVERAGE_BUILD ..
-  - cmake --build . --config $BUILD_TYPE
+  - if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then
+      cmake -D CMAKE_C_COMPILER=$C_COMPILER -D CMAKE_CXX_COMPILER=$CXX_COMPILER -D CMAKE_BUILD_TYPE=$BUILD_TYPE -D ma_force_qt_major_version=$QT_MAJOR_VERSION -D ma_coverage_build=$COVERAGE_BUILD .. && cmake --build . --config $BUILD_TYPE;
+    fi
   - if [[ "$COVERAGE_BUILD" == "ON" ]]; then
       lcov -z -d . && lcov -c -d . -i -o lcov-base.info;
     fi
