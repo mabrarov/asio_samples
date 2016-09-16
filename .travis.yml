@@ -286,7 +286,7 @@ matrix:
 
 script:
   - if [ "${COVERITY_SCAN_BRANCH}" == 1 ]; then
-      cat $TRAVIS_BUILD_DIR/build/cov-int/scm_log.txt;
+      echo "Coverity scan log:" && cat $TRAVIS_BUILD_DIR/build/cov-int/scm_log.txt && echo "Build was already perfomed with Coverity scan." && exit 0;
     fi
   - rm -rf $TRAVIS_BUILD_DIR/build && mkdir -p $TRAVIS_BUILD_DIR/build
   - cd $TRAVIS_BUILD_DIR/build
