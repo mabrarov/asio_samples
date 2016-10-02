@@ -565,6 +565,7 @@ before_build:
       Write-Host "QT_BIN_FOLDER             : $env:QT_BIN_FOLDER"
       Write-Host "QT_QMAKE_EXECUTABLE       : $env:QT_QMAKE_EXECUTABLE"
       Write-Host "CMAKE_GENERATOR           : $env:CMAKE_GENERATOR"
+      Write-Host "COVERITY_BUILD            : $env:COVERITY_BUILD"
   - cmd: if not "%MSVS_PATCH_FOLDER%"=="" cd /d "%MSVS_PATCH_FOLDER%"
   - cmd: if not "%MSVS_PATCH_BATCH_FILE%"=="" call "%MSVS_PATCH_BATCH_FILE%"
   - cmd: if not "%WINDOWS_SDK_ENV_BATCH_FILE%"=="" call "%WINDOWS_SDK_ENV_BATCH_FILE%" %WINDOWS_SDK_ENV_PARAMETERS%
@@ -632,6 +633,27 @@ build_script:
       }
       if ($LastExitCode -ne 0) {
         throw "Build failed with exit code $LastExitCode."
+      }
+      if ($env:COVERITY_BUILD -eq "True") {
+        # Compress results.
+        Write-Host "Compressing Coverity results..."
+        $zip_encoder_def = @'
+          namespace AnalyzeCode {
+            public class PortableFileNameEncoder: System.Text.UTF8Encoding {
+              public PortableFileNameEncoder() {}
+              public override byte[] GetBytes(string entry) {
+                return base.GetBytes(entry.Replace("\\", "/"));
+              }
+            }
+          }
+        '@
+        Add-Type -TypeDefinition $zip_encoder_def
+        [IO.Compression.ZipFile]::CreateFromDirectory(
+          "$env:APPVEYOR_BUILD_FOLDER\build\cov-int",
+          "$env:APPVEYOR_BUILD_FOLDER\build\$env:APPVEYOR_PROJECT_NAME.zip",
+          [IO.Compression.CompressionLevel]::Optimal,
+          $true,  # include root directory
+          (New-Object AnalyzeCode.PortableFileNameEncoder))
       }
 
 test_script:
