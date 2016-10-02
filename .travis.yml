@@ -30,7 +30,10 @@ matrix:
             - cmake-data
             - libboost1.55-all-dev
             - qtbase5-dev
-          sources: *gcc-package-sources
+          sources: &gcc-package-sources
+            - george-edison55-precise-backports
+            - ubuntu-toolchain-r-test
+            - boost-latest
     # GCC 5, Boost 1.55. Qt 5.x
     - env: C_COMPILER=gcc-5 CXX_COMPILER=g++-5 BOOST_VERSION=1.55 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
       compiler: gcc
