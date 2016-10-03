@@ -637,14 +637,7 @@ build_script:
       if ($env:COVERITY_BUILD -eq "True") {
         # Compress results.
         Write-Host "Compressing Coverity results..."
-        $zip_encoder_def = 'namespace AnalyzeCode { public class PortableFileNameEncoder: System.Text.UTF8Encoding { public PortableFileNameEncoder() {} public override byte[] GetBytes(string entry) { return base.GetBytes(entry.Replace("\\", "/")); } } }'
-        Add-Type -TypeDefinition $zip_encoder_def
-        [IO.Compression.ZipFile]::CreateFromDirectory(
-          "$env:APPVEYOR_BUILD_FOLDER\build\cov-int",
-          "$env:APPVEYOR_BUILD_FOLDER\build\$env:APPVEYOR_PROJECT_NAME.zip",
-          [IO.Compression.CompressionLevel]::Optimal,
-          $true,  # include root directory
-          (New-Object AnalyzeCode.PortableFileNameEncoder))
+        7z.exe a -tzip "$env:APPVEYOR_BUILD_FOLDER\build\$env:APPVEYOR_PROJECT_NAME.zip" "$env:APPVEYOR_BUILD_FOLDER\build\cov-int"
         # Upload results to Coverity server.
         Write-Host "Uploading Coverity results..."
         Add-Type -AssemblyName "System.Net.Http"
