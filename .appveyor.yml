@@ -12,12 +12,16 @@ platform:
   - Win32
 
 configuration:
-  - Debug
   - Release
+  - Debug
 
 environment:
   DEPENDENCIES_FOLDER: C:\projects\dependencies
   DOWNLOADS_FOLDER: C:\projects\downloads
+  COVERITY_TOKEN:
+    secure: Dla0jvWDYSf0CHGmqVUa8uwo2QflZjNdkUw/wSyRqEs=
+  COVERITY_NOTIFICATION_EMAIL:
+    secure: ENSUMQl8WDP8x86q4eKd7B/o4WA5cEY9hqE7kOJA/io=
 
   matrix:
     - MSVC_VERSION: 14.0
@@ -28,6 +32,7 @@ environment:
       QT_LINKAGE: static
       ICU_VERSION: 57.1
       ICU_LINKAGE: static
+      COVERITY_BUILD_CANDIDATE: True
     - MSVC_VERSION: 14.0
       RUNTIME_LINKAGE: shared
       BOOST_VERSION: 1.61.0
@@ -536,6 +541,7 @@ install:
         }
       }
       $env:CMAKE_GENERATOR="Visual Studio$cmake_generator_msvc_version_suffx$cmake_generator_platform_suffix"
+      $env:COVERITY_BUILD = $env:COVERITY_BUILD_CANDIDATE -and ($env:APPVEYOR_REPO_BRANCH -eq "coverity_scan") -and ($env:CONFIGURATION -eq "Release") -and ($env:PLATFORM -eq "x64")
 
 before_build:
   - ps: |
@@ -559,6 +565,7 @@ before_build:
       Write-Host "QT_BIN_FOLDER             : $env:QT_BIN_FOLDER"
       Write-Host "QT_QMAKE_EXECUTABLE       : $env:QT_QMAKE_EXECUTABLE"
       Write-Host "CMAKE_GENERATOR           : $env:CMAKE_GENERATOR"
+      Write-Host "COVERITY_BUILD            : $env:COVERITY_BUILD"
   - cmd: if not "%MSVS_PATCH_FOLDER%"=="" cd /d "%MSVS_PATCH_FOLDER%"
   - cmd: if not "%MSVS_PATCH_BATCH_FILE%"=="" call "%MSVS_PATCH_BATCH_FILE%"
   - cmd: if not "%WINDOWS_SDK_ENV_BATCH_FILE%"=="" call "%WINDOWS_SDK_ENV_BATCH_FILE%" %WINDOWS_SDK_ENV_PARAMETERS%
@@ -615,16 +622,32 @@ build_script:
       if ($LastExitCode -ne 0) {
         throw "Generation of project failed with exit code $LastExitCode."
       }
-      switch ($env:MSVC_VERSION) {
-        "9.0" {
-          cmake --build . --config $env:CONFIGURATION
-        }
-        default {
-          cmake --build . --config $env:CONFIGURATION -- /maxcpucount /verbosity:normal /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
-        }
+      $build_cmd = "cmake --build . --config $env:CONFIGURATION"
+      if ($env:MSVC_VERSION -ne "9.0") {
+        $build_cmd = "$build_cmd -- /maxcpucount /verbosity:normal /logger:""C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"""
+      }
+      if ($env:COVERITY_BUILD -eq "True") {
+        Invoke-Expression "cov-build.exe --dir cov-int $build_cmd"
+      } else {
+        Invoke-Expression "$build_cmd"
       }
       if ($LastExitCode -ne 0) {
         throw "Build failed with exit code $LastExitCode."
+      }
+      if ($env:COVERITY_BUILD -eq "True") {
+        # Compress results.
+        Write-Host "Compressing Coverity Scan results..."
+        7z.exe a -tzip "$env:APPVEYOR_BUILD_FOLDER\build\$env:APPVEYOR_PROJECT_NAME.zip" "$env:APPVEYOR_BUILD_FOLDER\build\cov-int" -aoa -y | out-null
+        if ($LastExitCode -ne 0) {
+          throw "Failed to zip Coverity Scan results with exit code $LastExitCode."
+        }
+        # Upload results to Coverity server.
+        $coverity_build_version = $env:APPVEYOR_REPO_COMMIT.Substring(0, 7)
+        Write-Host "Uploading Coverity Scan results (version: $coverity_build_version)..."
+        curl.exe --max-time 600 --show-error --silent --location --form token="$env:COVERITY_TOKEN" --form email="$env:COVERITY_NOTIFICATION_EMAIL" --form file=@"$env:APPVEYOR_BUILD_FOLDER\build\$env:APPVEYOR_PROJECT_NAME.zip" --form version="$coverity_build_version" --form description="Build submitted via AppVeyor CI" https://scan.coverity.com/builds?project=$env:APPVEYOR_REPO_NAME
+        if ($LastExitCode -ne 0) {
+          throw "Failed to upload Coverity Scan results with exit code $LastExitCode."
+        }
       }
 
 test_script:
