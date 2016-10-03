@@ -12,8 +12,8 @@ platform:
   - Win32
 
 configuration:
-  - Debug
   - Release
+  - Debug
 
 environment:
   DEPENDENCIES_FOLDER: C:\projects\dependencies
