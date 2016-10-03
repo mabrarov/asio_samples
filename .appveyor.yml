@@ -637,7 +637,7 @@ build_script:
       if ($env:COVERITY_BUILD -eq "True") {
         # Compress results.
         Write-Host "Compressing Coverity Scan results..."
-        7z.exe a -tzip "$env:APPVEYOR_BUILD_FOLDER\build\$env:APPVEYOR_PROJECT_NAME.zip" "$env:APPVEYOR_BUILD_FOLDER\build\cov-int" -ao -y | out-null
+        7z.exe a -tzip "$env:APPVEYOR_BUILD_FOLDER\build\$env:APPVEYOR_PROJECT_NAME.zip" "$env:APPVEYOR_BUILD_FOLDER\build\cov-int" -aoa -y | out-null
         if ($LastExitCode -ne 0) {
           throw "Failed to zip Coverity Scan results with exit code $LastExitCode."
         }
