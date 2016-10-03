@@ -636,13 +636,13 @@ build_script:
       }
       if ($env:COVERITY_BUILD -eq "True") {
         # Compress results.
-        Write-Host "Compressing Coverity results..."
-        7z.exe a -tzip "$env:APPVEYOR_BUILD_FOLDER\build\$env:APPVEYOR_PROJECT_NAME.zip" "$env:APPVEYOR_BUILD_FOLDER\build\cov-int"
+        Write-Host "Compressing Coverity Scan results..."
+        7z.exe a -tzip "$env:APPVEYOR_BUILD_FOLDER\build\$env:APPVEYOR_PROJECT_NAME.zip" "$env:APPVEYOR_BUILD_FOLDER\build\cov-int" -ao -y | out-null
         if ($LastExitCode -ne 0) {
           throw "Failed to zip Coverity Scan results with exit code $LastExitCode."
         }
         # Upload results to Coverity server.
-        Write-Host "Uploading Coverity results..."
+        Write-Host "Uploading Coverity Scan results (version: $env:APPVEYOR_REPO_COMMIT)..."
         curl.exe --max-time 600 --show-error --silent --location --form token="$env:COVERITY_TOKEN" --form email="$env:COVERITY_NOTIFICATION_EMAIL" --form file=@"$env:APPVEYOR_BUILD_FOLDER\build\$env:APPVEYOR_PROJECT_NAME.zip" --form version="$env:APPVEYOR_REPO_COMMIT" --form description="Build submitted via AppVeyor CI" https://scan.coverity.com/builds?project=$env:APPVEYOR_REPO_NAME
         if ($LastExitCode -ne 0) {
           throw "Failed to upload Coverity Scan results with exit code $LastExitCode."
