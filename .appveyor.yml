@@ -643,7 +643,7 @@ build_script:
         }
         # Upload results to Coverity server.
         Write-Host "Uploading Coverity results..."
-        curl.exe --form token="$env:COVERITY_TOKEN" --form email="$env:COVERITY_NOTIFICATION_EMAIL" --form file=@"$env:APPVEYOR_BUILD_FOLDER\build\$env:APPVEYOR_PROJECT_NAME.zip" --form version="$env:APPVEYOR_REPO_COMMIT" --form description="Build submitted via AppVeyor CI" https://scan.coverity.com/builds?project=$env:APPVEYOR_REPO_NAME
+        curl.exe --max-time 600 --show-error --silent --location --form token="$env:COVERITY_TOKEN" --form email="$env:COVERITY_NOTIFICATION_EMAIL" --form file=@"$env:APPVEYOR_BUILD_FOLDER\build\$env:APPVEYOR_PROJECT_NAME.zip" --form version="$env:APPVEYOR_REPO_COMMIT" --form description="Build submitted via AppVeyor CI" https://scan.coverity.com/builds?project=$env:APPVEYOR_REPO_NAME
         if ($LastExitCode -ne 0) {
           throw "Failed to upload Coverity Scan results with exit code $LastExitCode."
         }
