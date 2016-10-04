@@ -120,6 +120,8 @@ public:
   /// The size of returned buffer sequence is not greater than max_size.
   mutable_buffers_type prepared(std::size_t max_size) const;
 
+  std::size_t size() const;
+
 private:
   const_buffers_type   data_of_size(std::size_t buffers_size) const;
   mutable_buffers_type prepared_of_size(std::size_t buffers_size) const;
@@ -255,6 +257,11 @@ inline cyclic_buffer::mutable_buffers_type
 cyclic_buffer::prepared(std::size_t max_size) const
 {
   return prepared_of_size((std::min<std::size_t>)(nonfilled_size_, max_size));
+}
+
+inline std::size_t cyclic_buffer::size() const
+{
+  return size_;
 }
 
 inline cyclic_buffer::const_buffers_type

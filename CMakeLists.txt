@@ -11,7 +11,12 @@ project(asio_samples)
 option(ma_build_tests "Build tests" ON)
 option(ma_force_own_gtest "Use own (embedded) version of Google Test framework" OFF)
 option(ma_qt "Use Qt and do not skip all the code requiring Qt" ON)
-option(ma_force_qt_version "Preferred major version of Qt: 4 or 5")
+option(ma_coverage_build "Add coverage flags for compiler and linker" OFF)
+
+# Use ma_force_qt_major_version to force usage of Qt 5.x or Qt 4.x:
+# -D ma_force_qt_major_version=4
+# or
+# -D ma_force_qt_major_version=5
 
 # Additional helpers
 include(cmake/internal_utils.cmake)
@@ -27,6 +32,9 @@ foreach(configuration_type IN LISTS configuration_types)
     set(configuration_cxx_flags CMAKE_CXX_FLAGS_${configuration_type_upper_case})
     change_default_compile_options("${${configuration_cxx_flags}}" ${configuration_cxx_flags})
 endforeach(configuration_type)
+
+# Interface-only target for turning on code coverage
+add_subdirectory(cmake/ma_coverage)
 
 # Google Test framework
 if(ma_build_tests)
@@ -64,6 +72,8 @@ add_subdirectory(cmake/ma_boost_program_options)
 add_subdirectory(cmake/ma_boost_timer)
 add_subdirectory(cmake/ma_boost_regex)
 
+set(ma_qt4_msvs_project_support_files )
+set(ma_qt5_msvs_project_support_files )
 if(ma_qt)
     # Interface-only targets to simplify support of Qt 5
     add_subdirectory(cmake/ma_qt5_core_support)
@@ -72,6 +82,15 @@ if(ma_qt)
     # Interface-only targets to simplify support of Qt 4
     add_subdirectory(cmake/ma_qt4_core_support)
     add_subdirectory(cmake/ma_qt4_gui_support)
+
+    # MSVS project support files for Qt.
+    # Starting from MSVS 2015 these files can be included into MSVS project.
+    if(${CMAKE_GENERATOR} MATCHES "Visual Studio 14")
+        list(APPEND ma_qt4_msvs_project_support_files
+            "${CMAKE_SOURCE_DIR}/cmake/qt_msvs_tools/qt4.natvis")
+        list(APPEND ma_qt5_msvs_project_support_files
+            "${CMAKE_SOURCE_DIR}/cmake/qt_msvs_tools/qt5.natvis")
+    endif()
 endif()
 
 if(ma_build_tests)
@@ -109,25 +128,26 @@ add_subdirectory(libs/ma_windows_console_signal)
 
 # Tests
 if(ma_build_tests)
-    add_subdirectory(test/ma_async_connect_test)
-    add_subdirectory(test/ma_handler_storage_test)
-    add_subdirectory(test/ma_lockable_wrapper_test)
-    add_subdirectory(test/ma_shared_ptr_factory_test)
-    add_subdirectory(test/ma_sp_singleton_test)
+    add_subdirectory(tests/ma_async_connect_test)
+    add_subdirectory(tests/ma_handler_storage_test)
+    add_subdirectory(tests/ma_lockable_wrapper_test)
+    add_subdirectory(tests/ma_shared_ptr_factory_test)
+    add_subdirectory(tests/ma_sp_singleton_test)
     if(WIN32)
-        add_subdirectory(test/ma_windows_console_signal_test)
+        add_subdirectory(tests/ma_windows_console_signal_test)
     endif()
-    add_subdirectory(test/ma_handler_allocator_test)
-    add_subdirectory(test/ma_custom_alloc_handler_test)
+    add_subdirectory(tests/ma_handler_allocator_test)
+    add_subdirectory(tests/ma_custom_alloc_handler_test)
+    add_subdirectory(tests/ma_cyclic_buffer_test)
 endif()
 
 # Examples of using of libraries
-add_subdirectory(example/ma_asio_performance_test_client)
-add_subdirectory(example/ma_async_basics)
-add_subdirectory(example/ma_async_basics2)
-add_subdirectory(example/ma_echo_server)
-add_subdirectory(example/ma_echo_server_core)
-add_subdirectory(example/ma_nmea_client)
+add_subdirectory(examples/ma_asio_performance_test_client)
+add_subdirectory(examples/ma_async_basics)
+add_subdirectory(examples/ma_async_basics2)
+add_subdirectory(examples/ma_echo_server)
+add_subdirectory(examples/ma_echo_server_core)
+add_subdirectory(examples/ma_nmea_client)
 if(ma_qt)
-    add_subdirectory(example/ma_qt_echo_server)
+    add_subdirectory(examples/ma_qt_echo_server)
 endif()

@@ -1,0 +1,79 @@
+//
+// Copyright (c) 2010-2015 Marat Abrarov (abrarov@gmail.com)
+//
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+//
+
+#ifndef MA_ECHO_SERVER_SESSION_CONFIG_HPP
+#define MA_ECHO_SERVER_SESSION_CONFIG_HPP
+
+#if defined(_MSC_VER) && (_MSC_VER >= 1020)
+#pragma once
+#endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
+
+#include <cstddef>
+#include <boost/assert.hpp>
+#include <boost/optional.hpp>
+#include <boost/logic/tribool.hpp>
+#include <boost/date_time/posix_time/posix_time_types.hpp>
+#include <ma/echo/server/session_config_fwd.hpp>
+
+namespace ma {
+namespace echo {
+namespace server {
+
+struct session_config
+{
+public:
+  typedef boost::optional<int>             optional_int;
+  typedef boost::logic::tribool            tribool;
+  typedef boost::posix_time::time_duration time_duration;
+  typedef boost::optional<time_duration>   optional_time_duration;
+
+  explicit session_config(
+      std::size_t buffer_size,
+      std::size_t max_transfer_size,
+      const optional_int& socket_recv_buffer_size = boost::none,
+      const optional_int& socket_send_buffer_size = boost::none,
+      const tribool& no_delay = boost::logic::indeterminate,
+      const optional_time_duration& inactivity_timeout = boost::none);
+
+  tribool       no_delay;
+  optional_int  socket_recv_buffer_size;
+  optional_int  socket_send_buffer_size;
+  std::size_t   buffer_size;
+  std::size_t   max_transfer_size;
+  optional_time_duration inactivity_timeout;
+}; // struct session_config
+
+inline session_config::session_config(
+    std::size_t the_buffer_size,
+    std::size_t the_max_transfer_size,
+    const optional_int& the_socket_recv_buffer_size,
+    const optional_int& the_socket_send_buffer_size,
+    const tribool& the_no_delay,
+    const optional_time_duration& the_inactivity_timeout)
+  : no_delay(the_no_delay)
+  , socket_recv_buffer_size(the_socket_recv_buffer_size)
+  , socket_send_buffer_size(the_socket_send_buffer_size)
+  , buffer_size(the_buffer_size)
+  , max_transfer_size(the_max_transfer_size)
+  , inactivity_timeout(the_inactivity_timeout)
+{
+  BOOST_ASSERT_MSG(the_buffer_size > 0, "buffer_size must be > 0");
+
+  BOOST_ASSERT_MSG(
+      !the_socket_recv_buffer_size || (*the_socket_recv_buffer_size) >= 0,
+      "Defined socket_recv_buffer_size must be >= 0");
+
+  BOOST_ASSERT_MSG(
+      !the_socket_send_buffer_size || (*the_socket_send_buffer_size) >= 0,
+      "Defined socket_send_buffer_size must be >= 0");
+}
+
+} // namespace server
+} // namespace echo
+} // namespace ma
+
+#endif // MA_ECHO_SERVER_SESSION_CONFIG_HPP

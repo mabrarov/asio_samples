@@ -35,6 +35,7 @@ namespace windows {
 
 class console_signal_service_base
   : public detail::intrusive_list<console_signal_service_base>::base_hook
+  , private boost::noncopyable
 {
 private:
   typedef console_signal_service_base this_type;
@@ -47,10 +48,6 @@ protected:
   typedef detail::shared_ptr<system_service> system_service_ptr;
 
   console_signal_service_base()
-  {
-  }
-
-  console_signal_service_base(const this_type&)
   {
   }
 

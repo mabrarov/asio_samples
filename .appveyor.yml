@@ -12,39 +12,52 @@ platform:
   - Win32
 
 configuration:
-  - Debug
   - Release
+  - Debug
 
 environment:
   DEPENDENCIES_FOLDER: C:\projects\dependencies
   DOWNLOADS_FOLDER: C:\projects\downloads
+  COVERITY_TOKEN:
+    secure: Dla0jvWDYSf0CHGmqVUa8uwo2QflZjNdkUw/wSyRqEs=
+  COVERITY_NOTIFICATION_EMAIL:
+    secure: ENSUMQl8WDP8x86q4eKd7B/o4WA5cEY9hqE7kOJA/io=
 
   matrix:
     - MSVC_VERSION: 14.0
-      RUNTIME_LINKAGE: shared
-      BOOST_VERSION: 1.60.0
+      RUNTIME_LINKAGE: static
+      BOOST_VERSION: 1.61.0
       BOOST_LINKAGE: static
-      QT_VERSION: 5.6
+      QT_VERSION: 5.7
+      QT_LINKAGE: static
+      ICU_VERSION: 57.1
+      ICU_LINKAGE: static
+      COVERITY_BUILD_CANDIDATE: True
+    - MSVC_VERSION: 14.0
+      RUNTIME_LINKAGE: shared
+      BOOST_VERSION: 1.61.0
+      BOOST_LINKAGE: static
+      QT_VERSION: 5.7
       QT_LINKAGE: shared
     - MSVC_VERSION: 14.0
       RUNTIME_LINKAGE: shared
-      BOOST_VERSION: 1.60.0
+      BOOST_VERSION: 1.61.0
       BOOST_LINKAGE: shared
-      QT_VERSION: 5.6
+      QT_VERSION: 5.7
       QT_LINKAGE: shared
     - MSVC_VERSION: 12.0
       RUNTIME_LINKAGE: shared
-      BOOST_VERSION: 1.58.0
+      BOOST_VERSION: 1.61.0
       BOOST_LINKAGE: static
-      QT_VERSION: 5.6
+      QT_VERSION: 5.7
       QT_LINKAGE: shared
     - MSVC_VERSION: 11.0
       RUNTIME_LINKAGE: static
-      BOOST_VERSION: 1.60.0
+      BOOST_VERSION: 1.61.0
       BOOST_LINKAGE: static
     - MSVC_VERSION: 10.0
       RUNTIME_LINKAGE: shared
-      BOOST_VERSION: 1.60.0
+      BOOST_VERSION: 1.61.0
       BOOST_LINKAGE: static
       QT_VERSION: 4.8.7
       QT_LINKAGE: shared
@@ -56,7 +69,7 @@ environment:
       QT_LINKAGE: shared
     - MSVC_VERSION: 9.0
       RUNTIME_LINKAGE: static
-      BOOST_VERSION: 1.60.0
+      BOOST_VERSION: 1.61.0
       BOOST_LINKAGE: static
     - MSVC_VERSION: 9.0
       RUNTIME_LINKAGE: static
@@ -127,6 +140,79 @@ install:
         }
         default {
           throw "Unsupported platform: $env:PLATFORM"
+        }
+      }
+      $pre_installed_icu=""
+      if ($env:ICU_VERSION) {
+        if ($pre_installed_icu) {
+          throw "Pre-installed ICU is missing"
+        } else {
+          $icu_platform_suffix=""
+          switch ($env:PLATFORM) {
+            "Win32" {
+              $icu_platform_suffix="-x86"
+            }
+            "x64" {
+              $icu_platform_suffix="-x64"
+            }
+            default {
+              throw "Unsupported platform: $env:PLATFORM"
+            }
+          }
+          $icu_version_suffix="-$env:ICU_VERSION"
+          $icu_toolchain_suffix=""
+          switch ($env:MSVC_VERSION) {
+            "14.0" {
+              $icu_toolchain_suffix="-vs2015"
+            }
+            "12.0" {
+              $icu_toolchain_suffix="-vs2013"
+            }
+            default {
+              throw "Unsupported MSVS version: $env:MSVC_VERSION"
+            }
+          }
+          $icu_linkage_suffix=""
+          switch ($env:ICU_LINKAGE) {
+            "static" {
+              $icu_linkage_suffix="-static"
+            }
+            default {
+              $icu_linkage_suffix="-shared"
+            }
+          }
+          $icu_install_folder="$env:DEPENDENCIES_FOLDER\icu4c$icu_version_suffix$icu_platform_suffix$icu_toolchain_suffix$icu_linkage_suffix"
+          if (!(Test-Path -Path "$icu_install_folder")) {
+            Write-Host "Built ICU libraries are absent for the selected toolchain (msvc-$env:MSVC_VERSION) and ICU version ($env:ICU_VERSION)"
+            $icu_archive_name="icu4c$icu_version_suffix$icu_platform_suffix$icu_toolchain_suffix$icu_linkage_suffix.7z"
+            $icu_archive_file="$env:DOWNLOADS_FOLDER\$icu_archive_name"
+            if (!(Test-Path -Path "$icu_archive_file")) {
+              $icu_download_url="https://dl.bintray.com/mabrarov/generic/icu/$env:ICU_VERSION/$icu_archive_name"
+              if (!(Test-Path -Path "$env:DOWNLOADS_FOLDER")) {
+                New-Item "$env:DOWNLOADS_FOLDER" -type directory | out-null
+              }
+              Write-Host "Going to download pre-built ICU libraries from: $icu_download_url to: $icu_archive_file"
+              curl.exe --max-time 600 --show-error --silent --location --output "$icu_archive_file" "$icu_download_url"
+              if ($LastExitCode -ne 0) {
+                throw "File downloading failed with exit code $LastExitCode."
+              }
+              Write-Host "Downloaded: $icu_archive_file"
+            }
+            Write-Host "Extracting pre-built ICU libraries from: $icu_archive_file to: $env:DEPENDENCIES_FOLDER"
+            if (!(Test-Path -Path "$env:DEPENDENCIES_FOLDER")) {
+              New-Item "$env:DEPENDENCIES_FOLDER" -type directory | out-null
+            }
+            7z.exe x "$icu_archive_file" -o"$env:DEPENDENCIES_FOLDER" -aoa -y | out-null
+            if ($LastExitCode -ne 0) {
+              throw "File extraction failed with exit code $LastExitCode."
+            }
+            Write-Host "Extracted: $icu_install_folder"
+          }
+          $env:ICU_ROOT="$icu_install_folder"
+          $env:ICU_LIBRARY_FOLDER="$icu_install_folder\lib"
+        }
+        if ($env:RUNTIME_LINKAGE -eq "static" -and -not ($env:ICU_LINKAGE -eq "static")) {
+          throw "Incompatible type of linkage of ICU: $env:ICU_LINKAGE for the specified type of linkage of C/C++ runtime: $env:RUNTIME_LINKAGE"
         }
       }
       $pre_installed_boost=""
@@ -237,25 +323,30 @@ install:
           "static" {
             $env:BOOST_USE_STATIC_LIBS="ON"
           }
-          "shared" {
-            $env:BOOST_USE_STATIC_LIBS="OFF"
-          }
           default {
-            throw "Unsupported type of linkage of Boost: $env:BOOST_LINKAGE"
+            $env:BOOST_USE_STATIC_LIBS="OFF"
           }
         }
       }
       if ($env:QT_VERSION) {
         $pre_installed_qt=""
-        if ($env:QT_LINKAGE -eq "shared") {
+        if (!($env:QT_LINKAGE -eq "static")) {
           switch ($env:MSVC_VERSION) {
             "14.0" {
-              if ($env:QT_VERSION -eq "5.6") {
-                $pre_installed_qt="true"
+              switch ($env:QT_VERSION) {
+                "5.7" {
+                  $pre_installed_qt="true"
+                }
+                "5.6" {
+                  $pre_installed_qt="true"
+                }
               }
             }
             "12.0" {
               switch ($env:QT_VERSION) {
+                "5.7" {
+                  $pre_installed_qt="true"
+                }
                 "5.6" {
                   $pre_installed_qt="true"
                 }
@@ -331,7 +422,12 @@ install:
               throw "Unsupported platform: $env:PLATFORM"
             }
           }
-          $qt_version_suffix="-$env:QT_VERSION"
+          $qt_version_suffix=""
+          if (!($env:QT_VERSION -match "[\d]+\.[\d]+\.[\d]+")) {
+            $qt_version_suffix="-$env:QT_VERSION.0"
+          } else {
+            $qt_version_suffix="-$env:QT_VERSION"
+          }
           $qt_toolchain_suffix=""
           switch ($env:MSVC_VERSION) {
             "14.0" {
@@ -355,9 +451,6 @@ install:
           }
           $qt_linkage_suffix=""
           switch ($env:QT_LINKAGE) {
-            "shared" {
-              $qt_linkage_suffix="-shared"
-            }
             "static" {
               $qt_linkage_suffix="-static"
             }
@@ -367,11 +460,17 @@ install:
           }
           $qt_install_folder="$env:DEPENDENCIES_FOLDER\qt$qt_version_suffix$qt_platform_suffix$qt_toolchain_suffix$qt_linkage_suffix"
           if (!(Test-Path -Path "$qt_install_folder")) {
-            Write-Host "Built Qt libraries are absent for the selected toolchain (msvc-$env:MSVC_VERSION) and Qt version ($env:QT_VERSION)"
+            Write-Host "Built Qt libraries are absent for the selected toolchain (msvc-$env:MSVC_VERSION) and Qt version ($env:QT_VERSION) and Qt linkage ($env:QT_LINKAGE)"
             $qt_archive_name="qt$qt_version_suffix$qt_platform_suffix$qt_toolchain_suffix$qt_linkage_suffix.7z"
             $qt_archive_file="$env:DOWNLOADS_FOLDER\$qt_archive_name"
             if (!(Test-Path -Path "$qt_archive_file")) {
-              $qt_download_url="https://dl.bintray.com/mabrarov/generic/qt/$env:QT_VERSION/$qt_archive_name"
+              $qt_version_url_suffix=""
+              if (!($env:QT_VERSION -match "[\d]+\.[\d]+\.[\d]+")) {
+                $qt_version_url_suffix="/$env:QT_VERSION.0"
+              } else {
+                $qt_version_url_suffix="/$env:QT_VERSION"
+              }
+              $qt_download_url="https://dl.bintray.com/mabrarov/generic/qt$qt_version_url_suffix/$qt_archive_name"
               if (!(Test-Path -Path "$env:DOWNLOADS_FOLDER")) {
                 New-Item "$env:DOWNLOADS_FOLDER" -type directory | out-null
               }
@@ -442,6 +541,7 @@ install:
         }
       }
       $env:CMAKE_GENERATOR="Visual Studio$cmake_generator_msvc_version_suffx$cmake_generator_platform_suffix"
+      $env:COVERITY_BUILD = $env:COVERITY_BUILD_CANDIDATE -and ($env:APPVEYOR_REPO_BRANCH -eq "coverity_scan") -and ($env:CONFIGURATION -eq "Release") -and ($env:PLATFORM -eq "x64")
 
 before_build:
   - ps: |
@@ -454,6 +554,10 @@ before_build:
       Write-Host "VCVARS_BATCH_FILE         : $env:VCVARS_BATCH_FILE"
       Write-Host "VCVARS_PLATFORM           : $env:VCVARS_PLATFORM"
       Write-Host "APPVEYOR_BUILD_FOLDER     : $env:APPVEYOR_BUILD_FOLDER"
+      if ($env:ICU_ROOT) {
+        Write-Host "ICU_ROOT                  : $env:ICU_ROOT"
+        Write-Host "ICU_LIBRARY_FOLDER        : $env:ICU_LIBRARY_FOLDER"
+      }
       Write-Host "BOOST_INCLUDE_FOLDER      : $env:BOOST_INCLUDE_FOLDER"
       Write-Host "BOOST_LIBRARY_FOLDER      : $env:BOOST_LIBRARY_FOLDER"
       Write-Host "BOOST_USE_STATIC_LIBS     : $env:BOOST_USE_STATIC_LIBS"
@@ -461,6 +565,7 @@ before_build:
       Write-Host "QT_BIN_FOLDER             : $env:QT_BIN_FOLDER"
       Write-Host "QT_QMAKE_EXECUTABLE       : $env:QT_QMAKE_EXECUTABLE"
       Write-Host "CMAKE_GENERATOR           : $env:CMAKE_GENERATOR"
+      Write-Host "COVERITY_BUILD            : $env:COVERITY_BUILD"
   - cmd: if not "%MSVS_PATCH_FOLDER%"=="" cd /d "%MSVS_PATCH_FOLDER%"
   - cmd: if not "%MSVS_PATCH_BATCH_FILE%"=="" call "%MSVS_PATCH_BATCH_FILE%"
   - cmd: if not "%WINDOWS_SDK_ENV_BATCH_FILE%"=="" call "%WINDOWS_SDK_ENV_BATCH_FILE%" %WINDOWS_SDK_ENV_PARAMETERS%
@@ -469,8 +574,11 @@ before_build:
       if ($env:QT_VERSION) {
         $env:PATH="$env:QT_BIN_FOLDER;$env:PATH"
       }
-      if ($env:BOOST_VERSION -and ($env:BOOST_LINKAGE -eq "shared")) {
+      if ($env:BOOST_VERSION -and -not ($env:BOOST_LINKAGE -eq "static")) {
         $env:PATH="$env:BOOST_LIBRARY_FOLDER;$env:PATH"
+      }
+      if ($env:ICU_VERSION -and -not ($env:ICU_LINKAGE -eq "static")) {
+        $env:PATH="$env:ICU_LIBRARY_FOLDER;$env:PATH"        
       }
 
 build_script:
@@ -478,45 +586,68 @@ build_script:
       New-Item "$env:APPVEYOR_BUILD_FOLDER\build" -type directory | out-null
       Set-Location -Path "$env:APPVEYOR_BUILD_FOLDER\build"
       switch ($env:RUNTIME_LINKAGE) {
-        "shared" {
-          if (!($env:QT_VERSION)) {
-            cmake -D BOOST_INCLUDEDIR=$env:BOOST_INCLUDE_FOLDER -D BOOST_LIBRARYDIR=$env:BOOST_LIBRARY_FOLDER -D Boost_USE_STATIC_LIBS=$env:BOOST_USE_STATIC_LIBS -D Boost_NO_SYSTEM_PATHS=ON -D gtest_force_shared_crt=ON -D ma_qt=OFF -G "$env:CMAKE_GENERATOR" $env:APPVEYOR_BUILD_FOLDER
-          } elseif ($env:QT_VERSION -match "5\.*") {
-            cmake -D BOOST_INCLUDEDIR=$env:BOOST_INCLUDE_FOLDER -D BOOST_LIBRARYDIR=$env:BOOST_LIBRARY_FOLDER -D Boost_USE_STATIC_LIBS=$env:BOOST_USE_STATIC_LIBS -D Boost_NO_SYSTEM_PATHS=ON -D Qt5Core_DIR=$env:QT_HOME\lib\cmake\Qt5Core -D Qt5Gui_DIR=$env:QT_HOME\lib\cmake\Qt5Gui -D Qt5Widgets_DIR=$env:QT_HOME\lib\cmake\Qt5Widgets -D gtest_force_shared_crt=ON -G "$env:CMAKE_GENERATOR" $env:APPVEYOR_BUILD_FOLDER
-          } elseif ($env:QT_VERSION -match "4\.*") {
-            cmake -D BOOST_INCLUDEDIR=$env:BOOST_INCLUDE_FOLDER -D BOOST_LIBRARYDIR=$env:BOOST_LIBRARY_FOLDER -D Boost_USE_STATIC_LIBS=$env:BOOST_USE_STATIC_LIBS -D Boost_NO_SYSTEM_PATHS=ON -D QT_QMAKE_EXECUTABLE=$env:QT_QMAKE_EXECUTABLE -D gtest_force_shared_crt=ON -G "$env:CMAKE_GENERATOR" $env:APPVEYOR_BUILD_FOLDER
-          } else {
-            throw "Unsupported version of Qt: $env:QT_VERSION."
-          }
-        }
         "static" {
           if (!($env:QT_VERSION)) {
             cmake -D CMAKE_USER_MAKE_RULES_OVERRIDE=$env:APPVEYOR_BUILD_FOLDER\cmake\static_c_runtime_overrides.cmake -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX=$env:APPVEYOR_BUILD_FOLDER\cmake\static_cxx_runtime_overrides.cmake -D BOOST_INCLUDEDIR=$env:BOOST_INCLUDE_FOLDER -D BOOST_LIBRARYDIR=$env:BOOST_LIBRARY_FOLDER -D Boost_USE_STATIC_LIBS=$env:BOOST_USE_STATIC_LIBS -D Boost_NO_SYSTEM_PATHS=ON -D ma_qt=OFF -G "$env:CMAKE_GENERATOR" $env:APPVEYOR_BUILD_FOLDER
           } elseif ($env:QT_VERSION -match "5\.*") {
-            cmake -D CMAKE_USER_MAKE_RULES_OVERRIDE=$env:APPVEYOR_BUILD_FOLDER\cmake\static_c_runtime_overrides.cmake -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX=$env:APPVEYOR_BUILD_FOLDER\cmake\static_cxx_runtime_overrides.cmake -D BOOST_INCLUDEDIR=$env:BOOST_INCLUDE_FOLDER -D BOOST_LIBRARYDIR=$env:BOOST_LIBRARY_FOLDER -D Boost_USE_STATIC_LIBS=$env:BOOST_USE_STATIC_LIBS -D Boost_NO_SYSTEM_PATHS=ON -D Qt5Core_DIR=$env:QT_HOME\lib\cmake\Qt5Core -D Qt5Gui_DIR=$env:QT_HOME\lib\cmake\Qt5Gui -D Qt5Widgets_DIR=$env:QT_HOME\lib\cmake\Qt5Widgets -G "$env:CMAKE_GENERATOR" $env:APPVEYOR_BUILD_FOLDER
+            switch ($env:QT_LINKAGE) {
+              "static" {
+                if (!($env:ICU_ROOT)) {
+                  throw "ICU location is unspecified. Static Qt 5.x requires static ICU"
+                }
+                cmake -D CMAKE_USER_MAKE_RULES_OVERRIDE=$env:APPVEYOR_BUILD_FOLDER\cmake\static_c_runtime_overrides.cmake -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX=$env:APPVEYOR_BUILD_FOLDER\cmake\static_cxx_runtime_overrides.cmake -D ICU_ROOT=$env:ICU_ROOT -D BOOST_INCLUDEDIR=$env:BOOST_INCLUDE_FOLDER -D BOOST_LIBRARYDIR=$env:BOOST_LIBRARY_FOLDER -D Boost_USE_STATIC_LIBS=$env:BOOST_USE_STATIC_LIBS -D Boost_NO_SYSTEM_PATHS=ON -D Qt5Core_DIR=$env:QT_HOME\lib\cmake\Qt5Core -D Qt5Gui_DIR=$env:QT_HOME\lib\cmake\Qt5Gui -D Qt5Widgets_DIR=$env:QT_HOME\lib\cmake\Qt5Widgets -D ma_force_qt_major_version=5 -G "$env:CMAKE_GENERATOR" $env:APPVEYOR_BUILD_FOLDER
+              }
+              default {
+                cmake -D CMAKE_USER_MAKE_RULES_OVERRIDE=$env:APPVEYOR_BUILD_FOLDER\cmake\static_c_runtime_overrides.cmake -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX=$env:APPVEYOR_BUILD_FOLDER\cmake\static_cxx_runtime_overrides.cmake -D BOOST_INCLUDEDIR=$env:BOOST_INCLUDE_FOLDER -D BOOST_LIBRARYDIR=$env:BOOST_LIBRARY_FOLDER -D Boost_USE_STATIC_LIBS=$env:BOOST_USE_STATIC_LIBS -D Boost_NO_SYSTEM_PATHS=ON -D Qt5Core_DIR=$env:QT_HOME\lib\cmake\Qt5Core -D Qt5Gui_DIR=$env:QT_HOME\lib\cmake\Qt5Gui -D Qt5Widgets_DIR=$env:QT_HOME\lib\cmake\Qt5Widgets -D ma_force_qt_major_version=5 -G "$env:CMAKE_GENERATOR" $env:APPVEYOR_BUILD_FOLDER
+              }
+            }
           } elseif ($env:QT_VERSION -match "4\.*") {
-            cmake -D CMAKE_USER_MAKE_RULES_OVERRIDE=$env:APPVEYOR_BUILD_FOLDER\cmake\static_c_runtime_overrides.cmake -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX=$env:APPVEYOR_BUILD_FOLDER\cmake\static_cxx_runtime_overrides.cmake -D BOOST_INCLUDEDIR=$env:BOOST_INCLUDE_FOLDER -D BOOST_LIBRARYDIR=$env:BOOST_LIBRARY_FOLDER -D Boost_USE_STATIC_LIBS=$env:BOOST_USE_STATIC_LIBS -D Boost_NO_SYSTEM_PATHS=ON -D QT_QMAKE_EXECUTABLE=$env:QT_QMAKE_EXECUTABLE -G "$env:CMAKE_GENERATOR" $env:APPVEYOR_BUILD_FOLDER
+            cmake -D CMAKE_USER_MAKE_RULES_OVERRIDE=$env:APPVEYOR_BUILD_FOLDER\cmake\static_c_runtime_overrides.cmake -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX=$env:APPVEYOR_BUILD_FOLDER\cmake\static_cxx_runtime_overrides.cmake -D BOOST_INCLUDEDIR=$env:BOOST_INCLUDE_FOLDER -D BOOST_LIBRARYDIR=$env:BOOST_LIBRARY_FOLDER -D Boost_USE_STATIC_LIBS=$env:BOOST_USE_STATIC_LIBS -D Boost_NO_SYSTEM_PATHS=ON -D QT_QMAKE_EXECUTABLE=$env:QT_QMAKE_EXECUTABLE -D ma_force_qt_major_version=4 -G "$env:CMAKE_GENERATOR" $env:APPVEYOR_BUILD_FOLDER
           } else {
             throw "Unsupported version of Qt: $env:QT_VERSION."
           }
         }
         default {
-          throw "Unsupported type of linkage of C/C++ runtime: $env:RUNTIME_LINKAGE"
+          if (!($env:QT_VERSION)) {
+            cmake -D BOOST_INCLUDEDIR=$env:BOOST_INCLUDE_FOLDER -D BOOST_LIBRARYDIR=$env:BOOST_LIBRARY_FOLDER -D Boost_USE_STATIC_LIBS=$env:BOOST_USE_STATIC_LIBS -D Boost_NO_SYSTEM_PATHS=ON -D gtest_force_shared_crt=ON -D ma_qt=OFF -G "$env:CMAKE_GENERATOR" $env:APPVEYOR_BUILD_FOLDER
+          } elseif ($env:QT_VERSION -match "5\.*") {
+            cmake -D BOOST_INCLUDEDIR=$env:BOOST_INCLUDE_FOLDER -D BOOST_LIBRARYDIR=$env:BOOST_LIBRARY_FOLDER -D Boost_USE_STATIC_LIBS=$env:BOOST_USE_STATIC_LIBS -D Boost_NO_SYSTEM_PATHS=ON -D Qt5Core_DIR=$env:QT_HOME\lib\cmake\Qt5Core -D Qt5Gui_DIR=$env:QT_HOME\lib\cmake\Qt5Gui -D Qt5Widgets_DIR=$env:QT_HOME\lib\cmake\Qt5Widgets -D gtest_force_shared_crt=ON -D ma_force_qt_major_version=5 -G "$env:CMAKE_GENERATOR" $env:APPVEYOR_BUILD_FOLDER
+          } elseif ($env:QT_VERSION -match "4\.*") {
+            cmake -D BOOST_INCLUDEDIR=$env:BOOST_INCLUDE_FOLDER -D BOOST_LIBRARYDIR=$env:BOOST_LIBRARY_FOLDER -D Boost_USE_STATIC_LIBS=$env:BOOST_USE_STATIC_LIBS -D Boost_NO_SYSTEM_PATHS=ON -D QT_QMAKE_EXECUTABLE=$env:QT_QMAKE_EXECUTABLE -D gtest_force_shared_crt=ON -D ma_force_qt_major_version=4 -G "$env:CMAKE_GENERATOR" $env:APPVEYOR_BUILD_FOLDER
+          } else {
+            throw "Unsupported version of Qt: $env:QT_VERSION."
+          }
         }
       }
       if ($LastExitCode -ne 0) {
         throw "Generation of project failed with exit code $LastExitCode."
       }
-      switch ($env:MSVC_VERSION) {
-        "9.0" {
-          cmake --build . --config $env:CONFIGURATION
-        }
-        default {
-          cmake --build . --config $env:CONFIGURATION -- /maxcpucount /verbosity:normal /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
-        }
+      $build_cmd = "cmake --build . --config $env:CONFIGURATION"
+      if ($env:MSVC_VERSION -ne "9.0") {
+        $build_cmd = "$build_cmd -- /maxcpucount /verbosity:normal /logger:""C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"""
+      }
+      if ($env:COVERITY_BUILD -eq "True") {
+        Invoke-Expression "cov-build.exe --dir cov-int $build_cmd"
+      } else {
+        Invoke-Expression "$build_cmd"
       }
       if ($LastExitCode -ne 0) {
         throw "Build failed with exit code $LastExitCode."
+      }
+      if ($env:COVERITY_BUILD -eq "True") {
+        # Compress results.
+        Write-Host "Compressing Coverity Scan results..."
+        7z.exe a -tzip "$env:APPVEYOR_BUILD_FOLDER\build\$env:APPVEYOR_PROJECT_NAME.zip" "$env:APPVEYOR_BUILD_FOLDER\build\cov-int" -aoa -y | out-null
+        if ($LastExitCode -ne 0) {
+          throw "Failed to zip Coverity Scan results with exit code $LastExitCode."
+        }
+        # Upload results to Coverity server.
+        $coverity_build_version = $env:APPVEYOR_REPO_COMMIT.Substring(0, 7)
+        Write-Host "Uploading Coverity Scan results (version: $coverity_build_version)..."
+        curl.exe --max-time 600 --show-error --silent --location --form token="$env:COVERITY_TOKEN" --form email="$env:COVERITY_NOTIFICATION_EMAIL" --form file=@"$env:APPVEYOR_BUILD_FOLDER\build\$env:APPVEYOR_PROJECT_NAME.zip" --form version="$coverity_build_version" --form description="Build submitted via AppVeyor CI" https://scan.coverity.com/builds?project=$env:APPVEYOR_REPO_NAME
+        if ($LastExitCode -ne 0) {
+          throw "Failed to upload Coverity Scan results with exit code $LastExitCode."
+        }
       }
 
 test_script:
@@ -524,31 +655,31 @@ test_script:
   - cmd: ctest --build-config %CONFIGURATION% --verbose
 
 artifacts:
-  - path: build\example\ma_asio_performance_test_client\$(configuration)\*.exe
+  - path: build\examples\ma_asio_performance_test_client\$(configuration)\*.exe
     name: ma_asio_performance_test_client
-  - path: build\example\ma_async_basics\$(configuration)\*.exe
+  - path: build\examples\ma_async_basics\$(configuration)\*.exe
     name: ma_async_basics
-  - path: build\example\ma_async_basics2\$(configuration)\*.exe
+  - path: build\examples\ma_async_basics2\$(configuration)\*.exe
     name: ma_async_basics2
-  - path: build\example\ma_echo_server\$(configuration)\*.exe
+  - path: build\examples\ma_echo_server\$(configuration)\*.exe
     name: ma_echo_server
-  - path: build\example\ma_nmea_client\$(configuration)\*.exe
+  - path: build\examples\ma_nmea_client\$(configuration)\*.exe
     name: ma_nmea_client
-  - path: build\example\ma_qt_echo_server\$(configuration)\*.exe
+  - path: build\examples\ma_qt_echo_server\$(configuration)\*.exe
     name: ma_qt_echo_server
-  - path: build\test\ma_async_connect_test\$(configuration)\*.exe
+  - path: build\tests\ma_async_connect_test\$(configuration)\*.exe
     name: ma_async_connect_test
-  - path: build\test\ma_handler_storage_test\$(configuration)\*.exe
+  - path: build\tests\ma_handler_storage_test\$(configuration)\*.exe
     name: ma_handler_storage_test
-  - path: build\test\ma_lockable_wrapper_test\$(configuration)\*.exe
+  - path: build\tests\ma_lockable_wrapper_test\$(configuration)\*.exe
     name: ma_lockable_wrapper_test
-  - path: build\test\ma_shared_ptr_factory_test\$(configuration)\*.exe
+  - path: build\tests\ma_shared_ptr_factory_test\$(configuration)\*.exe
     name: ma_shared_ptr_factory_test
-  - path: build\test\ma_sp_singleton_test\$(configuration)\*.exe
+  - path: build\tests\ma_sp_singleton_test\$(configuration)\*.exe
     name: ma_sp_singleton_test
-  - path: build\test\ma_windows_console_signal_test\$(configuration)\*.exe
+  - path: build\tests\ma_windows_console_signal_test\$(configuration)\*.exe
     name: ma_windows_console_signal_test
-  - path: build\test\ma_handler_allocator_test\$(configuration)\*.exe
+  - path: build\tests\ma_handler_allocator_test\$(configuration)\*.exe
     name: ma_handler_allocator_test
-  - path: build\test\ma_custom_alloc_handler_test\$(configuration)\*.exe
+  - path: build\tests\ma_custom_alloc_handler_test\$(configuration)\*.exe
     name: ma_custom_alloc_handler_test

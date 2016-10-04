@@ -44,7 +44,8 @@ list(APPEND cxx_public_libraries
 list(APPEND cxx_private_libraries
     ma_boost_exception
     ma_shared_ptr_factory
-    ma_sp_singleton)
+    ma_sp_singleton
+    ma_coverage)
 
 add_library(${PROJECT_NAME} STATIC
     ${cxx_headers}
