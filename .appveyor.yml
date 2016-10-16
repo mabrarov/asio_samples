@@ -78,42 +78,42 @@ environment:
 
 install:
   - ps: |
-      $env:WINDOWS_SDK_ENV_BATCH_FILE=""
-      $env:WINDOWS_SDK_ENV_PARAMETERS=""
-      $env:MSVS_HOME="${env:ProgramFiles(x86)}\Microsoft Visual Studio $env:MSVC_VERSION"
-      $env:VCVARS_BATCH_FILE="$env:MSVS_HOME\VC\vcvarsall.bat"
-      $env:MSVS_PATCH_FOLDER=""
-      $env:MSVS_PATCH_BATCH_FILE=""
+      $env:WINDOWS_SDK_ENV_BATCH_FILE = ""
+      $env:WINDOWS_SDK_ENV_PARAMETERS = ""
+      $env:MSVS_HOME = "${env:ProgramFiles(x86)}\Microsoft Visual Studio $env:MSVC_VERSION"
+      $env:VCVARS_BATCH_FILE = "$env:MSVS_HOME\VC\vcvarsall.bat"
+      $env:MSVS_PATCH_FOLDER = ""
+      $env:MSVS_PATCH_BATCH_FILE = ""
       switch ($env:PLATFORM) {
         "Win32" {
-          $env:VCVARS_PLATFORM="x86"
+          $env:VCVARS_PLATFORM = "x86"
         }
         "x64" {
           switch ($env:MSVC_VERSION) {
             "14.0" {
-              $env:VCVARS_PLATFORM="amd64"
+              $env:VCVARS_PLATFORM = "amd64"
             }
             "12.0" {
-              $env:VCVARS_PLATFORM="amd64"
+              $env:VCVARS_PLATFORM = "amd64"
             }
             "11.0" {
-              $env:VCVARS_PLATFORM="x86_amd64"
+              $env:VCVARS_PLATFORM = "x86_amd64"
             }
             "10.0" {
-              $env:VCVARS_BATCH_FILE=""
-              $env:WINDOWS_SDK_ENV_BATCH_FILE="$env:ProgramFiles\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd"
-              $env:WINDOWS_SDK_ENV_PARAMETERS="/x64 /$env:CONFIGURATION"
+              $env:VCVARS_BATCH_FILE = ""
+              $env:WINDOWS_SDK_ENV_BATCH_FILE = "$env:ProgramFiles\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd"
+              $env:WINDOWS_SDK_ENV_PARAMETERS = "/x64 /$env:CONFIGURATION"
             }
             "9.0" {
               Write-Host "Selected MSVS version ($env:MSVC_VERSION) and platform ($env:PLATFORM) require patching"
-              $env:MSVS_PATCH_FOLDER="$env:DEPENDENCIES_FOLDER\vs2008_patch"
+              $env:MSVS_PATCH_FOLDER = "$env:DEPENDENCIES_FOLDER\vs2008_patch"
               if (!(Test-Path -Path "$env:MSVS_PATCH_FOLDER")) {
-                $msvs_patch_download_folder="$env:DOWNLOADS_FOLDER\condaci"
-                $msvs_patch_download_file="$msvs_patch_download_folder\vs2008_patch.zip"
+                $msvs_patch_download_folder = "$env:DOWNLOADS_FOLDER\condaci"
+                $msvs_patch_download_file = "$msvs_patch_download_folder\vs2008_patch.zip"
                 if (!(Test-Path -Path "$msvs_patch_download_file")) {
-                  $msvs2008_patch_url="https://github.com/menpo/condaci.git"
-                  $msvs2008_patch_revision="98d76b2089d494433ac2e3abd920123088a95a6d"
-                  $msvs_patch_download_folder_nix="$msvs_patch_download_folder" -replace "\\", "/"
+                  $msvs2008_patch_url = "https://github.com/menpo/condaci.git"
+                  $msvs2008_patch_revision = "98d76b2089d494433ac2e3abd920123088a95a6d"
+                  $msvs_patch_download_folder_nix = "$msvs_patch_download_folder" -replace "\\", "/"
                   Write-Host "Going to download MSVS patch from: $msvs2008_patch_url to: $msvs_patch_download_folder_nix"
                   git clone --quiet "$msvs2008_patch_url" "$msvs_patch_download_folder_nix"
                   git -C "$msvs_patch_download_folder_nix" checkout --quiet "$msvs2008_patch_revision"
@@ -130,8 +130,8 @@ install:
                 }
                 Write-Host "Extracted: $env:MSVS_PATCH_FOLDER"
               }
-              $env:MSVS_PATCH_BATCH_FILE="$env:MSVS_PATCH_FOLDER\setup_x64.bat"
-              $env:VCVARS_PLATFORM="x86_amd64"
+              $env:MSVS_PATCH_BATCH_FILE = "$env:MSVS_PATCH_FOLDER\setup_x64.bat"
+              $env:VCVARS_PLATFORM = "x86_amd64"
             }
             default {
               throw "Unsupported MSVS version: $env:MSVC_VERSION"
@@ -142,57 +142,57 @@ install:
           throw "Unsupported platform: $env:PLATFORM"
         }
       }
-      $pre_installed_icu=""
+      $pre_installed_icu = ""
       if ($env:ICU_VERSION) {
         if ($pre_installed_icu) {
           throw "Pre-installed ICU is missing"
         } else {
-          $icu_platform_suffix=""
+          $icu_platform_suffix = ""
           switch ($env:PLATFORM) {
             "Win32" {
-              $icu_platform_suffix="-x86"
+              $icu_platform_suffix = "-x86"
             }
             "x64" {
-              $icu_platform_suffix="-x64"
+              $icu_platform_suffix = "-x64"
             }
             default {
               throw "Unsupported platform: $env:PLATFORM"
             }
           }
-          $icu_version_suffix="-$env:ICU_VERSION"
-          $icu_toolchain_suffix=""
+          $icu_version_suffix = "-$env:ICU_VERSION"
+          $icu_toolchain_suffix = ""
           switch ($env:MSVC_VERSION) {
             "14.0" {
-              $icu_toolchain_suffix="-vs2015"
+              $icu_toolchain_suffix = "-vs2015"
             }
             "12.0" {
-              $icu_toolchain_suffix="-vs2013"
+              $icu_toolchain_suffix = "-vs2013"
             }
             default {
               throw "Unsupported MSVS version: $env:MSVC_VERSION"
             }
           }
-          $icu_linkage_suffix=""
+          $icu_linkage_suffix = ""
           switch ($env:ICU_LINKAGE) {
             "static" {
-              $icu_linkage_suffix="-static"
+              $icu_linkage_suffix = "-static"
             }
             default {
-              $icu_linkage_suffix="-shared"
+              $icu_linkage_suffix = "-shared"
             }
           }
-          $icu_install_folder="$env:DEPENDENCIES_FOLDER\icu4c$icu_version_suffix$icu_platform_suffix$icu_toolchain_suffix$icu_linkage_suffix"
+          $icu_install_folder = "$env:DEPENDENCIES_FOLDER\icu4c$icu_version_suffix$icu_platform_suffix$icu_toolchain_suffix$icu_linkage_suffix"
           if (!(Test-Path -Path "$icu_install_folder")) {
             Write-Host "Built ICU libraries are absent for the selected toolchain (msvc-$env:MSVC_VERSION) and ICU version ($env:ICU_VERSION)"
-            $icu_archive_name="icu4c$icu_version_suffix$icu_platform_suffix$icu_toolchain_suffix$icu_linkage_suffix.7z"
-            $icu_archive_file="$env:DOWNLOADS_FOLDER\$icu_archive_name"
+            $icu_archive_name = "icu4c$icu_version_suffix$icu_platform_suffix$icu_toolchain_suffix$icu_linkage_suffix.7z"
+            $icu_archive_file = "$env:DOWNLOADS_FOLDER\$icu_archive_name"
             if (!(Test-Path -Path "$icu_archive_file")) {
-              $icu_download_url="https://dl.bintray.com/mabrarov/generic/icu/$env:ICU_VERSION/$icu_archive_name"
+              $icu_download_url = "https://dl.bintray.com/mabrarov/generic/icu/$env:ICU_VERSION/$icu_archive_name"
               if (!(Test-Path -Path "$env:DOWNLOADS_FOLDER")) {
                 New-Item "$env:DOWNLOADS_FOLDER" -type directory | out-null
               }
               Write-Host "Going to download pre-built ICU libraries from: $icu_download_url to: $icu_archive_file"
-              curl.exe --max-time 600 --show-error --silent --location --output "$icu_archive_file" "$icu_download_url"
+              curl.exe --connect-timeout 300 --max-time 1800 --show-error --silent --location --output "$icu_archive_file" "$icu_download_url"
               if ($LastExitCode -ne 0) {
                 throw "File downloading failed with exit code $LastExitCode."
               }
@@ -208,95 +208,95 @@ install:
             }
             Write-Host "Extracted: $icu_install_folder"
           }
-          $env:ICU_ROOT="$icu_install_folder"
-          $env:ICU_LIBRARY_FOLDER="$icu_install_folder\lib"
+          $env:ICU_ROOT = "$icu_install_folder"
+          $env:ICU_LIBRARY_FOLDER = "$icu_install_folder\lib"
         }
         if ($env:RUNTIME_LINKAGE -eq "static" -and -not ($env:ICU_LINKAGE -eq "static")) {
           throw "Incompatible type of linkage of ICU: $env:ICU_LINKAGE for the specified type of linkage of C/C++ runtime: $env:RUNTIME_LINKAGE"
         }
       }
-      $pre_installed_boost=""
+      $pre_installed_boost = ""
       switch ($env:MSVC_VERSION) {
         "14.0" {
           if ($env:BOOST_VERSION -eq "1.59.0" -or $env:BOOST_VERSION -eq "1.60.0") {
-            $pre_installed_boost="true"
+            $pre_installed_boost = "true"
           }
         }
         "12.0" {
           if ($env:BOOST_VERSION -eq "1.58.0") {
-            $pre_installed_boost="true"
+            $pre_installed_boost = "true"
           }
         }
       }
       if ($env:BOOST_VERSION) {
         if ($pre_installed_boost) {
-          $boost_home="C:\Libraries\boost"
+          $boost_home = "C:\Libraries\boost"
           if (!($env:BOOST_VERSION -eq "1.56.0")) {
-            $boost_home_version_suffix="_$env:BOOST_VERSION" -replace "\.", '_'
-            $boost_home="$boost_home$boost_home_version_suffix"
+            $boost_home_version_suffix = "_$env:BOOST_VERSION" -replace "\.", '_'
+            $boost_home = "$boost_home$boost_home_version_suffix"
           }
-          $boost_library_folder_platform_suffix=""
+          $boost_library_folder_platform_suffix = ""
           switch ($env:PLATFORM) {
             "Win32" {
-              $boost_library_folder_platform_suffix="lib32"
+              $boost_library_folder_platform_suffix = "lib32"
             }
             "x64" {
-              $boost_library_folder_platform_suffix="lib64"
+              $boost_library_folder_platform_suffix = "lib64"
             }
             default {
               throw "Unsupported platform: $env:PLATFORM"
             }
           }
-          $boost_library_folder_toolchain_suffix="-msvc-$env:MSVC_VERSION"
-          $env:BOOST_INCLUDE_FOLDER="$boost_home"
-          $env:BOOST_LIBRARY_FOLDER="$boost_home\$boost_library_folder_platform_suffix$boost_library_folder_toolchain_suffix"
+          $boost_library_folder_toolchain_suffix = "-msvc-$env:MSVC_VERSION"
+          $env:BOOST_INCLUDE_FOLDER = "$boost_home"
+          $env:BOOST_LIBRARY_FOLDER = "$boost_home\$boost_library_folder_platform_suffix$boost_library_folder_toolchain_suffix"
         } else {
-          $boost_platform_suffix=""
+          $boost_platform_suffix = ""
           switch ($env:PLATFORM) {
             "Win32" {
-              $boost_platform_suffix="-x86"
+              $boost_platform_suffix = "-x86"
             }
             "x64" {
-              $boost_platform_suffix="-x64"
+              $boost_platform_suffix = "-x64"
             }
             default {
               throw "Unsupported platform: $env:PLATFORM"
             }
           }
-          $boost_version_suffix="-$env:BOOST_VERSION"
-          $boost_toolchain_suffix=""
+          $boost_version_suffix = "-$env:BOOST_VERSION"
+          $boost_toolchain_suffix = ""
           switch ($env:MSVC_VERSION) {
             "14.0" {
-              $boost_toolchain_suffix="-vs2015"
+              $boost_toolchain_suffix = "-vs2015"
             }
             "12.0" {
-              $boost_toolchain_suffix="-vs2013"
+              $boost_toolchain_suffix = "-vs2013"
             }
             "11.0" {
-              $boost_toolchain_suffix="-vs2012"
+              $boost_toolchain_suffix = "-vs2012"
             }
             "10.0" {
-              $boost_toolchain_suffix="-vs2010"
+              $boost_toolchain_suffix = "-vs2010"
             }
             "9.0" {
-              $boost_toolchain_suffix="-vs2008"
+              $boost_toolchain_suffix = "-vs2008"
             }
             default {
               throw "Unsupported MSVS version: $env:MSVC_VERSION"
             }
           }
-          $boost_install_folder="$env:DEPENDENCIES_FOLDER\boost$boost_version_suffix$boost_platform_suffix$boost_toolchain_suffix"
+          $boost_install_folder = "$env:DEPENDENCIES_FOLDER\boost$boost_version_suffix$boost_platform_suffix$boost_toolchain_suffix"
           if (!(Test-Path -Path "$boost_install_folder")) {
             Write-Host "Built Boost libraries are absent for the selected toolchain (msvc-$env:MSVC_VERSION) and Boost version ($env:BOOST_VERSION)"
-            $boost_archive_name="boost$boost_version_suffix$boost_platform_suffix$boost_toolchain_suffix.7z"
-            $boost_archive_file="$env:DOWNLOADS_FOLDER\$boost_archive_name"
+            $boost_archive_name = "boost$boost_version_suffix$boost_platform_suffix$boost_toolchain_suffix.7z"
+            $boost_archive_file = "$env:DOWNLOADS_FOLDER\$boost_archive_name"
             if (!(Test-Path -Path "$boost_archive_file")) {
-              $boost_download_url="https://dl.bintray.com/mabrarov/generic/boost/$env:BOOST_VERSION/$boost_archive_name"
+              $boost_download_url = "https://dl.bintray.com/mabrarov/generic/boost/$env:BOOST_VERSION/$boost_archive_name"
               if (!(Test-Path -Path "$env:DOWNLOADS_FOLDER")) {
                 New-Item "$env:DOWNLOADS_FOLDER" -type directory | out-null
               }
               Write-Host "Going to download pre-built Boost libraries from: $boost_download_url to: $boost_archive_file"
-              curl.exe --max-time 600 --show-error --silent --location --output "$boost_archive_file" "$boost_download_url"
+              curl.exe --connect-timeout 300 --max-time 1800 --show-error --silent --location --output "$boost_archive_file" "$boost_download_url"
               if ($LastExitCode -ne 0) {
                 throw "File downloading failed with exit code $LastExitCode."
               }
@@ -312,170 +312,170 @@ install:
             }
             Write-Host "Extracted: $boost_install_folder"
           }
-          $boost_include_folder_version_suffix="-$env:BOOST_VERSION" -replace "([\d]+)\.([\d]+)(\.[\d]+)*", '$1_$2'
-          $env:BOOST_INCLUDE_FOLDER="$boost_install_folder\include\boost$boost_include_folder_version_suffix"
-          $env:BOOST_LIBRARY_FOLDER="$boost_install_folder\lib"
+          $boost_include_folder_version_suffix = "-$env:BOOST_VERSION" -replace "([\d]+)\.([\d]+)(\.[\d]+)*", '$1_$2'
+          $env:BOOST_INCLUDE_FOLDER = "$boost_install_folder\include\boost$boost_include_folder_version_suffix"
+          $env:BOOST_LIBRARY_FOLDER = "$boost_install_folder\lib"
         }
         if ($env:RUNTIME_LINKAGE -eq "static" -and -not ($env:BOOST_LINKAGE -eq "static")) {
           throw "Incompatible type of linkage of Boost: $env:BOOST_LINKAGE for the specified type of linkage of C/C++ runtime: $env:RUNTIME_LINKAGE"
         }
         switch ($env:BOOST_LINKAGE) {
           "static" {
-            $env:BOOST_USE_STATIC_LIBS="ON"
+            $env:BOOST_USE_STATIC_LIBS = "ON"
           }
           default {
-            $env:BOOST_USE_STATIC_LIBS="OFF"
+            $env:BOOST_USE_STATIC_LIBS = "OFF"
           }
         }
       }
       if ($env:QT_VERSION) {
-        $pre_installed_qt=""
+        $pre_installed_qt = ""
         if (!($env:QT_LINKAGE -eq "static")) {
           switch ($env:MSVC_VERSION) {
             "14.0" {
               switch ($env:QT_VERSION) {
                 "5.7" {
-                  $pre_installed_qt="true"
+                  $pre_installed_qt = "true"
                 }
                 "5.6" {
-                  $pre_installed_qt="true"
+                  $pre_installed_qt = "true"
                 }
               }
             }
             "12.0" {
               switch ($env:QT_VERSION) {
                 "5.7" {
-                  $pre_installed_qt="true"
+                  $pre_installed_qt = "true"
                 }
                 "5.6" {
-                  $pre_installed_qt="true"
+                  $pre_installed_qt = "true"
                 }
                 "5.5" {
-                  $pre_installed_qt="true"
+                  $pre_installed_qt = "true"
                 }
                 "5.4" {
-                  $pre_installed_qt="true"
+                  $pre_installed_qt = "true"
                 }
                 "5.3" {
-                  $pre_installed_qt="true"
+                  $pre_installed_qt = "true"
                 }
               }
             }
           }
         }
         if ($pre_installed_qt) {
-          $qt_folder_toolchain_suffix=""
+          $qt_folder_toolchain_suffix = ""
           switch ($env:MSVC_VERSION) {
             "14.0" {
-              $qt_folder_toolchain_suffix="msvc2015"
+              $qt_folder_toolchain_suffix = "msvc2015"
             }
             "12.0" {
-              $qt_folder_toolchain_suffix="msvc2013"
+              $qt_folder_toolchain_suffix = "msvc2013"
             }
             "11.0" {
-              $qt_folder_toolchain_suffix="msvc2012"
+              $qt_folder_toolchain_suffix = "msvc2012"
             }
             "10.0" {
-              $qt_folder_toolchain_suffix="msvc2010"
+              $qt_folder_toolchain_suffix = "msvc2010"
             }
             "9.0" {
-              $qt_folder_toolchain_suffix="msvc2008"
+              $qt_folder_toolchain_suffix = "msvc2008"
             }
             default {
               throw "Unsupported MSVS version: $env:MSVC_VERSION"
             }
           }
-          $qt_folder_platform_suffix=""
+          $qt_folder_platform_suffix = ""
           switch ($env:PLATFORM) {
             "Win32" {
-              $qt_folder_platform_suffix=""
+              $qt_folder_platform_suffix = ""
             }
             "x64" {
-              $qt_folder_platform_suffix="_64"
+              $qt_folder_platform_suffix = "_64"
             }
             default {
               throw "Unsupported platform: $env:PLATFORM"
             }
           }
-          $qt_opengl_suffix=""
+          $qt_opengl_suffix = ""
           switch ($env:QT_VERSION) {
             "5.4" {
-              $qt_opengl_suffix="_opengl"
+              $qt_opengl_suffix = "_opengl"
             }
             "5.3" {
-              $qt_opengl_suffix="_opengl"
+              $qt_opengl_suffix = "_opengl"
             }
           }
-          $env:QT_HOME="C:\Qt\$env:QT_VERSION\$qt_folder_toolchain_suffix$qt_folder_platform_suffix$qt_opengl_suffix"
-          $env:QT_BIN_FOLDER="$env:QT_HOME\bin"
-          $env:QT_QMAKE_EXECUTABLE="$env:QT_BIN_FOLDER\qmake.exe"
+          $env:QT_HOME = "C:\Qt\$env:QT_VERSION\$qt_folder_toolchain_suffix$qt_folder_platform_suffix$qt_opengl_suffix"
+          $env:QT_BIN_FOLDER = "$env:QT_HOME\bin"
+          $env:QT_QMAKE_EXECUTABLE = "$env:QT_BIN_FOLDER\qmake.exe"
         } else {
-          $qt_platform_suffix=""
+          $qt_platform_suffix = ""
           switch ($env:PLATFORM) {
             "Win32" {
-              $qt_platform_suffix="-x86"
+              $qt_platform_suffix = "-x86"
             }
             "x64" {
-              $qt_platform_suffix="-x64"
+              $qt_platform_suffix = "-x64"
             }
             default {
               throw "Unsupported platform: $env:PLATFORM"
             }
           }
-          $qt_version_suffix=""
+          $qt_version_suffix = ""
           if (!($env:QT_VERSION -match "[\d]+\.[\d]+\.[\d]+")) {
-            $qt_version_suffix="-$env:QT_VERSION.0"
+            $qt_version_suffix = "-$env:QT_VERSION.0"
           } else {
-            $qt_version_suffix="-$env:QT_VERSION"
+            $qt_version_suffix = "-$env:QT_VERSION"
           }
-          $qt_toolchain_suffix=""
+          $qt_toolchain_suffix = ""
           switch ($env:MSVC_VERSION) {
             "14.0" {
-              $qt_toolchain_suffix="-vs2015"
+              $qt_toolchain_suffix = "-vs2015"
             }
             "12.0" {
-              $qt_toolchain_suffix="-vs2013"
+              $qt_toolchain_suffix = "-vs2013"
             }
             "11.0" {
-              $qt_toolchain_suffix="-vs2012"
+              $qt_toolchain_suffix = "-vs2012"
             }
             "10.0" {
-              $qt_toolchain_suffix="-vs2010"
+              $qt_toolchain_suffix = "-vs2010"
             }
             "9.0" {
-              $qt_toolchain_suffix="-vs2008"
+              $qt_toolchain_suffix = "-vs2008"
             }
             default {
               throw "Unsupported MSVS version: $env:MSVC_VERSION"
             }
           }
-          $qt_linkage_suffix=""
+          $qt_linkage_suffix = ""
           switch ($env:QT_LINKAGE) {
             "static" {
-              $qt_linkage_suffix="-static"
+              $qt_linkage_suffix = "-static"
             }
             default {
-              $qt_linkage_suffix="-shared"
+              $qt_linkage_suffix = "-shared"
             }
           }
-          $qt_install_folder="$env:DEPENDENCIES_FOLDER\qt$qt_version_suffix$qt_platform_suffix$qt_toolchain_suffix$qt_linkage_suffix"
+          $qt_install_folder = "$env:DEPENDENCIES_FOLDER\qt$qt_version_suffix$qt_platform_suffix$qt_toolchain_suffix$qt_linkage_suffix"
           if (!(Test-Path -Path "$qt_install_folder")) {
             Write-Host "Built Qt libraries are absent for the selected toolchain (msvc-$env:MSVC_VERSION) and Qt version ($env:QT_VERSION) and Qt linkage ($env:QT_LINKAGE)"
-            $qt_archive_name="qt$qt_version_suffix$qt_platform_suffix$qt_toolchain_suffix$qt_linkage_suffix.7z"
-            $qt_archive_file="$env:DOWNLOADS_FOLDER\$qt_archive_name"
+            $qt_archive_name = "qt$qt_version_suffix$qt_platform_suffix$qt_toolchain_suffix$qt_linkage_suffix.7z"
+            $qt_archive_file = "$env:DOWNLOADS_FOLDER\$qt_archive_name"
             if (!(Test-Path -Path "$qt_archive_file")) {
-              $qt_version_url_suffix=""
+              $qt_version_url_suffix = ""
               if (!($env:QT_VERSION -match "[\d]+\.[\d]+\.[\d]+")) {
-                $qt_version_url_suffix="/$env:QT_VERSION.0"
+                $qt_version_url_suffix = "/$env:QT_VERSION.0"
               } else {
-                $qt_version_url_suffix="/$env:QT_VERSION"
+                $qt_version_url_suffix = "/$env:QT_VERSION"
               }
-              $qt_download_url="https://dl.bintray.com/mabrarov/generic/qt$qt_version_url_suffix/$qt_archive_name"
+              $qt_download_url = "https://dl.bintray.com/mabrarov/generic/qt$qt_version_url_suffix/$qt_archive_name"
               if (!(Test-Path -Path "$env:DOWNLOADS_FOLDER")) {
                 New-Item "$env:DOWNLOADS_FOLDER" -type directory | out-null
               }
               Write-Host "Going to download pre-built Qt libraries from: $qt_download_url to: $qt_archive_file"
-              curl.exe --max-time 600 --show-error --silent --location --output "$qt_archive_file" "$qt_download_url"
+              curl.exe --connect-timeout 300 --max-time 1800 --show-error --silent --location --output "$qt_archive_file" "$qt_download_url"
               if ($LastExitCode -ne 0) {
                 throw "File downloading failed with exit code $LastExitCode."
               }
@@ -491,56 +491,56 @@ install:
             }
             Write-Host "Extracted: $qt_install_folder"
           }
-          $env:QT_HOME="$qt_install_folder"
-          $env:QT_BIN_FOLDER="$qt_install_folder\bin"
-          $env:QT_QMAKE_EXECUTABLE="$env:QT_BIN_FOLDER\qmake.exe"
+          $env:QT_HOME = "$qt_install_folder"
+          $env:QT_BIN_FOLDER = "$qt_install_folder\bin"
+          $env:QT_QMAKE_EXECUTABLE = "$env:QT_BIN_FOLDER\qmake.exe"
         }
       }
       switch ($env:CONFIGURATION) {
         "Debug" {
-          $env:CMAKE_BUILD_CONFIG="DEBUG"
+          $env:CMAKE_BUILD_CONFIG = "DEBUG"
         }
         "Release" {
-          $env:CMAKE_BUILD_CONFIG="RELEASE"
+          $env:CMAKE_BUILD_CONFIG = "RELEASE"
         }
         default {
           throw "Unsupported build configuration: $env:CONFIGURATION"
         }
       }
-      $cmake_generator_msvc_version_suffx=" $env:MSVC_VERSION" -replace "([\d]+)\.([\d]+)", '$1'
+      $cmake_generator_msvc_version_suffx = " $env:MSVC_VERSION" -replace "([\d]+)\.([\d]+)", '$1'
       switch ($env:MSVC_VERSION) {
         "14.0" {
-          $cmake_generator_msvc_version_suffx="$cmake_generator_msvc_version_suffx 2015"
+          $cmake_generator_msvc_version_suffx = "$cmake_generator_msvc_version_suffx 2015"
         }
         "12.0" {
-          $cmake_generator_msvc_version_suffx="$cmake_generator_msvc_version_suffx 2013"
+          $cmake_generator_msvc_version_suffx = "$cmake_generator_msvc_version_suffx 2013"
         }
         "11.0" {
-          $cmake_generator_msvc_version_suffx="$cmake_generator_msvc_version_suffx 2012"
+          $cmake_generator_msvc_version_suffx = "$cmake_generator_msvc_version_suffx 2012"
         }
         "10.0" {
-          $cmake_generator_msvc_version_suffx="$cmake_generator_msvc_version_suffx 2010"
+          $cmake_generator_msvc_version_suffx = "$cmake_generator_msvc_version_suffx 2010"
         }
         "9.0" {
-          $cmake_generator_msvc_version_suffx="$cmake_generator_msvc_version_suffx 2008"
+          $cmake_generator_msvc_version_suffx = "$cmake_generator_msvc_version_suffx 2008"
         }
         default {
           throw "Unsupported MSVS version: $env:MSVC_VERSION"
         }
       }
-      $cmake_generator_platform_suffix=""
+      $cmake_generator_platform_suffix = ""
       switch ($env:PLATFORM) {
         "Win32" {
-          $cmake_generator_platform_suffix=""
+          $cmake_generator_platform_suffix = ""
         }
         "x64" {
-          $cmake_generator_platform_suffix=" Win64"
+          $cmake_generator_platform_suffix = " Win64"
         }
         default {
           throw "Unsupported platform: $env:PLATFORM"
         }
       }
-      $env:CMAKE_GENERATOR="Visual Studio$cmake_generator_msvc_version_suffx$cmake_generator_platform_suffix"
+      $env:CMAKE_GENERATOR = "Visual Studio$cmake_generator_msvc_version_suffx$cmake_generator_platform_suffix"
       $env:COVERITY_BUILD = $env:COVERITY_BUILD_CANDIDATE -and ($env:APPVEYOR_REPO_BRANCH -eq "coverity_scan") -and ($env:CONFIGURATION -eq "Release") -and ($env:PLATFORM -eq "x64")
 
 before_build:
@@ -572,13 +572,13 @@ before_build:
   - cmd: if not "%VCVARS_BATCH_FILE%"=="" call "%VCVARS_BATCH_FILE%" %VCVARS_PLATFORM%
   - ps: |
       if ($env:QT_VERSION) {
-        $env:PATH="$env:QT_BIN_FOLDER;$env:PATH"
+        $env:PATH = "$env:QT_BIN_FOLDER;$env:PATH"
       }
       if ($env:BOOST_VERSION -and -not ($env:BOOST_LINKAGE -eq "static")) {
-        $env:PATH="$env:BOOST_LIBRARY_FOLDER;$env:PATH"
+        $env:PATH = "$env:BOOST_LIBRARY_FOLDER;$env:PATH"
       }
       if ($env:ICU_VERSION -and -not ($env:ICU_LINKAGE -eq "static")) {
-        $env:PATH="$env:ICU_LIBRARY_FOLDER;$env:PATH"        
+        $env:PATH = "$env:ICU_LIBRARY_FOLDER;$env:PATH"
       }
 
 build_script:
@@ -644,7 +644,7 @@ build_script:
         # Upload results to Coverity server.
         $coverity_build_version = $env:APPVEYOR_REPO_COMMIT.Substring(0, 7)
         Write-Host "Uploading Coverity Scan results (version: $coverity_build_version)..."
-        curl.exe --max-time 600 --show-error --silent --location --form token="$env:COVERITY_TOKEN" --form email="$env:COVERITY_NOTIFICATION_EMAIL" --form file=@"$env:APPVEYOR_BUILD_FOLDER\build\$env:APPVEYOR_PROJECT_NAME.zip" --form version="$coverity_build_version" --form description="Build submitted via AppVeyor CI" https://scan.coverity.com/builds?project=$env:APPVEYOR_REPO_NAME
+        curl.exe --connect-timeout 300 --max-time 1800 --show-error --silent --location --form token="$env:COVERITY_TOKEN" --form email="$env:COVERITY_NOTIFICATION_EMAIL" --form file=@"$env:APPVEYOR_BUILD_FOLDER\build\$env:APPVEYOR_PROJECT_NAME.zip" --form version="$coverity_build_version" --form description="Build submitted via AppVeyor CI" https://scan.coverity.com/builds?project=$env:APPVEYOR_REPO_NAME
         if ($LastExitCode -ne 0) {
           throw "Failed to upload Coverity Scan results with exit code $LastExitCode."
         }
