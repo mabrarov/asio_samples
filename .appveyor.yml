@@ -192,7 +192,7 @@ install:
                 New-Item "$env:DOWNLOADS_FOLDER" -type directory | out-null
               }
               Write-Host "Going to download pre-built ICU libraries from: $icu_download_url to: $icu_archive_file"
-              curl.exe --max-time 1800 --show-error --silent --location --output "$icu_archive_file" "$icu_download_url"
+              curl.exe --connect-timeout 300 --max-time 1800 --show-error --silent --location --output "$icu_archive_file" "$icu_download_url"
               if ($LastExitCode -ne 0) {
                 throw "File downloading failed with exit code $LastExitCode."
               }
@@ -296,7 +296,7 @@ install:
                 New-Item "$env:DOWNLOADS_FOLDER" -type directory | out-null
               }
               Write-Host "Going to download pre-built Boost libraries from: $boost_download_url to: $boost_archive_file"
-              curl.exe --max-time 1800 --show-error --silent --location --output "$boost_archive_file" "$boost_download_url"
+              curl.exe --connect-timeout 300 --max-time 1800 --show-error --silent --location --output "$boost_archive_file" "$boost_download_url"
               if ($LastExitCode -ne 0) {
                 throw "File downloading failed with exit code $LastExitCode."
               }
@@ -475,7 +475,7 @@ install:
                 New-Item "$env:DOWNLOADS_FOLDER" -type directory | out-null
               }
               Write-Host "Going to download pre-built Qt libraries from: $qt_download_url to: $qt_archive_file"
-              curl.exe --max-time 1800 --show-error --silent --location --output "$qt_archive_file" "$qt_download_url"
+              curl.exe --connect-timeout 300 --max-time 1800 --show-error --silent --location --output "$qt_archive_file" "$qt_download_url"
               if ($LastExitCode -ne 0) {
                 throw "File downloading failed with exit code $LastExitCode."
               }
@@ -644,7 +644,7 @@ build_script:
         # Upload results to Coverity server.
         $coverity_build_version = $env:APPVEYOR_REPO_COMMIT.Substring(0, 7)
         Write-Host "Uploading Coverity Scan results (version: $coverity_build_version)..."
-        curl.exe --max-time 1800 --show-error --silent --location --form token="$env:COVERITY_TOKEN" --form email="$env:COVERITY_NOTIFICATION_EMAIL" --form file=@"$env:APPVEYOR_BUILD_FOLDER\build\$env:APPVEYOR_PROJECT_NAME.zip" --form version="$coverity_build_version" --form description="Build submitted via AppVeyor CI" https://scan.coverity.com/builds?project=$env:APPVEYOR_REPO_NAME
+        curl.exe --connect-timeout 300 --max-time 1800 --show-error --silent --location --form token="$env:COVERITY_TOKEN" --form email="$env:COVERITY_NOTIFICATION_EMAIL" --form file=@"$env:APPVEYOR_BUILD_FOLDER\build\$env:APPVEYOR_PROJECT_NAME.zip" --form version="$coverity_build_version" --form description="Build submitted via AppVeyor CI" https://scan.coverity.com/builds?project=$env:APPVEYOR_REPO_NAME
         if ($LastExitCode -ne 0) {
           throw "Failed to upload Coverity Scan results with exit code $LastExitCode."
         }
