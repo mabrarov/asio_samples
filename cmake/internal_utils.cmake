@@ -109,7 +109,7 @@ endfunction()
 # Changes existing (default) compiler options.
 # Parameters:
 #   result - name of list to store compile options.
-function(change_default_compile_options orignal_compile_options result)
+function(ma_change_default_compile_options orignal_compile_options result)
     set(compile_options ${orignal_compile_options})
     # Turn on more strict warning mode
     if(MSVC)
@@ -125,7 +125,7 @@ endfunction()
 # Changes existing (default) linker options.
 # Parameters:
 #   result - name of list to store link options.
-function(change_default_link_options orignal_link_options result)
+function(ma_change_default_link_options orignal_link_options result)
     set(link_options ${orignal_link_options})
     if(MSVC AND (${CMAKE_CXX_COMPILER_ID} STREQUAL "Intel"))
         # Disable incremental linking for Intel C++ Compiler because it leads to crash of linker.
@@ -145,7 +145,7 @@ endfunction()
 # Builds list of additional internal compiler options.
 # Parameters:
 #   result - name of list to store compile options.
-function(config_private_compile_options result)
+function(ma_config_private_compile_options result)
     set(compile_options )
     # Turn on more strict warning mode
     if(MSVC)
@@ -159,7 +159,7 @@ endfunction()
 # Builds list of additional transitive compiler options.
 # Parameters:
 #   result - name of list to store compile options.
-function(config_public_compile_options result)
+function(ma_config_public_compile_options result)
     set(compile_options )
     # Turn on thread support for GCC
     if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
@@ -191,7 +191,7 @@ endfunction()
 # Builds list of additional internal compiler definitions.
 # Parameters:
 #   result - name of list to store compile definitions.
-function(config_private_compile_definitions result)
+function(ma_config_private_compile_definitions result)
     set(compile_definitions )
     set(${result} "${compile_definitions}" PARENT_SCOPE)
 endfunction()
@@ -199,7 +199,7 @@ endfunction()
 # Builds list of additional transitive compiler definitions.
 # Parameters:
 #   result - name of list to store compile definitions.
-function(config_public_compile_definitions result)
+function(ma_config_public_compile_definitions result)
     set(compile_definitions )
     # Additional preprocessor definitions for Windows target
     if(WIN32)
