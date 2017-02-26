@@ -352,7 +352,7 @@ script:
     fi
   - ctest --build-config $BUILD_TYPE --verbose
   - if [[ "$COVERAGE_BUILD" == "ON" ]]; then
-      lcov -c -d . -o lcov-test.info && lcov -a lcov-base.info -a lcov-test.info -o lcov.info && lcov -r lcov.info 'ui_*.h*' 'moc_*.c*' '/usr/*' '3rdparty/*' 'tests/*' -o lcov.info;
+      lcov -c -d . -o lcov-test.info && lcov -a lcov-base.info -a lcov-test.info -o lcov.info && lcov -r lcov.info 'ui_*.h*' 'moc_*.c*' '/usr/*' '3rdparty/*' 'examples/*' 'tests/*' -o lcov.info;
     fi
   - cd $TRAVIS_BUILD_DIR
 
