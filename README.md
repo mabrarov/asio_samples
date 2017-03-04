@@ -1,6 +1,6 @@
 # Asio samples 
 
-[![Travis CI Build Status](https://travis-ci.org/mabrarov/asio_samples.svg?branch=develop)](https://travis-ci.org/mabrarov/asio_samples?branch=develop) [![AppVeyor CI Build Status](https://ci.appveyor.com/api/projects/status/m3m15b3wxkyhqfj2/branch/develop?svg=true)](https://ci.appveyor.com/project/mabrarov/asio-samples) [![Coverity Scan Build Status](https://scan.coverity.com/projects/9191/badge.svg)](https://scan.coverity.com/projects/mabrarov-asio_samples) [![codecov](https://codecov.io/gh/mabrarov/asio_samples/branch/develop/graph/badge.svg)](https://codecov.io/gh/mabrarov/asio_samples) [![Release](https://img.shields.io/github/release/mabrarov/asio_samples.svg)](https://github.com/mabrarov/asio_samples/releases/latest)
+[![Travis CI Build Status](https://travis-ci.org/mabrarov/asio_samples.svg?branch=develop)](https://travis-ci.org/mabrarov/asio_samples?branch=develop) [![AppVeyor CI Build Status](https://ci.appveyor.com/api/projects/status/m3m15b3wxkyhqfj2/branch/develop?svg=true)](https://ci.appveyor.com/project/mabrarov/asio-samples) [![Coverity Scan Build Status](https://scan.coverity.com/projects/9191/badge.svg)](https://scan.coverity.com/projects/mabrarov-asio_samples) [![codecov](https://codecov.io/gh/mabrarov/asio_samples/branch/develop/graph/badge.svg)](https://codecov.io/gh/mabrarov/asio_samples)
 
 Examples (code samples) describing the construction of active objects 
 on the top of [Boost.Asio](http://www.boost.org/doc/libs/release/doc/html/boost_asio.html). 
