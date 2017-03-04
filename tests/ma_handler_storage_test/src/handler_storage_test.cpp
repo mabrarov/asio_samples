@@ -842,6 +842,38 @@ TEST(handler_storage, post_with_arg_with_target)
   ASSERT_EQ(test_post_value, out);
 } // TEST(handler_storage, arg)
 
+TEST(handler_storage, post_no_arg_when_empty)
+{
+  typedef ma::handler_storage<void> handler_storage_type;
+  boost::asio::io_service io_service;
+  handler_storage_type handler_storage(io_service);
+  ASSERT_THROW(handler_storage.post(), ma::bad_handler_call);
+} // TEST(handler_storage, post_no_arg_when_empty)
+
+TEST(handler_storage, post_no_arg_with_target_when_empty)
+{
+  typedef ma::handler_storage<void, test_handler_base> handler_storage_type;
+  boost::asio::io_service io_service;
+  handler_storage_type handler_storage(io_service);
+  ASSERT_THROW(handler_storage.post(), ma::bad_handler_call);
+} // TEST(handler_storage, post_no_arg_with_target_when_empty)
+
+TEST(handler_storage, post_with_arg_when_empty)
+{
+  typedef ma::handler_storage<int> handler_storage_type;
+  boost::asio::io_service io_service;
+  handler_storage_type handler_storage(io_service);
+  ASSERT_THROW(handler_storage.post(42), ma::bad_handler_call);
+} // TEST(handler_storage, post_with_arg_when_empty)
+
+TEST(handler_storage, post_with_arg_with_target_when_empty)
+{
+  typedef ma::handler_storage<int, test_handler_base> handler_storage_type;
+  boost::asio::io_service io_service;
+  handler_storage_type handler_storage(io_service);
+  ASSERT_THROW(handler_storage.post(42), ma::bad_handler_call);
+} // TEST(handler_storage, post_with_arg_with_target_when_empty)
+
 } // namespace handler_storage_post
 
 namespace handler_storage_move_support {
