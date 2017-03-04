@@ -376,6 +376,24 @@ private:
   int  value_;
 }; // class handler
 
+TEST(handler_storage, target_when_empty)
+{
+  {
+    typedef ma::handler_storage<int, handler_base> handler_storage_type;
+
+    boost::asio::io_service io_service;
+    handler_storage_type handler_storage(io_service);
+    ASSERT_EQ(0, handler_storage.target());
+  }
+  {
+    typedef ma::handler_storage<int> handler_storage_type;
+
+    boost::asio::io_service io_service;
+    handler_storage_type handler_storage(io_service);
+    ASSERT_EQ(0, handler_storage.target());
+  }
+} // TEST(handler_storage, target_when_empty)
+
 TEST(handler_storage, target)
 {
   typedef ma::handler_storage<int, handler_base> handler_storage_type;
