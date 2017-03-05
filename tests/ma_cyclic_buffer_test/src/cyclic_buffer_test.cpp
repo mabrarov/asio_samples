@@ -123,6 +123,24 @@ TEST_P(generic_test, reset)
   ASSERT_EQ(buffer_size, boost::asio::buffer_size(free_space));
 }
 
+TEST_P(generic_test, empty_mutable_buffers)
+{
+  typedef ma::cyclic_buffer::mutable_buffers_type mutable_buffers_type;
+  const std::size_t buffer_size = GetParam();
+  ma::cyclic_buffer buffer(buffer_size);
+  const mutable_buffers_type zero_buffers = buffer.prepared(0);
+  ASSERT_TRUE(zero_buffers.empty());
+}
+
+TEST_P(generic_test, empty_const_buffers)
+{
+  typedef ma::cyclic_buffer::const_buffers_type const_buffers_type;
+  const std::size_t buffer_size = GetParam();
+  ma::cyclic_buffer buffer(buffer_size);
+  const const_buffers_type zero_buffers = buffer.data();
+  ASSERT_TRUE(zero_buffers.empty());
+}
+
 TEST_P(generic_test, consume_more_than_available)
 {
   const std::size_t buffer_size = GetParam();
