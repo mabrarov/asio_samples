@@ -7,6 +7,7 @@
 
 #include <cstddef>
 #include <iterator>
+#include <stdexcept>
 #include <boost/asio.hpp>
 #include <gtest/gtest.h>
 #include <ma/cyclic_buffer.hpp>
@@ -109,6 +110,33 @@ TEST_P(generic_test, free_size_limited_with_too_large_value)
   ASSERT_EQ(buffer_size, boost::asio::buffer_size(free_space));
 }
 
+TEST_P(generic_test, reset)
+{
+  typedef ma::cyclic_buffer::mutable_buffers_type mutable_buffers_type;
+  const std::size_t buffer_size = GetParam();
+  ma::cyclic_buffer buffer(buffer_size);
+  // Consume all free space
+  buffer.consume(buffer_size);
+  buffer.reset();
+  // Check that buffer is all free again
+  const mutable_buffers_type free_space = buffer.prepared();
+  ASSERT_EQ(buffer_size, boost::asio::buffer_size(free_space));
+}
+
+TEST_P(generic_test, consume_more_than_available)
+{
+  const std::size_t buffer_size = GetParam();
+  ma::cyclic_buffer buffer(buffer_size);
+  ASSERT_THROW(buffer.consume(buffer_size + 1), std::length_error);
+}
+
+TEST_P(generic_test, commit_more_than_allocated)
+{
+  const std::size_t buffer_size = GetParam();
+  ma::cyclic_buffer buffer(buffer_size);
+  ASSERT_THROW(buffer.commit(1), std::length_error);
+}
+
 TEST(complex_test, looping_free_space)
 {
   typedef ma::cyclic_buffer::mutable_buffers_type mutable_buffers_type;
@@ -120,6 +148,21 @@ TEST(complex_test, looping_free_space)
   ASSERT_EQ(2U, std::distance(free_space.begin(), free_space.end()));
   // Check the size of free space
   ASSERT_EQ(12U, boost::asio::buffer_size(free_space));
+}
+
+TEST(complex_test, commit_after_fragmentation)
+{
+  typedef ma::cyclic_buffer::mutable_buffers_type mutable_buffers_type;
+  ma::cyclic_buffer buffer(16);
+  buffer.consume(buffer.size());
+  buffer.commit(12);
+  buffer.consume(4);
+  buffer.commit(8);
+  const mutable_buffers_type free_space = buffer.prepared();
+  // 2 buffers should be provided
+  ASSERT_EQ(2U, std::distance(free_space.begin(), free_space.end()));
+  // Check the size of free space
+  ASSERT_EQ(buffer.size(), boost::asio::buffer_size(free_space));
 }
 
 TEST(complex_test, looping_filled_space)
