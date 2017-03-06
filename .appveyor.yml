@@ -25,6 +25,13 @@ environment:
 
   matrix:
     - MSVC_VERSION: 14.0
+      RUNTIME_LINKAGE: shared
+      BOOST_VERSION: 1.63.0
+      BOOST_LINKAGE: static
+      QT_VERSION: 5.8
+      QT_LINKAGE: shared
+      COVERITY_BUILD_CANDIDATE: True
+    - MSVC_VERSION: 14.0
       RUNTIME_LINKAGE: static
       BOOST_VERSION: 1.61.0
       BOOST_LINKAGE: static
@@ -32,13 +39,6 @@ environment:
       QT_LINKAGE: static
       ICU_VERSION: 57.1
       ICU_LINKAGE: static
-      COVERITY_BUILD_CANDIDATE: True
-    - MSVC_VERSION: 14.0
-      RUNTIME_LINKAGE: shared
-      BOOST_VERSION: 1.63.0
-      BOOST_LINKAGE: static
-      QT_VERSION: 5.8
-      QT_LINKAGE: shared
     - MSVC_VERSION: 14.0
       RUNTIME_LINKAGE: shared
       BOOST_VERSION: 1.61.0
