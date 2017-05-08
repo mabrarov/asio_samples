@@ -7,6 +7,9 @@
 
 FROM abrarov/asio-samples-builder-alpine-base
 
+LABEL name="abrarov/asio-samples-builder-alpine-qt4" \
+    description="Builder of Asio samples project on Alpine Linux with Qt 4.x"
+
 ENV MA_QT=ON \
     MA_QT_MAJOR_VERSION=4
 

@@ -7,6 +7,9 @@
 
 FROM alpine
 
+LABEL name="abrarov/asio-samples-builder-alpine-base" \
+    description="Base image for builder of Asio samples project on Alpine Linux"
+
 ENV BUILD_TYPE=RELEASE \
     BOOST_USE_STATIC_LIBS=ON \
     MA_QT=OFF \

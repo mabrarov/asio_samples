@@ -14,13 +14,16 @@ cmake -D CMAKE_BUILD_TYPE=${BUILD_TYPE} \
 # Perform building of project
 cmake --build . --config ${BUILD_TYPE}
 
+# Prepare zero counters - baseline - for code coverage calculation
 if [[ "${COVERAGE_BUILD}" = "ON" ]]; then
-    lcov -z -d . && lcov -c -d . -i -o lcov-base.info;
+    lcov -z -d . &&\
+    lcov -c -d . -i -o lcov-base.info;
 fi
 
 # Run tests
 ctest --build-config ${BUILD_TYPE} --verbose
 
+# Calculate difference to get code coverage statistic and generate HTML report
 if [[ "${COVERAGE_BUILD}" = "ON" ]]; then
     lcov -c -d . -o lcov-test.info &&\
     lcov -a lcov-base.info -a lcov-test.info -o lcov.info &&\
