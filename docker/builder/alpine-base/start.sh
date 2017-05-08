@@ -9,7 +9,7 @@ cmake -D CMAKE_BUILD_TYPE=${BUILD_TYPE} \
       -D ma_qt=${MA_QT} -D ma_force_qt_major_version=${MA_QT_MAJOR_VERSION} \
       -D ma_coverage_build=${COVERAGE_BUILD} \
        $@ \
-       /project
+       ${PROJECT_DIR}
 
 # Perform building of project
 cmake --build . --config ${BUILD_TYPE}
@@ -27,6 +27,6 @@ ctest --build-config ${BUILD_TYPE} --verbose
 if [[ "${COVERAGE_BUILD}" = "ON" ]]; then
     lcov -c -d . -o lcov-test.info &&\
     lcov -a lcov-base.info -a lcov-test.info -o lcov.info &&\
-    lcov -r lcov.info 'ui_*.h*' 'moc_*.c*' '/usr/*' '3rdparty/*' 'examples/*' 'tests/*' -o lcov.info &&\
+    lcov -r lcov.info 'ui_*.h*' 'moc_*.c*' "/usr/*" "${PROJECT_DIR}/3rdparty/*" "${PROJECT_DIR}/examples/*" "${PROJECT_DIR}/tests/*" -o lcov.info &&\
     genhtml -o coverage lcov.info;
 fi
