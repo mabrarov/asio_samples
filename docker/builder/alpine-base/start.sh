@@ -14,14 +14,14 @@ cmake -D CMAKE_BUILD_TYPE=${BUILD_TYPE} \
 # Perform building of project
 cmake --build . --config ${BUILD_TYPE}
 
-if [[ "${COVERAGE_BUILD}" -eq "ON" ]]; then
+if [[ "${COVERAGE_BUILD}" = "ON" ]]; then
     lcov -z -d . && lcov -c -d . -i -o lcov-base.info;
 fi
 
 # Run tests
 ctest --build-config ${BUILD_TYPE} --verbose
 
-if [[ "${COVERAGE_BUILD}" -eq "ON" ]]; then
+if [[ "${COVERAGE_BUILD}" = "ON" ]]; then
     lcov -c -d . -o lcov-test.info &&\
     lcov -a lcov-base.info -a lcov-test.info -o lcov.info &&\
     lcov -r lcov.info 'ui_*.h*' 'moc_*.c*' '/usr/*' '3rdparty/*' 'examples/*' 'tests/*' -o lcov.info &&\
