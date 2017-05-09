@@ -5,23 +5,29 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
-FROM ubuntu:16.04
+FROM centos:7
 
-LABEL name="abrarov/asio-samples-builder-ubuntu" \
-    description="Builder of Asio samples project on Ubuntu"
+LABEL name="abrarov/asio-samples-builder-centos" \
+    description="Builder of Asio samples project on CentOS"
 
 ENV PROJECT_DIR="/project" \
     BUILD_TYPE=RELEASE \
     BOOST_USE_STATIC_LIBS=ON \
     MA_QT=ON \
     MA_QT_MAJOR_VERSION=5 \
-    COVERAGE_BUILD=OFF
+    COVERAGE_BUILD=OFF \
+    PATH=/opt/cmake/bin:${PATH}
 
 ADD ["start.sh", "/app/"]
 
-RUN apt-get update -y &&\
-    apt-get install -y build-essential cmake lcov libboost-all-dev libqt4-dev qtbase5-dev &&\
-    rm -rf /var/lib/apt/lists/* &&\
+RUN yum -y update &&\
+    yum -y install epel-release &&\
+    yum -y groupinstall 'Development Tools' &&\
+    yum -y install curl &&\
+        curl -jksSL https://cmake.org/files/v3.8/cmake-3.8.1-Linux-x86_64.tar.gz | tar -xzf - -C /opt &&\
+        mv -f /opt/cmake-3.8.1-Linux-x86_64 /opt/cmake &&\
+    yum -y install lcov boost-devel boost-static qt-devel qt5-qtbase-devel &&\
+    yum -y clean all &&\
     tr -d '\015' < /app/start.sh > /app/start-lf.sh &&\
     mv -f /app/start-lf.sh /app/start.sh &&\
     chmod u+x /app/start.sh &&\
