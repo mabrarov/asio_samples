@@ -15,7 +15,7 @@ cmake -D CMAKE_BUILD_TYPE=${BUILD_TYPE} \
 cmake --build . --config ${BUILD_TYPE}
 
 # Prepare zero counters - baseline - for code coverage calculation
-if [[ "${COVERAGE_BUILD}" = "ON" ]]; then
+if [ "${COVERAGE_BUILD}" = "ON" ]; then
     lcov -z -d . &&\
     lcov -c -d . -i -o lcov-base.info;
 fi
@@ -24,7 +24,7 @@ fi
 ctest --build-config ${BUILD_TYPE} --verbose
 
 # Calculate difference to get code coverage statistic and generate HTML report
-if [[ "${COVERAGE_BUILD}" = "ON" ]]; then
+if [ "${COVERAGE_BUILD}" = "ON" ]; then
     lcov -c -d . -o lcov-test.info &&\
     lcov -a lcov-base.info -a lcov-test.info -o lcov.info &&\
     lcov -r lcov.info "$(pwd)/**/ui_*.h*" "$(pwd)/**/moc_*.c*" "/usr/*" "${PROJECT_DIR}/3rdparty/*" "${PROJECT_DIR}/examples/*" "${PROJECT_DIR}/tests/*" -o lcov.info &&\

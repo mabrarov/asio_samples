@@ -4,20 +4,20 @@
 set -e
 
 # Setup required version of Qt if needed
-if [[ "${MA_QT}" = "ON" ]]; then
-    if [[ "${MA_QT_MAJOR_VERSION}" -ne 4 ]]; then
+if [ "${MA_QT}" = "ON" ]; then
+    if [ "${MA_QT_MAJOR_VERSION}" -ne 4 ]; then
         # Remove Qt 4 to eliminate conflicts with another version of Qt
         apk -q -f del qt-dev || true;
     fi
-    if [[ "${MA_QT_MAJOR_VERSION}" -ne 5 ]]; then
+    if [ "${MA_QT_MAJOR_VERSION}" -ne 5 ]; then
         # Remove Qt 5 to eliminate conflicts with another version of Qt
         apk -q -f del qt5-qtbase-dev || true;
     fi
     # Install requested version of Qt
-    if [[ "${MA_QT_MAJOR_VERSION}" -eq 4 ]]; then
+    if [ "${MA_QT_MAJOR_VERSION}" -eq 4 ]; then
         apk -f add --no-cache qt-dev;
     fi
-    if [[ "${MA_QT_MAJOR_VERSION}" -eq 5 ]]; then
+    if [ "${MA_QT_MAJOR_VERSION}" -eq 5 ]; then
         apk -f add --no-cache qt5-qtbase-dev;
     fi
 fi
@@ -34,7 +34,7 @@ cmake -D CMAKE_BUILD_TYPE=${BUILD_TYPE} \
 cmake --build . --config ${BUILD_TYPE}
 
 # Prepare zero counters - baseline - for code coverage calculation
-if [[ "${COVERAGE_BUILD}" = "ON" ]]; then
+if [ "${COVERAGE_BUILD}" = "ON" ]; then
     lcov -z -d . &&\
     lcov -c -d . -i -o lcov-base.info;
 fi
@@ -43,7 +43,7 @@ fi
 ctest --build-config ${BUILD_TYPE} --verbose
 
 # Calculate difference to get code coverage statistic and generate HTML report
-if [[ "${COVERAGE_BUILD}" = "ON" ]]; then
+if [ "${COVERAGE_BUILD}" = "ON" ]; then
     lcov -c -d . -o lcov-test.info &&\
     lcov -a lcov-base.info -a lcov-test.info -o lcov.info &&\
     lcov -r lcov.info "$(pwd)/**/ui_*.h*" "$(pwd)/**/moc_*.c*" "/usr/*" "${PROJECT_DIR}/3rdparty/*" "${PROJECT_DIR}/examples/*" "${PROJECT_DIR}/tests/*" -o lcov.info &&\
