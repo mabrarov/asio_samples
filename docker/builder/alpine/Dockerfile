@@ -7,19 +7,20 @@
 
 FROM alpine
 
-LABEL name="abrarov/asio-samples-builder-alpine-base" \
-    description="Base image for builder of Asio samples project on Alpine Linux"
+LABEL name="abrarov/asio-samples-builder-alpine" \
+    description="Builder of Asio samples project on Alpine Linux"
 
 ENV PROJECT_DIR="/project" \
     BUILD_TYPE=RELEASE \
     BOOST_USE_STATIC_LIBS=ON \
-    MA_QT=OFF \
+    MA_QT=ON \
+    MA_QT_MAJOR_VERSION=5 \
     COVERAGE_BUILD=OFF
 
 ADD ["start.sh", "/app/"]
 
 RUN echo http://nl.alpinelinux.org/alpine/edge/testing >> /etc/apk/repositories &&\
-    apk add --no-cache g++ make cmake lcov libstdc++ boost-dev &&\
+    apk add --no-cache g++ make cmake lcov libstdc++ boost-dev qt5-qtbase-dev &&\
     tr -d '\015' < /app/start.sh > /app/start-lf.sh &&\
     mv -f /app/start-lf.sh /app/start.sh &&\
     chmod u+x /app/start.sh &&\
