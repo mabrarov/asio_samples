@@ -5,7 +5,11 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
-FROM alpine
+FROM alpine:3.5
+
+LABEL name="abrarov/tcp-echo" \
+    description="TCP echo server from Asio samples project" \
+    license="BSL-1.0"
 
 RUN apk add --no-cache g++ make cmake boost-dev git libstdc++ &&\
     cd /tmp &&\
