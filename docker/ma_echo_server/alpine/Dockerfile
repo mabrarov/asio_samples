@@ -19,11 +19,11 @@ RUN apk add --no-cache libstdc++ &&\
     mkdir build &&\
     cd build &&\
     cmake -D CMAKE_BUILD_TYPE=RELEASE -D Boost_USE_STATIC_LIBS=ON -D ma_qt=OFF .. &&\
-    make ma_echo_server &&\
+    cmake --build . --target ma_echo_server &&\
     mkdir -p /opt/ma_echo_server &&\
     mv -f examples/ma_echo_server/ma_echo_server /opt/ma_echo_server/ma_echo_server &&\
-    cd / &&\
-    rm -rf /tmp &&\
+    cd /tmp &&\
+    rm -rf asio_samples &&\
     apk del build-dependencies
 
 ENTRYPOINT ["/opt/ma_echo_server/ma_echo_server"]
