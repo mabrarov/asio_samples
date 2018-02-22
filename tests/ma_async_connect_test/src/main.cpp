@@ -30,7 +30,7 @@
 #include <ma/steady_deadline_timer.hpp>
 #include <ma/handler_allocator.hpp>
 #include <ma/custom_alloc_handler.hpp>
-#include <ma/strand_wrapped_handler.hpp>
+#include <ma/strand.hpp>
 #include <ma/limited_int.hpp>
 #include <ma/thread_group.hpp>
 #include <ma/detail/memory.hpp>
@@ -381,7 +381,7 @@ private:
 
   const optional_duration connect_pause_;
   const tribool           no_delay_;
-  boost::asio::io_service::strand strand_;
+  ma::strand       strand_;
   protocol::socket socket_;
   deadline_timer   timer_;
   limited_counter  connect_count_;
