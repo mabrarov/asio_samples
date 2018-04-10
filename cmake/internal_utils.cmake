@@ -38,7 +38,7 @@ function(ma_list_subdirs files base_dir results)
         endif()        
 
         string(FIND "${case_normalized_file_path}" "${case_normalized_base_dir}" start_pos)
-        if(${start_pos} EQUAL 0)
+        if(start_pos EQUAL 0)
             file(RELATIVE_PATH subdir "${cmake_base_dir}" "${file_path}")
             list(APPEND subdirs "${subdir}")
             set(subdir_found TRUE)
