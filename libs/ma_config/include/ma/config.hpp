@@ -223,4 +223,14 @@
 #define MA_WIN32_TMAIN
 #endif
 
+#if BOOST_VERSION >= 106600
+
+#define MA_ASIO_NETWORKING_TS
+
+#else
+
+#undef MA_ASIO_NETWORKING_TS
+
+#endif
+
 #endif // MA_CONFIG_HPP

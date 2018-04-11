@@ -15,6 +15,7 @@ TRANSLATOR ma::echo::server::qt::Service
 #include <boost/noncopyable.hpp>
 #include <ma/thread_group.hpp>
 #include <ma/handler_invoke_helpers.hpp>
+#include <ma/io_context_helpers.hpp>
 #include <ma/echo/server/error.hpp>
 #include <ma/echo/server/simple_session_factory.hpp>
 #include <ma/echo/server/pooled_session_factory.hpp>
@@ -77,13 +78,14 @@ private:
     {
       for (std::size_t i = 0; i != exec_config.session_thread_count; ++i)
       {
-        io_services.push_back(detail::make_shared<boost::asio::io_service>(1));
+        io_services.push_back(detail::make_shared<boost::asio::io_service>(
+            ma::to_io_context_concurrency_hint(1)));
       }
     }
     else
     {
       io_service_ptr io_service = detail::make_shared<boost::asio::io_service>(
-          exec_config.session_thread_count);
+          ma::to_io_context_concurrency_hint(exec_config.session_thread_count));
       io_services.push_back(io_service);
     }
     return io_services;
@@ -140,7 +142,8 @@ public:
   explicit server_base_2(const execution_config& exec_config,
       const ma::echo::server::session_manager_config& session_manager_config)
     : server_base_1(exec_config, session_manager_config)
-    , session_manager_io_service_(exec_config.session_manager_thread_count)
+    , session_manager_io_service_(ma::to_io_context_concurrency_hint(
+		exec_config.session_manager_thread_count))
   {
   }
 

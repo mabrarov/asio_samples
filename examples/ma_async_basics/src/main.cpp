@@ -21,6 +21,7 @@
 #include <ma/handler_allocator.hpp>
 #include <ma/console_close_guard.hpp>
 #include <ma/custom_alloc_handler.hpp>
+#include <ma/io_context_helpers.hpp>
 #include <ma/thread_group.hpp>
 #include <ma/detail/memory.hpp>
 #include <ma/detail/functional.hpp>
@@ -69,7 +70,7 @@ int main(int /*argc*/, char* /*argv*/[])
     std::size_t work_thread_count = cpu_count < 2 ? 2 : cpu_count;
 
     using boost::asio::io_service;
-    io_service work_io_service(cpu_count);
+    io_service work_io_service(ma::to_io_context_concurrency_hint(cpu_count));
 
     // Setup console controller
     ma::console_close_guard console_close_guard(ma::detail::bind(
