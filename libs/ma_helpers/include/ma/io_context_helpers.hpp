@@ -19,20 +19,16 @@
 
 namespace ma {
 
-#if defined(MA_ASIO_NETWORKING_TS)
-
+#if defined(MA_ASIO_INT_CONCURRENCY_HINT)
 typedef int io_context_concurrency_hint;
-
 #else
-
 typedef std::size_t io_context_concurrency_hint;
-
 #endif
 
 inline io_context_concurrency_hint
 to_io_context_concurrency_hint(std::size_t hint)
 {
-#if defined(MA_ASIO_NETWORKING_TS)
+#if defined(MA_ASIO_INT_CONCURRENCY_HINT)
   if (1 == hint)
   {
     return BOOST_ASIO_CONCURRENCY_HINT_UNSAFE_IO;
