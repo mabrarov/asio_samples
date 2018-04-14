@@ -16,6 +16,12 @@
 #include <boost/throw_exception.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/system/system_error.hpp>
+
+#if !defined(MA_HAS_WINDOWS_CONSOLE_SIGNAL) \
+    && defined(MA_ASIO_DETAIL_SIGNAL_SET_SERVICE)
+#include <boost/asio/detail/signal_set_service.hpp>
+#endif
+
 #include <ma/config.hpp>
 #include <ma/windows/console_signal.hpp>
 #include <ma/detail/service_base.hpp>
@@ -36,8 +42,10 @@ private:
 
 #if defined(MA_HAS_WINDOWS_CONSOLE_SIGNAL)
   typedef ma::windows::console_signal_service service_impl_type;
+#elif defined(MA_ASIO_DETAIL_SIGNAL_SET_SERVICE)
+  typedef boost::asio::detail::signal_set_service service_impl_type;
 #else
-  typedef boost::asio::signal_set_service     service_impl_type;
+  typedef boost::asio::signal_set_service service_impl_type;
 #endif
 
 public:
@@ -99,7 +107,16 @@ template <typename Handler>
 void console_close_signal_service::async_wait(implementation_type& impl,
     MA_FWD_REF(Handler) handler)
 {
+#if !defined(MA_HAS_WINDOWS_CONSOLE_SIGNAL) \
+    && defined(MA_ASIO_DETAIL_SIGNAL_SET_SERVICE)
+  // boost::asio::detail::signal_set_service::async_wait method
+  // takes handler by non-const refererence, so we need to make a temporal copy
+  // before passing it to boost::asio::detail::signal_set_service::async_wait
+  Handler tmp(detail::forward<Handler>(handler));
+  service_impl_.async_wait(impl, tmp);
+#else
   service_impl_.async_wait(impl, detail::forward<Handler>(handler));
+#endif
 }
 
 inline void console_close_signal_service::cancel(
