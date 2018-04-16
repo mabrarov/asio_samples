@@ -124,9 +124,9 @@ install:
                   git clone --quiet "$msvs2008_patch_url" "$msvs_patch_download_folder_nix"
                   git -C "$msvs_patch_download_folder_nix" checkout --quiet "$msvs2008_patch_revision"
                   if ($LastExitCode -ne 0) {
-                    throw "File downloading failed with exit code $LastExitCode."
+                    throw "Downloading of MSVS patch failed with exit code $LastExitCode."
                   }
-                  Write-Host "Downloaded: $msvs_patch_download_file"
+                  Write-Host "Downloaded MSVS patch: $msvs_patch_download_file"
                 }
                 Write-Host "Extracting MSVS patch from: $msvs_patch_download_file to: $env:MSVS_PATCH_FOLDER"
                 New-Item "$env:MSVS_PATCH_FOLDER" -type directory | out-null
@@ -200,9 +200,9 @@ install:
               Write-Host "Going to download pre-built ICU libraries from: $icu_download_url to: $icu_archive_file"
               curl.exe --connect-timeout 300 --max-time 1800 --show-error --silent --location --output "$icu_archive_file" "$icu_download_url"
               if ($LastExitCode -ne 0) {
-                throw "File downloading failed with exit code $LastExitCode."
+                throw "Downloading of pre-built ICU libraries failed with exit code $LastExitCode."
               }
-              Write-Host "Downloaded: $icu_archive_file"
+              Write-Host "Downloaded pre-built ICU libraries: $icu_archive_file"
             }
             Write-Host "Extracting pre-built ICU libraries from: $icu_archive_file to: $env:DEPENDENCIES_FOLDER"
             if (!(Test-Path -Path "$env:DEPENDENCIES_FOLDER")) {
@@ -312,9 +312,9 @@ install:
               Write-Host "Going to download pre-built Boost libraries from: $boost_download_url to: $boost_archive_file"
               curl.exe --connect-timeout 300 --max-time 1800 --show-error --silent --location --output "$boost_archive_file" "$boost_download_url"
               if ($LastExitCode -ne 0) {
-                throw "File downloading failed with exit code $LastExitCode."
+                throw "Downloading of pre-built Boost libraries failed with exit code $LastExitCode."
               }
-              Write-Host "Downloaded: $boost_archive_file"
+              Write-Host "Downloaded pre-built Boost libraries: $boost_archive_file"
             }
             Write-Host "Extracting pre-built Boost libraries from: $boost_archive_file to: $env:DEPENDENCIES_FOLDER"
             if (!(Test-Path -Path "$env:DEPENDENCIES_FOLDER")) {
@@ -494,9 +494,9 @@ install:
               Write-Host "Going to download pre-built Qt libraries from: $qt_download_url to: $qt_archive_file"
               curl.exe --connect-timeout 300 --max-time 1800 --show-error --silent --location --output "$qt_archive_file" "$qt_download_url"
               if ($LastExitCode -ne 0) {
-                throw "File downloading failed with exit code $LastExitCode."
+                throw "Downloading of pre-built Qt libraries failed with exit code $LastExitCode."
               }
-              Write-Host "Downloaded: $qt_archive_file"
+              Write-Host "Downloaded pre-built Qt libraries: $qt_archive_file"
             }
             Write-Host "Extracting pre-built Qt libraries from: $qt_archive_file to: $env:DEPENDENCIES_FOLDER"
             if (!(Test-Path -Path "$env:DEPENDENCIES_FOLDER")) {
