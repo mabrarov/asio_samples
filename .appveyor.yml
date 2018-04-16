@@ -37,6 +37,8 @@ environment:
       BOOST_LINKAGE: static
       QT_VERSION: 5.7
       QT_LINKAGE: static
+      ICU_VERSION: 57.1
+      ICU_LINKAGE: static
     - MSVC_VERSION: 14.0
       RUNTIME_LINKAGE: static
       BOOST_VERSION: 1.61.0
