@@ -26,11 +26,17 @@ environment:
   matrix:
     - MSVC_VERSION: 14.0
       RUNTIME_LINKAGE: shared
-      BOOST_VERSION: 1.63.0
+      BOOST_VERSION: 1.66.0
       BOOST_LINKAGE: static
       QT_VERSION: 5.8
       QT_LINKAGE: shared
       COVERITY_BUILD_CANDIDATE: True
+    - MSVC_VERSION: 14.0
+      RUNTIME_LINKAGE: static
+      BOOST_VERSION: 1.66.0
+      BOOST_LINKAGE: static
+      QT_VERSION: 5.7
+      QT_LINKAGE: static
     - MSVC_VERSION: 14.0
       RUNTIME_LINKAGE: static
       BOOST_VERSION: 1.61.0
@@ -223,6 +229,19 @@ install:
       }
       $pre_installed_boost = ""
       switch ($env:MSVC_VERSION) {
+        "15.0" {
+          switch ($env:BOOST_VERSION) {
+            "1.64.0" {
+              $pre_installed_boost = "true"
+            }
+            "1.65.1" {
+              $pre_installed_boost = "true"
+            }
+            "1.66.0" {
+              $pre_installed_boost = "true"
+            }
+          }
+        }
         "14.0" {
           switch ($env:BOOST_VERSION) {
             "1.59.0" {
@@ -231,7 +250,16 @@ install:
             "1.60.0" {
               $pre_installed_boost = "true"
             }
+            "1.62.0" {
+              $pre_installed_boost = "true"
+            }
             "1.63.0" {
+              $pre_installed_boost = "true"
+            }
+            "1.65.1" {
+              $pre_installed_boost = "true"
+            }
+            "1.66.0" {
               $pre_installed_boost = "true"
             }
           }
