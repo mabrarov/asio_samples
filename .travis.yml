@@ -34,6 +34,22 @@ matrix:
             - george-edison55-precise-backports
             - ubuntu-toolchain-r-test
             - boost-latest
+    # GCC 7, Boost 1.55. Qt 5.x
+    - env: C_COMPILER=gcc-7 CXX_COMPILER=g++-7 BOOST_VERSION=1.55 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
+      compiler: gcc
+      addons: &addons-gcc7-boost155-qt5
+        apt:
+          packages:
+            - cmake
+            - cmake-data
+            - gcc-7
+            - g++-7
+            - libboost1.55-all-dev
+            - qtbase5-dev
+          sources: *gcc-package-sources
+    - env: C_COMPILER=gcc-7 CXX_COMPILER=g++-7 BOOST_VERSION=1.55 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
+      compiler: gcc
+      addons: *addons-gcc7-boost155-qt5
     # GCC 6, Boost 1.55. Qt 5.x
     - env: C_COMPILER=gcc-6 CXX_COMPILER=g++-6 BOOST_VERSION=1.55 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
       compiler: gcc
@@ -228,6 +244,22 @@ matrix:
     - env: C_COMPILER=clang-3.8 CXX_COMPILER=clang++-3.8 BOOST_VERSION=1.55 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
       compiler: clang
       addons: *addons-clang38-boost155-qt5
+    # GCC 7, Boost 1.55. Qt 4.x
+    - env: C_COMPILER=gcc-7 CXX_COMPILER=g++-7 BOOST_VERSION=1.55 QT_MAJOR_VERSION=4 BUILD_TYPE=RELEASE
+      compiler: gcc
+      addons: &addons-gcc7-boost155-qt4
+        apt:
+          packages:
+            - cmake
+            - cmake-data
+            - gcc-7
+            - g++-7
+            - libboost1.55-all-dev
+            - libqt4-dev
+          sources: *gcc-package-sources
+    - env: C_COMPILER=gcc-7 CXX_COMPILER=g++-7 BOOST_VERSION=1.55 QT_MAJOR_VERSION=4 BUILD_TYPE=DEBUG
+      compiler: gcc
+      addons: *addons-gcc7-boost155-qt4
     # GCC 6, Boost 1.55. Qt 4.x
     - env: C_COMPILER=gcc-6 CXX_COMPILER=g++-6 BOOST_VERSION=1.55 QT_MAJOR_VERSION=4 BUILD_TYPE=RELEASE
       compiler: gcc
