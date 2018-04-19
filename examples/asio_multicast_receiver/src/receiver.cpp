@@ -10,17 +10,17 @@
 
 #include <iostream>
 #include <string>
+#include <boost/lexical_cast.hpp>
 #include <boost/asio.hpp>
 #include "boost/bind.hpp"
-
-const short multicast_port = 30001;
 
 class receiver
 {
 public:
   receiver(boost::asio::io_service& io_service,
       const boost::asio::ip::address& listen_address,
-      const boost::asio::ip::address& multicast_address)
+      const boost::asio::ip::address& multicast_address,
+      unsigned short multicast_port)
     : socket_(io_service)
   {
     // Create the socket so that multiple may be bound to the same address.
@@ -68,20 +68,21 @@ int main(int argc, char* argv[])
 {
   try
   {
-    if (argc != 3)
+    if (argc != 4)
     {
-      std::cerr << "Usage: receiver <listen_address> <multicast_address>\n";
+      std::cerr << "Usage: receiver <listen_address> <multicast_address> <multicast_port>\n";
       std::cerr << "  For IPv4, try:\n";
-      std::cerr << "    receiver 0.0.0.0 239.255.0.1\n";
+      std::cerr << "    receiver 0.0.0.0 239.255.0.1 30001\n";
       std::cerr << "  For IPv6, try:\n";
-      std::cerr << "    receiver 0::0 ff31::8000:1234\n";
+      std::cerr << "    receiver 0::0 ff31::8000:1234 30001\n";
       return 1;
     }
 
     boost::asio::io_service io_service;
     receiver r(io_service,
         boost::asio::ip::address::from_string(argv[1]),
-        boost::asio::ip::address::from_string(argv[2]));
+        boost::asio::ip::address::from_string(argv[2]),
+        boost::lexical_cast<unsigned short>(argv[3]));
     io_service.run();
   }
   catch (std::exception& e)
