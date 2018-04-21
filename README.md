@@ -1,6 +1,11 @@
 # Asio samples 
 
-[![Travis CI Build Status](https://travis-ci.org/mabrarov/asio_samples.svg?branch=develop)](https://travis-ci.org/mabrarov/asio_samples?branch=develop) [![AppVeyor CI Build Status](https://ci.appveyor.com/api/projects/status/m3m15b3wxkyhqfj2/branch/develop?svg=true)](https://ci.appveyor.com/project/mabrarov/asio-samples) [![Coverity Scan Build Status](https://scan.coverity.com/projects/9191/badge.svg)](https://scan.coverity.com/projects/mabrarov-asio_samples) [![codecov](https://codecov.io/gh/mabrarov/asio_samples/branch/develop/graph/badge.svg)](https://codecov.io/gh/mabrarov/asio_samples)
+[![Travis CI Build Status](https://travis-ci.org/mabrarov/asio_samples.svg?branch=develop)](https://travis-ci.org/mabrarov/asio_samples?branch=develop) 
+[![AppVeyor CI Build Status](https://ci.appveyor.com/api/projects/status/m3m15b3wxkyhqfj2/branch/develop?svg=true)](https://ci.appveyor.com/project/mabrarov/asio-samples) 
+[![Coverity Scan Build Status](https://scan.coverity.com/projects/9191/badge.svg)](https://scan.coverity.com/projects/mabrarov-asio_samples) 
+[![codecov](https://codecov.io/gh/mabrarov/asio_samples/branch/develop/graph/badge.svg)](https://codecov.io/gh/mabrarov/asio_samples) 
+[![Release](https://img.shields.io/github/release/mabrarov/asio_samples.svg)](https://github.com/mabrarov/asio_samples/releases/latest) 
+[![License](https://img.shields.io/badge/license-BSL%201.0-brightgreen.svg)](LICENSE)
 
 Examples (code samples) describing the construction of active objects 
 on the top of [Boost.Asio](http://www.boost.org/doc/libs/release/doc/html/boost_asio.html). 
@@ -124,6 +129,23 @@ cmake -D ICU_ROOT=<ICU root directory>
 ```
 
 Remarks: use [this fix](https://software.intel.com/en-us/articles/limits1120-error-identifier-builtin-nanf-is-undefined) when using Intel C++ Compiler 16.0 with Visual Studio 2015 Update 1.
+
+Example of generation of Visual Studio 2015 project (static C/C++ runtime, static Boost and no Qt, x64) for usage with Intel Parallel Studio XE 2017:
+
+```
+cmake -D CMAKE_USER_MAKE_RULES_OVERRIDE=<asio_samples directory>/cmake/static_c_runtime_overrides.cmake
+      -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX=<asio_samples directory>/cmake/static_cxx_runtime_overrides.cmake
+      -D BOOST_INCLUDEDIR=<Boost headers directory>
+      -D BOOST_LIBRARYDIR=<Boost built libraries directory>
+      -D Boost_NO_SYSTEM_PATHS=ON
+      -D Boost_USE_STATIC_LIBS=ON
+      -D ma_qt=OFF
+      -D CMAKE_C_COMPILER=icl
+      -D CMAKE_CXX_COMPILER=icl
+      -T "Intel C++ Compiler 17.0"
+      -G "Visual Studio 14 2015 Win64"
+      <asio_samples directory>
+```
 
 Example of generation of Visual Studio 2010 project (shared C/C++ runtime, static Boost and shared Qt 4):
 

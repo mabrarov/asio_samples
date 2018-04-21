@@ -30,7 +30,7 @@
 #include <ma/steady_deadline_timer.hpp>
 #include <ma/handler_allocator.hpp>
 #include <ma/custom_alloc_handler.hpp>
-#include <ma/strand_wrapped_handler.hpp>
+#include <ma/strand.hpp>
 #include <ma/limited_int.hpp>
 #include <ma/thread_group.hpp>
 #include <ma/detail/memory.hpp>
@@ -381,7 +381,7 @@ private:
 
   const optional_duration connect_pause_;
   const tribool           no_delay_;
-  boost::asio::io_service::strand strand_;
+  ma::strand       strand_;
   protocol::socket socket_;
   deadline_timer   timer_;
   limited_counter  connect_count_;
@@ -650,13 +650,13 @@ public:
 const char* help_option_name           = "help";
 const char* host_option_name           = "host";
 const char* port_option_name           = "port";
-const char* demux_option_name          = "demux_per_work_thread";
+const char* demux_option_name          = "demux-per-work-thread";
 const char* threads_option_name        = "threads";
 const char* sessions_option_name       = "sessions";
-const char* block_size_option_name     = "block_size";
-const char* block_pause_option_name    = "block_pause";
-const char* connect_pause_option_name  = "connect_pause";
-const char* no_delay_option_name       = "no_delay";
+const char* block_size_option_name     = "block-size";
+const char* block_pause_option_name    = "block-pause";
+const char* connect_pause_option_name  = "connect-pause";
+const char* no_delay_option_name       = "no-delay";
 const char* time_option_name           = "time";
 const std::string default_system_value = "system default";
 
