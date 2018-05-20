@@ -28,7 +28,7 @@ environment:
       RUNTIME_LINKAGE: shared
       BOOST_VERSION: 1.67.0
       BOOST_LINKAGE: static
-      QT_VERSION: 5.8
+      QT_VERSION: 5.10.1
       QT_LINKAGE: shared
       COVERITY_BUILD_CANDIDATE: True
     - MSVC_VERSION: 14.0
@@ -51,19 +51,19 @@ environment:
       RUNTIME_LINKAGE: shared
       BOOST_VERSION: 1.61.0
       BOOST_LINKAGE: static
-      QT_VERSION: 5.7
+      QT_VERSION: 5.9.5
       QT_LINKAGE: shared
     - MSVC_VERSION: 14.0
       RUNTIME_LINKAGE: shared
       BOOST_VERSION: 1.61.0
       BOOST_LINKAGE: shared
-      QT_VERSION: 5.7
+      QT_VERSION: 5.9.5
       QT_LINKAGE: shared
     - MSVC_VERSION: 12.0
       RUNTIME_LINKAGE: shared
       BOOST_VERSION: 1.61.0
       BOOST_LINKAGE: static
-      QT_VERSION: 5.7
+      QT_VERSION: 5.6.3
       QT_LINKAGE: shared
     - MSVC_VERSION: 11.0
       RUNTIME_LINKAGE: static
@@ -159,7 +159,7 @@ install:
           throw "Unsupported platform: $env:PLATFORM"
         }
       }
-      $pre_installed_icu = ""
+      $pre_installed_icu = $false
       if ($env:ICU_VERSION) {
         if ($pre_installed_icu) {
           throw "Pre-installed ICU is missing"
@@ -232,46 +232,46 @@ install:
           throw "Incompatible type of linkage of ICU: $env:ICU_LINKAGE for the specified type of linkage of C/C++ runtime: $env:RUNTIME_LINKAGE"
         }
       }
-      $pre_installed_boost = ""
+      $pre_installed_boost = $false
       switch ($env:MSVC_VERSION) {
         "15.0" {
           switch ($env:BOOST_VERSION) {
             "1.64.0" {
-              $pre_installed_boost = "true"
+              $pre_installed_boost = $true
             }
             "1.65.1" {
-              $pre_installed_boost = "true"
+              $pre_installed_boost = $true
             }
             "1.66.0" {
-              $pre_installed_boost = "true"
+              $pre_installed_boost = $true
             }
           }
         }
         "14.0" {
           switch ($env:BOOST_VERSION) {
             "1.59.0" {
-              $pre_installed_boost = "true"
+              $pre_installed_boost = $true
             }
             "1.60.0" {
-              $pre_installed_boost = "true"
+              $pre_installed_boost = $true
             }
             "1.62.0" {
-              $pre_installed_boost = "true"
+              $pre_installed_boost = $true
             }
             "1.63.0" {
-              $pre_installed_boost = "true"
+              $pre_installed_boost = $true
             }
             "1.65.1" {
-              $pre_installed_boost = "true"
+              $pre_installed_boost = $true
             }
             "1.66.0" {
-              $pre_installed_boost = "true"
+              $pre_installed_boost = $true
             }
           }
         }
         "12.0" {
           if ($env:BOOST_VERSION -eq "1.58.0") {
-            $pre_installed_boost = "true"
+            $pre_installed_boost = $true
           }
         }
       }
@@ -376,40 +376,14 @@ install:
         }
       }
       if ($env:QT_VERSION) {
-        $pre_installed_qt = ""
+        $pre_installed_qt = $false
         if (!($env:QT_LINKAGE -eq "static")) {
           switch ($env:MSVC_VERSION) {
             "14.0" {
-              switch ($env:QT_VERSION) {
-                "5.8" {
-                  $pre_installed_qt = "true"
-                }
-                "5.7" {
-                  $pre_installed_qt = "true"
-                }
-                "5.6" {
-                  $pre_installed_qt = "true"
-                }
-              }
+              $pre_installed_qt = ($env:QT_VERSION -eq "5.10.1") -or ($env:QT_VERSION -eq "5.9.5") -or ($env:QT_VERSION -eq "5.6.3")
             }
             "12.0" {
-              switch ($env:QT_VERSION) {
-                "5.7" {
-                  $pre_installed_qt = "true"
-                }
-                "5.6" {
-                  $pre_installed_qt = "true"
-                }
-                "5.5" {
-                  $pre_installed_qt = "true"
-                }
-                "5.4" {
-                  $pre_installed_qt = "true"
-                }
-                "5.3" {
-                  $pre_installed_qt = "true"
-                }
-              }
+              $pre_installed_qt = (($env:QT_VERSION -eq "5.10.1") -and ($env:PLATFORM -eq "x64")) -or (($env:QT_VERSION -eq "5.9.5") -and ($env:PLATFORM -eq "x64")) -or ($env:QT_VERSION -eq "5.6.3")
             }
           }
         }
