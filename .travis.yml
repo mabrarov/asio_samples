@@ -454,7 +454,7 @@ before_script:
   - |
     set -e
     export PRE_INSTALLED_BOOST=0
-    if [ "${BOOST_VERSION}" -eq "1.55.0" ]; then
+    if [ "${BOOST_VERSION}" == "1.55.0" ]; then
       export PRE_INSTALLED_BOOST=1
     fi
     if [ "${PRE_INSTALLED_BOOST}" -eq 0 ]; then
