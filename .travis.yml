@@ -450,6 +450,7 @@ matrix:
 
 before_script:
   - |
+    set -e
     export PRE_INSTALLED_BOOST=0
     if [ "${BOOST_VERSION}" -eq "1.55.0" ]; then
       export PRE_INSTALLED_BOOST=1
@@ -479,6 +480,7 @@ before_script:
 
 script:
   - |
+    set -e
     if [ "${COVERITY_SCAN_BRANCH}" -eq 1 ]; then
       echo "Build was already perfomed with Coverity scan."
     else
@@ -502,6 +504,7 @@ script:
 
 after_success:
   - |
+    set -e
     cd ${TRAVIS_BUILD_DIR}
     if [ "${COVERAGE_BUILD}" -ne 0 ]; then
       bash <(curl -s https://codecov.io/bash) -f ${TRAVIS_BUILD_DIR}/build/lcov.info -R ${TRAVIS_BUILD_DIR} -X gcov
