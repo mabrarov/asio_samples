@@ -470,12 +470,12 @@ before_script:
           echo "Prebuilt Boost archive found at: ${prebuilt_boost_archive_file}"
         else
           echo "Prebuilt Boost archive not found at: ${prebuilt_boost_archive_file}"
-          echo "Going to download prebuild Boost archive from ${prebuilt_boost_download_url} to ${prebuilt_boost_archive_file}"
+          echo "Going to download prebuilt Boost archive from ${prebuilt_boost_download_url} to ${prebuilt_boost_archive_file}"
           mkdir -p ${DOWNLOADS_HOME}
           curl -jksSL ${prebuilt_boost_download_url} --output ${prebuilt_boost_archive_file}
         fi
         mkdir -p ${DEPENDENCIES_HOME}
-        echo "Going to unpack prebuild Boost archive from ${prebuilt_boost_archive_file} to ${DEPENDENCIES_HOME}"
+        echo "Going to unpack prebuilt Boost archive from ${prebuilt_boost_archive_file} to ${DEPENDENCIES_HOME}"
         tar -xzf ${prebuilt_boost_archive_file} -C ${DEPENDENCIES_HOME}
       fi
     fi
