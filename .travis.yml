@@ -35,7 +35,9 @@ matrix:
             - curl
             - ca-certificates
             - qtbase5-dev
-          sources: *gcc-package-sources
+          sources: &gcc-package-sources-without-boost
+            - george-edison55-precise-backports
+            - ubuntu-toolchain-r-test
     # Default GCC, Boost 1.55.0, Qt 5.x. Used for collecting information about test coverage.
     - env: C_COMPILER=gcc CXX_COMPILER=g++ BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG COVERAGE_BUILD=1
       compiler: gcc
