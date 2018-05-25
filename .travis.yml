@@ -458,16 +458,16 @@ before_script:
   - if [ "${PRE_INSTALLED_BOOST}" -eq 0 ]; then
       export PREBUILT_BOOST_HOME=${DEPENDENCIES_HOME}/boost-${BOOST_VERSION}-x64-gcc4.8 && \
       if [ -d "${PREBUILT_BOOST_HOME}" ]; then
-        echo "Prebuilt Boost found at: ${PREBUILT_BOOST_HOME}";
+        echo "Prebuilt Boost found at ${PREBUILT_BOOST_HOME}";
       else
-        echo "Prebuilt Boost not found at: ${PREBUILT_BOOST_HOME}" && \
+        echo "Prebuilt Boost not found at ${PREBUILT_BOOST_HOME}" && \
         prebuilt_boost_archive_name=boost-${BOOST_VERSION}-x64-gcc4.8.tar.gz && \
         prebuilt_boost_archive_file=${DOWNLOADS_HOME}/${prebuilt_boost_archive_name} && \
         prebuilt_boost_download_url=${PREBUILT_BOOST_DOWNLOAD_URL}/${BOOST_VERSION}/${prebuilt_boost_archive_name} && \
         if [ -f "${prebuilt_boost_archive_file}" ]; then
-          echo "Prebuilt Boost archive found at: ${prebuilt_boost_archive_file}";
+          echo "Prebuilt Boost archive found at ${prebuilt_boost_archive_file}";
         else
-          echo "Prebuilt Boost archive not found at: ${prebuilt_boost_archive_file}" && \
+          echo "Prebuilt Boost archive not found at ${prebuilt_boost_archive_file}" && \
           echo "Going to download prebuilt Boost archive from ${prebuilt_boost_download_url} to ${prebuilt_boost_archive_file}" && \
           mkdir -p ${DOWNLOADS_HOME} && \
           curl -jksSL ${prebuilt_boost_download_url} --output ${prebuilt_boost_archive_file};
