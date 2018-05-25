@@ -464,14 +464,14 @@ before_script:
     if [ "${PRE_INSTALLED_BOOST}" != 0 ]; then
       echo "Boost ${BOOST_VERSION} is pre-intalled"
     else
-      export PREBUILT_BOOST_HOME=${DEPENDENCIES_HOME}/none
+      export PREBUILT_BOOST_HOME=${DEPENDENCIES_HOME}/boost-${BOOST_VERSION}-x64-gcc4.8
       if [ -d "${PREBUILT_BOOST_HOME}" ]; then
         echo "Prebuilt Boost found at ${PREBUILT_BOOST_HOME}"
       else
         echo "Prebuilt Boost not found at ${PREBUILT_BOOST_HOME}"
         boost_archive_name=boost-${BOOST_VERSION}-x64-gcc4.8.tar.gz
         boost_archive_file=${DOWNLOADS_HOME}/${boost_archive_name}
-        boost_download_url=${PREBUILT_BOOST_DOWNLOAD_URL}/none
+        boost_download_url=${PREBUILT_BOOST_DOWNLOAD_URL}/${BOOST_VERSION}/${boost_archive_name}
         if [ -f "${boost_archive_file}" ]; then
           echo "Prebuilt Boost archive found at ${boost_archive_file}"
         else
