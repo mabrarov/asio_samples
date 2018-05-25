@@ -494,7 +494,7 @@ script:
       fi
       cmake --build . --config ${BUILD_TYPE};
     fi
-  - if [ "${COVERAGE_BUILD}" != 0 ] then
+  - if [ "${COVERAGE_BUILD}" != 0 ]; then
       lcov -z -d . && lcov -c -d . -i -o lcov-base.info;
     fi
   - ctest --build-config ${BUILD_TYPE} --verbose
