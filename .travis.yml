@@ -9,6 +9,10 @@ language: cpp
 sudo: required
 dist: trusty
 
+cache:
+  directories:
+  - ${HOME}/downloads
+
 env:
   global:
     - PREBUILT_BOOST_DOWNLOAD_URL: "https://dl.bintray.com/mabrarov/generic/boost"
