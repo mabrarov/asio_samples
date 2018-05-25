@@ -452,6 +452,7 @@ matrix:
 
 before_script:
   - |
+    set -e
     export PRE_INSTALLED_BOOST=0
     if [ "${BOOST_VERSION}" == "1.55.0" ]; then
       export PRE_INSTALLED_BOOST=1
@@ -480,31 +481,35 @@ before_script:
     fi
 
 script:
-  - if [ "${COVERITY_SCAN_BRANCH}" == 1 ]; then
-      echo "Build was already perfomed with Coverity scan.";
+  - |
+    set -e
+    if [ "${COVERITY_SCAN_BRANCH}" == 1 ]; then
+      echo "Build was already perfomed with Coverity scan."
     else
-      rm -rf ${TRAVIS_BUILD_DIR}/build && mkdir -p ${TRAVIS_BUILD_DIR}/build;
+      rm -rf ${TRAVIS_BUILD_DIR}/build && mkdir -p ${TRAVIS_BUILD_DIR}/build
     fi
-  - cd ${TRAVIS_BUILD_DIR}/build
-  - if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then
+    cd ${TRAVIS_BUILD_DIR}/build
+    if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then
       if [ "${PRE_INSTALLED_BOOST}" != 0 ]; then
-        cmake -D CMAKE_C_COMPILER=${C_COMPILER} -D CMAKE_CXX_COMPILER=${CXX_COMPILER} -D CMAKE_BUILD_TYPE=${BUILD_TYPE} -D ma_force_qt_major_version=${QT_MAJOR_VERSION} -D ma_coverage_build=${COVERAGE_BUILD} ${TRAVIS_BUILD_DIR};
+        cmake -D CMAKE_C_COMPILER=${C_COMPILER} -D CMAKE_CXX_COMPILER=${CXX_COMPILER} -D CMAKE_BUILD_TYPE=${BUILD_TYPE} -D ma_force_qt_major_version=${QT_MAJOR_VERSION} -D ma_coverage_build=${COVERAGE_BUILD} ${TRAVIS_BUILD_DIR}
       else
-        cmake -D CMAKE_C_COMPILER=${C_COMPILER} -D CMAKE_CXX_COMPILER=${CXX_COMPILER} -D CMAKE_BUILD_TYPE=${BUILD_TYPE} -D Boost_NO_SYSTEM_PATHS=ON -D BOOST_INCLUDEDIR=${PREBUILT_BOOST_HOME}/include -D BOOST_LIBRARYDIR=${PREBUILT_BOOST_HOME}/lib -D ma_force_qt_major_version=${QT_MAJOR_VERSION} -D ma_coverage_build=${COVERAGE_BUILD} ${TRAVIS_BUILD_DIR};
+        cmake -D CMAKE_C_COMPILER=${C_COMPILER} -D CMAKE_CXX_COMPILER=${CXX_COMPILER} -D CMAKE_BUILD_TYPE=${BUILD_TYPE} -D Boost_NO_SYSTEM_PATHS=ON -D BOOST_INCLUDEDIR=${PREBUILT_BOOST_HOME}/include -D BOOST_LIBRARYDIR=${PREBUILT_BOOST_HOME}/lib -D ma_force_qt_major_version=${QT_MAJOR_VERSION} -D ma_coverage_build=${COVERAGE_BUILD} ${TRAVIS_BUILD_DIR}
       fi
-      cmake --build . --config ${BUILD_TYPE};
+      cmake --build . --config ${BUILD_TYPE}
     fi
-  - if [ "${COVERAGE_BUILD}" != 0 ]; then
-      lcov -z -d . && lcov -c -d . -i -o lcov-base.info;
+    if [ "${COVERAGE_BUILD}" != 0 ]; then
+      lcov -z -d . && lcov -c -d . -i -o lcov-base.info
     fi
-  - ctest --build-config ${BUILD_TYPE} --verbose
-  - if [ "${COVERAGE_BUILD}" != 0 ]; then
-      lcov -c -d . -o lcov-test.info && lcov -a lcov-base.info -a lcov-test.info -o lcov.info && lcov -r lcov.info 'ui_*.h*' 'moc_*.c*' '/usr/*' '3rdparty/*' 'examples/*' 'tests/*' -o lcov.info;
+    ctest --build-config ${BUILD_TYPE} --verbose
+    if [ "${COVERAGE_BUILD}" != 0 ]; then
+      lcov -c -d . -o lcov-test.info && lcov -a lcov-base.info -a lcov-test.info -o lcov.info && lcov -r lcov.info 'ui_*.h*' 'moc_*.c*' '/usr/*' '3rdparty/*' 'examples/*' 'tests/*' -o lcov.info
     fi
-  - cd ${TRAVIS_BUILD_DIR}
+    cd ${TRAVIS_BUILD_DIR}
 
 after_success:
-  - cd ${TRAVIS_BUILD_DIR}
-  - if [ "${COVERAGE_BUILD}" != 0 ]; then
-      bash <(curl -s https://codecov.io/bash) -f ${TRAVIS_BUILD_DIR}/build/lcov.info -R ${TRAVIS_BUILD_DIR} -X gcov;
+  - |
+    set -e
+    cd ${TRAVIS_BUILD_DIR}
+    if [ "${COVERAGE_BUILD}" != 0 ]; then
+      bash <(curl -s https://codecov.io/bash) -f ${TRAVIS_BUILD_DIR}/build/lcov.info -R ${TRAVIS_BUILD_DIR} -X gcov
     fi
