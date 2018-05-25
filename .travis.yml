@@ -461,7 +461,7 @@ before_script:
         echo "Prebuilt Boost found at: ${PREBUILT_BOOST_HOME}";
       else
         echo "Prebuilt Boost not found at: ${PREBUILT_BOOST_HOME}" && \
-        prebuilt_boost_archive_name=boost${BOOST_VERSION}-x64-gcc4.8.tar.gz && \
+        prebuilt_boost_archive_name=boost-${BOOST_VERSION}-x64-gcc4.8.tar.gz && \
         prebuilt_boost_archive_file=${DOWNLOADS_HOME}/${prebuilt_boost_archive_name} && \
         prebuilt_boost_download_url=${PREBUILT_BOOST_DOWNLOAD_URL}/${BOOST_VERSION}/${prebuilt_boost_archive_name} && \
         if [ -f "${prebuilt_boost_archive_file}" ]; then
