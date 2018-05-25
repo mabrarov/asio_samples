@@ -260,7 +260,7 @@ TEST(custom_alloc_handler, preserving_invocation_strategy)
   in_place_handler_allocator<512> allocator;
   test_allocation_and_invocation(make_custom_alloc_handler(allocator,
       invoke_counting_handler(invoke_counter)), 511);
-  ASSERT_EQ(1U, invoke_counter.value());
+  ASSERT_EQ(0U, invoke_counter.value());
 }
 
 } // namespace custom_alloc_handler

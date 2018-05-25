@@ -464,7 +464,7 @@ before_script:
     if [ "${PRE_INSTALLED_BOOST}" != 0 ]; then
       echo "Boost ${BOOST_VERSION} is pre-intalled"
     else
-      export PREBUILT_BOOST_HOME=${DEPENDENCIES_HOME}/boost-${BOOST_VERSION}-x64-gcc4.8
+      export PREBUILT_BOOST_HOME=${DEPENDENCIES_HOME}/no-boost-${BOOST_VERSION}-x64-gcc4.8
       if [ -d "${PREBUILT_BOOST_HOME}" ]; then
         echo "Prebuilt Boost found at ${PREBUILT_BOOST_HOME}"
       else
