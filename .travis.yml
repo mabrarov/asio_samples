@@ -457,7 +457,7 @@ matrix:
       compiler: clang
       addons: *addons-clang38-boost155-qt4
 
-before_script:
+install:
   - |
     set -e
     export PRE_INSTALLED_BOOST=0
@@ -507,7 +507,7 @@ script:
         echo "Building with pre-installed Boost ${BOOST_VERSION}"
         cmake -D CMAKE_C_COMPILER=${C_COMPILER} -D CMAKE_CXX_COMPILER=${CXX_COMPILER} -D CMAKE_BUILD_TYPE=${BUILD_TYPE} -D ma_force_qt_major_version=${QT_MAJOR_VERSION} -D ma_coverage_build=${COVERAGE_BUILD} ${TRAVIS_BUILD_DIR}
       else
-        echo "Building with prebuilt Boost ${BOOST_VERSION}"
+        echo "Building with prebuilt Boost ${BOOST_VERSION} located at ${PREBUILT_BOOST_HOME}"
         cmake -D CMAKE_C_COMPILER=${C_COMPILER} -D CMAKE_CXX_COMPILER=${CXX_COMPILER} -D CMAKE_BUILD_TYPE=${BUILD_TYPE} -D Boost_NO_SYSTEM_PATHS=ON -D BOOST_INCLUDEDIR=${PREBUILT_BOOST_HOME}/include -D BOOST_LIBRARYDIR=${PREBUILT_BOOST_HOME}/lib -D ma_force_qt_major_version=${QT_MAJOR_VERSION} -D ma_coverage_build=${COVERAGE_BUILD} ${TRAVIS_BUILD_DIR}
       fi
       cmake --build . --config ${BUILD_TYPE}
