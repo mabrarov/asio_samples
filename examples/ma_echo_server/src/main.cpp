@@ -22,6 +22,7 @@
 #include <ma/config.hpp>
 #include <ma/handler_allocator.hpp>
 #include <ma/handler_invoke_helpers.hpp>
+#include <ma/io_context_helpers.hpp>
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/console_close_signal.hpp>
 #include <ma/steady_deadline_timer.hpp>
@@ -150,13 +151,14 @@ private:
     {
       for (std::size_t i = 0; i != exec_config.session_thread_count; ++i)
       {
-        io_services.push_back(detail::make_shared<boost::asio::io_service>(1));
+        io_services.push_back(detail::make_shared<boost::asio::io_service>(
+            ma::to_io_context_concurrency_hint(1)));
       }
     }
     else
     {
       io_service_ptr io_service = detail::make_shared<boost::asio::io_service>(
-          exec_config.session_thread_count);
+          ma::to_io_context_concurrency_hint(exec_config.session_thread_count));
       io_services.push_back(io_service);
     }
     return io_services;
@@ -217,8 +219,8 @@ public:
   explicit server_base_2(const echo_server::execution_config& execution_config,
       const ma::echo::server::session_manager_config& session_manager_config)
     : server_base_1(execution_config, session_manager_config)
-    , session_manager_io_service_(
-          execution_config.session_manager_thread_count)
+    , session_manager_io_service_(ma::to_io_context_concurrency_hint(
+          execution_config.session_manager_thread_count))
   {
   }
 

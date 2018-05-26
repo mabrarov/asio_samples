@@ -21,6 +21,7 @@
 #include <ma/context_alloc_handler.hpp>
 #include <ma/handler_alloc_helpers.hpp>
 #include <ma/thread_group.hpp>
+#include <ma/io_context_helpers.hpp>
 #include <ma/detail/memory.hpp>
 #include <ma/detail/functional.hpp>
 #include <ma/detail/latch.hpp>
@@ -376,6 +377,24 @@ private:
   int  value_;
 }; // class handler
 
+TEST(handler_storage, target_when_empty)
+{
+  {
+    typedef ma::handler_storage<int, handler_base> handler_storage_type;
+
+    boost::asio::io_service io_service;
+    handler_storage_type handler_storage(io_service);
+    ASSERT_EQ(0, handler_storage.target());
+  }
+  {
+    typedef ma::handler_storage<int> handler_storage_type;
+
+    boost::asio::io_service io_service;
+    handler_storage_type handler_storage(io_service);
+    ASSERT_EQ(0, handler_storage.target());
+  }
+} // TEST(handler_storage, target_when_empty)
+
 TEST(handler_storage, target)
 {
   typedef ma::handler_storage<int, handler_base> handler_storage_type;
@@ -730,7 +749,8 @@ TEST(handler_storage, post_no_arg)
 
   std::size_t cpu_count = detail::thread::hardware_concurrency();
   std::size_t work_thread_count = cpu_count > 1 ? cpu_count : 2;
-  boost::asio::io_service io_service(work_thread_count);
+  boost::asio::io_service io_service(
+      ma::to_io_context_concurrency_hint(work_thread_count));
   io_service_pool work_threads(io_service, work_thread_count);
   handler_storage_type handler_storage(io_service);
   ma::detail::latch done_latch(1);
@@ -755,7 +775,8 @@ TEST(handler_storage, post_no_arg_with_target)
 
   std::size_t cpu_count = detail::thread::hardware_concurrency();
   std::size_t work_thread_count = cpu_count > 1 ? cpu_count : 2;
-  boost::asio::io_service io_service(work_thread_count);
+  boost::asio::io_service io_service(
+      ma::to_io_context_concurrency_hint(work_thread_count));
   io_service_pool work_threads(io_service, work_thread_count);
   handler_storage_type handler_storage(io_service);
   ma::detail::latch done_latch(1);
@@ -781,7 +802,8 @@ TEST(handler_storage, post_with_arg)
 
   std::size_t cpu_count = detail::thread::hardware_concurrency();
   std::size_t work_thread_count = cpu_count > 1 ? cpu_count : 2;
-  boost::asio::io_service io_service(work_thread_count);
+  boost::asio::io_service io_service(
+      ma::to_io_context_concurrency_hint(work_thread_count));
   io_service_pool work_threads(io_service, work_thread_count);
   handler_storage_type handler_storage(io_service);
   ma::detail::latch done_latch(1);
@@ -807,7 +829,8 @@ TEST(handler_storage, post_with_arg_with_target)
 
   std::size_t cpu_count = detail::thread::hardware_concurrency();
   std::size_t work_thread_count = cpu_count > 1 ? cpu_count : 2;
-  boost::asio::io_service io_service(work_thread_count);
+  boost::asio::io_service io_service(
+      ma::to_io_context_concurrency_hint(work_thread_count));
   io_service_pool work_threads(io_service, work_thread_count);
   handler_storage_type handler_storage(io_service);
   ma::detail::latch done_latch(1);
@@ -823,6 +846,38 @@ TEST(handler_storage, post_with_arg_with_target)
 
   ASSERT_EQ(test_post_value, out);
 } // TEST(handler_storage, arg)
+
+TEST(handler_storage, post_no_arg_when_empty)
+{
+  typedef ma::handler_storage<void> handler_storage_type;
+  boost::asio::io_service io_service;
+  handler_storage_type handler_storage(io_service);
+  ASSERT_THROW(handler_storage.post(), ma::bad_handler_call);
+} // TEST(handler_storage, post_no_arg_when_empty)
+
+TEST(handler_storage, post_no_arg_with_target_when_empty)
+{
+  typedef ma::handler_storage<void, test_handler_base> handler_storage_type;
+  boost::asio::io_service io_service;
+  handler_storage_type handler_storage(io_service);
+  ASSERT_THROW(handler_storage.post(), ma::bad_handler_call);
+} // TEST(handler_storage, post_no_arg_with_target_when_empty)
+
+TEST(handler_storage, post_with_arg_when_empty)
+{
+  typedef ma::handler_storage<int> handler_storage_type;
+  boost::asio::io_service io_service;
+  handler_storage_type handler_storage(io_service);
+  ASSERT_THROW(handler_storage.post(42), ma::bad_handler_call);
+} // TEST(handler_storage, post_with_arg_when_empty)
+
+TEST(handler_storage, post_with_arg_with_target_when_empty)
+{
+  typedef ma::handler_storage<int, test_handler_base> handler_storage_type;
+  boost::asio::io_service io_service;
+  handler_storage_type handler_storage(io_service);
+  ASSERT_THROW(handler_storage.post(42), ma::bad_handler_call);
+} // TEST(handler_storage, post_with_arg_with_target_when_empty)
 
 } // namespace handler_storage_post
 
@@ -971,7 +1026,7 @@ TEST(handler_storage, move_support)
   ma::detail::latch done_latch;
   ma::detail::latch copy_latch;
 
-  boost::asio::io_service io_service(1);
+  boost::asio::io_service io_service(ma::to_io_context_concurrency_hint(1));
   io_service_pool work_threads(io_service, 1);
 
   ma::handler_storage<void> test_handler_storage(io_service);
@@ -1016,6 +1071,150 @@ TEST(handler_storage, move_support)
 } // TEST(handler_storage, move_support)
 
 } // namespace handler_storage_move_support
+
+namespace handler_storage_misc {
+
+class trackable
+{
+private:
+  typedef trackable this_type;
+
+  this_type& operator=(const this_type&);
+
+public:
+  typedef ma::detail::latch counter_type;
+
+  explicit trackable(counter_type& instance_counter)
+    : instance_counter_(instance_counter)
+  {
+    instance_counter_.count_up();
+  }
+
+  trackable(const this_type& other)
+    : instance_counter_(other.instance_counter_)
+  {
+    instance_counter_.count_up();
+  }
+
+#if defined(MA_HAS_RVALUE_REFS)
+  trackable(this_type&& other)
+    : instance_counter_(other.instance_counter_)
+  {
+    instance_counter_.count_up();
+  }
+#endif
+
+  ~trackable()
+  {
+    instance_counter_.count_down();
+  }
+
+private:
+  counter_type& instance_counter_;
+}; // class trackable
+
+class test_handler : public trackable
+{
+private:
+  typedef test_handler this_type;
+  typedef trackable    base_type;
+
+  this_type& operator=(const this_type&);
+
+public:
+  explicit test_handler(counter_type& instance_counter)
+    : base_type(instance_counter)
+  {
+  }
+
+  test_handler(const this_type& other)
+    : base_type(other)
+  {
+  }
+
+#if defined(MA_HAS_RVALUE_REFS)
+  test_handler(this_type&& other)
+    : base_type(detail::move(other))
+  {
+  }
+#endif
+
+  void operator()()
+  {
+  }
+
+  void operator()(int)
+  {
+  }
+};
+
+TEST(handler_storage, empty_handler_with_void)
+{
+  ma::detail::latch instance_latch;
+  boost::asio::io_service io_service;
+  ma::handler_storage<void> handler_storage(io_service);
+  ASSERT_TRUE(handler_storage.empty());
+  handler_storage.store(test_handler(instance_latch));
+  ASSERT_EQ(1U, instance_latch.value());
+  ASSERT_FALSE(handler_storage.empty());
+} // TEST(handler_storage, empty_handler_with_void)
+
+TEST(handler_storage, has_target_handler_with_void)
+{
+  ma::detail::latch instance_latch;
+  boost::asio::io_service io_service;
+  ma::handler_storage<void> handler_storage(io_service);
+  handler_storage.store(test_handler(instance_latch));
+  ASSERT_EQ(1U, instance_latch.value());
+  ASSERT_TRUE(handler_storage.has_target());
+} // TEST(handler_storage, has_target_handler_with_void)
+
+TEST(handler_storage, clear_handler_with_void)
+{
+  ma::detail::latch instance_latch;
+  boost::asio::io_service io_service;
+  ma::handler_storage<void> handler_storage(io_service);
+  handler_storage.store(test_handler(instance_latch));
+  handler_storage.clear();
+  ASSERT_EQ(0U, instance_latch.value());
+  ASSERT_FALSE(handler_storage.has_target());
+  ASSERT_TRUE(handler_storage.empty());
+} // TEST(handler_storage, clear_handler_with_void)
+
+TEST(handler_storage, empty_handler_with_param)
+{
+  ma::detail::latch instance_latch;
+  boost::asio::io_service io_service;
+  ma::handler_storage<int> handler_storage(io_service);
+  ASSERT_TRUE(handler_storage.empty());
+  handler_storage.store(test_handler(instance_latch));
+  ASSERT_EQ(1U, instance_latch.value());
+  ASSERT_FALSE(handler_storage.empty());
+} // TEST(handler_storage, empty_handler_with_param)
+
+TEST(handler_storage, has_target_handler_with_param)
+{
+  ma::detail::latch instance_latch;
+  boost::asio::io_service io_service;
+  ma::handler_storage<int> handler_storage(io_service);
+  handler_storage.store(test_handler(instance_latch));
+  ASSERT_EQ(1U, instance_latch.value());
+  ASSERT_TRUE(handler_storage.has_target());
+} // TEST(handler_storage, has_target_handler_with_param)
+
+TEST(handler_storage, clear_handler_with_param)
+{
+  ma::detail::latch instance_latch;
+  boost::asio::io_service io_service;
+  ma::handler_storage<int> handler_storage(io_service);
+  handler_storage.store(test_handler(instance_latch));
+  handler_storage.clear();
+  ASSERT_EQ(0U, instance_latch.value());
+  ASSERT_FALSE(handler_storage.has_target());
+  ASSERT_TRUE(handler_storage.empty());
+} // TEST(handler_storage, clear_handler_with_param)
+
+} // namespace handler_storage_misc
 
 } // namespace test
 } // namespace ma

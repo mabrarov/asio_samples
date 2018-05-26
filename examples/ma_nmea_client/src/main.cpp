@@ -25,6 +25,7 @@
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/thread_group.hpp>
 #include <ma/console_close_guard.hpp>
+#include <ma/io_context_helpers.hpp>
 #include <ma/detail/memory.hpp>
 #include <ma/detail/functional.hpp>
 #include <ma/detail/thread.hpp>
@@ -159,7 +160,8 @@ int main(int argc, char* argv[])
 
     // An io_service for the thread pool
     // (for the executors... Java Executors API? Apache MINA :)
-    boost::asio::io_service session_io_service(concurrent_count);
+    boost::asio::io_service session_io_service(
+        ma::to_io_context_concurrency_hint(concurrent_count));
 
     session_ptr the_session(session::create(session_io_service,
         read_buffer_size, message_queue_size, "$", "\x0a"));
