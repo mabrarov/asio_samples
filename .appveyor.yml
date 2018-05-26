@@ -26,14 +26,52 @@ environment:
   matrix:
     - MSVC_VERSION: 14.0
       RUNTIME_LINKAGE: shared
-      BOOST_VERSION: 1.63.0
+      BOOST_VERSION: 1.67.0
       BOOST_LINKAGE: static
-      QT_VERSION: 5.8
+      QT_VERSION: 5.10.1
       QT_LINKAGE: shared
       COVERITY_BUILD_CANDIDATE: True
+    - MSVC_VERSION: 12.0
+      RUNTIME_LINKAGE: shared
+      BOOST_VERSION: 1.67.0
+      BOOST_LINKAGE: static
+      QT_VERSION: 5.6.3
+      QT_LINKAGE: shared
+    - MSVC_VERSION: 11.0
+      RUNTIME_LINKAGE: static
+      BOOST_VERSION: 1.67.0
+      BOOST_LINKAGE: static
+    - MSVC_VERSION: 10.0
+      RUNTIME_LINKAGE: shared
+      BOOST_VERSION: 1.67.0
+      BOOST_LINKAGE: static
+      QT_VERSION: 4.8.7
+      QT_LINKAGE: shared
+    - MSVC_VERSION: 9.0
+      RUNTIME_LINKAGE: static
+      BOOST_VERSION: 1.67.0
+      BOOST_LINKAGE: static
+    - MSVC_VERSION: 10.0
+      RUNTIME_LINKAGE: shared
+      BOOST_VERSION: 1.47.0
+      BOOST_LINKAGE: static
+      QT_VERSION: 4.8.7
+      QT_LINKAGE: shared
+    - MSVC_VERSION: 9.0
+      RUNTIME_LINKAGE: static
+      BOOST_VERSION: 1.47.0
+      BOOST_LINKAGE: static
     - MSVC_VERSION: 14.0
       RUNTIME_LINKAGE: static
-      BOOST_VERSION: 1.61.0
+      BOOST_VERSION: 1.67.0
+      BOOST_LINKAGE: static
+      QT_VERSION: 5.7
+      QT_LINKAGE: static
+      ICU_VERSION: 57.1
+      ICU_LINKAGE: static
+    - MSVC_VERSION: 14.0
+      RUNTIME_LINKAGE: static
+      BOOST_VERSION: 1.67.0
       BOOST_LINKAGE: static
       QT_VERSION: 5.7
       QT_LINKAGE: static
@@ -41,46 +79,19 @@ environment:
       ICU_LINKAGE: static
     - MSVC_VERSION: 14.0
       RUNTIME_LINKAGE: shared
-      BOOST_VERSION: 1.61.0
+      BOOST_VERSION: 1.67.0
       BOOST_LINKAGE: static
-      QT_VERSION: 5.7
+      QT_VERSION: 5.10.1
       QT_LINKAGE: shared
     - MSVC_VERSION: 14.0
       RUNTIME_LINKAGE: shared
-      BOOST_VERSION: 1.61.0
+      BOOST_VERSION: 1.67.0
       BOOST_LINKAGE: shared
-      QT_VERSION: 5.7
+      QT_VERSION: 5.10.1
       QT_LINKAGE: shared
-    - MSVC_VERSION: 12.0
-      RUNTIME_LINKAGE: shared
-      BOOST_VERSION: 1.61.0
-      BOOST_LINKAGE: static
-      QT_VERSION: 5.7
-      QT_LINKAGE: shared
-    - MSVC_VERSION: 11.0
-      RUNTIME_LINKAGE: static
-      BOOST_VERSION: 1.61.0
-      BOOST_LINKAGE: static
-    - MSVC_VERSION: 10.0
-      RUNTIME_LINKAGE: shared
-      BOOST_VERSION: 1.61.0
-      BOOST_LINKAGE: static
-      QT_VERSION: 4.8.7
-      QT_LINKAGE: shared
-    - MSVC_VERSION: 10.0
-      RUNTIME_LINKAGE: shared
-      BOOST_VERSION: 1.47.0
-      BOOST_LINKAGE: static
-      QT_VERSION: 4.8.7
-      QT_LINKAGE: shared
-    - MSVC_VERSION: 9.0
-      RUNTIME_LINKAGE: static
-      BOOST_VERSION: 1.61.0
-      BOOST_LINKAGE: static
-    - MSVC_VERSION: 9.0
-      RUNTIME_LINKAGE: static
-      BOOST_VERSION: 1.47.0
-      BOOST_LINKAGE: static
+
+cache:
+  - C:\projects\downloads -> .appveyor.yml
 
 install:
   - ps: |
@@ -124,9 +135,9 @@ install:
                   git clone --quiet "$msvs2008_patch_url" "$msvs_patch_download_folder_nix"
                   git -C "$msvs_patch_download_folder_nix" checkout --quiet "$msvs2008_patch_revision"
                   if ($LastExitCode -ne 0) {
-                    throw "File downloading failed with exit code $LastExitCode."
+                    throw "Downloading of MSVS patch failed with exit code $LastExitCode."
                   }
-                  Write-Host "Downloaded: $msvs_patch_download_file"
+                  Write-Host "Downloaded MSVS patch: $msvs_patch_download_file"
                 }
                 Write-Host "Extracting MSVS patch from: $msvs_patch_download_file to: $env:MSVS_PATCH_FOLDER"
                 New-Item "$env:MSVS_PATCH_FOLDER" -type directory | out-null
@@ -148,7 +159,7 @@ install:
           throw "Unsupported platform: $env:PLATFORM"
         }
       }
-      $pre_installed_icu = ""
+      $pre_installed_icu = $false
       if ($env:ICU_VERSION) {
         if ($pre_installed_icu) {
           throw "Pre-installed ICU is missing"
@@ -200,9 +211,9 @@ install:
               Write-Host "Going to download pre-built ICU libraries from: $icu_download_url to: $icu_archive_file"
               curl.exe --connect-timeout 300 --max-time 1800 --show-error --silent --location --output "$icu_archive_file" "$icu_download_url"
               if ($LastExitCode -ne 0) {
-                throw "File downloading failed with exit code $LastExitCode."
+                throw "Downloading of pre-built ICU libraries failed with exit code $LastExitCode."
               }
-              Write-Host "Downloaded: $icu_archive_file"
+              Write-Host "Downloaded pre-built ICU libraries: $icu_archive_file"
             }
             Write-Host "Extracting pre-built ICU libraries from: $icu_archive_file to: $env:DEPENDENCIES_FOLDER"
             if (!(Test-Path -Path "$env:DEPENDENCIES_FOLDER")) {
@@ -221,28 +232,19 @@ install:
           throw "Incompatible type of linkage of ICU: $env:ICU_LINKAGE for the specified type of linkage of C/C++ runtime: $env:RUNTIME_LINKAGE"
         }
       }
-      $pre_installed_boost = ""
-      switch ($env:MSVC_VERSION) {
-        "14.0" {
-          switch ($env:BOOST_VERSION) {
-            "1.59.0" {
-              $pre_installed_boost = "true"
-            }
-            "1.60.0" {
-              $pre_installed_boost = "true"
-            }
-            "1.63.0" {
-              $pre_installed_boost = "true"
-            }
-          }
-        }
-        "12.0" {
-          if ($env:BOOST_VERSION -eq "1.58.0") {
-            $pre_installed_boost = "true"
-          }
-        }
-      }
       if ($env:BOOST_VERSION) {
+        $pre_installed_boost = $false
+        switch ($env:MSVC_VERSION) {
+          "15.0" {
+            $pre_installed_boost = ($env:BOOST_VERSION -eq "1.67.0") -or ($env:BOOST_VERSION -eq "1.66.0") -or ($env:BOOST_VERSION -eq "1.65.1") -or ($env:BOOST_VERSION -eq "1.63.0")
+          }
+          "14.0" {
+            $pre_installed_boost = ($env:BOOST_VERSION -eq "1.67.0") -or ($env:BOOST_VERSION -eq "1.66.0") -or ($env:BOOST_VERSION -eq "1.65.1") -or ($env:BOOST_VERSION -eq "1.63.0")
+          }
+          "12.0" {
+            $pre_installed_boost = ($env:BOOST_VERSION -eq "1.58.0")
+          }
+        }
         if ($pre_installed_boost) {
           $boost_home = "C:\Libraries\boost"
           if (!($env:BOOST_VERSION -eq "1.56.0")) {
@@ -312,9 +314,9 @@ install:
               Write-Host "Going to download pre-built Boost libraries from: $boost_download_url to: $boost_archive_file"
               curl.exe --connect-timeout 300 --max-time 1800 --show-error --silent --location --output "$boost_archive_file" "$boost_download_url"
               if ($LastExitCode -ne 0) {
-                throw "File downloading failed with exit code $LastExitCode."
+                throw "Downloading of pre-built Boost libraries failed with exit code $LastExitCode."
               }
-              Write-Host "Downloaded: $boost_archive_file"
+              Write-Host "Downloaded pre-built Boost libraries: $boost_archive_file"
             }
             Write-Host "Extracting pre-built Boost libraries from: $boost_archive_file to: $env:DEPENDENCIES_FOLDER"
             if (!(Test-Path -Path "$env:DEPENDENCIES_FOLDER")) {
@@ -343,40 +345,14 @@ install:
         }
       }
       if ($env:QT_VERSION) {
-        $pre_installed_qt = ""
+        $pre_installed_qt = $false
         if (!($env:QT_LINKAGE -eq "static")) {
           switch ($env:MSVC_VERSION) {
             "14.0" {
-              switch ($env:QT_VERSION) {
-                "5.8" {
-                  $pre_installed_qt = "true"
-                }
-                "5.7" {
-                  $pre_installed_qt = "true"
-                }
-                "5.6" {
-                  $pre_installed_qt = "true"
-                }
-              }
+              $pre_installed_qt = ($env:QT_VERSION -eq "5.10.1") -or ($env:QT_VERSION -eq "5.9.5") -or ($env:QT_VERSION -eq "5.6.3")
             }
             "12.0" {
-              switch ($env:QT_VERSION) {
-                "5.7" {
-                  $pre_installed_qt = "true"
-                }
-                "5.6" {
-                  $pre_installed_qt = "true"
-                }
-                "5.5" {
-                  $pre_installed_qt = "true"
-                }
-                "5.4" {
-                  $pre_installed_qt = "true"
-                }
-                "5.3" {
-                  $pre_installed_qt = "true"
-                }
-              }
+              $pre_installed_qt = (($env:QT_VERSION -eq "5.10.1") -and ($env:PLATFORM -eq "x64")) -or (($env:QT_VERSION -eq "5.9.5") -and ($env:PLATFORM -eq "x64")) -or ($env:QT_VERSION -eq "5.6.3")
             }
           }
         }
@@ -494,9 +470,9 @@ install:
               Write-Host "Going to download pre-built Qt libraries from: $qt_download_url to: $qt_archive_file"
               curl.exe --connect-timeout 300 --max-time 1800 --show-error --silent --location --output "$qt_archive_file" "$qt_download_url"
               if ($LastExitCode -ne 0) {
-                throw "File downloading failed with exit code $LastExitCode."
+                throw "Downloading of pre-built Qt libraries failed with exit code $LastExitCode."
               }
-              Write-Host "Downloaded: $qt_archive_file"
+              Write-Host "Downloaded pre-built Qt libraries: $qt_archive_file"
             }
             Write-Host "Extracting pre-built Qt libraries from: $qt_archive_file to: $env:DEPENDENCIES_FOLDER"
             if (!(Test-Path -Path "$env:DEPENDENCIES_FOLDER")) {
@@ -684,6 +660,10 @@ artifacts:
     name: ma_nmea_client
   - path: build\examples\ma_qt_echo_server\$(configuration)\*.exe
     name: ma_qt_echo_server
+  - path: build\examples\asio_multicast_receiver\$(configuration)\*.exe
+    name: asio_multicast_receiver
+  - path: build\examples\asio_multicast_sender\$(configuration)\*.exe
+    name: asio_multicast_sender
   - path: build\tests\ma_async_connect_test\$(configuration)\*.exe
     name: ma_async_connect_test
   - path: build\tests\ma_handler_storage_test\$(configuration)\*.exe

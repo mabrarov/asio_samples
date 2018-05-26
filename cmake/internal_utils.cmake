@@ -38,7 +38,7 @@ function(ma_list_subdirs files base_dir results)
         endif()        
 
         string(FIND "${case_normalized_file_path}" "${case_normalized_base_dir}" start_pos)
-        if(${start_pos} EQUAL 0)
+        if(start_pos EQUAL 0)
             file(RELATIVE_PATH subdir "${cmake_base_dir}" "${file_path}")
             list(APPEND subdirs "${subdir}")
             set(subdir_found TRUE)
@@ -147,9 +147,14 @@ endfunction()
 #   result - name of list to store compile options.
 function(ma_config_private_compile_options result)
     set(compile_options )
-    # Turn on more strict warning mode
     if(MSVC)
+        # Turn on more strict warning mode
         list(APPEND compile_options "/W4")
+        if((MSVC_VERSION EQUAL 1800) OR (MSVC_VERSION GREATER 1800))
+            # Turn on option which is turned on by default in Visual Studio (when using Visual Studio generator)
+            # ans is turned off by default in compiler command line (when using makefiles, for example).
+            list(APPEND cxx_compile_options "/Zc:inline")
+        endif()
     elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
         list(APPEND compile_options "-Wall" "-Wextra" "-pedantic" "-Wunused" "-Wno-long-long")
     endif()

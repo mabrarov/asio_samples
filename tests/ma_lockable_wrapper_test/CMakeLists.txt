@@ -32,6 +32,7 @@ list(APPEND cxx_private_libraries
     ma_compat
     ma_lockable_wrapped_handler
     ma_io_service_pool
+    ma_helpers
     ma_coverage)
 
 add_executable(${PROJECT_NAME}

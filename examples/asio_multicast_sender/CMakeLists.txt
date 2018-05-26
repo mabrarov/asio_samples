@@ -1,12 +1,12 @@
 #
-# Copyright (c) 2016 Marat Abrarov (abrarov@gmail.com)
+# Copyright (c) 2017 Marat Abrarov (abrarov@gmail.com)
 #
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
 cmake_minimum_required(VERSION 3.0)
-project(ma_helpers)
+project(asio_multicast_sender)
 
 set(project_base_dir "${PROJECT_SOURCE_DIR}")
 set(cxx_headers_dir  "${project_base_dir}/include")
@@ -23,23 +23,16 @@ ma_config_private_compile_options(cxx_private_compile_options)
 ma_config_private_compile_definitions(cxx_private_compile_definitions)
 set(cxx_private_libraries )
 
-list(APPEND cxx_headers
-    "${cxx_headers_dir}/ma/handler_alloc_helpers.hpp"
-    "${cxx_headers_dir}/ma/handler_cont_helpers.hpp"
-    "${cxx_headers_dir}/ma/handler_invoke_helpers.hpp"
-    "${cxx_headers_dir}/ma/io_context_helpers.hpp")
-
 list(APPEND cxx_sources
-    "${cxx_sources_dir}/fake.cpp")
+    "${cxx_sources_dir}/sender.cpp")
 
-list(APPEND cxx_public_libraries
+list(APPEND cxx_private_libraries
     ma_boost_header_only
     ma_boost_asio
-    ma_config
-    ma_compat
+    ma_boost_date_time
     ma_coverage)
 
-add_library(${PROJECT_NAME} STATIC
+add_executable(${PROJECT_NAME}
     ${cxx_headers}
     ${cxx_sources})
 target_compile_options(${PROJECT_NAME}

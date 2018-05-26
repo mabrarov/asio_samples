@@ -21,6 +21,7 @@
 #include <ma/context_alloc_handler.hpp>
 #include <ma/handler_alloc_helpers.hpp>
 #include <ma/thread_group.hpp>
+#include <ma/io_context_helpers.hpp>
 #include <ma/detail/memory.hpp>
 #include <ma/detail/functional.hpp>
 #include <ma/detail/latch.hpp>
@@ -748,7 +749,8 @@ TEST(handler_storage, post_no_arg)
 
   std::size_t cpu_count = detail::thread::hardware_concurrency();
   std::size_t work_thread_count = cpu_count > 1 ? cpu_count : 2;
-  boost::asio::io_service io_service(work_thread_count);
+  boost::asio::io_service io_service(
+      ma::to_io_context_concurrency_hint(work_thread_count));
   io_service_pool work_threads(io_service, work_thread_count);
   handler_storage_type handler_storage(io_service);
   ma::detail::latch done_latch(1);
@@ -773,7 +775,8 @@ TEST(handler_storage, post_no_arg_with_target)
 
   std::size_t cpu_count = detail::thread::hardware_concurrency();
   std::size_t work_thread_count = cpu_count > 1 ? cpu_count : 2;
-  boost::asio::io_service io_service(work_thread_count);
+  boost::asio::io_service io_service(
+      ma::to_io_context_concurrency_hint(work_thread_count));
   io_service_pool work_threads(io_service, work_thread_count);
   handler_storage_type handler_storage(io_service);
   ma::detail::latch done_latch(1);
@@ -799,7 +802,8 @@ TEST(handler_storage, post_with_arg)
 
   std::size_t cpu_count = detail::thread::hardware_concurrency();
   std::size_t work_thread_count = cpu_count > 1 ? cpu_count : 2;
-  boost::asio::io_service io_service(work_thread_count);
+  boost::asio::io_service io_service(
+      ma::to_io_context_concurrency_hint(work_thread_count));
   io_service_pool work_threads(io_service, work_thread_count);
   handler_storage_type handler_storage(io_service);
   ma::detail::latch done_latch(1);
@@ -825,7 +829,8 @@ TEST(handler_storage, post_with_arg_with_target)
 
   std::size_t cpu_count = detail::thread::hardware_concurrency();
   std::size_t work_thread_count = cpu_count > 1 ? cpu_count : 2;
-  boost::asio::io_service io_service(work_thread_count);
+  boost::asio::io_service io_service(
+      ma::to_io_context_concurrency_hint(work_thread_count));
   io_service_pool work_threads(io_service, work_thread_count);
   handler_storage_type handler_storage(io_service);
   ma::detail::latch done_latch(1);
@@ -1021,7 +1026,7 @@ TEST(handler_storage, move_support)
   ma::detail::latch done_latch;
   ma::detail::latch copy_latch;
 
-  boost::asio::io_service io_service(1);
+  boost::asio::io_service io_service(ma::to_io_context_concurrency_hint(1));
   io_service_pool work_threads(io_service, 1);
 
   ma::handler_storage<void> test_handler_storage(io_service);

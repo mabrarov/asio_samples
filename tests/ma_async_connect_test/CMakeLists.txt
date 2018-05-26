@@ -39,6 +39,7 @@ list(APPEND cxx_private_libraries
     ma_async_connect
     ma_strand
     ma_thread_group
+    ma_helpers
     ma_coverage)
 
 add_executable(${PROJECT_NAME}
