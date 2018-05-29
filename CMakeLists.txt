@@ -149,6 +149,7 @@ if(ma_build_tests)
     add_subdirectory(tests/ma_handler_allocator_test)
     add_subdirectory(tests/ma_custom_alloc_handler_test)
     add_subdirectory(tests/ma_cyclic_buffer_test)
+    add_subdirectory(tests/ma_sp_intrusive_list_test)
 endif()
 
 # Examples of using of libraries
