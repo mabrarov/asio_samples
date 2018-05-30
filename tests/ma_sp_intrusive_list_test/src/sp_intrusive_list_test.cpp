@@ -11,7 +11,6 @@
 #include <ma/sp_intrusive_list.hpp>
 #include <ma/detail/functional.hpp>
 #include <ma/detail/memory.hpp>
-#include <ma/detail/latch.hpp>
 
 namespace ma {
 namespace test {
@@ -23,22 +22,22 @@ class list_item
 {
 private:
   typedef list_item this_type;
-  typedef ma::sp_intrusive_list<list_item> list_type;
 
-  friend list_type;
+  friend class ma::sp_intrusive_list<list_item>;
 
 public:
-  explicit list_item(detail::latch& counter) : counter_(counter)
+  explicit list_item(int& counter) : counter_(counter)
   {
+    ++counter_;
   }
 
   ~list_item()
   {
-    counter_.count_down();
+    --counter_;
   }
 
 private:
-  detail::latch& counter_;
+  int& counter_;
 }; // class list_item
 
 typedef ma::sp_intrusive_list<list_item> list_type;
@@ -46,7 +45,7 @@ typedef detail::shared_ptr<list_item> list_item_ptr;
 
 TEST(sp_intrusive_list, lifetime)
 {
-  detail::latch instance_counter(1);
+  int instance_counter = 0;
   {
     list_type list;
     {
@@ -54,9 +53,9 @@ TEST(sp_intrusive_list, lifetime)
           detail::ref(instance_counter));
       list.push_front(item);
     }
-    ASSERT_EQ(1U, instance_counter.value());
+    ASSERT_EQ(1, instance_counter);
   }
-  ASSERT_EQ(0U, instance_counter.value());
+  ASSERT_EQ(0, instance_counter);
 }
 
 } // namespace sp_intrusive_list
