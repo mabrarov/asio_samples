@@ -682,3 +682,5 @@ artifacts:
     name: ma_custom_alloc_handler_test
   - path: build\tests\ma_sp_intrusive_list_test\$(configuration)\*.exe
     name: ma_sp_intrusive_list_test
+  - path: build\tests\ma_strand_test\$(configuration)\*.exe
+    name: ma_strand_test
