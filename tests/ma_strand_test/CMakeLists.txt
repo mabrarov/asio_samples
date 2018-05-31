@@ -28,6 +28,7 @@ list(APPEND cxx_sources
 
 list(APPEND cxx_private_libraries
     ma_strand
+    ma_config
     ma_boost_header_only
     ma_boost_asio
     ma_gtest
