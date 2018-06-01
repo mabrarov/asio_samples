@@ -13,7 +13,7 @@ A code-based guide for client/server creation with usage of active object patter
 
 ## Building
 
-Below examples assumes:
+Below examples assume:
 
 * Windows Command Prompt with Windows SDK environment set up (for example, `VS2015 x64 Native Tools Command Prompt` Windows main menu link for Visual Studio 2015 x64) is used on Windows.
 * Current directory is `asio_sample_build_dir`.
