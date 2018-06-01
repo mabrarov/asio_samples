@@ -24,7 +24,7 @@ ma_config_private_compile_definitions(cxx_private_compile_definitions)
 set(cxx_private_libraries )
 
 list(APPEND cxx_sources
-    "${cxx_sources_dir}/sp_strand_test.cpp")
+    "${cxx_sources_dir}/strand_test.cpp")
 
 list(APPEND cxx_private_libraries
     ma_strand
