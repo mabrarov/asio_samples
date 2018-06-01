@@ -61,29 +61,28 @@ dispatcher<typename detail::decay<Context>::type,
       detail::forward<Handler>(handler));
 }
 
-TEST(strand, dispatch_in_same_io_service)
-{
-  typedef std::size_t (boost::asio::io_service::*run_io_service_func)(void);
-  run_io_service_func run = &boost::asio::io_service::run;
+typedef std::size_t (boost::asio::io_service::*run_io_service_func)(void);
+static const run_io_service_func run_io_service = &boost::asio::io_service::run;
 
+TEST(strand, dispatch_same_io_service)
+{
   detail::latch done(1);
-  detail::thread::id strand_thread_id;
+  detail::thread::id handler_thread_id;
 
   boost::asio::io_service io_service1;
-  ma::strand strand(io_service1);
+  ma::strand test_strand(io_service1);
   boost::asio::io_service io_service2;
 
   optional_work work1(boost::in_place(detail::ref(io_service1)));
   optional_work work2(boost::in_place(detail::ref(io_service2)));
+  detail::thread thread1(detail::bind(run_io_service, &io_service1));
+  detail::thread thread2(detail::bind(run_io_service, &io_service2));
 
-  detail::thread thread1(detail::bind(run, &io_service1));
-  detail::thread thread2(detail::bind(run, &io_service2));
-
-  io_service2.post(make_dispatcher(strand, detail::bind(
-      save_thread_id, detail::ref(strand_thread_id), detail::ref(done))));
+  io_service2.post(make_dispatcher(test_strand, detail::bind(
+      save_thread_id, detail::ref(handler_thread_id), detail::ref(done))));
 
   done.wait();
-  ASSERT_EQ(thread1.get_id(), strand_thread_id);
+  ASSERT_EQ(thread1.get_id(), handler_thread_id);
 
   work2 = boost::none;
   work1 = boost::none;
@@ -91,36 +90,31 @@ TEST(strand, dispatch_in_same_io_service)
   thread1.join();
 }
 
-TEST(strand, wrapped_handler_dispatch_in_same_io_service)
+TEST(strand, wrapped_dispatch_same_io_service)
 {
-  typedef std::size_t (boost::asio::io_service::*run_io_service_func)(void);
-  run_io_service_func run = &boost::asio::io_service::run;
-
   detail::latch done(1);
-  detail::thread::id strand_thread_id;
+  detail::thread::id handler_thread_id;
 
   boost::asio::io_service io_service1;
-  ma::strand strand(io_service1);
+  ma::strand test_strand(io_service1);
   boost::asio::io_service io_service2;
 
   optional_work work1(boost::in_place(detail::ref(io_service1)));
   optional_work work2(boost::in_place(detail::ref(io_service2)));
+  detail::thread thread1(detail::bind(run_io_service, &io_service1));
+  detail::thread thread2(detail::bind(run_io_service, &io_service2));
 
-  detail::thread thread1(detail::bind(run, &io_service1));
-  detail::thread thread2(detail::bind(run, &io_service2));
-
-  io_service2.post(make_dispatcher(io_service2, strand.wrap(detail::bind(
-      save_thread_id, detail::ref(strand_thread_id), detail::ref(done)))));
+  io_service2.post(make_dispatcher(io_service2, test_strand.wrap(detail::bind(
+      save_thread_id, detail::ref(handler_thread_id), detail::ref(done)))));
 
   done.wait();
-  ASSERT_EQ(thread1.get_id(), strand_thread_id);
+  ASSERT_EQ(thread1.get_id(), handler_thread_id);
 
   work2 = boost::none;
   work1 = boost::none;
   thread2.join();
   thread1.join();
 }
-
 
 } // namespace strand
 } // namespace test
