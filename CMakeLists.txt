@@ -43,6 +43,14 @@ foreach(configuration_type IN LISTS configuration_types)
     ma_change_default_link_options("${${configuration_cxx_flags}}" ${configuration_cxx_flags})
 endforeach(configuration_type)
 
+# Turn on grouping of projects
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+# Groups of projects reflect location of projects in file system
+set(project_group_3rdparty "3rdparty")
+set(project_group_libs "libs")
+set(project_group_tests "tests")
+set(project_group_examples "examples")
+
 # Interface-only target for turning on code coverage
 add_subdirectory(cmake/ma_coverage)
 
@@ -53,6 +61,8 @@ if(ma_build_tests)
     endif()
     if(ma_force_own_gtest OR NOT GTEST_FOUND)
         add_subdirectory(3rdparty/gtest)
+        set_target_properties(gtest PROPERTIES FOLDER "${project_group_3rdparty}/gtest")
+        set_target_properties(gtest_main PROPERTIES FOLDER "${project_group_3rdparty}/gtest")
         set(ma_own_gtest ON)
         set(GTEST_LIBRARIES        gtest)
         set(GTEST_MAIN_LIBRARIES   gtest_main)
@@ -110,62 +120,159 @@ endif()
 
 # Libraries
 add_subdirectory(libs/ma_async_connect)
+set_target_properties(ma_async_connect PROPERTIES FOLDER "${project_group_libs}")
+
 add_subdirectory(libs/ma_bind_handler)
+set_target_properties(ma_bind_handler PROPERTIES FOLDER "${project_group_libs}")
+
 add_subdirectory(libs/ma_codecvt_cast)
+set_target_properties(ma_codecvt_cast PROPERTIES FOLDER "${project_group_libs}")
+
 add_subdirectory(libs/ma_compat)
+set_target_properties(ma_compat PROPERTIES FOLDER "${project_group_libs}")
+
 add_subdirectory(libs/ma_config)
+set_target_properties(ma_config PROPERTIES FOLDER "${project_group_libs}")
+
 add_subdirectory(libs/ma_console_close_signal)
+set_target_properties(ma_console_close_signal PROPERTIES FOLDER "${project_group_libs}")
+
 add_subdirectory(libs/ma_context_alloc_handler)
+set_target_properties(ma_context_alloc_handler PROPERTIES FOLDER "${project_group_libs}")
+
 add_subdirectory(libs/ma_context_invoke_handler)
+set_target_properties(ma_context_invoke_handler PROPERTIES FOLDER "${project_group_libs}")
+
 add_subdirectory(libs/ma_context_wrapped_handler)
+set_target_properties(ma_context_wrapped_handler PROPERTIES FOLDER "${project_group_libs}")
+
 add_subdirectory(libs/ma_custom_alloc_handler)
+set_target_properties(ma_custom_alloc_handler PROPERTIES FOLDER "${project_group_libs}")
+
 add_subdirectory(libs/ma_cyclic_buffer)
+set_target_properties(ma_cyclic_buffer PROPERTIES FOLDER "${project_group_libs}")
+
 add_subdirectory(libs/ma_handler_ptr)
+set_target_properties(ma_handler_ptr PROPERTIES FOLDER "${project_group_libs}")
+
 add_subdirectory(libs/ma_handler_storage)
+set_target_properties(ma_handler_storage PROPERTIES FOLDER "${project_group_libs}")
+
 add_subdirectory(libs/ma_helpers)
+set_target_properties(ma_helpers PROPERTIES FOLDER "${project_group_libs}")
+
 add_subdirectory(libs/ma_intrusive_list)
+set_target_properties(ma_intrusive_list PROPERTIES FOLDER "${project_group_libs}")
+
 add_subdirectory(libs/ma_io_service_pool)
+set_target_properties(ma_io_service_pool PROPERTIES FOLDER "${project_group_libs}")
+
 add_subdirectory(libs/ma_limited_int)
+set_target_properties(ma_limited_int PROPERTIES FOLDER "${project_group_libs}")
+
 add_subdirectory(libs/ma_lockable_wrapped_handler)
+set_target_properties(ma_lockable_wrapped_handler PROPERTIES FOLDER "${project_group_libs}")
+
 add_subdirectory(libs/ma_service_base)
+set_target_properties(ma_service_base PROPERTIES FOLDER "${project_group_libs}")
+
 add_subdirectory(libs/ma_shared_ptr_factory)
+set_target_properties(ma_shared_ptr_factory PROPERTIES FOLDER "${project_group_libs}")
+
 add_subdirectory(libs/ma_sp_intrusive_list)
+set_target_properties(ma_sp_intrusive_list PROPERTIES FOLDER "${project_group_libs}")
+
 add_subdirectory(libs/ma_sp_singleton)
+set_target_properties(ma_sp_singleton PROPERTIES FOLDER "${project_group_libs}")
+
 add_subdirectory(libs/ma_steady_deadline_timer)
+set_target_properties(ma_steady_deadline_timer PROPERTIES FOLDER "${project_group_libs}")
+
 add_subdirectory(libs/ma_strand)
+set_target_properties(ma_strand PROPERTIES FOLDER "${project_group_libs}")
+
 add_subdirectory(libs/ma_thread_group)
+set_target_properties(ma_thread_group PROPERTIES FOLDER "${project_group_libs}")
+
 add_subdirectory(libs/ma_windows_console_signal)
+set_target_properties(ma_windows_console_signal PROPERTIES FOLDER "${project_group_libs}")
 
 # Tests
 if(ma_build_tests)
     add_subdirectory(tests/ma_async_connect_test)
+    set_target_properties(ma_async_connect_test PROPERTIES FOLDER "${project_group_tests}")
+
     add_subdirectory(tests/ma_handler_storage_test)
+    set_target_properties(ma_handler_storage_test PROPERTIES FOLDER "${project_group_tests}")
+
     add_subdirectory(tests/ma_lockable_wrapper_test)
+    set_target_properties(ma_lockable_wrapper_test PROPERTIES FOLDER "${project_group_tests}")
+
     add_subdirectory(tests/ma_shared_ptr_factory_test)
+    set_target_properties(ma_shared_ptr_factory_test PROPERTIES FOLDER "${project_group_tests}")
+
     add_subdirectory(tests/ma_sp_singleton_test)
+    set_target_properties(ma_sp_singleton_test PROPERTIES FOLDER "${project_group_tests}")
+
     if(WIN32)
         add_subdirectory(tests/ma_windows_console_signal_test)
+        set_target_properties(ma_windows_console_signal_test PROPERTIES FOLDER "${project_group_tests}")
     endif()
+
     add_subdirectory(tests/ma_handler_allocator_test)
+    set_target_properties(ma_handler_allocator_test PROPERTIES FOLDER "${project_group_tests}")
+
     add_subdirectory(tests/ma_custom_alloc_handler_test)
+    set_target_properties(ma_custom_alloc_handler_test PROPERTIES FOLDER "${project_group_tests}")
+
     add_subdirectory(tests/ma_cyclic_buffer_test)
+    set_target_properties(ma_cyclic_buffer_test PROPERTIES FOLDER "${project_group_tests}")
+
     add_subdirectory(tests/ma_sp_intrusive_list_test)
+    set_target_properties(ma_sp_intrusive_list_test PROPERTIES FOLDER "${project_group_tests}")
+
     add_subdirectory(tests/ma_strand_test)
+    set_target_properties(ma_strand_test PROPERTIES FOLDER "${project_group_tests}")
+
     add_subdirectory(tests/ma_context_alloc_handler_test)
+    set_target_properties(ma_context_alloc_handler_test PROPERTIES FOLDER "${project_group_tests}")
+
     add_subdirectory(tests/ma_bind_handler_test)
+    set_target_properties(ma_bind_handler_test PROPERTIES FOLDER "${project_group_tests}")
+
     add_subdirectory(tests/ma_context_invoke_handler_test)
+    set_target_properties(ma_context_invoke_handler_test PROPERTIES FOLDER "${project_group_tests}")
+
     add_subdirectory(tests/ma_context_wrapped_handler_test)
+    set_target_properties(ma_context_wrapped_handler_test PROPERTIES FOLDER "${project_group_tests}")
 endif()
 
 # Examples of using of libraries
 add_subdirectory(examples/ma_asio_performance_test_client)
+set_target_properties(ma_asio_performance_test_client PROPERTIES FOLDER "${project_group_examples}")
+
 add_subdirectory(examples/ma_async_basics)
+set_target_properties(ma_async_basics PROPERTIES FOLDER "${project_group_examples}")
+
 add_subdirectory(examples/ma_async_basics2)
+set_target_properties(ma_async_basics2 PROPERTIES FOLDER "${project_group_examples}")
+
 add_subdirectory(examples/ma_echo_server)
+set_target_properties(ma_echo_server PROPERTIES FOLDER "${project_group_examples}")
+
 add_subdirectory(examples/ma_echo_server_core)
+set_target_properties(ma_echo_server_core PROPERTIES FOLDER "${project_group_examples}")
+
 add_subdirectory(examples/ma_nmea_client)
+set_target_properties(ma_nmea_client PROPERTIES FOLDER "${project_group_examples}")
+
 if(ma_qt)
     add_subdirectory(examples/ma_qt_echo_server)
+    set_target_properties(ma_qt_echo_server PROPERTIES FOLDER "${project_group_examples}")
 endif()
+
 add_subdirectory(examples/asio_multicast_receiver)
+set_target_properties(asio_multicast_receiver PROPERTIES FOLDER "${project_group_examples}")
+
 add_subdirectory(examples/asio_multicast_sender)
+set_target_properties(asio_multicast_sender PROPERTIES FOLDER "${project_group_examples}")
