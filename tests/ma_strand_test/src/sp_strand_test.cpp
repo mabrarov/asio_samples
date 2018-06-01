@@ -6,6 +6,7 @@
 //
 
 #include <cstddef>
+#include <boost/noncopyable.hpp>
 #include <boost/asio.hpp>
 #include <boost/optional.hpp>
 #include <boost/utility/in_place_factory.hpp>
@@ -61,6 +62,26 @@ dispatcher<typename detail::decay<Context>::type,
       detail::forward<Handler>(handler));
 }
 
+class io_service_thread_stop : private boost::noncopyable
+{
+public:
+  io_service_thread_stop(optional_work& io_service_work, detail::thread& thread)
+    : io_service_work_(io_service_work)
+    , thread_(thread)
+  {
+  }
+
+  ~io_service_thread_stop()
+  {
+    io_service_work_ = boost::none;
+    thread_.join();
+  }
+
+private:
+  optional_work& io_service_work_;
+  detail::thread& thread_;
+}; // class io_service_thread_stop
+
 typedef std::size_t (boost::asio::io_service::*run_io_service_func)(void);
 static const run_io_service_func run_io_service = &boost::asio::io_service::run;
 
@@ -74,9 +95,11 @@ TEST(strand, dispatch_same_io_service)
   boost::asio::io_service io_service2;
 
   optional_work work1(boost::in_place(detail::ref(io_service1)));
-  optional_work work2(boost::in_place(detail::ref(io_service2)));
   detail::thread thread1(detail::bind(run_io_service, &io_service1));
+  io_service_thread_stop thread1_stop(work1, thread1);
+  optional_work work2(boost::in_place(detail::ref(io_service2)));
   detail::thread thread2(detail::bind(run_io_service, &io_service2));
+  io_service_thread_stop thread2_stop(work2, thread2);
 
   io_service2.post(make_dispatcher(test_strand, detail::bind(
       save_thread_id, detail::ref(handler_thread_id), detail::ref(done))));
@@ -84,10 +107,8 @@ TEST(strand, dispatch_same_io_service)
   done.wait();
   ASSERT_EQ(thread1.get_id(), handler_thread_id);
 
-  work2 = boost::none;
-  work1 = boost::none;
-  thread2.join();
-  thread1.join();
+  (void) thread2_stop;
+  (void) thread1_stop;
 }
 
 TEST(strand, wrapped_dispatch_same_io_service)
@@ -100,9 +121,11 @@ TEST(strand, wrapped_dispatch_same_io_service)
   boost::asio::io_service io_service2;
 
   optional_work work1(boost::in_place(detail::ref(io_service1)));
-  optional_work work2(boost::in_place(detail::ref(io_service2)));
   detail::thread thread1(detail::bind(run_io_service, &io_service1));
+  io_service_thread_stop thread1_stop(work1, thread1);
+  optional_work work2(boost::in_place(detail::ref(io_service2)));
   detail::thread thread2(detail::bind(run_io_service, &io_service2));
+  io_service_thread_stop thread2_stop(work2, thread2);
 
   io_service2.post(make_dispatcher(io_service2, test_strand.wrap(detail::bind(
       save_thread_id, detail::ref(handler_thread_id), detail::ref(done)))));
@@ -110,10 +133,8 @@ TEST(strand, wrapped_dispatch_same_io_service)
   done.wait();
   ASSERT_EQ(thread1.get_id(), handler_thread_id);
 
-  work2 = boost::none;
-  work1 = boost::none;
-  thread2.join();
-  thread1.join();
+  (void) thread2_stop;
+  (void) thread1_stop;
 }
 
 } // namespace strand
