@@ -14,6 +14,7 @@
 #include <ma/config.hpp>
 #include <ma/strand.hpp>
 #include <ma/detail/utility.hpp>
+#include <ma/detail/memory.hpp>
 #include <ma/detail/type_traits.hpp>
 #include <ma/detail/functional.hpp>
 #include <ma/detail/thread.hpp>
@@ -115,6 +116,16 @@ private:
 
 typedef std::size_t (boost::asio::io_service::*run_io_service_func)(void);
 static const run_io_service_func run_io_service = &boost::asio::io_service::run;
+
+TEST(strand, get_io_service)
+{
+  boost::asio::io_service io_service;
+  ma::strand test_strand(io_service);
+  boost::asio::io_service& strand_io_service = test_strand.get_io_service();
+
+  ASSERT_EQ(detail::addressof(io_service),
+      detail::addressof(strand_io_service));
+}
 
 TEST(strand, dispatch_same_io_service)
 {
