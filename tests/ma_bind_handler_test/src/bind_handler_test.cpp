@@ -25,15 +25,17 @@ private:
   this_type& operator=(const this_type&);
 
 public:
-  tracking_handler(detail::latch& alloc_counter, detail::latch& dealloc_counter)
+  tracking_handler(detail::latch& alloc_counter, detail::latch& dealloc_counter,
+      detail::latch& invoke_counter)
     : alloc_counter_(alloc_counter)
     , dealloc_counter_(dealloc_counter)
+    , invoke_counter_(invoke_counter)
   {
   }
 
-  void operator()(detail::latch& invoke_counter)
+  void operator()(detail::latch& call_counter)
   {
-    invoke_counter.count_up();
+    call_counter.count_up();
   }
 
   friend void* asio_handler_allocate(std::size_t size, this_type* context)
@@ -49,9 +51,38 @@ public:
     boost::asio::asio_handler_deallocate(pointer, size);
   }
 
+#if defined(MA_HAS_RVALUE_REFS)
+
+  template <typename Function>
+  friend void asio_handler_invoke(MA_FWD_REF(Function) function,
+      this_type* context)
+  {
+    context->invoke_counter_.count_up();
+    boost::asio::asio_handler_invoke(detail::forward<Function>(function));
+  }
+
+#else // defined(MA_HAS_RVALUE_REFS)
+
+  template <typename Function>
+  friend void asio_handler_invoke(Function& function, this_type* context)
+  {
+    context->invoke_counter_.count_up();
+    boost::asio::asio_handler_invoke(function);
+  }
+
+  template <typename Function>
+  friend void asio_handler_invoke(const Function& function, this_type* context)
+  {
+    context->invoke_counter_.count_up();
+    boost::asio::asio_handler_invoke(function);
+  }
+
+#endif // defined(MA_HAS_RVALUE_REFS)
+
 private:
   detail::latch& alloc_counter_;
   detail::latch& dealloc_counter_;
+  detail::latch& invoke_counter_;
 }; // class tracking_handler
 
 TEST(bind_handler, delegation)
@@ -59,16 +90,19 @@ TEST(bind_handler, delegation)
   detail::latch alloc_counter;
   detail::latch dealloc_counter;
   detail::latch invoke_counter;
+  detail::latch call_counter;
 
   boost::asio::io_service io_service;
-  io_service.post(ma::bind_handler(tracking_handler(
-      alloc_counter, dealloc_counter), detail::ref(invoke_counter)));
+  io_service.post(ma::bind_handler(
+      tracking_handler(alloc_counter, dealloc_counter, invoke_counter),
+      detail::ref(call_counter)));
   io_service.run();
 
   ASSERT_LE(1U, alloc_counter.value());
   ASSERT_LE(1U, dealloc_counter.value());
   ASSERT_EQ(alloc_counter.value(), dealloc_counter.value());
   ASSERT_EQ(1U, invoke_counter.value());
+  ASSERT_EQ(1U, call_counter.value());
 }
 
 } // namespace bind_handler

@@ -153,6 +153,8 @@ if(ma_build_tests)
     add_subdirectory(tests/ma_strand_test)
     add_subdirectory(tests/ma_context_alloc_handler_test)
     add_subdirectory(tests/ma_bind_handler_test)
+    add_subdirectory(tests/ma_context_invoke_handler_test)
+    add_subdirectory(tests/ma_context_wrapped_handler_test)
 endif()
 
 # Examples of using of libraries

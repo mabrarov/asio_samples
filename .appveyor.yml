@@ -687,3 +687,7 @@ artifacts:
     name: ma_context_alloc_handler_test
   - path: build\tests\ma_bind_handler_test\$(configuration)\*.exe
     name: ma_bind_handler_test
+  - path: build\tests\ma_context_invoke_handler_test\$(configuration)\*.exe
+    name: ma_context_invoke_handler_test
+  - path: build\tests\ma_context_wrapped_handler_test\$(configuration)\*.exe
+    name: ma_context_wrapped_handler_test

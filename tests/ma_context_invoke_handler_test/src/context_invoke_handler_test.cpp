@@ -9,14 +9,14 @@
 #include <boost/asio.hpp>
 #include <gtest/gtest.h>
 #include <ma/config.hpp>
-#include <ma/context_alloc_handler.hpp>
+#include <ma/context_invoke_handler.hpp>
 #include <ma/detail/memory.hpp>
 #include <ma/detail/functional.hpp>
 #include <ma/detail/latch.hpp>
 
 namespace ma {
 namespace test {
-namespace context_alloc_handler {
+namespace context_invoke_handler {
 
 class tracking_handler
 {
@@ -86,7 +86,7 @@ private:
   detail::latch& invoke_counter_;
 }; // class tracking_handler
 
-TEST(context_alloc_handler, delegation)
+TEST(context_invoke_handler, delegation)
 {
   detail::latch alloc_counter;
   detail::latch dealloc_counter;
@@ -94,18 +94,17 @@ TEST(context_alloc_handler, delegation)
   detail::latch call_counter;
 
   boost::asio::io_service io_service;
-  io_service.post(ma::make_context_alloc_handler(
+  io_service.post(ma::make_context_invoke_handler(
       tracking_handler(alloc_counter, dealloc_counter, invoke_counter),
       detail::bind(&detail::latch::count_up, detail::addressof(call_counter))));
   io_service.run();
 
-  ASSERT_LE(1U, alloc_counter.value());
-  ASSERT_LE(1U, dealloc_counter.value());
-  ASSERT_EQ(alloc_counter.value(), dealloc_counter.value());
-  ASSERT_EQ(0U, invoke_counter.value());
+  ASSERT_EQ(0U, alloc_counter.value());
+  ASSERT_EQ(0U, dealloc_counter.value());
+  ASSERT_EQ(1U, invoke_counter.value());
   ASSERT_EQ(1U, call_counter.value());
 }
 
-} // namespace context_alloc_handler
+} // namespace context_invoke_handler
 } // namespace test
 } // namespace ma
