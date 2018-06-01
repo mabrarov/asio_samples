@@ -114,6 +114,76 @@ private:
   detail::thread& thread_;
 }; // class io_service_thread_stop
 
+class tracking_handler
+{
+private:
+  typedef tracking_handler this_type;
+
+  this_type& operator=(const this_type&);
+
+public:
+  tracking_handler(detail::latch& alloc_counter, detail::latch& dealloc_counter,
+      detail::latch& invoke_counter, detail::latch& call_counter)
+    : alloc_counter_(alloc_counter)
+    , dealloc_counter_(dealloc_counter)
+    , invoke_counter_(invoke_counter)
+    , call_counter_(call_counter)
+  {
+  }
+
+  void operator()()
+  {
+    call_counter_.count_up();
+  }
+
+  friend void* asio_handler_allocate(std::size_t size, this_type* context)
+  {
+    context->alloc_counter_.count_up();
+    return boost::asio::asio_handler_allocate(size);
+  }
+
+  friend void asio_handler_deallocate(void* pointer, std::size_t size,
+      this_type* context)
+  {
+    context->dealloc_counter_.count_up();
+    boost::asio::asio_handler_deallocate(pointer, size);
+  }
+
+#if defined(MA_HAS_RVALUE_REFS)
+
+  template <typename Function>
+  friend void asio_handler_invoke(MA_FWD_REF(Function) function,
+      this_type* context)
+  {
+    context->invoke_counter_.count_up();
+    boost::asio::asio_handler_invoke(detail::forward<Function>(function));
+  }
+
+#else // defined(MA_HAS_RVALUE_REFS)
+
+  template <typename Function>
+  friend void asio_handler_invoke(Function& function, this_type* context)
+  {
+    context->invoke_counter_.count_up();
+    boost::asio::asio_handler_invoke(function);
+  }
+
+  template <typename Function>
+  friend void asio_handler_invoke(const Function& function, this_type* context)
+  {
+    context->invoke_counter_.count_up();
+    boost::asio::asio_handler_invoke(function);
+  }
+
+#endif // defined(MA_HAS_RVALUE_REFS)
+
+private:
+  detail::latch& alloc_counter_;
+  detail::latch& dealloc_counter_;
+  detail::latch& invoke_counter_;
+  detail::latch& call_counter_;
+}; // class tracking_handler
+
 typedef std::size_t (boost::asio::io_service::*run_io_service_func)(void);
 static const run_io_service_func run_io_service = &boost::asio::io_service::run;
 
@@ -229,6 +299,66 @@ TEST(strand, wrapped_post_same_io_service)
 
   (void) thread2_stop;
   (void) thread1_stop;
+}
+
+TEST(strand, dispatch_delegation)
+{
+  detail::latch alloc_counter;
+  detail::latch dealloc_counter;
+  detail::latch invoke_counter;
+  detail::latch call_counter;
+
+  boost::asio::io_service io_service;
+  ma::strand test_strand(io_service);
+  test_strand.dispatch(tracking_handler(
+      alloc_counter, dealloc_counter, invoke_counter, call_counter));
+  io_service.run();
+
+  ASSERT_LE(1U, alloc_counter.value());
+  ASSERT_LE(1U, dealloc_counter.value());
+  ASSERT_EQ(alloc_counter.value(), dealloc_counter.value());
+  ASSERT_EQ(1U, invoke_counter.value());
+  ASSERT_EQ(1U, call_counter.value());
+}
+
+TEST(strand, post_delegation)
+{
+  detail::latch alloc_counter;
+  detail::latch dealloc_counter;
+  detail::latch invoke_counter;
+  detail::latch call_counter;
+
+  boost::asio::io_service io_service;
+  ma::strand test_strand(io_service);
+  test_strand.post(tracking_handler(
+      alloc_counter, dealloc_counter, invoke_counter, call_counter));
+  io_service.run();
+
+  ASSERT_LE(1U, alloc_counter.value());
+  ASSERT_LE(1U, dealloc_counter.value());
+  ASSERT_EQ(alloc_counter.value(), dealloc_counter.value());
+  ASSERT_EQ(1U, invoke_counter.value());
+  ASSERT_EQ(1U, call_counter.value());
+}
+
+TEST(strand, wrapped_delegation)
+{
+  detail::latch alloc_counter;
+  detail::latch dealloc_counter;
+  detail::latch invoke_counter;
+  detail::latch call_counter;
+
+  boost::asio::io_service io_service;
+  ma::strand test_strand(io_service);
+  io_service.post(test_strand.wrap(tracking_handler(
+      alloc_counter, dealloc_counter, invoke_counter, call_counter)));
+  io_service.run();
+
+  ASSERT_LE(1U, alloc_counter.value());
+  ASSERT_LE(1U, dealloc_counter.value());
+  ASSERT_EQ(alloc_counter.value(), dealloc_counter.value());
+  ASSERT_EQ(1U, invoke_counter.value());
+  ASSERT_EQ(1U, call_counter.value());
 }
 
 } // namespace strand
