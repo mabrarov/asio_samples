@@ -62,6 +62,37 @@ dispatcher<typename detail::decay<Context>::type,
       detail::forward<Handler>(handler));
 }
 
+template <typename Context, typename Handler>
+class poster
+{
+public:
+  poster(Context& context, MA_FWD_REF(Handler) handler)
+    : context_(context)
+    , handler_(detail::forward<Handler>(handler))
+  {
+  }
+
+  void operator()()
+  {
+    context_.post(detail::move(handler_));
+  }
+
+private:
+  Context& context_;
+  Handler handler_;
+}; // class poster
+
+template<typename Context, typename Handler>
+poster<typename detail::decay<Context>::type,
+    typename detail::decay<Handler>::type> make_poster(
+    Context& context, MA_FWD_REF(Handler) handler)
+{
+  typedef typename detail::decay<Context>::type context_type;
+  typedef typename detail::decay<Handler>::type handler_type;
+  return poster<context_type, handler_type>(context,
+      detail::forward<Handler>(handler));
+}
+
 class io_service_thread_stop : private boost::noncopyable
 {
 public:
@@ -128,6 +159,58 @@ TEST(strand, wrapped_dispatch_same_io_service)
   io_service_thread_stop thread2_stop(work2, thread2);
 
   io_service2.post(make_dispatcher(io_service2, test_strand.wrap(detail::bind(
+      save_thread_id, detail::ref(handler_thread_id), detail::ref(done)))));
+
+  done.wait();
+  ASSERT_EQ(thread1.get_id(), handler_thread_id);
+
+  (void) thread2_stop;
+  (void) thread1_stop;
+}
+
+TEST(strand, post_same_io_service)
+{
+  detail::latch done(1);
+  detail::thread::id handler_thread_id;
+
+  boost::asio::io_service io_service1;
+  ma::strand test_strand(io_service1);
+  boost::asio::io_service io_service2;
+
+  optional_work work1(boost::in_place(detail::ref(io_service1)));
+  detail::thread thread1(detail::bind(run_io_service, &io_service1));
+  io_service_thread_stop thread1_stop(work1, thread1);
+  optional_work work2(boost::in_place(detail::ref(io_service2)));
+  detail::thread thread2(detail::bind(run_io_service, &io_service2));
+  io_service_thread_stop thread2_stop(work2, thread2);
+
+  io_service2.post(make_poster(test_strand, detail::bind(
+      save_thread_id, detail::ref(handler_thread_id), detail::ref(done))));
+
+  done.wait();
+  ASSERT_EQ(thread1.get_id(), handler_thread_id);
+
+  (void) thread2_stop;
+  (void) thread1_stop;
+}
+
+TEST(strand, wrapped_post_same_io_service)
+{
+  detail::latch done(1);
+  detail::thread::id handler_thread_id;
+
+  boost::asio::io_service io_service1;
+  ma::strand test_strand(io_service1);
+  boost::asio::io_service io_service2;
+
+  optional_work work1(boost::in_place(detail::ref(io_service1)));
+  detail::thread thread1(detail::bind(run_io_service, &io_service1));
+  io_service_thread_stop thread1_stop(work1, thread1);
+  optional_work work2(boost::in_place(detail::ref(io_service2)));
+  detail::thread thread2(detail::bind(run_io_service, &io_service2));
+  io_service_thread_stop thread2_stop(work2, thread2);
+
+  io_service2.post(make_poster(io_service2, test_strand.wrap(detail::bind(
       save_thread_id, detail::ref(handler_thread_id), detail::ref(done)))));
 
   done.wait();
