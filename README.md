@@ -180,7 +180,7 @@ cmake
 
 Example of generation of Visual Studio 2008 project (static C/C++ runtime, static Boost and static Qt 4):
 
-```
+```powershell
 cmake 
 -D CMAKE_USER_MAKE_RULES_OVERRIDE=../cmake/static_c_runtime_overrides.cmake `
 -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX=../cmake/static_cxx_runtime_overrides.cmake `
@@ -195,18 +195,19 @@ cmake
 
 Example of generation of NMake makefile project (shared C/C++ runtime, static Boost and shared Qt 5):
 
-```
-cmake -D BOOST_INCLUDEDIR=boost_headers
--D BOOST_LIBRARYDIR=boost_libs
--D Boost_NO_SYSTEM_PATHS=ON
--D Boost_USE_STATIC_LIBS=ON
--D Qt5Core_DIR=qt5_home/lib/cmake/Qt5Core
--D Qt5Gui_DIR=qt5_home/lib/cmake/Qt5Gui
--D Qt5Widgets_DIR=qt5_home/lib/cmake/Qt5Widgets
--D GTEST_ROOT=gtest_home
-      -G "NMake Makefiles"
--D CMAKE_BUILD_TYPE=RELEASE
-      <asio_samples directory>
+```powershell
+cmake 
+-D BOOST_INCLUDEDIR=boost_headers `
+-D BOOST_LIBRARYDIR=boost_libs `
+-D Boost_NO_SYSTEM_PATHS=ON `
+-D Boost_USE_STATIC_LIBS=ON `
+-D Qt5Core_DIR=qt5_home/lib/cmake/Qt5Core `
+-D Qt5Gui_DIR=qt5_home/lib/cmake/Qt5Gui `
+-D Qt5Widgets_DIR=qt5_home/lib/cmake/Qt5Widgets `
+-D GTEST_ROOT=gtest_home `
+-G "NMake Makefiles" `
+-D CMAKE_BUILD_TYPE=RELEASE `
+..
 ```
 
 Note that if Google Test was built with CMake and MS Visual Studio then you have to "install" it somehow -
