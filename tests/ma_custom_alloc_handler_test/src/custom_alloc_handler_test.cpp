@@ -45,14 +45,14 @@ private:
 }; // class alloc_guard
 
 template <typename UnderlyingAllocator>
-class alloc_counting_allocator : private boost::noncopyable
+class tracking_allocator : private boost::noncopyable
 {
 private:
-  typedef alloc_counting_allocator<UnderlyingAllocator> this_type;
+  typedef tracking_allocator<UnderlyingAllocator> this_type;
   typedef UnderlyingAllocator allocator_type;
 
 public:
-  explicit alloc_counting_allocator(allocator_type& underlying_allocator,
+  explicit tracking_allocator(allocator_type& underlying_allocator,
       detail::latch& counter)
     : underlying_allocator_(underlying_allocator)
     , alloc_counter_(counter)
@@ -60,7 +60,7 @@ public:
   {
   }
 
-  alloc_counting_allocator(allocator_type& underlying_allocator,
+  tracking_allocator(allocator_type& underlying_allocator,
       detail::latch& alloc_counter, detail::latch& dealloc_counter)
     : underlying_allocator_(underlying_allocator)
     , alloc_counter_(alloc_counter)
@@ -94,7 +94,7 @@ private:
   allocator_type& underlying_allocator_;
   detail::latch& alloc_counter_;
   detail::latch& dealloc_counter_;
-}; // class alloc_counting_allocator
+}; // class tracking_allocator
 
 class no_default_allocation_handler
 {
@@ -137,10 +137,9 @@ TEST(custom_alloc_handler, allocator_is_used)
 
   allocator_type allocator;
   detail::latch alloc_counter;
-  alloc_counting_allocator<allocator_type> counting_allocator(
-      allocator, alloc_counter);
-  test_allocation_succeeded(make_custom_alloc_handler(
-      counting_allocator, no_default_allocation_handler()), 1);
+  tracking_allocator<allocator_type> tracker(allocator, alloc_counter);
+  test_allocation_succeeded(make_custom_alloc_handler(tracker,
+      no_default_allocation_handler()), 1);
   ASSERT_EQ(2U, alloc_counter.value());
 }
 
@@ -151,11 +150,11 @@ TEST(custom_alloc_handler, io_service_uses_allocator)
   allocator_type allocator;
   detail::latch alloc_counter;
   detail::latch dealloc_counter;
-  alloc_counting_allocator<allocator_type> counting_allocator(
-      allocator, alloc_counter, dealloc_counter);
+  tracking_allocator<allocator_type> tracker(allocator, alloc_counter,
+      dealloc_counter);
   boost::asio::io_service io_service;
-  io_service.post(make_custom_alloc_handler(
-      counting_allocator, no_default_allocation_handler()));
+  io_service.post(make_custom_alloc_handler(tracker,
+      no_default_allocation_handler()));
   io_service.run();
   ASSERT_LE(1U, alloc_counter.value());
   ASSERT_LE(1U, dealloc_counter.value());
