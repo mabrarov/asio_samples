@@ -691,3 +691,5 @@ artifacts:
     name: ma_context_invoke_handler_test
   - path: build\tests\ma_context_wrapped_handler_test\$(configuration)\*.exe
     name: ma_context_wrapped_handler_test
+  - path: build\tests\ma_limited_int_test\$(configuration)\*.exe
+    name: ma_limited_int_test

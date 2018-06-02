@@ -245,6 +245,9 @@ if(ma_build_tests)
 
     add_subdirectory(tests/ma_context_wrapped_handler_test)
     set_target_properties(ma_context_wrapped_handler_test PROPERTIES FOLDER "${project_group_tests}")
+
+    add_subdirectory(tests/ma_limited_int_test)
+    set_target_properties(ma_limited_int_test PROPERTIES FOLDER "${project_group_tests}")
 endif()
 
 # Examples of using of libraries
