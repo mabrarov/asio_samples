@@ -106,6 +106,14 @@ TEST(limited_int, add_with_overflow)
     ASSERT_EQ(max_value, counter.value());
     ASSERT_TRUE(counter.overflowed());
   }
+  {
+    counter_type counter;
+    counter_type overflowed_counter(max_value);
+    ++overflowed_counter;
+    counter += overflowed_counter;
+    ASSERT_EQ(max_value, counter.value());
+    ASSERT_TRUE(counter.overflowed());
+  }
 }
 
 TEST(limited_int, add_when_overflowed)
@@ -115,7 +123,6 @@ TEST(limited_int, add_when_overflowed)
   {
     counter_type counter(max_value);
     counter += max_value;
-
     ++counter;
     ASSERT_EQ(max_value, counter.value());
     ASSERT_TRUE(counter.overflowed());
@@ -123,7 +130,6 @@ TEST(limited_int, add_when_overflowed)
   {
     counter_type counter(max_value);
     counter += max_value;
-
     counter += max_value;
     ASSERT_EQ(max_value, counter.value());
     ASSERT_TRUE(counter.overflowed());
@@ -131,8 +137,16 @@ TEST(limited_int, add_when_overflowed)
   {
     counter_type counter(max_value);
     ++counter;
-
     counter += boost::numeric_cast<counter_value_type>(42);
+    ASSERT_EQ(max_value, counter.value());
+    ASSERT_TRUE(counter.overflowed());
+  }
+  {
+    counter_type counter(max_value);
+    ++counter;
+    counter_type overflowed_counter(max_value);
+    ++overflowed_counter;
+    counter += overflowed_counter;
     ASSERT_EQ(max_value, counter.value());
     ASSERT_TRUE(counter.overflowed());
   }
