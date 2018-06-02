@@ -38,6 +38,20 @@ public:
     call_counter.count_up();
   }
 
+  void operator()(detail::latch& call_counter1, detail::latch& call_counter2)
+  {
+    call_counter1.count_up();
+    call_counter2.count_up();
+  }
+
+  void operator()(detail::latch& call_counter1, detail::latch& call_counter2,
+      detail::latch& call_counter3)
+  {
+    call_counter1.count_up();
+    call_counter2.count_up();
+    call_counter3.count_up();
+  }
+
   friend void* asio_handler_allocate(std::size_t size, this_type* context)
   {
     context->alloc_counter_.count_up();
@@ -85,7 +99,7 @@ private:
   detail::latch& invoke_counter_;
 }; // class tracking_handler
 
-TEST(bind_handler, delegation)
+TEST(bind_handler, delegation_with_1_arg)
 {
   detail::latch alloc_counter;
   detail::latch dealloc_counter;
@@ -103,6 +117,47 @@ TEST(bind_handler, delegation)
   ASSERT_EQ(alloc_counter.value(), dealloc_counter.value());
   ASSERT_EQ(1U, invoke_counter.value());
   ASSERT_EQ(1U, call_counter.value());
+}
+
+TEST(bind_handler, delegation_with_2_args)
+{
+  detail::latch alloc_counter;
+  detail::latch dealloc_counter;
+  detail::latch invoke_counter;
+  detail::latch call_counter;
+
+  boost::asio::io_service io_service;
+  io_service.post(ma::bind_handler(
+      tracking_handler(alloc_counter, dealloc_counter, invoke_counter),
+      detail::ref(call_counter), detail::ref(call_counter)));
+  io_service.run();
+
+  ASSERT_LE(1U, alloc_counter.value());
+  ASSERT_LE(1U, dealloc_counter.value());
+  ASSERT_EQ(alloc_counter.value(), dealloc_counter.value());
+  ASSERT_EQ(1U, invoke_counter.value());
+  ASSERT_EQ(2U, call_counter.value());
+}
+
+TEST(bind_handler, delegation_with_3_args)
+{
+  detail::latch alloc_counter;
+  detail::latch dealloc_counter;
+  detail::latch invoke_counter;
+  detail::latch call_counter;
+
+  boost::asio::io_service io_service;
+  io_service.post(ma::bind_handler(
+      tracking_handler(alloc_counter, dealloc_counter, invoke_counter),
+      detail::ref(call_counter), detail::ref(call_counter),
+      detail::ref(call_counter)));
+  io_service.run();
+
+  ASSERT_LE(1U, alloc_counter.value());
+  ASSERT_LE(1U, dealloc_counter.value());
+  ASSERT_EQ(alloc_counter.value(), dealloc_counter.value());
+  ASSERT_EQ(1U, invoke_counter.value());
+  ASSERT_EQ(3U, call_counter.value());
 }
 
 } // namespace bind_handler
