@@ -40,21 +40,23 @@ struct handler_alloc_traits
   BOOST_STATIC_CONSTANT(std::size_t, value_size = sizeof(Value));
 }; // struct handler_alloc_traits
 
-template <typename Alloc_Traits>
+template <typename AllocTraits>
 class handler_ptr;
 
 /// Helper class to provide RAII on uninitialized handler memory.
-template <typename Alloc_Traits>
+template <typename AllocTraits>
 class raw_handler_ptr : private boost::noncopyable
 {
 public:
-  typedef typename Alloc_Traits::alloc_context_type alloc_context_type;
-  typedef typename Alloc_Traits::value_type         value_type;
-  typedef typename Alloc_Traits::pointer_type       pointer_type;
-  BOOST_STATIC_CONSTANT(std::size_t, value_size = Alloc_Traits::value_size);
+  typedef typename AllocTraits::alloc_context_type alloc_context_type;
+  typedef typename AllocTraits::value_type         value_type;
+  typedef typename AllocTraits::pointer_type       pointer_type;
+  BOOST_STATIC_CONSTANT(std::size_t, value_size = AllocTraits::value_size);
 
   /// Constructor that allocates the memory. Can throw.
-  raw_handler_ptr(alloc_context_type& alloc_context)
+  explicit raw_handler_ptr(alloc_context_type& alloc_context)
+      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(ma_handler_alloc_helpers::allocate(
+          value_size, alloc_context)))
     : alloc_context_(alloc_context)
     , pointer_(static_cast<pointer_type>(
           ma_handler_alloc_helpers::allocate(value_size, alloc_context)))
@@ -72,7 +74,9 @@ public:
   /// Destructor that automatically deallocates memory, unless it has been
   /// stolen by a handler_ptr object.
   /// Throws if associated deallocate throws.
-  ~raw_handler_ptr()
+  ~raw_handler_ptr() MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+      ma_handler_alloc_helpers::deallocate(static_cast<pointer_type>(0),
+          value_size, *static_cast<alloc_context_type*>(0))))
   {
     if (pointer_)
     {
@@ -82,22 +86,25 @@ public:
   }
 
 private:
-  friend class handler_ptr<Alloc_Traits>;
+  friend class handler_ptr<AllocTraits>;
 
   alloc_context_type& alloc_context_;
   pointer_type        pointer_;
 }; // raw_handler_ptr
 
 /// Helper class to provide RAII on uninitialized handler memory.
-template <typename Alloc_Traits>
+template <typename AllocTraits>
 class handler_ptr : private boost::noncopyable
 {
+private:
+  typedef handler_ptr<AllocTraits> this_type;
+
 public:
-  typedef raw_handler_ptr<Alloc_Traits>             raw_ptr_type;
-  typedef typename Alloc_Traits::alloc_context_type alloc_context_type;
-  typedef typename Alloc_Traits::value_type         value_type;
-  typedef typename Alloc_Traits::pointer_type       pointer_type;
-  BOOST_STATIC_CONSTANT(std::size_t, value_size = Alloc_Traits::value_size);
+  typedef raw_handler_ptr<AllocTraits>             raw_ptr_type;
+  typedef typename AllocTraits::alloc_context_type alloc_context_type;
+  typedef typename AllocTraits::value_type         value_type;
+  typedef typename AllocTraits::pointer_type       pointer_type;
+  BOOST_STATIC_CONSTANT(std::size_t, value_size = AllocTraits::value_size);
 
   /// Take ownership of existing memory.
   handler_ptr(alloc_context_type& alloc_context,
@@ -110,9 +117,10 @@ public:
   /// Construct object in raw memory and take ownership if construction
   /// succeeds.
   /// Throws if constructor of value_type throws.
-  handler_ptr(raw_ptr_type& raw_ptr)
+  explicit handler_ptr(raw_ptr_type& raw_ptr)
+      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(value_type()))
     : alloc_context_(detail::addressof(raw_ptr.alloc_context_))
-    , pointer_(new (raw_ptr.pointer_) value_type)
+    , pointer_(new (static_cast<pointer_type>(0)) value_type)
   {
     raw_ptr.pointer_ = 0;
   }
@@ -122,6 +130,7 @@ public:
   /// Throws if constructor of value_type throws.
   template <typename Arg1>
   handler_ptr(raw_ptr_type& raw_ptr, MA_FWD_REF(Arg1) a1)
+      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(value_type(detail::forward<Arg1>(a1))))
     : alloc_context_(detail::addressof(raw_ptr.alloc_context_))
     , pointer_(new (raw_ptr.pointer_) value_type(detail::forward<Arg1>(a1)))
   {
@@ -133,6 +142,8 @@ public:
   /// Throws if constructor of value_type throws.
   template <typename Arg1, typename Arg2>
   handler_ptr(raw_ptr_type& raw_ptr, MA_FWD_REF(Arg1) a1, MA_FWD_REF(Arg2) a2)
+      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(value_type(detail::forward<Arg1>(a1),
+          detail::forward<Arg2>(a2))))
     : alloc_context_(detail::addressof(raw_ptr.alloc_context_))
     , pointer_(new (raw_ptr.pointer_) value_type(detail::forward<Arg1>(a1),
           detail::forward<Arg2>(a2)))
@@ -145,7 +156,9 @@ public:
   /// Throws if constructor of value_type throws.
   template <typename Arg1, typename Arg2, typename Arg3>
   handler_ptr(raw_ptr_type& raw_ptr, MA_FWD_REF(Arg1) a1, MA_FWD_REF(Arg2) a2,
-      MA_FWD_REF(Arg3) a3)
+      MA_FWD_REF(Arg3) a3) MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(value_type(
+          detail::forward<Arg1>(a1), detail::forward<Arg2>(a2),
+          detail::forward<Arg3>(a3))))
     : alloc_context_(detail::addressof(raw_ptr.alloc_context_))
     , pointer_(new (raw_ptr.pointer_) value_type(detail::forward<Arg1>(a1),
           detail::forward<Arg2>(a2), detail::forward<Arg3>(a3)))
@@ -158,7 +171,9 @@ public:
   /// Throws if constructor of value_type throws.
   template <typename Arg1, typename Arg2, typename Arg3, typename Arg4>
   handler_ptr(raw_ptr_type& raw_ptr, MA_FWD_REF(Arg1) a1, MA_FWD_REF(Arg2) a2,
-      MA_FWD_REF(Arg3) a3, MA_FWD_REF(Arg4) a4)
+      MA_FWD_REF(Arg3) a3, MA_FWD_REF(Arg4) a4) MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+          value_type(detail::forward<Arg1>(a1), detail::forward<Arg2>(a2),
+              detail::forward<Arg3>(a3), detail::forward<Arg4>(a4))))
     : alloc_context_(detail::addressof(raw_ptr.alloc_context_))
     , pointer_(new (raw_ptr.pointer_) value_type(detail::forward<Arg1>(a1),
           detail::forward<Arg2>(a2), detail::forward<Arg3>(a3),
@@ -174,6 +189,9 @@ public:
       typename Arg5>
   handler_ptr(raw_ptr_type& raw_ptr, MA_FWD_REF(Arg1) a1, MA_FWD_REF(Arg2) a2,
       MA_FWD_REF(Arg3) a3, MA_FWD_REF(Arg4) a4, MA_FWD_REF(Arg5) a5)
+      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(value_type(detail::forward<Arg1>(a1),
+          detail::forward<Arg2>(a2), detail::forward<Arg3>(a3),
+          detail::forward<Arg4>(a4), detail::forward<Arg5>(a5))))
     : alloc_context_(detail::addressof(raw_ptr.alloc_context_))
     , pointer_(new (raw_ptr.pointer_) value_type(detail::forward<Arg1>(a1),
           detail::forward<Arg2>(a2), detail::forward<Arg3>(a3),
@@ -189,7 +207,10 @@ public:
       typename Arg5, typename Arg6>
   handler_ptr(raw_ptr_type& raw_ptr, MA_FWD_REF(Arg1) a1, MA_FWD_REF(Arg2) a2,
       MA_FWD_REF(Arg3) a3, MA_FWD_REF(Arg4) a4, MA_FWD_REF(Arg5) a5,
-      MA_FWD_REF(Arg6) a6)
+      MA_FWD_REF(Arg6) a6) MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(value_type(
+          detail::forward<Arg1>(a1), detail::forward<Arg2>(a2),
+          detail::forward<Arg3>(a3), detail::forward<Arg4>(a4),
+          detail::forward<Arg5>(a5), detail::forward<Arg6>(a6))))
     : alloc_context_(detail::addressof(raw_ptr.alloc_context_))
     , pointer_(new (raw_ptr.pointer_) value_type(detail::forward<Arg1>(a1),
           detail::forward<Arg2>(a2), detail::forward<Arg3>(a3),
@@ -206,7 +227,11 @@ public:
       typename Arg5, typename Arg6, typename Arg7>
   handler_ptr(raw_ptr_type& raw_ptr, MA_FWD_REF(Arg1) a1, MA_FWD_REF(Arg2) a2,
       MA_FWD_REF(Arg3) a3, MA_FWD_REF(Arg4) a4, MA_FWD_REF(Arg5) a5,
-      MA_FWD_REF(Arg6) a6, MA_FWD_REF(Arg7) a7)
+      MA_FWD_REF(Arg6) a6, MA_FWD_REF(Arg7) a7) MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+          value_type(detail::forward<Arg1>(a1), detail::forward<Arg2>(a2),
+              detail::forward<Arg3>(a3), detail::forward<Arg4>(a4),
+              detail::forward<Arg5>(a5),detail::forward<Arg6>(a6),
+              detail::forward<Arg7>(a7))))
     : alloc_context_(detail::addressof(raw_ptr.alloc_context_))
     , pointer_(new (raw_ptr.pointer_) value_type(detail::forward<Arg1>(a1),
           detail::forward<Arg2>(a2), detail::forward<Arg3>(a3),
@@ -224,6 +249,11 @@ public:
   handler_ptr(raw_ptr_type& raw_ptr, MA_FWD_REF(Arg1) a1, MA_FWD_REF(Arg2) a2,
       MA_FWD_REF(Arg3) a3, MA_FWD_REF(Arg4) a4, MA_FWD_REF(Arg5) a5,
       MA_FWD_REF(Arg6) a6, MA_FWD_REF(Arg7) a7, MA_FWD_REF(Arg8) a8)
+      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(value_type(detail::forward<Arg1>(a1),
+          detail::forward<Arg2>(a2), detail::forward<Arg3>(a3),
+          detail::forward<Arg4>(a4), detail::forward<Arg5>(a5),
+          detail::forward<Arg6>(a6), detail::forward<Arg7>(a7),
+          detail::forward<Arg8>(a8))))
     : alloc_context_(detail::addressof(raw_ptr.alloc_context_))
     , pointer_(new (raw_ptr.pointer_) value_type(detail::forward<Arg1>(a1),
           detail::forward<Arg2>(a2), detail::forward<Arg3>(a3),
@@ -234,10 +264,33 @@ public:
     raw_ptr.pointer_ = 0;
   }
 
+  /// Explicitly destroy object and deallocate memory.
+  /// Throws if value_type destructor throws.
+  /// Throws if associated to alloc_context_type deallocate throws.
+  void reset() MA_NOEXCEPT_IF(
+      MA_NOEXCEPT_EXPR(
+          static_cast<raw_ptr_type*>(0)->raw_ptr_type::~raw_ptr_type())
+          && MA_NOEXCEPT_EXPR(
+              static_cast<pointer_type>(0)->value_type::~value_type()))
+  {
+    if (pointer_)
+    {
+      // Move memory ownership to guard
+      raw_ptr_type raw_ptr(*alloc_context_, pointer_);
+      // Zero stored pointer with saving its value to a temporary
+      pointer_type tmp = pointer_;
+      pointer_ = 0;
+      // Destroy stored value
+      tmp->value_type::~value_type();
+      // Free memory by means of created guard
+    }
+  }
+
   /// Destructor automatically deallocates memory, unless it has been released.
   /// Throws if value_type destructor throws.
   /// Throws if associated to alloc_context_type deallocate throws.
-  ~handler_ptr()
+  ~handler_ptr() MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+      static_cast<this_type*>(0)->reset()))
   {
     reset();
   }
@@ -260,24 +313,6 @@ public:
     pointer_type tmp = pointer_;
     pointer_ = 0;
     return tmp;
-  }
-
-  /// Explicitly destroy object and deallocate memory.
-  /// Throws if value_type destructor throws.
-  /// Throws if associated to alloc_context_type deallocate throws.
-  void reset()
-  {
-    if (pointer_)
-    {
-      // Move memory ownership to guard
-      raw_ptr_type raw_ptr(*alloc_context_, pointer_);
-      // Zero stored pointer with saving its value to a temporary
-      pointer_type tmp = pointer_;
-      pointer_ = 0;
-      // Destroy stored value
-      tmp->value_type::~value_type();
-      // Free memory by means of created guard
-    }
   }
 
 private:
