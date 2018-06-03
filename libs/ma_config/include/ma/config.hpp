@@ -203,21 +203,41 @@
 #if defined(BOOST_MSVC) && (BOOST_MSVC >= 1500)
 
 #if BOOST_MSVC < 1900
-#define MA_NOEXCEPT throw()
-#else
-// MSVSC 2014 CTP or higher supports C++11 noexcept keyword
-#define MA_NOEXCEPT noexcept
-#endif
-
-#elif defined(BOOST_NOEXCEPT)
-
-#define MA_NOEXCEPT BOOST_NOEXCEPT
-
-#else
 
 #define MA_NOEXCEPT
+#define MA_NOEXCEPT_IF(predicate)
+#define MA_NOEXCEPT_EXPR(expression) false
 
+#else // BOOST_MSVC < 1900
+
+// MSVC 2015 and higher supports C++11 noexcept keyword
+#define MA_NOEXCEPT noexcept
+#define MA_NOEXCEPT_IF(predicate) noexcept((predicate))
+#define MA_NOEXCEPT_EXPR(expression) noexcept((expression))
+
+#endif // BOOST_MSVC < 1900
+
+#else // defined(BOOST_MSVC) && (BOOST_MSVC >= 1500)
+
+#if defined(BOOST_NOEXCEPT)
+#define MA_NOEXCEPT BOOST_NOEXCEPT
+#else
+#define MA_NOEXCEPT
 #endif
+
+#if defined(BOOST_NOEXCEPT_IF)
+#define MA_NOEXCEPT_IF BOOST_NOEXCEPT_IF
+#else
+#define MA_NOEXCEPT_IF(predicate)
+#endif
+
+#if defined(BOOST_NOEXCEPT_EXPR)
+#define MA_NOEXCEPT_EXPR BOOST_NOEXCEPT_EXPR
+#else
+#define MA_NOEXCEPT_EXPR(expression) false
+#endif
+
+#endif // defined(BOOST_MSVC) && (BOOST_MSVC >= 1500)
 
 #if !defined(MA_WIN32_TMAIN) && defined(WIN32) && !defined(__MINGW32__)
 #define MA_WIN32_TMAIN

@@ -14,6 +14,7 @@
 
 #include <cstddef>
 #include <boost/asio.hpp>
+#include <ma/config.hpp>
 #include <ma/detail/memory.hpp>
 
 // Calls to asio_handler_allocate and asio_handler_deallocate must be made from
@@ -22,19 +23,30 @@
 // It's a modified copy of Asio sources: asio/detail/handler_alloc_helpers.hpp
 namespace ma_handler_alloc_helpers {
 
+namespace detail {
+
+using namespace boost::asio;
+
 template <typename Context>
 inline void* allocate(std::size_t size, Context& context)
+    MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(asio_handler_allocate(
+        size, ma::detail::addressof(context))))
 {
-  using namespace boost::asio;
   return asio_handler_allocate(size, ma::detail::addressof(context));
 }
 
 template <typename Context>
 inline void deallocate(void* pointer, std::size_t size, Context& context)
+    MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(asio_handler_deallocate(
+        pointer, size, ma::detail::addressof(context))))
 {
-  using namespace boost::asio;
   asio_handler_deallocate(pointer, size, ma::detail::addressof(context));
 }
+
+} // namespace detail
+
+using detail::allocate;
+using detail::deallocate;
 
 } // namespace ma_handler_alloc_helpers
 
