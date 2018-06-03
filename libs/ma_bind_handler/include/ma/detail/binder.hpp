@@ -70,7 +70,9 @@ public:
   typedef void result_type;
 
   template <typename H, typename A1>
-  binder1(MA_FWD_REF(H) handler, MA_FWD_REF(A1) arg1)
+  binder1(MA_FWD_REF(H) handler, MA_FWD_REF(A1) arg1) MA_NOEXCEPT_IF(
+      MA_NOEXCEPT_EXPR(Handler(detail::forward<H>(handler)))
+          && MA_NOEXCEPT_EXPR(Arg1(detail::forward<A1>(arg1))))
     : handler_(detail::forward<H>(handler))
     , arg1_(detail::forward<A1>(arg1))
   {
@@ -79,24 +81,22 @@ public:
 #if defined(MA_HAS_RVALUE_REFS) \
     && (defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG))
 
-  binder1(this_type&& other)
+  binder1(this_type&& other) MA_NOEXCEPT_IF(
+      MA_NOEXCEPT_EXPR(Handler(detail::move(other.handler_)))
+          && MA_NOEXCEPT_EXPR(Arg1(detail::move(other.arg1_))))
     : handler_(detail::move(other.handler_))
     , arg1_(detail::move(other.arg1_))
   {
   }
 
-  binder1(const this_type& other)
+  binder1(const this_type& other) MA_NOEXCEPT_IF(
+      MA_NOEXCEPT_EXPR(Handler(other.handler_))
+          && MA_NOEXCEPT_EXPR(Arg1(other.arg1_)))
     : handler_(other.handler_)
     , arg1_(other.arg1_)
   {
   }
 
-#endif
-
-#if !defined(NDEBUG)
-  ~binder1()
-  {
-  }
 #endif
 
   void operator()()
@@ -110,13 +110,16 @@ public:
   }
 
   friend void* asio_handler_allocate(std::size_t size, this_type* context)
+      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+          ma_handler_alloc_helpers::allocate(size, context->handler_)))
   {
     // Forward to asio_handler_allocate provided by source handler.
     return ma_handler_alloc_helpers::allocate(size, context->handler_);
   }
 
   friend void asio_handler_deallocate(void* pointer, std::size_t size,
-      this_type* context)
+      this_type* context) MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+      ma_handler_alloc_helpers::deallocate(pointer, size, context->handler_)))
   {
     // Forward to asio_handler_deallocate provided by source handler.
     ma_handler_alloc_helpers::deallocate(pointer, size, context->handler_);
@@ -126,7 +129,9 @@ public:
 
   template <typename Function>
   friend void asio_handler_invoke(MA_FWD_REF(Function) function,
-      this_type* context)
+      this_type* context) MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+      ma_handler_invoke_helpers::invoke(
+          detail::forward<Function>(function), context->handler_)))
   {
     // Forward to asio_handler_invoke provided by source handler.
     ma_handler_invoke_helpers::invoke(
@@ -137,6 +142,8 @@ public:
 
   template <typename Function>
   friend void asio_handler_invoke(Function& function, this_type* context)
+      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+          ma_handler_invoke_helpers::invoke(function, context->handler_)))
   {
     // Forward to asio_handler_invoke provided by source handler.
     ma_handler_invoke_helpers::invoke(function, context->handler_);
@@ -144,6 +151,8 @@ public:
 
   template <typename Function>
   friend void asio_handler_invoke(const Function& function, this_type* context)
+      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+          ma_handler_invoke_helpers::invoke(function, context->handler_)))
   {
     // Forward to asio_handler_invoke provided by source handler.
     ma_handler_invoke_helpers::invoke(function, context->handler_);
@@ -152,6 +161,8 @@ public:
 #endif // defined(MA_HAS_RVALUE_REFS)
 
   friend bool asio_handler_is_continuation(this_type* context)
+      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+          ma_handler_cont_helpers::is_continuation(context->handler_)))
   {
     return ma_handler_cont_helpers::is_continuation(context->handler_);
   }
@@ -181,6 +192,10 @@ public:
 
   template <typename H, typename A1, typename A2>
   binder2(MA_FWD_REF(H) handler, MA_FWD_REF(A1) arg1, MA_FWD_REF(A2) arg2)
+      MA_NOEXCEPT_IF(
+          MA_NOEXCEPT_EXPR(Handler(detail::forward<H>(handler)))
+              && MA_NOEXCEPT_EXPR(Arg1(detail::forward<A1>(arg1)))
+              && MA_NOEXCEPT_EXPR(Arg2(detail::forward<A2>(arg2))))
     : handler_(detail::forward<H>(handler))
     , arg1_(detail::forward<A1>(arg1))
     , arg2_(detail::forward<A2>(arg2))
@@ -190,26 +205,26 @@ public:
 #if defined(MA_HAS_RVALUE_REFS) \
     && (defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG))
 
-  binder2(this_type&& other)
+  binder2(this_type&& other) MA_NOEXCEPT_IF(
+      MA_NOEXCEPT_EXPR(Handler(detail::move(other.handler_)))
+          && MA_NOEXCEPT_EXPR(Arg1(detail::move(other.arg1_)))
+          && MA_NOEXCEPT_EXPR(Arg2(detail::move(other.arg2_))))
     : handler_(detail::move(other.handler_))
     , arg1_(detail::move(other.arg1_))
     , arg2_(detail::move(other.arg2_))
   {
   }
 
-  binder2(const this_type& other)
+  binder2(const this_type& other) MA_NOEXCEPT_IF(
+      MA_NOEXCEPT_EXPR(Handler(other.handler_))
+          && MA_NOEXCEPT_EXPR(Arg1(other.arg1_))
+          && MA_NOEXCEPT_EXPR(Arg2(other.arg2_)))
     : handler_(other.handler_)
     , arg1_(other.arg1_)
     , arg2_(other.arg2_)
   {
   }
 
-#endif
-
-#if !defined(NDEBUG)
-  ~binder2()
-  {
-  }
 #endif
 
   void operator()()
@@ -223,13 +238,18 @@ public:
   }
 
   friend void* asio_handler_allocate(std::size_t size, this_type* context)
+      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+          ma_handler_alloc_helpers::allocate(size, context->handler_)))
   {
+    // Forward to asio_handler_allocate provided by source handler.
     return ma_handler_alloc_helpers::allocate(size, context->handler_);
   }
 
   friend void asio_handler_deallocate(void* pointer, std::size_t size,
-      this_type* context)
+      this_type* context) MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+      ma_handler_alloc_helpers::deallocate(pointer, size, context->handler_)))
   {
+    // Forward to asio_handler_deallocate provided by source handler.
     ma_handler_alloc_helpers::deallocate(pointer, size, context->handler_);
   }
 
@@ -237,8 +257,11 @@ public:
 
   template <typename Function>
   friend void asio_handler_invoke(MA_FWD_REF(Function) function,
-      this_type* context)
+      this_type* context) MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+      ma_handler_invoke_helpers::invoke(
+          detail::forward<Function>(function), context->handler_)))
   {
+    // Forward to asio_handler_invoke provided by source handler.
     ma_handler_invoke_helpers::invoke(
         detail::forward<Function>(function), context->handler_);
   }
@@ -247,19 +270,27 @@ public:
 
   template <typename Function>
   friend void asio_handler_invoke(Function& function, this_type* context)
+      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+          ma_handler_invoke_helpers::invoke(function, context->handler_)))
   {
+    // Forward to asio_handler_invoke provided by source handler.
     ma_handler_invoke_helpers::invoke(function, context->handler_);
   }
 
   template <typename Function>
   friend void asio_handler_invoke(const Function& function, this_type* context)
+      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+          ma_handler_invoke_helpers::invoke(function, context->handler_)))
   {
+    // Forward to asio_handler_invoke provided by source handler.
     ma_handler_invoke_helpers::invoke(function, context->handler_);
   }
 
 #endif // defined(MA_HAS_RVALUE_REFS)
 
   friend bool asio_handler_is_continuation(this_type* context)
+      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+          ma_handler_cont_helpers::is_continuation(context->handler_)))
   {
     return ma_handler_cont_helpers::is_continuation(context->handler_);
   }
@@ -290,7 +321,11 @@ public:
 
   template <typename H, typename A1, typename A2, typename A3>
   binder3(MA_FWD_REF(H) handler, MA_FWD_REF(A1) arg1, MA_FWD_REF(A2) arg2,
-      MA_FWD_REF(A3) arg3)
+      MA_FWD_REF(A3) arg3) MA_NOEXCEPT_IF(
+      MA_NOEXCEPT_EXPR(Handler(detail::forward<H>(handler)))
+          && MA_NOEXCEPT_EXPR(Arg1(detail::forward<A1>(arg1)))
+          && MA_NOEXCEPT_EXPR(Arg2(detail::forward<A2>(arg2)))
+          && MA_NOEXCEPT_EXPR(Arg3(detail::forward<A3>(arg3))))
     : handler_(detail::forward<H>(handler))
     , arg1_(detail::forward<A1>(arg1))
     , arg2_(detail::forward<A2>(arg2))
@@ -301,7 +336,11 @@ public:
 #if defined(MA_HAS_RVALUE_REFS) \
     && (defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG))
 
-  binder3(this_type&& other)
+  binder3(this_type&& other) MA_NOEXCEPT_IF(
+      MA_NOEXCEPT_EXPR(Handler(detail::move(other.handler_)))
+          && MA_NOEXCEPT_EXPR(Arg1(detail::move(other.arg1_)))
+          && MA_NOEXCEPT_EXPR(Arg2(detail::move(other.arg2_)))
+          && MA_NOEXCEPT_EXPR(Arg3(detail::move(other.arg3_))))
     : handler_(detail::move(other.handler_))
     , arg1_(detail::move(other.arg1_))
     , arg2_(detail::move(other.arg2_))
@@ -309,7 +348,11 @@ public:
   {
   }
 
-  binder3(const this_type& other)
+  binder3(const this_type& other) MA_NOEXCEPT_IF(
+      MA_NOEXCEPT_EXPR(Handler(other.handler_))
+          && MA_NOEXCEPT_EXPR(Arg1(other.arg1_))
+          && MA_NOEXCEPT_EXPR(Arg2(other.arg2_))
+          && MA_NOEXCEPT_EXPR(Arg3(other.arg3_)))
     : handler_(other.handler_)
     , arg1_(other.arg1_)
     , arg2_(other.arg2_)
@@ -317,12 +360,6 @@ public:
   {
   }
 
-#endif
-
-#if !defined(NDEBUG)
-  ~binder3()
-  {
-  }
 #endif
 
   void operator()()
@@ -336,13 +373,18 @@ public:
   }
 
   friend void* asio_handler_allocate(std::size_t size, this_type* context)
+      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+          ma_handler_alloc_helpers::allocate(size, context->handler_)))
   {
+    // Forward to asio_handler_allocate provided by source handler.
     return ma_handler_alloc_helpers::allocate(size, context->handler_);
   }
 
   friend void asio_handler_deallocate(void* pointer, std::size_t size,
-      this_type* context)
+      this_type* context) MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+      ma_handler_alloc_helpers::deallocate(pointer, size, context->handler_)))
   {
+    // Forward to asio_handler_deallocate provided by source handler.
     ma_handler_alloc_helpers::deallocate(pointer, size, context->handler_);
   }
 
@@ -350,8 +392,11 @@ public:
 
   template <typename Function>
   friend void asio_handler_invoke(MA_FWD_REF(Function) function,
-      this_type* context)
+      this_type* context) MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+      ma_handler_invoke_helpers::invoke(
+          detail::forward<Function>(function), context->handler_)))
   {
+    // Forward to asio_handler_invoke provided by source handler.
     ma_handler_invoke_helpers::invoke(
         detail::forward<Function>(function), context->handler_);
   }
@@ -360,19 +405,27 @@ public:
 
   template <typename Function>
   friend void asio_handler_invoke(Function& function, this_type* context)
+      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+          ma_handler_invoke_helpers::invoke(function, context->handler_)))
   {
+    // Forward to asio_handler_invoke provided by source handler.
     ma_handler_invoke_helpers::invoke(function, context->handler_);
   }
 
   template <typename Function>
   friend void asio_handler_invoke(const Function& function, this_type* context)
+      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+          ma_handler_invoke_helpers::invoke(function, context->handler_)))
   {
+    // Forward to asio_handler_invoke provided by source handler.
     ma_handler_invoke_helpers::invoke(function, context->handler_);
   }
 
 #endif // defined(MA_HAS_RVALUE_REFS)
 
   friend bool asio_handler_is_continuation(this_type* context)
+      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+          ma_handler_cont_helpers::is_continuation(context->handler_)))
   {
     return ma_handler_cont_helpers::is_continuation(context->handler_);
   }
@@ -405,7 +458,12 @@ public:
 
   template <typename H, typename A1, typename A2, typename A3, typename A4>
   binder4(MA_FWD_REF(H) handler, MA_FWD_REF(A1) arg1, MA_FWD_REF(A2) arg2,
-      MA_FWD_REF(A3) arg3, MA_FWD_REF(A4) arg4)
+      MA_FWD_REF(A3) arg3, MA_FWD_REF(A4) arg4) MA_NOEXCEPT_IF(
+      MA_NOEXCEPT_EXPR(Handler(detail::forward<H>(handler)))
+          && MA_NOEXCEPT_EXPR(Arg1(detail::forward<A1>(arg1)))
+          && MA_NOEXCEPT_EXPR(Arg2(detail::forward<A2>(arg2)))
+          && MA_NOEXCEPT_EXPR(Arg3(detail::forward<A3>(arg3)))
+          && MA_NOEXCEPT_EXPR(Arg4(detail::forward<A4>(arg4))))
     : handler_(detail::forward<H>(handler))
     , arg1_(detail::forward<A1>(arg1))
     , arg2_(detail::forward<A2>(arg2))
@@ -417,7 +475,12 @@ public:
 #if defined(MA_HAS_RVALUE_REFS) \
     && (defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG))
 
-  binder4(this_type&& other)
+  binder4(this_type&& other) MA_NOEXCEPT_IF(
+      MA_NOEXCEPT_EXPR(Handler(detail::move(other.handler_)))
+          && MA_NOEXCEPT_EXPR(Arg1(detail::move(other.arg1_)))
+          && MA_NOEXCEPT_EXPR(Arg2(detail::move(other.arg2_)))
+          && MA_NOEXCEPT_EXPR(Arg3(detail::move(other.arg3_)))
+          && MA_NOEXCEPT_EXPR(Arg4(detail::move(other.arg4_))))
     : handler_(detail::move(other.handler_))
     , arg1_(detail::move(other.arg1_))
     , arg2_(detail::move(other.arg2_))
@@ -426,7 +489,12 @@ public:
   {
   }
 
-  binder4(const this_type& other)
+  binder4(const this_type& other) MA_NOEXCEPT_IF(
+      MA_NOEXCEPT_EXPR(Handler(other.handler_))
+          && MA_NOEXCEPT_EXPR(Arg1(other.arg1_))
+          && MA_NOEXCEPT_EXPR(Arg2(other.arg2_))
+          && MA_NOEXCEPT_EXPR(Arg3(other.arg3_))
+          && MA_NOEXCEPT_EXPR(Arg4(other.arg4_)))
     : handler_(other.handler_)
     , arg1_(other.arg1_)
     , arg2_(other.arg2_)
@@ -435,12 +503,6 @@ public:
   {
   }
 
-#endif
-
-#if !defined(NDEBUG)
-  ~binder4()
-  {
-  }
 #endif
 
   void operator()()
@@ -454,13 +516,18 @@ public:
   }
 
   friend void* asio_handler_allocate(std::size_t size, this_type* context)
+      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+          ma_handler_alloc_helpers::allocate(size, context->handler_)))
   {
+    // Forward to asio_handler_allocate provided by source handler.
     return ma_handler_alloc_helpers::allocate(size, context->handler_);
   }
 
   friend void asio_handler_deallocate(void* pointer, std::size_t size,
-      this_type* context)
+      this_type* context) MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+      ma_handler_alloc_helpers::deallocate(pointer, size, context->handler_)))
   {
+    // Forward to asio_handler_deallocate provided by source handler.
     ma_handler_alloc_helpers::deallocate(pointer, size, context->handler_);
   }
 
@@ -468,29 +535,40 @@ public:
 
   template <typename Function>
   friend void asio_handler_invoke(MA_FWD_REF(Function) function,
-      this_type* context)
+      this_type* context) MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+      ma_handler_invoke_helpers::invoke(
+          detail::forward<Function>(function), context->handler_)))
   {
+    // Forward to asio_handler_invoke provided by source handler.
     ma_handler_invoke_helpers::invoke(
         detail::forward<Function>(function), context->handler_);
   }
 
-#else //defined(MA_HAS_RVALUE_REFS)
+#else // defined(MA_HAS_RVALUE_REFS)
 
   template <typename Function>
   friend void asio_handler_invoke(Function& function, this_type* context)
+      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+          ma_handler_invoke_helpers::invoke(function, context->handler_)))
   {
+    // Forward to asio_handler_invoke provided by source handler.
     ma_handler_invoke_helpers::invoke(function, context->handler_);
   }
 
   template <typename Function>
   friend void asio_handler_invoke(const Function& function, this_type* context)
+      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+          ma_handler_invoke_helpers::invoke(function, context->handler_)))
   {
+    // Forward to asio_handler_invoke provided by source handler.
     ma_handler_invoke_helpers::invoke(function, context->handler_);
   }
 
 #endif // defined(MA_HAS_RVALUE_REFS)
 
   friend bool asio_handler_is_continuation(this_type* context)
+      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+          ma_handler_cont_helpers::is_continuation(context->handler_)))
   {
     return ma_handler_cont_helpers::is_continuation(context->handler_);
   }
@@ -526,6 +604,13 @@ public:
       typename A5>
   binder5(MA_FWD_REF(H) handler, MA_FWD_REF(A1) arg1, MA_FWD_REF(A2) arg2,
       MA_FWD_REF(A3) arg3, MA_FWD_REF(A4) arg4, MA_FWD_REF(A5) arg5)
+      MA_NOEXCEPT_IF(
+          MA_NOEXCEPT_EXPR(Handler(detail::forward<H>(handler)))
+              && MA_NOEXCEPT_EXPR(Arg1(detail::forward<A1>(arg1)))
+              && MA_NOEXCEPT_EXPR(Arg2(detail::forward<A2>(arg2)))
+              && MA_NOEXCEPT_EXPR(Arg3(detail::forward<A3>(arg3)))
+              && MA_NOEXCEPT_EXPR(Arg4(detail::forward<A4>(arg4)))
+              && MA_NOEXCEPT_EXPR(Arg5(detail::forward<A5>(arg5))))
     : handler_(detail::forward<H>(handler))
     , arg1_(detail::forward<A1>(arg1))
     , arg2_(detail::forward<A2>(arg2))
@@ -538,7 +623,13 @@ public:
 #if defined(MA_HAS_RVALUE_REFS) \
     && (defined(MA_NO_IMPLICIT_MOVE_CONSTRUCTOR) || !defined(NDEBUG))
 
-  binder5(this_type&& other)
+  binder5(this_type&& other) MA_NOEXCEPT_IF(
+      MA_NOEXCEPT_EXPR(Handler(detail::move(other.handler_)))
+          && MA_NOEXCEPT_EXPR(Arg1(detail::move(other.arg1_)))
+          && MA_NOEXCEPT_EXPR(Arg2(detail::move(other.arg2_)))
+          && MA_NOEXCEPT_EXPR(Arg3(detail::move(other.arg3_)))
+          && MA_NOEXCEPT_EXPR(Arg4(detail::move(other.arg4_)))
+          && MA_NOEXCEPT_EXPR(Arg5(detail::move(other.arg5_))))
     : handler_(detail::move(other.handler_))
     , arg1_(detail::move(other.arg1_))
     , arg2_(detail::move(other.arg2_))
@@ -548,7 +639,13 @@ public:
   {
   }
 
-  binder5(const this_type& other)
+  binder5(const this_type& other) MA_NOEXCEPT_IF(
+      MA_NOEXCEPT_EXPR(Handler(other.handler_))
+          && MA_NOEXCEPT_EXPR(Arg1(other.arg1_))
+          && MA_NOEXCEPT_EXPR(Arg2(other.arg2_))
+          && MA_NOEXCEPT_EXPR(Arg3(other.arg3_))
+          && MA_NOEXCEPT_EXPR(Arg4(other.arg4_))
+          && MA_NOEXCEPT_EXPR(Arg5(other.arg5_)))
     : handler_(other.handler_)
     , arg1_(other.arg1_)
     , arg2_(other.arg2_)
@@ -558,12 +655,6 @@ public:
   {
   }
 
-#endif
-
-#if !defined(NDEBUG)
-  ~binder5()
-  {
-  }
 #endif
 
   void operator()()
@@ -577,13 +668,18 @@ public:
   }
 
   friend void* asio_handler_allocate(std::size_t size, this_type* context)
+      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+          ma_handler_alloc_helpers::allocate(size, context->handler_)))
   {
+    // Forward to asio_handler_allocate provided by source handler.
     return ma_handler_alloc_helpers::allocate(size, context->handler_);
   }
 
   friend void asio_handler_deallocate(void* pointer, std::size_t size,
-      this_type* context)
+      this_type* context) MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+      ma_handler_alloc_helpers::deallocate(pointer, size, context->handler_)))
   {
+    // Forward to asio_handler_deallocate provided by source handler.
     ma_handler_alloc_helpers::deallocate(pointer, size, context->handler_);
   }
 
@@ -591,8 +687,11 @@ public:
 
   template <typename Function>
   friend void asio_handler_invoke(MA_FWD_REF(Function) function,
-      this_type* context)
+      this_type* context) MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+      ma_handler_invoke_helpers::invoke(
+          detail::forward<Function>(function), context->handler_)))
   {
+    // Forward to asio_handler_invoke provided by source handler.
     ma_handler_invoke_helpers::invoke(
         detail::forward<Function>(function), context->handler_);
   }
@@ -601,19 +700,27 @@ public:
 
   template <typename Function>
   friend void asio_handler_invoke(Function& function, this_type* context)
+      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+          ma_handler_invoke_helpers::invoke(function, context->handler_)))
   {
+    // Forward to asio_handler_invoke provided by source handler.
     ma_handler_invoke_helpers::invoke(function, context->handler_);
   }
 
   template <typename Function>
   friend void asio_handler_invoke(const Function& function, this_type* context)
+      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+          ma_handler_invoke_helpers::invoke(function, context->handler_)))
   {
+    // Forward to asio_handler_invoke provided by source handler.
     ma_handler_invoke_helpers::invoke(function, context->handler_);
   }
 
 #endif // defined(MA_HAS_RVALUE_REFS)
 
   friend bool asio_handler_is_continuation(this_type* context)
+      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+          ma_handler_cont_helpers::is_continuation(context->handler_)))
   {
     return ma_handler_cont_helpers::is_continuation(context->handler_);
   }
