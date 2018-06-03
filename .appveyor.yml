@@ -90,9 +90,6 @@ environment:
       QT_VERSION: 5.10.1
       QT_LINKAGE: shared
 
-cache:
-  - C:\projects\downloads -> .appveyor.yml
-
 install:
   - ps: |
       $env:WINDOWS_SDK_ENV_BATCH_FILE = ""
@@ -680,3 +677,19 @@ artifacts:
     name: ma_handler_allocator_test
   - path: build\tests\ma_custom_alloc_handler_test\$(configuration)\*.exe
     name: ma_custom_alloc_handler_test
+  - path: build\tests\ma_cyclic_buffer_test\$(configuration)\*.exe
+    name: ma_cyclic_buffer_test
+  - path: build\tests\ma_sp_intrusive_list_test\$(configuration)\*.exe
+    name: ma_sp_intrusive_list_test
+  - path: build\tests\ma_strand_test\$(configuration)\*.exe
+    name: ma_strand_test
+  - path: build\tests\ma_context_alloc_handler_test\$(configuration)\*.exe
+    name: ma_context_alloc_handler_test
+  - path: build\tests\ma_bind_handler_test\$(configuration)\*.exe
+    name: ma_bind_handler_test
+  - path: build\tests\ma_context_invoke_handler_test\$(configuration)\*.exe
+    name: ma_context_invoke_handler_test
+  - path: build\tests\ma_context_wrapped_handler_test\$(configuration)\*.exe
+    name: ma_context_wrapped_handler_test
+  - path: build\tests\ma_limited_int_test\$(configuration)\*.exe
+    name: ma_limited_int_test
