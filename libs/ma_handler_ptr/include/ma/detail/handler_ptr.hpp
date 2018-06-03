@@ -117,7 +117,7 @@ public:
   /// Construct object in raw memory and take ownership if construction
   /// succeeds.
   /// Throws if constructor of value_type throws.
-  explicit handler_ptr(raw_ptr_type& raw_ptr)
+  handler_ptr(raw_ptr_type& raw_ptr)
       MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(value_type()))
     : alloc_context_(detail::addressof(raw_ptr.alloc_context_))
     , pointer_(new (static_cast<pointer_type>(0)) value_type)
