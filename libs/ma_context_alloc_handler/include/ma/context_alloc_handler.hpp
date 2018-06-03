@@ -93,13 +93,9 @@ public:
 
 #endif
 
-#if !defined(NDEBUG)
-  ~context_alloc_handler()
-  {
-  }
-#endif
-
   friend void* asio_handler_allocate(std::size_t size, this_type* context)
+      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+          ma_handler_alloc_helpers::allocate(size, context->handler_)))
   {
     // Forward to asio_handler_allocate provided by the specified allocation
     // context.
@@ -107,7 +103,9 @@ public:
   }
 
   friend void asio_handler_deallocate(void* pointer, std::size_t size,
-      this_type* context)
+      this_type* context) MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+          ma_handler_alloc_helpers::deallocate(
+              pointer, size, context->context_)))
   {
     // Forward to asio_handler_deallocate provided by the specified allocation
     // context.
@@ -118,7 +116,9 @@ public:
 
   template <typename Function>
   friend void asio_handler_invoke(MA_FWD_REF(Function) function,
-      this_type* context)
+      this_type* context) MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+          ma_handler_invoke_helpers::invoke(
+              detail::forward<Function>(function), context->handler_)))
   {
     // Forward to asio_handler_invoke provided by source handler.
     ma_handler_invoke_helpers::invoke(
@@ -129,6 +129,8 @@ public:
 
   template <typename Function>
   friend void asio_handler_invoke(Function& function, this_type* context)
+      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(ma_handler_invoke_helpers::invoke(
+          function, context->handler_)))
   {
     // Forward to asio_handler_invoke provided by source handler.
     ma_handler_invoke_helpers::invoke(function, context->handler_);
@@ -136,6 +138,8 @@ public:
 
   template <typename Function>
   friend void asio_handler_invoke(const Function& function, this_type* context)
+      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(ma_handler_invoke_helpers::invoke(
+          function, context->handler_)))
   {
     // Forward to asio_handler_invoke provided by source handler.
     ma_handler_invoke_helpers::invoke(function, context->handler_);
@@ -144,6 +148,8 @@ public:
 #endif // defined(MA_HAS_RVALUE_REFS)
 
   friend bool asio_handler_is_continuation(this_type* context)
+      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(ma_handler_cont_helpers::is_continuation(
+          context->handler_)))
   {
     return ma_handler_cont_helpers::is_continuation(context->handler_);
   }
@@ -304,19 +310,17 @@ public:
 
 #endif
 
-#if !defined(NDEBUG)
-  ~explicit_context_alloc_handler()
-  {
-  }
-#endif
-
   friend void* asio_handler_allocate(std::size_t size, this_type* context)
+      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(ma_handler_alloc_helpers::allocate(
+          size, context->context_)))
   {
     return ma_handler_alloc_helpers::allocate(size, context->context_);
   }
 
   friend void asio_handler_deallocate(void* pointer, std::size_t size,
-      this_type* context)
+      this_type* context) MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+          ma_handler_alloc_helpers::deallocate(
+              pointer, size, context->context_)))
   {
     ma_handler_alloc_helpers::deallocate(pointer, size, context->context_);
   }
@@ -325,7 +329,9 @@ public:
 
   template <typename Function>
   friend void asio_handler_invoke(MA_FWD_REF(Function) function,
-      this_type* context)
+      this_type* context) MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+          ma_handler_invoke_helpers::invoke(
+              detail::forward<Function>(function), context->handler_)))
   {
     ma_handler_invoke_helpers::invoke(
         detail::forward<Function>(function), context->handler_);
@@ -335,12 +341,16 @@ public:
 
   template <typename Function>
   friend void asio_handler_invoke(Function& function, this_type* context)
+      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(ma_handler_invoke_helpers::invoke(
+          function, context->handler_)))
   {
     ma_handler_invoke_helpers::invoke(function, context->handler_);
   }
 
   template <typename Function>
   friend void asio_handler_invoke(const Function& function, this_type* context)
+      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(ma_handler_invoke_helpers::invoke(
+          function, context->handler_)))
   {
     ma_handler_invoke_helpers::invoke(function, context->handler_);
   }
@@ -348,6 +358,8 @@ public:
 #endif // defined(MA_HAS_RVALUE_REFS)
 
   friend bool asio_handler_is_continuation(this_type* context)
+      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(ma_handler_cont_helpers::is_continuation(
+          context->handler_)))
   {
     return ma_handler_cont_helpers::is_continuation(context->handler_);
   }
