@@ -44,49 +44,57 @@ private:
   context_type& context_;
 }; // class alloc_guard
 
-template <typename BaseAllocator>
-class alloc_counting_allocator : public BaseAllocator
+template <typename UnderlyingAllocator>
+class tracking_allocator : private boost::noncopyable
 {
 private:
-  typedef alloc_counting_allocator<BaseAllocator> this_type;
-  typedef BaseAllocator base_type;
+  typedef tracking_allocator<UnderlyingAllocator> this_type;
+  typedef UnderlyingAllocator allocator_type;
 
 public:
-  explicit alloc_counting_allocator(detail::latch& counter)
-    : counter_(counter)
+  explicit tracking_allocator(allocator_type& underlying_allocator,
+      detail::latch& counter)
+    : underlying_allocator_(underlying_allocator)
+    , alloc_counter_(counter)
+    , dealloc_counter_(counter)
   {
   }
 
-  template <typename Arg1>
-  alloc_counting_allocator(detail::latch& counter, MA_FWD_REF(Arg1) arg1)
-    : base_type(detail::forward<Arg1>(arg1))
-    , counter_(counter)
-  {
-  }
-
-  template<typename Arg1, typename Arg2>
-  alloc_counting_allocator(detail::latch& counter, MA_FWD_REF(Arg1) arg1,
-      MA_FWD_REF(Arg2) arg2)
-    : base_type(detail::forward<Arg1>(arg1), detail::forward<Arg2>(arg2))
-    , counter_(counter)
+  tracking_allocator(allocator_type& underlying_allocator,
+      detail::latch& alloc_counter, detail::latch& dealloc_counter)
+    : underlying_allocator_(underlying_allocator)
+    , alloc_counter_(alloc_counter)
+    , dealloc_counter_(dealloc_counter)
   {
   }
 
   void* allocate(std::size_t size)
   {
-    counter_.count_up();
-    return base_type::allocate(size);
+    alloc_counter_.count_up();
+    return underlying_allocator_.allocate(size);
   }
 
   void deallocate(void* pointer)
   {
-    counter_.count_up();
-    base_type::deallocate(pointer);
+    dealloc_counter_.count_up();
+    underlying_allocator_.deallocate(pointer);
+  }
+
+  bool owns(void* pointer) const
+  {
+    return underlying_allocator_.owns(pointer);
+  }
+
+  std::size_t size() const
+  {
+    return underlying_allocator_.size();
   }
 
 private:
-  detail::latch& counter_;
-}; // class alloc_counting_allocator
+  allocator_type& underlying_allocator_;
+  detail::latch& alloc_counter_;
+  detail::latch& dealloc_counter_;
+}; // class tracking_allocator
 
 class no_default_allocation_handler
 {
@@ -125,12 +133,32 @@ void test_allocation_succeeded(Handler handler, std::size_t size)
 
 TEST(custom_alloc_handler, allocator_is_used)
 {
+  typedef in_place_handler_allocator<512> allocator_type;
+
+  allocator_type allocator;
   detail::latch alloc_counter;
-  alloc_counting_allocator<in_place_handler_allocator<512>>
-      allocator(alloc_counter);
-  test_allocation_succeeded(
-      make_custom_alloc_handler(allocator, no_default_allocation_handler()), 1);
+  tracking_allocator<allocator_type> tracker(allocator, alloc_counter);
+  test_allocation_succeeded(make_custom_alloc_handler(tracker,
+      no_default_allocation_handler()), 1);
   ASSERT_EQ(2U, alloc_counter.value());
+}
+
+TEST(custom_alloc_handler, io_service_uses_allocator)
+{
+  typedef in_place_handler_allocator<512> allocator_type;
+
+  allocator_type allocator;
+  detail::latch alloc_counter;
+  detail::latch dealloc_counter;
+  tracking_allocator<allocator_type> tracker(allocator, alloc_counter,
+      dealloc_counter);
+  boost::asio::io_service io_service;
+  io_service.post(make_custom_alloc_handler(tracker,
+      no_default_allocation_handler()));
+  io_service.run();
+  ASSERT_LE(1U, alloc_counter.value());
+  ASSERT_LE(1U, dealloc_counter.value());
+  ASSERT_EQ(alloc_counter.value(), dealloc_counter.value());
 }
 
 TEST(custom_alloc_handler, in_place_allocator)
