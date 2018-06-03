@@ -23,12 +23,18 @@
 // sources: asio/detail/handler_invoke_helpers.hpp
 namespace ma_handler_invoke_helpers {
 
+namespace detail {
+
+using namespace boost::asio;
+
 #if defined(MA_HAS_RVALUE_REFS)
 
 template <typename Function, typename Context>
 inline void invoke(MA_FWD_REF(Function) function, Context& context)
+    MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(asio_handler_invoke(
+        ma::detail::forward<Function>(function),
+        ma::detail::addressof(context))))
 {
-  using namespace boost::asio;
   asio_handler_invoke(ma::detail::forward<Function>(function),
       ma::detail::addressof(context));
 }
@@ -37,19 +43,25 @@ inline void invoke(MA_FWD_REF(Function) function, Context& context)
 
 template <typename Function, typename Context>
 inline void invoke(Function& function, Context& context)
+    MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(asio_handler_invoke(
+        function, ma::detail::addressof(context))))
 {
-  using namespace boost::asio;
   asio_handler_invoke(function, ma::detail::addressof(context));
 }
 
 template <typename Function, typename Context>
 inline void invoke(const Function& function, Context& context)
+    MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(asio_handler_invoke(
+        function, ma::detail::addressof(context))))
 {
-  using namespace boost::asio;
   asio_handler_invoke(function, ma::detail::addressof(context));
 }
 
 #endif // defined(MA_HAS_RVALUE_REFS)
+
+} // namespace detail
+
+using detail::invoke;
 
 } // namespace ma_handler_invoke_helpers
 
