@@ -115,17 +115,6 @@ public:
   }
 
   /// Construct object in raw memory and take ownership if construction
-  /// succeeds.
-  /// Throws if constructor of value_type throws.
-  handler_ptr(raw_ptr_type& raw_ptr)
-      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(value_type()))
-    : alloc_context_(detail::addressof(raw_ptr.alloc_context_))
-    , pointer_(new (static_cast<pointer_type>(0)) value_type)
-  {
-    raw_ptr.pointer_ = 0;
-  }
-
-  /// Construct object in raw memory and take ownership if construction
   /// succeeds. Forwards arg1,..., argn to the object's constructor.
   /// Throws if constructor of value_type throws.
   template <typename Arg1>
