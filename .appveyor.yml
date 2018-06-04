@@ -91,6 +91,8 @@ environment:
       QT_LINKAGE: shared
 
 install:
+  - cmd: choco install opencppcoverage
+  - cmd: set PATH=C:\Program Files\OpenCppCoverage;%PATH%
   - ps: |
       $env:WINDOWS_SDK_ENV_BATCH_FILE = ""
       $env:WINDOWS_SDK_ENV_PARAMETERS = ""
