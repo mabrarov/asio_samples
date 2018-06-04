@@ -225,13 +225,13 @@
 #define MA_NOEXCEPT
 #endif
 
-#if defined(BOOST_NOEXCEPT_IF)
+#if defined(BOOST_NOEXCEPT_IF) && !(defined(BOOST_GCC) && (BOOST_GCC < 40800))
 #define MA_NOEXCEPT_IF BOOST_NOEXCEPT_IF
 #else
 #define MA_NOEXCEPT_IF(predicate)
 #endif
 
-#if defined(BOOST_NOEXCEPT_EXPR)
+#if defined(BOOST_NOEXCEPT_EXPR) && !(defined(BOOST_GCC) && (BOOST_GCC < 40800))
 #define MA_NOEXCEPT_EXPR BOOST_NOEXCEPT_EXPR
 #else
 #define MA_NOEXCEPT_EXPR(expression) false
