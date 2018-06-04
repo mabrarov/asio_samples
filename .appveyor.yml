@@ -22,6 +22,7 @@ environment:
     secure: Dla0jvWDYSf0CHGmqVUa8uwo2QflZjNdkUw/wSyRqEs=
   COVERITY_NOTIFICATION_EMAIL:
     secure: ENSUMQl8WDP8x86q4eKd7B/o4WA5cEY9hqE7kOJA/io=
+  COVERAGE_BUILD: False
 
   matrix:
     - MSVC_VERSION: 14.0
@@ -31,6 +32,7 @@ environment:
       QT_VERSION: 5.10.1
       QT_LINKAGE: shared
       COVERITY_BUILD_CANDIDATE: True
+      COVERAGE_BUILD: True
     - MSVC_VERSION: 12.0
       RUNTIME_LINKAGE: shared
       BOOST_VERSION: 1.67.0
