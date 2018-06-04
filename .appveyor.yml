@@ -18,11 +18,12 @@ configuration:
 environment:
   DEPENDENCIES_FOLDER: C:\projects\dependencies
   DOWNLOADS_FOLDER: C:\projects\downloads
+  COVERITY_SCAN_BUILD_CANDIDATE: 0
+  COVERAGE_BUILD_CANDIDATE: 0
   COVERITY_TOKEN:
     secure: Dla0jvWDYSf0CHGmqVUa8uwo2QflZjNdkUw/wSyRqEs=
   COVERITY_NOTIFICATION_EMAIL:
     secure: ENSUMQl8WDP8x86q4eKd7B/o4WA5cEY9hqE7kOJA/io=
-  COVERAGE_BUILD: False
 
   matrix:
     - MSVC_VERSION: 14.0
@@ -31,8 +32,8 @@ environment:
       BOOST_LINKAGE: static
       QT_VERSION: 5.10.1
       QT_LINKAGE: shared
-      COVERITY_BUILD_CANDIDATE: True
-      COVERAGE_BUILD: True
+      COVERITY_SCAN_BUILD_CANDIDATE: 1
+      COVERAGE_BUILD_CANDIDATE: 1
     - MSVC_VERSION: 12.0
       RUNTIME_LINKAGE: shared
       BOOST_VERSION: 1.67.0
@@ -93,8 +94,6 @@ environment:
       QT_LINKAGE: shared
 
 install:
-  - cmd: choco install opencppcoverage
-  - cmd: set PATH=C:\Program Files\OpenCppCoverage;%PATH%
   - ps: |
       $env:WINDOWS_SDK_ENV_BATCH_FILE = ""
       $env:WINDOWS_SDK_ENV_PARAMETERS = ""
@@ -535,10 +534,8 @@ install:
         }
       }
       $env:CMAKE_GENERATOR = "Visual Studio$cmake_generator_msvc_version_suffx$cmake_generator_platform_suffix"
-      $env:COVERITY_BUILD = $env:COVERITY_BUILD_CANDIDATE -and ($env:APPVEYOR_REPO_BRANCH -eq "coverity_scan") -and ($env:CONFIGURATION -eq "Release") -and ($env:PLATFORM -eq "x64")
-
-before_build:
-  - ps: |
+      $env:COVERITY_SCAN_BUILD = ($env:COVERITY_SCAN_BUILD_CANDIDATE -eq "1") -and ($env:APPVEYOR_REPO_BRANCH -eq "coverity_scan") -and ($env:CONFIGURATION -eq "Release") -and ($env:PLATFORM -eq "x64")
+      $env:COVERAGE_BUILD = ($env:COVERAGE_BUILD_CANDIDATE -eq "1") -and ($env:CONFIGURATION -eq "Debug") -and ($env:PLATFORM -eq "x64")
       Write-Host "PLATFORM                  : $env:PLATFORM"
       Write-Host "CONFIGURATION             : $env:CONFIGURATION"
       Write-Host "MSVS_PATCH_FOLDER         : $env:MSVS_PATCH_FOLDER"
@@ -559,7 +556,9 @@ before_build:
       Write-Host "QT_BIN_FOLDER             : $env:QT_BIN_FOLDER"
       Write-Host "QT_QMAKE_EXECUTABLE       : $env:QT_QMAKE_EXECUTABLE"
       Write-Host "CMAKE_GENERATOR           : $env:CMAKE_GENERATOR"
-      Write-Host "COVERITY_BUILD            : $env:COVERITY_BUILD"
+      Write-Host "COVERITY_SCAN_BUILD       : $env:COVERITY_SCAN_BUILD"
+      Write-Host "COVERAGE_BUILD            : $env:COVERAGE_BUILD"
+  - cmd: if "%COVERAGE_BUILD%"=="True" choco install opencppcoverage
   - cmd: if not "%MSVS_PATCH_FOLDER%"=="" cd /d "%MSVS_PATCH_FOLDER%"
   - cmd: if not "%MSVS_PATCH_BATCH_FILE%"=="" call "%MSVS_PATCH_BATCH_FILE%"
   - cmd: if not "%WINDOWS_SDK_ENV_BATCH_FILE%"=="" call "%WINDOWS_SDK_ENV_BATCH_FILE%" %WINDOWS_SDK_ENV_PARAMETERS%
@@ -620,7 +619,7 @@ build_script:
       if ($env:MSVC_VERSION -ne "9.0") {
         $build_cmd = "$build_cmd -- /maxcpucount /verbosity:normal /logger:""C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"""
       }
-      if ($env:COVERITY_BUILD -eq "True") {
+      if ($env:COVERITY_SCAN_BUILD -eq "True") {
         Invoke-Expression "cov-build.exe --dir cov-int $build_cmd"
       } else {
         Invoke-Expression "$build_cmd"
@@ -628,7 +627,7 @@ build_script:
       if ($LastExitCode -ne 0) {
         throw "Build failed with exit code $LastExitCode."
       }
-      if ($env:COVERITY_BUILD -eq "True") {
+      if ($env:COVERITY_SCAN_BUILD -eq "True") {
         # Compress results.
         Write-Host "Compressing Coverity Scan results..."
         7z.exe a -tzip "$env:APPVEYOR_BUILD_FOLDER\build\$env:APPVEYOR_PROJECT_NAME.zip" "$env:APPVEYOR_BUILD_FOLDER\build\cov-int" -aoa -y | out-null
