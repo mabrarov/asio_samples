@@ -95,7 +95,7 @@ public:
 
   friend void* asio_handler_allocate(std::size_t size, this_type* context)
       MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
-          ma_handler_alloc_helpers::allocate(size, context->handler_)))
+          ma_handler_alloc_helpers::allocate(size, context->context_)))
   {
     // Forward to asio_handler_allocate provided by the specified allocation
     // context.
@@ -311,9 +311,11 @@ public:
 #endif
 
   friend void* asio_handler_allocate(std::size_t size, this_type* context)
-      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(ma_handler_alloc_helpers::allocate(
-          size, context->context_)))
+      MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+          ma_handler_alloc_helpers::allocate(size, context->context_)))
   {
+    // Forward to asio_handler_allocate provided by the specified allocation
+    // context.
     return ma_handler_alloc_helpers::allocate(size, context->context_);
   }
 
@@ -322,6 +324,8 @@ public:
           ma_handler_alloc_helpers::deallocate(
               pointer, size, context->context_)))
   {
+    // Forward to asio_handler_deallocate provided by the specified allocation
+    // context.
     ma_handler_alloc_helpers::deallocate(pointer, size, context->context_);
   }
 
@@ -333,6 +337,7 @@ public:
           ma_handler_invoke_helpers::invoke(
               detail::forward<Function>(function), context->handler_)))
   {
+    // Forward to asio_handler_invoke provided by source handler.
     ma_handler_invoke_helpers::invoke(
         detail::forward<Function>(function), context->handler_);
   }
@@ -344,6 +349,7 @@ public:
       MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(ma_handler_invoke_helpers::invoke(
           function, context->handler_)))
   {
+    // Forward to asio_handler_invoke provided by source handler.
     ma_handler_invoke_helpers::invoke(function, context->handler_);
   }
 
@@ -352,6 +358,7 @@ public:
       MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(ma_handler_invoke_helpers::invoke(
           function, context->handler_)))
   {
+    // Forward to asio_handler_invoke provided by source handler.
     ma_handler_invoke_helpers::invoke(function, context->handler_);
   }
 
