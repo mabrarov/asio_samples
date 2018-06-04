@@ -16,6 +16,8 @@
 #include <boost/assert.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/aligned_storage.hpp>
+#include <ma/config.hpp>
+#include <ma/detail/utility.hpp>
 #include <ma/detail/memory.hpp>
 
 namespace ma {
@@ -28,25 +30,25 @@ template <std::size_t alloc_size>
 class in_place_handler_allocator : private boost::noncopyable
 {
 public:
-  in_place_handler_allocator();
+  in_place_handler_allocator() MA_NOEXCEPT;
 
   /// For debug purposes (ability to check destruction order, etc).
-  ~in_place_handler_allocator();
+  ~in_place_handler_allocator() MA_NOEXCEPT;
 
   /// Allocates memory from internal memory block if it is free and is
   /// large enough. Elsewhere returns null pointer.
-  void* allocate(std::size_t size);
+  void* allocate(std::size_t size) MA_NOEXCEPT;
 
   /// Deallocate memory which had previously been allocated by usage of
   /// allocate method.
-  void deallocate(void* pointer);
+  void deallocate(void* pointer) MA_NOEXCEPT;
 
   /// Checks if memory block of size 1 is owned by allocator - as allocated or
   /// as free.
-  bool owns(void* pointer) const;
+  bool owns(void* pointer) const MA_NOEXCEPT;
 
   /// Returns max size allocator can allocate
-  std::size_t size() const;
+  std::size_t size() const MA_NOEXCEPT;
 
 private:
   typedef char byte_type;
@@ -63,11 +65,21 @@ private:
  */
 class in_heap_handler_allocator : private boost::noncopyable
 {
+private:
+  typedef char byte_type;
+
+#if defined(MA_USE_CXX11_STDLIB_MEMORY)
+  typedef detail::unique_ptr<byte_type[]> storage_type;
+#else
+  typedef detail::scoped_array<byte_type> storage_type;
+#endif
+
 public:
   explicit in_heap_handler_allocator(std::size_t size, bool lazy = false);
 
   /// For debug purposes (ability to check destruction order, etc).
-  ~in_heap_handler_allocator();
+  ~in_heap_handler_allocator() MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+      static_cast<storage_type*>(0)->storage_type::~storage_type()));
 
   /// Allocates memory from internal memory block if it is free and is
   /// large enough. Elsewhere returns null pointer.
@@ -75,44 +87,39 @@ public:
 
   /// Deallocate memory which had previously been allocated by usage of
   /// allocate method.
-  void deallocate(void* pointer);
+  void deallocate(void* pointer) MA_NOEXCEPT;
 
   /// Checks if memory block of size 1 is owned by allocator - as allocated or
   /// as free.
-  bool owns(void* pointer) const;
+  bool owns(void* pointer) const MA_NOEXCEPT;
 
   /// Returns max size allocator can allocate
-  std::size_t size() const;
+  std::size_t size() const MA_NOEXCEPT;
 
 private:
-  typedef char byte_type;
-
   static byte_type* allocate_storage(std::size_t);
 
-#if defined(MA_USE_CXX11_STDLIB_MEMORY)
-  detail::unique_ptr<byte_type[]> storage_;
-#else
-  detail::scoped_array<byte_type> storage_;
-#endif
-
-  std::size_t size_;
-  bool        in_use_;
+  storage_type storage_;
+  std::size_t  size_;
+  bool         in_use_;
 }; // class in_heap_handler_allocator
 
 template <std::size_t alloc_size>
-in_place_handler_allocator<alloc_size>::in_place_handler_allocator()
+in_place_handler_allocator<alloc_size>::in_place_handler_allocator() MA_NOEXCEPT
   : in_use_(false)
 {
 }
 
 template <std::size_t alloc_size>
 in_place_handler_allocator<alloc_size>::~in_place_handler_allocator()
+    MA_NOEXCEPT
 {
   BOOST_ASSERT_MSG(!in_use_, "Allocator is still used");
 }
 
 template <std::size_t alloc_size>
 void* in_place_handler_allocator<alloc_size>::allocate(std::size_t size)
+    MA_NOEXCEPT
 {
   if (in_use_ || (size > storage_.size))
   {
@@ -124,6 +131,7 @@ void* in_place_handler_allocator<alloc_size>::allocate(std::size_t size)
 
 template <std::size_t alloc_size>
 void in_place_handler_allocator<alloc_size>::deallocate(void* pointer)
+    MA_NOEXCEPT
 {
   BOOST_ASSERT_MSG(
       !pointer || in_use_, "Allocator wasn't marked as used");
@@ -137,6 +145,7 @@ void in_place_handler_allocator<alloc_size>::deallocate(void* pointer)
 
 template <std::size_t alloc_size>
 bool in_place_handler_allocator<alloc_size>::owns(void* pointer) const
+    MA_NOEXCEPT
 {
   const byte_type* begin = static_cast<const byte_type*>(storage_.address());
   const byte_type* end = begin + alloc_size;
@@ -145,7 +154,7 @@ bool in_place_handler_allocator<alloc_size>::owns(void* pointer) const
 }
 
 template <std::size_t alloc_size>
-std::size_t in_place_handler_allocator<alloc_size>::size() const
+std::size_t in_place_handler_allocator<alloc_size>::size() const MA_NOEXCEPT
 {
   return alloc_size;
 }
@@ -165,11 +174,14 @@ inline in_heap_handler_allocator::in_heap_handler_allocator(
 }
 
 inline in_heap_handler_allocator::~in_heap_handler_allocator()
+    MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(
+        static_cast<storage_type*>(0)->storage_type::~storage_type()))
 {
   BOOST_ASSERT_MSG(!in_use_, "Allocator is still used");
 }
 
 inline void* in_heap_handler_allocator::allocate(std::size_t size)
+    MA_NOEXCEPT_IF(MA_NOEXCEPT_EXPR(allocate_storage(size)))
 {
   if (in_use_ || (size > size_))
   {
@@ -183,7 +195,7 @@ inline void* in_heap_handler_allocator::allocate(std::size_t size)
   return storage_.get();
 }
 
-inline void in_heap_handler_allocator::deallocate(void* pointer)
+inline void in_heap_handler_allocator::deallocate(void* pointer) MA_NOEXCEPT
 {
   BOOST_ASSERT_MSG(
       !pointer || in_use_, "Allocator wasn't marked as used");
@@ -195,7 +207,7 @@ inline void in_heap_handler_allocator::deallocate(void* pointer)
   }
 }
 
-inline bool in_heap_handler_allocator::owns(void* pointer) const
+inline bool in_heap_handler_allocator::owns(void* pointer) const MA_NOEXCEPT
 {
   const byte_type* begin = storage_.get();
   const byte_type* end = begin + size_;
@@ -203,7 +215,7 @@ inline bool in_heap_handler_allocator::owns(void* pointer) const
   return (p >= begin) && (p < end) && begin && p;
 }
 
-inline std::size_t in_heap_handler_allocator::size() const
+inline std::size_t in_heap_handler_allocator::size() const MA_NOEXCEPT
 {
   return size_;
 }
