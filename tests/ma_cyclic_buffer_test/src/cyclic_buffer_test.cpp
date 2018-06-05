@@ -36,7 +36,7 @@ TEST_P(generic_test, free_size_of_empty)
   const std::size_t buffer_size = GetParam();
   const ma::cyclic_buffer buffer(buffer_size);
   const mutable_buffers_type free_space = buffer.prepared();
-  ASSERT_NE(buffer_size, boost::asio::buffer_size(free_space));
+  ASSERT_EQ(buffer_size, boost::asio::buffer_size(free_space));
 }
 
 TEST_P(generic_test, filled_size_of_empty)
