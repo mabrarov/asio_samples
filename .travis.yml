@@ -458,80 +458,75 @@ matrix:
       addons: *addons-clang38-boost155-qt4
 
 install:
-  - |
-    set -e
-    export PRE_INSTALLED_BOOST=0
-    if [ "${BOOST_VERSION}" == "1.55.0" ]; then
-      export PRE_INSTALLED_BOOST=1
+  - export PRE_INSTALLED_BOOST=0
+  - if [ "${BOOST_VERSION}" == "1.55.0" ]; then
+      export PRE_INSTALLED_BOOST=1;
     fi
-    if [ "${PRE_INSTALLED_BOOST}" != 0 ]; then
-      echo "Boost ${BOOST_VERSION} is pre-intalled"
+  - if [ "${PRE_INSTALLED_BOOST}" != 0 ]; then
+      echo "Boost ${BOOST_VERSION} is pre-intalled";
     else
-      export PREBUILT_BOOST_HOME=${DEPENDENCIES_HOME}/boost-${BOOST_VERSION}-x64-gcc4.8
+      export PREBUILT_BOOST_HOME=${DEPENDENCIES_HOME}/boost-${BOOST_VERSION}-x64-gcc4.8 && \
       if [ -d "${PREBUILT_BOOST_HOME}" ]; then
-        echo "Prebuilt Boost found at ${PREBUILT_BOOST_HOME}"
+        echo "Prebuilt Boost found at ${PREBUILT_BOOST_HOME}";
       else
-        echo "Prebuilt Boost not found at ${PREBUILT_BOOST_HOME}"
-        boost_archive_name=boost-${BOOST_VERSION}-x64-gcc4.8.tar.gz
-        boost_archive_file=${DOWNLOADS_HOME}/${boost_archive_name}
-        boost_download_url=${PREBUILT_BOOST_DOWNLOAD_URL}/${BOOST_VERSION}/${boost_archive_name}
+        echo "Prebuilt Boost not found at ${PREBUILT_BOOST_HOME}" && \
+        boost_archive_name=boost-${BOOST_VERSION}-x64-gcc4.8.tar.gz && \
+        boost_archive_file=${DOWNLOADS_HOME}/${boost_archive_name} && \
+        boost_download_url=${PREBUILT_BOOST_DOWNLOAD_URL}/${BOOST_VERSION}/${boost_archive_name} && \
         if [ -f "${boost_archive_file}" ]; then
-          echo "Prebuilt Boost archive found at ${boost_archive_file}"
+          echo "Prebuilt Boost archive found at ${boost_archive_file}";
         else
-          echo "Prebuilt Boost archive not found at ${boost_archive_file}"
-          echo "Going to download prebuilt Boost archive from ${boost_download_url} to ${boost_archive_file}"
-          mkdir -p ${DOWNLOADS_HOME}
-          curl -jksSL ${boost_download_url} --output ${boost_archive_file}
-          echo "Download of prebuilt Boost archive from ${boost_download_url} to ${boost_archive_file} completed successfully"
-        fi
-        mkdir -p ${DEPENDENCIES_HOME}
-        echo "Going to unpack prebuilt Boost archive from ${boost_archive_file} to ${DEPENDENCIES_HOME}"
-        tar -xzf ${boost_archive_file} -C ${DEPENDENCIES_HOME}
-        echo "Unpacking of prebuilt Boost archive from ${boost_archive_file} to ${DEPENDENCIES_HOME} completed successfully"
-      fi
-      echo "Prebuilt Boost ${BOOST_VERSION} is located at ${PREBUILT_BOOST_HOME}"
+          echo "Prebuilt Boost archive not found at ${boost_archive_file}" && \
+          echo "Going to download prebuilt Boost archive from ${boost_download_url} to ${boost_archive_file}" && \
+          mkdir -p ${DOWNLOADS_HOME} && \
+          curl -jksSL ${boost_download_url} --output ${boost_archive_file} && \
+          echo "Download of prebuilt Boost archive from ${boost_download_url} to ${boost_archive_file} completed successfully";
+        fi && \
+        mkdir -p ${DEPENDENCIES_HOME} && \
+        echo "Going to unpack prebuilt Boost archive from ${boost_archive_file} to ${DEPENDENCIES_HOME}" && \
+        tar -xzf ${boost_archive_file} -C ${DEPENDENCIES_HOME} && \
+        echo "Unpacking of prebuilt Boost archive from ${boost_archive_file} to ${DEPENDENCIES_HOME} completed successfully";
+      fi && \
+      echo "Prebuilt Boost ${BOOST_VERSION} is located at ${PREBUILT_BOOST_HOME}";
     fi
 
 script:
-  - |
-    set -e
-    if [ "${COVERITY_SCAN_BRANCH}" == 1 ]; then
-      echo "Build was already perfomed with Coverity scan."
+  - if [ "${COVERITY_SCAN_BRANCH}" == 1 ]; then
+      echo "Build was already perfomed with Coverity scan.";
     else
-      echo "Preparing build dir at ${TRAVIS_BUILD_DIR}/build"
-      rm -rf ${TRAVIS_BUILD_DIR}/build && mkdir -p ${TRAVIS_BUILD_DIR}/build
+      echo "Preparing build dir at ${TRAVIS_BUILD_DIR}/build" && \
+      rm -rf ${TRAVIS_BUILD_DIR}/build && mkdir -p ${TRAVIS_BUILD_DIR}/build;
     fi
-    cd ${TRAVIS_BUILD_DIR}/build
-    if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then
+  - cd ${TRAVIS_BUILD_DIR}/build
+  - if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then
       if [ "${PRE_INSTALLED_BOOST}" != 0 ]; then
-        echo "Building with pre-installed Boost ${BOOST_VERSION}"
-        cmake -D CMAKE_C_COMPILER=${C_COMPILER} -D CMAKE_CXX_COMPILER=${CXX_COMPILER} -D CMAKE_BUILD_TYPE=${BUILD_TYPE} -D ma_force_qt_major_version=${QT_MAJOR_VERSION} -D ma_coverage_build=${COVERAGE_BUILD} ${TRAVIS_BUILD_DIR}
+        echo "Building with pre-installed Boost ${BOOST_VERSION}" && \
+        cmake -D CMAKE_C_COMPILER=${C_COMPILER} -D CMAKE_CXX_COMPILER=${CXX_COMPILER} -D CMAKE_BUILD_TYPE=${BUILD_TYPE} -D ma_force_qt_major_version=${QT_MAJOR_VERSION} -D ma_coverage_build=${COVERAGE_BUILD} ${TRAVIS_BUILD_DIR};
       else
-        echo "Building with prebuilt Boost ${BOOST_VERSION} located at ${PREBUILT_BOOST_HOME}"
-        cmake -D CMAKE_C_COMPILER=${C_COMPILER} -D CMAKE_CXX_COMPILER=${CXX_COMPILER} -D CMAKE_BUILD_TYPE=${BUILD_TYPE} -D Boost_NO_SYSTEM_PATHS=ON -D BOOST_INCLUDEDIR=${PREBUILT_BOOST_HOME}/include -D BOOST_LIBRARYDIR=${PREBUILT_BOOST_HOME}/lib -D ma_force_qt_major_version=${QT_MAJOR_VERSION} -D ma_coverage_build=${COVERAGE_BUILD} ${TRAVIS_BUILD_DIR}
-      fi
-      cmake --build . --config ${BUILD_TYPE}
+        echo "Building with prebuilt Boost ${BOOST_VERSION} located at ${PREBUILT_BOOST_HOME}" && \
+        cmake -D CMAKE_C_COMPILER=${C_COMPILER} -D CMAKE_CXX_COMPILER=${CXX_COMPILER} -D CMAKE_BUILD_TYPE=${BUILD_TYPE} -D Boost_NO_SYSTEM_PATHS=ON -D BOOST_INCLUDEDIR=${PREBUILT_BOOST_HOME}/include -D BOOST_LIBRARYDIR=${PREBUILT_BOOST_HOME}/lib -D ma_force_qt_major_version=${QT_MAJOR_VERSION} -D ma_coverage_build=${COVERAGE_BUILD} ${TRAVIS_BUILD_DIR};
+      fi && \
+      cmake --build . --config ${BUILD_TYPE};
     fi
-    if [ "${COVERAGE_BUILD}" != 0 ]; then
-      echo "Preparing code coverage counters at ${TRAVIS_BUILD_DIR}/build/lcov-base.info"
-      lcov -z -d . && lcov -c -d . -i -o lcov-base.info
+  - if [ "${COVERAGE_BUILD}" != 0 ]; then
+      echo "Preparing code coverage counters at ${TRAVIS_BUILD_DIR}/build/lcov-base.info" && \
+      lcov -z -d . && \
+      lcov -c -d . -i -o lcov-base.info;
     fi
-    ctest --build-config ${BUILD_TYPE} --verbose
-    if [ "${COVERAGE_BUILD}" != 0 ]; then
-      echo "Caclulating coverage at ${TRAVIS_BUILD_DIR}/build/lcov-test.info"
-      lcov -c -d . -o lcov-test.info
-      echo "Caclulating coverage delta at ${TRAVIS_BUILD_DIR}/build/lcov.info"
-      lcov -a lcov-base.info -a lcov-test.info -o lcov.info
-      echo "Excluding 3rd party code from coverage data located at ${TRAVIS_BUILD_DIR}/build/lcov.info"
-      lcov -r lcov.info "ui_*.h*" "moc_*.c*" "/usr/*" "3rdparty/*" "examples/*" "tests/*" "${DEPENDENCIES_HOME}/*" -o lcov.info
+  - ctest --build-config ${BUILD_TYPE} --verbose
+  - if [ "${COVERAGE_BUILD}" != 0 ]; then
+      echo "Caclulating coverage at ${TRAVIS_BUILD_DIR}/build/lcov-test.info" && \
+      lcov -c -d . -o lcov-test.info && \
+      echo "Caclulating coverage delta at ${TRAVIS_BUILD_DIR}/build/lcov.info" && \
+      lcov -a lcov-base.info -a lcov-test.info -o lcov.info && \
+      echo "Excluding 3rd party code from coverage data located at ${TRAVIS_BUILD_DIR}/build/lcov.info" && \
+      lcov -r lcov.info "ui_*.h*" "moc_*.c*" "/usr/*" "3rdparty/*" "examples/*" "tests/*" "${DEPENDENCIES_HOME}/*" -o lcov.info;
     fi
-    cd ${TRAVIS_BUILD_DIR}
+  - cd ${TRAVIS_BUILD_DIR}
 
 after_success:
-  - |
-    set -e
-    cd ${TRAVIS_BUILD_DIR}
-    if [ "${COVERAGE_BUILD}" != 0 ]; then
-      echo "Sending ${TRAVIS_BUILD_DIR}/build/lcov.info coverage data to Codecov"
-      bash <(curl -s https://codecov.io/bash) -f ${TRAVIS_BUILD_DIR}/build/lcov.info -R ${TRAVIS_BUILD_DIR} -X gcov
+  - cd ${TRAVIS_BUILD_DIR}
+  - if [ "${COVERAGE_BUILD}" != 0 ]; then
+      echo "Sending ${TRAVIS_BUILD_DIR}/build/lcov.info coverage data to Codecov" && \
+      bash <(curl -s https://codecov.io/bash) -f ${TRAVIS_BUILD_DIR}/build/lcov.info -R ${TRAVIS_BUILD_DIR} -X gcov;
     fi
