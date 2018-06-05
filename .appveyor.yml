@@ -655,7 +655,7 @@ test_script:
         $cobertura_coverage_file = "$coverage_work_folder\coverage.xml"
         $coverage_report_archive = "$coverage_work_folder\report.zip"
         New-Item "$coverage_work_folder" -type directory | out-null
-        OpenCppCoverage.exe --quiet --export_type "html:$coverage_report_folder" --export_type "cobertura:$cobertura_coverage_file" --sources "$env:APPVEYOR_BUILD_FOLDER" --excluded_sources "$env:APPVEYOR_BUILD_FOLDER\3rdparty" --excluded_sources "$env:APPVEYOR_BUILD_FOLDER\tests" --modules "$env:APPVEYOR_BUILD_FOLDER\tests" --cover_children --working_dir "$env:APPVEYOR_BUILD_FOLDER\build" -- ctest.exe --build-config $env:CONFIGURATION --verbose
+        OpenCppCoverage.exe --quiet --export_type "html:$coverage_report_folder" --export_type "cobertura:$cobertura_coverage_file" --sources "$env:APPVEYOR_BUILD_FOLDER" --excluded_sources "$env:APPVEYOR_BUILD_FOLDER\3rdparty" --excluded_sources "$env:APPVEYOR_BUILD_FOLDER\examples" --excluded_sources "$env:APPVEYOR_BUILD_FOLDER\tests" --modules "$env:APPVEYOR_BUILD_FOLDER\build\tests" --cover_children --working_dir "$env:APPVEYOR_BUILD_FOLDER\build" -- ctest.exe --build-config $env:CONFIGURATION --verbose
         if ($LastExitCode -ne 0) {
           throw "Tests failed with exit code $LastExitCode."
         }
