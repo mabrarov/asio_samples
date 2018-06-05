@@ -98,26 +98,26 @@ install:
       $env:WINDOWS_SDK_ENV_BATCH_FILE = ""
       $env:WINDOWS_SDK_ENV_PARAMETERS = ""
       $env:MSVS_HOME = "${env:ProgramFiles(x86)}\Microsoft Visual Studio $env:MSVC_VERSION"
-      $env:VCVARS_BATCH_FILE = "$env:MSVS_HOME\VC\vcvarsall.bat"
+      $env:MSVC_VARS_BATCH_FILE = "$env:MSVS_HOME\VC\vcvarsall.bat"
       $env:MSVS_PATCH_FOLDER = ""
       $env:MSVS_PATCH_BATCH_FILE = ""
       switch ($env:PLATFORM) {
         "Win32" {
-          $env:VCVARS_PLATFORM = "x86"
+          $env:MSVC_VARS_PLATFORM = "x86"
         }
         "x64" {
           switch ($env:MSVC_VERSION) {
             "14.0" {
-              $env:VCVARS_PLATFORM = "amd64"
+              $env:MSVC_VARS_PLATFORM = "amd64"
             }
             "12.0" {
-              $env:VCVARS_PLATFORM = "amd64"
+              $env:MSVC_VARS_PLATFORM = "amd64"
             }
             "11.0" {
-              $env:VCVARS_PLATFORM = "x86_amd64"
+              $env:MSVC_VARS_PLATFORM = "x86_amd64"
             }
             "10.0" {
-              $env:VCVARS_BATCH_FILE = ""
+              $env:MSVC_VARS_BATCH_FILE = ""
               $env:WINDOWS_SDK_ENV_BATCH_FILE = "$env:ProgramFiles\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd"
               $env:WINDOWS_SDK_ENV_PARAMETERS = "/x64 /$env:CONFIGURATION"
             }
@@ -148,7 +148,7 @@ install:
                 Write-Host "Extracted: $env:MSVS_PATCH_FOLDER"
               }
               $env:MSVS_PATCH_BATCH_FILE = "$env:MSVS_PATCH_FOLDER\setup_x64.bat"
-              $env:VCVARS_PLATFORM = "x86_amd64"
+              $env:MSVC_VARS_PLATFORM = "x86_amd64"
             }
             default {
               throw "Unsupported MSVS version: $env:MSVC_VERSION"
@@ -542,8 +542,8 @@ install:
       Write-Host "MSVS_PATCH_BATCH_FILE     : $env:MSVS_PATCH_BATCH_FILE"
       Write-Host "WINDOWS_SDK_ENV_BATCH_FILE: $env:WINDOWS_SDK_ENV_BATCH_FILE"
       Write-Host "WINDOWS_SDK_ENV_PARAMETERS: $env:WINDOWS_SDK_ENV_PARAMETERS"
-      Write-Host "VCVARS_BATCH_FILE         : $env:VCVARS_BATCH_FILE"
-      Write-Host "VCVARS_PLATFORM           : $env:VCVARS_PLATFORM"
+      Write-Host "MSVC_VARS_BATCH_FILE      : $env:MSVC_VARS_BATCH_FILE"
+      Write-Host "MSVC_VARS_PLATFORM        : $env:MSVC_VARS_PLATFORM"
       Write-Host "APPVEYOR_BUILD_FOLDER     : $env:APPVEYOR_BUILD_FOLDER"
       if ($env:ICU_ROOT) {
         Write-Host "ICU_ROOT                  : $env:ICU_ROOT"
@@ -569,30 +569,10 @@ install:
       if ($env:MSVS_PATCH_FOLDER) {
         Set-Location -Path "$env:MSVS_PATCH_FOLDER"
       }
-      if ($env:MSVS_PATCH_BATCH_FILE) {
-        Write-Host "Applying MSVS patch: $env:MSVS_PATCH_BATCH_FILE"
-        & "$env:MSVS_PATCH_BATCH_FILE"
-        if ($LastExitCode -ne 0) {
-          throw "Failed to apply MSVS patch $env:MSVS_PATCH_BATCH_FILE with exit code $LastExitCode"
-        }
-        Write-Host "Successfully applied MSVS patch"
-      }
-      if ($env:WINDOWS_SDK_ENV_BATCH_FILE) {
-        Write-Host "Configuring Windows SDK with $env:WINDOWS_SDK_ENV_BATCH_FILE script using parameters: $env:WINDOWS_SDK_ENV_PARAMETERS"
-        & "$env:WINDOWS_SDK_ENV_BATCH_FILE" $env:WINDOWS_SDK_ENV_PARAMETERS
-        if ($LastExitCode -ne 0) {
-          throw "Failed to configure Windows SDK using $env:WINDOWS_SDK_ENV_BATCH_FILE script with parameters: $env:WINDOWS_SDK_ENV_PARAMETERS. Exit code: $LastExitCode"
-        }
-        Write-Host "Successfully configured Windows SDK"
-      }
-      if ($env:VCVARS_BATCH_FILE) {
-        Write-Host "Configuring MSVC command line with $env:VCVARS_BATCH_FILE script using parameters: $env:VCVARS_PLATFORM"
-        & "$env:VCVARS_BATCH_FILE" $env:VCVARS_PLATFORM
-        if ($LastExitCode -ne 0) {
-          throw "Failed to configure MSVC command line using $env:VCVARS_BATCH_FILE script with parameters: $env:VCVARS_PLATFORM. Exit code: $LastExitCode"
-        }
-        Write-Host "Successfully configured MSVC command line"
-      }
+  - cmd: if not "%MSVS_PATCH_BATCH_FILE%"=="" call "%MSVS_PATCH_BATCH_FILE%"
+  - cmd: if not "%WINDOWS_SDK_ENV_BATCH_FILE%"=="" call "%WINDOWS_SDK_ENV_BATCH_FILE%" %WINDOWS_SDK_ENV_PARAMETERS%
+  - cmd: if not "%MSVC_VARS_BATCH_FILE%"=="" call "%MSVC_VARS_BATCH_FILE%" %MSVC_VARS_PLATFORM%
+  - ps: |
       if ($env:QT_VERSION) {
         $env:PATH = "$env:QT_BIN_FOLDER;$env:PATH"
       }
