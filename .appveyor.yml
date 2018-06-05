@@ -655,9 +655,16 @@ build_script:
 test_script:
   - ps: |
       Set-Location -Path "$env:APPVEYOR_BUILD_FOLDER\build"
-      ctest.exe --build-config $env:CONFIGURATION --verbose
-      if ($LastExitCode -ne 0) {
-        throw "Tests failed exit code $LastExitCode."
+      if ($env:COVERAGE_BUILD -eq "True") {
+        OpenCppCoverage.exe --sources "$env:APPVEYOR_BUILD_FOLDER" --excluded_sources "$env:APPVEYOR_BUILD_FOLDER\3rdparty" --excluded_sources "$env:APPVEYOR_BUILD_FOLDER\tests" --modules "$env:APPVEYOR_BUILD_FOLDER\tests" --cover_children --working_dir "$env:APPVEYOR_BUILD_FOLDER\build" -- ctest.exe --build-config $env:CONFIGURATION --verbose
+        if ($LastExitCode -ne 0) {
+          throw "Tests failed exit code $LastExitCode."
+        }
+      } else {
+        ctest.exe --build-config $env:CONFIGURATION --verbose
+        if ($LastExitCode -ne 0) {
+          throw "Tests failed exit code $LastExitCode."
+        }
       }
 
 artifacts:
