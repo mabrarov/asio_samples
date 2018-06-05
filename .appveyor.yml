@@ -558,12 +558,41 @@ install:
       Write-Host "CMAKE_GENERATOR           : $env:CMAKE_GENERATOR"
       Write-Host "COVERITY_SCAN_BUILD       : $env:COVERITY_SCAN_BUILD"
       Write-Host "COVERAGE_BUILD            : $env:COVERAGE_BUILD"
-  - cmd: if "%COVERAGE_BUILD%"=="True" choco install opencppcoverage
-  - cmd: if not "%MSVS_PATCH_FOLDER%"=="" cd /d "%MSVS_PATCH_FOLDER%"
-  - cmd: if not "%MSVS_PATCH_BATCH_FILE%"=="" call "%MSVS_PATCH_BATCH_FILE%"
-  - cmd: if not "%WINDOWS_SDK_ENV_BATCH_FILE%"=="" call "%WINDOWS_SDK_ENV_BATCH_FILE%" %WINDOWS_SDK_ENV_PARAMETERS%
-  - cmd: if not "%VCVARS_BATCH_FILE%"=="" call "%VCVARS_BATCH_FILE%" %VCVARS_PLATFORM%
-  - ps: |
+      if ($env:COVERAGE_BUILD -eq "True") {
+        Write-Host "Installing OpenCppCoverage for calculating test coverage"
+        choco install opencppcoverage
+        if ($LastExitCode -ne 0) {
+          throw "Failed to install OpenCppCoverage"
+        }
+        Write-Host "OpenCppCoverage installed succesfully"
+      }
+      if ($env:MSVS_PATCH_FOLDER) {
+        Set-Location -Path "$env:MSVS_PATCH_FOLDER"
+      }
+      if ($env:MSVS_PATCH_BATCH_FILE) {
+        Write-Host "Applying MSVS patch: $env:MSVS_PATCH_BATCH_FILE"
+        & "$env:MSVS_PATCH_BATCH_FILE"
+        if ($LastExitCode -ne 0) {
+          throw "Failed to apply MSVS patch $env:MSVS_PATCH_BATCH_FILE with exit code $LastExitCode"
+        }
+        Write-Host "Successfully applied MSVS patch"
+      }
+      if ($env:WINDOWS_SDK_ENV_BATCH_FILE) {
+        Write-Host "Configuring Windows SDK with $env:WINDOWS_SDK_ENV_BATCH_FILE script using parameters: $env:WINDOWS_SDK_ENV_PARAMETERS"
+        & "$env:WINDOWS_SDK_ENV_BATCH_FILE" $env:WINDOWS_SDK_ENV_PARAMETERS
+        if ($LastExitCode -ne 0) {
+          throw "Failed to configure Windows SDK using $env:WINDOWS_SDK_ENV_BATCH_FILE script with parameters: $env:WINDOWS_SDK_ENV_PARAMETERS. Exit code: $LastExitCode"
+        }
+        Write-Host "Successfully configured Windows SDK"
+      }
+      if ($env:VCVARS_BATCH_FILE) {
+        Write-Host "Configuring MSVC command line with $env:VCVARS_BATCH_FILE script using parameters: $env:VCVARS_PLATFORM"
+        & "$env:VCVARS_BATCH_FILE" $env:VCVARS_PLATFORM
+        if ($LastExitCode -ne 0) {
+          throw "Failed to configure MSVC command line using $env:VCVARS_BATCH_FILE script with parameters: $env:VCVARS_PLATFORM. Exit code: $LastExitCode"
+        }
+        Write-Host "Successfully configured MSVC command line"
+      }
       if ($env:QT_VERSION) {
         $env:PATH = "$env:QT_BIN_FOLDER;$env:PATH"
       }
@@ -644,8 +673,12 @@ build_script:
       }
 
 test_script:
-  - cmd: cd /d "%APPVEYOR_BUILD_FOLDER%\build"
-  - cmd: ctest --build-config %CONFIGURATION% --verbose
+  - ps: |
+      Set-Location -Path "$env:APPVEYOR_BUILD_FOLDER\build"
+      ctest.exe --build-config $env:CONFIGURATION --verbose
+      if ($LastExitCode -ne 0) {
+        throw "Tests failed exit code $LastExitCode."
+      }
 
 artifacts:
   - path: build\examples\ma_asio_performance_test_client\$(configuration)\*.exe
