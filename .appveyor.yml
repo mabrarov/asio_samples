@@ -562,7 +562,7 @@ install:
         Write-Host "Installing OpenCppCoverage for calculating test coverage"
         choco install opencppcoverage
         if ($LastExitCode -ne 0) {
-          throw "Failed to install OpenCppCoverage"
+          throw "Failed to install OpenCppCoverage with exit code $LastExitCode."
         }
         Write-Host "OpenCppCoverage installed succesfully"
       }
