@@ -103,6 +103,7 @@ install:
   - cmd: choco install opencppcoverage
   - cmd: pip install codecov==2.0.9
   - ps: |
+      $env:OS_VERSION = (Get-WmiObject win32_operatingsystem).version
       $env:WINDOWS_SDK_ENV_BATCH_FILE = ""
       $env:WINDOWS_SDK_ENV_PARAMETERS = ""
       $env:MSVS_HOME = "${env:ProgramFiles(x86)}\Microsoft Visual Studio $env:MSVC_VERSION"
@@ -544,6 +545,7 @@ install:
       $env:CMAKE_GENERATOR = "Visual Studio$cmake_generator_msvc_version_suffx$cmake_generator_platform_suffix"
       $env:COVERITY_SCAN_BUILD = ($env:COVERITY_SCAN_CANDIDATE -eq "1") -and ($env:APPVEYOR_REPO_BRANCH -eq "coverity_scan") -and ($env:CONFIGURATION -eq "Release") -and ($env:PLATFORM -eq "x64")
       $env:COVERAGE_BUILD = ($env:COVERAGE_BUILD_CANDIDATE -eq "1") -and ($env:CONFIGURATION -eq "Debug") -and ($env:PLATFORM -eq "x64")
+      $env:CODECOV_FLAG="windows_${env:OS_VERSION}__msvc_${env:MSVC_VERSION}__boost_${env:BOOST_VERSION}__qt_${env:QT_VERSION}" -replace "\.", "_"
       Write-Host "PLATFORM                  : $env:PLATFORM"
       Write-Host "CONFIGURATION             : $env:CONFIGURATION"
       Write-Host "MSVS_PATCH_FOLDER         : $env:MSVS_PATCH_FOLDER"
@@ -566,6 +568,7 @@ install:
       Write-Host "CMAKE_GENERATOR           : $env:CMAKE_GENERATOR"
       Write-Host "COVERITY_SCAN_BUILD       : $env:COVERITY_SCAN_BUILD"
       Write-Host "COVERAGE_BUILD            : $env:COVERAGE_BUILD"
+      Write-Host "CODECOV_FLAG              : $env:CODECOV_FLAG"
   - cmd: if not "%MSVS_PATCH_FOLDER%"=="" cd /d "%MSVS_PATCH_FOLDER%"
   - cmd: if not "%MSVS_PATCH_BATCH_FILE%"=="" call "%MSVS_PATCH_BATCH_FILE%"
   - cmd: if not "%WINDOWS_SDK_ENV_BATCH_FILE%"=="" call "%WINDOWS_SDK_ENV_BATCH_FILE%" %WINDOWS_SDK_ENV_PARAMETERS%
@@ -654,7 +657,6 @@ test_script:
   - ps: |
       Set-Location -Path "$env:APPVEYOR_BUILD_FOLDER\build"
       if ($env:COVERAGE_BUILD -eq "True") {
-        $env:OS_VERSION = (Get-WmiObject win32_operatingsystem).version
         $coverage_report_folder = "$env:COVERAGE_WORK_FOLDER\report"
         $coverage_report_archive = "$env:COVERAGE_WORK_FOLDER\report.zip"
         New-Item "$env:COVERAGE_WORK_FOLDER" -type directory | out-null
@@ -677,7 +679,7 @@ test_script:
 
 after_test:
   - cmd: cd /d "%APPVEYOR_BUILD_FOLDER%"
-  - cmd: if "%COVERAGE_BUILD%"=="True" codecov --token "%CODECOV_TOKEN%" --file "%COBERTURA_COVERAGE_FILE%" --root "%APPVEYOR_BUILD_FOLDER%" -X gcov -F "windows-%OS_VERSION%_msvc-%MSVC_VERSION%_boost-%BOOST_VERSION%_qt-%QT_VERSION%"
+  - cmd: if "%COVERAGE_BUILD%"=="True" codecov --token "%CODECOV_TOKEN%" --file "%COBERTURA_COVERAGE_FILE%" --root "%APPVEYOR_BUILD_FOLDER%" -X gcov -F "%CODECOV_FLAG%"
 
 artifacts:
   - path: build\examples\ma_asio_performance_test_client\$(configuration)\*.exe
