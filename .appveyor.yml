@@ -675,7 +675,8 @@ test_script:
       }
 
 after_test:
-  - cmd: if "%COVERAGE_BUILD%"=="True" codecov -t "%CODECOV_TOKEN%" -f "%COBERTURA_COVERAGE_FILE%" -R "%APPVEYOR_BUILD_FOLDER%" -X gcov
+  - cmd: cd /d "%APPVEYOR_BUILD_FOLDER%"
+  - cmd: if "%COVERAGE_BUILD%"=="True" codecov --token "%CODECOV_TOKEN%" --file "%COBERTURA_COVERAGE_FILE%" --root "%APPVEYOR_BUILD_FOLDER%" -X gcov
 
 artifacts:
   - path: build\examples\ma_asio_performance_test_client\$(configuration)\*.exe
