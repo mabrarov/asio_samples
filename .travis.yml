@@ -490,8 +490,8 @@ install:
     fi
 
 script:
-  - export CODECOV_FLAG="ubuntu_14_04__${CXX_COMPILER_FAMILY}_$(${CXX_COMPILER} -dumpversion)__boost_${BOOST_VERSION}__qt_${QT_MAJOR_VERSION}"
-  - export CODECOV_FLAG="${CODECOV_FLAG//./_}"
+  - export CODECOV_FLAG="ubuntu_14_04__$(uname -m)__${CXX_COMPILER_FAMILY}_$(${CXX_COMPILER} -dumpversion)__boost_${BOOST_VERSION}__qt_${QT_MAJOR_VERSION}"
+  - export CODECOV_FLAG="${CODECOV_FLAG//[.-]/_}"
   - if [ "${COVERITY_SCAN_BRANCH}" == 1 ]; then
       echo "Build was already perfomed with Coverity scan.";
     else
