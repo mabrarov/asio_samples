@@ -543,7 +543,7 @@ install:
       }
       $env:CMAKE_GENERATOR = "Visual Studio$cmake_generator_msvc_version_suffx$cmake_generator_platform_suffix"
       $env:COVERITY_SCAN_BUILD = ($env:COVERITY_SCAN_CANDIDATE -eq "1") -and ($env:APPVEYOR_REPO_BRANCH -eq "coverity_scan") -and ($env:CONFIGURATION -eq "Release") -and ($env:PLATFORM -eq "x64")
-      $env:COVERAGE_BUILD = ($env:COVERAGE_BUILD_CANDIDATE -eq "1") -and ($env:CONFIGURATION -eq "Debug") -and ($env:PLATFORM -eq "x64") -and (($env:APPVEYOR_REPO_BRANCH -match "^.*_win$") -or ($env:APPVEYOR_REPO_BRANCH -match "^.*_windows$"))
+      $env:COVERAGE_BUILD = ($env:COVERAGE_BUILD_CANDIDATE -eq "1") -and ($env:CONFIGURATION -eq "Debug") -and ($env:PLATFORM -eq "x64")
       Write-Host "PLATFORM                  : $env:PLATFORM"
       Write-Host "CONFIGURATION             : $env:CONFIGURATION"
       Write-Host "MSVS_PATCH_FOLDER         : $env:MSVS_PATCH_FOLDER"
@@ -654,6 +654,7 @@ test_script:
   - ps: |
       Set-Location -Path "$env:APPVEYOR_BUILD_FOLDER\build"
       if ($env:COVERAGE_BUILD -eq "True") {
+        $env:OS_VERSION = (Get-WmiObject win32_operatingsystem).version
         $coverage_report_folder = "$env:COVERAGE_WORK_FOLDER\report"
         $coverage_report_archive = "$env:COVERAGE_WORK_FOLDER\report.zip"
         New-Item "$env:COVERAGE_WORK_FOLDER" -type directory | out-null
@@ -676,7 +677,7 @@ test_script:
 
 after_test:
   - cmd: cd /d "%APPVEYOR_BUILD_FOLDER%"
-  - cmd: if "%COVERAGE_BUILD%"=="True" codecov --token "%CODECOV_TOKEN%" --file "%COBERTURA_COVERAGE_FILE%" --root "%APPVEYOR_BUILD_FOLDER%" -X gcov
+  - cmd: if "%COVERAGE_BUILD%"=="True" codecov --token "%CODECOV_TOKEN%" --file "%COBERTURA_COVERAGE_FILE%" --root "%APPVEYOR_BUILD_FOLDER%" -X gcov -F "windows-%OS_VERSION%_msvc-%MSVC_VERSION%_boost-%BOOST_VERSION%_qt-%QT_VERSION%"
 
 artifacts:
   - path: build\examples\ma_asio_performance_test_client\$(configuration)\*.exe

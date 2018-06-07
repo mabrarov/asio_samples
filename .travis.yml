@@ -496,7 +496,7 @@ script:
       rm -rf ${TRAVIS_BUILD_DIR}/build && mkdir -p ${TRAVIS_BUILD_DIR}/build;
     fi
   - export COVERAGE_BUILD=0;
-  - if [[ "${COVERAGE_BUILD_CANDIDATE}" != 0 ]] && [[ ! "${TRAVIS_BRANCH}" =~ ^.*_win$ ]] && [[ ! "${TRAVIS_BRANCH}" =~ ^.*_windows$ ]]; then
+  - if [[ "${COVERAGE_BUILD_CANDIDATE}" != 0 ]]; then
       export COVERAGE_BUILD=1;
     fi
   - cd ${TRAVIS_BUILD_DIR}/build
@@ -530,5 +530,5 @@ after_success:
   - cd ${TRAVIS_BUILD_DIR}
   - if [ "${COVERAGE_BUILD}" != 0 ]; then
       echo "Sending ${TRAVIS_BUILD_DIR}/build/lcov.info coverage data to Codecov" &&
-      bash <(curl -s https://codecov.io/bash) -f ${TRAVIS_BUILD_DIR}/build/lcov.info -R ${TRAVIS_BUILD_DIR} -X gcov;
+      bash <(curl -s https://codecov.io/bash) -f ${TRAVIS_BUILD_DIR}/build/lcov.info -R ${TRAVIS_BUILD_DIR} -X gcov -F "ubuntu-14.04_gcc-$(${CXX_COMPILER} -dumpversion)_boost-${BOOST_VERSION}_qt-${QT_MAJOR_VERSION}";
     fi
