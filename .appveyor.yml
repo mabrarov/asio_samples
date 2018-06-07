@@ -100,8 +100,6 @@ environment:
       QT_LINKAGE: shared
 
 install:
-  - cmd: choco install opencppcoverage
-  - cmd: pip install codecov==2.0.9
   - ps: |
       $env:OS_VERSION = (Get-WmiObject win32_operatingsystem).version
       $env:WINDOWS_SDK_ENV_BATCH_FILE = ""
@@ -569,6 +567,8 @@ install:
       Write-Host "COVERITY_SCAN_BUILD       : $env:COVERITY_SCAN_BUILD"
       Write-Host "COVERAGE_BUILD            : $env:COVERAGE_BUILD"
       Write-Host "CODECOV_FLAG              : $env:CODECOV_FLAG"
+  - cmd: if "%COVERAGE_BUILD%"=="True" choco install opencppcoverage
+  - cmd: if "%COVERAGE_BUILD%"=="True" pip install codecov==2.0.9
   - cmd: if not "%MSVS_PATCH_FOLDER%"=="" cd /d "%MSVS_PATCH_FOLDER%"
   - cmd: if not "%MSVS_PATCH_BATCH_FILE%"=="" call "%MSVS_PATCH_BATCH_FILE%"
   - cmd: if not "%WINDOWS_SDK_ENV_BATCH_FILE%"=="" call "%WINDOWS_SDK_ENV_BATCH_FILE%" %WINDOWS_SDK_ENV_PARAMETERS%
