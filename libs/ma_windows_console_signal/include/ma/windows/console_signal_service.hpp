@@ -34,11 +34,12 @@ namespace ma {
 namespace windows {
 
 class console_signal_service_base
-  : public detail::intrusive_list<console_signal_service_base>::base_hook
+  : private detail::intrusive_list<console_signal_service_base>::base_hook
   , private boost::noncopyable
 {
 private:
   typedef console_signal_service_base this_type;
+  friend class detail::intrusive_list<console_signal_service_base>;
 
 public:
   virtual bool deliver_signal() = 0;
@@ -64,7 +65,7 @@ protected:
 /// asio::io_service::service implementing console_signal.
 class console_signal_service
   : public detail::service_base<console_signal_service>
-  , private console_signal_service_base
+  , public console_signal_service_base
 {
 private:
   class handler_base
@@ -154,6 +155,8 @@ public:
   std::size_t cancel(implementation_type& impl,
       boost::system::error_code& error);
 
+  virtual bool deliver_signal();
+
 protected:
   virtual ~console_signal_service();
 
@@ -171,7 +174,6 @@ private:
   typedef detail::intrusive_list<impl_base> impl_base_list;
 
   virtual void shutdown_service();
-  virtual bool deliver_signal();
 
   mutex_type mutex_;
   // Double-linked intrusive list of active implementations.
