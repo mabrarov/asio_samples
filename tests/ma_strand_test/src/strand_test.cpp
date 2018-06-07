@@ -35,6 +35,11 @@ void save_thread_id(detail::thread::id& thread_id, detail::latch& done)
 template <typename Context, typename Handler>
 class dispatcher
 {
+private:
+  typedef dispatcher<Context, Handler> this_type;
+
+  this_type& operator=(const this_type&);
+
 public:
   dispatcher(Context& context, MA_FWD_REF(Handler) handler)
     : context_(context)
@@ -66,6 +71,11 @@ dispatcher<typename detail::decay<Context>::type,
 template <typename Context, typename Handler>
 class poster
 {
+private:
+  typedef poster<Context, Handler> this_type;
+
+  this_type& operator=(const this_type&);
+
 public:
   poster(Context& context, MA_FWD_REF(Handler) handler)
     : context_(context)
