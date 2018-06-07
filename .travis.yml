@@ -11,7 +11,7 @@ dist: trusty
 
 cache:
   directories:
-  - ${HOME}/downloads
+    - ${HOME}/downloads
 
 env:
   global:
