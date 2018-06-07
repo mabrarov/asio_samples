@@ -27,6 +27,7 @@ list(APPEND cxx_sources
     "${cxx_sources_dir}/windows_console_signal_test.cpp")
 
 list(APPEND cxx_private_libraries
+    ma_boost_header_only
     ma_boost_system
     ma_boost_asio
     ma_gtest

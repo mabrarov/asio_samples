@@ -12,6 +12,8 @@
 #include <windows.h>
 #include <iostream>
 #include <boost/asio.hpp>
+#include <boost/optional.hpp>
+#include <boost/utility/in_place_factory.hpp>
 #include <boost/system/error_code.hpp>
 #include <gtest/gtest.h>
 #include <ma/config.hpp>
@@ -21,34 +23,110 @@
 #include <ma/detail/memory.hpp>
 #include <ma/detail/functional.hpp>
 #include <ma/detail/latch.hpp>
+#include <ma/detail/thread.hpp>
 
 namespace ma {
 namespace test {
 
-namespace windows_console_signal_ctrl_c_handling {
+namespace windows_console_signal_handler_invocation {
 
-void handle_ctrl_c(detail::latch& latch)
+typedef boost::optional<boost::asio::io_service::work> optional_work;
+typedef std::size_t (boost::asio::io_service::*run_io_service_func)(void);
+
+static const run_io_service_func run_io_service = &boost::asio::io_service::run;
+
+class io_service_thread_stop : private boost::noncopyable
 {
-  latch.count_down();
+public:
+  io_service_thread_stop(optional_work& io_service_work, detail::thread& thread)
+    : io_service_work_(io_service_work)
+    , io_service_(io_service_work->get_io_service())
+    , thread_(thread)
+  {
+  }
+
+  ~io_service_thread_stop()
+  {
+    io_service_work_ = boost::none;
+    io_service_.stop();
+    if (thread_.joinable())
+    {
+      thread_.join();
+    }
+  }
+
+private:
+  optional_work& io_service_work_;
+  boost::asio::io_service& io_service_;
+  detail::thread& thread_;
+}; // class io_service_thread_stop
+
+void handle_ctrl_c(detail::latch& latch, const boost::system::error_code& error)
+{
+  if (!error)
+  {
+    latch.count_down();
+  }
+}
+
+void handle_cancel(detail::latch& latch, const boost::system::error_code& error)
+{
+  if (boost::asio::error::operation_aborted == error)
+  {
+    latch.count_down();
+  }
 }
 
 TEST(windows_console_signal, ctrl_c_handling)
 {
   detail::latch done_latch(1);
+
   boost::asio::io_service io_service;
+  optional_work work(boost::in_place(detail::ref(io_service)));
+  detail::thread thread(detail::bind(run_io_service, &io_service));
+  io_service_thread_stop thread_stop(work, thread);
+
   ma::windows::console_signal console_signal(io_service);
   console_signal.async_wait(
-      detail::bind(&handle_ctrl_c, detail::ref(done_latch)));
+      detail::bind(&handle_ctrl_c, detail::ref(done_latch),
+          detail::placeholders::_1));
   ma::windows::console_signal::service_type& console_signal_service =
       boost::asio::use_service<ma::windows::console_signal::service_type>(
           console_signal.get_io_service());
   // Imitate Ctrl+C / Ctrl+Break
   console_signal_service.deliver_signal();
-  io_service.run();
+
+  work = boost::none;
+  thread.join();
+
   ASSERT_EQ(0U, done_latch.value());
 }
 
-} // namespace windows_console_signal_ctrl_c_handling
+TEST(windows_console_signal, cancel_handling)
+{
+  detail::latch done_latch(1);
+
+  boost::asio::io_service io_service;
+  optional_work work(boost::in_place(detail::ref(io_service)));
+  detail::thread thread(detail::bind(run_io_service, &io_service));
+  io_service_thread_stop thread_stop(work, thread);
+
+  ma::windows::console_signal console_signal(io_service);
+  console_signal.async_wait(
+      detail::bind(&handle_cancel, detail::ref(done_latch),
+          detail::placeholders::_1));
+
+  boost::system::error_code error;
+  console_signal.cancel(error);
+  ASSERT_FALSE(error);
+
+  work = boost::none;
+  thread.join();
+
+  ASSERT_EQ(0U, done_latch.value());
+}
+
+} // namespace windows_console_signal_handler_invocation
 
 namespace windows_console_signal_destruction {
 
