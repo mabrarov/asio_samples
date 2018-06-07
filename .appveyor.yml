@@ -19,13 +19,17 @@ environment:
   PATH: C:\Program Files\OpenCppCoverage;C:\Python34;C:\Python34\Scripts;%PATH%
   DEPENDENCIES_FOLDER: C:\projects\dependencies
   DOWNLOADS_FOLDER: C:\projects\downloads
+  COVERAGE_WORK_FOLDER: %APPVEYOR_BUILD_FOLDER%\build\coverage
+  COBERTURA_COVERAGE_FILE: %APPVEYOR_BUILD_FOLDER%\build\coverage\coverage.xml
   COVERITY_SCAN_BUILD_CANDIDATE: 0
   COVERAGE_BUILD_CANDIDATE: 0
   COVERAGE_ARTIFACT_NAME: coverage
-  COVERITY_TOKEN:
-    secure: Dla0jvWDYSf0CHGmqVUa8uwo2QflZjNdkUw/wSyRqEs=
-  COVERITY_NOTIFICATION_EMAIL:
+  COVERITY_SCAN_TOKEN:
+    secure: /xtA6PHQhEU4NSLYHHUDfqrvNq0uflDa4a2clvq5dmE=
+  COVERITY_SCAN_NOTIFICATION_EMAIL:
     secure: ENSUMQl8WDP8x86q4eKd7B/o4WA5cEY9hqE7kOJA/io=
+  CODECOV_TOKEN:
+    secure: nh1i6Biwm7XuaX4qPVcR9oK+msdTBszi/VftjnP1gkBM5LXRT4v8ylUEvhZjuNM5
 
   matrix:
     - MSVC_VERSION: 14.0
@@ -640,7 +644,7 @@ build_script:
         # Upload results to Coverity server.
         $coverity_build_version = $env:APPVEYOR_REPO_COMMIT.Substring(0, 7)
         Write-Host "Uploading Coverity Scan results (version: $coverity_build_version)..."
-        curl.exe --connect-timeout 300 --max-time 1800 --retry 3 --retry-delay 5 --show-error --silent --location --form token="$env:COVERITY_TOKEN" --form email="$env:COVERITY_NOTIFICATION_EMAIL" --form file=@"$env:APPVEYOR_BUILD_FOLDER\build\$env:APPVEYOR_PROJECT_NAME.zip" --form version="$coverity_build_version" --form description="Build submitted via AppVeyor CI" https://scan.coverity.com/builds?project=$env:APPVEYOR_REPO_NAME
+        curl.exe --connect-timeout 300 --max-time 1800 --retry 3 --retry-delay 5 --show-error --silent --location --form token="$env:COVERITY_SCAN_TOKEN" --form email="$env:COVERITY_SCAN_NOTIFICATION_EMAIL" --form file=@"$env:APPVEYOR_BUILD_FOLDER\build\$env:APPVEYOR_PROJECT_NAME.zip" --form version="$coverity_build_version" --form description="Build submitted via AppVeyor CI" https://scan.coverity.com/builds?project=$env:APPVEYOR_REPO_NAME
         if ($LastExitCode -ne 0) {
           throw "Failed to upload Coverity Scan results with exit code $LastExitCode."
         }
@@ -650,12 +654,10 @@ test_script:
   - ps: |
       Set-Location -Path "$env:APPVEYOR_BUILD_FOLDER\build"
       if ($env:COVERAGE_BUILD -eq "True") {
-        $coverage_work_folder = "$env:APPVEYOR_BUILD_FOLDER\build\coverage"
-        $coverage_report_folder = "$coverage_work_folder\report"
-        $cobertura_coverage_file = "$coverage_work_folder\coverage.xml"
-        $coverage_report_archive = "$coverage_work_folder\report.zip"
-        New-Item "$coverage_work_folder" -type directory | out-null
-        OpenCppCoverage.exe --quiet --export_type "html:$coverage_report_folder" --export_type "cobertura:$cobertura_coverage_file" --sources "$env:APPVEYOR_BUILD_FOLDER" --excluded_sources "$env:APPVEYOR_BUILD_FOLDER\3rdparty" --excluded_sources "$env:APPVEYOR_BUILD_FOLDER\examples" --excluded_sources "$env:APPVEYOR_BUILD_FOLDER\tests" --modules "$env:APPVEYOR_BUILD_FOLDER\build\tests" --cover_children --working_dir "$env:APPVEYOR_BUILD_FOLDER\build" -- ctest.exe --build-config $env:CONFIGURATION --verbose
+        $coverage_report_folder = "$env:COVERAGE_WORK_FOLDER\report"
+        $coverage_report_archive = "$env:COVERAGE_WORK_FOLDER\report.zip"
+        New-Item "$env:COVERAGE_WORK_FOLDER" -type directory | out-null
+        OpenCppCoverage.exe --quiet --export_type "html:$coverage_report_folder" --export_type "cobertura:$env:COBERTURA_COVERAGE_FILE" --sources "$env:APPVEYOR_BUILD_FOLDER" --excluded_sources "$env:APPVEYOR_BUILD_FOLDER\3rdparty" --excluded_sources "$env:APPVEYOR_BUILD_FOLDER\examples" --excluded_sources "$env:APPVEYOR_BUILD_FOLDER\tests" --modules "$env:APPVEYOR_BUILD_FOLDER\build\tests" --cover_children --working_dir "$env:APPVEYOR_BUILD_FOLDER\build" -- ctest.exe --build-config $env:CONFIGURATION --verbose
         if ($LastExitCode -ne 0) {
           throw "Tests failed with exit code $LastExitCode."
         }
@@ -664,13 +666,16 @@ test_script:
           throw "Failed to archive coverage report located at $coverage_report_folder with exit code $LastExitCode."
         }
         Push-AppveyorArtifact "$coverage_report_archive" -DeploymentName "$env:COVERAGE_ARTIFACT_NAME"
-        Push-AppveyorArtifact "$cobertura_coverage_file" -DeploymentName "$env:COVERAGE_ARTIFACT_NAME"
+        Push-AppveyorArtifact "$env:COBERTURA_COVERAGE_FILE" -DeploymentName "$env:COVERAGE_ARTIFACT_NAME"
       } else {
         ctest.exe --build-config $env:CONFIGURATION --verbose
         if ($LastExitCode -ne 0) {
           throw "Tests failed with exit code $LastExitCode."
         }
       }
+
+after_test:
+  - cmd: if "%COVERAGE_BUILD%"=="True" codecov -X gcov -t "%CODECOV_TOKEN%" -f "%COBERTURA_COVERAGE_FILE%"
 
 artifacts:
   - path: build\examples\ma_asio_performance_test_client\$(configuration)\*.exe
