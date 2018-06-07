@@ -17,7 +17,7 @@ env:
   global:
     - PREBUILT_BOOST_DOWNLOAD_URL: "https://dl.bintray.com/mabrarov/generic/boost"
     - secure: "rxP3V/oY3YSGIaUkRjCK302ueka7zmxdEWBLnec4nW1We8ys0HS/WL//FkNyTQBHNILerfHCtKLMg4tX1ccxC9JPiS9biyDYDOMZQYlXv6UcJBoJBThcKUNcC8vxSrPc1rgSgbai+FvmwiXA/VmHPWInAhcUmsMqCocElR+lLf8gI9Y9VbiuEc3fOSq4KgeIdmblHfdA2BkCc96hR34gOa6r+C+gA0Y3eD3sQnAlzwYG0uXIaRcO0CPI2TJk0HJHc6Lzzpkvwd9vWNMlfRa7U2aKMtow44VPa9dQ+O2BI1H/+GT0eF+7wGPRZWYpkr9EKnzFJf+CFUnWz8BWULp5TsLUa6e6LCnkWiVfXeP/5+LNOrmYMZia6Ko0E9jY595y0aNKAPpzC535ecuYZ9PrV6W12ginutteKRgOjo0H1Rat7QkJ89FJiAXEmhQkiCu5D2FMsgRd6N6+3G06h4DEZeZ7wsUUZV3SpSSkl1wfQNUw0ddNDbTtOCw007md00LSTVPRaLVRuu7weyCKHqgY+h78yhvwAREKEK+qmnzcFBS6bwg5NReKYDiMK1JzgbiUPnqnvZ69rMEErfOWb4ET1FJ382dUtlGoUIbJIAY+1WlLRLTKkIBAeEnVWQFvDFPSYHeaLCxeNlacM76q9S5lBEY6XlC3g+nQidGnBLhGqZU="
-    - COVERAGE_BUILD: 0
+    - COVERAGE_BUILD_CANDIDATE: 0
     - DEPENDENCIES_HOME: ${HOME}/dependencies
     - DOWNLOADS_HOME: ${HOME}/downloads
 
@@ -27,7 +27,7 @@ before_install:
 matrix:
   include:
     # Default GCC, Boost 1.55.0, Qt 5.x. Used for collecting information about test coverage.
-    - env: C_COMPILER=gcc CXX_COMPILER=g++ BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG COVERAGE_BUILD=1
+    - env: C_COMPILER=gcc CXX_COMPILER=g++ BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG COVERAGE_BUILD_CANDIDATE=1
       compiler: gcc
       addons:
         apt:
@@ -494,6 +494,10 @@ script:
     else
       echo "Preparing build dir at ${TRAVIS_BUILD_DIR}/build" &&
       rm -rf ${TRAVIS_BUILD_DIR}/build && mkdir -p ${TRAVIS_BUILD_DIR}/build;
+    fi
+  - export COVERAGE_BUILD=0;
+  - if [[ "${COVERAGE_BUILD_CANDIDATE}" != 0 ]] && [[ ! "${TRAVIS_BRANCH}" =~ ^.*_win$ ]] && [[ ! "${TRAVIS_BRANCH}" =~ ^.*_windows$ ]]; then
+      export COVERAGE_BUILD=1;
     fi
   - cd ${TRAVIS_BUILD_DIR}/build
   - if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then
