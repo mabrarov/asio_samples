@@ -12,8 +12,8 @@ platform:
   - Win32
 
 configuration:
-  - Release
   - Debug
+  - Release
 
 environment:
   PATH: 'C:\Program Files\OpenCppCoverage;C:\Python34;C:\Python34\Scripts;%PATH%'
