@@ -87,6 +87,7 @@ TEST(limited_int, add_with_overflow)
 {
   const counter_value_type max_value =
       (std::numeric_limits<counter_value_type>::max)();
+  const counter_value_type one = boost::numeric_cast<counter_value_type>(1);
   {
     counter_type counter(max_value);
     ++counter;
@@ -100,9 +101,15 @@ TEST(limited_int, add_with_overflow)
     ASSERT_TRUE(counter.overflowed());
   }
   {
-    const counter_value_type one = boost::numeric_cast<counter_value_type>(1);
     counter_type counter(one);
     counter += max_value;
+    ASSERT_EQ(max_value, counter.value());
+    ASSERT_TRUE(counter.overflowed());
+  }
+  {
+    counter_type counter(one);
+    counter_type max_counter(max_value);
+    counter += max_counter;
     ASSERT_EQ(max_value, counter.value());
     ASSERT_TRUE(counter.overflowed());
   }

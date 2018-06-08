@@ -12,20 +12,24 @@ platform:
   - Win32
 
 configuration:
-  - Release
   - Debug
+  - Release
 
 environment:
-  PATH: C:\Program Files\OpenCppCoverage;C:\Python34;C:\Python34\Scripts;%PATH%
-  DEPENDENCIES_FOLDER: C:\projects\dependencies
-  DOWNLOADS_FOLDER: C:\projects\downloads
-  COVERITY_SCAN_BUILD_CANDIDATE: 0
+  PATH: 'C:\Program Files\OpenCppCoverage;C:\Python34;C:\Python34\Scripts;%PATH%'
+  DEPENDENCIES_FOLDER: 'C:\projects\dependencies'
+  DOWNLOADS_FOLDER: 'C:\projects\downloads'
+  COVERAGE_WORK_FOLDER: '%APPVEYOR_BUILD_FOLDER%\build\coverage'
+  COBERTURA_COVERAGE_FILE: '%APPVEYOR_BUILD_FOLDER%\build\coverage\coverage.xml'
+  COVERITY_SCAN_CANDIDATE: 0
   COVERAGE_BUILD_CANDIDATE: 0
-  COVERAGE_ARTIFACT_NAME: coverage
-  COVERITY_TOKEN:
-    secure: Dla0jvWDYSf0CHGmqVUa8uwo2QflZjNdkUw/wSyRqEs=
-  COVERITY_NOTIFICATION_EMAIL:
-    secure: ENSUMQl8WDP8x86q4eKd7B/o4WA5cEY9hqE7kOJA/io=
+  COVERAGE_ARTIFACT_NAME: 'coverage'
+  COVERITY_SCAN_TOKEN:
+    secure: '/xtA6PHQhEU4NSLYHHUDfqrvNq0uflDa4a2clvq5dmE='
+  COVERITY_SCAN_NOTIFICATION_EMAIL:
+    secure: 'ENSUMQl8WDP8x86q4eKd7B/o4WA5cEY9hqE7kOJA/io='
+  CODECOV_TOKEN:
+    secure: 'nh1i6Biwm7XuaX4qPVcR9oK+msdTBszi/VftjnP1gkBM5LXRT4v8ylUEvhZjuNM5'
 
   matrix:
     - MSVC_VERSION: 14.0
@@ -34,7 +38,7 @@ environment:
       BOOST_LINKAGE: static
       QT_VERSION: 5.10.1
       QT_LINKAGE: shared
-      COVERITY_SCAN_BUILD_CANDIDATE: 1
+      COVERITY_SCAN_CANDIDATE: 1
       COVERAGE_BUILD_CANDIDATE: 1
     - MSVC_VERSION: 12.0
       RUNTIME_LINKAGE: shared
@@ -96,9 +100,8 @@ environment:
       QT_LINKAGE: shared
 
 install:
-  - cmd: choco install opencppcoverage
-  - cmd: pip install codecov==2.0.9
   - ps: |
+      $env:OS_VERSION = (Get-WmiObject win32_operatingsystem).version
       $env:WINDOWS_SDK_ENV_BATCH_FILE = ""
       $env:WINDOWS_SDK_ENV_PARAMETERS = ""
       $env:MSVS_HOME = "${env:ProgramFiles(x86)}\Microsoft Visual Studio $env:MSVC_VERSION"
@@ -538,8 +541,9 @@ install:
         }
       }
       $env:CMAKE_GENERATOR = "Visual Studio$cmake_generator_msvc_version_suffx$cmake_generator_platform_suffix"
-      $env:COVERITY_SCAN_BUILD = ($env:COVERITY_SCAN_BUILD_CANDIDATE -eq "1") -and ($env:APPVEYOR_REPO_BRANCH -eq "coverity_scan") -and ($env:CONFIGURATION -eq "Release") -and ($env:PLATFORM -eq "x64")
+      $env:COVERITY_SCAN_BUILD = ($env:COVERITY_SCAN_CANDIDATE -eq "1") -and ($env:APPVEYOR_REPO_BRANCH -eq "coverity_scan") -and ($env:CONFIGURATION -eq "Release") -and ($env:PLATFORM -eq "x64")
       $env:COVERAGE_BUILD = ($env:COVERAGE_BUILD_CANDIDATE -eq "1") -and ($env:CONFIGURATION -eq "Debug") -and ($env:PLATFORM -eq "x64")
+      $env:CODECOV_FLAG="windows_${env:OS_VERSION}__${env:PLATFORM}__msvc_${env:MSVC_VERSION}__boost_${env:BOOST_VERSION}__qt_${env:QT_VERSION}" -replace "[\.-]", "_"
       Write-Host "PLATFORM                  : $env:PLATFORM"
       Write-Host "CONFIGURATION             : $env:CONFIGURATION"
       Write-Host "MSVS_PATCH_FOLDER         : $env:MSVS_PATCH_FOLDER"
@@ -562,6 +566,9 @@ install:
       Write-Host "CMAKE_GENERATOR           : $env:CMAKE_GENERATOR"
       Write-Host "COVERITY_SCAN_BUILD       : $env:COVERITY_SCAN_BUILD"
       Write-Host "COVERAGE_BUILD            : $env:COVERAGE_BUILD"
+      Write-Host "CODECOV_FLAG              : $env:CODECOV_FLAG"
+  - cmd: if "%COVERAGE_BUILD%"=="True" choco install opencppcoverage
+  - cmd: if "%COVERAGE_BUILD%"=="True" pip install codecov==2.0.9
   - cmd: if not "%MSVS_PATCH_FOLDER%"=="" cd /d "%MSVS_PATCH_FOLDER%"
   - cmd: if not "%MSVS_PATCH_BATCH_FILE%"=="" call "%MSVS_PATCH_BATCH_FILE%"
   - cmd: if not "%WINDOWS_SDK_ENV_BATCH_FILE%"=="" call "%WINDOWS_SDK_ENV_BATCH_FILE%" %WINDOWS_SDK_ENV_PARAMETERS%
@@ -640,7 +647,7 @@ build_script:
         # Upload results to Coverity server.
         $coverity_build_version = $env:APPVEYOR_REPO_COMMIT.Substring(0, 7)
         Write-Host "Uploading Coverity Scan results (version: $coverity_build_version)..."
-        curl.exe --connect-timeout 300 --max-time 1800 --retry 3 --retry-delay 5 --show-error --silent --location --form token="$env:COVERITY_TOKEN" --form email="$env:COVERITY_NOTIFICATION_EMAIL" --form file=@"$env:APPVEYOR_BUILD_FOLDER\build\$env:APPVEYOR_PROJECT_NAME.zip" --form version="$coverity_build_version" --form description="Build submitted via AppVeyor CI" https://scan.coverity.com/builds?project=$env:APPVEYOR_REPO_NAME
+        curl.exe --connect-timeout 300 --max-time 1800 --retry 3 --retry-delay 5 --show-error --silent --location --form token="$env:COVERITY_SCAN_TOKEN" --form email="$env:COVERITY_SCAN_NOTIFICATION_EMAIL" --form file=@"$env:APPVEYOR_BUILD_FOLDER\build\$env:APPVEYOR_PROJECT_NAME.zip" --form version="$coverity_build_version" --form description="Build submitted via AppVeyor CI" https://scan.coverity.com/builds?project=$env:APPVEYOR_REPO_NAME
         if ($LastExitCode -ne 0) {
           throw "Failed to upload Coverity Scan results with exit code $LastExitCode."
         }
@@ -650,12 +657,10 @@ test_script:
   - ps: |
       Set-Location -Path "$env:APPVEYOR_BUILD_FOLDER\build"
       if ($env:COVERAGE_BUILD -eq "True") {
-        $coverage_work_folder = "$env:APPVEYOR_BUILD_FOLDER\build\coverage"
-        $coverage_report_folder = "$coverage_work_folder\report"
-        $cobertura_coverage_file = "$coverage_work_folder\coverage.xml"
-        $coverage_report_archive = "$coverage_work_folder\report.zip"
-        New-Item "$coverage_work_folder" -type directory | out-null
-        OpenCppCoverage.exe --quiet --export_type "html:$coverage_report_folder" --export_type "cobertura:$cobertura_coverage_file" --sources "$env:APPVEYOR_BUILD_FOLDER" --excluded_sources "$env:APPVEYOR_BUILD_FOLDER\3rdparty" --excluded_sources "$env:APPVEYOR_BUILD_FOLDER\examples" --excluded_sources "$env:APPVEYOR_BUILD_FOLDER\tests" --modules "$env:APPVEYOR_BUILD_FOLDER\build\tests" --cover_children --working_dir "$env:APPVEYOR_BUILD_FOLDER\build" -- ctest.exe --build-config $env:CONFIGURATION --verbose
+        $coverage_report_folder = "$env:COVERAGE_WORK_FOLDER\report"
+        $coverage_report_archive = "$env:COVERAGE_WORK_FOLDER\report.zip"
+        New-Item "$env:COVERAGE_WORK_FOLDER" -type directory | out-null
+        OpenCppCoverage.exe --quiet --export_type "html:$coverage_report_folder" --export_type "cobertura:$env:COBERTURA_COVERAGE_FILE" --sources "$env:APPVEYOR_BUILD_FOLDER" --excluded_sources "$env:APPVEYOR_BUILD_FOLDER\3rdparty" --excluded_sources "$env:APPVEYOR_BUILD_FOLDER\examples" --excluded_sources "$env:APPVEYOR_BUILD_FOLDER\tests" --modules "$env:APPVEYOR_BUILD_FOLDER\build\tests" --cover_children --working_dir "$env:APPVEYOR_BUILD_FOLDER\build" -- ctest.exe --build-config $env:CONFIGURATION --verbose
         if ($LastExitCode -ne 0) {
           throw "Tests failed with exit code $LastExitCode."
         }
@@ -664,13 +669,17 @@ test_script:
           throw "Failed to archive coverage report located at $coverage_report_folder with exit code $LastExitCode."
         }
         Push-AppveyorArtifact "$coverage_report_archive" -DeploymentName "$env:COVERAGE_ARTIFACT_NAME"
-        Push-AppveyorArtifact "$cobertura_coverage_file" -DeploymentName "$env:COVERAGE_ARTIFACT_NAME"
+        Push-AppveyorArtifact "$env:COBERTURA_COVERAGE_FILE" -DeploymentName "$env:COVERAGE_ARTIFACT_NAME"
       } else {
         ctest.exe --build-config $env:CONFIGURATION --verbose
         if ($LastExitCode -ne 0) {
           throw "Tests failed with exit code $LastExitCode."
         }
       }
+
+after_test:
+  - cmd: cd /d "%APPVEYOR_BUILD_FOLDER%"
+  - cmd: if "%COVERAGE_BUILD%"=="True" codecov --token "%CODECOV_TOKEN%" --file "%COBERTURA_COVERAGE_FILE%" --root "%APPVEYOR_BUILD_FOLDER%" -X gcov -F "%CODECOV_FLAG%"
 
 artifacts:
   - path: build\examples\ma_asio_performance_test_client\$(configuration)\*.exe

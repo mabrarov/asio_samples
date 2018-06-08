@@ -17,6 +17,7 @@
 #if defined(MA_HAS_WINDOWS_CONSOLE_SIGNAL)
 
 #include <cstddef>
+#include <csignal>
 #include <boost/asio.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/system/error_code.hpp>
@@ -34,14 +35,15 @@ namespace ma {
 namespace windows {
 
 class console_signal_service_base
-  : public detail::intrusive_list<console_signal_service_base>::base_hook
+  : private detail::intrusive_list<console_signal_service_base>::base_hook
   , private boost::noncopyable
 {
 private:
   typedef console_signal_service_base this_type;
+  friend class detail::intrusive_list<console_signal_service_base>;
 
 public:
-  virtual bool deliver_signal() = 0;
+  virtual bool deliver_signal(int signal) = 0;
 
 protected:
   class system_service;
@@ -64,7 +66,7 @@ protected:
 /// asio::io_service::service implementing console_signal.
 class console_signal_service
   : public detail::service_base<console_signal_service>
-  , private console_signal_service_base
+  , public console_signal_service_base
 {
 private:
   class handler_base
@@ -79,12 +81,12 @@ private:
 #if !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 
     virtual void destroy() = 0;
-    virtual void post(const boost::system::error_code&) = 0;
+    virtual void post(const boost::system::error_code&, int) = 0;
 
 #else
 
     void destroy();
-    void post(const boost::system::error_code&);
+    void post(const boost::system::error_code&, int);
 
 #endif // !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 
@@ -97,7 +99,8 @@ private:
 #else
 
     typedef void (*destroy_func_type)(this_type*);
-    typedef void (*post_func_type)(this_type*, const boost::system::error_code&);
+    typedef void (*post_func_type)(this_type*,
+        const boost::system::error_code&, int);
 
     handler_base(destroy_func_type, post_func_type);
 
@@ -154,6 +157,8 @@ public:
   std::size_t cancel(implementation_type& impl,
       boost::system::error_code& error);
 
+  virtual bool deliver_signal(int signal);
+
 protected:
   virtual ~console_signal_service();
 
@@ -171,12 +176,12 @@ private:
   typedef detail::intrusive_list<impl_base> impl_base_list;
 
   virtual void shutdown_service();
-  virtual bool deliver_signal();
 
   mutex_type mutex_;
   // Double-linked intrusive list of active implementations.
   impl_base_list impl_list_;
-  queued_signals_counter queued_signals_;
+  queued_signals_counter sigint_queued_signals_;
+  queued_signals_counter sigterm_queued_signals_;
   // Shutdown state flag.
   bool shutdown_;
   system_service_ptr system_service_;
@@ -205,7 +210,7 @@ public:
 #if !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 
   void destroy();
-  void post(const boost::system::error_code&);
+  void post(const boost::system::error_code&, int);
 
 #endif // !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
 
@@ -217,7 +222,7 @@ private:
   this_type& operator=(const this_type&);
 
   static void do_destroy(base_type*);
-  static void do_post(base_type*, const boost::system::error_code&);
+  static void do_post(base_type*, const boost::system::error_code&, int);
 
   boost::asio::io_service::work work_;
   Handler handler_;
@@ -231,14 +236,22 @@ void console_signal_service::async_wait(implementation_type& impl,
   if (shutdown_)
   {
     get_io_service().post(ma::bind_handler(detail::move(handler),
-        boost::asio::error::operation_aborted));
+        boost::asio::error::operation_aborted, 0));
     return;
   }
-  if (queued_signals_)
+
+  if (sigint_queued_signals_)
   {
-    --queued_signals_;
+    --sigint_queued_signals_;
     get_io_service().post(ma::bind_handler(detail::move(handler),
-        boost::system::error_code()));
+        boost::system::error_code(), SIGINT));
+    return;
+  }
+  if (sigterm_queued_signals_)
+  {
+    --sigterm_queued_signals_;
+    get_io_service().post(ma::bind_handler(detail::move(handler),
+        boost::system::error_code(), SIGTERM));
     return;
   }
 
@@ -301,9 +314,9 @@ void console_signal_service::handler_wrapper<Handler>::destroy()
 
 template <typename Handler>
 void console_signal_service::handler_wrapper<Handler>::post(
-    const boost::system::error_code& error)
+    const boost::system::error_code& error, int signal)
 {
-  do_post(this, error);
+  do_post(this, error, signal);
 }
 
 #endif // !defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
@@ -340,7 +353,7 @@ void console_signal_service::handler_wrapper<Handler>::do_destroy(
 
 template <typename Handler>
 void console_signal_service::handler_wrapper<Handler>::do_post(
-    base_type* base, const boost::system::error_code& error)
+    base_type* base, const boost::system::error_code& error, int signal)
 {
   this_type* this_ptr = static_cast<this_type*>(base);
   // Take ownership of the wrapper object
@@ -362,7 +375,7 @@ void console_signal_service::handler_wrapper<Handler>::do_post(
   ptr.reset();
   // Post the copy of handler's local copy to io_service
   boost::asio::io_service& io_service = work.get_io_service();
-  io_service.post(ma::bind_handler(detail::move(handler), error));
+  io_service.post(ma::bind_handler(detail::move(handler), error, signal));
 }
 
 } // namespace windows
