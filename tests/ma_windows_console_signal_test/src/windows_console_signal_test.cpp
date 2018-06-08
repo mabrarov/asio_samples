@@ -70,6 +70,15 @@ void handle_ctrl_c(detail::latch& latch, const boost::system::error_code& error,
   }
 }
 
+void handle_signal(detail::latch& latch, int expected_signal,
+    const boost::system::error_code& error, int signal)
+{
+  if (!error && expected_signal == signal)
+  {
+    latch.count_down();
+  }
+}
+
 void handle_cancel(detail::latch& latch, const boost::system::error_code& error,
     int signal)
 {
@@ -92,10 +101,11 @@ TEST(windows_console_signal, ctrl_c_handling)
   console_signal.async_wait(
       detail::bind(&handle_ctrl_c, detail::ref(done_latch),
           detail::placeholders::_1, detail::placeholders::_2));
+
+  // Imitate Ctrl+C / Ctrl+Break
   ma::windows::console_signal::service_type& console_signal_service =
       boost::asio::use_service<ma::windows::console_signal::service_type>(
           console_signal.get_io_service());
-  // Imitate Ctrl+C / Ctrl+Break
   console_signal_service.deliver_signal(SIGINT);
 
   work = boost::none;
@@ -103,6 +113,49 @@ TEST(windows_console_signal, ctrl_c_handling)
 
   ASSERT_EQ(0U, done_latch.value());
 } // TEST(windows_console_signal, ctrl_c_handling)
+
+TEST(windows_console_signal, ctrl_c_queuing)
+{
+  detail::latch done_latch(5);
+
+  boost::asio::io_service io_service;
+  optional_work work(boost::in_place(detail::ref(io_service)));
+  detail::thread thread(detail::bind(run_io_service, &io_service));
+  io_service_thread_stop thread_stop(work, thread);
+
+  ma::windows::console_signal console_signal(io_service);
+
+  // Enqueue / imitate Ctrl+C / Ctrl+Break
+  ma::windows::console_signal::service_type& console_signal_service =
+      boost::asio::use_service<ma::windows::console_signal::service_type>(
+          console_signal.get_io_service());
+  console_signal_service.deliver_signal(SIGINT);
+  console_signal_service.deliver_signal(SIGTERM);
+  console_signal_service.deliver_signal(SIGINT);
+  console_signal_service.deliver_signal(SIGTERM);
+  console_signal_service.deliver_signal(SIGINT);
+
+  console_signal.async_wait(
+      detail::bind(&handle_signal, detail::ref(done_latch), SIGINT,
+          detail::placeholders::_1, detail::placeholders::_2));
+  console_signal.async_wait(
+      detail::bind(&handle_signal, detail::ref(done_latch), SIGINT,
+          detail::placeholders::_1, detail::placeholders::_2));
+  console_signal.async_wait(
+      detail::bind(&handle_signal, detail::ref(done_latch), SIGINT,
+          detail::placeholders::_1, detail::placeholders::_2));
+  console_signal.async_wait(
+      detail::bind(&handle_signal, detail::ref(done_latch), SIGTERM,
+          detail::placeholders::_1, detail::placeholders::_2));
+  console_signal.async_wait(
+      detail::bind(&handle_signal, detail::ref(done_latch), SIGTERM,
+          detail::placeholders::_1, detail::placeholders::_2));
+
+  work = boost::none;
+  thread.join();
+
+  ASSERT_EQ(0U, done_latch.value());
+} // TEST(windows_console_signal, ctrl_c_queuing)
 
 TEST(windows_console_signal, cancel_handling)
 {
