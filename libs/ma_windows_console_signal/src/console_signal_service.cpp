@@ -10,6 +10,7 @@
 #if defined(MA_HAS_WINDOWS_CONSOLE_SIGNAL)
 
 #include <windows.h>
+#include <csignal>
 #include <limits>
 #include <boost/noncopyable.hpp>
 #include <boost/throw_exception.hpp>
@@ -53,7 +54,7 @@ private:
 
   static system_service_ptr get_nullable_instance();
   static BOOL WINAPI windows_ctrl_handler(DWORD);
-  bool deliver_signal();
+  bool deliver_signal(int);
   
   instance_guard_type singleton_instance_guard_;
   mutex_type          subscribers_mutex_;
@@ -81,7 +82,7 @@ private:
 public:
   typedef detail::shared_ptr<handler_list_owner> handler_list_owner_ptr;
 
-  handler_list_binder(const handler_list_owner_ptr&);
+  handler_list_binder(const handler_list_owner_ptr&, int);
 
 #if defined(MA_HAS_RVALUE_REFS)
   handler_list_binder(const this_type&);
@@ -94,6 +95,7 @@ private:
   this_type& operator=(const this_type&);
 
   handler_list_owner_ptr handlers_;
+  int signal_;
 }; // class console_signal_service::handler_list_binder
 
 console_signal_service_base::system_service_ptr
@@ -142,33 +144,47 @@ console_signal_service_base::system_service::~system_service()
 BOOL WINAPI console_signal_service_base::system_service::windows_ctrl_handler(
     DWORD ctrl_type)
 {
+  system_service_ptr instance = get_nullable_instance();
+  if (!instance)
+  {
+    return FALSE;
+  }
   switch (ctrl_type)
   {
   case CTRL_C_EVENT:
   case CTRL_BREAK_EVENT:
+    if (instance->deliver_signal(SIGINT))
+    {
+      return TRUE;
+    }
+    return FALSE;
   case CTRL_CLOSE_EVENT:
+#if defined(SIGQUIT)
+    if (instance->deliver_signal(SIGQUIT))
+    {
+      return TRUE;
+    }
+    return FALSE;
+#endif // defined(SIGQUIT)
   case CTRL_LOGOFF_EVENT:
   case CTRL_SHUTDOWN_EVENT:
-    if (system_service_ptr instance = get_nullable_instance())
+    if (instance->deliver_signal(SIGTERM))
     {
-      if (instance->deliver_signal())
-      {
-        return TRUE;
-      }
+      return TRUE;
     }
   default:
     return FALSE;
   };
 }
 
-bool console_signal_service_base::system_service::deliver_signal()
+bool console_signal_service_base::system_service::deliver_signal(int signal)
 {
   bool handled = false;
   lock_guard services_guard(subscribers_mutex_);
   for (console_signal_service_base* subscriber = subscribers_.front(); 
       subscriber; subscriber = subscribers_.next(*subscriber))
   {
-    handled |= subscriber->deliver_signal();
+    handled |= subscriber->deliver_signal(signal);
   }
   return handled;
 }
@@ -195,9 +211,9 @@ void console_signal_service::handler_base::destroy()
 }
 
 void console_signal_service::handler_base::post(
-    const boost::system::error_code& error)
+    const boost::system::error_code& error, int signal)
 {
-  post_func_(this, error);
+  post_func_(this, error, signal);
 }
 
 console_signal_service::handler_base::handler_base(
@@ -245,8 +261,9 @@ console_signal_service::handler_list_owner::~handler_list_owner()
 }
 
 console_signal_service::handler_list_binder::handler_list_binder(
-    const handler_list_owner_ptr& handlers)
+    const handler_list_owner_ptr& handlers, int signal)
   : handlers_(handlers)
+  , signal_(signal)
 {
 }
 
@@ -255,12 +272,14 @@ console_signal_service::handler_list_binder::handler_list_binder(
 console_signal_service::handler_list_binder::handler_list_binder(
     const this_type& other)
   : handlers_(other.handlers_)
+  , signal_(other.signal_)
 {
 }
 
 console_signal_service::handler_list_binder::handler_list_binder(
     this_type&& other)
   : handlers_(detail::move(other.handlers_))
+  , signal_(detail::move(other.signal_))
 {
 }
 
@@ -271,7 +290,7 @@ void console_signal_service::handler_list_binder::operator()()
   while (handler_base* handler = handlers_->list.front())
   {
     handlers_->list.pop_front();
-    handler->post(boost::system::error_code());
+    handler->post(boost::system::error_code(), signal_);
   }
 }
 
@@ -320,7 +339,7 @@ void console_signal_service::destroy(implementation_type& impl)
   while (handler_base* handler = handlers.list.front())
   {
     handlers.list.pop_front();
-    handler->post(boost::asio::error::operation_aborted);
+    handler->post(boost::asio::error::operation_aborted, 0);
   }  
 }
 
@@ -345,7 +364,7 @@ std::size_t console_signal_service::cancel(implementation_type& impl,
   while (handler_base* handler = handlers.list.front())
   {
     handlers.list.pop_front();
-    handler->post(boost::asio::error::operation_aborted);
+    handler->post(boost::asio::error::operation_aborted, 0);
     ++handler_count;
   }
   error = boost::system::error_code();
@@ -368,7 +387,7 @@ void console_signal_service::shutdown_service()
   }
 }
 
-bool console_signal_service::deliver_signal()
+bool console_signal_service::deliver_signal(int signal)
 {
   handler_list_binder::handler_list_owner_ptr handlers =
       detail::make_shared<handler_list_owner>();
@@ -395,7 +414,7 @@ bool console_signal_service::deliver_signal()
     }
     else
     {
-      get_io_service().post(handler_list_binder(handlers));
+      get_io_service().post(handler_list_binder(handlers, signal));
     }
   }
   return true;
