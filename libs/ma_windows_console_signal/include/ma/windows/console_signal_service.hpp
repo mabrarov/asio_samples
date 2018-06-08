@@ -180,7 +180,8 @@ private:
   mutex_type mutex_;
   // Double-linked intrusive list of active implementations.
   impl_base_list impl_list_;
-  queued_signals_counter queued_signals_;
+  queued_signals_counter sigint_queued_signals_;
+  queued_signals_counter sigterm_queued_signals_;
   // Shutdown state flag.
   bool shutdown_;
   system_service_ptr system_service_;
@@ -238,13 +239,31 @@ void console_signal_service::async_wait(implementation_type& impl,
         boost::asio::error::operation_aborted, 0));
     return;
   }
-  if (queued_signals_)
+#if SIGINT < SIGTERM
+  if (sigint_queued_signals_)
   {
-    --queued_signals_;
+    --sigint_queued_signals_;
     get_io_service().post(ma::bind_handler(detail::move(handler),
         boost::system::error_code(), SIGINT));
     return;
   }
+#endif
+  if (sigterm_queued_signals_)
+  {
+    --sigterm_queued_signals_;
+    get_io_service().post(ma::bind_handler(detail::move(handler),
+        boost::system::error_code(), SIGTERM));
+    return;
+  }
+#if !(SIGINT < SIGTERM)
+  if (sigint_queued_signals_)
+  {
+    --sigint_queued_signals_;
+    get_io_service().post(ma::bind_handler(detail::move(handler),
+        boost::system::error_code(), SIGINT));
+    return;
+  }
+#endif
 
   typedef handler_wrapper<Handler> value_type;
   typedef detail::handler_alloc_traits<Handler, value_type> alloc_traits;

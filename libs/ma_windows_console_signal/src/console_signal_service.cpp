@@ -16,6 +16,7 @@
 #include <boost/throw_exception.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/system/system_error.hpp>
+#include <boost/assert.hpp>
 #include <ma/config.hpp>
 #include <ma/shared_ptr_factory.hpp>
 #include <ma/windows/console_signal_service.hpp>
@@ -159,13 +160,6 @@ BOOL WINAPI console_signal_service_base::system_service::windows_ctrl_handler(
     }
     return FALSE;
   case CTRL_CLOSE_EVENT:
-#if defined(SIGQUIT)
-    if (instance->deliver_signal(SIGQUIT))
-    {
-      return TRUE;
-    }
-    return FALSE;
-#endif // defined(SIGQUIT)
   case CTRL_LOGOFF_EVENT:
   case CTRL_SHUTDOWN_EVENT:
     if (instance->deliver_signal(SIGTERM))
@@ -297,7 +291,8 @@ void console_signal_service::handler_list_binder::operator()()
 console_signal_service::console_signal_service(
     boost::asio::io_service& io_service)
   : detail::service_base<console_signal_service>(io_service)  
-  , queued_signals_(0)
+  , sigint_queued_signals_(0)
+  , sigterm_queued_signals_(0)
   , shutdown_(false)
   , system_service_(system_service::get_instance())
 {
@@ -404,17 +399,33 @@ bool console_signal_service::deliver_signal(int signal)
     {      
       handlers->list.insert_front(impl->handlers_);
     }
-    if (handlers->list.empty())
+    if (!handlers->list.empty())
     {
-      if ((std::numeric_limits<queued_signals_counter>::max)() 
-          != queued_signals_)
-      {
-        ++queued_signals_;
-      }
+      get_io_service().post(handler_list_binder(handlers, signal));
     }
     else
     {
-      get_io_service().post(handler_list_binder(handlers, signal));
+      switch (signal)
+      {
+      case SIGINT:
+        if ((std::numeric_limits<queued_signals_counter>::max)()
+            != sigint_queued_signals_)
+        {
+          ++sigint_queued_signals_;
+        }
+        break;
+      case SIGTERM:
+        if ((std::numeric_limits<queued_signals_counter>::max)()
+            != sigterm_queued_signals_)
+        {
+          ++sigterm_queued_signals_;
+        }
+        break;
+      default:
+        BOOST_ASSERT_MSG(false,
+            "SIGINT and SIGTERM are the only signals Windows supports");
+        break;
+      }
     }
   }
   return true;
