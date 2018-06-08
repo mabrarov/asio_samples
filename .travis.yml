@@ -585,5 +585,5 @@ after_success:
   - cd ${TRAVIS_BUILD_DIR}
   - if [ "${COVERAGE_BUILD}" != 0 ]; then
       echo "Sending ${BUILD_HOME}/lcov.info coverage data to Codecov" &&
-      bash <(curl -s https://codecov.io/bash) -f ${BUILD_HOME}/lcov.info -R ${TRAVIS_BUILD_DIR} -X gcov -F "${CODECOV_FLAG}";
+      bash <(curl -s https://codecov.io/bash) -Z -f ${BUILD_HOME}/lcov.info -R ${TRAVIS_BUILD_DIR} -X gcov -F "${CODECOV_FLAG}";
     fi
