@@ -46,30 +46,36 @@ environment:
       BOOST_LINKAGE: static
       QT_VERSION: 5.6.3
       QT_LINKAGE: shared
+      COVERAGE_BUILD_CANDIDATE: 1
     - MSVC_VERSION: 11.0
       RUNTIME_LINKAGE: static
       BOOST_VERSION: 1.67.0
       BOOST_LINKAGE: static
+      COVERAGE_BUILD_CANDIDATE: 1
     - MSVC_VERSION: 10.0
       RUNTIME_LINKAGE: shared
       BOOST_VERSION: 1.67.0
       BOOST_LINKAGE: static
       QT_VERSION: 4.8.7
       QT_LINKAGE: shared
+      COVERAGE_BUILD_CANDIDATE: 1
     - MSVC_VERSION: 9.0
       RUNTIME_LINKAGE: static
       BOOST_VERSION: 1.67.0
       BOOST_LINKAGE: static
+      COVERAGE_BUILD_CANDIDATE: 1
     - MSVC_VERSION: 10.0
       RUNTIME_LINKAGE: shared
       BOOST_VERSION: 1.47.0
       BOOST_LINKAGE: static
       QT_VERSION: 4.8.7
       QT_LINKAGE: shared
+      COVERAGE_BUILD_CANDIDATE: 1
     - MSVC_VERSION: 9.0
       RUNTIME_LINKAGE: static
       BOOST_VERSION: 1.47.0
       BOOST_LINKAGE: static
+      COVERAGE_BUILD_CANDIDATE: 1
     - MSVC_VERSION: 14.0
       RUNTIME_LINKAGE: static
       BOOST_VERSION: 1.67.0
@@ -543,7 +549,14 @@ install:
       $env:CMAKE_GENERATOR = "Visual Studio$cmake_generator_msvc_version_suffx$cmake_generator_platform_suffix"
       $env:COVERITY_SCAN_BUILD = ($env:COVERITY_SCAN_CANDIDATE -eq "1") -and ($env:APPVEYOR_REPO_BRANCH -eq "coverity_scan") -and ($env:CONFIGURATION -eq "Release") -and ($env:PLATFORM -eq "x64")
       $env:COVERAGE_BUILD = ($env:COVERAGE_BUILD_CANDIDATE -eq "1") -and ($env:CONFIGURATION -eq "Debug") -and ($env:PLATFORM -eq "x64")
-      $env:CODECOV_FLAG="windows_${env:OS_VERSION}__${env:PLATFORM}__msvc_${env:MSVC_VERSION}__boost_${env:BOOST_VERSION}__qt_${env:QT_VERSION}" -replace "[\.-]", "_"
+      $env:CODECOV_FLAG = "windows_${env:OS_VERSION}__${env:PLATFORM}__msvc_${env:MSVC_VERSION}"
+      if ($env:BOOST_VERSION) {
+        $env:CODECOV_FLAG = "${env:CODECOV_FLAG}__boost_${env:BOOST_VERSION}"
+      }
+      if ($env:QT_VERSION) {
+        $env:CODECOV_FLAG = "${env:CODECOV_FLAG}__qt_${env:QT_VERSION}"
+      }
+      $env:CODECOV_FLAG = "$env:CODECOV_FLAG" -replace "[\.-]", "_"
       Write-Host "PLATFORM                  : $env:PLATFORM"
       Write-Host "CONFIGURATION             : $env:CONFIGURATION"
       Write-Host "MSVS_PATCH_FOLDER         : $env:MSVS_PATCH_FOLDER"

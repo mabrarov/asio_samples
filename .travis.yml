@@ -32,6 +32,8 @@ matrix:
       compiler: gcc
       addons:
         apt:
+          config:
+            retries: true
           packages:
             - lcov
             - cmake
@@ -47,6 +49,8 @@ matrix:
       compiler: gcc
       addons: &addons-gcc7-qt5
         apt:
+          config:
+            retries: true
           packages:
             - cmake
             - cmake-data
@@ -64,6 +68,8 @@ matrix:
       compiler: gcc
       addons: &addons-gcc7-boost155-qt5
         apt:
+          config:
+            retries: true
           packages:
             - cmake
             - cmake-data
@@ -80,6 +86,8 @@ matrix:
       compiler: gcc
       addons: &addons-gcc6-boost155-qt5
         apt:
+          config:
+            retries: true
           packages:
             - cmake
             - cmake-data
@@ -96,6 +104,8 @@ matrix:
       compiler: gcc
       addons: &addons-gcc5-boost155-qt5
         apt:
+          config:
+            retries: true
           packages:
             - cmake
             - cmake-data
@@ -112,6 +122,8 @@ matrix:
       compiler: gcc
       addons: &addons-gcc49-boost155-qt5
         apt:
+          config:
+            retries: true
           packages:
             - cmake
             - cmake-data
@@ -128,6 +140,8 @@ matrix:
       compiler: gcc
       addons: &addons-gcc48-boost155-qt5
         apt:
+          config:
+            retries: true
           packages:
             - cmake
             - cmake-data
@@ -144,6 +158,8 @@ matrix:
       compiler: gcc
       addons: &addons-gcc46-boost155-qt5
         apt:
+          config:
+            retries: true
           packages:
             - cmake
             - cmake-data
@@ -160,6 +176,8 @@ matrix:
       compiler: clang
       addons: &addons-clang50-boost155-qt5
         apt:
+          config:
+            retries: true
           packages:
             - cmake
             - cmake-data
@@ -179,6 +197,8 @@ matrix:
       compiler: clang
       addons: &addons-clang40-boost155-qt5
         apt:
+          config:
+            retries: true
           packages:
             - cmake
             - cmake-data
@@ -198,6 +218,8 @@ matrix:
       compiler: clang
       addons: &addons-clang39-boost155-qt5
         apt:
+          config:
+            retries: true
           packages:
             - cmake
             - cmake-data
@@ -217,6 +239,8 @@ matrix:
       compiler: clang
       addons: &addons-clang36-boost155-qt5
         apt:
+          config:
+            retries: true
           packages:
             - cmake
             - cmake-data
@@ -236,6 +260,8 @@ matrix:
       compiler: clang
       addons: &addons-clang37-boost155-qt5
         apt:
+          config:
+            retries: true
           packages:
             - cmake
             - cmake-data
@@ -255,6 +281,8 @@ matrix:
       compiler: clang
       addons: &addons-clang38-boost155-qt5
         apt:
+          config:
+            retries: true
           packages:
             - cmake
             - cmake-data
@@ -274,6 +302,8 @@ matrix:
       compiler: gcc
       addons: &addons-gcc7-boost155-qt4
         apt:
+          config:
+            retries: true
           packages:
             - cmake
             - cmake-data
@@ -290,6 +320,8 @@ matrix:
       compiler: gcc
       addons: &addons-gcc6-boost155-qt4
         apt:
+          config:
+            retries: true
           packages:
             - cmake
             - cmake-data
@@ -306,6 +338,8 @@ matrix:
       compiler: gcc
       addons: &addons-gcc5-boost155-qt4
         apt:
+          config:
+            retries: true
           packages:
             - cmake
             - cmake-data
@@ -322,6 +356,8 @@ matrix:
       compiler: gcc
       addons: &addons-gcc49-boost155-qt4
         apt:
+          config:
+            retries: true
           packages:
             - cmake
             - cmake-data
@@ -338,6 +374,8 @@ matrix:
       compiler: gcc
       addons: &addons-gcc48-boost155-qt4
         apt:
+          config:
+            retries: true
           packages:
             - cmake
             - cmake-data
@@ -354,6 +392,8 @@ matrix:
       compiler: gcc
       addons: &addons-gcc46-boost155-qt4
         apt:
+          config:
+            retries: true
           packages:
             - cmake
             - cmake-data
@@ -370,6 +410,8 @@ matrix:
       compiler: clang
       addons: &addons-clang50-boost155-qt4
         apt:
+          config:
+            retries: true
           packages:
             - cmake
             - cmake-data
@@ -385,6 +427,8 @@ matrix:
       compiler: clang
       addons: &addons-clang40-boost155-qt4
         apt:
+          config:
+            retries: true
           packages:
             - cmake
             - cmake-data
@@ -400,6 +444,8 @@ matrix:
       compiler: clang
       addons: &addons-clang39-boost155-qt4
         apt:
+          config:
+            retries: true
           packages:
             - cmake
             - cmake-data
@@ -415,6 +461,8 @@ matrix:
       compiler: clang
       addons: &addons-clang36-boost155-qt4
         apt:
+          config:
+            retries: true
           packages:
             - cmake
             - cmake-data
@@ -430,6 +478,8 @@ matrix:
       compiler: clang
       addons: &addons-clang37-boost155-qt4
         apt:
+          config:
+            retries: true
           packages:
             - cmake
             - cmake-data
@@ -445,6 +495,8 @@ matrix:
       compiler: clang
       addons: &addons-clang38-boost155-qt4
         apt:
+          config:
+            retries: true
           packages:
             - cmake
             - cmake-data
@@ -533,5 +585,5 @@ after_success:
   - cd ${TRAVIS_BUILD_DIR}
   - if [ "${COVERAGE_BUILD}" != 0 ]; then
       echo "Sending ${BUILD_HOME}/lcov.info coverage data to Codecov" &&
-      bash <(curl -s https://codecov.io/bash) -f ${BUILD_HOME}/lcov.info -R ${TRAVIS_BUILD_DIR} -X gcov -F "${CODECOV_FLAG}";
+      bash <(curl -s https://codecov.io/bash) -Z -f ${BUILD_HOME}/lcov.info -R ${TRAVIS_BUILD_DIR} -X gcov -F "${CODECOV_FLAG}";
     fi
