@@ -6,7 +6,7 @@
 #
 
 cmake_minimum_required(VERSION 3.0)
-project(ma_windows_console_signal_test)
+project(ma_console_close_signal_test)
 
 set(project_base_dir "${PROJECT_SOURCE_DIR}")
 set(cxx_headers_dir  "${project_base_dir}/include")
@@ -24,7 +24,7 @@ ma_config_private_compile_definitions(cxx_private_compile_definitions)
 set(cxx_private_libraries )
 
 list(APPEND cxx_sources
-    "${cxx_sources_dir}/windows_console_signal_test.cpp")
+    "${cxx_sources_dir}/console_close_signal_test.cpp")
 
 list(APPEND cxx_private_libraries
     ma_boost_header_only
@@ -35,7 +35,7 @@ list(APPEND cxx_private_libraries
     ma_compat
     ma_custom_alloc_handler
     ma_context_alloc_handler
-    ma_windows_console_signal
+    ma_console_close_signal
     ma_coverage)
 
 add_executable(${PROJECT_NAME}
