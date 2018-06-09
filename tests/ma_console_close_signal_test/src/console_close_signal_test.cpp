@@ -22,8 +22,17 @@
 
 namespace ma {
 namespace test {
+namespace console_close_signal {
 
-namespace console_close_signal_handler_invocation {
+TEST(console_close_signal, get_io_service)
+{
+  boost::asio::io_service io_service;
+  ma::console_close_signal console_signal(io_service);
+  boost::asio::io_service& console_signal_io_service =
+      console_signal.get_io_service();
+  ASSERT_EQ(detail::addressof(io_service),
+      detail::addressof(console_signal_io_service));
+} // TEST(console_close_signal, get_io_service)
 
 typedef boost::optional<boost::asio::io_service::work> optional_work;
 typedef std::size_t (boost::asio::io_service::*run_io_service_func)(void);
@@ -65,7 +74,6 @@ void handle_cancel(detail::latch& latch, const boost::system::error_code& error,
   }
 }
 
-
 TEST(console_close_signal, cancel_handling)
 {
   detail::latch done_latch(1);
@@ -89,10 +97,6 @@ TEST(console_close_signal, cancel_handling)
 
   ASSERT_EQ(0U, done_latch.value());
 } // TEST(console_close_signal, cancel_handling)
-
-} // namespace console_close_signal_handler_invocation
-
-namespace console_close_signal_destruction {
 
 void handle_console_signal(const boost::system::error_code&, int)
 {
@@ -214,6 +218,6 @@ TEST(console_close_signal, destruction)
   }
 } // TEST(console_close_signal, destruction)
 
-} // namespace console_close_signal_destruction
+} // namespace console_close_signal
 } // namespace test
 } // namespace ma
