@@ -11,45 +11,29 @@ dist: trusty
 
 cache:
   directories:
-  - ${HOME}/downloads
+    - ${HOME}/downloads
 
 env:
   global:
     - PREBUILT_BOOST_DOWNLOAD_URL: "https://dl.bintray.com/mabrarov/generic/boost"
     - secure: "rxP3V/oY3YSGIaUkRjCK302ueka7zmxdEWBLnec4nW1We8ys0HS/WL//FkNyTQBHNILerfHCtKLMg4tX1ccxC9JPiS9biyDYDOMZQYlXv6UcJBoJBThcKUNcC8vxSrPc1rgSgbai+FvmwiXA/VmHPWInAhcUmsMqCocElR+lLf8gI9Y9VbiuEc3fOSq4KgeIdmblHfdA2BkCc96hR34gOa6r+C+gA0Y3eD3sQnAlzwYG0uXIaRcO0CPI2TJk0HJHc6Lzzpkvwd9vWNMlfRa7U2aKMtow44VPa9dQ+O2BI1H/+GT0eF+7wGPRZWYpkr9EKnzFJf+CFUnWz8BWULp5TsLUa6e6LCnkWiVfXeP/5+LNOrmYMZia6Ko0E9jY595y0aNKAPpzC535ecuYZ9PrV6W12ginutteKRgOjo0H1Rat7QkJ89FJiAXEmhQkiCu5D2FMsgRd6N6+3G06h4DEZeZ7wsUUZV3SpSSkl1wfQNUw0ddNDbTtOCw007md00LSTVPRaLVRuu7weyCKHqgY+h78yhvwAREKEK+qmnzcFBS6bwg5NReKYDiMK1JzgbiUPnqnvZ69rMEErfOWb4ET1FJ382dUtlGoUIbJIAY+1WlLRLTKkIBAeEnVWQFvDFPSYHeaLCxeNlacM76q9S5lBEY6XlC3g+nQidGnBLhGqZU="
-    - COVERAGE_BUILD: 0
+    - COVERAGE_BUILD_CANDIDATE: 0
     - DEPENDENCIES_HOME: ${HOME}/dependencies
     - DOWNLOADS_HOME: ${HOME}/downloads
+    - BUILD_HOME: ${TRAVIS_BUILD_DIR}/build
 
 before_install:
   - echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-certificates.crt
 
 matrix:
   include:
-    # GCC 7, Boost 1.67.0, Qt 5.x
-    - env: C_COMPILER=gcc-7 CXX_COMPILER=g++-7 BOOST_VERSION=1.67.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
-      compiler: gcc
-      addons: &addons-gcc7-boost167-qt5
-        apt:
-          packages:
-            - cmake
-            - cmake-data
-            - gcc-7
-            - g++-7
-            - curl
-            - ca-certificates
-            - qtbase5-dev
-          sources: &gcc-package-sources-without-boost
-            - george-edison55-precise-backports
-            - ubuntu-toolchain-r-test
-    - env: C_COMPILER=gcc-7 CXX_COMPILER=g++-7 BOOST_VERSION=1.67.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
-      compiler: gcc
-      addons: *addons-gcc7-boost167-qt5
     # Default GCC, Boost 1.55.0, Qt 5.x. Used for collecting information about test coverage.
-    - env: C_COMPILER=gcc CXX_COMPILER=g++ BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG COVERAGE_BUILD=1
+    - env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc CXX_COMPILER=g++ BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG COVERAGE_BUILD_CANDIDATE=1
       compiler: gcc
       addons:
         apt:
+          config:
+            retries: true
           packages:
             - lcov
             - cmake
@@ -60,11 +44,32 @@ matrix:
             - george-edison55-precise-backports
             - ubuntu-toolchain-r-test
             - boost-latest
+    # GCC 7, Boost 1.67.0, Qt 5.x.
+    - env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-7 CXX_COMPILER=g++-7 BOOST_VERSION=1.67.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
+      compiler: gcc
+      addons: &addons-gcc7-qt5
+        apt:
+          config:
+            retries: true
+          packages:
+            - cmake
+            - cmake-data
+            - gcc-7
+            - g++-7
+            - curl
+            - ca-certificates
+            - qtbase5-dev
+          sources: *gcc-package-sources
+    - env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-7 CXX_COMPILER=g++-7 BOOST_VERSION=1.67.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
+      compiler: gcc
+      addons: *addons-gcc7-qt5
     # GCC 7, Boost 1.55.0, Qt 5.x
-    - env: C_COMPILER=gcc-7 CXX_COMPILER=g++-7 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
+    - env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-7 CXX_COMPILER=g++-7 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
       compiler: gcc
       addons: &addons-gcc7-boost155-qt5
         apt:
+          config:
+            retries: true
           packages:
             - cmake
             - cmake-data
@@ -73,14 +78,16 @@ matrix:
             - libboost1.55-all-dev
             - qtbase5-dev
           sources: *gcc-package-sources
-    - env: C_COMPILER=gcc-7 CXX_COMPILER=g++-7 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
+    - env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-7 CXX_COMPILER=g++-7 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
       compiler: gcc
       addons: *addons-gcc7-boost155-qt5
     # GCC 6, Boost 1.55.0, Qt 5.x
-    - env: C_COMPILER=gcc-6 CXX_COMPILER=g++-6 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
+    - env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-6 CXX_COMPILER=g++-6 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
       compiler: gcc
       addons: &addons-gcc6-boost155-qt5
         apt:
+          config:
+            retries: true
           packages:
             - cmake
             - cmake-data
@@ -89,14 +96,16 @@ matrix:
             - libboost1.55-all-dev
             - qtbase5-dev
           sources: *gcc-package-sources
-    - env: C_COMPILER=gcc-6 CXX_COMPILER=g++-6 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
+    - env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-6 CXX_COMPILER=g++-6 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
       compiler: gcc
       addons: *addons-gcc6-boost155-qt5
     # GCC 5, Boost 1.55.0, Qt 5.x
-    - env: C_COMPILER=gcc-5 CXX_COMPILER=g++-5 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
+    - env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-5 CXX_COMPILER=g++-5 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
       compiler: gcc
       addons: &addons-gcc5-boost155-qt5
         apt:
+          config:
+            retries: true
           packages:
             - cmake
             - cmake-data
@@ -105,14 +114,16 @@ matrix:
             - libboost1.55-all-dev
             - qtbase5-dev
           sources: *gcc-package-sources
-    - env: C_COMPILER=gcc-5 CXX_COMPILER=g++-5 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
+    - env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-5 CXX_COMPILER=g++-5 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
       compiler: gcc
       addons: *addons-gcc5-boost155-qt5
     # GCC 4.9, Boost 1.55.0, Qt 5.x
-    - env: C_COMPILER=gcc-4.9 CXX_COMPILER=g++-4.9 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
+    - env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-4.9 CXX_COMPILER=g++-4.9 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
       compiler: gcc
       addons: &addons-gcc49-boost155-qt5
         apt:
+          config:
+            retries: true
           packages:
             - cmake
             - cmake-data
@@ -121,14 +132,16 @@ matrix:
             - libboost1.55-all-dev
             - qtbase5-dev
           sources: *gcc-package-sources
-    - env: C_COMPILER=gcc-4.9 CXX_COMPILER=g++-4.9 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
+    - env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-4.9 CXX_COMPILER=g++-4.9 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
       compiler: gcc
       addons: *addons-gcc49-boost155-qt5
     # GCC 4.8, Boost 1.55.0, Qt 5.x
-    - env: C_COMPILER=gcc-4.8 CXX_COMPILER=g++-4.8 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
+    - env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-4.8 CXX_COMPILER=g++-4.8 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
       compiler: gcc
       addons: &addons-gcc48-boost155-qt5
         apt:
+          config:
+            retries: true
           packages:
             - cmake
             - cmake-data
@@ -137,14 +150,16 @@ matrix:
             - libboost1.55-all-dev
             - qtbase5-dev
           sources: *gcc-package-sources
-    - env: C_COMPILER=gcc-4.8 CXX_COMPILER=g++-4.8 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
+    - env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-4.8 CXX_COMPILER=g++-4.8 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
       compiler: gcc
       addons: *addons-gcc48-boost155-qt5
     # GCC 4.6, Boost 1.55.0, Qt 5.x
-    - env: C_COMPILER=gcc-4.6 CXX_COMPILER=g++-4.6 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
+    - env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-4.6 CXX_COMPILER=g++-4.6 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
       compiler: gcc
       addons: &addons-gcc46-boost155-qt5
         apt:
+          config:
+            retries: true
           packages:
             - cmake
             - cmake-data
@@ -153,14 +168,16 @@ matrix:
             - libboost1.55-all-dev
             - qtbase5-dev
           sources: *gcc-package-sources
-    - env: C_COMPILER=gcc-4.6 CXX_COMPILER=g++-4.6 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
+    - env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-4.6 CXX_COMPILER=g++-4.6 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
       compiler: gcc
       addons: *addons-gcc46-boost155-qt5
     # Clang 5.0, Boost 1.55.0, Qt 5.x
-    - env: C_COMPILER=clang-5.0 CXX_COMPILER=clang++-5.0 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
+    - env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-5.0 CXX_COMPILER=clang++-5.0 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
       compiler: clang
       addons: &addons-clang50-boost155-qt5
         apt:
+          config:
+            retries: true
           packages:
             - cmake
             - cmake-data
@@ -172,14 +189,16 @@ matrix:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-5.0
             - boost-latest
-    - env: C_COMPILER=clang-5.0 CXX_COMPILER=clang++-5.0 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
+    - env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-5.0 CXX_COMPILER=clang++-5.0 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
       compiler: clang
       addons: *addons-clang50-boost155-qt5
     # Clang 4.0, Boost 1.55.0, Qt 5.x
-    - env: C_COMPILER=clang-4.0 CXX_COMPILER=clang++-4.0 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
+    - env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-4.0 CXX_COMPILER=clang++-4.0 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
       compiler: clang
       addons: &addons-clang40-boost155-qt5
         apt:
+          config:
+            retries: true
           packages:
             - cmake
             - cmake-data
@@ -191,14 +210,16 @@ matrix:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-4.0
             - boost-latest
-    - env: C_COMPILER=clang-4.0 CXX_COMPILER=clang++-4.0 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
+    - env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-4.0 CXX_COMPILER=clang++-4.0 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
       compiler: clang
       addons: *addons-clang40-boost155-qt5
     # Clang 3.9, Boost 1.55.0, Qt 5.x
-    - env: C_COMPILER=clang-3.9 CXX_COMPILER=clang++-3.9 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
+    - env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-3.9 CXX_COMPILER=clang++-3.9 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
       compiler: clang
       addons: &addons-clang39-boost155-qt5
         apt:
+          config:
+            retries: true
           packages:
             - cmake
             - cmake-data
@@ -210,14 +231,16 @@ matrix:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-trusty-3.9
             - boost-latest
-    - env: C_COMPILER=clang-3.9 CXX_COMPILER=clang++-3.9 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
+    - env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-3.9 CXX_COMPILER=clang++-3.9 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
       compiler: clang
       addons: *addons-clang39-boost155-qt5
     # Clang 3.6, Boost 1.55.0, Qt 5.x
-    - env: C_COMPILER=clang-3.6 CXX_COMPILER=clang++-3.6 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
+    - env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-3.6 CXX_COMPILER=clang++-3.6 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
       compiler: clang
       addons: &addons-clang36-boost155-qt5
         apt:
+          config:
+            retries: true
           packages:
             - cmake
             - cmake-data
@@ -229,14 +252,16 @@ matrix:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-precise-3.6
             - boost-latest
-    - env: C_COMPILER=clang-3.6 CXX_COMPILER=clang++-3.6 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
+    - env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-3.6 CXX_COMPILER=clang++-3.6 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
       compiler: clang
       addons: *addons-clang36-boost155-qt5
     # Clang 3.7, Boost 1.55.0, Qt 5.x
-    - env: C_COMPILER=clang-3.7 CXX_COMPILER=clang++-3.7 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
+    - env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-3.7 CXX_COMPILER=clang++-3.7 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
       compiler: clang
       addons: &addons-clang37-boost155-qt5
         apt:
+          config:
+            retries: true
           packages:
             - cmake
             - cmake-data
@@ -248,14 +273,16 @@ matrix:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-precise-3.7
             - boost-latest
-    - env: C_COMPILER=clang-3.7 CXX_COMPILER=clang++-3.7 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
+    - env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-3.7 CXX_COMPILER=clang++-3.7 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
       compiler: clang
       addons: *addons-clang37-boost155-qt5
     # Clang 3.8, Boost 1.55.0, Qt 5.x
-    - env: C_COMPILER=clang-3.8 CXX_COMPILER=clang++-3.8 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
+    - env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-3.8 CXX_COMPILER=clang++-3.8 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
       compiler: clang
       addons: &addons-clang38-boost155-qt5
         apt:
+          config:
+            retries: true
           packages:
             - cmake
             - cmake-data
@@ -267,14 +294,16 @@ matrix:
             - ubuntu-toolchain-r-test
             - llvm-toolchain-precise-3.8
             - boost-latest
-    - env: C_COMPILER=clang-3.8 CXX_COMPILER=clang++-3.8 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
+    - env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-3.8 CXX_COMPILER=clang++-3.8 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
       compiler: clang
       addons: *addons-clang38-boost155-qt5
     # GCC 7, Boost 1.55.0, Qt 4.x
-    - env: C_COMPILER=gcc-7 CXX_COMPILER=g++-7 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=RELEASE
+    - env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-7 CXX_COMPILER=g++-7 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=RELEASE
       compiler: gcc
       addons: &addons-gcc7-boost155-qt4
         apt:
+          config:
+            retries: true
           packages:
             - cmake
             - cmake-data
@@ -283,14 +312,16 @@ matrix:
             - libboost1.55-all-dev
             - libqt4-dev
           sources: *gcc-package-sources
-    - env: C_COMPILER=gcc-7 CXX_COMPILER=g++-7 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=DEBUG
+    - env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-7 CXX_COMPILER=g++-7 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=DEBUG
       compiler: gcc
       addons: *addons-gcc7-boost155-qt4
     # GCC 6, Boost 1.55.0, Qt 4.x
-    - env: C_COMPILER=gcc-6 CXX_COMPILER=g++-6 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=RELEASE
+    - env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-6 CXX_COMPILER=g++-6 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=RELEASE
       compiler: gcc
       addons: &addons-gcc6-boost155-qt4
         apt:
+          config:
+            retries: true
           packages:
             - cmake
             - cmake-data
@@ -299,14 +330,16 @@ matrix:
             - libboost1.55-all-dev
             - libqt4-dev
           sources: *gcc-package-sources
-    - env: C_COMPILER=gcc-6 CXX_COMPILER=g++-6 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=DEBUG
+    - env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-6 CXX_COMPILER=g++-6 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=DEBUG
       compiler: gcc
       addons: *addons-gcc6-boost155-qt4
     # GCC 5, Boost 1.55.0, Qt 4.x
-    - env: C_COMPILER=gcc-5 CXX_COMPILER=g++-5 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=RELEASE
+    - env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-5 CXX_COMPILER=g++-5 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=RELEASE
       compiler: gcc
       addons: &addons-gcc5-boost155-qt4
         apt:
+          config:
+            retries: true
           packages:
             - cmake
             - cmake-data
@@ -315,14 +348,16 @@ matrix:
             - libboost1.55-all-dev
             - libqt4-dev
           sources: *gcc-package-sources
-    - env: C_COMPILER=gcc-5 CXX_COMPILER=g++-5 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=DEBUG
+    - env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-5 CXX_COMPILER=g++-5 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=DEBUG
       compiler: gcc
       addons: *addons-gcc5-boost155-qt4
     # GCC 4.9, Boost 1.55.0, Qt 4.x
-    - env: C_COMPILER=gcc-4.9 CXX_COMPILER=g++-4.9 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=RELEASE
+    - env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-4.9 CXX_COMPILER=g++-4.9 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=RELEASE
       compiler: gcc
       addons: &addons-gcc49-boost155-qt4
         apt:
+          config:
+            retries: true
           packages:
             - cmake
             - cmake-data
@@ -331,14 +366,16 @@ matrix:
             - libboost1.55-all-dev
             - libqt4-dev
           sources: *gcc-package-sources
-    - env: C_COMPILER=gcc-4.9 CXX_COMPILER=g++-4.9 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=DEBUG
+    - env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-4.9 CXX_COMPILER=g++-4.9 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=DEBUG
       compiler: gcc
       addons: *addons-gcc49-boost155-qt4
     # GCC 4.8, Boost 1.55.0, Qt 4.x
-    - env: C_COMPILER=gcc-4.8 CXX_COMPILER=g++-4.8 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=RELEASE
+    - env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-4.8 CXX_COMPILER=g++-4.8 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=RELEASE
       compiler: gcc
       addons: &addons-gcc48-boost155-qt4
         apt:
+          config:
+            retries: true
           packages:
             - cmake
             - cmake-data
@@ -347,14 +384,16 @@ matrix:
             - libboost1.55-all-dev
             - libqt4-dev
           sources: *gcc-package-sources
-    - env: C_COMPILER=gcc-4.8 CXX_COMPILER=g++-4.8 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=DEBUG
+    - env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-4.8 CXX_COMPILER=g++-4.8 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=DEBUG
       compiler: gcc
       addons: *addons-gcc48-boost155-qt4
     # GCC 4.6, Boost 1.55.0, Qt 4.x
-    - env: C_COMPILER=gcc-4.6 CXX_COMPILER=g++-4.6 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=RELEASE
+    - env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-4.6 CXX_COMPILER=g++-4.6 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=RELEASE
       compiler: gcc
       addons: &addons-gcc46-boost155-qt4
         apt:
+          config:
+            retries: true
           packages:
             - cmake
             - cmake-data
@@ -363,14 +402,16 @@ matrix:
             - libboost1.55-all-dev
             - libqt4-dev
           sources: *gcc-package-sources
-    - env: C_COMPILER=gcc-4.6 CXX_COMPILER=g++-4.6 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=DEBUG
+    - env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-4.6 CXX_COMPILER=g++-4.6 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=DEBUG
       compiler: gcc
       addons: *addons-gcc46-boost155-qt4
     # Clang 5.0, Boost 1.55.0, Qt 4.x
-    - env: C_COMPILER=clang-5.0 CXX_COMPILER=clang++-5.0 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=RELEASE
+    - env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-5.0 CXX_COMPILER=clang++-5.0 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=RELEASE
       compiler: clang
       addons: &addons-clang50-boost155-qt4
         apt:
+          config:
+            retries: true
           packages:
             - cmake
             - cmake-data
@@ -378,14 +419,16 @@ matrix:
             - libboost1.55-all-dev
             - libqt4-dev
           sources: *llvm50-package-sources
-    - env: C_COMPILER=clang-5.0 CXX_COMPILER=clang++-5.0 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=DEBUG
+    - env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-5.0 CXX_COMPILER=clang++-5.0 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=DEBUG
       compiler: clang
       addons: *addons-clang50-boost155-qt4
     # Clang 4.0, Boost 1.55.0, Qt 4.x
-    - env: C_COMPILER=clang-4.0 CXX_COMPILER=clang++-4.0 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=RELEASE
+    - env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-4.0 CXX_COMPILER=clang++-4.0 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=RELEASE
       compiler: clang
       addons: &addons-clang40-boost155-qt4
         apt:
+          config:
+            retries: true
           packages:
             - cmake
             - cmake-data
@@ -393,14 +436,16 @@ matrix:
             - libboost1.55-all-dev
             - libqt4-dev
           sources: *llvm40-package-sources
-    - env: C_COMPILER=clang-4.0 CXX_COMPILER=clang++-4.0 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=DEBUG
+    - env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-4.0 CXX_COMPILER=clang++-4.0 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=DEBUG
       compiler: clang
       addons: *addons-clang40-boost155-qt4
     # Clang 3.9, Boost 1.55.0, Qt 4.x
-    - env: C_COMPILER=clang-3.9 CXX_COMPILER=clang++-3.9 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=RELEASE
+    - env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-3.9 CXX_COMPILER=clang++-3.9 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=RELEASE
       compiler: clang
       addons: &addons-clang39-boost155-qt4
         apt:
+          config:
+            retries: true
           packages:
             - cmake
             - cmake-data
@@ -408,14 +453,16 @@ matrix:
             - libboost1.55-all-dev
             - libqt4-dev
           sources: *llvm39-package-sources
-    - env: C_COMPILER=clang-3.9 CXX_COMPILER=clang++-3.9 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=DEBUG
+    - env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-3.9 CXX_COMPILER=clang++-3.9 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=DEBUG
       compiler: clang
       addons: *addons-clang39-boost155-qt4
     # Clang 3.6, Boost 1.55.0, Qt 4.x
-    - env: C_COMPILER=clang-3.6 CXX_COMPILER=clang++-3.6 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=RELEASE
+    - env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-3.6 CXX_COMPILER=clang++-3.6 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=RELEASE
       compiler: clang
       addons: &addons-clang36-boost155-qt4
         apt:
+          config:
+            retries: true
           packages:
             - cmake
             - cmake-data
@@ -423,14 +470,16 @@ matrix:
             - libboost1.55-all-dev
             - libqt4-dev
           sources: *llvm36-package-sources
-    - env: C_COMPILER=clang-3.6 CXX_COMPILER=clang++-3.6 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=DEBUG
+    - env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-3.6 CXX_COMPILER=clang++-3.6 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=DEBUG
       compiler: clang
       addons: *addons-clang36-boost155-qt4
     # Clang 3.7, Boost 1.55.0, Qt 4.x
-    - env: C_COMPILER=clang-3.7 CXX_COMPILER=clang++-3.7 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=RELEASE
+    - env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-3.7 CXX_COMPILER=clang++-3.7 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=RELEASE
       compiler: clang
       addons: &addons-clang37-boost155-qt4
         apt:
+          config:
+            retries: true
           packages:
             - cmake
             - cmake-data
@@ -438,14 +487,16 @@ matrix:
             - libboost1.55-all-dev
             - libqt4-dev
           sources: *llvm37-package-sources
-    - env: C_COMPILER=clang-3.7 CXX_COMPILER=clang++-3.7 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=DEBUG
+    - env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-3.7 CXX_COMPILER=clang++-3.7 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=DEBUG
       compiler: clang
       addons: *addons-clang37-boost155-qt4
     # Clang 3.8, Boost 1.55.0, Qt 4.x
-    - env: C_COMPILER=clang-3.8 CXX_COMPILER=clang++-3.8 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=RELEASE
+    - env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-3.8 CXX_COMPILER=clang++-3.8 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=RELEASE
       compiler: clang
       addons: &addons-clang38-boost155-qt4
         apt:
+          config:
+            retries: true
           packages:
             - cmake
             - cmake-data
@@ -453,85 +504,86 @@ matrix:
             - libboost1.55-all-dev
             - libqt4-dev
           sources: *llvm38-package-sources
-    - env: C_COMPILER=clang-3.8 CXX_COMPILER=clang++-3.8 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=DEBUG
+    - env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-3.8 CXX_COMPILER=clang++-3.8 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=DEBUG
       compiler: clang
       addons: *addons-clang38-boost155-qt4
 
 install:
-  - |
-    set -e
-    export PRE_INSTALLED_BOOST=0
-    if [ "${BOOST_VERSION}" == "1.55.0" ]; then
-      export PRE_INSTALLED_BOOST=1
+  - export PRE_INSTALLED_BOOST=0
+  - if [ "${BOOST_VERSION}" == "1.55.0" ]; then
+      export PRE_INSTALLED_BOOST=1;
     fi
-    if [ "${PRE_INSTALLED_BOOST}" != 0 ]; then
-      echo "Boost ${BOOST_VERSION} is pre-intalled"
+  - if [ "${PRE_INSTALLED_BOOST}" != 0 ]; then
+      echo "Boost ${BOOST_VERSION} is pre-intalled";
     else
-      export PREBUILT_BOOST_HOME=${DEPENDENCIES_HOME}/boost-${BOOST_VERSION}-x64-gcc4.8
+      export PREBUILT_BOOST_HOME=${DEPENDENCIES_HOME}/boost-${BOOST_VERSION}-x64-gcc4.8 &&
       if [ -d "${PREBUILT_BOOST_HOME}" ]; then
-        echo "Prebuilt Boost found at ${PREBUILT_BOOST_HOME}"
+        echo "Prebuilt Boost found at ${PREBUILT_BOOST_HOME}";
       else
-        echo "Prebuilt Boost not found at ${PREBUILT_BOOST_HOME}"
-        boost_archive_name=boost-${BOOST_VERSION}-x64-gcc4.8.tar.gz
-        boost_archive_file=${DOWNLOADS_HOME}/${boost_archive_name}
-        boost_download_url=${PREBUILT_BOOST_DOWNLOAD_URL}/${BOOST_VERSION}/${boost_archive_name}
+        echo "Prebuilt Boost not found at ${PREBUILT_BOOST_HOME}" &&
+        boost_archive_name=boost-${BOOST_VERSION}-x64-gcc4.8.tar.gz &&
+        boost_archive_file=${DOWNLOADS_HOME}/${boost_archive_name} &&
+        boost_download_url=${PREBUILT_BOOST_DOWNLOAD_URL}/${BOOST_VERSION}/${boost_archive_name} &&
         if [ -f "${boost_archive_file}" ]; then
-          echo "Prebuilt Boost archive found at ${boost_archive_file}"
+          echo "Prebuilt Boost archive found at ${boost_archive_file}";
         else
-          echo "Prebuilt Boost archive not found at ${boost_archive_file}"
-          echo "Going to download prebuilt Boost archive from ${boost_download_url} to ${boost_archive_file}"
-          mkdir -p ${DOWNLOADS_HOME}
-          curl -jksSL ${boost_download_url} --output ${boost_archive_file}
-          echo "Download of prebuilt Boost archive from ${boost_download_url} to ${boost_archive_file} completed successfully"
-        fi
-        mkdir -p ${DEPENDENCIES_HOME}
-        echo "Going to unpack prebuilt Boost archive from ${boost_archive_file} to ${DEPENDENCIES_HOME}"
-        tar -xzf ${boost_archive_file} -C ${DEPENDENCIES_HOME}
-        echo "Unpacking of prebuilt Boost archive from ${boost_archive_file} to ${DEPENDENCIES_HOME} completed successfully"
-      fi
-      echo "Prebuilt Boost ${BOOST_VERSION} is located at ${PREBUILT_BOOST_HOME}"
+          echo "Prebuilt Boost archive not found at ${boost_archive_file}" &&
+          echo "Going to download prebuilt Boost archive from ${boost_download_url} to ${boost_archive_file}" &&
+          mkdir -p ${DOWNLOADS_HOME} &&
+          curl -jksSL ${boost_download_url} --output ${boost_archive_file} &&
+          echo "Download of prebuilt Boost archive from ${boost_download_url} to ${boost_archive_file} completed successfully";
+        fi &&
+        mkdir -p ${DEPENDENCIES_HOME} &&
+        echo "Going to unpack prebuilt Boost archive from ${boost_archive_file} to ${DEPENDENCIES_HOME}" &&
+        tar -xzf ${boost_archive_file} -C ${DEPENDENCIES_HOME} &&
+        echo "Unpacking of prebuilt Boost archive from ${boost_archive_file} to ${DEPENDENCIES_HOME} completed successfully";
+      fi &&
+      echo "Prebuilt Boost ${BOOST_VERSION} is located at ${PREBUILT_BOOST_HOME}";
     fi
 
 script:
-  - |
-    set -e
-    if [ "${COVERITY_SCAN_BRANCH}" == 1 ]; then
-      echo "Build was already perfomed with Coverity scan."
+  - export CODECOV_FLAG="ubuntu_14_04__$(uname -m)__${CXX_COMPILER_FAMILY}_$(${CXX_COMPILER} -dumpversion)__boost_${BOOST_VERSION}__qt_${QT_MAJOR_VERSION}"
+  - export CODECOV_FLAG="${CODECOV_FLAG//[.-]/_}"
+  - if [ "${COVERITY_SCAN_BRANCH}" == 1 ]; then
+      echo "Build was already perfomed with Coverity scan.";
     else
-      echo "Preparing build dir at ${TRAVIS_BUILD_DIR}/build"
-      rm -rf ${TRAVIS_BUILD_DIR}/build && mkdir -p ${TRAVIS_BUILD_DIR}/build
+      echo "Preparing build dir at ${BUILD_HOME}" &&
+      rm -rf ${BUILD_HOME} && mkdir -p ${BUILD_HOME};
     fi
-    cd ${TRAVIS_BUILD_DIR}/build
-    if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then
+  - export COVERAGE_BUILD=0;
+  - if [[ "${COVERAGE_BUILD_CANDIDATE}" != 0 ]]; then
+      export COVERAGE_BUILD=1;
+    fi
+  - cd ${BUILD_HOME}
+  - if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then
       if [ "${PRE_INSTALLED_BOOST}" != 0 ]; then
-        echo "Building with pre-installed Boost ${BOOST_VERSION}"
-        cmake -D CMAKE_C_COMPILER=${C_COMPILER} -D CMAKE_CXX_COMPILER=${CXX_COMPILER} -D CMAKE_BUILD_TYPE=${BUILD_TYPE} -D ma_force_qt_major_version=${QT_MAJOR_VERSION} -D ma_coverage_build=${COVERAGE_BUILD} ${TRAVIS_BUILD_DIR}
+        echo "Building with pre-installed Boost ${BOOST_VERSION}" &&
+        cmake -D CMAKE_C_COMPILER=${C_COMPILER} -D CMAKE_CXX_COMPILER=${CXX_COMPILER} -D CMAKE_BUILD_TYPE=${BUILD_TYPE} -D ma_force_qt_major_version=${QT_MAJOR_VERSION} -D ma_coverage_build=${COVERAGE_BUILD} ${TRAVIS_BUILD_DIR};
       else
-        echo "Building with prebuilt Boost ${BOOST_VERSION} located at ${PREBUILT_BOOST_HOME}"
-        cmake -D CMAKE_C_COMPILER=${C_COMPILER} -D CMAKE_CXX_COMPILER=${CXX_COMPILER} -D CMAKE_BUILD_TYPE=${BUILD_TYPE} -D Boost_NO_SYSTEM_PATHS=ON -D BOOST_INCLUDEDIR=${PREBUILT_BOOST_HOME}/include -D BOOST_LIBRARYDIR=${PREBUILT_BOOST_HOME}/lib -D ma_force_qt_major_version=${QT_MAJOR_VERSION} -D ma_coverage_build=${COVERAGE_BUILD} ${TRAVIS_BUILD_DIR}
-      fi
-      cmake --build . --config ${BUILD_TYPE}
+        echo "Building with prebuilt Boost ${BOOST_VERSION} located at ${PREBUILT_BOOST_HOME}" &&
+        cmake -D CMAKE_C_COMPILER=${C_COMPILER} -D CMAKE_CXX_COMPILER=${CXX_COMPILER} -D CMAKE_BUILD_TYPE=${BUILD_TYPE} -D Boost_NO_SYSTEM_PATHS=ON -D BOOST_INCLUDEDIR=${PREBUILT_BOOST_HOME}/include -D BOOST_LIBRARYDIR=${PREBUILT_BOOST_HOME}/lib -D ma_force_qt_major_version=${QT_MAJOR_VERSION} -D ma_coverage_build=${COVERAGE_BUILD} ${TRAVIS_BUILD_DIR};
+      fi &&
+      cmake --build ${BUILD_HOME} --config ${BUILD_TYPE};
     fi
-    if [ "${COVERAGE_BUILD}" != 0 ]; then
-      echo "Preparing code coverage counters at ${TRAVIS_BUILD_DIR}/build/lcov-base.info"
-      lcov -z -d . && lcov -c -d . -i -o lcov-base.info
+  - if [ "${COVERAGE_BUILD}" != 0 ]; then
+      echo "Preparing code coverage counters at ${BUILD_HOME}/lcov-base.info" &&
+      lcov -z -d ${BUILD_HOME} &&
+      lcov -c -d ${BUILD_HOME} -i -o lcov-base.info;
     fi
-    ctest --build-config ${BUILD_TYPE} --verbose
-    if [ "${COVERAGE_BUILD}" != 0 ]; then
-      echo "Caclulating coverage at ${TRAVIS_BUILD_DIR}/build/lcov-test.info"
-      lcov -c -d . -o lcov-test.info
-      echo "Caclulating coverage delta at ${TRAVIS_BUILD_DIR}/build/lcov.info"
-      lcov -a lcov-base.info -a lcov-test.info -o lcov.info
-      echo "Excluding 3rd party code from coverage data located at ${TRAVIS_BUILD_DIR}/build/lcov.info"
-      lcov -r lcov.info "ui_*.h*" "moc_*.c*" "/usr/*" "3rdparty/*" "examples/*" "tests/*" "${DEPENDENCIES_HOME}/*" -o lcov.info
+  - ctest --build-config ${BUILD_TYPE} --verbose
+  - if [ "${COVERAGE_BUILD}" != 0 ]; then
+      echo "Caclulating coverage at ${BUILD_HOME}/lcov-test.info" &&
+      lcov -c -d ${BUILD_HOME} -o lcov-test.info &&
+      echo "Caclulating coverage delta at ${BUILD_HOME}/lcov.info" &&
+      lcov -a lcov-base.info -a lcov-test.info -o lcov.info &&
+      echo "Excluding 3rd party code from coverage data located at ${BUILD_HOME}/lcov.info" &&
+      lcov -r lcov.info "ui_*.h*" "moc_*.c*" "/usr/*" "3rdparty/*" "examples/*" "tests/*" "${DEPENDENCIES_HOME}/*" -o lcov.info;
     fi
-    cd ${TRAVIS_BUILD_DIR}
+  - cd ${TRAVIS_BUILD_DIR}
 
 after_success:
-  - |
-    set -e
-    cd ${TRAVIS_BUILD_DIR}
-    if [ "${COVERAGE_BUILD}" != 0 ]; then
-      echo "Sending ${TRAVIS_BUILD_DIR}/build/lcov.info coverage data to Codecov"
-      bash <(curl -s https://codecov.io/bash) -f ${TRAVIS_BUILD_DIR}/build/lcov.info -R ${TRAVIS_BUILD_DIR} -X gcov
+  - cd ${TRAVIS_BUILD_DIR}
+  - if [ "${COVERAGE_BUILD}" != 0 ]; then
+      echo "Sending ${BUILD_HOME}/lcov.info coverage data to Codecov" &&
+      bash <(curl -s https://codecov.io/bash) -Z -f ${BUILD_HOME}/lcov.info -R ${TRAVIS_BUILD_DIR} -X gcov -F "${CODECOV_FLAG}";
     fi
