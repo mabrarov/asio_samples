@@ -59,7 +59,7 @@ TEST(sp_intrusive_list, lifetime_of_1st_pushed)
     ASSERT_EQ(1, instance_counter);
   }
   ASSERT_EQ(0, instance_counter);
-}
+} // TEST(sp_intrusive_list, lifetime_of_1st_pushed)
 
 TEST(sp_intrusive_list, lifetime_of_2nd_pushed)
 {
@@ -80,7 +80,7 @@ TEST(sp_intrusive_list, lifetime_of_2nd_pushed)
     ASSERT_EQ(2, instance_counter);
   }
   ASSERT_EQ(0, instance_counter);
-}
+} // TEST(sp_intrusive_list, lifetime_of_2nd_pushed)
 
 TEST(sp_intrusive_list, lifetime_of_single_erased)
 {
@@ -95,7 +95,7 @@ TEST(sp_intrusive_list, lifetime_of_single_erased)
     ASSERT_EQ(1, instance_counter);
   }
   ASSERT_EQ(0, instance_counter);
-}
+} // TEST(sp_intrusive_list, lifetime_of_single_erased)
 
 TEST(sp_intrusive_list, lifetime_of_1st_erased)
 {
@@ -118,7 +118,7 @@ TEST(sp_intrusive_list, lifetime_of_1st_erased)
     ASSERT_EQ(1, instance_counter);
   }
   ASSERT_EQ(0, instance_counter);
-}
+} // TEST(sp_intrusive_list, lifetime_of_1st_erased)
 
 TEST(sp_intrusive_list, lifetime_of_2nd_erased)
 {
@@ -141,7 +141,7 @@ TEST(sp_intrusive_list, lifetime_of_2nd_erased)
     ASSERT_EQ(1, instance_counter);
   }
   ASSERT_EQ(0, instance_counter);
-}
+} // TEST(sp_intrusive_list, lifetime_of_2nd_erased)
 
 TEST(sp_intrusive_list, front_after_push_front)
 {
@@ -157,7 +157,7 @@ TEST(sp_intrusive_list, front_after_push_front)
       detail::ref(instance_counter));
   list.push_front(item2);
   ASSERT_EQ(item2, list.front());
-}
+} // TEST(sp_intrusive_list, front_after_push_front)
 
 TEST(sp_intrusive_list, front_after_erase_last)
 {
@@ -174,7 +174,7 @@ TEST(sp_intrusive_list, front_after_erase_last)
 
   list.erase(item1);
   ASSERT_EQ(item2, list.front());
-}
+} // TEST(sp_intrusive_list, front_after_erase_last)
 
 TEST(sp_intrusive_list, front_after_erase_front)
 {
@@ -191,7 +191,7 @@ TEST(sp_intrusive_list, front_after_erase_front)
 
   list.erase(item2);
   ASSERT_EQ(item1, list.front());
-}
+} // TEST(sp_intrusive_list, front_after_erase_front)
 
 TEST(sp_intrusive_list, size)
 {
@@ -220,7 +220,7 @@ TEST(sp_intrusive_list, size)
 
   list.clear();
   ASSERT_EQ(0U, list.size());
-}
+} // TEST(sp_intrusive_list, size)
 
 TEST(sp_intrusive_list, empty)
 {
@@ -250,7 +250,7 @@ TEST(sp_intrusive_list, empty)
 
   list.clear();
   ASSERT_TRUE(list.empty());
-}
+} // TEST(sp_intrusive_list, empty)
 
 TEST(sp_intrusive_list, next)
 {
@@ -278,7 +278,7 @@ TEST(sp_intrusive_list, next)
   }
 
   ASSERT_FALSE(item);
-}
+} // TEST(sp_intrusive_list, next)
 
 TEST(sp_intrusive_list, prev)
 {
@@ -313,7 +313,7 @@ TEST(sp_intrusive_list, prev)
   }
 
   ASSERT_FALSE(item);
-}
+} // TEST(sp_intrusive_list, prev)
 
 } // namespace sp_intrusive_list
 } // namespace test
