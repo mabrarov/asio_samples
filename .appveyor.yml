@@ -743,5 +743,7 @@ artifacts:
     name: ma_context_wrapped_handler_test
   - path: build\tests\ma_limited_int_test\$(configuration)\*.exe
     name: ma_limited_int_test
+  - path: build\tests\ma_console_close_signal_test\$(configuration)\*.exe
+    name: ma_console_close_signal_test
   - path: build\tests\ma_intrusive_list_test\$(configuration)\*.exe
     name: ma_intrusive_list_test
