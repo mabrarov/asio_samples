@@ -174,7 +174,7 @@ TEST(intrusive_list, move_assign)
 
 #endif // defined(MA_HAS_RVALUE_REFS)
 
-TEST(intrusive_list, push_one)
+TEST(intrusive_list, push_front_1)
 {
   int instance_counter = 0;
   {
@@ -190,9 +190,9 @@ TEST(intrusive_list, push_one)
     ASSERT_EQ(0, instance_counter);
   }
   ASSERT_EQ(0, instance_counter);
-} // TEST(intrusive_list, push_one)
+} // TEST(intrusive_list, push_front_1)
 
-TEST(intrusive_list, push_two)
+TEST(intrusive_list, push_front_2)
 {
   int instance_counter = 0;
   {
@@ -211,9 +211,9 @@ TEST(intrusive_list, push_two)
     ASSERT_EQ(0, instance_counter);
   }
   ASSERT_EQ(0, instance_counter);
-} // TEST(intrusive_list, push_two)
+} // TEST(intrusive_list, push_front_2)
 
-TEST(intrusive_list, push_three)
+TEST(intrusive_list, push_front_3)
 {
   int instance_counter = 0;
   {
@@ -235,7 +235,146 @@ TEST(intrusive_list, push_three)
     ASSERT_EQ(0, instance_counter);
   }
   ASSERT_EQ(0, instance_counter);
-} // TEST(intrusive_list, push_three)
+} // TEST(intrusive_list, push_front_3)
+
+TEST(intrusive_list, push_back_1)
+{
+  int instance_counter = 0;
+  {
+    list_type list;
+    {
+      list_item item(instance_counter);
+      list.push_back(item);
+
+      ASSERT_EQ(list.front(), detail::addressof(item));
+      ASSERT_EQ(list.back(), detail::addressof(item));
+      ASSERT_EQ(1, instance_counter);
+    }
+    ASSERT_EQ(0, instance_counter);
+  }
+  ASSERT_EQ(0, instance_counter);
+} // TEST(intrusive_list, push_back_1)
+
+TEST(intrusive_list, push_back_2)
+{
+  int instance_counter = 0;
+  {
+    list_type list;
+    {
+      list_item item1(instance_counter);
+      list.push_back(item1);
+
+      list_item item2(instance_counter);
+      list.push_back(item2);
+
+      ASSERT_EQ(list.front(), detail::addressof(item1));
+      ASSERT_EQ(list.back(), detail::addressof(item2));
+      ASSERT_EQ(2, instance_counter);
+    }
+    ASSERT_EQ(0, instance_counter);
+  }
+  ASSERT_EQ(0, instance_counter);
+} // TEST(intrusive_list, push_back_2)
+
+TEST(intrusive_list, push_back_3)
+{
+  int instance_counter = 0;
+  {
+    list_type list;
+    {
+      list_item item1(instance_counter);
+      list.push_back(item1);
+
+      list_item item2(instance_counter);
+      list.push_back(item2);
+
+      list_item item3(instance_counter);
+      list.push_back(item3);
+
+      ASSERT_EQ(list.front(), detail::addressof(item1));
+      ASSERT_EQ(list.back(), detail::addressof(item3));
+      ASSERT_EQ(3, instance_counter);
+    }
+    ASSERT_EQ(0, instance_counter);
+  }
+  ASSERT_EQ(0, instance_counter);
+} // TEST(intrusive_list, push_back_3)
+
+TEST(intrusive_list, pop_front_1)
+{
+  int instance_counter = 0;
+  {
+    list_type list;
+    {
+      list_item item(instance_counter);
+      list.push_front(item);
+      list.pop_front();
+      ASSERT_TRUE(list.empty());
+      ASSERT_EQ(1, instance_counter);
+    }
+    ASSERT_EQ(0, instance_counter);
+  }
+  ASSERT_EQ(0, instance_counter);
+} // TEST(intrusive_list, pop_front_1)
+
+TEST(intrusive_list, pop_front_2)
+{
+  int instance_counter = 0;
+  {
+    list_type list;
+    {
+      list_item item1(instance_counter);
+      list_item item2(instance_counter);
+      list.push_front(item1);
+      list.push_front(item2);
+
+      list.pop_front();
+      ASSERT_FALSE(list.empty());
+      ASSERT_EQ(list.front(), detail::addressof(item1));
+      ASSERT_EQ(list.back(), detail::addressof(item1));
+
+      list.pop_front();
+      ASSERT_TRUE(list.empty());
+
+      ASSERT_EQ(2, instance_counter);
+    }
+    ASSERT_EQ(0, instance_counter);
+  }
+  ASSERT_EQ(0, instance_counter);
+} // TEST(intrusive_list, pop_front_2)
+
+TEST(intrusive_list, pop_front_3)
+{
+  int instance_counter = 0;
+  {
+    list_type list;
+    {
+      list_item item1(instance_counter);
+      list_item item2(instance_counter);
+      list_item item3(instance_counter);
+      list.push_front(item1);
+      list.push_front(item2);
+      list.push_front(item3);
+
+      list.pop_front();
+      ASSERT_FALSE(list.empty());
+      ASSERT_EQ(list.front(), detail::addressof(item2));
+      ASSERT_EQ(list.back(), detail::addressof(item1));
+
+      list.pop_front();
+      ASSERT_FALSE(list.empty());
+      ASSERT_EQ(list.front(), detail::addressof(item1));
+      ASSERT_EQ(list.back(), detail::addressof(item1));
+
+      list.pop_front();
+      ASSERT_TRUE(list.empty());
+
+      ASSERT_EQ(3, instance_counter);
+    }
+    ASSERT_EQ(0, instance_counter);
+  }
+  ASSERT_EQ(0, instance_counter);
+} // TEST(intrusive_list, pop_front_3)
 
 TEST(intrusive_list, erase_last)
 {
