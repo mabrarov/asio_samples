@@ -5,9 +5,21 @@
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include <gtest/gtest.h>
+#include <csignal>
 #include <ma/config.hpp>
+
+#if defined(MA_HAS_WINDOWS_CONSOLE_SIGNAL)
+#include <boost/asio/detail/signal_set_service.hpp>
+#endif
+
+#include <gtest/gtest.h>
 #include <ma/console_close_guard.hpp>
+
+#if defined(MA_HAS_WINDOWS_CONSOLE_SIGNAL)
+#include <ma/windows/console_signal.hpp>
+#endif
+
+#include <ma/detail/functional.hpp>
 #include <ma/detail/latch.hpp>
 
 namespace ma {
@@ -62,6 +74,34 @@ private:
   detail::latch& instance_counter_;
   detail::latch& call_counter_;
 }; // class instance_tracking_handler
+
+void handle_close(detail::latch& call_counter)
+{
+  call_counter.count_down();
+}
+
+TEST(console_close_guard, handler_call)
+{
+  detail::latch call_counter(1);
+  ma::console_close_guard console_close_guard(detail::bind(handle_close,
+      detail::ref(call_counter)));
+
+  // Imitate SIGINT
+#if defined(MA_HAS_WINDOWS_CONSOLE_SIGNAL)
+  ma::windows::console_signal::service_type& console_signal_service =
+      boost::asio::use_service<ma::windows::console_signal::service_type>(
+          console_close_guard.get_io_service());
+  console_signal_service.deliver_signal(SIGINT);
+#else
+  boost::asio::detail::signal_set_service::deliver_signal(SIGINT);
+#endif
+
+  call_counter.wait();
+
+  ASSERT_EQ(0U, call_counter.value());
+
+  (void) console_close_guard;
+} // TEST(console_close_guard, handler_call)
 
 TEST(console_close_guard, destruction_doesnt_call_handler)
 {

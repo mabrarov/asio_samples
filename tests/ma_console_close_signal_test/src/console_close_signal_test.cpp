@@ -21,6 +21,11 @@
 #include <ma/handler_allocator.hpp>
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/console_close_signal.hpp>
+
+#if defined(MA_HAS_WINDOWS_CONSOLE_SIGNAL)
+#include <ma/windows/console_signal.hpp>
+#endif
+
 #include <ma/detail/memory.hpp>
 #include <ma/detail/functional.hpp>
 #include <ma/detail/latch.hpp>
