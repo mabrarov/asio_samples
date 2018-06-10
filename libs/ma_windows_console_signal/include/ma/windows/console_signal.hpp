@@ -48,18 +48,18 @@ private:
   implementation_type impl_;
 }; // class console_signal
 
-console_signal::console_signal(boost::asio::io_service& io_service)
+inline console_signal::console_signal(boost::asio::io_service& io_service)
   : service_(boost::asio::use_service<service_type>(io_service))
 {
   service_.construct(impl_);
 }
 
-console_signal::~console_signal()
+inline console_signal::~console_signal()
 {
   service_.destroy(impl_);
 }
 
-boost::asio::io_service& console_signal::get_io_service()
+inline boost::asio::io_service& console_signal::get_io_service()
 {
   return service_.get_io_service();
 }
@@ -70,7 +70,7 @@ void console_signal::async_wait(MA_FWD_REF(Handler) handler)
   service_.async_wait(impl_, detail::forward<Handler>(handler));
 }
 
-std::size_t console_signal::cancel(boost::system::error_code& error)
+inline std::size_t console_signal::cancel(boost::system::error_code& error)
 {
   return service_.cancel(impl_, error);
 }
