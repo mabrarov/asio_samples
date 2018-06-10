@@ -24,7 +24,8 @@ ma_config_private_compile_definitions(cxx_private_compile_definitions)
 set(cxx_private_libraries )
 
 list(APPEND cxx_sources
-    "${cxx_sources_dir}/intrusive_list_test.cpp")
+    "${cxx_sources_dir}/intrusive_list_test.cpp"
+    "${cxx_sources_dir}/intrusive_forward_list_test.cpp")
 
 list(APPEND cxx_private_libraries
     ma_intrusive_list
