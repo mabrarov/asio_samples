@@ -11,6 +11,7 @@
 #include <ma/detail/intrusive_list.hpp>
 #include <ma/detail/utility.hpp>
 #include <ma/detail/memory.hpp>
+#include <ma/detail/functional.hpp>
 
 namespace ma {
 namespace test {
@@ -27,7 +28,7 @@ private:
   this_type& operator=(const this_type&);
 
 public:
-  explicit list_item(int& counter) : counter_(counter)
+  explicit list_item(std::size_t& counter) : counter_(counter)
   {
     ++counter_;
   }
@@ -54,16 +55,17 @@ public:
   }
 
 private:
-  int& counter_;
+  std::size_t& counter_;
 }; // class list_item
 
 typedef ma::detail::intrusive_list<list_item> list_type;
 typedef list_item* list_item_ptr;
-typedef std::vector<list_item_ptr> item_ptr_vector;
+typedef detail::shared_ptr<list_item> list_item_shared_ptr;
+typedef std::vector<list_item_shared_ptr> item_shared_ptr_vector;
 
 TEST(intrusive_list, empty)
 {
-  int instance_counter = 0;
+  std::size_t instance_counter = 0;
   list_type list;
   ASSERT_TRUE(list.empty());
 
@@ -91,7 +93,7 @@ TEST(intrusive_list, empty)
 
 TEST(intrusive_list, copy_construct)
 {
-  int instance_counter = 0;
+  std::size_t instance_counter = 0;
   list_type list1;
   list_item item1(instance_counter);
   list_item item2(instance_counter);
@@ -111,7 +113,7 @@ TEST(intrusive_list, copy_construct)
 
 TEST(intrusive_list, copy_assign)
 {
-  int instance_counter = 0;
+  std::size_t instance_counter = 0;
   list_type list1;
   list_item item1(instance_counter);
   list_item item2(instance_counter);
@@ -136,7 +138,7 @@ TEST(intrusive_list, copy_assign)
 
 TEST(intrusive_list, move_construct)
 {
-  int instance_counter = 0;
+  std::size_t instance_counter = 0;
   list_type list1;
   list_item item1(instance_counter);
   list_item item2(instance_counter);
@@ -154,7 +156,7 @@ TEST(intrusive_list, move_construct)
 
 TEST(intrusive_list, move_assign)
 {
-  int instance_counter = 0;
+  std::size_t instance_counter = 0;
   list_type list1;
   list_item item1(instance_counter);
   list_item item2(instance_counter);
@@ -176,25 +178,25 @@ TEST(intrusive_list, move_assign)
 
 TEST(intrusive_list, push_front_1)
 {
-  int instance_counter = 0;
+  std::size_t instance_counter = 0;
   {
     list_type list;
     {
       list_item item(instance_counter);
       list.push_front(item);
 
-      ASSERT_EQ(list.front(), detail::addressof(item));
-      ASSERT_EQ(list.back(), detail::addressof(item));
-      ASSERT_EQ(1, instance_counter);
+      ASSERT_EQ(detail::addressof(item), list.front());
+      ASSERT_EQ(detail::addressof(item), list.back());
+      ASSERT_EQ(1U, instance_counter);
     }
-    ASSERT_EQ(0, instance_counter);
+    ASSERT_EQ(0U, instance_counter);
   }
-  ASSERT_EQ(0, instance_counter);
+  ASSERT_EQ(0U, instance_counter);
 } // TEST(intrusive_list, push_front_1)
 
 TEST(intrusive_list, push_front_2)
 {
-  int instance_counter = 0;
+  std::size_t instance_counter = 0;
   {
     list_type list;
     {
@@ -204,18 +206,18 @@ TEST(intrusive_list, push_front_2)
       list_item item2(instance_counter);
       list.push_front(item2);
 
-      ASSERT_EQ(list.front(), detail::addressof(item2));
-      ASSERT_EQ(list.back(), detail::addressof(item1));
-      ASSERT_EQ(2, instance_counter);
+      ASSERT_EQ(detail::addressof(item2), list.front());
+      ASSERT_EQ(detail::addressof(item1), list.back());
+      ASSERT_EQ(2U, instance_counter);
     }
-    ASSERT_EQ(0, instance_counter);
+    ASSERT_EQ(0U, instance_counter);
   }
-  ASSERT_EQ(0, instance_counter);
+  ASSERT_EQ(0U, instance_counter);
 } // TEST(intrusive_list, push_front_2)
 
 TEST(intrusive_list, push_front_3)
 {
-  int instance_counter = 0;
+  std::size_t instance_counter = 0;
   {
     list_type list;
     {
@@ -228,36 +230,36 @@ TEST(intrusive_list, push_front_3)
       list_item item3(instance_counter);
       list.push_front(item3);
 
-      ASSERT_EQ(list.front(), detail::addressof(item3));
-      ASSERT_EQ(list.back(), detail::addressof(item1));
-      ASSERT_EQ(3, instance_counter);
+      ASSERT_EQ(detail::addressof(item3), list.front());
+      ASSERT_EQ(detail::addressof(item1), list.back());
+      ASSERT_EQ(3U, instance_counter);
     }
-    ASSERT_EQ(0, instance_counter);
+    ASSERT_EQ(0U, instance_counter);
   }
-  ASSERT_EQ(0, instance_counter);
+  ASSERT_EQ(0U, instance_counter);
 } // TEST(intrusive_list, push_front_3)
 
 TEST(intrusive_list, push_back_1)
 {
-  int instance_counter = 0;
+  std::size_t instance_counter = 0;
   {
     list_type list;
     {
       list_item item(instance_counter);
       list.push_back(item);
 
-      ASSERT_EQ(list.front(), detail::addressof(item));
-      ASSERT_EQ(list.back(), detail::addressof(item));
-      ASSERT_EQ(1, instance_counter);
+      ASSERT_EQ(detail::addressof(item), list.front());
+      ASSERT_EQ(detail::addressof(item), list.back());
+      ASSERT_EQ(1U, instance_counter);
     }
-    ASSERT_EQ(0, instance_counter);
+    ASSERT_EQ(0U, instance_counter);
   }
-  ASSERT_EQ(0, instance_counter);
+  ASSERT_EQ(0U, instance_counter);
 } // TEST(intrusive_list, push_back_1)
 
 TEST(intrusive_list, push_back_2)
 {
-  int instance_counter = 0;
+  std::size_t instance_counter = 0;
   {
     list_type list;
     {
@@ -267,18 +269,18 @@ TEST(intrusive_list, push_back_2)
       list_item item2(instance_counter);
       list.push_back(item2);
 
-      ASSERT_EQ(list.front(), detail::addressof(item1));
-      ASSERT_EQ(list.back(), detail::addressof(item2));
-      ASSERT_EQ(2, instance_counter);
+      ASSERT_EQ(detail::addressof(item1), list.front());
+      ASSERT_EQ(detail::addressof(item2), list.back());
+      ASSERT_EQ(2U, instance_counter);
     }
-    ASSERT_EQ(0, instance_counter);
+    ASSERT_EQ(0U, instance_counter);
   }
-  ASSERT_EQ(0, instance_counter);
+  ASSERT_EQ(0U, instance_counter);
 } // TEST(intrusive_list, push_back_2)
 
 TEST(intrusive_list, push_back_3)
 {
-  int instance_counter = 0;
+  std::size_t instance_counter = 0;
   {
     list_type list;
     {
@@ -291,18 +293,18 @@ TEST(intrusive_list, push_back_3)
       list_item item3(instance_counter);
       list.push_back(item3);
 
-      ASSERT_EQ(list.front(), detail::addressof(item1));
-      ASSERT_EQ(list.back(), detail::addressof(item3));
-      ASSERT_EQ(3, instance_counter);
+      ASSERT_EQ(detail::addressof(item1), list.front());
+      ASSERT_EQ(detail::addressof(item3), list.back());
+      ASSERT_EQ(3U, instance_counter);
     }
-    ASSERT_EQ(0, instance_counter);
+    ASSERT_EQ(0U, instance_counter);
   }
-  ASSERT_EQ(0, instance_counter);
+  ASSERT_EQ(0U, instance_counter);
 } // TEST(intrusive_list, push_back_3)
 
 TEST(intrusive_list, pop_front_1)
 {
-  int instance_counter = 0;
+  std::size_t instance_counter = 0;
   {
     list_type list;
     {
@@ -310,16 +312,16 @@ TEST(intrusive_list, pop_front_1)
       list.push_front(item);
       list.pop_front();
       ASSERT_TRUE(list.empty());
-      ASSERT_EQ(1, instance_counter);
+      ASSERT_EQ(1U, instance_counter);
     }
-    ASSERT_EQ(0, instance_counter);
+    ASSERT_EQ(0U, instance_counter);
   }
-  ASSERT_EQ(0, instance_counter);
+  ASSERT_EQ(0U, instance_counter);
 } // TEST(intrusive_list, pop_front_1)
 
 TEST(intrusive_list, pop_front_2)
 {
-  int instance_counter = 0;
+  std::size_t instance_counter = 0;
   {
     list_type list;
     {
@@ -330,22 +332,22 @@ TEST(intrusive_list, pop_front_2)
 
       list.pop_front();
       ASSERT_FALSE(list.empty());
-      ASSERT_EQ(list.front(), detail::addressof(item1));
-      ASSERT_EQ(list.back(), detail::addressof(item1));
+      ASSERT_EQ(detail::addressof(item1), list.front());
+      ASSERT_EQ(detail::addressof(item1), list.back());
 
       list.pop_front();
       ASSERT_TRUE(list.empty());
 
-      ASSERT_EQ(2, instance_counter);
+      ASSERT_EQ(2U, instance_counter);
     }
-    ASSERT_EQ(0, instance_counter);
+    ASSERT_EQ(0U, instance_counter);
   }
-  ASSERT_EQ(0, instance_counter);
+  ASSERT_EQ(0U, instance_counter);
 } // TEST(intrusive_list, pop_front_2)
 
 TEST(intrusive_list, pop_front_3)
 {
-  int instance_counter = 0;
+  std::size_t instance_counter = 0;
   {
     list_type list;
     {
@@ -358,27 +360,103 @@ TEST(intrusive_list, pop_front_3)
 
       list.pop_front();
       ASSERT_FALSE(list.empty());
-      ASSERT_EQ(list.front(), detail::addressof(item2));
-      ASSERT_EQ(list.back(), detail::addressof(item1));
+      ASSERT_EQ(detail::addressof(item2), list.front());
+      ASSERT_EQ(detail::addressof(item1), list.back());
 
       list.pop_front();
       ASSERT_FALSE(list.empty());
-      ASSERT_EQ(list.front(), detail::addressof(item1));
-      ASSERT_EQ(list.back(), detail::addressof(item1));
+      ASSERT_EQ(detail::addressof(item1), list.front());
+      ASSERT_EQ(detail::addressof(item1), list.back());
 
       list.pop_front();
       ASSERT_TRUE(list.empty());
 
-      ASSERT_EQ(3, instance_counter);
+      ASSERT_EQ(3U, instance_counter);
     }
-    ASSERT_EQ(0, instance_counter);
+    ASSERT_EQ(0U, instance_counter);
   }
-  ASSERT_EQ(0, instance_counter);
+  ASSERT_EQ(0U, instance_counter);
 } // TEST(intrusive_list, pop_front_3)
+
+TEST(intrusive_list, pop_back_1)
+{
+  std::size_t instance_counter = 0;
+  {
+    list_type list;
+    {
+      list_item item(instance_counter);
+      list.push_front(item);
+      list.pop_back();
+      ASSERT_TRUE(list.empty());
+      ASSERT_EQ(1U, instance_counter);
+    }
+    ASSERT_EQ(0U, instance_counter);
+  }
+  ASSERT_EQ(0U, instance_counter);
+} // TEST(intrusive_list, pop_back_1)
+
+TEST(intrusive_list, pop_back_2)
+{
+  std::size_t instance_counter = 0;
+  {
+    list_type list;
+    {
+      list_item item1(instance_counter);
+      list_item item2(instance_counter);
+      list.push_front(item1);
+      list.push_front(item2);
+
+      list.pop_back();
+      ASSERT_FALSE(list.empty());
+      ASSERT_EQ(detail::addressof(item2), list.front());
+      ASSERT_EQ(detail::addressof(item2), list.back());
+
+      list.pop_back();
+      ASSERT_TRUE(list.empty());
+
+      ASSERT_EQ(2U, instance_counter);
+    }
+    ASSERT_EQ(0U, instance_counter);
+  }
+  ASSERT_EQ(0U, instance_counter);
+} // TEST(intrusive_list, pop_back_2)
+
+TEST(intrusive_list, pop_back_3)
+{
+  std::size_t instance_counter = 0;
+  {
+    list_type list;
+    {
+      list_item item1(instance_counter);
+      list_item item2(instance_counter);
+      list_item item3(instance_counter);
+      list.push_front(item1);
+      list.push_front(item2);
+      list.push_front(item3);
+
+      list.pop_back();
+      ASSERT_FALSE(list.empty());
+      ASSERT_EQ(detail::addressof(item3), list.front());
+      ASSERT_EQ(detail::addressof(item2), list.back());
+
+      list.pop_back();
+      ASSERT_FALSE(list.empty());
+      ASSERT_EQ(detail::addressof(item3), list.front());
+      ASSERT_EQ(detail::addressof(item3), list.back());
+
+      list.pop_back();
+      ASSERT_TRUE(list.empty());
+
+      ASSERT_EQ(3U, instance_counter);
+    }
+    ASSERT_EQ(0U, instance_counter);
+  }
+  ASSERT_EQ(0U, instance_counter);
+} // TEST(intrusive_list, pop_back_3)
 
 TEST(intrusive_list, erase_last)
 {
-  int instance_counter = 0;
+  std::size_t instance_counter = 0;
   {
     list_type list;
 
@@ -387,19 +465,19 @@ TEST(intrusive_list, erase_last)
     list_item item2(instance_counter);
     list.push_front(item2);
 
-    ASSERT_EQ(2, instance_counter);
+    ASSERT_EQ(2U, instance_counter);
     list.erase(item1);
-    ASSERT_EQ(2, instance_counter);
+    ASSERT_EQ(2U, instance_counter);
 
-    ASSERT_EQ(list.front(), detail::addressof(item2));
-    ASSERT_EQ(list.back(), detail::addressof(item2));
+    ASSERT_EQ(detail::addressof(item2), list.front());
+    ASSERT_EQ(detail::addressof(item2), list.back());
   }
-  ASSERT_EQ(0, instance_counter);
+  ASSERT_EQ(0U, instance_counter);
 } // TEST(intrusive_list, erase_last)
 
 TEST(intrusive_list, erase_first)
 {
-  int instance_counter = 0;
+  std::size_t instance_counter = 0;
   {
     list_type list;
 
@@ -408,19 +486,19 @@ TEST(intrusive_list, erase_first)
     list_item item2(instance_counter);
     list.push_front(item2);
 
-    ASSERT_EQ(2, instance_counter);
+    ASSERT_EQ(2U, instance_counter);
     list.erase(item2);
-    ASSERT_EQ(2, instance_counter);
+    ASSERT_EQ(2U, instance_counter);
 
-    ASSERT_EQ(list.front(), detail::addressof(item1));
-    ASSERT_EQ(list.back(), detail::addressof(item1));
+    ASSERT_EQ(detail::addressof(item1), list.front());
+    ASSERT_EQ(detail::addressof(item1), list.back());
   }
-  ASSERT_EQ(0, instance_counter);
+  ASSERT_EQ(0U, instance_counter);
 } // TEST(intrusive_list, erase_first)
 
 TEST(intrusive_list, erase_middle)
 {
-  int instance_counter = 0;
+  std::size_t instance_counter = 0;
   {
     list_type list;
 
@@ -431,15 +509,250 @@ TEST(intrusive_list, erase_middle)
     list_item item3(instance_counter);
     list.push_front(item3);
 
-    ASSERT_EQ(3, instance_counter);
+    ASSERT_EQ(3U, instance_counter);
     list.erase(item2);
-    ASSERT_EQ(3, instance_counter);
+    ASSERT_EQ(3U, instance_counter);
 
-    ASSERT_EQ(list.front(), detail::addressof(item3));
-    ASSERT_EQ(list.back(), detail::addressof(item1));
+    ASSERT_EQ(detail::addressof(item3), list.front());
+    ASSERT_EQ(detail::addressof(item1), list.back());
   }
-  ASSERT_EQ(0, instance_counter);
+  ASSERT_EQ(0U, instance_counter);
 } // TEST(intrusive_list, erase_middle)
+
+TEST(intrusive_list, swap_with_empty)
+{
+  std::size_t instance_counter = 0;
+  {
+    list_type list1;
+    list_type list2;
+    {
+      list_item item1(instance_counter);
+      list_item item2(instance_counter);
+      list1.push_front(item1);
+      list1.push_front(item2);
+
+      list1.swap(list2);
+
+      ASSERT_TRUE(list1.empty());
+      ASSERT_FALSE(list2.empty());
+
+      ASSERT_EQ(detail::addressof(item2), list2.front());
+      ASSERT_EQ(detail::addressof(item1), list2.back());
+      ASSERT_EQ(static_cast<list_item_ptr>(0), list1.front());
+      ASSERT_EQ(static_cast<list_item_ptr>(0), list1.back());
+
+      ASSERT_EQ(2U, instance_counter);
+    }
+    ASSERT_EQ(0U, instance_counter);
+  }
+  {
+    list_type list1;
+    list_type list2;
+    {
+      list_item item1(instance_counter);
+      list_item item2(instance_counter);
+      list1.push_front(item1);
+      list1.push_front(item2);
+
+      list2.swap(list1);
+
+      ASSERT_TRUE(list1.empty());
+      ASSERT_FALSE(list2.empty());
+
+      ASSERT_EQ(detail::addressof(item2), list2.front());
+      ASSERT_EQ(detail::addressof(item1), list2.back());
+      ASSERT_EQ(static_cast<list_item_ptr>(0), list1.front());
+      ASSERT_EQ(static_cast<list_item_ptr>(0), list1.back());
+
+      ASSERT_EQ(2U, instance_counter);
+    }
+    ASSERT_EQ(0U, instance_counter);
+  }
+  ASSERT_EQ(0U, instance_counter);
+} // TEST(intrusive_list, swap_with_empty)
+
+TEST(intrusive_list, swap_with_non_empty)
+{
+  std::size_t instance_counter = 0;
+  {
+    list_type list1;
+    list_type list2;
+    {
+      list_item item11(instance_counter);
+      list_item item12(instance_counter);
+      list_item item21(instance_counter);
+      list_item item22(instance_counter);
+      list1.push_front(item11);
+      list1.push_front(item12);
+      list2.push_front(item21);
+      list2.push_front(item22);
+
+      list1.swap(list2);
+
+      ASSERT_FALSE(list1.empty());
+      ASSERT_FALSE(list2.empty());
+
+      ASSERT_EQ(detail::addressof(item12), list2.front());
+      ASSERT_EQ(detail::addressof(item11), list2.back());
+      ASSERT_EQ(detail::addressof(item22), list1.front());
+      ASSERT_EQ(detail::addressof(item21), list1.back());
+
+      ASSERT_EQ(4U, instance_counter);
+    }
+    ASSERT_EQ(0U, instance_counter);
+  }
+  ASSERT_EQ(0U, instance_counter);
+} // TEST(intrusive_list, swap_with_non_empty)
+
+TEST(intrusive_list, next)
+{
+  const std::size_t item_num = 10;
+  std::size_t instance_counter = 0;
+  item_shared_ptr_vector items;
+  items.reserve(item_num);
+  list_type list;
+
+  for (std::size_t i = 0; i < item_num; ++i)
+  {
+    list_item_shared_ptr item = detail::make_shared<list_item>(
+        detail::ref(instance_counter));
+    items.push_back(item);
+    list.push_front(*item);
+  }
+
+  ASSERT_EQ(item_num, instance_counter);
+
+  list_item_ptr item = list.front();
+  for (item_shared_ptr_vector::reverse_iterator i = items.rbegin(),
+      end = items.rend(); i != end; ++i)
+  {
+    ASSERT_EQ(i->get(), item);
+    item = list_type::next(*item);
+  }
+
+  ASSERT_FALSE(item);
+} // TEST(intrusive_list, next)
+
+TEST(intrusive_list, prev)
+{
+  const std::size_t item_num = 10;
+  std::size_t instance_counter = 0;
+  item_shared_ptr_vector items;
+  items.reserve(item_num);
+  list_type list;
+
+  for (std::size_t i = 0; i < item_num; ++i)
+  {
+    list_item_shared_ptr item = detail::make_shared<list_item>(
+        detail::ref(instance_counter));
+    items.push_back(item);
+    list.push_front(*item);
+  }
+
+  ASSERT_EQ(item_num, instance_counter);
+
+  list_item_ptr item = list.back();
+  for (item_shared_ptr_vector::iterator i = items.begin(), end = items.end();
+      i != end; ++i)
+  {
+    ASSERT_EQ(i->get(), item);
+    item = list_type::prev(*item);
+  }
+
+  ASSERT_FALSE(item);
+} // TEST(intrusive_list, prev)
+
+TEST(intrusive_list, insert_front)
+{
+  const std::size_t item_num = 10;
+  std::size_t instance_counter = 0;
+  item_shared_ptr_vector items;
+  items.reserve(item_num * 2);
+  list_type list1;
+  list_type list2;
+
+  for (std::size_t i = 0; i < item_num; ++i)
+  {
+    list_item_shared_ptr item = detail::make_shared<list_item>(
+        detail::ref(instance_counter));
+    items.push_back(item);
+    list1.push_front(*item);
+  }
+
+  for (std::size_t i = 0; i < item_num; ++i)
+  {
+    list_item_shared_ptr item = detail::make_shared<list_item>(
+        detail::ref(instance_counter));
+    items.push_back(item);
+    list2.push_front(*item);
+  }
+
+  ASSERT_EQ(item_num * 2, instance_counter);
+
+  list1.insert_front(list2);
+
+  ASSERT_FALSE(list1.empty());
+  ASSERT_TRUE(list2.empty());
+
+  list_item_ptr item = list1.front();
+  for (item_shared_ptr_vector::reverse_iterator i = items.rbegin(),
+      end = items.rend(); i != end; ++i)
+  {
+    ASSERT_EQ(i->get(), item);
+    item = list_type::next(*item);
+  }
+
+  ASSERT_FALSE(item);
+} // TEST(intrusive_list, insert_front)
+
+TEST(intrusive_list, insert_back)
+{
+  const std::size_t item_num = 10;
+  std::size_t instance_counter = 0;
+  item_shared_ptr_vector items;
+  items.reserve(item_num * 2);
+  list_type list1;
+  list_type list2;
+
+  for (std::size_t i = 0; i < item_num; ++i)
+  {
+    list_item_shared_ptr item = detail::make_shared<list_item>(
+        detail::ref(instance_counter));
+    items.push_back(item);
+    list1.push_front(*item);
+  }
+
+  for (std::size_t i = 0; i < item_num; ++i)
+  {
+    list_item_shared_ptr item = detail::make_shared<list_item>(
+        detail::ref(instance_counter));
+    items.push_back(item);
+    list2.push_front(*item);
+  }
+
+  ASSERT_EQ(item_num * 2, instance_counter);
+
+  list1.insert_back(list2);
+
+  ASSERT_FALSE(list1.empty());
+  ASSERT_TRUE(list2.empty());
+
+  list_item_ptr item = list1.front();
+  for (item_shared_ptr_vector::reverse_iterator i = items.rbegin() + item_num,
+      end = items.rend(); i != end; ++i)
+  {
+    ASSERT_EQ(i->get(), item);
+    item = list_type::next(*item);
+  }
+  for (item_shared_ptr_vector::reverse_iterator i = items.rbegin(),
+      end = items.rbegin() + item_num; i != end; ++i)
+  {
+    ASSERT_EQ(i->get(), item);
+    item = list_type::next(*item);
+  }
+
+  ASSERT_FALSE(item);
+} // TEST(intrusive_list, insert_back)
 
 } // namespace intrusive_list
 } // namespace test
