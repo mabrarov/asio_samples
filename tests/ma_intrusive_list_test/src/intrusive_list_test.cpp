@@ -940,6 +940,44 @@ TEST(intrusive_list, item_copy_assign)
   assert_same_items(items2, list2);
 } // TEST(intrusive_list, item_copy_assign)
 
+TEST(intrusive_list, item_move_assign)
+{
+  const std::size_t item_num = 10;
+  std::size_t instance_counter = 0;
+  item_shared_ptr_vector items1;
+  item_shared_ptr_vector items2;
+  items1.reserve(item_num);
+  items2.reserve(item_num);
+  list_type list1;
+  list_type list2;
+
+  for (std::size_t i = 0; i < item_num; ++i)
+  {
+    list_item_shared_ptr item = detail::make_shared<list_item>(
+        detail::ref(instance_counter));
+    items1.push_back(item);
+    list1.push_front(*item);
+  }
+
+  for (std::size_t i = 0; i < item_num; ++i)
+  {
+    list_item_shared_ptr item = detail::make_shared<list_item>(
+        detail::ref(instance_counter));
+    items2.push_back(item);
+    list2.push_front(*item);
+  }
+
+  for (std::size_t i = 0; i < item_num; ++i)
+  {
+    *(items1[i]) = detail::move(*(items2[i]));
+  }
+
+  ASSERT_EQ(item_num * 2, instance_counter);
+
+  assert_same_items(items1, list1);
+  assert_same_items(items2, list2);
+} // TEST(intrusive_list, item_move_assign)
+
 } // namespace intrusive_list
 } // namespace test
 } // namespace ma
