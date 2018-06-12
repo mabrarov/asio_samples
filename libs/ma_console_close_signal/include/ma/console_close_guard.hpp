@@ -30,6 +30,8 @@ public:
   template <typename Handler>
   explicit console_close_guard_base(MA_FWD_REF(Handler) handler);
 
+  boost::asio::io_service& get_io_service();
+
 protected:
   ~console_close_guard_base();
 
@@ -43,15 +45,14 @@ protected:
 
 /// Hook-helper for console application. Supports setup of the own functor that
 /// will be called when user tries to close console application.
-/**
- * Supported OS: MS Windows family, Linux (Ubuntu 10.x tested).
- */
 class console_close_guard : private console_close_guard_base
 {
 public:
   template <typename Handler>
   explicit console_close_guard(MA_FWD_REF(Handler) handler);
   ~console_close_guard();
+
+  using console_close_guard_base::get_io_service;
 
 private:
   detail::thread work_thread_;
@@ -68,6 +69,11 @@ console_close_guard_base::console_close_guard_base(MA_FWD_REF(Handler) handler)
       detail::bind(&handle_signal<handler_type>, 
           detail::ref(close_signal_.get_io_service()),
           detail::placeholders::_1, detail::placeholders::_2)));
+}
+
+inline boost::asio::io_service& console_close_guard_base::get_io_service()
+{
+  return io_service_;
 }
 
 inline console_close_guard_base::~console_close_guard_base()

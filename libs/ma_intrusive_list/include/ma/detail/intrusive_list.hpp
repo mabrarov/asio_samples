@@ -583,9 +583,9 @@ void intrusive_forward_list<Value>::push_front(reference value) MA_NOEXCEPT
     back_ = front_;
   }
 
+  BOOST_ASSERT_MSG(front_ && back_, "The list has to be not empty");
   BOOST_ASSERT_MSG(value_hook.next_ || (front_ == back_),
       "The pushed value has to be linked");
-  BOOST_ASSERT_MSG(front_ && back_, "The list has to be not empty");
 }
 
 template<typename Value>
@@ -594,6 +594,8 @@ void intrusive_forward_list<Value>::push_back(reference value) MA_NOEXCEPT
   base_hook& value_hook = get_hook(value);
 
   BOOST_ASSERT_MSG(!value_hook.next_, "The value to push has to be unlinked");
+
+  (void) value_hook;
 
   const pointer value_ptr = detail::addressof(value);
   if (back_)
@@ -606,9 +608,8 @@ void intrusive_forward_list<Value>::push_back(reference value) MA_NOEXCEPT
     front_ = back_;
   }
 
-  BOOST_ASSERT_MSG(value_hook.next_ || (front_ == back_),
-      "The pushed value has to be linked");
   BOOST_ASSERT_MSG(front_ && back_, "The list has to be not empty");
+  BOOST_ASSERT_MSG(back_ == value_ptr, "The pushed value has to be linked");
 }
 
 template<typename Value>

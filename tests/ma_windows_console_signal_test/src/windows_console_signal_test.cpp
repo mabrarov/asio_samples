@@ -27,8 +27,17 @@
 
 namespace ma {
 namespace test {
+namespace windows_console_signal {
 
-namespace windows_console_signal_handler_invocation {
+TEST(windows_console_signal, get_io_service)
+{
+  boost::asio::io_service io_service;
+  ma::windows::console_signal console_signal(io_service);
+  boost::asio::io_service& console_signal_io_service =
+      console_signal.get_io_service();
+  ASSERT_EQ(detail::addressof(io_service),
+      detail::addressof(console_signal_io_service));
+} // TEST(windows_console_signal, get_io_service)
 
 typedef boost::optional<boost::asio::io_service::work> optional_work;
 typedef std::size_t (boost::asio::io_service::*run_io_service_func)(void);
@@ -112,6 +121,8 @@ TEST(windows_console_signal, ctrl_c_handling)
   thread.join();
 
   ASSERT_EQ(0U, done_latch.value());
+
+  (void) thread_stop;
 } // TEST(windows_console_signal, ctrl_c_handling)
 
 TEST(windows_console_signal, ctrl_c_queuing)
@@ -155,6 +166,8 @@ TEST(windows_console_signal, ctrl_c_queuing)
   thread.join();
 
   ASSERT_EQ(0U, done_latch.value());
+
+  (void) thread_stop;
 } // TEST(windows_console_signal, ctrl_c_queuing)
 
 TEST(windows_console_signal, cancel_handling)
@@ -179,11 +192,9 @@ TEST(windows_console_signal, cancel_handling)
   thread.join();
 
   ASSERT_EQ(0U, done_latch.value());
+
+  (void) thread_stop;
 } // TEST(windows_console_signal, cancel_handling)
-
-} // namespace windows_console_signal_handler_invocation
-
-namespace windows_console_signal_destruction {
 
 void handle_console_signal(const boost::system::error_code&, int)
 {
@@ -305,7 +316,7 @@ TEST(windows_console_signal, destruction)
   }
 } // TEST(windows_console_signal, destruction)
 
-} // namespace windows_console_signal_destruction
+} // namespace windows_console_signal
 } // namespace test
 } // namespace ma
 
