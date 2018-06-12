@@ -25,12 +25,11 @@ private:
 
   friend class ma::detail::intrusive_list<list_item>;
 
-  this_type& operator=(const this_type&);
-
 public:
-  explicit list_item(std::size_t& counter) : counter_(counter)
+  explicit list_item(std::size_t& counter)
+    : counter_(detail::addressof(counter))
   {
-    ++counter_;
+    ++(*counter_);
   }
 
   list_item(const this_type& other)
@@ -39,29 +38,56 @@ public:
   {
   }
 
+  this_type& operator=(const this_type& other)
+  {
+    this->base_type::operator=(other);
+    counter_ = other.counter_;
+    return *this;
+  }
+
 #if defined(MA_HAS_RVALUE_REFS)
 
   list_item(this_type&& other)
-      : base_type(detail::move(other))
-      , counter_(other.counter_)
+    : base_type(detail::move(other))
+    , counter_(other.counter_)
   {
+  }
+
+  this_type& operator=(this_type&& other)
+  {
+    this->base_type::operator=(detail::move(other));
+    counter_ = other.counter_;
+    return *this;
   }
 
 #endif
 
   ~list_item()
   {
-    --counter_;
+    --(*counter_);
   }
 
 private:
-  std::size_t& counter_;
+  std::size_t* counter_;
 }; // class list_item
 
 typedef ma::detail::intrusive_list<list_item> list_type;
 typedef list_item* list_item_ptr;
 typedef detail::shared_ptr<list_item> list_item_shared_ptr;
 typedef std::vector<list_item_shared_ptr> item_shared_ptr_vector;
+
+void assert_same_items(const item_shared_ptr_vector& items,
+    const list_type& list)
+{
+  list_item_ptr item = list.front();
+  for (item_shared_ptr_vector::const_reverse_iterator i = items.rbegin(),
+      end = items.rend(); i != end; ++i)
+  {
+    ASSERT_EQ(i->get(), item);
+    item = list_type::next(*item);
+  }
+  ASSERT_FALSE(item);
+}
 
 TEST(intrusive_list, empty)
 {
@@ -686,15 +712,7 @@ TEST(intrusive_list, insert_front_empty)
   ASSERT_FALSE(list1.empty());
   ASSERT_TRUE(list2.empty());
 
-  list_item_ptr item = list1.front();
-  for (item_shared_ptr_vector::reverse_iterator i = items.rbegin(),
-      end = items.rend(); i != end; ++i)
-  {
-    ASSERT_EQ(i->get(), item);
-    item = list_type::next(*item);
-  }
-
-  ASSERT_FALSE(item);
+  assert_same_items(items, list1);
 } // TEST(intrusive_list, insert_front_empty)
 
 TEST(intrusive_list, empty_insert_front)
@@ -721,15 +739,7 @@ TEST(intrusive_list, empty_insert_front)
   ASSERT_FALSE(list1.empty());
   ASSERT_TRUE(list2.empty());
 
-  list_item_ptr item = list1.front();
-  for (item_shared_ptr_vector::reverse_iterator i = items.rbegin(),
-      end = items.rend(); i != end; ++i)
-  {
-    ASSERT_EQ(i->get(), item);
-    item = list_type::next(*item);
-  }
-
-  ASSERT_FALSE(item);
+  assert_same_items(items, list1);
 } // TEST(intrusive_list, empty_insert_front)
 
 TEST(intrusive_list, empty_insert_front_empty)
@@ -775,15 +785,7 @@ TEST(intrusive_list, insert_front)
   ASSERT_FALSE(list1.empty());
   ASSERT_TRUE(list2.empty());
 
-  list_item_ptr item = list1.front();
-  for (item_shared_ptr_vector::reverse_iterator i = items.rbegin(),
-      end = items.rend(); i != end; ++i)
-  {
-    ASSERT_EQ(i->get(), item);
-    item = list_type::next(*item);
-  }
-
-  ASSERT_FALSE(item);
+  assert_same_items(items, list1);
 } // TEST(intrusive_list, insert_front)
 
 TEST(intrusive_list, insert_back_empty)
@@ -810,15 +812,7 @@ TEST(intrusive_list, insert_back_empty)
   ASSERT_FALSE(list1.empty());
   ASSERT_TRUE(list2.empty());
 
-  list_item_ptr item = list1.front();
-  for (item_shared_ptr_vector::reverse_iterator i = items.rbegin(),
-      end = items.rend(); i != end; ++i)
-  {
-    ASSERT_EQ(i->get(), item);
-    item = list_type::next(*item);
-  }
-
-  ASSERT_FALSE(item);
+  assert_same_items(items, list1);
 } // TEST(intrusive_list, insert_back_empty)
 
 TEST(intrusive_list, empty_insert_back)
@@ -845,15 +839,7 @@ TEST(intrusive_list, empty_insert_back)
   ASSERT_FALSE(list1.empty());
   ASSERT_TRUE(list2.empty());
 
-  list_item_ptr item = list1.front();
-  for (item_shared_ptr_vector::reverse_iterator i = items.rbegin(),
-      end = items.rend(); i != end; ++i)
-  {
-    ASSERT_EQ(i->get(), item);
-    item = list_type::next(*item);
-  }
-
-  ASSERT_FALSE(item);
+  assert_same_items(items, list1);
 } // TEST(intrusive_list, empty_insert_back)
 
 TEST(intrusive_list, empty_insert_back_empty)
@@ -900,13 +886,13 @@ TEST(intrusive_list, insert_back)
   ASSERT_TRUE(list2.empty());
 
   list_item_ptr item = list1.front();
-  for (item_shared_ptr_vector::reverse_iterator i = items.rbegin() + item_num,
-      end = items.rend(); i != end; ++i)
+  for (item_shared_ptr_vector::const_reverse_iterator i =
+      items.rbegin() + item_num, end = items.rend(); i != end; ++i)
   {
     ASSERT_EQ(i->get(), item);
     item = list_type::next(*item);
   }
-  for (item_shared_ptr_vector::reverse_iterator i = items.rbegin(),
+  for (item_shared_ptr_vector::const_reverse_iterator i = items.rbegin(),
       end = items.rbegin() + item_num; i != end; ++i)
   {
     ASSERT_EQ(i->get(), item);
@@ -915,6 +901,82 @@ TEST(intrusive_list, insert_back)
 
   ASSERT_FALSE(item);
 } // TEST(intrusive_list, insert_back)
+
+TEST(intrusive_list, item_copy_assign)
+{
+  const std::size_t item_num = 10;
+  std::size_t instance_counter = 0;
+  item_shared_ptr_vector items1;
+  item_shared_ptr_vector items2;
+  items1.reserve(item_num);
+  items2.reserve(item_num);
+  list_type list1;
+  list_type list2;
+
+  for (std::size_t i = 0; i < item_num; ++i)
+  {
+    list_item_shared_ptr item = detail::make_shared<list_item>(
+        detail::ref(instance_counter));
+    items1.push_back(item);
+    list1.push_front(*item);
+  }
+
+  for (std::size_t i = 0; i < item_num; ++i)
+  {
+    list_item_shared_ptr item = detail::make_shared<list_item>(
+        detail::ref(instance_counter));
+    items2.push_back(item);
+    list2.push_front(*item);
+  }
+
+  for (std::size_t i = 0; i < item_num; ++i)
+  {
+    *(items1[i]) = *(items2[i]);
+  }
+
+  ASSERT_EQ(item_num * 2, instance_counter);
+
+  assert_same_items(items1, list1);
+  assert_same_items(items2, list2);
+} // TEST(intrusive_list, item_copy_assign)
+
+TEST(intrusive_list, item_move_assign)
+{
+  const std::size_t item_num = 10;
+  std::size_t instance_counter = 0;
+  item_shared_ptr_vector items1;
+  item_shared_ptr_vector items2;
+  items1.reserve(item_num);
+  items2.reserve(item_num);
+  list_type list1;
+  list_type list2;
+
+  for (std::size_t i = 0; i < item_num; ++i)
+  {
+    list_item_shared_ptr item = detail::make_shared<list_item>(
+        detail::ref(instance_counter));
+    items1.push_back(item);
+    list1.push_front(*item);
+  }
+
+  for (std::size_t i = 0; i < item_num; ++i)
+  {
+    list_item_shared_ptr item = detail::make_shared<list_item>(
+        detail::ref(instance_counter));
+    items2.push_back(item);
+    list2.push_front(*item);
+  }
+
+  for (std::size_t i = 0; i < item_num; ++i)
+  {
+    *(items1[i]) = detail::move(*(items2[i]));
+  }
+
+  ASSERT_EQ(item_num * 2, instance_counter);
+
+  assert_same_items(items1, list1);
+  assert_same_items(items2, list2);
+} // TEST(intrusive_list, item_move_assign)
 
 } // namespace intrusive_list
 } // namespace test
