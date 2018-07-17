@@ -568,16 +568,16 @@ script:
   - if [ "${COVERAGE_BUILD}" != 0 ]; then
       echo "Preparing code coverage counters at ${BUILD_HOME}/lcov-base.info" &&
       lcov -z -d ${BUILD_HOME} &&
-      lcov -c -d ${BUILD_HOME} -i -o lcov-base.info;
+      lcov -c -d ${BUILD_HOME} -i -o lcov-base.info --rc lcov_branch_coverage=1;
     fi
   - ctest --build-config ${BUILD_TYPE} --verbose
   - if [ "${COVERAGE_BUILD}" != 0 ]; then
       echo "Caclulating coverage at ${BUILD_HOME}/lcov-test.info" &&
-      lcov -c -d ${BUILD_HOME} -o lcov-test.info &&
+      lcov -c -d ${BUILD_HOME} -o lcov-test.info --rc lcov_branch_coverage=1 &&
       echo "Caclulating coverage delta at ${BUILD_HOME}/lcov.info" &&
-      lcov -a lcov-base.info -a lcov-test.info -o lcov.info &&
+      lcov -a lcov-base.info -a lcov-test.info -o lcov.info --rc lcov_branch_coverage=1 &&
       echo "Excluding 3rd party code from coverage data located at ${BUILD_HOME}/lcov.info" &&
-      lcov -r lcov.info "ui_*.h*" "moc_*.c*" "/usr/*" "3rdparty/*" "examples/*" "tests/*" "${DEPENDENCIES_HOME}/*" -o lcov.info;
+      lcov -r lcov.info "ui_*.h*" "moc_*.c*" "/usr/*" "3rdparty/*" "examples/*" "tests/*" "${DEPENDENCIES_HOME}/*" -o lcov.info --rc lcov_branch_coverage=1;
     fi
   - cd ${TRAVIS_BUILD_DIR}
 
