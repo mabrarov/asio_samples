@@ -114,33 +114,83 @@ typedef ma::detail::shared_ptr<boost::asio::io_service::work>
     io_service_work_ptr;
 typedef std::vector<io_service_work_ptr>  io_service_work_vector;
 
-class server_base_0 : private boost::noncopyable
+class server : private boost::noncopyable
 {
+private:
+  typedef server this_type;
+
 public:
-  explicit server_base_0(const echo_server::execution_config& config)
-    : ios_per_work_thread_(config.ios_per_work_thread)
-    , session_manager_thread_count_(config.session_manager_thread_count)
-    , session_thread_count_(config.session_thread_count)
-    , session_io_services_(create_session_io_services(config))
+  template <typename Handler>
+  server(const echo_server::execution_config& execution_config,
+      const ma::echo::server::session_manager_config& session_manager_config,
+      const Handler& exception_handler)
+    : session_io_services_(create_session_io_services(execution_config))
+    , session_factory_(create_session_factory(execution_config,
+        session_manager_config, session_io_services_))
+    , session_manager_io_service_(ma::to_io_context_concurrency_hint(
+          execution_config.session_manager_thread_count))
+    , threads_stopped_(false)
+    , session_work_(create_works(session_io_services_))
+    , session_manager_work_(session_manager_io_service_)
+    , threads_()
+    , session_manager_(ma::echo::server::session_manager::create(
+          session_manager_io_service_, *session_factory_,
+          session_manager_config))
   {
+    create_threads(exception_handler, execution_config.ios_per_work_thread,
+        execution_config.session_manager_thread_count,
+        execution_config.session_thread_count);
   }
 
-  io_service_vector session_io_services() const
+  ~server()
   {
-    return session_io_services_;
+    stop_threads();
   }
 
-protected:
-  ~server_base_0()
+  void stop_threads()
   {
+    if (!threads_stopped_)
+    {
+      session_manager_io_service_.stop();
+      stop(session_io_services_);
+      threads_.join_all();
+      threads_stopped_ = true;
+    }
   }
 
-  const bool ios_per_work_thread_;
-  const std::size_t session_manager_thread_count_;
-  const std::size_t session_thread_count_;
-  const io_service_vector session_io_services_;
+  template <typename Handler>
+  void async_start(const Handler& handler)
+  {
+    session_manager_->async_start(handler);
+  }
+
+  template <typename Handler>
+  void async_wait(const Handler& handler)
+  {
+    session_manager_->async_wait(handler);
+  }
+
+  template <typename Handler>
+  void async_stop(const Handler& handler)
+  {
+    session_manager_->async_stop(handler);
+  }
+
+  ma::echo::server::session_manager_stats stats() const
+  {
+    return session_manager_->stats();
+  }
 
 private:
+  const io_service_vector session_io_services_;
+  const session_factory_ptr session_factory_;
+  boost::asio::io_service session_manager_io_service_;
+  bool threads_stopped_;
+  const io_service_work_vector session_work_;
+  const boost::asio::io_service::work session_manager_work_;
+  ma::thread_group threads_;
+  const ma::echo::server::session_manager_ptr session_manager_;
+
   static io_service_vector create_session_io_services(
       const echo_server::execution_config& exec_config)
   {
@@ -163,32 +213,7 @@ private:
     }
     return io_services;
   }
-}; // class server_base_0
 
-class server_base_1 : public server_base_0
-{
-public:
-  server_base_1(const echo_server::execution_config& execution_config,
-      const ma::echo::server::session_manager_config& session_manager_config)
-    : server_base_0(execution_config)
-    , session_factory_(create_session_factory(execution_config,
-          session_manager_config, session_io_services_))
-  {
-  }
-
-  ma::echo::server::session_factory& session_factory() const
-  {
-    return *session_factory_;
-  }
-
-protected:
-  ~server_base_1()
-  {
-  }
-
-  const session_factory_ptr session_factory_;
-
-private:
   static session_factory_ptr create_session_factory(
       const echo_server::execution_config& exec_config,
       const ma::echo::server::session_manager_config& session_manager_config,
@@ -211,70 +236,11 @@ private:
           session_manager_config.recycled_session_count);
     }
   }
-}; // class server_base_1
 
-class server_base_2 : public server_base_1
-{
-public:
-  explicit server_base_2(const echo_server::execution_config& execution_config,
-      const ma::echo::server::session_manager_config& session_manager_config)
-    : server_base_1(execution_config, session_manager_config)
-    , session_manager_io_service_(ma::to_io_context_concurrency_hint(
-          execution_config.session_manager_thread_count))
-  {
-  }
-
-  boost::asio::io_service& session_manager_io_service()
-  {
-    return session_manager_io_service_;
-  }
-
-protected:
-  ~server_base_2()
-  {
-  }
-
-  boost::asio::io_service session_manager_io_service_;
-}; // class server_base_2
-
-class server_base_3 : public server_base_2
-{
-private:
-  typedef server_base_3 this_type;
-
-public:
   template <typename Handler>
-  server_base_3(const echo_server::execution_config& execution_config,
-      const ma::echo::server::session_manager_config& session_manager_config,
-      const Handler& exception_handler)
-    : server_base_2(execution_config, session_manager_config)
-    , threads_stopped_(false)
-    , session_work_(create_works(session_io_services_))
-    , session_manager_work_(session_manager_io_service_)
-    , threads_()
-  {
-    create_threads(exception_handler);
-  }
-
-  ~server_base_3()
-  {
-    stop_threads();
-  }
-
-  void stop_threads()
-  {
-    if (!threads_stopped_)
-    {
-      session_manager_io_service_.stop();
-      stop(session_io_services_);
-      threads_.join_all();
-      threads_stopped_ = true;
-    }
-  }
-
-private:
-  template <typename Handler>
-  void create_threads(const Handler& handler)
+  void create_threads(const Handler& handler, bool ios_per_work_thread,
+      std::size_t session_manager_thread_count,
+      std::size_t session_thread_count)
   {
     namespace detail = ma::detail;
 
@@ -285,7 +251,7 @@ private:
     wrapped_handler_type wrapped_handler = detail::make_tuple(handler);
     thread_func_type func = &this_type::thread_func<Handler>;
 
-    if (ios_per_work_thread_)
+    if (ios_per_work_thread)
     {
       for (io_service_vector::const_iterator i = session_io_services_.begin(),
           end = session_io_services_.end(); i != end; ++i)
@@ -297,14 +263,14 @@ private:
     else
     {
       boost::asio::io_service& io_service = *session_io_services_.front();
-      for (std::size_t i = 0; i != session_thread_count_; ++i)
+      for (std::size_t i = 0; i != session_thread_count; ++i)
       {
         threads_.create_thread(
             detail::bind(func, detail::ref(io_service), wrapped_handler));
       }
     }
 
-    for (std::size_t i = 0; i != session_manager_thread_count_; ++i)
+    for (std::size_t i = 0; i != session_manager_thread_count; ++i)
     {
       threads_.create_thread(
           detail::bind(func, detail::ref(session_manager_io_service_),
@@ -349,60 +315,6 @@ private:
       (*i)->stop();
     }
   }
-
-  bool threads_stopped_;
-  const io_service_work_vector session_work_;
-  const boost::asio::io_service::work session_manager_work_;
-  ma::thread_group threads_;
-}; // class server_base_3
-
-class server : public server_base_3
-{
-private:
-  typedef server this_type;
-
-public:
-  template <typename Handler>
-  server(const echo_server::execution_config& execution_config,
-      const ma::echo::server::session_manager_config& session_manager_config,
-      const Handler& exception_handler)
-    : server_base_3(execution_config, session_manager_config,
-          exception_handler)
-    , session_manager_(ma::echo::server::session_manager::create(
-          session_manager_io_service_, *session_factory_,
-          session_manager_config))
-  {
-  }
-
-  ~server()
-  {
-  }
-
-  template <typename Handler>
-  void async_start(const Handler& handler)
-  {
-    session_manager_->async_start(handler);
-  }
-
-  template <typename Handler>
-  void async_wait(const Handler& handler)
-  {
-    session_manager_->async_wait(handler);
-  }
-
-  template <typename Handler>
-  void async_stop(const Handler& handler)
-  {
-    session_manager_->async_stop(handler);
-  }
-
-  ma::echo::server::session_manager_stats stats() const
-  {
-    return session_manager_->stats();
-  }
-
-private:
-  const ma::echo::server::session_manager_ptr session_manager_;
 }; // class server
 
 struct execution_context : private boost::noncopyable
