@@ -5,7 +5,7 @@
 # file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
-FROM ubuntu:16.04
+FROM ubuntu:18.04
 
 LABEL name="abrarov/asio-samples-builder-ubuntu" \
     description="Builder of Asio samples project on Ubuntu"
