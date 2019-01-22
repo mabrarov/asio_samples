@@ -34,6 +34,7 @@
 #include <ma/detail/memory.hpp>
 #include <ma/detail/functional.hpp>
 #include <ma/detail/thread.hpp>
+#include <ma/detail/utility.hpp>
 #include "config.hpp"
 
 namespace echo_server {
@@ -159,21 +160,21 @@ public:
   }
 
   template <typename Handler>
-  void async_start(const Handler& handler)
+  void async_start(MA_FWD_REF(Handler) handler)
   {
-    session_manager_->async_start(handler);
+    session_manager_->async_start(ma::detail::forward<Handler>(handler));
   }
 
   template <typename Handler>
-  void async_wait(const Handler& handler)
+  void async_wait(MA_FWD_REF(Handler) handler)
   {
-    session_manager_->async_wait(handler);
+    session_manager_->async_wait(ma::detail::forward<Handler>(handler));
   }
 
   template <typename Handler>
-  void async_stop(const Handler& handler)
+  void async_stop(MA_FWD_REF(Handler) handler)
   {
-    session_manager_->async_stop(handler);
+    session_manager_->async_stop(ma::detail::forward<Handler>(handler));
   }
 
   ma::echo::server::session_manager_stats stats() const
