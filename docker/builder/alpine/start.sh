@@ -5,7 +5,7 @@ set -e
 
 # Setup required version of Qt if needed
 if [[ "${MA_QT}" = "ON" ]]; then
-    if [ "${MA_QT_MAJOR_VERSION}" -ne 4 ]; then
+    if [[ "${MA_QT_MAJOR_VERSION}" -ne 4 ]]; then
         # Remove Qt 4 to eliminate conflicts with another version of Qt
         apk -q -f del qt-dev || true;
     fi
