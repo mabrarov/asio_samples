@@ -17,7 +17,7 @@ if(MSVC)
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCC)
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libstdc++ -static-libgcc")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static -static-libgcc -static-libstdc++")
 endif()
 
 set(Boost_USE_STATIC_LIBS    ON)
