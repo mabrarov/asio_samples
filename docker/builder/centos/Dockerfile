@@ -25,8 +25,8 @@ RUN yum update -y &&\
     yum install -y epel-release &&\
     yum groupinstall -y 'Development Tools' &&\
     yum install -y curl &&\
-        curl -jksSL https://cmake.org/files/v3.8/cmake-3.8.1-Linux-x86_64.tar.gz | tar -xzf - -C /opt &&\
-        mv -f /opt/cmake-3.8.1-Linux-x86_64 /opt/cmake &&\
+        curl -jksSL https://github.com/Kitware/CMake/releases/download/v3.13.3/cmake-3.13.3-Linux-x86_64.tar.gz | tar -xzf - -C /opt &&\
+        mv -f /opt/cmake-3.13.3-Linux-x86_64 /opt/cmake &&\
     yum install -y glibc-static &&\
     yum install -y libstdc++-static &&\
     yum install -y lcov &&\
