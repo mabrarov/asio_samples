@@ -974,7 +974,7 @@ client_config build_client_config(
       build_optional_int(options_values, socket_send_buffer_size_option_name);
 
   tribool no_delay = boost::logic::indeterminate;
-  if (0 != options_values.count(no_delay_option_name))
+  if (options_values.count(no_delay_option_name))
   {
     no_delay = options_values[no_delay_option_name].as<bool>();
   }
