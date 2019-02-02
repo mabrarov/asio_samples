@@ -15,17 +15,12 @@ ENV PROJECT_DIR="/project" \
     BOOST_USE_STATIC_LIBS=ON \
     MA_QT=ON \
     MA_QT_MAJOR_VERSION=5 \
-    COVERAGE_BUILD=OFF \
-    CMAKE_VERSION=3.13.3 \
-    PATH=/opt/cmake/bin:${PATH}
+    COVERAGE_BUILD=OFF
 
 ADD ["start.sh", "/app/"]
 
 RUN echo http://nl.alpinelinux.org/alpine/edge/testing >> /etc/apk/repositories &&\
-    apk add --no-cache curl tar g++ make lcov libstdc++ boost-dev qt5-qtbase-dev &&\
-    mkdir -p /opt &&\
-    curl -jksSL https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz | tar -xzf - -C /opt &&\
-    mv -f /opt/cmake-${CMAKE_VERSION}-Linux-x86_64 /opt/cmake &&\
+    apk add --no-cache g++ make cmake lcov libstdc++ boost-dev qt5-qtbase-dev &&\
     tr -d '\015' < /app/start.sh > /app/start-lf.sh &&\
     mv -f /app/start-lf.sh /app/start.sh &&\
     chmod u+x /app/start.sh &&\
