@@ -26,15 +26,15 @@ leads to passing `-D MY_PARAM=my_value` to CMake command line during generation 
 
 ## Alpine Linux
 
-Use `abrarov/asio-samples-builder-alpine` as `image_name`
+Use `abrarov/asio-samples-builder-alpine` as `${image_name}`
 
 ## Ubuntu
 
-Use `abrarov/asio-samples-builder-ubuntu` as `image_name`.
+Use `abrarov/asio-samples-builder-ubuntu` as `${image_name}`.
 
 ## CentOS
 
-Use `abrarov/asio-samples-builder-centos` as `image_name`.
+Use `abrarov/asio-samples-builder-centos` as `${image_name}`.
 
 ## Build steps
 
