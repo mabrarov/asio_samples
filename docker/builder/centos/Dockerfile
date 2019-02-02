@@ -17,6 +17,7 @@ ENV PROJECT_DIR="/project" \
     MA_QT=ON \
     MA_QT_MAJOR_VERSION=5 \
     COVERAGE_BUILD=OFF \
+    CMAKE_VERSION=3.13.3 \
     PATH=/opt/cmake/bin:${PATH}
 
 ADD ["start.sh", "/app/"]
@@ -25,8 +26,9 @@ RUN yum update -y &&\
     yum install -y epel-release &&\
     yum groupinstall -y 'Development Tools' &&\
     yum install -y curl &&\
-        curl -jksSL https://github.com/Kitware/CMake/releases/download/v3.13.3/cmake-3.13.3-Linux-x86_64.tar.gz | tar -xzf - -C /opt &&\
-        mv -f /opt/cmake-3.13.3-Linux-x86_64 /opt/cmake &&\
+    mkdir -p /opt &&\
+    curl -jksSL https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz | tar -xzf - -C /opt &&\
+    mv -f /opt/cmake-${CMAKE_VERSION}-Linux-x86_64 /opt/cmake &&\
     yum install -y glibc-static &&\
     yum install -y libstdc++-static &&\
     yum install -y lcov &&\
