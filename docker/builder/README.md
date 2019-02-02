@@ -86,8 +86,8 @@ ${image_name}
 
 ### Prerequisites
 
-1. Get prebuilt or build Boost C++ Libraries with static C/C++ runtime
-1. Get prebuilt or build Qt with static C/C++ runtime or use `MA_QT` environment variable to skip usage of Qt and to not build parts which require Qt
+1. Get prebuilt ([Alpine](https://bintray.com/mabrarov/generic/download_file?file_path=boost%2F1.69.0%2Fboost-1.69.0-alpine39-x64-gcc820-static-runtime.tar.gz), [CentOS](https://bintray.com/mabrarov/generic/download_file?file_path=boost%2F1.69.0%2Fboost-1.69.0-centos7-x64-gcc485-static-runtime.tar.gz)) or build Boost C++ Libraries with static C/C++ runtime
+1. Get prebuilt or build Qt with static C/C++ runtime (as well as all dependencies of Qt like ICU) or use `MA_QT` environment variable to skip usage of Qt and to not build parts which require Qt
 
 ### Steps
 
@@ -100,7 +100,7 @@ docker run --rm \
 -v ${directory_with_project}:/project:ro \
 -v ${directory_with_results_of_build}:/build \
 -v ${boost_install_root}:/boost:ro \
-abrarov/asio-samples-builder-centos \
+${image_name} \
 -D Boost_NO_SYSTEM_PATHS=ON \
 -D BOOST_INCLUDEDIR=/boost/include \
 -D BOOST_LIBRARYDIR=/boost/lib

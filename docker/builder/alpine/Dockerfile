@@ -20,7 +20,7 @@ ENV PROJECT_DIR="/project" \
 ADD ["start.sh", "/app/"]
 
 RUN echo http://nl.alpinelinux.org/alpine/edge/testing >> /etc/apk/repositories &&\
-    apk add --no-cache g++ make cmake lcov libstdc++ boost-dev boost-static qt5-qtbase-dev &&\
+    apk add --no-cache g++ make cmake lcov musl-dev libgcc libstdc++ boost-dev boost-static qt5-qtbase-dev &&\
     tr -d '\015' < /app/start.sh > /app/start-lf.sh &&\
     mv -f /app/start-lf.sh /app/start.sh &&\
     chmod u+x /app/start.sh &&\
