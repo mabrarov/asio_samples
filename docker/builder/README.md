@@ -2,8 +2,8 @@
 
 ## Common
 
-_&lt;directory_with_project&gt;_ is assumed to be a directory with project (root). 
-_&lt;directory_with_results_of_build&gt;_ is assumed to be existing directory where the results of build (CMake generated project) will be placed.
+`${directory_with_project}` is assumed to be a directory with project (root). 
+`${directory_with_results_of_build}` is assumed to be existing directory where the results of build (CMake generated project) will be placed.
 
 Environment variables to control build process:
 
