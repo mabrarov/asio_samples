@@ -18,46 +18,90 @@ Environment variables to control build process:
 
 All the Docker Run command line parameters specified after name of image are passed to CMake during generation of project as is, i.e. this command:
 
-```
-docker run ... <image-name> -D MY_PARAM=my_value
+```bash
+docker run ... ${image_name} -D MY_PARAM=my_value
 ```
 
 leads to passing `-D MY_PARAM=my_value` to CMake command line during generation of project.
 
 ## Alpine Linux
 
-Use `abrarov/asio-samples-builder-alpine` as _&lt;image-name&gt;_.
+Use `abrarov/asio-samples-builder-alpine` as `image_name`
 
 ## Ubuntu
 
-Use `abrarov/asio-samples-builder-ubuntu` as _&lt;image-name&gt;_.
+Use `abrarov/asio-samples-builder-ubuntu` as `image_name`.
 
 ## CentOS
 
-Use `abrarov/asio-samples-builder-centos` as _&lt;image-name&gt;_.
+Use `abrarov/asio-samples-builder-centos` as `image_name`.
 
 ## Build steps
 
 Use below command to build with Qt 5.x and to calculate code coverage:
 
-```
-docker run --rm --env MA_QT_MAJOR_VERSION=5 --env BUILD_TYPE=DEBUG --env COVERAGE_BUILD=ON -v <directory_with_project>:/project -v <directory_with_results_of_build>:/build <image-name>
+```bash
+docker run --rm \
+-e MA_QT_MAJOR_VERSION=5 \
+-e BUILD_TYPE=DEBUG \
+-e COVERAGE_BUILD=ON \
+-v ${directory_with_project}:/project:ro \
+-v ${directory_with_results_of_build}:/build \
+${image_name}
 ```
 
 Use below command to build release version with Qt 5.x:
 
-```
-docker run --rm --env MA_QT_MAJOR_VERSION=5 -v <directory_with_project>:/project -v <directory_with_results_of_build>:/build <image-name>
+```bash
+docker run --rm \
+-e MA_QT_MAJOR_VERSION=5 \
+-v ${directory_with_project}:/project:ro \
+-v ${directory_with_results_of_build}:/build \
+${image_name}
 ```
 
 Use below command to build with Qt 4.x and to calculate code coverage:
 
-```
-docker run --rm --env MA_QT_MAJOR_VERSION=4 --env BUILD_TYPE=DEBUG --env COVERAGE_BUILD=ON -v <directory_with_project>:/project -v <directory_with_results_of_build>:/build <image-name>
+```bash
+docker run --rm \
+-e MA_QT_MAJOR_VERSION=4 \
+-e BUILD_TYPE=DEBUG \
+-e COVERAGE_BUILD=ON \
+-v ${directory_with_project}:/project:ro \
+-v ${directory_with_results_of_build}:/build \
+${image_name}
 ```
 
 Use below command to build release version with Qt 4.x:
 
+```bash
+docker run --rm \
+-e MA_QT_MAJOR_VERSION=4 \
+-v ${directory_with_project}:/project:ro \
+-v ${directory_with_results_of_build}:/build \
+${image_name}
 ```
-docker run --rm --env MA_QT_MAJOR_VERSION=4 -v <directory_with_project>:/project -v <directory_with_results_of_build>:/build <image-name>
+
+## Building with static C/C++ runtime
+
+### Prerequisites
+
+1. Get prebuilt or build Boost C++ Libraries with static C/C++ runtime
+1. Get prebuilt or build Qt with static C/C++ runtime or use `MA_QT` environment variable to skip usage of Qt and to not build parts which require Qt
+
+### Steps
+
+Assuming built Boost C++ Libraries are installed into `${boost_install_root}`
+
+```bash
+docker run --rm \
+-e STATIC_RUNTIME=ON \
+-e MA_QT=OFF \
+-v ${directory_with_project}:/project:ro \
+-v ${directory_with_results_of_build}:/build \
+-v ${boost_install_root}:/boost:ro \
+abrarov/asio-samples-builder-centos \
+-D Boost_NO_SYSTEM_PATHS=ON \
+-D BOOST_INCLUDEDIR=/boost/include \
+-D BOOST_LIBRARYDIR=/boost/lib
 ```
