@@ -415,7 +415,7 @@ execution_config MainForm::buildExecutionConfig() const
 
 session_config MainForm::buildSessionConfig() const
 {
-  session_config::optional_time_duration inactivityTimeout;
+  session_config::optional_time_duration inactivityTimeout = boost::none;
   if (boost::optional<int> timeoutSeconds = readOptionalValue(
       *ui_.inactivityTimeoutCheckBox, *ui_.inactivityTimeoutSpinBox))
   {

@@ -789,7 +789,7 @@ client_config build_client_config(
   const long connect_pause_millis =
       options_values[connect_pause_option_name].as<long>();
   tribool no_delay = boost::logic::indeterminate;
-  if (0 != options_values.count(no_delay_option_name))
+  if (options_values.count(no_delay_option_name))
   {
     no_delay = options_values[no_delay_option_name].as<bool>();
   }

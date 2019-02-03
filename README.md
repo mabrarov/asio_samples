@@ -16,15 +16,15 @@ A code-based guide for client/server creation with usage of active object patter
 Below examples assume:
 
 * Windows Command Prompt with Windows SDK environment set up (for example, `VS2015 x64 Native Tools Command Prompt` Windows main menu link for Visual Studio 2015 x64) is used on Windows.
-* Current directory is `asio_sample_build_dir`.
-* This repository is cloned into `asio_samples_home_dir` directory.
-* ICU library is located at `icu_home_dir` directory.
-* Header files of Boost C++ Libraries are located at `boost_headers_dir` directory.
-* Binary files of Boost C++ Libraries are located at `boost_libs_dir` directory.
-* Qt 5.x is located at `qt5_home_dir` directory.
-* Qt 4.x is located at `qt4_home_dir` directory.
-* Google Test libraries are located at `gtest_home_dir` directory.
-* `project_build_configuration` is [configuration to build](https://cmake.org/cmake/help/v3.0/variable/CMAKE_BUILD_TYPE.html), i.e. one of:
+* Current directory is `%asio_sample_build_dir%`.
+* This repository is cloned into `%asio_samples_home_dir%` directory.
+* ICU library is located at `%icu_home_dir%` directory.
+* Header files of Boost C++ Libraries are located at `%boost_headers_dir%` directory.
+* Binary files of Boost C++ Libraries are located at `%boost_libs_dir%` directory.
+* Qt 5.x is located at `%qt5_home_dir%` directory.
+* Qt 4.x is located at `%qt4_home_dir%` directory.
+* Google Test libraries are located at `%gtest_home_dir%` directory.
+* `%project_build_configuration%` is [configuration to build](https://cmake.org/cmake/help/v3.0/variable/CMAKE_BUILD_TYPE.html), i.e. one of:
 
   * DEBUG
   * RELEASE
@@ -64,95 +64,94 @@ Example of generation of Visual Studio 2013 project (static C/C++ runtime, stati
 
 ```cmd
 cmake ^
--D CMAKE_USER_MAKE_RULES_OVERRIDE=asio_samples_home_dir/cmake/static_c_runtime_overrides.cmake ^
--D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX=asio_samples_home_dir/cmake/static_cxx_runtime_overrides.cmake ^
--D ICU_ROOT=icu_home_dir ^
--D BOOST_INCLUDEDIR=boost_headers_dir ^
--D BOOST_LIBRARYDIR=boost_libs_dir ^
+-D CMAKE_USER_MAKE_RULES_OVERRIDE=%asio_samples_home_dir%/cmake/static_c_runtime_overrides.cmake ^
+-D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX=%asio_samples_home_dir%/cmake/static_cxx_runtime_overrides.cmake ^
+-D ICU_ROOT=%icu_home_dir% ^
+-D BOOST_INCLUDEDIR=%boost_headers_dir% ^
+-D BOOST_LIBRARYDIR=%boost_libs_dir% ^
 -D Boost_NO_SYSTEM_PATHS=ON ^
 -D Boost_USE_STATIC_LIBS=ON ^
--D Qt5Core_DIR=qt5_home_dir/lib/cmake/Qt5Core ^
--D Qt5Gui_DIR=qt5_home_dir/lib/cmake/Qt5Gui ^
--D Qt5Widgets_DIR=qt5_home_dir/lib/cmake/Qt5Widgets ^
--D GTEST_ROOT=gtest_home_dir ^
+-D Qt5Core_DIR=%qt5_home_dir%/lib/cmake/Qt5Core ^
+-D Qt5Gui_DIR=%qt5_home_dir%/lib/cmake/Qt5Gui ^
+-D Qt5Widgets_DIR=%qt5_home_dir%/lib/cmake/Qt5Widgets ^
+-D GTEST_ROOT=%gtest_home_dir% ^
 -G "Visual Studio 12 2013 Win64" ^
-asio_samples_home_dir
+%asio_samples_home_dir%
 ```
 
 Example of generation of Visual Studio 2015 project (shared C/C++ runtime, static Boost and shared Qt 5, x64):
 
 ```cmd
 cmake ^
--D BOOST_INCLUDEDIR=boost_headers_dir ^
--D BOOST_LIBRARYDIR=boost_libs_dir ^
+-D BOOST_INCLUDEDIR=%boost_headers_dir% ^
+-D BOOST_LIBRARYDIR=%boost_libs_dir% ^
 -D Boost_NO_SYSTEM_PATHS=ON ^
 -D Boost_USE_STATIC_LIBS=ON ^
--D Qt5Core_DIR=qt5_home_dir/lib/cmake/Qt5Core ^
--D Qt5Gui_DIR=qt5_home_dir/lib/cmake/Qt5Gui ^
--D Qt5Widgets_DIR=qt5_home_dir/lib/cmake/Qt5Widgets ^
--D GTEST_ROOT=gtest_home_dir ^
+-D Qt5Core_DIR=%qt5_home_dir%/lib/cmake/Qt5Core ^
+-D Qt5Gui_DIR=%qt5_home_dir%/lib/cmake/Qt5Gui ^
+-D Qt5Widgets_DIR=%qt5_home_dir%/lib/cmake/Qt5Widgets ^
+-D GTEST_ROOT=%gtest_home_dir% ^
 G "Visual Studio 14 2015 Win64" ^
-asio_samples_home_dir
+%asio_samples_home_dir%
 ```
 
 Example of generation of Visual Studio 2015 project (shared C/C++ runtime, shared Boost and shared Qt 5, x64):
 
 ```cmd
 cmake ^
--D BOOST_INCLUDEDIR=boost_headers_dir ^ 
--D BOOST_LIBRARYDIR=boost_libs_dir ^
+-D BOOST_INCLUDEDIR=%boost_headers_dir% ^ 
+-D BOOST_LIBRARYDIR=%boost_libs_dir% ^
 -D Boost_NO_SYSTEM_PATHS=ON ^
 -D Boost_USE_STATIC_LIBS=OFF ^
--D Qt5Core_DIR=qt5_home_dir/lib/cmake/Qt5Core ^
--D Qt5Gui_DIR=qt5_home_dir/lib/cmake/Qt5Gui ^
--D Qt5Widgets_DIR=qt5_home_dir/lib/cmake/Qt5Widgets ^
--D GTEST_ROOT=gtest_home_dir ^
+-D Qt5Core_DIR=%qt5_home_dir%/lib/cmake/Qt5Core ^
+-D Qt5Gui_DIR=%qt5_home_dir%/lib/cmake/Qt5Gui ^
+-D Qt5Widgets_DIR=%qt5_home_dir%/lib/cmake/Qt5Widgets ^
+-D GTEST_ROOT=%gtest_home_dir% ^
 -G "Visual Studio 14 2015 Win64" ^
-asio_samples_home_dir
+%asio_samples_home_dir%
 ```
 
-`Boost_USE_STATIC_LIBS` is turned `OFF` by default according to [FindBoost documentation](http://www.cmake.org/cmake/help/v3.1/module/FindBoost.html?highlight=findboost),
-so `-D Boost_USE_STATIC_LIBS=OFF` can be omitted.
+`Boost_USE_STATIC_LIBS` is turned `OFF` by default according to [FindBoost documentation](http://www.cmake.org/cmake/help/v3.1/module/FindBoost.html?highlight=findboost), so `-D Boost_USE_STATIC_LIBS=OFF` can be omitted.
 
 Example of generation of Visual Studio 2013 project (static C/C++ runtime, static Boost and static Qt 5, x64) for usage with Intel C++ Compiler XE 2015:
 
 ```cmd
 cmake ^
--D CMAKE_USER_MAKE_RULES_OVERRIDE=asio_samples_home_dir/cmake/static_c_runtime_overrides.cmake ^
--D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX=asio_samples_home_dir/cmake/static_cxx_runtime_overrides.cmake ^
--D ICU_ROOT=icu_home_dir ^
--D BOOST_INCLUDEDIR=boost_headers_dir ^
--D BOOST_LIBRARYDIR=boost_libs_dir ^
+-D CMAKE_USER_MAKE_RULES_OVERRIDE=%asio_samples_home_dir%/cmake/static_c_runtime_overrides.cmake ^
+-D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX=%asio_samples_home_dir%/cmake/static_cxx_runtime_overrides.cmake ^
+-D ICU_ROOT=%icu_home_dir% ^
+-D BOOST_INCLUDEDIR=%boost_headers_dir% ^
+-D BOOST_LIBRARYDIR=%boost_libs_dir% ^
 -D Boost_NO_SYSTEM_PATHS=ON ^
 -D Boost_USE_STATIC_LIBS=ON ^
--D Qt5Core_DIR=qt5_home_dir/lib/cmake/Qt5Core ^
--D Qt5Gui_DIR=qt5_home_dir/lib/cmake/Qt5Gui ^
--D Qt5Widgets_DIR=qt5_home_dir/lib/cmake/Qt5Widgets ^
--D GTEST_ROOT=gtest_home_dir ^
+-D Qt5Core_DIR=%qt5_home_dir%/lib/cmake/Qt5Core ^
+-D Qt5Gui_DIR=%qt5_home_dir%/lib/cmake/Qt5Gui ^
+-D Qt5Widgets_DIR=%qt5_home_dir%/lib/cmake/Qt5Widgets ^
+-D GTEST_ROOT=%gtest_home_dir% ^
 -D CMAKE_C_COMPILER=icl ^
 -D CMAKE_CXX_COMPILER=icl ^
 -T "Intel C++ Compiler XE 15.0" ^
 -G "Visual Studio 12 2013 Win64" ^
-asio_samples_home_dir
+%asio_samples_home_dir%
 ```
 
 Example of generation of Visual Studio 2015 project (shared C/C++ runtime, static Boost and shared Qt 5, x64) for usage with Intel C++ Compiler 2016:
 
 ```cmd
 cmake ^
--D ICU_ROOT=icu_home_dir ^
--D BOOST_INCLUDEDIR=boost_headers_dir ^
--D BOOST_LIBRARYDIR=boost_libs_dir ^
+-D ICU_ROOT=%icu_home_dir% ^
+-D BOOST_INCLUDEDIR=%boost_headers_dir% ^
+-D BOOST_LIBRARYDIR=%boost_libs_dir% ^
 -D Boost_NO_SYSTEM_PATHS=ON ^
--D Qt5Core_DIR=qt5_home_dir/lib/cmake/Qt5Core ^
--D Qt5Gui_DIR=qt5_home_dir/lib/cmake/Qt5Gui ^
--D Qt5Widgets_DIR=qt5_home_dir/lib/cmake/Qt5Widgets ^
--D GTEST_ROOT=gtest_home_dir ^
+-D Qt5Core_DIR=%qt5_home_dir%/lib/cmake/Qt5Core ^
+-D Qt5Gui_DIR=%qt5_home_dir%/lib/cmake/Qt5Gui ^
+-D Qt5Widgets_DIR=%qt5_home_dir%/lib/cmake/Qt5Widgets ^
+-D GTEST_ROOT=%gtest_home_dir% ^
 -D CMAKE_C_COMPILER=icl ^
 -D CMAKE_CXX_COMPILER=icl ^
 -T "Intel C++ Compiler 16.0" ^
 -G "Visual Studio 14 2015 Win64" ^
-asio_samples_home_dir
+%asio_samples_home_dir%
 ```
 
 Remarks: use [this fix](https://software.intel.com/en-us/articles/limits1120-error-identifier-builtin-nanf-is-undefined) when using Intel C++ Compiler 16.0 with Visual Studio 2015 Update 1.
@@ -161,10 +160,10 @@ Example of generation of Visual Studio 2015 project (static C/C++ runtime, stati
 
 ```cmd
 cmake ^
--D CMAKE_USER_MAKE_RULES_OVERRIDE=asio_samples_home_dir/cmake/static_c_runtime_overrides.cmake ^
--D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX=asio_samples_home_dir/cmake/static_cxx_runtime_overrides.cmake ^
--D BOOST_INCLUDEDIR=boost_headers_dir ^
--D BOOST_LIBRARYDIR=boost_libs_dir ^
+-D CMAKE_USER_MAKE_RULES_OVERRIDE=%asio_samples_home_dir%/cmake/static_c_runtime_overrides.cmake ^
+-D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX=%asio_samples_home_dir%/cmake/static_cxx_runtime_overrides.cmake ^
+-D BOOST_INCLUDEDIR=%boost_headers_dir% ^
+-D BOOST_LIBRARYDIR=%boost_libs_dir% ^
 -D Boost_NO_SYSTEM_PATHS=ON ^
 -D Boost_USE_STATIC_LIBS=ON ^
 -D ma_qt=OFF ^
@@ -172,53 +171,53 @@ cmake ^
 -D CMAKE_CXX_COMPILER=icl ^
 -T "Intel C++ Compiler 17.0" ^
 -G "Visual Studio 14 2015 Win64" ^
-asio_samples_home_dir
+%asio_samples_home_dir%
 ```
 
 Example of generation of Visual Studio 2010 project (shared C/C++ runtime, static Boost and shared Qt 4):
 
 ```cmd
 cmake ^
--D BOOST_INCLUDEDIR=boost_headers_dir ^
--D BOOST_LIBRARYDIR=boost_libs_dir ^
+-D BOOST_INCLUDEDIR=%boost_headers_dir% ^
+-D BOOST_LIBRARYDIR=%boost_libs_dir% ^
 -D Boost_NO_SYSTEM_PATHS=ON ^
 -D Boost_USE_STATIC_LIBS=ON ^
--D QT_QMAKE_EXECUTABLE=qt4_home_dir/bin/qmake.exe ^
--D GTEST_ROOT=gtest_home_dir ^
+-D QT_QMAKE_EXECUTABLE=%qt4_home_dir%/bin/qmake.exe ^
+-D GTEST_ROOT=%gtest_home_dir% ^
 -G "Visual Studio 10 2010" ^
-asio_samples_home_dir
+%asio_samples_home_dir%
 ```
 
 Example of generation of Visual Studio 2008 project (static C/C++ runtime, static Boost and static Qt 4):
 
 ```cmd
 cmake ^
--D CMAKE_USER_MAKE_RULES_OVERRIDE=asio_samples_home_dir/cmake/static_c_runtime_overrides.cmake ^
--D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX=asio_samples_home_dir/cmake/static_cxx_runtime_overrides.cmake ^
--D BOOST_INCLUDEDIR=boost_headers_dir ^
--D BOOST_LIBRARYDIR=boost_libs_dir ^
+-D CMAKE_USER_MAKE_RULES_OVERRIDE=%asio_samples_home_dir%/cmake/static_c_runtime_overrides.cmake ^
+-D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX=%asio_samples_home_dir%/cmake/static_cxx_runtime_overrides.cmake ^
+-D BOOST_INCLUDEDIR=%boost_headers_dir% ^
+-D BOOST_LIBRARYDIR=%boost_libs_dir% ^
 -D Boost_NO_SYSTEM_PATHS=ON ^
--D QT_QMAKE_EXECUTABLE=qt4_home_dir/bin/qmake.exe ^
--D GTEST_ROOT=gtest_home_dir ^
+-D QT_QMAKE_EXECUTABLE=%qt4_home_dir%/bin/qmake.exe ^
+-D GTEST_ROOT=%gtest_home_dir% ^
 -G "Visual Studio 9 2008" ^
-asio_samples_home_dir
+%asio_samples_home_dir%
 ```
 
 Example of generation of NMake makefile project (shared C/C++ runtime, static Boost and shared Qt 5):
 
 ```cmd
 cmake ^
--D BOOST_INCLUDEDIR=boost_headers_dir ^
--D BOOST_LIBRARYDIR=boost_libs_dir ^
+-D BOOST_INCLUDEDIR=%boost_headers_dir% ^
+-D BOOST_LIBRARYDIR=%boost_libs_dir% ^
 -D Boost_NO_SYSTEM_PATHS=ON ^
 -D Boost_USE_STATIC_LIBS=ON ^
--D Qt5Core_DIR=qt5_home_dir/lib/cmake/Qt5Core ^
--D Qt5Gui_DIR=qt5_home_dir/lib/cmake/Qt5Gui ^
--D Qt5Widgets_DIR=qt5_home_dir/lib/cmake/Qt5Widgets ^
--D GTEST_ROOT=gtest_home_dir ^
+-D Qt5Core_DIR=%qt5_home_dir%/lib/cmake/Qt5Core ^
+-D Qt5Gui_DIR=%qt5_home_dir%/lib/cmake/Qt5Gui ^
+-D Qt5Widgets_DIR=%qt5_home_dir%/lib/cmake/Qt5Widgets ^
+-D GTEST_ROOT=%gtest_home_dir% ^
 -G "NMake Makefiles" ^
--D CMAKE_BUILD_TYPE=project_build_configuration ^
-asio_samples_home_dir
+-D CMAKE_BUILD_TYPE=%project_build_configuration% ^
+%asio_samples_home_dir%
 ```
 
 Note that if Google Test was built with CMake and MS Visual Studio then you have to "install" it somehow - just copying results of build (add "d" postfix into the name of debug artifacts) into Google Test root directory (or into "lib" sub-directory) would be enough for [FindGTest](https://cmake.org/cmake/help/v3.1/module/FindGTest.html).
@@ -232,5 +231,5 @@ Building of generated project can be done using chosen (during generation of pro
 CMake command to build generated project:
 
 ```cmd
-cmake --build asio_sample_build_dir --config project_build_configuration
+cmake --build %asio_sample_build_dir% --config %project_build_configuration%
 ```

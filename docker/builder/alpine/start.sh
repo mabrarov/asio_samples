@@ -23,13 +23,25 @@ if [[ "${MA_QT}" = "ON" ]]; then
 fi
 
 # Generate Makefile project
-cmake -D CMAKE_SKIP_BUILD_RPATH=ON \
-      -D CMAKE_BUILD_TYPE=${BUILD_TYPE} \
-      -D Boost_USE_STATIC_LIBS=${BOOST_USE_STATIC_LIBS} \
-      -D ma_qt=${MA_QT} -D ma_force_qt_major_version=${MA_QT_MAJOR_VERSION} \
-      -D ma_coverage_build=${COVERAGE_BUILD} \
-       $@ \
-       ${PROJECT_DIR}
+if [[ "${STATIC_RUNTIME}" = "ON" ]]; then
+    cmake -D CMAKE_USER_MAKE_RULES_OVERRIDE=${PROJECT_DIR}/cmake/static_c_runtime_overrides.cmake \
+          -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX=${PROJECT_DIR}/cmake/static_cxx_runtime_overrides.cmake \
+          -D CMAKE_SKIP_BUILD_RPATH=ON \
+          -D CMAKE_BUILD_TYPE=${BUILD_TYPE} \
+          -D Boost_USE_STATIC_LIBS=${BOOST_USE_STATIC_LIBS} \
+          -D ma_qt=${MA_QT} -D ma_force_qt_major_version=${MA_QT_MAJOR_VERSION} \
+          -D ma_coverage_build=${COVERAGE_BUILD} \
+           $@ \
+           ${PROJECT_DIR}
+else
+    cmake -D CMAKE_SKIP_BUILD_RPATH=ON \
+          -D CMAKE_BUILD_TYPE=${BUILD_TYPE} \
+          -D Boost_USE_STATIC_LIBS=${BOOST_USE_STATIC_LIBS} \
+          -D ma_qt=${MA_QT} -D ma_force_qt_major_version=${MA_QT_MAJOR_VERSION} \
+          -D ma_coverage_build=${COVERAGE_BUILD} \
+           $@ \
+           ${PROJECT_DIR}
+fi
 
 # Perform building of project
 cmake --build . --config ${BUILD_TYPE}

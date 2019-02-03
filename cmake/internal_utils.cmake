@@ -166,14 +166,6 @@ endfunction()
 #   result - name of list to store compile options.
 function(ma_config_public_compile_options result)
     set(compile_options )
-    # Turn on thread support for GCC
-    if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
-        if(MINGW)
-            list(APPEND compile_options "-mthreads")
-        else()
-            list(APPEND compile_options "-pthread")
-        endif()
-    endif()
     # Turn on support of C++11 if it's available
     if(CMAKE_COMPILER_IS_GNUCXX)
         if(NOT (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "4.7"))
