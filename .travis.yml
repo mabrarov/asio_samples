@@ -21,6 +21,10 @@ env:
     - DEPENDENCIES_HOME: ${HOME}/dependencies
     - DOWNLOADS_HOME: ${HOME}/downloads
     - BUILD_HOME: ${TRAVIS_BUILD_DIR}/build
+    - CURL_CONNECT_TIMEOUT: 300
+    - CURL_MAX_TIME: 1800
+    - CURL_RETRY: 10
+    - CURL_RETRY_DELAY: 10
 
 before_install:
   - echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-certificates.crt
@@ -530,7 +534,7 @@ install:
           echo "Prebuilt Boost archive not found at ${boost_archive_file}" &&
           echo "Going to download prebuilt Boost archive from ${boost_download_url} to ${boost_archive_file}" &&
           mkdir -p ${DOWNLOADS_HOME} &&
-          curl -jksSL ${boost_download_url} --output ${boost_archive_file} &&
+          curl --connect-timeout ${CURL_CONNECT_TIMEOUT} --max-time ${CURL_MAX_TIME} --retry ${CURL_RETRY} --retry-delay ${CURL_RETRY_DELAY} -jksSL ${boost_download_url} --output ${boost_archive_file} &&
           echo "Download of prebuilt Boost archive from ${boost_download_url} to ${boost_archive_file} completed successfully";
         fi &&
         mkdir -p ${DEPENDENCIES_HOME} &&
@@ -586,5 +590,5 @@ after_success:
   - cd ${TRAVIS_BUILD_DIR}
   - if [ "${COVERAGE_BUILD}" != 0 ]; then
       echo "Sending ${BUILD_HOME}/lcov.info coverage data to Codecov" &&
-      bash <(curl -s https://codecov.io/bash) -Z -f ${BUILD_HOME}/lcov.info -R ${TRAVIS_BUILD_DIR} -X gcov -F "${CODECOV_FLAG}";
+      bash <(curl --connect-timeout ${CURL_CONNECT_TIMEOUT} --max-time ${CURL_MAX_TIME} --retry ${CURL_RETRY} --retry-delay ${CURL_RETRY_DELAY} -s https://codecov.io/bash) -Z -f ${BUILD_HOME}/lcov.info -R ${TRAVIS_BUILD_DIR} -X gcov -F "${CODECOV_FLAG}";
     fi
