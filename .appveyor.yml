@@ -34,6 +34,9 @@ environment:
   CURL_MAX_TIME: 1800
   CURL_RETRY: 10
   CURL_RETRY_DELAY: 10
+  CHOCO_RETRY: 10
+  CHOCO_RETRY_DELAY: 10
+  PIP_RETRY: 10
 
   matrix:
     - MSVC_VERSION: 14.0
@@ -584,8 +587,28 @@ install:
       Write-Host "COVERITY_SCAN_BUILD       : $env:COVERITY_SCAN_BUILD"
       Write-Host "COVERAGE_BUILD            : $env:COVERAGE_BUILD"
       Write-Host "CODECOV_FLAG              : $env:CODECOV_FLAG"
-  - cmd: if "%COVERAGE_BUILD%"=="True" choco install opencppcoverage
-  - cmd: if "%COVERAGE_BUILD%"=="True" pip install codecov==2.0.9
+  - ps: |
+      if ($env:COVERAGE_BUILD -eq "True") {
+        $exit_code = 1
+        $try_num = 0
+        while ($true) {
+          choco install -y opencppcoverage
+          $exit_code = $LastExitCode
+          $try_num++
+          if ($exit_code -eq 0) {
+            break
+          }
+          if ($try_num -ge $env:CHOCO_RETRY) {
+            break
+          }
+          Write-Host "Sleeping for $env:CHOCO_RETRY_DELAY seconds before making next try to install OpenCppCoverage Chocolatey package"
+          Start-Sleep -Seconds $env:CHOCO_RETRY_DELAY
+        }
+        if ($exit_code -ne 0) {
+          throw "Installation of OpenCppCoverage Chocolatey package failed with $exit_code exit code after $try_num tries."
+        }
+      }
+  - cmd: if "%COVERAGE_BUILD%"=="True" pip install --retries %PIP_RETRY% codecov==2.0.9
   - cmd: if not "%MSVS_PATCH_FOLDER%"=="" cd /d "%MSVS_PATCH_FOLDER%"
   - cmd: if not "%MSVS_PATCH_BATCH_FILE%"=="" call "%MSVS_PATCH_BATCH_FILE%"
   - cmd: if not "%WINDOWS_SDK_ENV_BATCH_FILE%"=="" call "%WINDOWS_SDK_ENV_BATCH_FILE%" %WINDOWS_SDK_ENV_PARAMETERS%
