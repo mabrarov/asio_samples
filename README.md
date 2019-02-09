@@ -239,7 +239,7 @@ CMake project uses (just part of supported variables is listed, refer to documen
     -D ICU_ROOT="${icu_home_dir}"
     ```
 
-To build with [static C/C++ runtime](http://www.cmake.org/Wiki/CMake_FAQ#How_can_I_build_my_MSVC_application_with_a_static_runtime.3F):
+To build with [static C/C++ runtime](https://gitlab.kitware.com/cmake/community/wikis/FAQ#how-can-i-build-my-msvc-application-with-a-static-runtime):
 
 * Use `CMAKE_USER_MAKE_RULES_OVERRIDE` CMake variable pointing to [cmake/static_c_runtime_overrides.cmake](cmake/static_c_runtime_overrides.cmake)
 
