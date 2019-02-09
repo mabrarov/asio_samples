@@ -19,7 +19,7 @@ Refer to [docker/builder/README.md](docker/builder/README.md) for instruction on
 
 * C++ toolchain (one of):
   * MinGW
-  * Visual Studio (Visual C++) 2008-2014
+  * Visual Studio (Visual C++) 2008-2015
   * GCC / Clang with make
 * [CMake](https://cmake.org/)
 * [Boost](https://www.boost.org)
