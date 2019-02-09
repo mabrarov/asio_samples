@@ -38,7 +38,7 @@ Refer to [docker/builder/README.md](docker/builder/README.md) for instruction on
 ### Assumptions
 
 * `%...%` syntax is used for Windows Command Prompt and `${...}` syntax is used for *nix shell
-* Windows Command Prompt with Windows SDK environment configured is used on Windows
+* Windows Command Prompt with configured Windows SDK environment is used on Windows
 * Directory with generated project files and with built binaries is specified in `asio_samples_build_dir` environment variable
 * This repository is cloned into directory specified in `asio_samples_home_dir` environment variable
 * ICU is located at directory specified by `icu_home_dir` environment variable
