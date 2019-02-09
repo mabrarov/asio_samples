@@ -30,6 +30,13 @@ environment:
     secure: 'ENSUMQl8WDP8x86q4eKd7B/o4WA5cEY9hqE7kOJA/io='
   CODECOV_TOKEN:
     secure: 'nh1i6Biwm7XuaX4qPVcR9oK+msdTBszi/VftjnP1gkBM5LXRT4v8ylUEvhZjuNM5'
+  CURL_CONNECT_TIMEOUT: 300
+  CURL_MAX_TIME: 1800
+  CURL_RETRY: 10
+  CURL_RETRY_DELAY: 10
+  CHOCO_RETRY: 10
+  CHOCO_RETRY_DELAY: 10
+  PIP_RETRY: 10
 
   matrix:
     - MSVC_VERSION: 14.0
@@ -222,7 +229,7 @@ install:
                 New-Item "$env:DOWNLOADS_FOLDER" -type directory | out-null
               }
               Write-Host "Going to download pre-built ICU libraries from: $icu_download_url to: $icu_archive_file"
-              curl.exe --connect-timeout 300 --max-time 1800 --retry 3 --retry-delay 5 --show-error --silent --location --output "$icu_archive_file" "$icu_download_url"
+              curl.exe --connect-timeout $env:CURL_CONNECT_TIMEOUT --max-time $env:CURL_MAX_TIME --retry $env:CURL_RETRY --retry-delay $env:CURL_RETRY_DELAY --show-error --silent --location --output "$icu_archive_file" "$icu_download_url"
               if ($LastExitCode -ne 0) {
                 throw "Downloading of pre-built ICU libraries failed with exit code $LastExitCode."
               }
@@ -325,7 +332,7 @@ install:
                 New-Item "$env:DOWNLOADS_FOLDER" -type directory | out-null
               }
               Write-Host "Going to download pre-built Boost libraries from: $boost_download_url to: $boost_archive_file"
-              curl.exe --connect-timeout 300 --max-time 1800 --retry 3 --retry-delay 5 --show-error --silent --location --output "$boost_archive_file" "$boost_download_url"
+              curl.exe --connect-timeout $env:CURL_CONNECT_TIMEOUT --max-time $env:CURL_MAX_TIME --retry $env:CURL_RETRY --retry-delay $env:CURL_RETRY_DELAY --show-error --silent --location --output "$boost_archive_file" "$boost_download_url"
               if ($LastExitCode -ne 0) {
                 throw "Downloading of pre-built Boost libraries failed with exit code $LastExitCode."
               }
@@ -481,7 +488,7 @@ install:
                 New-Item "$env:DOWNLOADS_FOLDER" -type directory | out-null
               }
               Write-Host "Going to download pre-built Qt libraries from: $qt_download_url to: $qt_archive_file"
-              curl.exe --connect-timeout 300 --max-time 1800 --retry 3 --retry-delay 5 --show-error --silent --location --output "$qt_archive_file" "$qt_download_url"
+              curl.exe --connect-timeout $env:CURL_CONNECT_TIMEOUT --max-time $env:CURL_MAX_TIME --retry $env:CURL_RETRY --retry-delay $env:CURL_RETRY_DELAY --show-error --silent --location --output "$qt_archive_file" "$qt_download_url"
               if ($LastExitCode -ne 0) {
                 throw "Downloading of pre-built Qt libraries failed with exit code $LastExitCode."
               }
@@ -580,8 +587,28 @@ install:
       Write-Host "COVERITY_SCAN_BUILD       : $env:COVERITY_SCAN_BUILD"
       Write-Host "COVERAGE_BUILD            : $env:COVERAGE_BUILD"
       Write-Host "CODECOV_FLAG              : $env:CODECOV_FLAG"
-  - cmd: if "%COVERAGE_BUILD%"=="True" choco install opencppcoverage
-  - cmd: if "%COVERAGE_BUILD%"=="True" pip install codecov==2.0.9
+  - ps: |
+      if ($env:COVERAGE_BUILD -eq "True") {
+        $exit_code = 1
+        $try_num = 0
+        while ($true) {
+          choco install -y opencppcoverage
+          $exit_code = $LastExitCode
+          $try_num++
+          if ($exit_code -eq 0) {
+            break
+          }
+          if ($try_num -ge $env:CHOCO_RETRY) {
+            break
+          }
+          Write-Host "Sleeping for $env:CHOCO_RETRY_DELAY seconds before making next try to install OpenCppCoverage Chocolatey package"
+          Start-Sleep -Seconds $env:CHOCO_RETRY_DELAY
+        }
+        if ($exit_code -ne 0) {
+          throw "Installation of OpenCppCoverage Chocolatey package failed with $exit_code exit code after $try_num tries."
+        }
+      }
+  - cmd: if "%COVERAGE_BUILD%"=="True" pip install --retries %PIP_RETRY% codecov==2.0.9
   - cmd: if not "%MSVS_PATCH_FOLDER%"=="" cd /d "%MSVS_PATCH_FOLDER%"
   - cmd: if not "%MSVS_PATCH_BATCH_FILE%"=="" call "%MSVS_PATCH_BATCH_FILE%"
   - cmd: if not "%WINDOWS_SDK_ENV_BATCH_FILE%"=="" call "%WINDOWS_SDK_ENV_BATCH_FILE%" %WINDOWS_SDK_ENV_PARAMETERS%
@@ -660,7 +687,7 @@ build_script:
         # Upload results to Coverity server.
         $coverity_build_version = $env:APPVEYOR_REPO_COMMIT.Substring(0, 7)
         Write-Host "Uploading Coverity Scan results (version: $coverity_build_version)..."
-        curl.exe --connect-timeout 300 --max-time 1800 --retry 3 --retry-delay 5 --show-error --silent --location --form token="$env:COVERITY_SCAN_TOKEN" --form email="$env:COVERITY_SCAN_NOTIFICATION_EMAIL" --form file=@"$env:APPVEYOR_BUILD_FOLDER\build\$env:APPVEYOR_PROJECT_NAME.zip" --form version="$coverity_build_version" --form description="Build submitted via AppVeyor CI" https://scan.coverity.com/builds?project=$env:APPVEYOR_REPO_NAME
+        curl.exe --connect-timeout $env:CURL_CONNECT_TIMEOUT --max-time $env:CURL_MAX_TIME --retry $env:CURL_RETRY --retry-delay $env:CURL_RETRY_DELAY --show-error --silent --location --form token="$env:COVERITY_SCAN_TOKEN" --form email="$env:COVERITY_SCAN_NOTIFICATION_EMAIL" --form file=@"$env:APPVEYOR_BUILD_FOLDER\build\$env:APPVEYOR_PROJECT_NAME.zip" --form version="$coverity_build_version" --form description="Build submitted via AppVeyor CI" https://scan.coverity.com/builds?project=$env:APPVEYOR_REPO_NAME
         if ($LastExitCode -ne 0) {
           throw "Failed to upload Coverity Scan results with exit code $LastExitCode."
         }

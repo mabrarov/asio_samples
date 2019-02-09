@@ -619,30 +619,32 @@ void session::continue_timer_wait()
   BOOST_ASSERT_MSG(intern_state::stopped != intern_state_,
       "Invalid internal state");
 
-  if (inactivity_timeout_)
+  if (!inactivity_timeout_)
   {
-    bool has_io_activity = (read_state::in_progress == read_state_)
-        || (write_state::in_progress == write_state_);
-    if (has_io_activity && !timer_turned_)
+    return;
+  }
+
+  bool has_io_activity = (read_state::in_progress == read_state_)
+      || (write_state::in_progress == write_state_);
+  if (has_io_activity && !timer_turned_)
+  {
+    // Update timer expiry
+    boost::system::error_code error;
+    timer_.expires_from_now(*inactivity_timeout_, error);
+    if (error)
     {
-      // Update timer expiry
-      boost::system::error_code error;
-      timer_.expires_from_now(*inactivity_timeout_, error);
-      if (error)
-      {
-        start_stop(error);
-        return;
-      }
+      start_stop(error);
+      return;
+    }
 
-      timer_wait_cancelled_ = true;
-      timer_turned_         = true;
+    timer_wait_cancelled_ = true;
+    timer_turned_         = true;
 
-      // Start async wait if it can be done right now.
-      // Otherwise it will be done by handle_timer.
-      if (timer_state::ready == timer_state_)
-      {
-        start_timer_wait();
-      }
+    // Start async wait if it can be done right now.
+    // Otherwise it will be done by handle_timer.
+    if (timer_state::ready == timer_state_)
+    {
+      start_timer_wait();
     }
   }
 }

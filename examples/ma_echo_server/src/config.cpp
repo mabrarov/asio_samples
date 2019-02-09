@@ -239,7 +239,7 @@ void print_config(std::ostream& stream, std::size_t cpu_count,
   const ma::echo::server::session_config& session_config =
       session_manager_config.managed_session_config;
 
-  boost::optional<long> session_inactivity_timeout_sec;
+  boost::optional<long> session_inactivity_timeout_sec = boost::none;
   if (ma::echo::server::session_config::optional_time_duration timeout =
       session_config.inactivity_timeout)
   {
@@ -354,7 +354,7 @@ ma::echo::server::session_config build_session_config(
       options_values[buffer_size_option_name].as<std::size_t>();
   validate_option<std::size_t>(buffer_size_option_name, buffer_size, 1);
 
-  session_config::optional_time_duration inactivity_timeout;
+  session_config::optional_time_duration inactivity_timeout = boost::none;
   if (options_values.count(inactivity_timeout_option_name))
   {
     long timeout_sec =
