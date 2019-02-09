@@ -25,7 +25,7 @@ Refer to [docker/builder/README.md](docker/builder/README.md) for instruction on
 * [Boost](https://www.boost.org)
 * [Google Test](https://github.com/google/googletest) 
 
-  Optional, copy shipped within this project can be used instead
+  Optional, copy shipped with this project can be used instead
 
 * [Qt](https://www.qt.io)
 
@@ -38,10 +38,7 @@ Refer to [docker/builder/README.md](docker/builder/README.md) for instruction on
 ### Assumptions
 
 * `%...%` syntax is used for Windows Command Prompt and `${...}` syntax is used for *nix shell
-* Windows Command Prompt with Windows SDK environment set up  is used on Windows
-
-  It can be done with `VS2015 x64 Native Tools Command Prompt` Windows main menu link for Visual Studio 2015 x64
-
+* Windows Command Prompt with configured Windows SDK environment is used on Windows
 * Directory with generated project files and with built binaries is specified in `asio_samples_build_dir` environment variable
 * This repository is cloned into directory specified in `asio_samples_home_dir` environment variable
 * ICU is located at directory specified by `icu_home_dir` environment variable
@@ -85,7 +82,7 @@ cmake ... -G "%cmake_generator%" "%asio_samples_home_dir%"
 cmake ... -G "${cmake_generator}" "${asio_samples_home_dir}"
 ```
 
-where `...` is optional parameters which are described below.
+where `...` are optional parameters which are described below.
 
 Use `ma_build_tests` CMake variable to exclude tests from build (tests are included by default):
 
@@ -220,7 +217,7 @@ CMake project uses (just part of supported variables is listed, refer to documen
 
   There is a copy of Google Test shipped as part of CMake project (refer to [3rdparty/gtest](3rdparty/gtest) directory). 
   It will be used in case [FindGTest](https://cmake.org/cmake/help/latest/module/FindGTest.html) fails to find Google Test (so `GTEST_ROOT` is optional).
-  Note that `-D gtest_force_shared_crt=ON` command line parameter is required in case shared C/C++ runtime is planned to be used with Google Test.
+  Note that `-D gtest_force_shared_crt=ON` command line parameter is required in case shared C/C++ runtime is planned to be used with Google Test on Windows.
 
 * [FindICU CMake module](cmake/ma_qt5_core_support/FindICU.cmake)
 
@@ -242,7 +239,7 @@ CMake project uses (just part of supported variables is listed, refer to documen
     -D ICU_ROOT="${icu_home_dir}"
     ```
 
-To build with [static C/C++ runtime](http://www.cmake.org/Wiki/CMake_FAQ#How_can_I_build_my_MSVC_application_with_a_static_runtime.3F):
+To build with [static C/C++ runtime](https://gitlab.kitware.com/cmake/community/wikis/FAQ#how-can-i-build-my-msvc-application-with-a-static-runtime):
 
 * Use `CMAKE_USER_MAKE_RULES_OVERRIDE` CMake variable pointing to [cmake/static_c_runtime_overrides.cmake](cmake/static_c_runtime_overrides.cmake)
 
@@ -347,6 +344,7 @@ cmake ^
 -D BOOST_LIBRARYDIR="%boost_libs_dir%" ^
 -D Boost_NO_SYSTEM_PATHS=ON ^
 -D Boost_USE_STATIC_LIBS=ON ^
+-D gtest_force_shared_crt=ON ^
 -D Qt5Core_DIR="%qt5_home_dir%/lib/cmake/Qt5Core" ^
 -D Qt5Gui_DIR="%qt5_home_dir%/lib/cmake/Qt5Gui" ^
 -D Qt5Widgets_DIR="%qt5_home_dir%/lib/cmake/Qt5Widgets" ^
@@ -397,6 +395,7 @@ cmake ^
 -D BOOST_LIBRARYDIR="%boost_libs_dir%" ^
 -D Boost_NO_SYSTEM_PATHS=ON ^
 -D Boost_USE_STATIC_LIBS=OFF ^
+-D gtest_force_shared_crt=ON ^
 -D Qt5Core_DIR="%qt5_home_dir%/lib/cmake/Qt5Core" ^
 -D Qt5Gui_DIR="%qt5_home_dir%/lib/cmake/Qt5Gui" ^
 -D Qt5Widgets_DIR="%qt5_home_dir%/lib/cmake/Qt5Widgets" ^
@@ -422,6 +421,7 @@ cmake ^
 -D BOOST_LIBRARYDIR="%boost_libs_dir%" ^
 -D Boost_NO_SYSTEM_PATHS=ON ^
 -D Boost_USE_STATIC_LIBS=ON ^
+-D gtest_force_shared_crt=ON ^
 -D QT_QMAKE_EXECUTABLE="%qt4_home_dir%/bin/qmake.exe" ^
 -G "Visual Studio 10 2010" ^
 "%asio_samples_home_dir%"
@@ -451,14 +451,16 @@ cmake ^
 
 Building of generated project can be done using chosen (during generation of project) build system or using CMake.
 
+Assuming current directory is `asio_samples_build_dir`.
+
 CMake command to build generated project (Windows Command Prompt):
 
 ```cmd
-cmake --build "%asio_samples_build_dir%" --config %build_type%
+cmake --build . --config %build_type%
 ```
 
 CMake command to build generated project (*nix shell):
 
 ```bash
-cmake --build "${asio_samples_build_dir}" --config ${build_type}
+cmake --build . --config ${build_type}
 ```
