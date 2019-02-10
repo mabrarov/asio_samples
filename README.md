@@ -425,8 +425,6 @@ cmake ^
 "%asio_samples_home_dir%"
 ```
 
-**Note** that [manual fix](https://software.intel.com/en-us/articles/limits1120-error-identifier-builtin-nanf-is-undefined) is needed when using Intel C++ Compiler 16.0 with Visual Studio 2015 Update 1.
-
 Example of generation of Visual Studio 2010 project with:
 
 * shared C/C++ runtime

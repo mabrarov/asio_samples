@@ -211,5 +211,19 @@ function(ma_config_public_compile_definitions result)
             UNICODE
             _WINSOCK_DEPRECATED_NO_WARNINGS)
     endif()
+    # If using Intel C++ Compiler with Visual Studio
+    if(MSVC AND (${CMAKE_CXX_COMPILER_ID} STREQUAL "Intel"))
+        # If Intel C++ Compiler 16.0 and Visual Studio 2015+
+        if((CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL "16") AND ((MSVC_VERSION EQUAL 1900) OR (MSVC_VERSION GREATER 1900)))
+            # Apply fix decribed at https://software.intel.com/en-us/articles/limits1120-error-identifier-builtin-nanf-is-undefined
+            list(APPEND compile_definitions
+                "__builtin_huge_val()=HUGE_VAL"
+                "__builtin_huge_valf()=HUGE_VALF"
+                "__builtin_nan=nan"
+                "__builtin_nanf=nanf"
+                "__builtin_nans=nan"
+                "__builtin_nansf=nanf")
+        endif()
+    endif()
     set(${result} "${compile_definitions}" PARENT_SCOPE)
 endfunction()
