@@ -18,22 +18,41 @@ Refer to [docker/builder/README.md](docker/builder/README.md) for instruction on
 ### Prerequisites
 
 * C++ toolchain (one of):
-  * MinGW
-  * Visual Studio (Visual C++) 2008-2015
-  * GCC / Clang with make
+  * MinGW with MSYS make
+
+    MinGW-W64 4.9+
+
+  * Visual Studio (Visual C++)
+
+    2008, 2010, 2012, 2013, 2015 are tested versions
+
+  * GCC with make
+
+    4.6+
+
+  * Clang with make
+
+    3.6+  
+
 * [CMake](https://cmake.org/)
+
+  3.0+, consider using the latest version of CMake because it supports recent versions of libraries
+
 * [Boost](https://www.boost.org)
+
+  1.47+, the latest tested version is 1.69
+
 * [Google Test](https://github.com/google/googletest) 
 
-  Optional, copy shipped with this project can be used instead
+  Optional, copy of 1.7.0 version is shipped with this project and is used if no other instance is found
 
 * [Qt](https://www.qt.io)
 
-  Optional, 5.x or 4.x
+  Optional, 4.0+, both 4.x and 5.x are supported with default preference to 5.x
 
 * [ICU](http://site.icu-project.org/home)
 
-  Optional, required if static Qt 5.x is used
+  Optional, required if static Qt 5.x is used, version should match Qt requirements / version which was used to build static Qt
 
 ### Assumptions
 
@@ -47,7 +66,7 @@ Refer to [docker/builder/README.md](docker/builder/README.md) for instruction on
 * Qt 5.x is located at directory specified by `qt5_home_dir` environment variable
 * Qt 4.x is located at directory specified by `qt4_home_dir` environment variable
 * Google Test is located at directory specified by `gtest_home_dir` environment variable
-* `build_type` environment variable is [build type](https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html), i.e. one of:
+* [build type](https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html) is specified in `build_type` environment variable and is one of:
   * Debug
   * Release
   * RelWithDebInfo
@@ -61,7 +80,7 @@ Refer to [docker/builder/README.md](docker/builder/README.md) for instruction on
   * `MinGW Makefiles` - MinGW makefiles
   * `Unix Makefiles` - *nix makefiles
 
-Building of CMake project is usually performed in 2 phases:
+Building of CMake project is usually performed in 2 steps:
 
 1. [Generation of project for build system](#generation-of-project-for-build-system)
 1. [Building generated project with build system](#building-generated-project-with-build-system)
@@ -90,7 +109,7 @@ Use `ma_build_tests` CMake variable to exclude tests from build (tests are inclu
 cmake -D ma_build_tests=OFF ...
 ```
 
-CMake project uses (just part of supported variables is listed, refer to documentation of corresponding CMake module for the full list):
+CMake project uses CMake find modules, so most of parameters comes from these CMake modules:
 
 * [FindBoost CMake module](http://www.cmake.org/cmake/help/latest/module/FindBoost.html?highlight=findboost)
 
@@ -405,8 +424,6 @@ cmake ^
 -G "Visual Studio 14 2015 Win64" ^
 "%asio_samples_home_dir%"
 ```
-
-**Note** that [fix](https://software.intel.com/en-us/articles/limits1120-error-identifier-builtin-nanf-is-undefined) is needed when using Intel C++ Compiler 16.0 with Visual Studio 2015 Update 1.
 
 Example of generation of Visual Studio 2010 project with:
 
