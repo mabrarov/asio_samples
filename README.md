@@ -481,3 +481,19 @@ CMake command to build generated project (*nix shell):
 ```bash
 cmake --build . --config ${build_type}
 ```
+
+### Running tests
+
+Assuming current directory is `asio_samples_build_dir`.
+
+[CTest](https://cmake.org/cmake/help/latest/manual/ctest.1.html) command to run built tests (Windows Command Prompt):
+
+```cmd
+ctest --build-config %build_type%
+```
+
+CTest command to run built tests (*nix shell):
+
+```bash
+ctest --build-config ${build_type}
+```
