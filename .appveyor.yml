@@ -259,7 +259,7 @@ install:
             $pre_installed_boost = ($env:BOOST_VERSION -eq "1.69.0") -or ($env:BOOST_VERSION -eq "1.67.0") -or ($env:BOOST_VERSION -eq "1.66.0") -or ($env:BOOST_VERSION -eq "1.65.1") -or ($env:BOOST_VERSION -eq "1.63.0")
           }
           "14.0" {
-            $pre_installed_boost = ($env:BOOST_VERSION -eq "1.67.0") -or ($env:BOOST_VERSION -eq "1.66.0") -or ($env:BOOST_VERSION -eq "1.65.1") -or ($env:BOOST_VERSION -eq "1.63.0")
+            $pre_installed_boost = ($env:BOOST_VERSION -eq "1.69.0") -or ($env:BOOST_VERSION -eq "1.67.0") -or ($env:BOOST_VERSION -eq "1.66.0") -or ($env:BOOST_VERSION -eq "1.65.1") -or ($env:BOOST_VERSION -eq "1.63.0")
           }
           "12.0" {
             $pre_installed_boost = ($env:BOOST_VERSION -eq "1.58.0")
