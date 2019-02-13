@@ -41,7 +41,7 @@ environment:
   matrix:
     - MSVC_VERSION: 14.0
       RUNTIME_LINKAGE: shared
-      BOOST_VERSION: 1.67.0
+      BOOST_VERSION: 1.69.0
       BOOST_LINKAGE: static
       QT_VERSION: 5.10.1
       QT_LINKAGE: shared
@@ -85,7 +85,7 @@ environment:
       COVERAGE_BUILD_CANDIDATE: 1
     - MSVC_VERSION: 14.0
       RUNTIME_LINKAGE: static
-      BOOST_VERSION: 1.67.0
+      BOOST_VERSION: 1.69.0
       BOOST_LINKAGE: static
       QT_VERSION: 5.7
       QT_LINKAGE: static
@@ -93,7 +93,7 @@ environment:
       ICU_LINKAGE: static
     - MSVC_VERSION: 14.0
       RUNTIME_LINKAGE: static
-      BOOST_VERSION: 1.67.0
+      BOOST_VERSION: 1.69.0
       BOOST_LINKAGE: static
       QT_VERSION: 5.7
       QT_LINKAGE: static
@@ -101,13 +101,13 @@ environment:
       ICU_LINKAGE: static
     - MSVC_VERSION: 14.0
       RUNTIME_LINKAGE: shared
-      BOOST_VERSION: 1.67.0
+      BOOST_VERSION: 1.69.0
       BOOST_LINKAGE: static
       QT_VERSION: 5.10.1
       QT_LINKAGE: shared
     - MSVC_VERSION: 14.0
       RUNTIME_LINKAGE: shared
-      BOOST_VERSION: 1.67.0
+      BOOST_VERSION: 1.69.0
       BOOST_LINKAGE: shared
       QT_VERSION: 5.10.1
       QT_LINKAGE: shared
@@ -256,10 +256,10 @@ install:
         $pre_installed_boost = $false
         switch ($env:MSVC_VERSION) {
           "15.0" {
-            $pre_installed_boost = ($env:BOOST_VERSION -eq "1.67.0") -or ($env:BOOST_VERSION -eq "1.66.0") -or ($env:BOOST_VERSION -eq "1.65.1") -or ($env:BOOST_VERSION -eq "1.63.0")
+            $pre_installed_boost = ($env:BOOST_VERSION -eq "1.69.0") -or ($env:BOOST_VERSION -eq "1.67.0") -or ($env:BOOST_VERSION -eq "1.66.0") -or ($env:BOOST_VERSION -eq "1.65.1") -or ($env:BOOST_VERSION -eq "1.63.0")
           }
           "14.0" {
-            $pre_installed_boost = ($env:BOOST_VERSION -eq "1.67.0") -or ($env:BOOST_VERSION -eq "1.66.0") -or ($env:BOOST_VERSION -eq "1.65.1") -or ($env:BOOST_VERSION -eq "1.63.0")
+            $pre_installed_boost = ($env:BOOST_VERSION -eq "1.69.0") -or ($env:BOOST_VERSION -eq "1.67.0") -or ($env:BOOST_VERSION -eq "1.66.0") -or ($env:BOOST_VERSION -eq "1.65.1") -or ($env:BOOST_VERSION -eq "1.63.0")
           }
           "12.0" {
             $pre_installed_boost = ($env:BOOST_VERSION -eq "1.58.0")
