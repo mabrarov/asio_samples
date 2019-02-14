@@ -282,6 +282,8 @@ int main(int, char** argv)
     using socket_type = boost::asio::ip::tcp::socket;
     using endpoint_type = boost::asio::ip::tcp::endpoint;
 
+    bool handler_called = false;
+
     // Create a listening socket, accept a connection, perform
     // the echo, and then shut everything down and exit.
     boost::asio::io_context ioc;
@@ -295,9 +297,16 @@ int main(int, char** argv)
     async_echo(sock,
         [&](boost::beast::error_code ec)
         {
+            handler_called = true;
             if(ec)
                 std::cerr << argv[0] << ": " << ec.message() << std::endl;
         });
     ioc.run();
+    if (!handler_called)
+    {
+        std::cerr << "Handler of echo_op composed operation" \
+            "was not called while io_context bound to sock" \
+            "run out of work" << std::endl;
+    }
     return 0;
 }
