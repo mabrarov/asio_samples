@@ -294,13 +294,14 @@ int main(int, char** argv)
     acceptor.bind(ep);
     acceptor.listen();
     acceptor.accept(sock);
-    async_echo(sock,
+    boost::asio::io_context handler_io_context;
+    async_echo(sock, boost::asio::bind_executor(handler_io_context,
         [&](boost::beast::error_code ec)
         {
             handler_called = true;
             if(ec)
                 std::cerr << argv[0] << ": " << ec.message() << std::endl;
-        });
+        }));
     ioc.run();
     if (!handler_called)
     {
