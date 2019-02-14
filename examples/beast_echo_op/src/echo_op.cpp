@@ -13,6 +13,7 @@
 #include <iostream>
 #include <memory>
 #include <utility>
+#include <array>
 
 //[example_core_echo_op_1
 
@@ -295,12 +296,47 @@ int main(int, char** argv)
     acceptor.listen();
     acceptor.accept(sock);
     boost::asio::io_context handler_io_context;
-    async_echo(sock, boost::asio::bind_executor(handler_io_context,
-        [&](boost::beast::error_code ec)
+
+    // This example fails if async_echo composed operation is used because
+    // completion handler provided by user is wrong - bound to another executor,
+    // different comparing to executor used by sock
+    //async_echo(sock, boost::asio::bind_executor(handler_io_context,
+    //    [&](boost::beast::error_code ec)
+    //    {
+    //        handler_called = true;
+    //        if(ec)
+    //            std::cerr << argv[0] << ": " << ec.message() << std::endl;
+    //    }));
+
+    std::array<char, 16> buf;
+
+    // This example still fails if asio::async_read is used because even
+    // Asio native composed operations don't care about users trying to shoot
+    // themselves and providing wrong completion handler
+    //boost::asio::async_read(sock, boost::asio::buffer(buf), boost::asio::bind_executor(handler_io_context,
+    //    [&](const boost::beast::error_code& ec, std::size_t /*bytes_transferred*/)
+    //    {
+    //      handler_called = true;
+    //      if(ec)
+    //          std::cerr << argv[0] << ": " << ec.message() << std::endl;
+    //    }));
+
+    // Below is completely legal example which demonstrates the case when Asio
+    // native composed operation uses strand (and executor?) of user provided
+    // handler for intermediate operations / handlers to synchronize access to
+    // user provided data - sock in our case
+    //
+    // Maybe asio::async_read composed operation needs to be changed to keep
+    // work guard - that could fix previous example with asio::async_read
+    // (see above), but I'm not sure if it's needed to keep so much stuff for
+    // the user provided completion handler
+    boost::asio::io_context::strand strand(ioc);
+    boost::asio::async_read(sock, boost::asio::buffer(buf), boost::asio::bind_executor(strand,
+        [&](const boost::beast::error_code& ec, std::size_t /*bytes_transferred*/)
         {
-            handler_called = true;
-            if(ec)
-                std::cerr << argv[0] << ": " << ec.message() << std::endl;
+          handler_called = true;
+          if(ec)
+              std::cerr << argv[0] << ": " << ec.message() << std::endl;
         }));
     ioc.run();
     if (!handler_called)
