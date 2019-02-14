@@ -285,3 +285,6 @@ set_target_properties(asio_multicast_receiver PROPERTIES FOLDER "${project_group
 
 add_subdirectory(examples/asio_multicast_sender)
 set_target_properties(asio_multicast_sender PROPERTIES FOLDER "${project_group_examples}")
+
+add_subdirectory(examples/beast_echo_op)
+set_target_properties(beast_echo_op PROPERTIES FOLDER "${project_group_examples}")
