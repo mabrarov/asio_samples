@@ -316,7 +316,7 @@ int main(int, char** argv)
     // Asio native composed operations don't care about users trying to shoot
     // themselves and providing wrong completion handler
 
-    // If we replace async_read with sock.async_read_some the ths test starts working
+    // If we replace async_read with sock.async_read_some then this test starts working
     //sock.async_read_some(boost::asio::buffer(buf), boost::asio::bind_executor(handler_io_context,
     boost::asio::async_read(sock, boost::asio::buffer(buf), boost::asio::bind_executor(handler_io_context,
         [&](const boost::beast::error_code& ec, std::size_t /*bytes_transferred*/)
