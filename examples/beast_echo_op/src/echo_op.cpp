@@ -14,6 +14,8 @@
 #include <memory>
 #include <utility>
 #include <array>
+#include <thread>
+#include <chrono>
 
 //[example_core_echo_op_1
 
@@ -285,6 +287,9 @@ int main(int, char** argv)
 
     bool handler_called = false;
 
+    boost::asio::io_context handler_io_context;
+    std::array<char, 16> buf;
+
     // Create a listening socket, accept a connection, perform
     // the echo, and then shut everything down and exit.
     boost::asio::io_context ioc;
@@ -295,7 +300,6 @@ int main(int, char** argv)
     acceptor.bind(ep);
     acceptor.listen();
     acceptor.accept(sock);
-    boost::asio::io_context handler_io_context;
 
     // This example fails if async_echo composed operation is used because
     // completion handler provided by user is wrong - bound to another executor,
@@ -308,18 +312,21 @@ int main(int, char** argv)
     //            std::cerr << argv[0] << ": " << ec.message() << std::endl;
     //    }));
 
-    std::array<char, 16> buf;
-
     // This example still fails if asio::async_read is used because even
     // Asio native composed operations don't care about users trying to shoot
     // themselves and providing wrong completion handler
-    //boost::asio::async_read(sock, boost::asio::buffer(buf), boost::asio::bind_executor(handler_io_context,
-    //    [&](const boost::beast::error_code& ec, std::size_t /*bytes_transferred*/)
-    //    {
-    //      handler_called = true;
-    //      if(ec)
-    //          std::cerr << argv[0] << ": " << ec.message() << std::endl;
-    //    }));
+
+    // If we replace async_read with sock.async_read_some the ths test starts working
+    //sock.async_read_some(boost::asio::buffer(buf), boost::asio::bind_executor(handler_io_context,
+    boost::asio::async_read(sock, boost::asio::buffer(buf), boost::asio::bind_executor(handler_io_context,
+        [&](const boost::beast::error_code& ec, std::size_t /*bytes_transferred*/)
+        {
+            handler_called = true;
+            if(ec)
+            {
+                std::cerr << argv[0] << ": " << ec.message() << std::endl;
+            }
+        }));
 
     // Below is completely legal example which demonstrates the case when Asio
     // native composed operation uses strand (and executor?) of user provided
@@ -330,20 +337,23 @@ int main(int, char** argv)
     // work guard - that could fix previous example with asio::async_read
     // (see above), but I'm not sure if it's needed to keep so much stuff for
     // the user provided completion handler
-    boost::asio::io_context::strand strand(ioc);
-    boost::asio::async_read(sock, boost::asio::buffer(buf), boost::asio::bind_executor(strand,
-        [&](const boost::beast::error_code& ec, std::size_t /*bytes_transferred*/)
-        {
-          handler_called = true;
-          if(ec)
-              std::cerr << argv[0] << ": " << ec.message() << std::endl;
-        }));
+    //boost::asio::io_context::strand strand(ioc);
+    //boost::asio::async_read(sock, boost::asio::buffer(buf), boost::asio::bind_executor(strand,
+    //    [&](const boost::beast::error_code& ec, std::size_t /*bytes_transferred*/)
+    //    {
+    //      handler_called = true;
+    //      if(ec)
+    //          std::cerr << argv[0] << ": " << ec.message() << std::endl;
+    //    }));
     ioc.run();
+    std::this_thread::sleep_for(std::chrono::seconds(10));
+    handler_io_context.poll();
     if (!handler_called)
     {
         std::cerr << "Handler of echo_op composed operation" \
-            "was not called while io_context bound to sock" \
-            "run out of work" << std::endl;
+            " was not called while io_context bound to sock" \
+            " run out of work" << std::endl;
+        return EXIT_FAILURE;
     }
-    return 0;
+    return EXIT_SUCCESS;
 }
