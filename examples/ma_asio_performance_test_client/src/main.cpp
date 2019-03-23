@@ -545,18 +545,18 @@ struct session_manager_config
 public:
   session_manager_config(std::size_t the_session_count,
       std::size_t the_batch_size,
-      const optional_duration& the_batch_pause,
+      const optional_duration& the_batch_interval,
       const session_config& the_managed_session_config)
     : session_count(the_session_count)
     , batch_size(the_batch_size)
-    , batch_pause(the_batch_pause)
+    , batch_interval(the_batch_interval)
     , managed_session_config(the_managed_session_config)
   {
   }
 
   std::size_t       session_count;
   std::size_t       batch_size;
-  optional_duration batch_pause;
+  optional_duration batch_interval;
   session_config    managed_session_config;
 }; // struct session_manager_config
 
@@ -578,7 +578,7 @@ public:
       const io_service_vector& session_io_services,
       const session_manager_config& config)
     : batch_size_(config.batch_size)
-    , batch_pause_(config.batch_pause)
+    , batch_interval_(config.batch_interval)
     , io_service_(session_manager_io_service)
     , strand_(session_manager_io_service)
     , timer_(session_manager_io_service)
@@ -667,11 +667,11 @@ private:
   void schedule_session_start(
       const protocol::resolver::iterator& endpoint_iterator)
   {
-    if (batch_pause_)
+    if (batch_interval_)
     {
       BOOST_ASSERT_MSG(!timer_in_progess_, "Invalid timer state");
 
-      timer_.expires_from_now(*batch_pause_);
+      timer_.expires_from_now(*batch_interval_);
       timer_.async_wait(strand_.wrap(
           ma::make_custom_alloc_handler(timer_allocator_,
               ma::detail::bind(&this_type::handle_scheduled_session_start, this,
@@ -742,7 +742,7 @@ private:
   }
 
   const std::size_t        batch_size_;
-  const optional_duration  batch_pause_;
+  const optional_duration  batch_interval_;
   boost::asio::io_service& io_service_;
   boost::asio::io_service::strand strand_;
   deadline_timer timer_;
@@ -800,14 +800,13 @@ const char* demux_option_name                   = "demux-per-work-thread";
 const char* threads_option_name                 = "threads";
 const char* sessions_option_name                = "sessions";
 const char* batch_size_option_name              = "batch-size";
-const char* batch_pause_option_name             = "batch-pause";
+const char* batch_interval_option_name          = "batch-interval";
 const char* buffer_option_name                  = "buffer";
 const char* connect_attempts_option_name        = "connect-attempts";
 const char* socket_recv_buffer_size_option_name = "sock-recv-buffer";
 const char* socket_send_buffer_size_option_name = "sock-send-buffer";
 const char* no_delay_option_name                = "no-delay";
 const char* time_option_name                    = "time";
-const std::string default_system_value          = "system default";
 
 std::size_t calc_thread_count(std::size_t hardware_concurrency)
 {
@@ -867,10 +866,9 @@ boost::program_options::options_description build_cmd_options_description(
       "set the number of simultaneous running connect operations"
     )
     (
-      batch_pause_option_name,
+      batch_interval_option_name,
       boost::program_options::value<long>()->default_value(1000),
-      "set the pause between simultaneous running" \
-          "  connect operations (milliseconds)"
+      "interval between simultaneous running connect operations (milliseconds)"
     )
     (
       buffer_option_name,
@@ -960,8 +958,8 @@ client_config build_client_config(
       options_values[sessions_option_name].as<std::size_t>();
   const std::size_t batch_size =
       options_values[batch_size_option_name].as<std::size_t>();
-  const long batch_pause_millis =
-      options_values[batch_pause_option_name].as<long>();
+  const long batch_interval_millis =
+      options_values[batch_interval_option_name].as<long>();
 
   const std::size_t buffer_size =
       options_values[buffer_option_name].as<std::size_t>();
@@ -983,7 +981,7 @@ client_config build_client_config(
       socket_recv_buffer_size, socket_send_buffer_size, no_delay);
 
   session_manager_config client_session_manager_config(session_count,
-      batch_size, to_optional_duration(batch_pause_millis),
+      batch_size, to_optional_duration(batch_interval_millis),
       client_session_config);
 
   bool ios_per_work_thread =
@@ -1076,7 +1074,7 @@ void print(const client_config& config)
             << std::endl
             << "batch pause (milliseconds)        : "
             << to_milliseconds_string(
-                  client_session_manager_config.batch_pause)
+                  client_session_manager_config.batch_interval)
             << std::endl
             << "Demultiplexer-per-work-thread mode: "
             << (to_string)(config.ios_per_work_thread)
