@@ -36,11 +36,14 @@ list(APPEND cxx_private_libraries
     ma_cyclic_buffer
     ma_limited_int
     ma_custom_alloc_handler
+    ma_context_alloc_handler
     ma_steady_deadline_timer
     ma_strand
     ma_thread_group
     ma_async_connect
     ma_helpers
+    ma_bind_handler
+    ma_handler_storage
     ma_coverage)
 
 add_executable(${PROJECT_NAME}

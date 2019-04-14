@@ -34,13 +34,19 @@
 #include <ma/steady_deadline_timer.hpp>
 #include <ma/handler_allocator.hpp>
 #include <ma/custom_alloc_handler.hpp>
+#include <ma/context_alloc_handler.hpp>
 #include <ma/strand.hpp>
 #include <ma/limited_int.hpp>
 #include <ma/thread_group.hpp>
 #include <ma/io_context_helpers.hpp>
+#include <ma/handler_storage.hpp>
+#include <ma/bind_handler.hpp>
 #include <ma/detail/memory.hpp>
 #include <ma/detail/functional.hpp>
 #include <ma/detail/thread.hpp>
+#include <ma/detail/tuple.hpp>
+#include <ma/detail/utility.hpp>
+#include <ma/detail/type_traits.hpp>
 
 #if defined(MA_HAS_BOOST_TIMER)
 #include <boost/timer/timer.hpp>
@@ -190,24 +196,25 @@ class session : private boost::noncopyable
 public:
   typedef boost::asio::ip::tcp protocol;
 
-  session(boost::asio::io_service& io_service, const session_config& config,
-      work_state& work_state)
+  session(boost::asio::io_service& io_service, const session_config& config)
     : max_connect_attempts_(config.max_connect_attempts)
     , socket_recv_buffer_size_(config.socket_recv_buffer_size)
     , socket_send_buffer_size_(config.socket_send_buffer_size)
     , no_delay_(config.no_delay)
+    , io_service_(io_service)
     , strand_(io_service)
     , socket_(io_service)
     , buffer_(config.buffer_size)
     , bytes_written_()
     , bytes_read_()
     , connected_(false)
+    , connect_in_progress_(false)
     , write_in_progress_(false)
     , read_in_progress_(false)
     , started_(false)
     , stopped_(false)
-    , was_connected_(false)
-    , work_state_(work_state)
+    , run_handler_(io_service)
+    , stop_handler_(io_service)
   {
     typedef ma::cyclic_buffer::mutable_buffers_type buffers_type;
     std::size_t filled_size = config.buffer_size / 2;
@@ -229,27 +236,45 @@ public:
   ~session()
   {
     BOOST_ASSERT_MSG(!connected_, "Invalid connect state");
+    BOOST_ASSERT_MSG(!connect_in_progress_, "Invalid connect state");
     BOOST_ASSERT_MSG(!read_in_progress_, "Invalid read state");
     BOOST_ASSERT_MSG(!write_in_progress_, "Invalid write state");
     BOOST_ASSERT_MSG(!started_ || (started_ && stopped_),
         "Session was not stopped");
   }
 
-  void async_start(const protocol::resolver::iterator& endpoint_iterator)
+  template <typename Handler>
+  void async_connect(const protocol::resolver::iterator& endpoint_iterator,
+      MA_FWD_REF(Handler) handler)
   {
-    strand_.post(ma::make_custom_alloc_handler(write_allocator_,
-        ma::detail::bind(&this_type::do_start, this, endpoint_iterator)));
+    typedef typename ma::detail::decay<Handler>::type handler_type;
+
+    strand_.post(ma::make_explicit_context_alloc_handler(
+        ma::detail::forward<Handler>(handler),
+        ma::detail::bind(&this_type::do_connect<handler_type>, this,
+            endpoint_iterator, ma::detail::placeholders::_1)));
   }
 
-  void async_stop()
+  template <typename Handler>
+  void async_run(MA_FWD_REF(Handler) handler)
   {
-    strand_.post(ma::make_custom_alloc_handler(stop_allocator_,
-        ma::detail::bind(&this_type::do_stop, this)));
+    typedef typename ma::detail::decay<Handler>::type handler_type;
+
+    strand_.post(ma::make_explicit_context_alloc_handler(
+        ma::detail::forward<Handler>(handler),
+        ma::detail::bind(&this_type::do_start_run<handler_type>, this,
+            ma::detail::placeholders::_1)));
   }
 
-  bool was_connected() const
+  template <typename Handler>
+  void async_stop(MA_FWD_REF(Handler) handler)
   {
-    return was_connected_;
+    typedef typename ma::detail::decay<Handler>::type handler_type;
+
+    strand_.post(ma::make_explicit_context_alloc_handler(
+        ma::detail::forward<Handler>(handler),
+        ma::detail::bind(&this_type::do_stop<handler_type>, this,
+            ma::detail::placeholders::_1)));
   }
 
   limited_counter bytes_written() const
@@ -263,23 +288,61 @@ public:
   }
 
 private:
-  void do_start(const protocol::resolver::iterator& initial_endpoint_iterator)
+  template <typename Handler>
+  void do_connect(const protocol::resolver::iterator& initial_endpoint_iterator,
+      MA_FWD_REF(Handler) handler)
   {
+    typedef typename ma::detail::decay<Handler>::type handler_type;
+
     if (stopped_)
     {
+      io_service_.post(ma::bind_handler(ma::detail::forward<Handler>(handler),
+          boost::asio::error::operation_aborted));
+      return;
+    }
+
+    if (connect_in_progress_ || write_in_progress_ || read_in_progress_)
+    {
+      io_service_.post(ma::bind_handler(ma::detail::forward<Handler>(handler),
+          boost::asio::error::already_started));
+      return;
+    }
+
+    start_connect<handler_type>(0, initial_endpoint_iterator,
+        initial_endpoint_iterator, ma::detail::forward<Handler>(handler));
+  }
+
+  template <typename Handler>
+  void do_start_run(MA_FWD_REF(Handler) handler)
+  {
+    typedef typename ma::detail::decay<Handler>::type handler_type;
+
+    if (stopped_ || !connected_)
+    {
+      io_service_.post(ma::bind_handler(
+          ma::detail::forward<Handler>(handler),
+          boost::asio::error::operation_aborted));
       return;
     }
 
     started_ = true;
-    start_connect(0, initial_endpoint_iterator, initial_endpoint_iterator);
+    start_write_some();
+    start_read_some();
+
+    run_handler_.store(ma::detail::forward<Handler>(handler));
   }
 
-  void do_stop()
+  template <typename Handler>
+  void do_stop(MA_FWD_REF(Handler) handler)
   {
-    if (stopped_)
+    if (stopped_
+        && !connect_in_progress_ && !read_in_progress_ && !write_in_progress_)
     {
+      io_service_.post(ma::detail::forward<Handler>(handler));
       return;
     }
+
+    stop_handler_.store(ma::detail::forward<Handler>(handler));
 
     if (connected_)
     {
@@ -288,28 +351,42 @@ private:
     stop();
   }
 
+  template <typename Handler>
   void start_connect(std::size_t connect_attempt,
       const protocol::resolver::iterator& initial_endpoint_iterator,
-      const protocol::resolver::iterator& current_endpoint_iterator)
+      const protocol::resolver::iterator& current_endpoint_iterator,
+      MA_FWD_REF(Handler) handler)
   {
+    typedef typename ma::detail::decay<Handler>::type handler_type;
+
     protocol::endpoint endpoint = *current_endpoint_iterator;
     ma::async_connect(socket_, endpoint, strand_.wrap(
         ma::make_custom_alloc_handler(write_allocator_,
-            ma::detail::bind(&this_type::handle_connect, this,
+            ma::detail::bind(&this_type::handle_connect<handler_type>, this,
                 ma::detail::placeholders::_1, connect_attempt,
-                initial_endpoint_iterator, current_endpoint_iterator))));
+                initial_endpoint_iterator, current_endpoint_iterator,
+                ma::detail::make_tuple(
+                    ma::detail::forward<Handler>(handler))))));
+    connect_in_progress_ = true;
   }
 
+  template <typename Handler>
   void handle_connect(const boost::system::error_code& error,
       std::size_t connect_attempt,
       const protocol::resolver::iterator& initial_endpoint_iterator,
-      protocol::resolver::iterator current_endpoint_iterator)
+      protocol::resolver::iterator current_endpoint_iterator,
+      MA_FWD_REF(ma::detail::tuple<Handler>) boxed_handler)
   {
-    // Collect statistics at first step
-    was_connected_ = !error;
+    typedef typename ma::detail::decay<Handler>::type handler_type;
+
+    handler_type handler(ma::detail::get<0>(
+        ma::detail::forward<Handler>(boxed_handler)));
 
     if (stopped_)
     {
+      io_service_.post(ma::bind_handler(ma::detail::move(handler),
+          boost::asio::error::operation_aborted));
+      complete_stop();
       return;
     }
 
@@ -320,8 +397,9 @@ private:
       ++current_endpoint_iterator;
       if (protocol::resolver::iterator() != current_endpoint_iterator)
       {
-        start_connect(connect_attempt,
-            initial_endpoint_iterator, current_endpoint_iterator);
+        start_connect<handler_type>(connect_attempt,
+            initial_endpoint_iterator, current_endpoint_iterator,
+            ma::detail::move(handler));
         return;
       }
 
@@ -330,26 +408,30 @@ private:
         ++connect_attempt;
         if (connect_attempt >= max_connect_attempts_)
         {
-          stop();
+          io_service_.post(ma::bind_handler(ma::detail::move(handler), error));
           return;
         }
       }
 
-      start_connect(connect_attempt,
-          initial_endpoint_iterator, initial_endpoint_iterator);
+      start_connect<handler_type>(connect_attempt,
+          initial_endpoint_iterator, initial_endpoint_iterator,
+          ma::detail::move(handler));
       return;
     }
 
     connected_ = true;
 
-    if (apply_socket_options())
+    boost::system::error_code socket_options_error = apply_socket_options();
+    if (socket_options_error)
     {
-      stop();
+      close_socket();
+      io_service_.post(ma::bind_handler(ma::detail::move(handler),
+          socket_options_error));
       return;
     }
 
-    start_write_some();
-    start_read_some();
+    io_service_.post(ma::bind_handler(ma::detail::move(handler),
+        boost::system::error_code()));
   }
 
   void handle_read(const boost::system::error_code& error,
@@ -363,6 +445,8 @@ private:
 
     if (stopped_)
     {
+      complete_run();
+      complete_stop();
       return;
     }
 
@@ -375,7 +459,7 @@ private:
 
     if (error)
     {
-      stop();
+      stop(error);
       return;
     }
 
@@ -397,12 +481,14 @@ private:
 
     if (stopped_)
     {
+      complete_run();
+      complete_stop();
       return;
     }
 
     if (error)
     {
-      stop();
+      stop(error);
       return;
     }
 
@@ -413,12 +499,32 @@ private:
     start_write_some();
   }
 
-  void stop()
+  void complete_run(const boost::system::error_code& error =
+      boost::system::error_code())
+  {
+    if (!read_in_progress_ && !write_in_progress_ && run_handler_.has_target())
+    {
+      run_handler_.post(error);
+    }
+  }
+
+  void complete_stop()
+  {
+    if (!connect_in_progress_ && !read_in_progress_ && !write_in_progress_
+        && stop_handler_.has_target())
+    {
+      stop_handler_.post();
+    }
+  }
+
+  void stop(const boost::system::error_code& error =
+    boost::system::error_code())
   {
     close_socket();
     connected_ = false;
     stopped_   = true;
-    work_state_.dec_outstanding();
+    complete_run(error);
+    complete_stop();
   }
 
   void start_write_some()
@@ -464,7 +570,7 @@ private:
       }
     }
 
-    // Apply all (really) configered socket options
+    // Apply all configured socket options
     if (socket_recv_buffer_size_)
     {
       boost::system::error_code error;
@@ -514,23 +620,24 @@ private:
     socket_.close(ignored);
   }
 
-  const std::size_t   max_connect_attempts_;
-  const optional_int  socket_recv_buffer_size_;
-  const optional_int  socket_send_buffer_size_;
-  const tribool       no_delay_;
-  ma::strand          strand_;
-  protocol::socket    socket_;
-  ma::cyclic_buffer   buffer_;
-  limited_counter     bytes_written_;
-  limited_counter     bytes_read_;
+  const std::size_t  max_connect_attempts_;
+  const optional_int socket_recv_buffer_size_;
+  const optional_int socket_send_buffer_size_;
+  const tribool      no_delay_;
+  boost::asio::io_service& io_service_;
+  ma::strand        strand_;
+  protocol::socket  socket_;
+  ma::cyclic_buffer buffer_;
+  limited_counter   bytes_written_;
+  limited_counter   bytes_read_;
   bool connected_;
+  bool connect_in_progress_;
   bool write_in_progress_;
   bool read_in_progress_;
   bool started_;
   bool stopped_;
-  bool was_connected_;
-  work_state& work_state_;
-  ma::in_place_handler_allocator<256> stop_allocator_;
+  ma::handler_storage<boost::system::error_code> run_handler_;
+  ma::handler_storage<void> stop_handler_;
   ma::in_place_handler_allocator<512> read_allocator_;
   ma::in_place_handler_allocator<512> write_allocator_;
 }; // class session
