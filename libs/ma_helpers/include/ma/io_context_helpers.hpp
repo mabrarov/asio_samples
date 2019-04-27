@@ -14,9 +14,9 @@
 
 #include <cstddef>
 #include <ma/config.hpp>
+#include <boost/asio.hpp>
 
 #if defined(MA_ASIO_IO_CONTEXT_INT_CONCURRENCY_HINT)
-#include <boost/asio.hpp>
 #include <boost/numeric/conversion/cast.hpp>
 #endif
 
