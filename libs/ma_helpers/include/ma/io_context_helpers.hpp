@@ -42,6 +42,36 @@ to_io_context_concurrency_hint(std::size_t hint)
 #endif
 }
 
+inline boost::asio::io_service&
+get_io_context(boost::asio::io_service::work& work)
+{
+#if BOOST_VERSION >= 107000
+  return work.get_io_context();
+#else
+  return work.get_io_service();
+#endif
+}
+
+inline boost::asio::io_service&
+get_io_context(boost::asio::io_service::strand& strand)
+{
+#if BOOST_VERSION >= 107000
+  return strand.context();
+#else
+  return strand.get_io_service();
+#endif
+}
+
+inline boost::asio::io_service&
+get_io_context(boost::asio::io_service::service& service)
+{
+#if BOOST_VERSION >= 107000
+  return service.get_io_context();
+#else
+  return service.get_io_service();
+#endif
+}
+
 } // namespace ma
 
 #endif // MA_IO_CONTEXT_HELPERS_HPP

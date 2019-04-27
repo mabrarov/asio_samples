@@ -18,7 +18,8 @@
 #include <ma/detail/utility.hpp>
 
 #if defined(WIN32) && !defined(BOOST_ASIO_DISABLE_IOCP) \
-    && !defined(MA_BOOST_ASIO_WINDOWS_CONNECT_EX) && (_WIN32_WINNT >= 0x0501)
+    && !defined(MA_BOOST_ASIO_WINDOWS_CONNECT_EX) && (_WIN32_WINNT >= 0x0501) \
+    && (BOOST_VERSION < 107000)
 #define MA_ASYNC_CONNECT_USES_WINDOWS_CONNECT_EX
 #else
 #undef  MA_ASYNC_CONNECT_USES_WINDOWS_CONNECT_EX

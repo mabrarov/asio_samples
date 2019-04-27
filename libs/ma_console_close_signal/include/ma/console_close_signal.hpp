@@ -15,6 +15,7 @@
 #include <boost/asio.hpp>
 #include <boost/noncopyable.hpp>
 #include <ma/config.hpp>
+#include <ma/io_context_helpers.hpp>
 #include <ma/detail/utility.hpp>
 #include <ma/console_close_signal_service.hpp>
 
@@ -58,7 +59,7 @@ inline console_close_signal::~console_close_signal()
 
 inline boost::asio::io_service& console_close_signal::get_io_service()
 {
-  return service_.get_io_service();
+  return ma::get_io_context(service_);
 }
 
 template <typename Handler>
