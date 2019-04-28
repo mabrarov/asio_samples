@@ -13,8 +13,9 @@
 #endif // defined(_MSC_VER) && (_MSC_VER >= 1200)
 
 #include <cstddef>
-#include <ma/config.hpp>
+#include <boost/version.hpp>
 #include <boost/asio.hpp>
+#include <ma/config.hpp>
 
 #if defined(MA_ASIO_IO_CONTEXT_INT_CONCURRENCY_HINT)
 #include <boost/numeric/conversion/cast.hpp>
