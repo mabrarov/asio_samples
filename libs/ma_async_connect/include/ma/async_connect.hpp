@@ -18,8 +18,7 @@
 #include <ma/detail/utility.hpp>
 
 #if defined(WIN32) && !defined(BOOST_ASIO_DISABLE_IOCP) \
-    && !defined(MA_BOOST_ASIO_WINDOWS_CONNECT_EX) && (_WIN32_WINNT >= 0x0501) \
-    && (BOOST_VERSION < 107000)
+    && !defined(MA_BOOST_ASIO_WINDOWS_CONNECT_EX) && (_WIN32_WINNT >= 0x0501)
 #define MA_ASYNC_CONNECT_USES_WINDOWS_CONNECT_EX
 #else
 #undef  MA_ASYNC_CONNECT_USES_WINDOWS_CONNECT_EX
@@ -191,8 +190,13 @@ void async_connect(Socket& socket,
     socket.open(peer_endpoint.protocol(), error);
     if (error)
     {
+#if BOOST_VERSION < 107000
       socket.get_io_service().post(
           ma::bind_handler(detail::forward<Handler>(handler), error));
+#else
+      boost::asio::post(socket.get_executor(),
+          ma::bind_handler(detail::forward<Handler>(handler), error));
+#endif
       return;
     }
   }
@@ -222,14 +226,24 @@ void async_connect(Socket& socket,
   if (boost::system::error_code error = detail::bind_to_any(socket, 
       peer_endpoint.protocol()))
   {
+#if BOOST_VERSION < 107000
     socket.get_io_service().post(
         ma::bind_handler(detail::forward<Handler>(handler), error));
+#else
+    boost::asio::post(socket.get_executor(),
+        ma::bind_handler(detail::forward<Handler>(handler), error));
+#endif
     return;
   }
 
   // Construct an OVERLAPPED-derived object to contain the handler.
+#if BOOST_VERSION < 107000
   boost::asio::windows::overlapped_ptr overlapped(socket.get_io_service(),
       detail::make_connect_ex_handler(detail::forward<Handler>(handler)));
+#else
+  boost::asio::windows::overlapped_ptr overlapped(socket.get_executor(),
+      detail::make_connect_ex_handler(detail::forward<Handler>(handler)));
+#endif
 
   // Initiate the ConnectEx operation.
   BOOL ok = connect_ex_func(native_socket, peer_endpoint.data(),
