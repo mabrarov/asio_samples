@@ -27,7 +27,8 @@ list(APPEND cxx_headers
     "${cxx_headers_dir}/ma/handler_alloc_helpers.hpp"
     "${cxx_headers_dir}/ma/handler_cont_helpers.hpp"
     "${cxx_headers_dir}/ma/handler_invoke_helpers.hpp"
-    "${cxx_headers_dir}/ma/io_context_helpers.hpp")
+    "${cxx_headers_dir}/ma/io_context_helpers.hpp"
+    "${cxx_headers_dir}/ma/executor_helpers.hpp")
 
 list(APPEND cxx_sources
     "${cxx_sources_dir}/fake.cpp")
