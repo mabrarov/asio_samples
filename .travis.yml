@@ -48,8 +48,8 @@ matrix:
             - george-edison55-precise-backports
             - ubuntu-toolchain-r-test
             - boost-latest
-    # GCC 7, Boost 1.67.0, Qt 5.x.
-    - env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-7 CXX_COMPILER=g++-7 BOOST_VERSION=1.67.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
+    # GCC 7, Boost 1.70.0, Qt 5.x.
+    - env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-7 CXX_COMPILER=g++-7 BOOST_VERSION=1.70.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
       compiler: gcc
       addons: &addons-gcc7-qt5
         apt:
@@ -64,6 +64,13 @@ matrix:
             - ca-certificates
             - qtbase5-dev
           sources: *gcc-package-sources
+    - env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-7 CXX_COMPILER=g++-7 BOOST_VERSION=1.70.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
+      compiler: gcc
+      addons: *addons-gcc7-qt5
+    # GCC 7, Boost 1.67.0, Qt 5.x.
+    - env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-7 CXX_COMPILER=g++-7 BOOST_VERSION=1.67.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
+      compiler: gcc
+      addons: *addons-gcc7-qt5
     - env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-7 CXX_COMPILER=g++-7 BOOST_VERSION=1.67.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
       compiler: gcc
       addons: *addons-gcc7-qt5
