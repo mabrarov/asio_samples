@@ -6,6 +6,7 @@
 //
 
 #include <boost/utility/in_place_factory.hpp>
+#include <ma/io_context_helpers.hpp>
 #include <ma/detail/functional.hpp>
 #include <ma/test/io_service_pool.hpp>
 
@@ -27,7 +28,7 @@ io_service_pool::io_service_pool(boost::asio::io_service& io_service,
 
 io_service_pool::~io_service_pool()
 {
-  boost::asio::io_service& io_service = work_->get_io_service();
+  boost::asio::io_service& io_service = ma::get_io_context(*work_);
   work_ = boost::none;
   io_service.stop();
   threads_.join_all();

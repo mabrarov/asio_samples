@@ -20,6 +20,7 @@
 #include <ma/handler_allocator.hpp>
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/windows/console_signal.hpp>
+#include <ma/io_context_helpers.hpp>
 #include <ma/detail/memory.hpp>
 #include <ma/detail/functional.hpp>
 #include <ma/detail/latch.hpp>
@@ -49,7 +50,7 @@ class io_service_thread_stop : private boost::noncopyable
 public:
   io_service_thread_stop(optional_work& io_service_work, detail::thread& thread)
     : io_service_work_(io_service_work)
-    , io_service_(io_service_work->get_io_service())
+    , io_service_(ma::get_io_context(*io_service_work))
     , thread_(thread)
   {
   }
