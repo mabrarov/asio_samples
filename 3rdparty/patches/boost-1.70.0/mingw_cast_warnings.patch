@@ -11,7 +11,7 @@
        DWORD last_error = ::GetLastError();
 
 --- boost/asio/detail/impl/win_iocp_socket_service_base.ipp	2019-03-09 22:35:22
-+++ boost/asio/detail/impl/win_iocp_socket_service_base.ipp	2019-047-30 10:32:53
++++ boost/asio/detail/impl/win_iocp_socket_service_base.ipp	2019-04-30 10:32:53
 @@ -250,7 +250,7 @@
    {
      // The version of Windows supports cancellation from any thread.
