@@ -40,6 +40,7 @@ list(APPEND cxx_public_libraries
     ma_bind_handler
     ma_intrusive_list
     ma_service_base
+    ma_helpers
     ma_coverage)
 
 add_library(${PROJECT_NAME} STATIC

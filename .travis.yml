@@ -48,8 +48,8 @@ matrix:
             - george-edison55-precise-backports
             - ubuntu-toolchain-r-test
             - boost-latest
-    # GCC 7, Boost 1.67.0, Qt 5.x.
-    - env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-7 CXX_COMPILER=g++-7 BOOST_VERSION=1.67.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
+    # GCC 7, Boost 1.70.0, Qt 5.x.
+    - env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-7 CXX_COMPILER=g++-7 BOOST_VERSION=1.70.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
       compiler: gcc
       addons: &addons-gcc7-qt5
         apt:
@@ -64,6 +64,13 @@ matrix:
             - ca-certificates
             - qtbase5-dev
           sources: *gcc-package-sources
+    - env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-7 CXX_COMPILER=g++-7 BOOST_VERSION=1.70.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
+      compiler: gcc
+      addons: *addons-gcc7-qt5
+    # GCC 7, Boost 1.67.0, Qt 5.x.
+    - env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-7 CXX_COMPILER=g++-7 BOOST_VERSION=1.67.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
+      compiler: gcc
+      addons: *addons-gcc7-qt5
     - env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-7 CXX_COMPILER=g++-7 BOOST_VERSION=1.67.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
       compiler: gcc
       addons: *addons-gcc7-qt5
@@ -520,12 +527,13 @@ install:
   - if [ "${PRE_INSTALLED_BOOST}" != 0 ]; then
       echo "Boost ${BOOST_VERSION} is pre-intalled";
     else
-      export PREBUILT_BOOST_HOME=${DEPENDENCIES_HOME}/boost-${BOOST_VERSION}-x64-gcc4.8 &&
+      boost_archive_base_name=boost-${BOOST_VERSION}-x64-gcc4.8 &&
+      export PREBUILT_BOOST_HOME=${DEPENDENCIES_HOME}/${boost_archive_base_name} &&
       if [ -d "${PREBUILT_BOOST_HOME}" ]; then
         echo "Prebuilt Boost found at ${PREBUILT_BOOST_HOME}";
       else
         echo "Prebuilt Boost not found at ${PREBUILT_BOOST_HOME}" &&
-        boost_archive_name=boost-${BOOST_VERSION}-x64-gcc4.8.tar.gz &&
+        boost_archive_name=${boost_archive_base_name}.tar.gz &&
         boost_archive_file=${DOWNLOADS_HOME}/${boost_archive_name} &&
         boost_download_url=${PREBUILT_BOOST_DOWNLOAD_URL}/${BOOST_VERSION}/${boost_archive_name} &&
         if [ -f "${boost_archive_file}" ]; then

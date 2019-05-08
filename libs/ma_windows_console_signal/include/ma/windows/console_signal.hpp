@@ -18,6 +18,7 @@
 
 #include <boost/asio.hpp>
 #include <boost/noncopyable.hpp>
+#include <ma/io_context_helpers.hpp>
 #include <ma/windows/console_signal_service.hpp>
 #include <ma/detail/utility.hpp>
 
@@ -61,7 +62,7 @@ inline console_signal::~console_signal()
 
 inline boost::asio::io_service& console_signal::get_io_service()
 {
-  return service_.get_io_service();
+  return ma::get_io_context(service_);
 }
 
 template <typename Handler>

@@ -16,6 +16,7 @@
 #include <boost/noncopyable.hpp>
 #include <ma/config.hpp>
 #include <ma/strand_wrapped_handler.hpp>
+#include <ma/io_context_helpers.hpp>
 #include <ma/detail/type_traits.hpp>
 #include <ma/detail/utility.hpp>
 
@@ -50,6 +51,11 @@ private:
   boost::asio::io_service::strand strand_;
 }; // class strand
 
+inline boost::asio::io_service& get_io_context(ma::strand& strand)
+{
+  return strand.get_io_service();
+}
+
 inline strand::strand(boost::asio::io_service& io_service)
   : strand_(io_service)
 {
@@ -57,7 +63,7 @@ inline strand::strand(boost::asio::io_service& io_service)
 
 inline boost::asio::io_service& strand::get_io_service()
 {
-  return strand_.get_io_service();
+  return ma::get_io_context(strand_);
 }
 
 template<typename Handler>

@@ -39,7 +39,8 @@ list(APPEND cxx_public_libraries
     ma_bind_handler
     ma_intrusive_list
     ma_handler_ptr
-    ma_service_base)
+    ma_service_base
+    ma_helpers)
 
 list(APPEND cxx_private_libraries
     ma_boost_exception

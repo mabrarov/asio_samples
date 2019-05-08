@@ -19,6 +19,7 @@
 #include <boost/noncopyable.hpp>
 #include <boost/throw_exception.hpp>
 #include <ma/config.hpp>
+#include <ma/io_context_helpers.hpp>
 #include <ma/detail/type_traits.hpp>
 #include <ma/bind_handler.hpp>
 #include <ma/detail/memory.hpp>
@@ -625,7 +626,7 @@ void handler_storage_service::handler_wrapper<Handler, Arg, Target>::do_post(
   // through the local copy of handler
   ptr.reset();
   // Post the copy of handler's local copy to io_service
-  boost::asio::io_service& io_service = work.get_io_service();
+  boost::asio::io_service& io_service = ma::get_io_context(work);
   io_service.post(ma::bind_handler(detail::move(handler), arg));
 }
 
@@ -755,7 +756,7 @@ void handler_storage_service::handler_wrapper<Handler, void, Target>::do_post(
   // through the local copy of handler
   ptr.reset();
   // Post the copy of handler's local copy to io_service
-  boost::asio::io_service& io_service = work.get_io_service();
+  boost::asio::io_service& io_service = ma::get_io_context(work);
   io_service.post(detail::move(handler));
 }
 
@@ -869,7 +870,7 @@ void handler_storage_service::store(implementation_type& impl, Handler handler)
   // Create wrapped handler at allocated memory and
   // move ownership of allocated memory to ptr
   detail::handler_ptr<alloc_traits> ptr(raw_ptr,
-      detail::ref(this->get_io_service()), detail::move(handler));
+      detail::ref(ma::get_io_context(*this)), detail::move(handler));
   // Copy current handler
   stored_base* old_handler = impl.handler_;
   // Move ownership of already created wrapped handler

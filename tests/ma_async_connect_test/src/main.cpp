@@ -133,14 +133,14 @@ typedef boost::logic::tribool          tribool;
 struct session_config
 {
 public:
-  session_config(const optional_duration& the_connect_pause,
+  session_config(const optional_duration& the_connect_interval,
       const tribool& the_no_delay)
-    : connect_pause(the_connect_pause)
+    : connect_interval(the_connect_interval)
     , no_delay(the_no_delay)
   {
   }
 
-  optional_duration connect_pause;
+  optional_duration connect_interval;
   tribool           no_delay;
 }; // struct session_config
 
@@ -153,7 +153,7 @@ public:
 
   session(boost::asio::io_service& io_service, const session_config& config,
       work_state& work_state)
-    : connect_pause_(config.connect_pause)
+    : connect_interval_(config.connect_interval)
     , no_delay_(config.no_delay)
     , strand_(io_service)
     , socket_(io_service)
@@ -269,7 +269,7 @@ private:
       return;
     }
 
-    if (connect_pause_)
+    if (connect_interval_)
     {
       start_deferred_continue_work(initial_endpoint_iterator);
     }
@@ -284,7 +284,7 @@ private:
   {
     BOOST_ASSERT_MSG(!timer_in_progress_, "Invalid timer state");
 
-    timer_.expires_from_now(*connect_pause_);
+    timer_.expires_from_now(*connect_interval_);
     timer_.async_wait(strand_.wrap(
         ma::make_custom_alloc_handler(timer_allocator_,
             ma::detail::bind(&this_type::handle_timer, this,
@@ -380,7 +380,7 @@ private:
     work_state_.dec_outstanding();
   }
 
-  const optional_duration connect_pause_;
+  const optional_duration connect_interval_;
   const tribool           no_delay_;
   ma::strand       strand_;
   protocol::socket socket_;
@@ -402,19 +402,19 @@ struct session_manager_config
 {
 public:
   session_manager_config(std::size_t the_session_count,
-      std::size_t the_block_size,
-      const optional_duration& the_block_pause,
+      std::size_t the_batch_size,
+      const optional_duration& the_batch_interval,
       const session_config& the_managed_session_config)
     : session_count(the_session_count)
-    , block_size(the_block_size)
-    , block_pause(the_block_pause)
+    , batch_size(the_batch_size)
+    , batch_interval(the_batch_interval)
     , managed_session_config(the_managed_session_config)
   {
   }
 
   std::size_t       session_count;
-  std::size_t       block_size;
-  optional_duration block_pause;
+  std::size_t       batch_size;
+  optional_duration batch_interval;
   session_config    managed_session_config;
 }; // struct session_manager_config
 
@@ -435,8 +435,8 @@ public:
   session_manager(boost::asio::io_service& session_manager_io_service,
       const io_service_vector& session_io_services,
       const session_manager_config& config)
-    : block_size_(config.block_size)
-    , block_pause_(config.block_pause)
+    : batch_size_(config.batch_size)
+    , batch_interval_(config.batch_interval)
     , io_service_(session_manager_io_service)
     , strand_(session_manager_io_service)
     , timer_(session_manager_io_service)
@@ -515,7 +515,7 @@ private:
     }
 
     started_sessions_end_ = start_sessions(endpoint_iterator,
-        started_sessions_end_, sessions_.end(), block_size_);
+        started_sessions_end_, sessions_.end(), batch_size_);
     if (sessions_.end() != started_sessions_end_)
     {
       schedule_session_start(endpoint_iterator);
@@ -525,11 +525,11 @@ private:
   void schedule_session_start(
       const protocol::resolver::iterator& endpoint_iterator)
   {
-    if (block_pause_)
+    if (batch_interval_)
     {
       BOOST_ASSERT_MSG(!timer_in_progress_, "Invalid timer state");
 
-      timer_.expires_from_now(*block_pause_);
+      timer_.expires_from_now(*batch_interval_);
       timer_.async_wait(strand_.wrap(
           ma::make_custom_alloc_handler(timer_allocator_,
               ma::detail::bind(&this_type::handle_scheduled_session_start, this,
@@ -561,7 +561,7 @@ private:
     }
 
     started_sessions_end_ = start_sessions(endpoint_iterator,
-        started_sessions_end_, sessions_.end(), block_size_);
+        started_sessions_end_, sessions_.end(), batch_size_);
     if (sessions_.end() != started_sessions_end_)
     {
       schedule_session_start(endpoint_iterator);
@@ -596,8 +596,8 @@ private:
     stats_.add(session->connect_count());
   }
 
-  const std::size_t        block_size_;
-  const optional_duration  block_pause_;
+  const std::size_t        batch_size_;
+  const optional_duration  batch_interval_;
   boost::asio::io_service& io_service_;
   boost::asio::io_service::strand strand_;
   deadline_timer timer_;
@@ -648,18 +648,17 @@ public:
   session_manager_config client_session_manager_config;
 }; // struct client_config
 
-const char* help_option_name           = "help";
-const char* host_option_name           = "host";
-const char* port_option_name           = "port";
-const char* demux_option_name          = "demux-per-work-thread";
-const char* threads_option_name        = "threads";
-const char* sessions_option_name       = "sessions";
-const char* block_size_option_name     = "block-size";
-const char* block_pause_option_name    = "block-pause";
-const char* connect_pause_option_name  = "connect-pause";
-const char* no_delay_option_name       = "no-delay";
-const char* time_option_name           = "time";
-const std::string default_system_value = "system default";
+const char* help_option_name             = "help";
+const char* host_option_name             = "host";
+const char* port_option_name             = "port";
+const char* demux_option_name            = "demux-per-work-thread";
+const char* threads_option_name          = "threads";
+const char* sessions_option_name         = "sessions";
+const char* batch_size_option_name       = "batch-size";
+const char* batch_interval_option_name   = "batch-interval";
+const char* connect_interval_option_name = "connect-interval";
+const char* no_delay_option_name         = "no-delay";
+const char* time_option_name             = "time";
 
 std::size_t calc_thread_count(std::size_t hardware_concurrency)
 {
@@ -714,20 +713,20 @@ boost::program_options::options_description build_cmd_options_description(
       "set the maximum number of simultaneous TCP connections"
     )
     (
-      block_size_option_name,
+      batch_size_option_name,
       boost::program_options::value<std::size_t>()->default_value(100),
       "set the number of simultaneous running connect operations"
     )
     (
-      block_pause_option_name,
+      batch_interval_option_name,
       boost::program_options::value<long>()->default_value(1000),
-      "set the pause betweeen simultaneous running" \
+      "set the interval between simultaneous running" \
           "  connect operations (milliseconds)"
     )
     (
-      connect_pause_option_name,
+      connect_interval_option_name,
       boost::program_options::value<long>()->default_value(1000),
-      "set the pause before next connect operation" \
+      "set the interval before next connect operation" \
           " for each session (milliseconds)"
     )
     (
@@ -782,12 +781,12 @@ client_config build_client_config(
       options_values[threads_option_name].as<std::size_t>();
   const std::size_t session_count =
       options_values[sessions_option_name].as<std::size_t>();
-  const std::size_t block_size =
-      options_values[block_size_option_name].as<std::size_t>();
-  const long block_pause_millis =
-      options_values[block_pause_option_name].as<long>();
-  const long connect_pause_millis =
-      options_values[connect_pause_option_name].as<long>();
+  const std::size_t batch_size =
+      options_values[batch_size_option_name].as<std::size_t>();
+  const long batch_interval_millis =
+      options_values[batch_interval_option_name].as<long>();
+  const long connect_interval_millis =
+      options_values[connect_interval_option_name].as<long>();
   tribool no_delay = boost::logic::indeterminate;
   if (options_values.count(no_delay_option_name))
   {
@@ -797,10 +796,10 @@ client_config build_client_config(
       options_values[time_option_name].as<long>();
 
   session_config client_session_config(
-      to_optional_duration(connect_pause_millis), no_delay);
+      to_optional_duration(connect_interval_millis), no_delay);
 
   session_manager_config client_session_manager_config(session_count,
-      block_size, to_optional_duration(block_pause_millis),
+      batch_size, to_optional_duration(batch_interval_millis),
       client_session_config);
 
   bool ios_per_work_thread =
@@ -876,18 +875,18 @@ void print(const client_config& config)
             << "Sessions  : "
             << client_session_manager_config.session_count
             << std::endl
-            << "Block size: "
-            << client_session_manager_config.block_size
+            << "Batch size: "
+            << client_session_manager_config.batch_size
             << std::endl
-            << "Block pause (milliseconds)  : "
+            << "Batch interval (milliseconds)  : "
             << to_milliseconds_string(
-                  client_session_manager_config.block_pause)
+                  client_session_manager_config.batch_interval)
             << std::endl
             << "Demultiplexer-per-work-thread mode: "
             << (to_string)(config.ios_per_work_thread)
             << std::endl
-            << "Connect pause (milliseconds): "
-            << to_milliseconds_string(managed_session_config.connect_pause)
+            << "Connect interval (milliseconds): "
+            << to_milliseconds_string(managed_session_config.connect_interval)
             << std::endl
             << "TCP_NODELAY   : "
             << (to_string)(managed_session_config.no_delay)

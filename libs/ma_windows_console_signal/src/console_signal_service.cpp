@@ -19,6 +19,7 @@
 #include <boost/assert.hpp>
 #include <ma/config.hpp>
 #include <ma/shared_ptr_factory.hpp>
+#include <ma/io_context_helpers.hpp>
 #include <ma/windows/console_signal_service.hpp>
 #include <ma/detail/memory.hpp>
 #include <ma/detail/sp_singleton.hpp>
@@ -168,7 +169,7 @@ BOOL WINAPI console_signal_service_base::system_service::windows_ctrl_handler(
     }
   default:
     return FALSE;
-  };
+  }
 }
 
 bool console_signal_service_base::system_service::deliver_signal(int signal)
@@ -401,7 +402,7 @@ bool console_signal_service::deliver_signal(int signal)
     }
     if (!handlers->list.empty())
     {
-      get_io_service().post(handler_list_binder(handlers, signal));
+      ma::get_io_context(*this).post(handler_list_binder(handlers, signal));
     }
     else
     {
