@@ -30,7 +30,9 @@ if(boost_has_chrono)
         ma_boost_link)
     # Boost.Chrono requires rt library on *nix
     if(UNIX AND boost_has_chrono)
-        list(APPEND cxx_libraries "rt")
+        if (NOT APPLE)
+            list(APPEND cxx_libraries "rt")
+        endif ()
     endif()
 endif()
 
