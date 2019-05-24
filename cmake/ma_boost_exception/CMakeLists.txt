@@ -12,6 +12,7 @@ set(cxx_include_directories )
 set(cxx_libraries )
 set(boost_components )
 set(boost_has_exception FALSE)
+set(boost_exception_header_only TRUE)
 
 # Select used Boost libraries
 find_package(Boost REQUIRED)
@@ -21,15 +22,25 @@ if(NOT(${Boost_VERSION} LESS 104700))
 endif()
 
 if(boost_has_exception)
-    # Attach used Boost libraries
-    # Boost.Exception is a static library always
-    set(Boost_USE_STATIC_LIBS ON)
-    find_package(Boost REQUIRED COMPONENTS ${boost_components})
-    list(APPEND cxx_include_directories
-        ${Boost_INCLUDE_DIRS})
-    list(APPEND cxx_libraries
-        ${Boost_LIBRARIES}
-        ma_boost_link)
+    # Boost.Exception is static library on Windows sometimes
+    # https://www.boost.org/doc/libs/1_54_0/more/getting_started/windows.html#header-only-libraries
+    if(WIN32 AND NOT(${Boost_VERSION} LESS 105400))
+        set(Boost_USE_STATIC_LIBS ON)
+        find_package(Boost COMPONENTS ${boost_components})
+        if(Boost_FOUND)
+            set(boost_exception_header_only FALSE)
+            list(APPEND cxx_include_directories
+                ${Boost_INCLUDE_DIRS})
+            list(APPEND cxx_libraries
+                ${Boost_LIBRARIES}
+                ma_boost_link)
+        endif()
+    endif()
+    if(boost_exception_header_only)
+        list(APPEND cxx_libraries
+            ma_boost_header_only
+            ma_boost_link)
+    endif()
 endif()
 
 add_library(${PROJECT_NAME} INTERFACE)
