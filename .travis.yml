@@ -662,7 +662,7 @@ script:
     fi
   - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then
       if [ "${QT_MAJOR_VERSION}" -eq "5"]; then
-        export CMAKE_PREFIX_PATH="/usr/local/opt/qt5/lib/cmake;${CMAKE_PREFIX_PATH}"
+        export CMAKE_PREFIX_PATH="/usr/local/opt/qt5/lib/cmake;${CMAKE_PREFIX_PATH}";
       fi
     fi
   - cd ${BUILD_HOME}
