@@ -677,7 +677,6 @@ script:
       if [ "${TRAVIS_OS_NAME}" == "osx" ]; then
         if [ "${QT_MAJOR_VERSION}" == 5 ]; then
           export Qt5_DIR="/usr/local/opt/qt5/lib/cmake" &&
-          ls -lh ${Qt5_DIR} &&
           export CMAKE_GENERATOR_COMMAND="${CMAKE_GENERATOR_COMMAND} -D Qt5Core_DIR=${Qt5_DIR}/Qt5Core -D Qt5Gui_DIR=${Qt5_DIR}/Qt5Gui -D Qt5Widgets_DIR=${Qt5_DIR}/Qt5Widgets";
         fi
       fi &&
