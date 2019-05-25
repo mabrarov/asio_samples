@@ -660,6 +660,11 @@ script:
   - if [[ "${COVERAGE_BUILD_CANDIDATE}" != 0 ]]; then
       export COVERAGE_BUILD=1;
     fi
+  - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then
+      if [ "${QT_MAJOR_VERSION}" -eq "5"]; then
+        export CMAKE_PREFIX_PATH="/usr/local/opt/qt5/lib/cmake;${CMAKE_PREFIX_PATH}"
+      fi
+    fi
   - cd ${BUILD_HOME}
   - if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then
       if [ "${PRE_INSTALLED_BOOST}" != 0 ]; then
