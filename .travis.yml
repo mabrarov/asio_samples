@@ -663,6 +663,7 @@ script:
     fi
   - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then
       if [ "${QT_MAJOR_VERSION}" -eq "5"]; then
+        ls -lh /usr/local/opt/qt5 &&
         export Qt5_DIR="/usr/local/opt/qt5/lib/cmake" &&
         export Qt5Core_DIR="/usr/local/opt/qt5/lib/cmake/Qt5Core" &&
         export Qt5Gui_DIR="/usr/local/opt/qt5/lib/cmake/Qt5Gui" &&
