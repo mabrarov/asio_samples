@@ -662,7 +662,10 @@ script:
     fi
   - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then
       if [ "${QT_MAJOR_VERSION}" -eq "5"]; then
-        export CMAKE_PREFIX_PATH="/usr/local/opt/qt5/lib/cmake;${CMAKE_PREFIX_PATH}";
+        export Qt5_DIR="/usr/local/opt/qt5/lib/cmake" &&
+        export Qt5Core_DIR="/usr/local/opt/qt5/lib/cmake/Qt5Core" &&
+        export Qt5Gui_DIR="/usr/local/opt/qt5/lib/cmake/Qt5Gui" &&
+        export Qt5Widgets_DIR="/usr/local/opt/qt5/lib/cmake/Qt5Widgets";
       fi
     fi
   - cd ${BUILD_HOME}
