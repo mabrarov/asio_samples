@@ -56,7 +56,7 @@ matrix:
       addons: &brew-boost169-qt5
         homebrew:
           packages:
-            - gnu-sed --with-default-names
+            - gnu-sed
             - cmake
             - boost@1.69
             - qt5
@@ -608,6 +608,9 @@ matrix:
       addons: *addons-clang38-boost155-qt4
 
 install:
+  - if [ "${TRAVIS_OS_NAME}" == "osx" ]; then
+      export PATH="/usr/local/opt/gnu-sed/libexec/gnubin:${PATH}"
+    fi
   - export PRE_INSTALLED_BOOST=0
   - if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
       if [ "${BOOST_VERSION}" == "1.55.0" ] || [ "${BOOST_VERSION}" == "1.68.0" ]; then
