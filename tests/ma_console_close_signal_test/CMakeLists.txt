@@ -37,6 +37,7 @@ list(APPEND cxx_private_libraries
     ma_custom_alloc_handler
     ma_context_alloc_handler
     ma_console_close_signal
+    ma_helpers
     ma_coverage)
 
 add_executable(${PROJECT_NAME}

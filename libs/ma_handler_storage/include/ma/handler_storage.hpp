@@ -15,6 +15,7 @@
 #include <boost/asio.hpp>
 #include <boost/noncopyable.hpp>
 #include <ma/config.hpp>
+#include <ma/io_context_helpers.hpp>
 #include <ma/detail/type_traits.hpp>
 #include <ma/handler_storage_service.hpp>
 #include <ma/detail/utility.hpp>
@@ -245,7 +246,7 @@ handler_storage<Arg, Target>::handler_storage(this_type&& other)
 template <typename Arg, typename Target>
 boost::asio::io_service& handler_storage<Arg, Target>::get_io_service()
 {
-  return service_.get_io_service();
+  return ma::get_io_context(service_);
 }
 
 template <typename Arg, typename Target>
@@ -323,7 +324,7 @@ handler_storage<void, Target>::handler_storage(this_type&& other)
 template <typename Target>
 boost::asio::io_service& handler_storage<void, Target>::get_io_service()
 {
-  return service_.get_io_service();
+  return ma::get_io_context(service_);
 }
 
 template <typename Target>

@@ -19,6 +19,7 @@
 #include <ma/handler_storage.hpp>
 #include <ma/bind_handler.hpp>
 #include <ma/context_alloc_handler.hpp>
+#include <ma/io_context_helpers.hpp>
 #include <ma/detail/type_traits.hpp>
 #include <ma/detail/memory.hpp>
 #include <ma/detail/functional.hpp>
@@ -144,7 +145,7 @@ void async_interface::start_do_something(Handler& handler)
 {
   if (optional_do_something_result result = start_do_something())
   {
-    strand().get_io_service().post(
+    ma::get_io_context(strand()).post(
         ma::bind_handler(detail::move(handler), *result));
   }
   else

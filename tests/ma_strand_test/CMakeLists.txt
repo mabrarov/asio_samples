@@ -33,6 +33,7 @@ list(APPEND cxx_private_libraries
     ma_boost_asio
     ma_gtest
     ma_compat
+    ma_helpers
     ma_coverage)
 
 add_executable(${PROJECT_NAME}

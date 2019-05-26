@@ -1,0 +1,23 @@
+--- boost/asio/detail/impl/win_iocp_handle_service.ipp	2019-03-09 22:35:22
++++ boost/asio/detail/impl/win_iocp_handle_service.ipp	2019-04-30 10:17:39
+@@ -243,7 +243,7 @@
+   {
+     // The version of Windows supports cancellation from any thread.
+     typedef BOOL (WINAPI* cancel_io_ex_t)(HANDLE, LPOVERLAPPED);
+-    cancel_io_ex_t cancel_io_ex = (cancel_io_ex_t)cancel_io_ex_ptr;
++    cancel_io_ex_t cancel_io_ex = reinterpret_cast<cancel_io_ex_t>(reinterpret_cast<void*>(cancel_io_ex_ptr));
+     if (!cancel_io_ex(impl.handle_, 0))
+     {
+       DWORD last_error = ::GetLastError();
+
+--- boost/asio/detail/impl/win_iocp_socket_service_base.ipp	2019-03-09 22:35:22
++++ boost/asio/detail/impl/win_iocp_socket_service_base.ipp	2019-04-30 10:32:53
+@@ -250,7 +250,7 @@
+   {
+     // The version of Windows supports cancellation from any thread.
+     typedef BOOL (WINAPI* cancel_io_ex_t)(HANDLE, LPOVERLAPPED);
+-    cancel_io_ex_t cancel_io_ex = (cancel_io_ex_t)cancel_io_ex_ptr;
++    cancel_io_ex_t cancel_io_ex = reinterpret_cast<cancel_io_ex_t>(reinterpret_cast<void*>(cancel_io_ex_ptr));
+     socket_type sock = impl.socket_;
+     HANDLE sock_as_handle = reinterpret_cast<HANDLE>(sock);
+     if (!cancel_io_ex(sock_as_handle, 0))
