@@ -32,7 +32,8 @@ list(APPEND cxx_sources
 list(APPEND cxx_public_libraries
     ma_boost_header_only
     ma_boost_asio
-    ma_thread_group)
+    ma_thread_group
+    ma_helpers)
 
 list(APPEND cxx_private_libraries
     ma_compat

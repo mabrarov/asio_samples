@@ -33,6 +33,7 @@
 #include <ma/handler_alloc_helpers.hpp>
 #include <ma/handler_invoke_helpers.hpp>
 #include <ma/handler_cont_helpers.hpp>
+#include <ma/executor_helpers.hpp>
 #endif // defined(MA_ASYNC_CONNECT_USES_WINDOWS_CONNECT_EX)
 
 namespace ma {
@@ -190,7 +191,7 @@ void async_connect(Socket& socket,
     socket.open(peer_endpoint.protocol(), error);
     if (error)
     {
-      socket.get_io_service().post(
+      ma::post(ma::get_executor(socket),
           ma::bind_handler(detail::forward<Handler>(handler), error));
       return;
     }
@@ -221,13 +222,13 @@ void async_connect(Socket& socket,
   if (boost::system::error_code error = detail::bind_to_any(socket, 
       peer_endpoint.protocol()))
   {
-    socket.get_io_service().post(
+    ma::post(ma::get_executor(socket),
         ma::bind_handler(detail::forward<Handler>(handler), error));
     return;
   }
 
   // Construct an OVERLAPPED-derived object to contain the handler.
-  boost::asio::windows::overlapped_ptr overlapped(socket.get_io_service(),
+  boost::asio::windows::overlapped_ptr overlapped(ma::get_executor(socket),
       detail::make_connect_ex_handler(detail::forward<Handler>(handler)));
 
   // Initiate the ConnectEx operation.

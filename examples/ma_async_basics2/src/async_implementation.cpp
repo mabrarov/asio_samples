@@ -11,6 +11,7 @@
 #include <ma/shared_ptr_factory.hpp>
 #include <ma/custom_alloc_handler.hpp>
 #include <ma/strand_wrapped_handler.hpp>
+#include <ma/io_context_helpers.hpp>
 #include <ma/detail/memory.hpp>
 #include <ma/detail/functional.hpp>
 #include <ma/detail/utility.hpp>
@@ -290,7 +291,7 @@ void async_implementation::start_do_something(
   if (boost::optional<boost::system::error_code> result =
       do_start_do_something())
   {
-    strand_.get_io_service().post(
+    ma::get_io_context(strand_).post(
         do_something_handler_binder(handler, *result));
   }
   else
