@@ -660,8 +660,8 @@ build_script:
       } else {
         throw "Unsupported version of Qt: $env:QT_VERSION."
       }
-      $generate_cmd = "$generate_cmd -G ""$env:CMAKE_GENERATOR"" $env:APPVEYOR_BUILD_FOLDER"
-      Write-Host "Command for CMake project generator: $generate_cmd"
+      $generate_cmd = "$generate_cmd -G ""$env:CMAKE_GENERATOR"" ""$env:APPVEYOR_BUILD_FOLDER"""
+      Write-Host "CMake project generation command: $generate_cmd"
       Invoke-Expression "$generate_cmd"
       if ($LastExitCode -ne 0) {
         throw "Generation of project failed with exit code $LastExitCode."
@@ -670,7 +670,7 @@ build_script:
       if ($env:MSVC_VERSION -ne "9.0") {
         $build_cmd = "$build_cmd -- /maxcpucount /verbosity:normal /logger:""C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"""
       }
-      Write-Host "Command for building of generated project: $build_cmd"
+      Write-Host "CMake project build command: $build_cmd"
       if ($env:COVERITY_SCAN_BUILD -eq "True") {
         Invoke-Expression "cov-build.exe --dir cov-int $build_cmd"
       } else {
