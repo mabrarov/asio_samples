@@ -635,40 +635,34 @@ build_script:
   - ps: |
       New-Item "$env:APPVEYOR_BUILD_FOLDER\build" -type directory | out-null
       Set-Location -Path "$env:APPVEYOR_BUILD_FOLDER\build"
+      $generate_cmd = "cmake"
       switch ($env:RUNTIME_LINKAGE) {
         "static" {
-          if (!($env:QT_VERSION)) {
-            cmake -D CMAKE_USER_MAKE_RULES_OVERRIDE=$env:APPVEYOR_BUILD_FOLDER\cmake\static_c_runtime_overrides.cmake -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX=$env:APPVEYOR_BUILD_FOLDER\cmake\static_cxx_runtime_overrides.cmake -D BOOST_INCLUDEDIR=$env:BOOST_INCLUDE_FOLDER -D BOOST_LIBRARYDIR=$env:BOOST_LIBRARY_FOLDER -D Boost_USE_STATIC_LIBS=$env:BOOST_USE_STATIC_LIBS -D Boost_NO_SYSTEM_PATHS=ON -D ma_qt=OFF -G "$env:CMAKE_GENERATOR" $env:APPVEYOR_BUILD_FOLDER
-          } elseif ($env:QT_VERSION -match "5\.*") {
-            switch ($env:QT_LINKAGE) {
-              "static" {
-                if (!($env:ICU_ROOT)) {
-                  throw "ICU location is unspecified. Static Qt 5.x requires static ICU"
-                }
-                cmake -D CMAKE_USER_MAKE_RULES_OVERRIDE=$env:APPVEYOR_BUILD_FOLDER\cmake\static_c_runtime_overrides.cmake -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX=$env:APPVEYOR_BUILD_FOLDER\cmake\static_cxx_runtime_overrides.cmake -D ICU_ROOT=$env:ICU_ROOT -D BOOST_INCLUDEDIR=$env:BOOST_INCLUDE_FOLDER -D BOOST_LIBRARYDIR=$env:BOOST_LIBRARY_FOLDER -D Boost_USE_STATIC_LIBS=$env:BOOST_USE_STATIC_LIBS -D Boost_NO_SYSTEM_PATHS=ON -D Qt5Core_DIR=$env:QT_HOME\lib\cmake\Qt5Core -D Qt5Gui_DIR=$env:QT_HOME\lib\cmake\Qt5Gui -D Qt5Widgets_DIR=$env:QT_HOME\lib\cmake\Qt5Widgets -D ma_force_qt_major_version=5 -G "$env:CMAKE_GENERATOR" $env:APPVEYOR_BUILD_FOLDER
-              }
-              default {
-                cmake -D CMAKE_USER_MAKE_RULES_OVERRIDE=$env:APPVEYOR_BUILD_FOLDER\cmake\static_c_runtime_overrides.cmake -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX=$env:APPVEYOR_BUILD_FOLDER\cmake\static_cxx_runtime_overrides.cmake -D BOOST_INCLUDEDIR=$env:BOOST_INCLUDE_FOLDER -D BOOST_LIBRARYDIR=$env:BOOST_LIBRARY_FOLDER -D Boost_USE_STATIC_LIBS=$env:BOOST_USE_STATIC_LIBS -D Boost_NO_SYSTEM_PATHS=ON -D Qt5Core_DIR=$env:QT_HOME\lib\cmake\Qt5Core -D Qt5Gui_DIR=$env:QT_HOME\lib\cmake\Qt5Gui -D Qt5Widgets_DIR=$env:QT_HOME\lib\cmake\Qt5Widgets -D ma_force_qt_major_version=5 -G "$env:CMAKE_GENERATOR" $env:APPVEYOR_BUILD_FOLDER
-              }
+          $generate_cmd = "$generate_cmd -D CMAKE_USER_MAKE_RULES_OVERRIDE=""$env:APPVEYOR_BUILD_FOLDER\cmake\static_c_runtime_overrides.cmake"" -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX=""$env:APPVEYOR_BUILD_FOLDER\cmake\static_cxx_runtime_overrides.cmake"""
+          if (($env:QT_VERSION -match "5\.*") -and ($env:QT_LINKAGE -eq "static")) {
+            if (!($env:ICU_ROOT)) {
+              throw "ICU location is unspecified. Static Qt 5.x requires static ICU"
             }
-          } elseif ($env:QT_VERSION -match "4\.*") {
-            cmake -D CMAKE_USER_MAKE_RULES_OVERRIDE=$env:APPVEYOR_BUILD_FOLDER\cmake\static_c_runtime_overrides.cmake -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX=$env:APPVEYOR_BUILD_FOLDER\cmake\static_cxx_runtime_overrides.cmake -D BOOST_INCLUDEDIR=$env:BOOST_INCLUDE_FOLDER -D BOOST_LIBRARYDIR=$env:BOOST_LIBRARY_FOLDER -D Boost_USE_STATIC_LIBS=$env:BOOST_USE_STATIC_LIBS -D Boost_NO_SYSTEM_PATHS=ON -D QT_QMAKE_EXECUTABLE=$env:QT_QMAKE_EXECUTABLE -D ma_force_qt_major_version=4 -G "$env:CMAKE_GENERATOR" $env:APPVEYOR_BUILD_FOLDER
-          } else {
-            throw "Unsupported version of Qt: $env:QT_VERSION."
+            $generate_cmd = "$generate_cmd -D ICU_ROOT=""$env:ICU_ROOT"""
           }
         }
         default {
-          if (!($env:QT_VERSION)) {
-            cmake -D BOOST_INCLUDEDIR=$env:BOOST_INCLUDE_FOLDER -D BOOST_LIBRARYDIR=$env:BOOST_LIBRARY_FOLDER -D Boost_USE_STATIC_LIBS=$env:BOOST_USE_STATIC_LIBS -D Boost_NO_SYSTEM_PATHS=ON -D gtest_force_shared_crt=ON -D ma_qt=OFF -G "$env:CMAKE_GENERATOR" $env:APPVEYOR_BUILD_FOLDER
-          } elseif ($env:QT_VERSION -match "5\.*") {
-            cmake -D BOOST_INCLUDEDIR=$env:BOOST_INCLUDE_FOLDER -D BOOST_LIBRARYDIR=$env:BOOST_LIBRARY_FOLDER -D Boost_USE_STATIC_LIBS=$env:BOOST_USE_STATIC_LIBS -D Boost_NO_SYSTEM_PATHS=ON -D Qt5Core_DIR=$env:QT_HOME\lib\cmake\Qt5Core -D Qt5Gui_DIR=$env:QT_HOME\lib\cmake\Qt5Gui -D Qt5Widgets_DIR=$env:QT_HOME\lib\cmake\Qt5Widgets -D gtest_force_shared_crt=ON -D ma_force_qt_major_version=5 -G "$env:CMAKE_GENERATOR" $env:APPVEYOR_BUILD_FOLDER
-          } elseif ($env:QT_VERSION -match "4\.*") {
-            cmake -D BOOST_INCLUDEDIR=$env:BOOST_INCLUDE_FOLDER -D BOOST_LIBRARYDIR=$env:BOOST_LIBRARY_FOLDER -D Boost_USE_STATIC_LIBS=$env:BOOST_USE_STATIC_LIBS -D Boost_NO_SYSTEM_PATHS=ON -D QT_QMAKE_EXECUTABLE=$env:QT_QMAKE_EXECUTABLE -D gtest_force_shared_crt=ON -D ma_force_qt_major_version=4 -G "$env:CMAKE_GENERATOR" $env:APPVEYOR_BUILD_FOLDER
-          } else {
-            throw "Unsupported version of Qt: $env:QT_VERSION."
-          }
+          $generate_cmd = "$generate_cmd -D gtest_force_shared_crt=ON"
         }
       }
+      $generate_cmd = "$generate_cmd -D BOOST_INCLUDEDIR=""$env:BOOST_INCLUDE_FOLDER"" -D BOOST_LIBRARYDIR=""$env:BOOST_LIBRARY_FOLDER"" -D Boost_USE_STATIC_LIBS=$env:BOOST_USE_STATIC_LIBS -D Boost_NO_SYSTEM_PATHS=ON"
+      if (!($env:QT_VERSION)) {
+         $generate_cmd = "$generate_cmd -D ma_qt=OFF"
+      } elseif ($env:QT_VERSION -match "5\.*") {
+        $generate_cmd = "$generate_cmd -D Qt5Core_DIR=""$env:QT_HOME\lib\cmake\Qt5Core"" -D Qt5Gui_DIR=""$env:QT_HOME\lib\cmake\Qt5Gui"" -D Qt5Widgets_DIR=""$env:QT_HOME\lib\cmake\Qt5Widgets"" ma_force_qt_major_version=5"
+      } elseif ($env:QT_VERSION -match "4\.*") {
+        $generate_cmd = "$generate_cmd -D QT_QMAKE_EXECUTABLE=""$env:QT_QMAKE_EXECUTABLE"" -D ma_force_qt_major_version=4"
+      } else {
+        throw "Unsupported version of Qt: $env:QT_VERSION."
+      }
+      $generate_cmd = "$generate_cmd -G ""$env:CMAKE_GENERATOR"" $env:APPVEYOR_BUILD_FOLDER"
+      Write-Host "Command for CMake project generator: $generate_cmd"
+      Invoke-Expression "$generate_cmd"
       if ($LastExitCode -ne 0) {
         throw "Generation of project failed with exit code $LastExitCode."
       }
@@ -676,6 +670,7 @@ build_script:
       if ($env:MSVC_VERSION -ne "9.0") {
         $build_cmd = "$build_cmd -- /maxcpucount /verbosity:normal /logger:""C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"""
       }
+      Write-Host "Command for building of generated project: $build_cmd"
       if ($env:COVERITY_SCAN_BUILD -eq "True") {
         Invoke-Expression "cov-build.exe --dir cov-int $build_cmd"
       } else {
