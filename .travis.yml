@@ -681,6 +681,7 @@ script:
         fi
       fi &&
       export CMAKE_GENERATOR_COMMAND="${CMAKE_GENERATOR_COMMAND} -D ma_coverage_build=${COVERAGE_BUILD} ${TRAVIS_BUILD_DIR}" &&
+      echo "CMake project generation command ${CMAKE_GENERATOR_COMMAND}" &&
       eval ${CMAKE_GENERATOR_COMMAND} &&
       cmake --build ${BUILD_HOME} --config ${BUILD_TYPE};
     fi
