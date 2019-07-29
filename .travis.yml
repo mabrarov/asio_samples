@@ -720,6 +720,7 @@ install:
           exit 1;
         fi
       fi
+    fi
   - export PRE_INSTALLED_BOOST=0
   - if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
       if [[ "${TRAVIS_DIST}" == "trusty" ]]; then
