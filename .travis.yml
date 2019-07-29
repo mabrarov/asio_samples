@@ -630,8 +630,14 @@ install:
     fi
   - export PRE_INSTALLED_BOOST=0
   - if [ "${TRAVIS_OS_NAME}" == "linux" ]; then
-      if [ "${BOOST_VERSION}" == "1.55.0" ] || [ "${BOOST_VERSION}" == "1.68.0" ]; then
-        export PRE_INSTALLED_BOOST=1;
+      if [ "${TRAVIS_DIST}" == "trusty" ]; then
+        if [ "${BOOST_VERSION}" == "1.55.0" ] || [ "${BOOST_VERSION}" == "1.68.0" ]; then
+          export PRE_INSTALLED_BOOST=1;
+        fi
+      elif [ "${TRAVIS_DIST}" == "bionic" ]; then
+        if [ "${BOOST_VERSION}" == "1.65.1" ]; then
+          export PRE_INSTALLED_BOOST=1;
+        fi
       fi
     elif [ "${TRAVIS_OS_NAME}" == "osx" ]; then
       if [ "${BOOST_VERSION}" == "1.55.0" ] || [ "${BOOST_VERSION}" == "1.57.0" ] || [ "${BOOST_VERSION}" == "1.59.0" ] || [ "${BOOST_VERSION}" == "1.60.0" ] || [ "${BOOST_VERSION}" == "1.69.0" ]; then
