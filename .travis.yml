@@ -79,7 +79,7 @@ matrix:
           packages:
             - cmake
             - cmake-data
-            - clang-8.0
+            - clang-8
             - libboost1.68-dev
             - qtbase5-dev
           sources:
@@ -103,7 +103,7 @@ matrix:
           packages:
             - cmake
             - cmake-data
-            - clang-7.0
+            - clang-7
             - libboost1.68-dev
             - qtbase5-dev
           sources:
