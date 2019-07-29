@@ -41,6 +41,7 @@ environment:
   matrix:
     - MSVC_VERSION: 14.0
       RUNTIME_LINKAGE: shared
+      CMAKE_VERSION: 3.15.1
       BOOST_VERSION: 1.70.0
       BOOST_LINKAGE: static
       QT_VERSION: 5.10.1
@@ -49,6 +50,7 @@ environment:
       COVERAGE_BUILD_CANDIDATE: 1
     - MSVC_VERSION: 14.0
       RUNTIME_LINKAGE: shared
+      CMAKE_VERSION: 3.15.1
       BOOST_VERSION: 1.69.0
       BOOST_LINKAGE: static
       QT_VERSION: 5.10.1
@@ -56,6 +58,7 @@ environment:
       COVERAGE_BUILD_CANDIDATE: 1
     - MSVC_VERSION: 12.0
       RUNTIME_LINKAGE: shared
+      CMAKE_VERSION: 3.15.1
       BOOST_VERSION: 1.67.0
       BOOST_LINKAGE: static
       QT_VERSION: 5.6.3
@@ -63,11 +66,13 @@ environment:
       COVERAGE_BUILD_CANDIDATE: 1
     - MSVC_VERSION: 11.0
       RUNTIME_LINKAGE: static
+      CMAKE_VERSION: 3.15.1
       BOOST_VERSION: 1.67.0
       BOOST_LINKAGE: static
       COVERAGE_BUILD_CANDIDATE: 1
     - MSVC_VERSION: 10.0
       RUNTIME_LINKAGE: shared
+      CMAKE_VERSION: 3.15.1
       BOOST_VERSION: 1.67.0
       BOOST_LINKAGE: static
       QT_VERSION: 4.8.7
@@ -75,6 +80,7 @@ environment:
       COVERAGE_BUILD_CANDIDATE: 1
     - MSVC_VERSION: 9.0
       RUNTIME_LINKAGE: static
+      CMAKE_VERSION: 3.15.1
       BOOST_VERSION: 1.67.0
       BOOST_LINKAGE: static
       COVERAGE_BUILD_CANDIDATE: 1
@@ -92,6 +98,7 @@ environment:
       COVERAGE_BUILD_CANDIDATE: 1
     - MSVC_VERSION: 14.0
       RUNTIME_LINKAGE: static
+      CMAKE_VERSION: 3.15.1
       BOOST_VERSION: 1.70.0
       BOOST_LINKAGE: static
       QT_VERSION: 5.7
@@ -100,6 +107,7 @@ environment:
       ICU_LINKAGE: static
     - MSVC_VERSION: 14.0
       RUNTIME_LINKAGE: static
+      CMAKE_VERSION: 3.15.1
       BOOST_VERSION: 1.69.0
       BOOST_LINKAGE: static
       QT_VERSION: 5.7
@@ -108,12 +116,14 @@ environment:
       ICU_LINKAGE: static
     - MSVC_VERSION: 14.0
       RUNTIME_LINKAGE: shared
+      CMAKE_VERSION: 3.15.1
       BOOST_VERSION: 1.69.0
       BOOST_LINKAGE: static
       QT_VERSION: 5.10.1
       QT_LINKAGE: shared
     - MSVC_VERSION: 14.0
       RUNTIME_LINKAGE: shared
+      CMAKE_VERSION: 3.15.1
       BOOST_VERSION: 1.69.0
       BOOST_LINKAGE: shared
       QT_VERSION: 5.10.1
@@ -184,6 +194,48 @@ install:
         }
         default {
           throw "Unsupported platform: ${env:PLATFORM}"
+        }
+      }
+      $env:DETECTED_CMAKE_VERSION = (& cmake --version | Where-Object {$_ -match 'cmake version ([0-9]+\.[0-9]+\.[0-9]+)'}) -replace "cmake version ([0-9]+\.[0-9]+\.[0-9]+)", '$1'
+      Write-Host "Detected CMake of ${env:DETECTED_CMAKE_VERSION} version"
+      if (Test-Path env:CMAKE_VERSION) {
+        Write-Host "CMake of ${env:CMAKE_VERSION} version is requested"
+        if (${env:CMAKE_VERSION} -ne ${env:DETECTED_CMAKE_VERSION}) {
+          cmake_archive_base_name="cmake-${env:CMAKE_VERSION}-win64-x64"
+          cmake_home="${env:DEPENDENCIES_FOLDER}\${cmake_archive_base_name}"
+          if (Test-Path -Path "${cmake_home}") {
+            Write-Host "CMake ${env:CMAKE_VERSION} found at ${cmake_home}"
+          } else {
+            Write-Host "CMake ${env:CMAKE_VERSION} not found at ${cmake_home}"
+            cmake_archive_name="${cmake_archive_base_name}.zip"
+            cmake_archive_file="${env:DOWNLOADS_FOLDER}\${cmake_archive_name}"
+            cmake_download_url="https://github.com/Kitware/CMake/releases/download/v${env:CMAKE_VERSION}/${cmake_archive_name}"
+            if (Test-Path -Path "${cmake_archive_file}") {
+              Write-Host "CMake ${env:CMAKE_VERSION} archive found at ${cmake_archive_file}"
+            } else {
+              Write-Host "CMake ${env:CMAKE_VERSION} archive not found at ${cmake_archive_file}"
+              Write-Host "Going to download CMake ${env:CMAKE_VERSION} archive from ${cmake_download_url} to ${cmake_archive_file}"
+              if (!(Test-Path -Path "${env:DOWNLOADS_FOLDER}")) {
+                New-Item "${env:DOWNLOADS_FOLDER}" -type directory | out-null
+              }
+              curl.exe --connect-timeout "${env:CURL_CONNECT_TIMEOUT}" --max-time "${env:CURL_MAX_TIME}" --retry "${env:CURL_RETRY}" --retry-delay "${env:CURL_RETRY_DELAY}" --show-error --silent --location --output "${cmake_archive_file}" "${cmake_download_url}"
+              if (${LastExitCode} -ne 0) {
+                throw "Downloading of CMake ${env:CMAKE_VERSION} failed with exit code ${LastExitCode}."
+              }
+              Write-Host "Download of CMake ${env:CMAKE_VERSION} archive from ${cmake_download_url} to ${cmake_archive_file} completed successfully"
+            }
+            if (!(Test-Path -Path "${env:DEPENDENCIES_FOLDER}")) {
+              New-Item "${env:DEPENDENCIES_FOLDER}" -type directory | out-null
+            }
+            Write-Host "Going to unpack CMake ${env:CMAKE_VERSION} archive from ${cmake_archive_file} to ${env:DEPENDENCIES_FOLDER}"
+            7z.exe x "${cmake_archive_file}" -o"${env:DEPENDENCIES_FOLDER}" -aoa -y | out-null
+            if (${LastExitCode} -ne 0) {
+              throw "File extraction failed with exit code ${LastExitCode}."
+            }
+            Write-Host "Unpacking of CMake ${env:CMAKE_VERSION} archive from ${cmake_archive_file} to ${env:DEPENDENCIES_FOLDER} completed successfully"
+          }
+          Write-Host "CMake ${env:CMAKE_VERSION} is located at ${cmake_home}"
+          $env:PATH = "${cmake_home}\bin;${env:PATH}"
         }
       }
       $pre_installed_icu = $false
