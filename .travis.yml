@@ -69,6 +69,23 @@ matrix:
       env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-7 CXX_COMPILER=g++-7 BOOST_VERSION=1.70.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
       compiler: gcc
       addons: *addons-gcc7-qt5
+    # Clang 7.0, Boost 1.65.1, Qt 5.x
+    - os: linux
+      dist: bionic
+      env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-7.0 CXX_COMPILER=clang++-7.0 BOOST_VERSION=1.65.1 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
+      compiler: clang
+      addons: &addons-clang70-boost165-qt5
+        apt:
+          packages:
+            - cmake
+            - cmake-data
+            - libboost-all-dev
+            - qtbase5-dev
+    - os: linux
+      dist: bionic
+      env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-5.0 CXX_COMPILER=clang++-5.0 BOOST_VERSION=1.65.1 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
+      compiler: clang
+      addons: *addons-clang70-boost165-qt5
     # Clang 5.0, Boost 1.68.0, Qt 5.x
     - os: linux
       dist: trusty
