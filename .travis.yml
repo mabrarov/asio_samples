@@ -89,7 +89,7 @@ matrix:
             - boost-latest
             - sourceline: 'ppa:mhier/libboost-latest'
     - os: linux
-      dist: bionic
+      dist: trusty
       env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-8.0 CXX_COMPILER=clang++-8.0 BOOST_VERSION=1.68.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
       compiler: clang
       addons: *addons-clang80-boost168-qt5
@@ -113,7 +113,7 @@ matrix:
             - boost-latest
             - sourceline: 'ppa:mhier/libboost-latest'
     - os: linux
-      dist: bionic
+      dist: trusty
       env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-7.0 CXX_COMPILER=clang++-7.0 BOOST_VERSION=1.68.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
       compiler: clang
       addons: *addons-clang70-boost168-qt5
@@ -137,7 +137,7 @@ matrix:
             - boost-latest
             - sourceline: 'ppa:mhier/libboost-latest'
     - os: linux
-      dist: bionic
+      dist: trusty
       env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-6.0 CXX_COMPILER=clang++-6.0 BOOST_VERSION=1.68.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
       compiler: clang
       addons: *addons-clang60-boost168-qt5
