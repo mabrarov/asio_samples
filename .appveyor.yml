@@ -124,16 +124,16 @@ install:
       $env:OS_VERSION = (Get-WmiObject win32_operatingsystem).version
       $env:WINDOWS_SDK_ENV_BATCH_FILE = ""
       $env:WINDOWS_SDK_ENV_PARAMETERS = ""
-      $env:MSVS_HOME = "${env:ProgramFiles(x86)}\Microsoft Visual Studio $env:MSVC_VERSION"
-      $env:MSVC_VARS_BATCH_FILE = "$env:MSVS_HOME\VC\vcvarsall.bat"
+      $env:MSVS_HOME = "${env:ProgramFiles(x86)}\Microsoft Visual Studio ${env:MSVC_VERSION}"
+      $env:MSVC_VARS_BATCH_FILE = "${env:MSVS_HOME}\VC\vcvarsall.bat"
       $env:MSVS_PATCH_FOLDER = ""
       $env:MSVS_PATCH_BATCH_FILE = ""
-      switch ($env:PLATFORM) {
+      switch (${env:PLATFORM}) {
         "Win32" {
           $env:MSVC_VARS_PLATFORM = "x86"
         }
         "x64" {
-          switch ($env:MSVC_VERSION) {
+          switch (${env:MSVC_VERSION}) {
             "14.0" {
               $env:MSVC_VARS_PLATFORM = "amd64"
             }
@@ -145,54 +145,54 @@ install:
             }
             "10.0" {
               $env:MSVC_VARS_BATCH_FILE = ""
-              $env:WINDOWS_SDK_ENV_BATCH_FILE = "$env:ProgramFiles\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd"
-              $env:WINDOWS_SDK_ENV_PARAMETERS = "/x64 /$env:CONFIGURATION"
+              $env:WINDOWS_SDK_ENV_BATCH_FILE = "${env:ProgramFiles}\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd"
+              $env:WINDOWS_SDK_ENV_PARAMETERS = "/x64 /${env:CONFIGURATION}"
             }
             "9.0" {
-              Write-Host "Selected MSVS version ($env:MSVC_VERSION) and platform ($env:PLATFORM) require patching"
-              $env:MSVS_PATCH_FOLDER = "$env:DEPENDENCIES_FOLDER\vs2008_patch"
-              if (!(Test-Path -Path "$env:MSVS_PATCH_FOLDER")) {
-                $msvs_patch_download_folder = "$env:DOWNLOADS_FOLDER\condaci"
-                $msvs_patch_download_file = "$msvs_patch_download_folder\vs2008_patch.zip"
-                if (!(Test-Path -Path "$msvs_patch_download_file")) {
+              Write-Host "Selected MSVS version (${env:MSVC_VERSION}) and platform (${env:PLATFORM}) require patching"
+              $env:MSVS_PATCH_FOLDER = "${env:DEPENDENCIES_FOLDER}\vs2008_patch"
+              if (!(Test-Path -Path "${env:MSVS_PATCH_FOLDER}")) {
+                $msvs_patch_download_folder = "${env:DOWNLOADS_FOLDER}\condaci"
+                $msvs_patch_download_file = "${msvs_patch_download_folder}\vs2008_patch.zip"
+                if (!(Test-Path -Path "${msvs_patch_download_file}")) {
                   $msvs2008_patch_url = "https://github.com/menpo/condaci.git"
                   $msvs2008_patch_revision = "98d76b2089d494433ac2e3abd920123088a95a6d"
-                  $msvs_patch_download_folder_nix = "$msvs_patch_download_folder" -replace "\\", "/"
-                  Write-Host "Going to download MSVS patch from: $msvs2008_patch_url to: $msvs_patch_download_folder_nix"
-                  git clone --quiet "$msvs2008_patch_url" "$msvs_patch_download_folder_nix"
-                  git -C "$msvs_patch_download_folder_nix" checkout --quiet "$msvs2008_patch_revision"
-                  if ($LastExitCode -ne 0) {
-                    throw "Downloading of MSVS patch failed with exit code $LastExitCode."
+                  $msvs_patch_download_folder_nix = "${msvs_patch_download_folder}" -replace "\\", "/"
+                  Write-Host "Going to download MSVS patch from: ${msvs2008_patch_url} to: ${msvs_patch_download_folder_nix}"
+                  git clone --quiet "${msvs2008_patch_url}" "${msvs_patch_download_folder_nix}"
+                  git -C "${msvs_patch_download_folder_nix}" checkout --quiet "${msvs2008_patch_revision}"
+                  if (${LastExitCode} -ne 0) {
+                    throw "Downloading of MSVS patch failed with exit code ${LastExitCode}."
                   }
-                  Write-Host "Downloaded MSVS patch: $msvs_patch_download_file"
+                  Write-Host "Downloaded MSVS patch: ${msvs_patch_download_file}"
                 }
-                Write-Host "Extracting MSVS patch from: $msvs_patch_download_file to: $env:MSVS_PATCH_FOLDER"
-                New-Item "$env:MSVS_PATCH_FOLDER" -type directory | out-null
-                7z.exe x "$msvs_patch_download_file" -o"$env:MSVS_PATCH_FOLDER" -aoa -y | out-null
-                if ($LastExitCode -ne 0) {
-                  throw "File extraction failed with exit code $LastExitCode."
+                Write-Host "Extracting MSVS patch from: ${msvs_patch_download_file} to: ${env:MSVS_PATCH_FOLDER}"
+                New-Item "${env:MSVS_PATCH_FOLDER}" -type directory | out-null
+                7z.exe x "${msvs_patch_download_file}" -o"${env:MSVS_PATCH_FOLDER}" -aoa -y | out-null
+                if (${LastExitCode} -ne 0) {
+                  throw "File extraction failed with exit code ${LastExitCode}."
                 }
-                Write-Host "Extracted: $env:MSVS_PATCH_FOLDER"
+                Write-Host "Extracted: ${env:MSVS_PATCH_FOLDER}"
               }
-              $env:MSVS_PATCH_BATCH_FILE = "$env:MSVS_PATCH_FOLDER\setup_x64.bat"
+              $env:MSVS_PATCH_BATCH_FILE = "${env:MSVS_PATCH_FOLDER}\setup_x64.bat"
               $env:MSVC_VARS_PLATFORM = "x86_amd64"
             }
             default {
-              throw "Unsupported MSVS version: $env:MSVC_VERSION"
+              throw "Unsupported MSVS version: ${env:MSVC_VERSION}"
             }
           }
         }
         default {
-          throw "Unsupported platform: $env:PLATFORM"
+          throw "Unsupported platform: ${env:PLATFORM}"
         }
       }
       $pre_installed_icu = $false
-      if ($env:ICU_VERSION) {
-        if ($pre_installed_icu) {
+      if (${env:ICU_VERSION}) {
+        if (${pre_installed_icu}) {
           throw "Pre-installed ICU is missing"
         } else {
           $icu_platform_suffix = ""
-          switch ($env:PLATFORM) {
+          switch (${env:PLATFORM}) {
             "Win32" {
               $icu_platform_suffix = "-x86"
             }
@@ -200,12 +200,12 @@ install:
               $icu_platform_suffix = "-x64"
             }
             default {
-              throw "Unsupported platform: $env:PLATFORM"
+              throw "Unsupported platform: ${env:PLATFORM}"
             }
           }
-          $icu_version_suffix = "-$env:ICU_VERSION"
+          $icu_version_suffix = "-${env:ICU_VERSION}"
           $icu_toolchain_suffix = ""
-          switch ($env:MSVC_VERSION) {
+          switch (${env:MSVC_VERSION}) {
             "14.0" {
               $icu_toolchain_suffix = "-vs2015"
             }
@@ -213,11 +213,11 @@ install:
               $icu_toolchain_suffix = "-vs2013"
             }
             default {
-              throw "Unsupported MSVS version: $env:MSVC_VERSION"
+              throw "Unsupported MSVS version: ${env:MSVC_VERSION}"
             }
           }
           $icu_linkage_suffix = ""
-          switch ($env:ICU_LINKAGE) {
+          switch (${env:ICU_LINKAGE}) {
             "static" {
               $icu_linkage_suffix = "-static"
             }
@@ -225,61 +225,61 @@ install:
               $icu_linkage_suffix = "-shared"
             }
           }
-          $icu_install_folder = "$env:DEPENDENCIES_FOLDER\icu4c$icu_version_suffix$icu_platform_suffix$icu_toolchain_suffix$icu_linkage_suffix"
-          if (!(Test-Path -Path "$icu_install_folder")) {
-            Write-Host "Built ICU libraries are absent for the selected toolchain (msvc-$env:MSVC_VERSION) and ICU version ($env:ICU_VERSION)"
-            $icu_archive_name = "icu4c$icu_version_suffix$icu_platform_suffix$icu_toolchain_suffix$icu_linkage_suffix.7z"
-            $icu_archive_file = "$env:DOWNLOADS_FOLDER\$icu_archive_name"
-            if (!(Test-Path -Path "$icu_archive_file")) {
-              $icu_download_url = "https://dl.bintray.com/mabrarov/generic/icu/$env:ICU_VERSION/$icu_archive_name"
-              if (!(Test-Path -Path "$env:DOWNLOADS_FOLDER")) {
-                New-Item "$env:DOWNLOADS_FOLDER" -type directory | out-null
+          $icu_install_folder = "${env:DEPENDENCIES_FOLDER}\icu4c${icu_version_suffix}${icu_platform_suffix}${icu_toolchain_suffix}${icu_linkage_suffix}"
+          if (!(Test-Path -Path "${icu_install_folder}")) {
+            Write-Host "Built ICU libraries are absent for the selected toolchain (msvc-${env:MSVC_VERSION}) and ICU version (${env:ICU_VERSION})"
+            $icu_archive_name = "icu4c${icu_version_suffix}${icu_platform_suffix}${icu_toolchain_suffix}${icu_linkage_suffix}.7z"
+            $icu_archive_file = "${env:DOWNLOADS_FOLDER}\${icu_archive_name}"
+            if (!(Test-Path -Path "${icu_archive_file}")) {
+              $icu_download_url = "https://dl.bintray.com/mabrarov/generic/icu/${env:ICU_VERSION}/${icu_archive_name}"
+              if (!(Test-Path -Path "${env:DOWNLOADS_FOLDER}")) {
+                New-Item "${env:DOWNLOADS_FOLDER}" -type directory | out-null
               }
-              Write-Host "Going to download pre-built ICU libraries from: $icu_download_url to: $icu_archive_file"
-              curl.exe --connect-timeout $env:CURL_CONNECT_TIMEOUT --max-time $env:CURL_MAX_TIME --retry $env:CURL_RETRY --retry-delay $env:CURL_RETRY_DELAY --show-error --silent --location --output "$icu_archive_file" "$icu_download_url"
-              if ($LastExitCode -ne 0) {
-                throw "Downloading of pre-built ICU libraries failed with exit code $LastExitCode."
+              Write-Host "Going to download pre-built ICU libraries from: ${icu_download_url} to: ${icu_archive_file}"
+              curl.exe --connect-timeout "${env:CURL_CONNECT_TIMEOUT}" --max-time "${env:CURL_MAX_TIME}" --retry "${env:CURL_RETRY}" --retry-delay "${env:CURL_RETRY_DELAY}" --show-error --silent --location --output "${icu_archive_file}" "${icu_download_url}"
+              if (${LastExitCode} -ne 0) {
+                throw "Downloading of pre-built ICU libraries failed with exit code ${LastExitCode}."
               }
-              Write-Host "Downloaded pre-built ICU libraries: $icu_archive_file"
+              Write-Host "Downloaded pre-built ICU libraries: ${icu_archive_file}"
             }
-            Write-Host "Extracting pre-built ICU libraries from: $icu_archive_file to: $env:DEPENDENCIES_FOLDER"
-            if (!(Test-Path -Path "$env:DEPENDENCIES_FOLDER")) {
-              New-Item "$env:DEPENDENCIES_FOLDER" -type directory | out-null
+            Write-Host "Extracting pre-built ICU libraries from: ${icu_archive_file} to: ${env:DEPENDENCIES_FOLDER}"
+            if (!(Test-Path -Path "${env:DEPENDENCIES_FOLDER}")) {
+              New-Item "${env:DEPENDENCIES_FOLDER}" -type directory | out-null
             }
-            7z.exe x "$icu_archive_file" -o"$env:DEPENDENCIES_FOLDER" -aoa -y | out-null
-            if ($LastExitCode -ne 0) {
-              throw "File extraction failed with exit code $LastExitCode."
+            7z.exe x "${icu_archive_file}" -o"${env:DEPENDENCIES_FOLDER}" -aoa -y | out-null
+            if (${LastExitCode} -ne 0) {
+              throw "File extraction failed with exit code ${LastExitCode}."
             }
-            Write-Host "Extracted: $icu_install_folder"
+            Write-Host "Extracted: ${icu_install_folder}"
           }
-          $env:ICU_ROOT = "$icu_install_folder"
-          $env:ICU_LIBRARY_FOLDER = "$icu_install_folder\lib"
+          $env:ICU_ROOT = "${icu_install_folder}"
+          $env:ICU_LIBRARY_FOLDER = "${icu_install_folder}\lib"
         }
-        if ($env:RUNTIME_LINKAGE -eq "static" -and -not ($env:ICU_LINKAGE -eq "static")) {
-          throw "Incompatible type of linkage of ICU: $env:ICU_LINKAGE for the specified type of linkage of C/C++ runtime: $env:RUNTIME_LINKAGE"
+        if (${env:RUNTIME_LINKAGE} -eq "static" -and -not (${env:ICU_LINKAGE} -eq "static")) {
+          throw "Incompatible type of linkage of ICU: ${env:ICU_LINKAGE} for the specified type of linkage of C/C++ runtime: ${env:RUNTIME_LINKAGE}"
         }
       }
-      if ($env:BOOST_VERSION) {
+      if (${env:BOOST_VERSION}) {
         $pre_installed_boost = $false
-        switch ($env:MSVC_VERSION) {
+        switch (${env:MSVC_VERSION}) {
           "15.0" {
-            $pre_installed_boost = ($env:BOOST_VERSION -eq "1.69.0") -or ($env:BOOST_VERSION -eq "1.67.0") -or ($env:BOOST_VERSION -eq "1.66.0") -or ($env:BOOST_VERSION -eq "1.65.1") -or ($env:BOOST_VERSION -eq "1.63.0")
+            $pre_installed_boost = (${env:BOOST_VERSION} -eq "1.69.0") -or (${env:BOOST_VERSION} -eq "1.67.0") -or (${env:BOOST_VERSION} -eq "1.66.0") -or (${env:BOOST_VERSION} -eq "1.65.1") -or (${env:BOOST_VERSION} -eq "1.63.0")
           }
           "14.0" {
-            $pre_installed_boost = ($env:BOOST_VERSION -eq "1.69.0") -or ($env:BOOST_VERSION -eq "1.67.0") -or ($env:BOOST_VERSION -eq "1.66.0") -or ($env:BOOST_VERSION -eq "1.65.1") -or ($env:BOOST_VERSION -eq "1.63.0")
+            $pre_installed_boost = (${env:BOOST_VERSION} -eq "1.69.0") -or (${env:BOOST_VERSION} -eq "1.67.0") -or (${env:BOOST_VERSION} -eq "1.66.0") -or (${env:BOOST_VERSION} -eq "1.65.1") -or (${env:BOOST_VERSION} -eq "1.63.0")
           }
           "12.0" {
-            $pre_installed_boost = ($env:BOOST_VERSION -eq "1.58.0")
+            $pre_installed_boost = (${env:BOOST_VERSION} -eq "1.58.0")
           }
         }
-        if ($pre_installed_boost) {
+        if (${pre_installed_boost}) {
           $boost_home = "C:\Libraries\boost"
-          if (!($env:BOOST_VERSION -eq "1.56.0")) {
-            $boost_home_version_suffix = "_$env:BOOST_VERSION" -replace "\.", '_'
-            $boost_home = "$boost_home$boost_home_version_suffix"
+          if (!(${env:BOOST_VERSION} -eq "1.56.0")) {
+            $boost_home_version_suffix = "_${env:BOOST_VERSION}" -replace "\.", '_'
+            $boost_home = "${boost_home}${boost_home_version_suffix}"
           }
           $boost_library_folder_platform_suffix = ""
-          switch ($env:PLATFORM) {
+          switch (${env:PLATFORM}) {
             "Win32" {
               $boost_library_folder_platform_suffix = "lib32"
             }
@@ -287,15 +287,15 @@ install:
               $boost_library_folder_platform_suffix = "lib64"
             }
             default {
-              throw "Unsupported platform: $env:PLATFORM"
+              throw "Unsupported platform: ${env:PLATFORM}"
             }
           }
-          $boost_library_folder_toolchain_suffix = "-msvc-$env:MSVC_VERSION"
-          $env:BOOST_INCLUDE_FOLDER = "$boost_home"
-          $env:BOOST_LIBRARY_FOLDER = "$boost_home\$boost_library_folder_platform_suffix$boost_library_folder_toolchain_suffix"
+          $boost_library_folder_toolchain_suffix = "-msvc-${env:MSVC_VERSION}"
+          $env:BOOST_INCLUDE_FOLDER = "${boost_home}"
+          $env:BOOST_LIBRARY_FOLDER = "${boost_home}\${boost_library_folder_platform_suffix}${boost_library_folder_toolchain_suffix}"
         } else {
           $boost_platform_suffix = ""
-          switch ($env:PLATFORM) {
+          switch (${env:PLATFORM}) {
             "Win32" {
               $boost_platform_suffix = "-x86"
             }
@@ -303,12 +303,12 @@ install:
               $boost_platform_suffix = "-x64"
             }
             default {
-              throw "Unsupported platform: $env:PLATFORM"
+              throw "Unsupported platform: ${env:PLATFORM}"
             }
           }
-          $boost_version_suffix = "-$env:BOOST_VERSION"
+          $boost_version_suffix = "-${env:BOOST_VERSION}"
           $boost_toolchain_suffix = ""
-          switch ($env:MSVC_VERSION) {
+          switch (${env:MSVC_VERSION}) {
             "14.0" {
               $boost_toolchain_suffix = "-vs2015"
             }
@@ -325,44 +325,44 @@ install:
               $boost_toolchain_suffix = "-vs2008"
             }
             default {
-              throw "Unsupported MSVS version: $env:MSVC_VERSION"
+              throw "Unsupported MSVS version: ${env:MSVC_VERSION}"
             }
           }
-          $boost_install_folder = "$env:DEPENDENCIES_FOLDER\boost$boost_version_suffix$boost_platform_suffix$boost_toolchain_suffix"
-          if (!(Test-Path -Path "$boost_install_folder")) {
-            Write-Host "Built Boost libraries are absent for the selected toolchain (msvc-$env:MSVC_VERSION) and Boost version ($env:BOOST_VERSION)"
-            $boost_archive_name = "boost$boost_version_suffix$boost_platform_suffix$boost_toolchain_suffix.7z"
-            $boost_archive_file = "$env:DOWNLOADS_FOLDER\$boost_archive_name"
-            if (!(Test-Path -Path "$boost_archive_file")) {
-              $boost_download_url = "https://dl.bintray.com/mabrarov/generic/boost/$env:BOOST_VERSION/$boost_archive_name"
-              if (!(Test-Path -Path "$env:DOWNLOADS_FOLDER")) {
-                New-Item "$env:DOWNLOADS_FOLDER" -type directory | out-null
+          $boost_install_folder = "${env:DEPENDENCIES_FOLDER}\boost${boost_version_suffix}${boost_platform_suffix}${boost_toolchain_suffix}"
+          if (!(Test-Path -Path "${boost_install_folder}")) {
+            Write-Host "Built Boost libraries are absent for the selected toolchain (msvc-${env:MSVC_VERSION}) and Boost version (${env:BOOST_VERSION})"
+            $boost_archive_name = "boost${boost_version_suffix}${boost_platform_suffix}${boost_toolchain_suffix}.7z"
+            $boost_archive_file = "${env:DOWNLOADS_FOLDER}\${boost_archive_name}"
+            if (!(Test-Path -Path "${boost_archive_file}")) {
+              $boost_download_url = "https://dl.bintray.com/mabrarov/generic/boost/${env:BOOST_VERSION}/${boost_archive_name}"
+              if (!(Test-Path -Path "${env:DOWNLOADS_FOLDER}")) {
+                New-Item "${env:DOWNLOADS_FOLDER}" -type directory | out-null
               }
-              Write-Host "Going to download pre-built Boost libraries from: $boost_download_url to: $boost_archive_file"
-              curl.exe --connect-timeout $env:CURL_CONNECT_TIMEOUT --max-time $env:CURL_MAX_TIME --retry $env:CURL_RETRY --retry-delay $env:CURL_RETRY_DELAY --show-error --silent --location --output "$boost_archive_file" "$boost_download_url"
-              if ($LastExitCode -ne 0) {
-                throw "Downloading of pre-built Boost libraries failed with exit code $LastExitCode."
+              Write-Host "Going to download pre-built Boost libraries from: ${boost_download_url} to: ${boost_archive_file}"
+              curl.exe --connect-timeout "${env:CURL_CONNECT_TIMEOUT}" --max-time "${env:CURL_MAX_TIME}" --retry "${env:CURL_RETRY}" --retry-delay "${env:CURL_RETRY_DELAY}" --show-error --silent --location --output "${boost_archive_file}" "${boost_download_url}"
+              if (${LastExitCode} -ne 0) {
+                throw "Downloading of pre-built Boost libraries failed with exit code ${LastExitCode}."
               }
-              Write-Host "Downloaded pre-built Boost libraries: $boost_archive_file"
+              Write-Host "Downloaded pre-built Boost libraries: ${boost_archive_file}"
             }
-            Write-Host "Extracting pre-built Boost libraries from: $boost_archive_file to: $env:DEPENDENCIES_FOLDER"
-            if (!(Test-Path -Path "$env:DEPENDENCIES_FOLDER")) {
-              New-Item "$env:DEPENDENCIES_FOLDER" -type directory | out-null
+            Write-Host "Extracting pre-built Boost libraries from: ${boost_archive_file} to: ${env:DEPENDENCIES_FOLDER}"
+            if (!(Test-Path -Path "${env:DEPENDENCIES_FOLDER}")) {
+              New-Item "${env:DEPENDENCIES_FOLDER}" -type directory | out-null
             }
-            7z.exe x "$boost_archive_file" -o"$env:DEPENDENCIES_FOLDER" -aoa -y | out-null
-            if ($LastExitCode -ne 0) {
-              throw "File extraction failed with exit code $LastExitCode."
+            7z.exe x "${boost_archive_file}" -o"${env:DEPENDENCIES_FOLDER}" -aoa -y | out-null
+            if (${LastExitCode} -ne 0) {
+              throw "File extraction failed with exit code ${LastExitCode}."
             }
-            Write-Host "Extracted: $boost_install_folder"
+            Write-Host "Extracted: ${boost_install_folder}"
           }
-          $boost_include_folder_version_suffix = "-$env:BOOST_VERSION" -replace "([\d]+)\.([\d]+)(\.[\d]+)*", '$1_$2'
-          $env:BOOST_INCLUDE_FOLDER = "$boost_install_folder\include\boost$boost_include_folder_version_suffix"
-          $env:BOOST_LIBRARY_FOLDER = "$boost_install_folder\lib"
+          $boost_include_folder_version_suffix = "-${env:BOOST_VERSION}" -replace "([\d]+)\.([\d]+)(\.[\d]+)*", '$1_$2'
+          $env:BOOST_INCLUDE_FOLDER = "${boost_install_folder}\include\boost${boost_include_folder_version_suffix}"
+          $env:BOOST_LIBRARY_FOLDER = "${boost_install_folder}\lib"
         }
-        if ($env:RUNTIME_LINKAGE -eq "static" -and -not ($env:BOOST_LINKAGE -eq "static")) {
-          throw "Incompatible type of linkage of Boost: $env:BOOST_LINKAGE for the specified type of linkage of C/C++ runtime: $env:RUNTIME_LINKAGE"
+        if (${env:RUNTIME_LINKAGE} -eq "static" -and -not (${env:BOOST_LINKAGE} -eq "static")) {
+          throw "Incompatible type of linkage of Boost: ${env:BOOST_LINKAGE} for the specified type of linkage of C/C++ runtime: ${env:RUNTIME_LINKAGE}"
         }
-        switch ($env:BOOST_LINKAGE) {
+        switch (${env:BOOST_LINKAGE}) {
           "static" {
             $env:BOOST_USE_STATIC_LIBS = "ON"
           }
@@ -371,21 +371,21 @@ install:
           }
         }
       }
-      if ($env:QT_VERSION) {
+      if (${env:QT_VERSION}) {
         $pre_installed_qt = $false
-        if (!($env:QT_LINKAGE -eq "static")) {
-          switch ($env:MSVC_VERSION) {
+        if (!(${env:QT_LINKAGE} -eq "static")) {
+          switch (${env:MSVC_VERSION}) {
             "14.0" {
-              $pre_installed_qt = ($env:QT_VERSION -eq "5.10.1") -or ($env:QT_VERSION -eq "5.9.5") -or ($env:QT_VERSION -eq "5.6.3")
+              $pre_installed_qt = (${env:QT_VERSION} -eq "5.10.1") -or (${env:QT_VERSION} -eq "5.9.5") -or (${env:QT_VERSION} -eq "5.6.3")
             }
             "12.0" {
-              $pre_installed_qt = (($env:QT_VERSION -eq "5.10.1") -and ($env:PLATFORM -eq "x64")) -or (($env:QT_VERSION -eq "5.9.5") -and ($env:PLATFORM -eq "x64")) -or ($env:QT_VERSION -eq "5.6.3")
+              $pre_installed_qt = ((${env:QT_VERSION} -eq "5.10.1") -and (${env:PLATFORM} -eq "x64")) -or ((${env:QT_VERSION} -eq "5.9.5") -and (${env:PLATFORM} -eq "x64")) -or (${env:QT_VERSION} -eq "5.6.3")
             }
           }
         }
-        if ($pre_installed_qt) {
+        if (${pre_installed_qt}) {
           $qt_folder_toolchain_suffix = ""
-          switch ($env:MSVC_VERSION) {
+          switch (${env:MSVC_VERSION}) {
             "14.0" {
               $qt_folder_toolchain_suffix = "msvc2015"
             }
@@ -402,11 +402,11 @@ install:
               $qt_folder_toolchain_suffix = "msvc2008"
             }
             default {
-              throw "Unsupported MSVS version: $env:MSVC_VERSION"
+              throw "Unsupported MSVS version: ${env:MSVC_VERSION}"
             }
           }
           $qt_folder_platform_suffix = ""
-          switch ($env:PLATFORM) {
+          switch (${env:PLATFORM}) {
             "Win32" {
               $qt_folder_platform_suffix = ""
             }
@@ -414,11 +414,11 @@ install:
               $qt_folder_platform_suffix = "_64"
             }
             default {
-              throw "Unsupported platform: $env:PLATFORM"
+              throw "Unsupported platform: ${env:PLATFORM}"
             }
           }
           $qt_opengl_suffix = ""
-          switch ($env:QT_VERSION) {
+          switch (${env:QT_VERSION}) {
             "5.4" {
               $qt_opengl_suffix = "_opengl"
             }
@@ -426,12 +426,12 @@ install:
               $qt_opengl_suffix = "_opengl"
             }
           }
-          $env:QT_HOME = "C:\Qt\$env:QT_VERSION\$qt_folder_toolchain_suffix$qt_folder_platform_suffix$qt_opengl_suffix"
-          $env:QT_BIN_FOLDER = "$env:QT_HOME\bin"
-          $env:QT_QMAKE_EXECUTABLE = "$env:QT_BIN_FOLDER\qmake.exe"
+          $env:QT_HOME = "C:\Qt\${env:QT_VERSION}\${qt_folder_toolchain_suffix}${qt_folder_platform_suffix}${qt_opengl_suffix}"
+          $env:QT_BIN_FOLDER = "${env:QT_HOME}\bin"
+          $env:QT_QMAKE_EXECUTABLE = "${env:QT_BIN_FOLDER}\qmake.exe"
         } else {
           $qt_platform_suffix = ""
-          switch ($env:PLATFORM) {
+          switch (${env:PLATFORM}) {
             "Win32" {
               $qt_platform_suffix = "-x86"
             }
@@ -439,17 +439,17 @@ install:
               $qt_platform_suffix = "-x64"
             }
             default {
-              throw "Unsupported platform: $env:PLATFORM"
+              throw "Unsupported platform: ${env:PLATFORM}"
             }
           }
           $qt_version_suffix = ""
-          if (!($env:QT_VERSION -match "[\d]+\.[\d]+\.[\d]+")) {
-            $qt_version_suffix = "-$env:QT_VERSION.0"
+          if (!(${env:QT_VERSION} -match "[\d]+\.[\d]+\.[\d]+")) {
+            $qt_version_suffix = "-${env:QT_VERSION}.0"
           } else {
-            $qt_version_suffix = "-$env:QT_VERSION"
+            $qt_version_suffix = "-${env:QT_VERSION}"
           }
           $qt_toolchain_suffix = ""
-          switch ($env:MSVC_VERSION) {
+          switch (${env:MSVC_VERSION}) {
             "14.0" {
               $qt_toolchain_suffix = "-vs2015"
             }
@@ -466,11 +466,11 @@ install:
               $qt_toolchain_suffix = "-vs2008"
             }
             default {
-              throw "Unsupported MSVS version: $env:MSVC_VERSION"
+              throw "Unsupported MSVS version: ${env:MSVC_VERSION}"
             }
           }
           $qt_linkage_suffix = ""
-          switch ($env:QT_LINKAGE) {
+          switch (${env:QT_LINKAGE}) {
             "static" {
               $qt_linkage_suffix = "-static"
             }
@@ -478,45 +478,45 @@ install:
               $qt_linkage_suffix = "-shared"
             }
           }
-          $qt_install_folder = "$env:DEPENDENCIES_FOLDER\qt$qt_version_suffix$qt_platform_suffix$qt_toolchain_suffix$qt_linkage_suffix"
-          if (!(Test-Path -Path "$qt_install_folder")) {
-            Write-Host "Built Qt libraries are absent for the selected toolchain (msvc-$env:MSVC_VERSION) and Qt version ($env:QT_VERSION) and Qt linkage ($env:QT_LINKAGE)"
-            $qt_archive_name = "qt$qt_version_suffix$qt_platform_suffix$qt_toolchain_suffix$qt_linkage_suffix.7z"
-            $qt_archive_file = "$env:DOWNLOADS_FOLDER\$qt_archive_name"
-            if (!(Test-Path -Path "$qt_archive_file")) {
+          $qt_install_folder = "${env:DEPENDENCIES_FOLDER}\qt${qt_version_suffix}${qt_platform_suffix}${qt_toolchain_suffix}${qt_linkage_suffix}"
+          if (!(Test-Path -Path "${qt_install_folder}")) {
+            Write-Host "Built Qt libraries are absent for the selected toolchain (msvc-${env:MSVC_VERSION}) and Qt version (${env:QT_VERSION}) and Qt linkage (${env:QT_LINKAGE})"
+            $qt_archive_name = "qt${qt_version_suffix}${qt_platform_suffix}${qt_toolchain_suffix}${qt_linkage_suffix}.7z"
+            $qt_archive_file = "${env:DOWNLOADS_FOLDER}\${qt_archive_name}"
+            if (!(Test-Path -Path "${qt_archive_file}")) {
               $qt_version_url_suffix = ""
-              if (!($env:QT_VERSION -match "[\d]+\.[\d]+\.[\d]+")) {
-                $qt_version_url_suffix = "/$env:QT_VERSION.0"
+              if (!(${env:QT_VERSION} -match "[\d]+\.[\d]+\.[\d]+")) {
+                $qt_version_url_suffix = "/${env:QT_VERSION}.0"
               } else {
-                $qt_version_url_suffix = "/$env:QT_VERSION"
+                $qt_version_url_suffix = "/${env:QT_VERSION}"
               }
-              $qt_download_url = "https://dl.bintray.com/mabrarov/generic/qt$qt_version_url_suffix/$qt_archive_name"
-              if (!(Test-Path -Path "$env:DOWNLOADS_FOLDER")) {
-                New-Item "$env:DOWNLOADS_FOLDER" -type directory | out-null
+              $qt_download_url = "https://dl.bintray.com/mabrarov/generic/qt${qt_version_url_suffix}/${qt_archive_name}"
+              if (!(Test-Path -Path "${env:DOWNLOADS_FOLDER}")) {
+                New-Item "${env:DOWNLOADS_FOLDER}" -type directory | out-null
               }
-              Write-Host "Going to download pre-built Qt libraries from: $qt_download_url to: $qt_archive_file"
-              curl.exe --connect-timeout $env:CURL_CONNECT_TIMEOUT --max-time $env:CURL_MAX_TIME --retry $env:CURL_RETRY --retry-delay $env:CURL_RETRY_DELAY --show-error --silent --location --output "$qt_archive_file" "$qt_download_url"
-              if ($LastExitCode -ne 0) {
-                throw "Downloading of pre-built Qt libraries failed with exit code $LastExitCode."
+              Write-Host "Going to download pre-built Qt libraries from: ${qt_download_url} to: ${qt_archive_file}"
+              curl.exe --connect-timeout "${env:CURL_CONNECT_TIMEOUT}" --max-time "${env:CURL_MAX_TIME}" --retry "${env:CURL_RETRY}" --retry-delay "${env:CURL_RETRY_DELAY}" --show-error --silent --location --output "${qt_archive_file}" "${qt_download_url}"
+              if (${LastExitCode} -ne 0) {
+                throw "Downloading of pre-built Qt libraries failed with exit code ${LastExitCode}."
               }
-              Write-Host "Downloaded pre-built Qt libraries: $qt_archive_file"
+              Write-Host "Downloaded pre-built Qt libraries: ${qt_archive_file}"
             }
-            Write-Host "Extracting pre-built Qt libraries from: $qt_archive_file to: $env:DEPENDENCIES_FOLDER"
-            if (!(Test-Path -Path "$env:DEPENDENCIES_FOLDER")) {
-              New-Item "$env:DEPENDENCIES_FOLDER" -type directory | out-null
+            Write-Host "Extracting pre-built Qt libraries from: ${qt_archive_file} to: ${env:DEPENDENCIES_FOLDER}"
+            if (!(Test-Path -Path "${env:DEPENDENCIES_FOLDER}")) {
+              New-Item "${env:DEPENDENCIES_FOLDER}" -type directory | out-null
             }
-            7z.exe x "$qt_archive_file" -o"$env:DEPENDENCIES_FOLDER" -aoa -y | out-null
-            if ($LastExitCode -ne 0) {
-              throw "File extraction failed with exit code $LastExitCode."
+            7z.exe x "${qt_archive_file}" -o"${env:DEPENDENCIES_FOLDER}" -aoa -y | out-null
+            if (${LastExitCode} -ne 0) {
+              throw "File extraction failed with exit code ${LastExitCode}."
             }
-            Write-Host "Extracted: $qt_install_folder"
+            Write-Host "Extracted: ${qt_install_folder}"
           }
-          $env:QT_HOME = "$qt_install_folder"
-          $env:QT_BIN_FOLDER = "$qt_install_folder\bin"
-          $env:QT_QMAKE_EXECUTABLE = "$env:QT_BIN_FOLDER\qmake.exe"
+          $env:QT_HOME = "${qt_install_folder}"
+          $env:QT_BIN_FOLDER = "${qt_install_folder}\bin"
+          $env:QT_QMAKE_EXECUTABLE = "${env:QT_BIN_FOLDER}\qmake.exe"
         }
       }
-      switch ($env:CONFIGURATION) {
+      switch (${env:CONFIGURATION}) {
         "Debug" {
           $env:CMAKE_BUILD_CONFIG = "DEBUG"
         }
@@ -524,32 +524,32 @@ install:
           $env:CMAKE_BUILD_CONFIG = "RELEASE"
         }
         default {
-          throw "Unsupported build configuration: $env:CONFIGURATION"
+          throw "Unsupported build configuration: ${env:CONFIGURATION}"
         }
       }
-      $cmake_generator_msvc_version_suffx = " $env:MSVC_VERSION" -replace "([\d]+)\.([\d]+)", '$1'
-      switch ($env:MSVC_VERSION) {
+      $cmake_generator_msvc_version_suffx = " ${env:MSVC_VERSION}" -replace "([\d]+)\.([\d]+)", '$1'
+      switch (${env:MSVC_VERSION}) {
         "14.0" {
-          $cmake_generator_msvc_version_suffx = "$cmake_generator_msvc_version_suffx 2015"
+          $cmake_generator_msvc_version_suffx = "${cmake_generator_msvc_version_suffx} 2015"
         }
         "12.0" {
-          $cmake_generator_msvc_version_suffx = "$cmake_generator_msvc_version_suffx 2013"
+          $cmake_generator_msvc_version_suffx = "${cmake_generator_msvc_version_suffx} 2013"
         }
         "11.0" {
-          $cmake_generator_msvc_version_suffx = "$cmake_generator_msvc_version_suffx 2012"
+          $cmake_generator_msvc_version_suffx = "${cmake_generator_msvc_version_suffx} 2012"
         }
         "10.0" {
-          $cmake_generator_msvc_version_suffx = "$cmake_generator_msvc_version_suffx 2010"
+          $cmake_generator_msvc_version_suffx = "${cmake_generator_msvc_version_suffx} 2010"
         }
         "9.0" {
-          $cmake_generator_msvc_version_suffx = "$cmake_generator_msvc_version_suffx 2008"
+          $cmake_generator_msvc_version_suffx = "${cmake_generator_msvc_version_suffx} 2008"
         }
         default {
-          throw "Unsupported MSVS version: $env:MSVC_VERSION"
+          throw "Unsupported MSVS version: ${env:MSVC_VERSION}"
         }
       }
       $cmake_generator_platform_suffix = ""
-      switch ($env:PLATFORM) {
+      switch (${env:PLATFORM}) {
         "Win32" {
           $cmake_generator_platform_suffix = ""
         }
@@ -557,62 +557,62 @@ install:
           $cmake_generator_platform_suffix = " Win64"
         }
         default {
-          throw "Unsupported platform: $env:PLATFORM"
+          throw "Unsupported platform: ${env:PLATFORM}"
         }
       }
-      $env:CMAKE_GENERATOR = "Visual Studio$cmake_generator_msvc_version_suffx$cmake_generator_platform_suffix"
-      $env:COVERITY_SCAN_BUILD = ($env:COVERITY_SCAN_CANDIDATE -eq "1") -and ($env:APPVEYOR_REPO_BRANCH -eq "coverity_scan") -and ($env:CONFIGURATION -eq "Release") -and ($env:PLATFORM -eq "x64")
-      $env:COVERAGE_BUILD = ($env:COVERAGE_BUILD_CANDIDATE -eq "1") -and ($env:CONFIGURATION -eq "Debug") -and ($env:PLATFORM -eq "x64")
+      $env:CMAKE_GENERATOR = "Visual Studio${cmake_generator_msvc_version_suffx}${cmake_generator_platform_suffix}"
+      $env:COVERITY_SCAN_BUILD = (${env:COVERITY_SCAN_CANDIDATE} -eq "1") -and (${env:APPVEYOR_REPO_BRANCH} -eq "coverity_scan") -and (${env:CONFIGURATION} -eq "Release") -and (${env:PLATFORM} -eq "x64")
+      $env:COVERAGE_BUILD = (${env:COVERAGE_BUILD_CANDIDATE} -eq "1") -and (${env:CONFIGURATION} -eq "Debug") -and (${env:PLATFORM} -eq "x64")
       $env:CODECOV_FLAG = "windows_${env:OS_VERSION}__${env:PLATFORM}__msvc_${env:MSVC_VERSION}"
-      if ($env:BOOST_VERSION) {
+      if (${env:BOOST_VERSION}) {
         $env:CODECOV_FLAG = "${env:CODECOV_FLAG}__boost_${env:BOOST_VERSION}"
       }
-      if ($env:QT_VERSION) {
+      if (${env:QT_VERSION}) {
         $env:CODECOV_FLAG = "${env:CODECOV_FLAG}__qt_${env:QT_VERSION}"
       }
-      $env:CODECOV_FLAG = "$env:CODECOV_FLAG" -replace "[\.-]", "_"
-      Write-Host "PLATFORM                  : $env:PLATFORM"
-      Write-Host "CONFIGURATION             : $env:CONFIGURATION"
-      Write-Host "MSVS_PATCH_FOLDER         : $env:MSVS_PATCH_FOLDER"
-      Write-Host "MSVS_PATCH_BATCH_FILE     : $env:MSVS_PATCH_BATCH_FILE"
-      Write-Host "WINDOWS_SDK_ENV_BATCH_FILE: $env:WINDOWS_SDK_ENV_BATCH_FILE"
-      Write-Host "WINDOWS_SDK_ENV_PARAMETERS: $env:WINDOWS_SDK_ENV_PARAMETERS"
-      Write-Host "MSVC_VARS_BATCH_FILE      : $env:MSVC_VARS_BATCH_FILE"
-      Write-Host "MSVC_VARS_PLATFORM        : $env:MSVC_VARS_PLATFORM"
-      Write-Host "APPVEYOR_BUILD_FOLDER     : $env:APPVEYOR_BUILD_FOLDER"
-      if ($env:ICU_ROOT) {
-        Write-Host "ICU_ROOT                  : $env:ICU_ROOT"
-        Write-Host "ICU_LIBRARY_FOLDER        : $env:ICU_LIBRARY_FOLDER"
+      $env:CODECOV_FLAG = "${env:CODECOV_FLAG}" -replace "[\.-]", "_"
+      Write-Host "PLATFORM                  : ${env:PLATFORM}"
+      Write-Host "CONFIGURATION             : ${env:CONFIGURATION}"
+      Write-Host "MSVS_PATCH_FOLDER         : ${env:MSVS_PATCH_FOLDER}"
+      Write-Host "MSVS_PATCH_BATCH_FILE     : ${env:MSVS_PATCH_BATCH_FILE}"
+      Write-Host "WINDOWS_SDK_ENV_BATCH_FILE: ${env:WINDOWS_SDK_ENV_BATCH_FILE}"
+      Write-Host "WINDOWS_SDK_ENV_PARAMETERS: ${env:WINDOWS_SDK_ENV_PARAMETERS}"
+      Write-Host "MSVC_VARS_BATCH_FILE      : ${env:MSVC_VARS_BATCH_FILE}"
+      Write-Host "MSVC_VARS_PLATFORM        : ${env:MSVC_VARS_PLATFORM}"
+      Write-Host "APPVEYOR_BUILD_FOLDER     : ${env:APPVEYOR_BUILD_FOLDER}"
+      if (${env:ICU_ROOT}) {
+        Write-Host "ICU_ROOT                  : ${env:ICU_ROOT}"
+        Write-Host "ICU_LIBRARY_FOLDER        : ${env:ICU_LIBRARY_FOLDER}"
       }
-      Write-Host "BOOST_INCLUDE_FOLDER      : $env:BOOST_INCLUDE_FOLDER"
-      Write-Host "BOOST_LIBRARY_FOLDER      : $env:BOOST_LIBRARY_FOLDER"
-      Write-Host "BOOST_USE_STATIC_LIBS     : $env:BOOST_USE_STATIC_LIBS"
-      Write-Host "QT_HOME                   : $env:QT_HOME"
-      Write-Host "QT_BIN_FOLDER             : $env:QT_BIN_FOLDER"
-      Write-Host "QT_QMAKE_EXECUTABLE       : $env:QT_QMAKE_EXECUTABLE"
-      Write-Host "CMAKE_GENERATOR           : $env:CMAKE_GENERATOR"
-      Write-Host "COVERITY_SCAN_BUILD       : $env:COVERITY_SCAN_BUILD"
-      Write-Host "COVERAGE_BUILD            : $env:COVERAGE_BUILD"
-      Write-Host "CODECOV_FLAG              : $env:CODECOV_FLAG"
+      Write-Host "BOOST_INCLUDE_FOLDER      : ${env:BOOST_INCLUDE_FOLDER}"
+      Write-Host "BOOST_LIBRARY_FOLDER      : ${env:BOOST_LIBRARY_FOLDER}"
+      Write-Host "BOOST_USE_STATIC_LIBS     : ${env:BOOST_USE_STATIC_LIBS}"
+      Write-Host "QT_HOME                   : ${env:QT_HOME}"
+      Write-Host "QT_BIN_FOLDER             : ${env:QT_BIN_FOLDER}"
+      Write-Host "QT_QMAKE_EXECUTABLE       : ${env:QT_QMAKE_EXECUTABLE}"
+      Write-Host "CMAKE_GENERATOR           : ${env:CMAKE_GENERATOR}"
+      Write-Host "COVERITY_SCAN_BUILD       : ${env:COVERITY_SCAN_BUILD}"
+      Write-Host "COVERAGE_BUILD            : ${env:COVERAGE_BUILD}"
+      Write-Host "CODECOV_FLAG              : ${env:CODECOV_FLAG}"
   - ps: |
-      if ($env:COVERAGE_BUILD -eq "True") {
+      if (${env:COVERAGE_BUILD} -eq "True") {
         $exit_code = 1
         $try_num = 0
         while ($true) {
           choco install -y opencppcoverage
-          $exit_code = $LastExitCode
+          $exit_code = ${LastExitCode}
           $try_num++
-          if ($exit_code -eq 0) {
+          if (${exit_code} -eq 0) {
             break
           }
-          if ($try_num -ge $env:CHOCO_RETRY) {
+          if (${try_num} -ge ${env:CHOCO_RETRY}) {
             break
           }
-          Write-Host "Sleeping for $env:CHOCO_RETRY_DELAY seconds before making next try to install OpenCppCoverage Chocolatey package"
-          Start-Sleep -Seconds $env:CHOCO_RETRY_DELAY
+          Write-Host "Sleeping for ${env:CHOCO_RETRY_DELAY} seconds before making next try to install OpenCppCoverage Chocolatey package"
+          Start-Sleep -Seconds "${env:CHOCO_RETRY_DELAY}"
         }
-        if ($exit_code -ne 0) {
-          throw "Installation of OpenCppCoverage Chocolatey package failed with $exit_code exit code after $try_num tries."
+        if (${exit_code} -ne 0) {
+          throw "Installation of OpenCppCoverage Chocolatey package failed with ${exit_code} exit code after ${try_num} tries."
         }
       }
   - cmd: if "%COVERAGE_BUILD%"=="True" pip install --retries %PIP_RETRY% codecov==2.0.9
@@ -621,101 +621,101 @@ install:
   - cmd: if not "%WINDOWS_SDK_ENV_BATCH_FILE%"=="" call "%WINDOWS_SDK_ENV_BATCH_FILE%" %WINDOWS_SDK_ENV_PARAMETERS%
   - cmd: if not "%MSVC_VARS_BATCH_FILE%"=="" call "%MSVC_VARS_BATCH_FILE%" %MSVC_VARS_PLATFORM%
   - ps: |
-      if ($env:QT_VERSION) {
-        $env:PATH = "$env:QT_BIN_FOLDER;$env:PATH"
+      if (${env:QT_VERSION}) {
+        $env:PATH = "${env:QT_BIN_FOLDER};${env:PATH}"
       }
-      if ($env:BOOST_VERSION -and -not ($env:BOOST_LINKAGE -eq "static")) {
-        $env:PATH = "$env:BOOST_LIBRARY_FOLDER;$env:PATH"
+      if (${env:BOOST_VERSION} -and -not (${env:BOOST_LINKAGE} -eq "static")) {
+        $env:PATH = "${env:BOOST_LIBRARY_FOLDER};${env:PATH}"
       }
-      if ($env:ICU_VERSION -and -not ($env:ICU_LINKAGE -eq "static")) {
-        $env:PATH = "$env:ICU_LIBRARY_FOLDER;$env:PATH"
+      if (${env:ICU_VERSION} -and -not (${env:ICU_LINKAGE} -eq "static")) {
+        $env:PATH = "${env:ICU_LIBRARY_FOLDER};${env:PATH}"
       }
 
 build_script:
   - ps: |
-      New-Item "$env:APPVEYOR_BUILD_FOLDER\build" -type directory | out-null
-      Set-Location -Path "$env:APPVEYOR_BUILD_FOLDER\build"
+      New-Item "${env:APPVEYOR_BUILD_FOLDER}\build" -type directory | out-null
+      Set-Location -Path "${env:APPVEYOR_BUILD_FOLDER}\build"
       $generate_cmd = "cmake"
-      switch ($env:RUNTIME_LINKAGE) {
+      switch (${env:RUNTIME_LINKAGE}) {
         "static" {
-          $generate_cmd = "$generate_cmd -D CMAKE_USER_MAKE_RULES_OVERRIDE=""$env:APPVEYOR_BUILD_FOLDER\cmake\static_c_runtime_overrides.cmake"" -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX=""$env:APPVEYOR_BUILD_FOLDER\cmake\static_cxx_runtime_overrides.cmake"""
-          if (($env:QT_VERSION -match "5\.*") -and ($env:QT_LINKAGE -eq "static")) {
-            if (!($env:ICU_ROOT)) {
+          $generate_cmd = "${generate_cmd} -D CMAKE_USER_MAKE_RULES_OVERRIDE=""${env:APPVEYOR_BUILD_FOLDER}\cmake\static_c_runtime_overrides.cmake"" -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX=""${env:APPVEYOR_BUILD_FOLDER}\cmake\static_cxx_runtime_overrides.cmake"""
+          if ((${env:QT_VERSION} -match "5\.*") -and (${env:QT_LINKAGE} -eq "static")) {
+            if (!(${env:ICU_ROOT})) {
               throw "ICU location is unspecified. Static Qt 5.x requires static ICU"
             }
-            $generate_cmd = "$generate_cmd -D ICU_ROOT=""$env:ICU_ROOT"""
+            $generate_cmd = "${generate_cmd} -D ICU_ROOT=""${env:ICU_ROOT}"""
           }
         }
         default {
-          $generate_cmd = "$generate_cmd -D gtest_force_shared_crt=ON"
+          $generate_cmd = "${generate_cmd} -D gtest_force_shared_crt=ON"
         }
       }
-      $generate_cmd = "$generate_cmd -D BOOST_INCLUDEDIR=""$env:BOOST_INCLUDE_FOLDER"" -D BOOST_LIBRARYDIR=""$env:BOOST_LIBRARY_FOLDER"" -D Boost_USE_STATIC_LIBS=$env:BOOST_USE_STATIC_LIBS -D Boost_NO_SYSTEM_PATHS=ON"
-      if (!($env:QT_VERSION)) {
-         $generate_cmd = "$generate_cmd -D ma_qt=OFF"
-      } elseif ($env:QT_VERSION -match "5\.*") {
-        $generate_cmd = "$generate_cmd -D Qt5Core_DIR=""$env:QT_HOME\lib\cmake\Qt5Core"" -D Qt5Gui_DIR=""$env:QT_HOME\lib\cmake\Qt5Gui"" -D Qt5Widgets_DIR=""$env:QT_HOME\lib\cmake\Qt5Widgets"" ma_force_qt_major_version=5"
-      } elseif ($env:QT_VERSION -match "4\.*") {
-        $generate_cmd = "$generate_cmd -D QT_QMAKE_EXECUTABLE=""$env:QT_QMAKE_EXECUTABLE"" -D ma_force_qt_major_version=4"
+      $generate_cmd = "${generate_cmd} -D BOOST_INCLUDEDIR=""${env:BOOST_INCLUDE_FOLDER}"" -D BOOST_LIBRARYDIR=""${env:BOOST_LIBRARY_FOLDER}"" -D Boost_USE_STATIC_LIBS=${env:BOOST_USE_STATIC_LIBS} -D Boost_NO_SYSTEM_PATHS=ON"
+      if (!(${env:QT_VERSION})) {
+         $generate_cmd = "${generate_cmd} -D ma_qt=OFF"
+      } elseif (${env:QT_VERSION} -match "5\.*") {
+        $generate_cmd = "${generate_cmd} -D Qt5Core_DIR=""${env:QT_HOME}\lib\cmake\Qt5Core"" -D Qt5Gui_DIR=""${env:QT_HOME}\lib\cmake\Qt5Gui"" -D Qt5Widgets_DIR=""${env:QT_HOME}\lib\cmake\Qt5Widgets"" ma_force_qt_major_version=5"
+      } elseif (${env:QT_VERSION} -match "4\.*") {
+        $generate_cmd = "${generate_cmd} -D QT_QMAKE_EXECUTABLE=""${env:QT_QMAKE_EXECUTABLE}"" -D ma_force_qt_major_version=4"
       } else {
-        throw "Unsupported version of Qt: $env:QT_VERSION."
+        throw "Unsupported version of Qt: ${env:QT_VERSION}."
       }
-      $generate_cmd = "$generate_cmd -G ""$env:CMAKE_GENERATOR"" ""$env:APPVEYOR_BUILD_FOLDER"""
-      Write-Host "CMake project generation command: $generate_cmd"
-      Invoke-Expression "$generate_cmd"
-      if ($LastExitCode -ne 0) {
-        throw "Generation of project failed with exit code $LastExitCode."
+      $generate_cmd = "${generate_cmd} -G ""${env:CMAKE_GENERATOR}"" ""${env:APPVEYOR_BUILD_FOLDER}"""
+      Write-Host "CMake project generation command: ${generate_cmd}"
+      Invoke-Expression "${generate_cmd}"
+      if (${LastExitCode} -ne 0) {
+        throw "Generation of project failed with exit code ${LastExitCode}."
       }
-      $build_cmd = "cmake --build . --config $env:CONFIGURATION"
-      if ($env:MSVC_VERSION -ne "9.0") {
-        $build_cmd = "$build_cmd -- /maxcpucount /verbosity:normal /logger:""C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"""
+      $build_cmd = "cmake --build . --config ""${env:CONFIGURATION}"""
+      if (${env:MSVC_VERSION} -ne "9.0") {
+        $build_cmd = "${build_cmd} -- /maxcpucount /verbosity:normal /logger:""C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"""
       }
-      Write-Host "CMake project build command: $build_cmd"
-      if ($env:COVERITY_SCAN_BUILD -eq "True") {
-        Invoke-Expression "cov-build.exe --dir cov-int $build_cmd"
+      Write-Host "CMake project build command: ${build_cmd}"
+      if (${env:COVERITY_SCAN_BUILD} -eq "True") {
+        Invoke-Expression "cov-build.exe --dir cov-int ${build_cmd}"
       } else {
-        Invoke-Expression "$build_cmd"
+        Invoke-Expression "${build_cmd}"
       }
-      if ($LastExitCode -ne 0) {
-        throw "Build failed with exit code $LastExitCode."
+      if (${LastExitCode} -ne 0) {
+        throw "Build failed with exit code ${LastExitCode}."
       }
-      if ($env:COVERITY_SCAN_BUILD -eq "True") {
+      if (${env:COVERITY_SCAN_BUILD} -eq "True") {
         # Compress results.
         Write-Host "Compressing Coverity Scan results..."
-        7z.exe a -tzip "$env:APPVEYOR_BUILD_FOLDER\build\$env:APPVEYOR_PROJECT_NAME.zip" "$env:APPVEYOR_BUILD_FOLDER\build\cov-int" -aoa -y | out-null
-        if ($LastExitCode -ne 0) {
-          throw "Failed to zip Coverity Scan results with exit code $LastExitCode."
+        7z.exe a -tzip "${env:APPVEYOR_BUILD_FOLDER}\build\${env:APPVEYOR_PROJECT_NAME}.zip" "${env:APPVEYOR_BUILD_FOLDER}\build\cov-int" -aoa -y | out-null
+        if (${LastExitCode} -ne 0) {
+          throw "Failed to zip Coverity Scan results with exit code ${LastExitCode}."
         }
         # Upload results to Coverity server.
-        $coverity_build_version = $env:APPVEYOR_REPO_COMMIT.Substring(0, 7)
-        Write-Host "Uploading Coverity Scan results (version: $coverity_build_version)..."
-        curl.exe --connect-timeout $env:CURL_CONNECT_TIMEOUT --max-time $env:CURL_MAX_TIME --retry $env:CURL_RETRY --retry-delay $env:CURL_RETRY_DELAY --show-error --silent --location --form token="$env:COVERITY_SCAN_TOKEN" --form email="$env:COVERITY_SCAN_NOTIFICATION_EMAIL" --form file=@"$env:APPVEYOR_BUILD_FOLDER\build\$env:APPVEYOR_PROJECT_NAME.zip" --form version="$coverity_build_version" --form description="Build submitted via AppVeyor CI" https://scan.coverity.com/builds?project=$env:APPVEYOR_REPO_NAME
-        if ($LastExitCode -ne 0) {
-          throw "Failed to upload Coverity Scan results with exit code $LastExitCode."
+        $coverity_build_version = ${env:APPVEYOR_REPO_COMMIT}.Substring(0, 7)
+        Write-Host "Uploading Coverity Scan results (version: ${coverity_build_version})..."
+        curl.exe --connect-timeout "${env:CURL_CONNECT_TIMEOUT}" --max-time "${env:CURL_MAX_TIME}" --retry "${env:CURL_RETRY}" --retry-delay "${env:CURL_RETRY_DELAY}" --show-error --silent --location --form token="${env:COVERITY_SCAN_TOKEN}" --form email="${env:COVERITY_SCAN_NOTIFICATION_EMAIL}" --form file=@"${env:APPVEYOR_BUILD_FOLDER}\build\${env:APPVEYOR_PROJECT_NAME}.zip" --form version="${coverity_build_version}" --form description="Build submitted via AppVeyor CI" "https://scan.coverity.com/builds?project=${env:APPVEYOR_REPO_NAME}"
+        if (${LastExitCode} -ne 0) {
+          throw "Failed to upload Coverity Scan results with exit code ${LastExitCode}."
         }
       }
 
 test_script:
   - ps: |
-      Set-Location -Path "$env:APPVEYOR_BUILD_FOLDER\build"
-      if ($env:COVERAGE_BUILD -eq "True") {
-        $coverage_report_folder = "$env:COVERAGE_WORK_FOLDER\report"
-        $coverage_report_archive = "$env:COVERAGE_WORK_FOLDER\report.zip"
-        New-Item "$env:COVERAGE_WORK_FOLDER" -type directory | out-null
-        OpenCppCoverage.exe --quiet --export_type "html:$coverage_report_folder" --export_type "cobertura:$env:COBERTURA_COVERAGE_FILE" --sources "$env:APPVEYOR_BUILD_FOLDER" --excluded_sources "$env:APPVEYOR_BUILD_FOLDER\3rdparty" --excluded_sources "$env:APPVEYOR_BUILD_FOLDER\examples" --excluded_sources "$env:APPVEYOR_BUILD_FOLDER\tests" --modules "$env:APPVEYOR_BUILD_FOLDER\build\tests" --cover_children --working_dir "$env:APPVEYOR_BUILD_FOLDER\build" -- ctest.exe --build-config $env:CONFIGURATION --verbose
-        if ($LastExitCode -ne 0) {
-          throw "Tests failed with exit code $LastExitCode."
+      Set-Location -Path "${env:APPVEYOR_BUILD_FOLDER}\build"
+      if (${env:COVERAGE_BUILD} -eq "True") {
+        $coverage_report_folder = "${env:COVERAGE_WORK_FOLDER}\report"
+        $coverage_report_archive = "${env:COVERAGE_WORK_FOLDER}\report.zip"
+        New-Item "${env:COVERAGE_WORK_FOLDER}" -type directory | out-null
+        OpenCppCoverage.exe --quiet --export_type "html:${coverage_report_folder}" --export_type "cobertura:${env:COBERTURA_COVERAGE_FILE}" --sources "${env:APPVEYOR_BUILD_FOLDER}" --excluded_sources "${env:APPVEYOR_BUILD_FOLDER}\3rdparty" --excluded_sources "${env:APPVEYOR_BUILD_FOLDER}\examples" --excluded_sources "${env:APPVEYOR_BUILD_FOLDER}\tests" --modules "${env:APPVEYOR_BUILD_FOLDER}\build\tests" --cover_children --working_dir "${env:APPVEYOR_BUILD_FOLDER}\build" -- ctest.exe --build-config "${env:CONFIGURATION}" --verbose
+        if (${LastExitCode} -ne 0) {
+          throw "Tests failed with exit code ${LastExitCode}."
         }
-        7z.exe a -tzip "$coverage_report_archive" "$coverage_report_folder" | out-null
-        if ($LastExitCode -ne 0) {
-          throw "Failed to archive coverage report located at $coverage_report_folder with exit code $LastExitCode."
+        7z.exe a -tzip "${coverage_report_archive}" "${coverage_report_folder}" | out-null
+        if (${LastExitCode} -ne 0) {
+          throw "Failed to archive coverage report located at ${coverage_report_folder} with exit code ${LastExitCode}."
         }
-        Push-AppveyorArtifact "$coverage_report_archive" -DeploymentName "$env:COVERAGE_ARTIFACT_NAME"
-        Push-AppveyorArtifact "$env:COBERTURA_COVERAGE_FILE" -DeploymentName "$env:COVERAGE_ARTIFACT_NAME"
+        Push-AppveyorArtifact "${coverage_report_archive}" -DeploymentName "${env:COVERAGE_ARTIFACT_NAME}"
+        Push-AppveyorArtifact "${env:COBERTURA_COVERAGE_FILE}" -DeploymentName "${env:COVERAGE_ARTIFACT_NAME}"
       } else {
-        ctest.exe --build-config $env:CONFIGURATION --verbose
-        if ($LastExitCode -ne 0) {
-          throw "Tests failed with exit code $LastExitCode."
+        ctest.exe --build-config "${env:CONFIGURATION}" --verbose
+        if (${LastExitCode} -ne 0) {
+          throw "Tests failed with exit code ${LastExitCode}."
         }
       }
 
