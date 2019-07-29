@@ -703,7 +703,7 @@ install:
               echo "CMake ${CMAKE_VERSION} archive found at ${cmake_archive_file}";
             else
               echo "CMake ${CMAKE_VERSION} archive not found at ${cmake_archive_file}" &&
-              echo "Going to download CMake ${CMAKE_VERSION} archive from ${boost_download_url} to ${cmake_archive_file}" &&
+              echo "Going to download CMake ${CMAKE_VERSION} archive from ${cmake_download_url} to ${cmake_archive_file}" &&
               mkdir -p "${DOWNLOADS_HOME}" &&
               curl --connect-timeout "${CURL_CONNECT_TIMEOUT}" --max-time "${CURL_MAX_TIME}" --retry "${CURL_RETRY}" --retry-delay "${CURL_RETRY_DELAY}" -jksSL "${cmake_download_url}" --output "${cmake_archive_file}" &&
               echo "Download of CMake ${CMAKE_VERSION} archive from ${cmake_download_url} to ${cmake_archive_file} completed successfully";
