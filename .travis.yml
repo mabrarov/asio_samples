@@ -81,6 +81,9 @@ matrix:
             - cmake-data
             - libboost-all-dev
             - qtbase5-dev
+          sources:
+            - boost-defaults
+            - qtbase-opensource-src
     - os: linux
       dist: bionic
       env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang CXX_COMPILER=clang++ BOOST_VERSION=1.65.1 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
