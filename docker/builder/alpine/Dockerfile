@@ -15,7 +15,7 @@ ENV PROJECT_DIR="/project" \
     BOOST_USE_STATIC_LIBS=ON \
     MA_QT=ON \
     MA_QT_MAJOR_VERSION=5 \
-    COVERAGE_BUILD=OFF
+    MA_COVERAGE=OFF
 
 ADD ["start.sh", "/app/"]
 

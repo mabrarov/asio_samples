@@ -21,7 +21,7 @@ RUN apk add --no-cache libstdc++ &&\
     cmake -D CMAKE_SKIP_BUILD_RPATH=ON \
           -D CMAKE_BUILD_TYPE=RELEASE \
           -D Boost_USE_STATIC_LIBS=ON \
-          -D ma_qt=OFF \
+          -D MA_QT=OFF \
           .. &&\
     cmake --build . --target ma_echo_server &&\
     mkdir -p /opt/ma_echo_server &&\

@@ -12,7 +12,7 @@ set(compile_options )
 set(link_options )
 set(cxx_libraries )
 
-if(ma_coverage_build)
+if(MA_COVERAGE)
     if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
         list(APPEND compile_options "-O0" "-fprofile-arcs" "-ftest-coverage")
         list(APPEND link_options "--coverage")
