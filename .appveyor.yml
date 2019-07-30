@@ -130,7 +130,7 @@ environment:
       QT_LINKAGE: shared
 
 cache:
-  - C:\projects\downloads
+  - C:\projects\downloads -> .appveyor.yml
 
 install:
   - ps: |
