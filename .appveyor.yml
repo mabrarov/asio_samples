@@ -241,7 +241,7 @@ install:
       $pre_installed_icu = $false
       if (${env:ICU_VERSION}) {
         if (${pre_installed_icu}) {
-          throw "Pre-installed ICU is missing"
+          throw "Installed ICU is missing"
         } else {
           $icu_platform_suffix = ""
           switch (${env:PLATFORM}) {

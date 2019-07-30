@@ -734,7 +734,7 @@ install:
       fi
     fi
   - if [[ "${PRE_INSTALLED_BOOST}" != 0 ]]; then
-      echo "Boost ${BOOST_VERSION} is pre-intalled";
+      echo "Boost ${BOOST_VERSION} is installed";
     else
       boost_archive_base_name="boost-${BOOST_VERSION}-x64-gcc4.8" &&
       export PREBUILT_BOOST_HOME="${DEPENDENCIES_HOME}/${boost_archive_base_name}" &&
@@ -780,7 +780,7 @@ script:
   - if [[ "${COVERITY_SCAN_BRANCH}" != 1 ]]; then
       export CMAKE_GENERATOR_COMMAND="cmake -D CMAKE_C_COMPILER=\"${C_COMPILER}\" -D CMAKE_CXX_COMPILER=\"${CXX_COMPILER}\" -D CMAKE_BUILD_TYPE=\"${BUILD_TYPE}\"" &&
       if [[ "${PRE_INSTALLED_BOOST}" != 0 ]]; then
-        echo "Building with pre-installed Boost ${BOOST_VERSION}";
+        echo "Building with installed Boost ${BOOST_VERSION}";
       else
         echo "Building with prebuilt Boost ${BOOST_VERSION} located at ${PREBUILT_BOOST_HOME}" &&
         export CMAKE_GENERATOR_COMMAND="${CMAKE_GENERATOR_COMMAND} -D CMAKE_SKIP_BUILD_RPATH=ON -D Boost_NO_SYSTEM_PATHS=ON -D BOOST_INCLUDEDIR=\"${PREBUILT_BOOST_HOME}/include\" -D BOOST_LIBRARYDIR=\"${PREBUILT_BOOST_HOME}/lib\"";
