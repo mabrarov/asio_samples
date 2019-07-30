@@ -11,9 +11,9 @@ LABEL name="abrarov/tcp-echo" \
     description="TCP echo server from Asio samples project" \
     license="BSL-1.0"
 
-ENV BUILD_ID=bjnu35iauc1bl0od
+ARG MA_BUILD=vob36o641p8o00ib
 
 RUN powershell "New-Item \"$env:ProgramFiles\ma_echo_server\" -type directory | out-null" && \
-    powershell "Invoke-WebRequest -Uri \"https://ci.appveyor.com/api/buildjobs/$env:BUILD_ID/artifacts/build%2Fexamples%2Fma_echo_server%2FRelease%2Fma_echo_server.exe\" -OutFile \"$env:ProgramFiles\ma_echo_server\ma_echo_server.exe\""
+    powershell "Invoke-WebRequest -Uri \"https://ci.appveyor.com/api/buildjobs/${env:MA_BUILD}/artifacts/build%2Fexamples%2Fma_echo_server%2FRelease%2Fma_echo_server.exe\" -OutFile \"$env:ProgramFiles\ma_echo_server\ma_echo_server.exe\""
 
 ENTRYPOINT ["C:/Program Files/ma_echo_server/ma_echo_server.exe"]
