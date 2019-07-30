@@ -168,22 +168,23 @@ install:
                   $msvs2008_patch_url = "https://github.com/menpo/condaci.git"
                   $msvs2008_patch_revision = "98d76b2089d494433ac2e3abd920123088a95a6d"
                   $msvs_patch_download_folder_nix = "${msvs_patch_download_folder}" -replace "\\", "/"
-                  Write-Host "Going to download MSVS patch from: ${msvs2008_patch_url} to: ${msvs_patch_download_folder_nix}"
+                  Write-Host "Going to download MSVS patch from ${msvs2008_patch_url} to ${msvs_patch_download_folder_nix}"
                   git clone --quiet "${msvs2008_patch_url}" "${msvs_patch_download_folder_nix}"
                   git -C "${msvs_patch_download_folder_nix}" checkout --quiet "${msvs2008_patch_revision}"
                   if (${LastExitCode} -ne 0) {
-                    throw "Downloading of MSVS patch failed with exit code ${LastExitCode}."
+                    throw "Downloading of MSVS patch from ${msvs2008_patch_url} to ${msvs_patch_download_file} failed with exit code ${LastExitCode}."
                   }
-                  Write-Host "Downloaded MSVS patch: ${msvs_patch_download_file}"
+                  Write-Host "Downloading of MSVS patch from ${msvs2008_patch_url} to ${msvs_patch_download_file} completed successfully"
                 }
-                Write-Host "Extracting MSVS patch from: ${msvs_patch_download_file} to: ${env:MSVS_PATCH_FOLDER}"
+                Write-Host "Extracting MSVS patch from ${msvs_patch_download_file} to ${env:MSVS_PATCH_FOLDER}"
                 New-Item "${env:MSVS_PATCH_FOLDER}" -type directory | out-null
                 7z.exe x "${msvs_patch_download_file}" -o"${env:MSVS_PATCH_FOLDER}" -aoa -y | out-null
                 if (${LastExitCode} -ne 0) {
                   throw "File extraction failed with exit code ${LastExitCode}."
                 }
-                Write-Host "Extracted: ${env:MSVS_PATCH_FOLDER}"
+                Write-Host "Extracting of MSVS patch from ${msvs_patch_download_file} to ${env:MSVS_PATCH_FOLDER} completed successfully"
               }
+              Write-Host "MSVS patch is located at ${env:MSVS_PATCH_FOLDER}"
               $env:MSVS_PATCH_BATCH_FILE = "${env:MSVS_PATCH_FOLDER}\setup_x64.bat"
               $env:MSVC_VARS_PLATFORM = "x86_amd64"
             }
@@ -203,36 +204,31 @@ install:
         if (${env:CMAKE_VERSION} -ne ${env:DETECTED_CMAKE_VERSION}) {
           $cmake_archive_base_name = "cmake-${env:CMAKE_VERSION}-win64-x64"
           $cmake_home = "${env:DEPENDENCIES_FOLDER}\${cmake_archive_base_name}"
-          if (Test-Path -Path "${cmake_home}") {
-            Write-Host "CMake ${env:CMAKE_VERSION} found at ${cmake_home}"
-          } else {
+          if (!(Test-Path -Path "${cmake_home}")) {
             Write-Host "CMake ${env:CMAKE_VERSION} not found at ${cmake_home}"
             $cmake_archive_name = "${cmake_archive_base_name}.zip"
             $cmake_archive_file = "${env:DOWNLOADS_FOLDER}\${cmake_archive_name}"
             $cmake_download_url = "https://github.com/Kitware/CMake/releases/download/v${env:CMAKE_VERSION}/${cmake_archive_name}"
-            if (Test-Path -Path "${cmake_archive_file}") {
-              Write-Host "CMake ${env:CMAKE_VERSION} archive found at ${cmake_archive_file}"
-            } else {
-              Write-Host "CMake ${env:CMAKE_VERSION} archive not found at ${cmake_archive_file}"
+            if (!(Test-Path -Path "${cmake_archive_file}")) {
               Write-Host "Going to download CMake ${env:CMAKE_VERSION} archive from ${cmake_download_url} to ${cmake_archive_file}"
               if (!(Test-Path -Path "${env:DOWNLOADS_FOLDER}")) {
                 New-Item "${env:DOWNLOADS_FOLDER}" -type directory | out-null
               }
               curl.exe --connect-timeout "${env:CURL_CONNECT_TIMEOUT}" --max-time "${env:CURL_MAX_TIME}" --retry "${env:CURL_RETRY}" --retry-delay "${env:CURL_RETRY_DELAY}" --show-error --silent --location --output "${cmake_archive_file}" "${cmake_download_url}"
               if (${LastExitCode} -ne 0) {
-                throw "Downloading of CMake ${env:CMAKE_VERSION} failed with exit code ${LastExitCode}."
+                throw "Downloading of CMake ${env:CMAKE_VERSION} from ${cmake_download_url} to ${cmake_archive_file} failed with exit code ${LastExitCode}."
               }
-              Write-Host "Download of CMake ${env:CMAKE_VERSION} archive from ${cmake_download_url} to ${cmake_archive_file} completed successfully"
+              Write-Host "Downloading of CMake ${env:CMAKE_VERSION} from ${cmake_download_url} to ${cmake_archive_file} completed successfully"
             }
             if (!(Test-Path -Path "${env:DEPENDENCIES_FOLDER}")) {
               New-Item "${env:DEPENDENCIES_FOLDER}" -type directory | out-null
             }
-            Write-Host "Going to unpack CMake ${env:CMAKE_VERSION} archive from ${cmake_archive_file} to ${env:DEPENDENCIES_FOLDER}"
+            Write-Host "Extracting CMake ${env:CMAKE_VERSION} from ${cmake_archive_file} to ${env:DEPENDENCIES_FOLDER}"
             7z.exe x "${cmake_archive_file}" -o"${env:DEPENDENCIES_FOLDER}" -aoa -y | out-null
             if (${LastExitCode} -ne 0) {
               throw "File extraction failed with exit code ${LastExitCode}."
             }
-            Write-Host "Unpacking of CMake ${env:CMAKE_VERSION} archive from ${cmake_archive_file} to ${env:DEPENDENCIES_FOLDER} completed successfully"
+            Write-Host "Extracting of CMake ${env:CMAKE_VERSION} from ${cmake_archive_file} to ${env:DEPENDENCIES_FOLDER} completed successfully"
           }
           Write-Host "CMake ${env:CMAKE_VERSION} is located at ${cmake_home}"
           $env:PATH = "${cmake_home}\bin;${env:PATH}"
@@ -279,7 +275,7 @@ install:
           }
           $icu_install_folder = "${env:DEPENDENCIES_FOLDER}\icu4c${icu_version_suffix}${icu_platform_suffix}${icu_toolchain_suffix}${icu_linkage_suffix}"
           if (!(Test-Path -Path "${icu_install_folder}")) {
-            Write-Host "Built ICU libraries are absent for the selected toolchain (msvc-${env:MSVC_VERSION}) and ICU version (${env:ICU_VERSION})"
+            Write-Host "ICU libraries are absent for the selected toolchain (msvc-${env:MSVC_VERSION}) and ICU version (${env:ICU_VERSION})"
             $icu_archive_name = "icu4c${icu_version_suffix}${icu_platform_suffix}${icu_toolchain_suffix}${icu_linkage_suffix}.7z"
             $icu_archive_file = "${env:DOWNLOADS_FOLDER}\${icu_archive_name}"
             if (!(Test-Path -Path "${icu_archive_file}")) {
@@ -287,14 +283,14 @@ install:
               if (!(Test-Path -Path "${env:DOWNLOADS_FOLDER}")) {
                 New-Item "${env:DOWNLOADS_FOLDER}" -type directory | out-null
               }
-              Write-Host "Going to download ICU libraries from: ${icu_download_url} to: ${icu_archive_file}"
+              Write-Host "Going to download ICU libraries from ${icu_download_url} to ${icu_archive_file}"
               curl.exe --connect-timeout "${env:CURL_CONNECT_TIMEOUT}" --max-time "${env:CURL_MAX_TIME}" --retry "${env:CURL_RETRY}" --retry-delay "${env:CURL_RETRY_DELAY}" --show-error --silent --location --output "${icu_archive_file}" "${icu_download_url}"
               if (${LastExitCode} -ne 0) {
-                throw "Downloading of ICU libraries failed with exit code ${LastExitCode}."
+                throw "Downloading of ICU libraries from ${icu_download_url} to ${icu_archive_file} failed with exit code ${LastExitCode}."
               }
-              Write-Host "Downloaded ICU libraries: ${icu_archive_file}"
+              Write-Host "Downloading of ICU libraries from ${icu_download_url} to ${icu_archive_file} completed successfully"
             }
-            Write-Host "Extracting ICU libraries from: ${icu_archive_file} to: ${env:DEPENDENCIES_FOLDER}"
+            Write-Host "Extracting ICU libraries from ${icu_archive_file} to ${env:DEPENDENCIES_FOLDER}"
             if (!(Test-Path -Path "${env:DEPENDENCIES_FOLDER}")) {
               New-Item "${env:DEPENDENCIES_FOLDER}" -type directory | out-null
             }
@@ -302,8 +298,9 @@ install:
             if (${LastExitCode} -ne 0) {
               throw "File extraction failed with exit code ${LastExitCode}."
             }
-            Write-Host "Extracted: ${icu_install_folder}"
+            Write-Host "Extracting of ICU libraries from ${icu_archive_file} to ${env:DEPENDENCIES_FOLDER} completed successfully"
           }
+          Write-Host "ICU ${env:ICU_VERSION} is located at ${icu_install_folder}"
           $env:ICU_ROOT = "${icu_install_folder}"
           $env:ICU_LIBRARY_FOLDER = "${icu_install_folder}\lib"
         }
@@ -382,7 +379,7 @@ install:
           }
           $boost_install_folder = "${env:DEPENDENCIES_FOLDER}\boost${boost_version_suffix}${boost_platform_suffix}${boost_toolchain_suffix}"
           if (!(Test-Path -Path "${boost_install_folder}")) {
-            Write-Host "Built Boost libraries are absent for the selected toolchain (msvc-${env:MSVC_VERSION}) and Boost version (${env:BOOST_VERSION})"
+            Write-Host "Boost libraries are absent for the selected toolchain (msvc-${env:MSVC_VERSION}) and Boost version (${env:BOOST_VERSION}) at ${boost_install_folder}"
             $boost_archive_name = "boost${boost_version_suffix}${boost_platform_suffix}${boost_toolchain_suffix}.7z"
             $boost_archive_file = "${env:DOWNLOADS_FOLDER}\${boost_archive_name}"
             if (!(Test-Path -Path "${boost_archive_file}")) {
@@ -390,14 +387,14 @@ install:
               if (!(Test-Path -Path "${env:DOWNLOADS_FOLDER}")) {
                 New-Item "${env:DOWNLOADS_FOLDER}" -type directory | out-null
               }
-              Write-Host "Going to download Boost libraries from: ${boost_download_url} to: ${boost_archive_file}"
+              Write-Host "Going to download Boost libraries from ${boost_download_url} to ${boost_archive_file}"
               curl.exe --connect-timeout "${env:CURL_CONNECT_TIMEOUT}" --max-time "${env:CURL_MAX_TIME}" --retry "${env:CURL_RETRY}" --retry-delay "${env:CURL_RETRY_DELAY}" --show-error --silent --location --output "${boost_archive_file}" "${boost_download_url}"
               if (${LastExitCode} -ne 0) {
-                throw "Downloading of Boost libraries failed with exit code ${LastExitCode}."
+                throw "Downloading of Boost libraries from ${boost_download_url} to ${boost_archive_file} failed with exit code ${LastExitCode}."
               }
-              Write-Host "Downloaded Boost libraries: ${boost_archive_file}"
+              Write-Host "Downloading of Boost libraries from ${boost_download_url} to ${boost_archive_file} completed successfully"
             }
-            Write-Host "Extracting Boost libraries from: ${boost_archive_file} to: ${env:DEPENDENCIES_FOLDER}"
+            Write-Host "Extracting Boost libraries from ${boost_archive_file} to ${env:DEPENDENCIES_FOLDER}"
             if (!(Test-Path -Path "${env:DEPENDENCIES_FOLDER}")) {
               New-Item "${env:DEPENDENCIES_FOLDER}" -type directory | out-null
             }
@@ -405,8 +402,9 @@ install:
             if (${LastExitCode} -ne 0) {
               throw "File extraction failed with exit code ${LastExitCode}."
             }
-            Write-Host "Extracted: ${boost_install_folder}"
+            Write-Host "Extracting of Boost libraries from ${boost_archive_file} to ${env:DEPENDENCIES_FOLDER} completed successfully"
           }
+          Write-Host "Boost ${env:BOOST_VERSION} is located at ${boost_install_folder}"
           $boost_include_folder_version_suffix = "-${env:BOOST_VERSION}" -replace "([\d]+)\.([\d]+)(\.[\d]+)*", '$1_$2'
           $env:BOOST_INCLUDE_FOLDER = "${boost_install_folder}\include\boost${boost_include_folder_version_suffix}"
           $env:BOOST_LIBRARY_FOLDER = "${boost_install_folder}\lib"
@@ -532,7 +530,7 @@ install:
           }
           $qt_install_folder = "${env:DEPENDENCIES_FOLDER}\qt${qt_version_suffix}${qt_platform_suffix}${qt_toolchain_suffix}${qt_linkage_suffix}"
           if (!(Test-Path -Path "${qt_install_folder}")) {
-            Write-Host "Built Qt libraries are absent for the selected toolchain (msvc-${env:MSVC_VERSION}) and Qt version (${env:QT_VERSION}) and Qt linkage (${env:QT_LINKAGE})"
+            Write-Host "Qt libraries are absent for the selected toolchain (msvc-${env:MSVC_VERSION}) and Qt version (${env:QT_VERSION}) and Qt linkage (${env:QT_LINKAGE}) at ${qt_install_folder}"
             $qt_archive_name = "qt${qt_version_suffix}${qt_platform_suffix}${qt_toolchain_suffix}${qt_linkage_suffix}.7z"
             $qt_archive_file = "${env:DOWNLOADS_FOLDER}\${qt_archive_name}"
             if (!(Test-Path -Path "${qt_archive_file}")) {
@@ -546,14 +544,14 @@ install:
               if (!(Test-Path -Path "${env:DOWNLOADS_FOLDER}")) {
                 New-Item "${env:DOWNLOADS_FOLDER}" -type directory | out-null
               }
-              Write-Host "Going to download Qt libraries from: ${qt_download_url} to: ${qt_archive_file}"
+              Write-Host "Going to download Qt libraries from ${qt_download_url} to ${qt_archive_file}"
               curl.exe --connect-timeout "${env:CURL_CONNECT_TIMEOUT}" --max-time "${env:CURL_MAX_TIME}" --retry "${env:CURL_RETRY}" --retry-delay "${env:CURL_RETRY_DELAY}" --show-error --silent --location --output "${qt_archive_file}" "${qt_download_url}"
               if (${LastExitCode} -ne 0) {
-                throw "Downloading of Qt libraries failed with exit code ${LastExitCode}."
+                throw "Downloading of Qt libraries ${qt_download_url} to ${qt_archive_file} failed with exit code ${LastExitCode}."
               }
-              Write-Host "Downloaded Qt libraries: ${qt_archive_file}"
+              Write-Host "Downloading of Qt libraries from ${qt_download_url} to ${qt_archive_file} completed successfully"
             }
-            Write-Host "Extracting Qt libraries from: ${qt_archive_file} to: ${env:DEPENDENCIES_FOLDER}"
+            Write-Host "Extracting Qt libraries from ${qt_archive_file} to ${env:DEPENDENCIES_FOLDER}"
             if (!(Test-Path -Path "${env:DEPENDENCIES_FOLDER}")) {
               New-Item "${env:DEPENDENCIES_FOLDER}" -type directory | out-null
             }
@@ -561,8 +559,9 @@ install:
             if (${LastExitCode} -ne 0) {
               throw "File extraction failed with exit code ${LastExitCode}."
             }
-            Write-Host "Extracted: ${qt_install_folder}"
+            Write-Host "Extracting of Qt libraries from ${qt_archive_file} to ${env:DEPENDENCIES_FOLDER} completed successfully"
           }
+          Write-Host "Qt ${env:QT_VERSION} is located at ${qt_install_folder}"
           $env:QT_HOME = "${qt_install_folder}"
           $env:QT_BIN_FOLDER = "${qt_install_folder}\bin"
           $env:QT_QMAKE_EXECUTABLE = "${env:QT_BIN_FOLDER}\qmake.exe"
