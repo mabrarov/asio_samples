@@ -749,15 +749,15 @@ install:
           echo "Prebuilt Boost archive found at ${boost_archive_file}";
         else
           echo "Prebuilt Boost archive not found at ${boost_archive_file}" &&
-          echo "Going to download prebuilt Boost archive from ${boost_download_url} to ${boost_archive_file}" &&
+          echo "Going to download Boost archive from ${boost_download_url} to ${boost_archive_file}" &&
           mkdir -p "${DOWNLOADS_HOME}" &&
           curl --connect-timeout "${CURL_CONNECT_TIMEOUT}" --max-time "${CURL_MAX_TIME}" --retry "${CURL_RETRY}" --retry-delay "${CURL_RETRY_DELAY}" -jksSL "${boost_download_url}" --output "${boost_archive_file}" &&
-          echo "Download of prebuilt Boost archive from ${boost_download_url} to ${boost_archive_file} completed successfully";
+          echo "Download of Boost archive from ${boost_download_url} to ${boost_archive_file} completed successfully";
         fi &&
         mkdir -p "${DEPENDENCIES_HOME}" &&
-        echo "Going to unpack prebuilt Boost archive from ${boost_archive_file} to ${DEPENDENCIES_HOME}" &&
+        echo "Going to unpack Boost archive from ${boost_archive_file} to ${DEPENDENCIES_HOME}" &&
         tar -xzf "${boost_archive_file}" -C "${DEPENDENCIES_HOME}" &&
-        echo "Unpacking of prebuilt Boost archive from ${boost_archive_file} to ${DEPENDENCIES_HOME} completed successfully";
+        echo "Unpacking of Boost archive from ${boost_archive_file} to ${DEPENDENCIES_HOME} completed successfully";
       fi &&
       echo "Prebuilt Boost ${BOOST_VERSION} is located at ${PREBUILT_BOOST_HOME}" &&
       export LD_LIBRARY_PATH="${PREBUILT_BOOST_HOME}/lib:${LD_LIBRARY_PATH}";
@@ -782,7 +782,7 @@ script:
       if [[ "${PRE_INSTALLED_BOOST}" != 0 ]]; then
         echo "Building with installed Boost ${BOOST_VERSION}";
       else
-        echo "Building with prebuilt Boost ${BOOST_VERSION} located at ${PREBUILT_BOOST_HOME}" &&
+        echo "Building with Boost ${BOOST_VERSION} located at ${PREBUILT_BOOST_HOME}" &&
         export CMAKE_GENERATOR_COMMAND="${CMAKE_GENERATOR_COMMAND} -D CMAKE_SKIP_BUILD_RPATH=ON -D Boost_NO_SYSTEM_PATHS=ON -D BOOST_INCLUDEDIR=\"${PREBUILT_BOOST_HOME}/include\" -D BOOST_LIBRARYDIR=\"${PREBUILT_BOOST_HOME}/lib\"";
       fi &&
       export CMAKE_GENERATOR_COMMAND="${CMAKE_GENERATOR_COMMAND} -D ma_force_qt_major_version=\"${QT_MAJOR_VERSION}\"" &&

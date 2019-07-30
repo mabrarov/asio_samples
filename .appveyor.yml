@@ -287,14 +287,14 @@ install:
               if (!(Test-Path -Path "${env:DOWNLOADS_FOLDER}")) {
                 New-Item "${env:DOWNLOADS_FOLDER}" -type directory | out-null
               }
-              Write-Host "Going to download pre-built ICU libraries from: ${icu_download_url} to: ${icu_archive_file}"
+              Write-Host "Going to download ICU libraries from: ${icu_download_url} to: ${icu_archive_file}"
               curl.exe --connect-timeout "${env:CURL_CONNECT_TIMEOUT}" --max-time "${env:CURL_MAX_TIME}" --retry "${env:CURL_RETRY}" --retry-delay "${env:CURL_RETRY_DELAY}" --show-error --silent --location --output "${icu_archive_file}" "${icu_download_url}"
               if (${LastExitCode} -ne 0) {
-                throw "Downloading of pre-built ICU libraries failed with exit code ${LastExitCode}."
+                throw "Downloading of ICU libraries failed with exit code ${LastExitCode}."
               }
-              Write-Host "Downloaded pre-built ICU libraries: ${icu_archive_file}"
+              Write-Host "Downloaded ICU libraries: ${icu_archive_file}"
             }
-            Write-Host "Extracting pre-built ICU libraries from: ${icu_archive_file} to: ${env:DEPENDENCIES_FOLDER}"
+            Write-Host "Extracting ICU libraries from: ${icu_archive_file} to: ${env:DEPENDENCIES_FOLDER}"
             if (!(Test-Path -Path "${env:DEPENDENCIES_FOLDER}")) {
               New-Item "${env:DEPENDENCIES_FOLDER}" -type directory | out-null
             }
@@ -390,14 +390,14 @@ install:
               if (!(Test-Path -Path "${env:DOWNLOADS_FOLDER}")) {
                 New-Item "${env:DOWNLOADS_FOLDER}" -type directory | out-null
               }
-              Write-Host "Going to download pre-built Boost libraries from: ${boost_download_url} to: ${boost_archive_file}"
+              Write-Host "Going to download Boost libraries from: ${boost_download_url} to: ${boost_archive_file}"
               curl.exe --connect-timeout "${env:CURL_CONNECT_TIMEOUT}" --max-time "${env:CURL_MAX_TIME}" --retry "${env:CURL_RETRY}" --retry-delay "${env:CURL_RETRY_DELAY}" --show-error --silent --location --output "${boost_archive_file}" "${boost_download_url}"
               if (${LastExitCode} -ne 0) {
-                throw "Downloading of pre-built Boost libraries failed with exit code ${LastExitCode}."
+                throw "Downloading of Boost libraries failed with exit code ${LastExitCode}."
               }
-              Write-Host "Downloaded pre-built Boost libraries: ${boost_archive_file}"
+              Write-Host "Downloaded Boost libraries: ${boost_archive_file}"
             }
-            Write-Host "Extracting pre-built Boost libraries from: ${boost_archive_file} to: ${env:DEPENDENCIES_FOLDER}"
+            Write-Host "Extracting Boost libraries from: ${boost_archive_file} to: ${env:DEPENDENCIES_FOLDER}"
             if (!(Test-Path -Path "${env:DEPENDENCIES_FOLDER}")) {
               New-Item "${env:DEPENDENCIES_FOLDER}" -type directory | out-null
             }
@@ -546,14 +546,14 @@ install:
               if (!(Test-Path -Path "${env:DOWNLOADS_FOLDER}")) {
                 New-Item "${env:DOWNLOADS_FOLDER}" -type directory | out-null
               }
-              Write-Host "Going to download pre-built Qt libraries from: ${qt_download_url} to: ${qt_archive_file}"
+              Write-Host "Going to download Qt libraries from: ${qt_download_url} to: ${qt_archive_file}"
               curl.exe --connect-timeout "${env:CURL_CONNECT_TIMEOUT}" --max-time "${env:CURL_MAX_TIME}" --retry "${env:CURL_RETRY}" --retry-delay "${env:CURL_RETRY_DELAY}" --show-error --silent --location --output "${qt_archive_file}" "${qt_download_url}"
               if (${LastExitCode} -ne 0) {
-                throw "Downloading of pre-built Qt libraries failed with exit code ${LastExitCode}."
+                throw "Downloading of Qt libraries failed with exit code ${LastExitCode}."
               }
-              Write-Host "Downloaded pre-built Qt libraries: ${qt_archive_file}"
+              Write-Host "Downloaded Qt libraries: ${qt_archive_file}"
             }
-            Write-Host "Extracting pre-built Qt libraries from: ${qt_archive_file} to: ${env:DEPENDENCIES_FOLDER}"
+            Write-Host "Extracting Qt libraries from: ${qt_archive_file} to: ${env:DEPENDENCIES_FOLDER}"
             if (!(Test-Path -Path "${env:DEPENDENCIES_FOLDER}")) {
               New-Item "${env:DEPENDENCIES_FOLDER}" -type directory | out-null
             }
