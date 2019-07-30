@@ -129,6 +129,9 @@ environment:
       QT_VERSION: 5.10.1
       QT_LINKAGE: shared
 
+cache:
+  - C:\projects\downloads
+
 install:
   - ps: |
       $env:OS_VERSION = (Get-WmiObject win32_operatingsystem).version
