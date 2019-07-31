@@ -39,16 +39,6 @@ environment:
   PIP_RETRY: 10
 
   matrix:
-    - TOOLCHAIN: mingw
-      MINGW_VERSION: 7.3.0
-      MINGW_RT_VERSION: 5
-      MINGW_REVISION: 0
-      RUNTIME_LINKAGE: static
-      CMAKE_VERSION: 3.15.1
-      BOOST_VERSION: 1.70.0
-      BOOST_LINKAGE: static
-      QT_VERSION: 5.12.2
-      QT_LINKAGE: shared
     - TOOLCHAIN: msvc
       MSVC_VERSION: 14.0
       RUNTIME_LINKAGE: shared
@@ -59,6 +49,14 @@ environment:
       QT_LINKAGE: shared
       COVERITY_SCAN_CANDIDATE: 1
       COVERAGE_BUILD_CANDIDATE: 1
+    - TOOLCHAIN: mingw
+      MINGW_VERSION: 8.1.0
+      MINGW_RT_VERSION: 6
+      MINGW_REVISION: 0
+      RUNTIME_LINKAGE: static
+      CMAKE_VERSION: 3.15.1
+      BOOST_VERSION: 1.70.0
+      BOOST_LINKAGE: static
     - TOOLCHAIN: msvc
       MSVC_VERSION: 14.0
       RUNTIME_LINKAGE: shared
@@ -231,6 +229,7 @@ install:
               throw "Unsupported platform for ${env:TOOLCHAIN} toolchain: ${env:PLATFORM}"
             }
           }
+          $env:ARTIFACT_PATH_PREFIX = "${env:CONFIGURATION}\"
         }
         "mingw" {
           $env:TOOLCHAIN_ID = "${env:TOOLCHAIN}-${env:MINGW_VERSION}"
@@ -249,7 +248,8 @@ install:
               throw "Unsupported platform for ${env:TOOLCHAIN} toolchain: ${env:PLATFORM}"
             }
           }
-          $env:MINGW_HOME = "C:\mingw-w64\${mingw_platform_suffix}${env:MINGW_VERSION}-posix${mingw_exception_suffix}-rt_v${env:MINGW_RT_VERSION}-rev${env:MINGW_REVISION}"
+          $env:MINGW_HOME = "C:\mingw-w64\${mingw_platform_suffix}${env:MINGW_VERSION}-posix${mingw_exception_suffix}-rt_v${env:MINGW_RT_VERSION}-rev${env:MINGW_REVISION}\mingw64"
+          $env:ARTIFACT_PATH_PREFIX = ""
         }
         default {
           throw "Unsupported toolchain: ${env:TOOLCHAIN}"
@@ -293,7 +293,7 @@ install:
         }
       }
       $pre_installed_icu = $false
-      if (${env:ICU_VERSION}) {
+      if (Test-Path env:ICU_VERSION) {
         if (${pre_installed_icu}) {
           throw "Installed ICU is missing"
         } else {
@@ -372,11 +372,11 @@ install:
           $env:ICU_ROOT = "${icu_install_folder}"
           $env:ICU_LIBRARY_FOLDER = "${icu_install_folder}\lib"
         }
-        if (${env:RUNTIME_LINKAGE} -eq "static" -and -not (${env:ICU_LINKAGE} -eq "static")) {
+        if ((${env:RUNTIME_LINKAGE} -eq "static") -and (${env:ICU_LINKAGE} -ne "static")) {
           throw "Incompatible type of linkage of ICU: ${env:ICU_LINKAGE} for the specified type of linkage of C/C++ runtime: ${env:RUNTIME_LINKAGE}"
         }
       }
-      if (${env:BOOST_VERSION}) {
+      if (Test-Path env:BOOST_VERSION) {
         $pre_installed_boost = $false
         switch (${env:TOOLCHAIN}) {
           "msvc" {
@@ -415,13 +415,12 @@ install:
           $env:BOOST_INCLUDE_FOLDER = "${boost_home}"
           $env:BOOST_LIBRARY_FOLDER = "${boost_home}\${boost_library_folder_platform_suffix}${boost_library_folder_toolchain_suffix}"
         } else {
-          $boost_platform_suffix = ""
           switch (${env:PLATFORM}) {
             "Win32" {
-              $boost_platform_suffix = "-x86"
+              $env:BOOST_PLATFORM_SUFFIX = "-x86"
             }
             "x64" {
-              $boost_platform_suffix = "-x64"
+              $env:BOOST_PLATFORM_SUFFIX = "-x64"
             }
             default {
               throw "Unsupported platform for Boost libraries: ${env:PLATFORM}"
@@ -459,10 +458,10 @@ install:
               throw "Unsupported toolchain for Boost libraries: ${env:TOOLCHAIN}"
             }
           }
-          $boost_install_folder = "${env:DEPENDENCIES_FOLDER}\boost${boost_version_suffix}${boost_platform_suffix}${boost_toolchain_suffix}"
+          $boost_install_folder = "${env:DEPENDENCIES_FOLDER}\boost${boost_version_suffix}${env:BOOST_PLATFORM_SUFFIX}${boost_toolchain_suffix}"
           if (!(Test-Path -Path "${boost_install_folder}")) {
             Write-Host "Boost libraries are absent for the selected toolchain (${env:TOOLCHAIN_ID}) and Boost version (${env:BOOST_VERSION}) at ${boost_install_folder}"
-            $boost_archive_name = "boost${boost_version_suffix}${boost_platform_suffix}${boost_toolchain_suffix}.7z"
+            $boost_archive_name = "boost${boost_version_suffix}${env:BOOST_PLATFORM_SUFFIX}${boost_toolchain_suffix}.7z"
             $boost_archive_file = "${env:DOWNLOADS_FOLDER}\${boost_archive_name}"
             if (!(Test-Path -Path "${boost_archive_file}")) {
               $boost_download_url = "https://dl.bintray.com/mabrarov/generic/boost/${env:BOOST_VERSION}/${boost_archive_name}"
@@ -491,8 +490,8 @@ install:
           $env:BOOST_INCLUDE_FOLDER = "${boost_install_folder}\include\boost${boost_include_folder_version_suffix}"
           $env:BOOST_LIBRARY_FOLDER = "${boost_install_folder}\lib"
         }
-        if (${env:RUNTIME_LINKAGE} -eq "static" -and -not (${env:BOOST_LINKAGE} -eq "static")) {
-          throw "Incompatible type of linkage of Boost: ${env:BOOST_LINKAGE} for the specified type of linkage of C/C++ runtime: ${env:RUNTIME_LINKAGE}"
+        if ((${env:RUNTIME_LINKAGE} -eq "static") -and (${env:BOOST_LINKAGE} -ne "static")) {
+          throw "Incompatible type of linkage of Boost libraries: ${env:BOOST_LINKAGE} for the specified type of linkage of C/C++ runtime: ${env:RUNTIME_LINKAGE}"
         }
         switch (${env:BOOST_LINKAGE}) {
           "static" {
@@ -503,7 +502,7 @@ install:
           }
         }
       }
-      if (${env:QT_VERSION}) {
+      if (Test-Path env:QT_VERSION) {
         $pre_installed_qt = $false
         if (!(${env:QT_LINKAGE} -eq "static")) {
           switch (${env:TOOLCHAIN}) {
@@ -743,18 +742,18 @@ install:
       }
       $env:COVERITY_SCAN_BUILD = (${env:COVERITY_SCAN_CANDIDATE} -eq "1") -and (${env:APPVEYOR_REPO_BRANCH} -eq "coverity_scan") -and (${env:CONFIGURATION} -eq "Release") -and (${env:PLATFORM} -eq "x64")
       $env:COVERAGE_BUILD = (${env:COVERAGE_BUILD_CANDIDATE} -eq "1") -and (${env:CONFIGURATION} -eq "Debug") -and (${env:PLATFORM} -eq "x64")
-      $env:CODECOV_FLAG = "windows_${env:OS_VERSION}__${env:PLATFORM}__${env:TOOLCHAIN}_${env:MSVC_VERSION}"
-      if (${env:BOOST_VERSION}) {
+      $env:CODECOV_FLAG = "windows_${env:OS_VERSION}__${env:PLATFORM}__${env:TOOLCHAIN_ID}"
+      if (Test-Path env:BOOST_VERSION) {
         $env:CODECOV_FLAG = "${env:CODECOV_FLAG}__boost_${env:BOOST_VERSION}"
       }
-      if (${env:QT_VERSION}) {
+      if (Test-Path env:QT_VERSION) {
         $env:CODECOV_FLAG = "${env:CODECOV_FLAG}__qt_${env:QT_VERSION}"
       }
       $env:CODECOV_FLAG = "${env:CODECOV_FLAG}" -replace "[\.-]", "_"
       Write-Host "PLATFORM                  : ${env:PLATFORM}"
       Write-Host "CONFIGURATION             : ${env:CONFIGURATION}"
-      Write-Host "TOOLCHAIN                 : ${env:TOOLCHAIN_ID}"
-      swicth (${env:TOOLCHAIN}) {
+      Write-Host "TOOLCHAIN_ID              : ${env:TOOLCHAIN_ID}"
+      switch (${env:TOOLCHAIN}) {
         "msvc" {
           Write-Host "MSVS_PATCH_FOLDER         : ${env:MSVS_PATCH_FOLDER}"
           Write-Host "MSVS_PATCH_BATCH_FILE     : ${env:MSVS_PATCH_BATCH_FILE}"
@@ -768,7 +767,7 @@ install:
         }
       }
       Write-Host "APPVEYOR_BUILD_FOLDER     : ${env:APPVEYOR_BUILD_FOLDER}"
-      if (${env:ICU_ROOT}) {
+      if (Test-Path env:ICU_ROOT) {
         Write-Host "ICU_ROOT                  : ${env:ICU_ROOT}"
         Write-Host "ICU_LIBRARY_FOLDER        : ${env:ICU_LIBRARY_FOLDER}"
       }
@@ -809,16 +808,16 @@ install:
   - cmd: if not "%WINDOWS_SDK_ENV_BATCH_FILE%"=="" call "%WINDOWS_SDK_ENV_BATCH_FILE%" %WINDOWS_SDK_ENV_PARAMETERS%
   - cmd: if not "%MSVC_VARS_BATCH_FILE%"=="" call "%MSVC_VARS_BATCH_FILE%" %MSVC_VARS_PLATFORM%
   - ps: |
-      if (${env:QT_VERSION}) {
+      if (Test-Path env:QT_VERSION) {
         $env:PATH = "${env:QT_BIN_FOLDER};${env:PATH}"
       }
-      if (${env:BOOST_VERSION} -and -not (${env:BOOST_LINKAGE} -eq "static")) {
+      if ((Test-Path env:BOOST_VERSION) -and (${env:BOOST_LINKAGE} -ne "static")) {
         $env:PATH = "${env:BOOST_LIBRARY_FOLDER};${env:PATH}"
       }
-      if (${env:ICU_VERSION} -and -not (${env:ICU_LINKAGE} -eq "static")) {
+      if ((Test-Path env:ICU_VERSION) -and (${env:ICU_LINKAGE} -ne "static")) {
         $env:PATH = "${env:ICU_LIBRARY_FOLDER};${env:PATH}"
       }
-      if (${env:MINGW_HOME}) {
+      if (Test-Path env:MINGW_HOME) {
         $env:PATH = "${env:MINGW_HOME}\bin;${env:PATH}"
       }
 
@@ -827,11 +826,14 @@ build_script:
       New-Item "${env:APPVEYOR_BUILD_FOLDER}\build" -type directory | out-null
       Set-Location -Path "${env:APPVEYOR_BUILD_FOLDER}\build"
       $generate_cmd = "cmake"
+      if (${env:TOOLCHAIN} -eq "mingw") {
+        $generate_cmd = "${generate_cmd} -D CMAKE_SH=""CMAKE_SH-NOTFOUND"""
+      }
       switch (${env:RUNTIME_LINKAGE}) {
         "static" {
           $generate_cmd = "${generate_cmd} -D CMAKE_USER_MAKE_RULES_OVERRIDE=""${env:APPVEYOR_BUILD_FOLDER}\cmake\static_c_runtime_overrides.cmake"" -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX=""${env:APPVEYOR_BUILD_FOLDER}\cmake\static_cxx_runtime_overrides.cmake"""
-          if ((${env:QT_VERSION} -match "5\.*") -and (${env:QT_LINKAGE} -eq "static")) {
-            if (!(${env:ICU_ROOT})) {
+          if ((Test-Path env:QT_VERSION) -and (${env:QT_VERSION} -match "5\.*") -and (${env:QT_LINKAGE} -eq "static")) {
+            if (!(Test-Path env:ICU_ROOT)) {
               throw "ICU location is unspecified. Static Qt 5.x requires static ICU"
             }
             $generate_cmd = "${generate_cmd} -D ICU_ROOT=""${env:ICU_ROOT}"""
@@ -842,7 +844,10 @@ build_script:
         }
       }
       $generate_cmd = "${generate_cmd} -D BOOST_INCLUDEDIR=""${env:BOOST_INCLUDE_FOLDER}"" -D BOOST_LIBRARYDIR=""${env:BOOST_LIBRARY_FOLDER}"" -D Boost_USE_STATIC_LIBS=${env:BOOST_USE_STATIC_LIBS} -D Boost_NO_SYSTEM_PATHS=ON"
-      if (!(${env:QT_VERSION})) {
+      if ((${env:TOOLCHAIN} -eq "mingw") -and (Test-Path env:BOOST_PLATFORM_SUFFIX)) {
+        $generate_cmd = "${generate_cmd} -D Boost_ARCHITECTURE=""${env:BOOST_PLATFORM_SUFFIX}"""
+      }
+      if (!(Test-Path env:QT_VERSION)) {
         $generate_cmd = "${generate_cmd} -D MA_QT=OFF"
       } elseif (${env:QT_VERSION} -match "5\.*") {
         $generate_cmd = "${generate_cmd} -D Qt5Core_DIR=""${env:QT_HOME}\lib\cmake\Qt5Core"" -D Qt5Gui_DIR=""${env:QT_HOME}\lib\cmake\Qt5Gui"" -D Qt5Widgets_DIR=""${env:QT_HOME}\lib\cmake\Qt5Widgets"" -D MA_QT_MAJOR_VERSION=5"
@@ -851,6 +856,9 @@ build_script:
       } else {
         throw "Unsupported version of Qt: ${env:QT_VERSION}."
       }
+      if (${env:TOOLCHAIN} -eq "mingw") {
+        $generate_cmd = "${generate_cmd} -D CMAKE_BUILD_TYPE=""${env:CONFIGURATION}"""
+      }
       $generate_cmd = "${generate_cmd} -G ""${env:CMAKE_GENERATOR}"" ""${env:APPVEYOR_BUILD_FOLDER}"""
       Write-Host "CMake project generation command: ${generate_cmd}"
       Invoke-Expression "${generate_cmd}"
@@ -858,7 +866,7 @@ build_script:
         throw "Generation of project failed with exit code ${LastExitCode}."
       }
       $build_cmd = "cmake --build . --config ""${env:CONFIGURATION}"""
-      if (${env:MSVC_VERSION} -ne "9.0") {
+      if ((${env:TOOLCHAIN} -eq "msvc") -and (${env:MSVC_VERSION} -ne "9.0")) {
         $build_cmd = "${build_cmd} -- /maxcpucount /verbosity:normal /logger:""C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"""
       }
       if (${env:COVERITY_SCAN_BUILD} -eq "True") {
@@ -913,55 +921,55 @@ after_test:
   - cmd: if "%COVERAGE_BUILD%"=="True" codecov --token "%CODECOV_TOKEN%" --file "%COBERTURA_COVERAGE_FILE%" --root "%APPVEYOR_BUILD_FOLDER%" -X gcov -F "%CODECOV_FLAG%"
 
 artifacts:
-  - path: build\examples\ma_asio_performance_test_client\$(configuration)\*.exe
+  - path: build\examples\ma_asio_performance_test_client\$(ARTIFACT_PATH_PREFIX)*.exe
     name: ma_asio_performance_test_client
-  - path: build\examples\ma_async_basics\$(configuration)\*.exe
+  - path: build\examples\ma_async_basics\$(ARTIFACT_PATH_PREFIX)*.exe
     name: ma_async_basics
-  - path: build\examples\ma_async_basics2\$(configuration)\*.exe
+  - path: build\examples\ma_async_basics2\$(ARTIFACT_PATH_PREFIX)*.exe
     name: ma_async_basics2
-  - path: build\examples\ma_echo_server\$(configuration)\*.exe
+  - path: build\examples\ma_echo_server\$(ARTIFACT_PATH_PREFIX)*.exe
     name: ma_echo_server
-  - path: build\examples\ma_nmea_client\$(configuration)\*.exe
+  - path: build\examples\ma_nmea_client\$(ARTIFACT_PATH_PREFIX)*.exe
     name: ma_nmea_client
-  - path: build\examples\ma_qt_echo_server\$(configuration)\*.exe
+  - path: build\examples\ma_qt_echo_server\$(ARTIFACT_PATH_PREFIX)*.exe
     name: ma_qt_echo_server
-  - path: build\examples\asio_multicast_receiver\$(configuration)\*.exe
+  - path: build\examples\asio_multicast_receiver\$(ARTIFACT_PATH_PREFIX)*.exe
     name: asio_multicast_receiver
-  - path: build\examples\asio_multicast_sender\$(configuration)\*.exe
+  - path: build\examples\asio_multicast_sender\$(ARTIFACT_PATH_PREFIX)*.exe
     name: asio_multicast_sender
-  - path: build\tests\ma_async_connect_test\$(configuration)\*.exe
+  - path: build\tests\ma_async_connect_test\$(ARTIFACT_PATH_PREFIX)*.exe
     name: ma_async_connect_test
-  - path: build\tests\ma_handler_storage_test\$(configuration)\*.exe
+  - path: build\tests\ma_handler_storage_test\$(ARTIFACT_PATH_PREFIX)*.exe
     name: ma_handler_storage_test
-  - path: build\tests\ma_lockable_wrapper_test\$(configuration)\*.exe
+  - path: build\tests\ma_lockable_wrapper_test\$(ARTIFACT_PATH_PREFIX)*.exe
     name: ma_lockable_wrapper_test
-  - path: build\tests\ma_shared_ptr_factory_test\$(configuration)\*.exe
+  - path: build\tests\ma_shared_ptr_factory_test\$(ARTIFACT_PATH_PREFIX)*.exe
     name: ma_shared_ptr_factory_test
-  - path: build\tests\ma_sp_singleton_test\$(configuration)\*.exe
+  - path: build\tests\ma_sp_singleton_test\$(ARTIFACT_PATH_PREFIX)*.exe
     name: ma_sp_singleton_test
-  - path: build\tests\ma_windows_console_signal_test\$(configuration)\*.exe
+  - path: build\tests\ma_windows_console_signal_test\$(ARTIFACT_PATH_PREFIX)*.exe
     name: ma_windows_console_signal_test
-  - path: build\tests\ma_handler_allocator_test\$(configuration)\*.exe
+  - path: build\tests\ma_handler_allocator_test\$(ARTIFACT_PATH_PREFIX)*.exe
     name: ma_handler_allocator_test
-  - path: build\tests\ma_custom_alloc_handler_test\$(configuration)\*.exe
+  - path: build\tests\ma_custom_alloc_handler_test\$(ARTIFACT_PATH_PREFIX)*.exe
     name: ma_custom_alloc_handler_test
-  - path: build\tests\ma_cyclic_buffer_test\$(configuration)\*.exe
+  - path: build\tests\ma_cyclic_buffer_test\$(ARTIFACT_PATH_PREFIX)*.exe
     name: ma_cyclic_buffer_test
-  - path: build\tests\ma_sp_intrusive_list_test\$(configuration)\*.exe
+  - path: build\tests\ma_sp_intrusive_list_test\$(ARTIFACT_PATH_PREFIX)*.exe
     name: ma_sp_intrusive_list_test
-  - path: build\tests\ma_strand_test\$(configuration)\*.exe
+  - path: build\tests\ma_strand_test\$(ARTIFACT_PATH_PREFIX)*.exe
     name: ma_strand_test
-  - path: build\tests\ma_context_alloc_handler_test\$(configuration)\*.exe
+  - path: build\tests\ma_context_alloc_handler_test\$(ARTIFACT_PATH_PREFIX)*.exe
     name: ma_context_alloc_handler_test
-  - path: build\tests\ma_bind_handler_test\$(configuration)\*.exe
+  - path: build\tests\ma_bind_handler_test\$(ARTIFACT_PATH_PREFIX)*.exe
     name: ma_bind_handler_test
-  - path: build\tests\ma_context_invoke_handler_test\$(configuration)\*.exe
+  - path: build\tests\ma_context_invoke_handler_test\$(ARTIFACT_PATH_PREFIX)*.exe
     name: ma_context_invoke_handler_test
-  - path: build\tests\ma_context_wrapped_handler_test\$(configuration)\*.exe
+  - path: build\tests\ma_context_wrapped_handler_test\$(ARTIFACT_PATH_PREFIX)*.exe
     name: ma_context_wrapped_handler_test
-  - path: build\tests\ma_limited_int_test\$(configuration)\*.exe
+  - path: build\tests\ma_limited_int_test\$(ARTIFACT_PATH_PREFIX)*.exe
     name: ma_limited_int_test
-  - path: build\tests\ma_console_close_signal_test\$(configuration)\*.exe
+  - path: build\tests\ma_console_close_signal_test\$(ARTIFACT_PATH_PREFIX)*.exe
     name: ma_console_close_signal_test
-  - path: build\tests\ma_intrusive_list_test\$(configuration)\*.exe
+  - path: build\tests\ma_intrusive_list_test\$(ARTIFACT_PATH_PREFIX)*.exe
     name: ma_intrusive_list_test
