@@ -229,7 +229,7 @@ install:
               throw "Unsupported platform for ${env:TOOLCHAIN} toolchain: ${env:PLATFORM}"
             }
           }
-          $env:ARTIFACT_PATH_PATTERN = "${env:CONFIGURATION}\*.exe"
+          $env:ARTIFACT_PATH_SUFFIX = "\${env:CONFIGURATION}\"
         }
         "mingw" {
           $env:TOOLCHAIN_ID = "${env:TOOLCHAIN}-${env:MINGW_VERSION}"
@@ -249,7 +249,7 @@ install:
             }
           }
           $env:MINGW_HOME = "C:\mingw-w64\${mingw_platform_suffix}${env:MINGW_VERSION}-posix${mingw_exception_suffix}-rt_v${env:MINGW_RT_VERSION}-rev${env:MINGW_REVISION}\mingw64"
-          $env:ARTIFACT_PATH_PATTERN = "*.exe"
+          $env:ARTIFACT_PATH_SUFFIX = "\"
         }
         default {
           throw "Unsupported toolchain: ${env:TOOLCHAIN}"
@@ -771,7 +771,7 @@ install:
         Write-Host "ICU_ROOT                  : ${env:ICU_ROOT}"
         Write-Host "ICU_LIBRARY_FOLDER        : ${env:ICU_LIBRARY_FOLDER}"
       }
-      Write-Host "ARTIFACT_PATH_PATTERN     : ${env:ARTIFACT_PATH_PATTERN}"
+      Write-Host "ARTIFACT_PATH_SUFFIX      : ${env:ARTIFACT_PATH_SUFFIX}"
       Write-Host "BOOST_INCLUDE_FOLDER      : ${env:BOOST_INCLUDE_FOLDER}"
       Write-Host "BOOST_LIBRARY_FOLDER      : ${env:BOOST_LIBRARY_FOLDER}"
       Write-Host "BOOST_USE_STATIC_LIBS     : ${env:BOOST_USE_STATIC_LIBS}"
@@ -922,55 +922,55 @@ after_test:
   - cmd: if "%COVERAGE_BUILD%"=="True" codecov --token "%CODECOV_TOKEN%" --file "%COBERTURA_COVERAGE_FILE%" --root "%APPVEYOR_BUILD_FOLDER%" -X gcov -F "%CODECOV_FLAG%"
 
 artifacts:
-  - path: build\examples\ma_asio_performance_test_client\$(ARTIFACT_PATH_PATTERN)
+  - path: build\examples\ma_asio_performance_test_client$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_asio_performance_test_client
-  - path: build\examples\ma_async_basics\$(ARTIFACT_PATH_PATTERN)
+  - path: build\examples\ma_async_basics$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_async_basics
-  - path: build\examples\ma_async_basics2\$(ARTIFACT_PATH_PATTERN)
+  - path: build\examples\ma_async_basics2$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_async_basics2
-  - path: build\examples\ma_echo_server\$(ARTIFACT_PATH_PATTERN)
+  - path: build\examples\ma_echo_server$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_echo_server
-  - path: build\examples\ma_nmea_client\$(ARTIFACT_PATH_PATTERN)
+  - path: build\examples\ma_nmea_client$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_nmea_client
-  - path: build\examples\ma_qt_echo_server\$(ARTIFACT_PATH_PATTERN)
+  - path: build\examples\ma_qt_echo_server$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_qt_echo_server
-  - path: build\examples\asio_multicast_receiver\$(ARTIFACT_PATH_PATTERN)
+  - path: build\examples\asio_multicast_receiver$(ARTIFACT_PATH_SUFFIX)*.exe
     name: asio_multicast_receiver
-  - path: build\examples\asio_multicast_sender\$(ARTIFACT_PATH_PATTERN)
+  - path: build\examples\asio_multicast_sender$(ARTIFACT_PATH_SUFFIX)*.exe
     name: asio_multicast_sender
-  - path: build\tests\ma_async_connect_test\$(ARTIFACT_PATH_PATTERN)
+  - path: build\tests\ma_async_connect_test$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_async_connect_test
-  - path: build\tests\ma_handler_storage_test\$(ARTIFACT_PATH_PATTERN)
+  - path: build\tests\ma_handler_storage_test$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_handler_storage_test
-  - path: build\tests\ma_lockable_wrapper_test\$(ARTIFACT_PATH_PATTERN)
+  - path: build\tests\ma_lockable_wrapper_test$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_lockable_wrapper_test
-  - path: build\tests\ma_shared_ptr_factory_test\$(ARTIFACT_PATH_PATTERN)
+  - path: build\tests\ma_shared_ptr_factory_test$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_shared_ptr_factory_test
-  - path: build\tests\ma_sp_singleton_test\$(ARTIFACT_PATH_PATTERN)
+  - path: build\tests\ma_sp_singleton_test$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_sp_singleton_test
-  - path: build\tests\ma_windows_console_signal_test\$(ARTIFACT_PATH_PATTERN)
+  - path: build\tests\ma_windows_console_signal_test$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_windows_console_signal_test
-  - path: build\tests\ma_handler_allocator_test\$(ARTIFACT_PATH_PATTERN)
+  - path: build\tests\ma_handler_allocator_test$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_handler_allocator_test
-  - path: build\tests\ma_custom_alloc_handler_test\$(ARTIFACT_PATH_PATTERN)
+  - path: build\tests\ma_custom_alloc_handler_test$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_custom_alloc_handler_test
-  - path: build\tests\ma_cyclic_buffer_test\$(ARTIFACT_PATH_PATTERN)
+  - path: build\tests\ma_cyclic_buffer_test$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_cyclic_buffer_test
-  - path: build\tests\ma_sp_intrusive_list_test\$(ARTIFACT_PATH_PATTERN)
+  - path: build\tests\ma_sp_intrusive_list_test$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_sp_intrusive_list_test
-  - path: build\tests\ma_strand_test\$(ARTIFACT_PATH_PATTERN)
+  - path: build\tests\ma_strand_test$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_strand_test
-  - path: build\tests\ma_context_alloc_handler_test\$(ARTIFACT_PATH_PATTERN)
+  - path: build\tests\ma_context_alloc_handler_test$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_context_alloc_handler_test
-  - path: build\tests\ma_bind_handler_test\$(ARTIFACT_PATH_PATTERN)
+  - path: build\tests\ma_bind_handler_test$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_bind_handler_test
-  - path: build\tests\ma_context_invoke_handler_test\$(ARTIFACT_PATH_PATTERN)
+  - path: build\tests\ma_context_invoke_handler_test$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_context_invoke_handler_test
-  - path: build\tests\ma_context_wrapped_handler_test\$(ARTIFACT_PATH_PATTERN)
+  - path: build\tests\ma_context_wrapped_handler_test$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_context_wrapped_handler_test
-  - path: build\tests\ma_limited_int_test\$(ARTIFACT_PATH_PATTERN)
+  - path: build\tests\ma_limited_int_test$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_limited_int_test
-  - path: build\tests\ma_console_close_signal_test\$(ARTIFACT_PATH_PATTERN)
+  - path: build\tests\ma_console_close_signal_test$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_console_close_signal_test
-  - path: build\tests\ma_intrusive_list_test\$(ARTIFACT_PATH_PATTERN)
+  - path: build\tests\ma_intrusive_list_test$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_intrusive_list_test
