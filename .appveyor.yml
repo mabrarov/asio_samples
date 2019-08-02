@@ -39,7 +39,8 @@ environment:
   PIP_RETRY: 10
 
   matrix:
-    - MSVC_VERSION: 14.0
+    - TOOLCHAIN: msvc
+      MSVC_VERSION: 14.0
       RUNTIME_LINKAGE: shared
       CMAKE_VERSION: 3.15.1
       BOOST_VERSION: 1.70.0
@@ -48,7 +49,16 @@ environment:
       QT_LINKAGE: shared
       COVERITY_SCAN_CANDIDATE: 1
       COVERAGE_BUILD_CANDIDATE: 1
-    - MSVC_VERSION: 14.0
+    - TOOLCHAIN: mingw
+      MINGW_VERSION: 8.1.0
+      MINGW_RT_VERSION: 6
+      MINGW_REVISION: 0
+      RUNTIME_LINKAGE: static
+      CMAKE_VERSION: 3.15.1
+      BOOST_VERSION: 1.70.0
+      BOOST_LINKAGE: static
+    - TOOLCHAIN: msvc
+      MSVC_VERSION: 14.0
       RUNTIME_LINKAGE: shared
       CMAKE_VERSION: 3.15.1
       BOOST_VERSION: 1.69.0
@@ -56,7 +66,8 @@ environment:
       QT_VERSION: 5.10.1
       QT_LINKAGE: shared
       COVERAGE_BUILD_CANDIDATE: 1
-    - MSVC_VERSION: 12.0
+    - TOOLCHAIN: msvc
+      MSVC_VERSION: 12.0
       RUNTIME_LINKAGE: shared
       CMAKE_VERSION: 3.15.1
       BOOST_VERSION: 1.67.0
@@ -64,13 +75,15 @@ environment:
       QT_VERSION: 5.6.3
       QT_LINKAGE: shared
       COVERAGE_BUILD_CANDIDATE: 1
-    - MSVC_VERSION: 11.0
+    - TOOLCHAIN: msvc
+      MSVC_VERSION: 11.0
       RUNTIME_LINKAGE: static
       CMAKE_VERSION: 3.15.1
       BOOST_VERSION: 1.67.0
       BOOST_LINKAGE: static
       COVERAGE_BUILD_CANDIDATE: 1
-    - MSVC_VERSION: 10.0
+    - TOOLCHAIN: msvc
+      MSVC_VERSION: 10.0
       RUNTIME_LINKAGE: shared
       CMAKE_VERSION: 3.15.1
       BOOST_VERSION: 1.67.0
@@ -78,25 +91,29 @@ environment:
       QT_VERSION: 4.8.7
       QT_LINKAGE: shared
       COVERAGE_BUILD_CANDIDATE: 1
-    - MSVC_VERSION: 9.0
+    - TOOLCHAIN: msvc
+      MSVC_VERSION: 9.0
       RUNTIME_LINKAGE: static
       CMAKE_VERSION: 3.15.1
       BOOST_VERSION: 1.67.0
       BOOST_LINKAGE: static
       COVERAGE_BUILD_CANDIDATE: 1
-    - MSVC_VERSION: 10.0
+    - TOOLCHAIN: msvc
+      MSVC_VERSION: 10.0
       RUNTIME_LINKAGE: shared
       BOOST_VERSION: 1.47.0
       BOOST_LINKAGE: static
       QT_VERSION: 4.8.7
       QT_LINKAGE: shared
       COVERAGE_BUILD_CANDIDATE: 1
-    - MSVC_VERSION: 9.0
+    - TOOLCHAIN: msvc
+      MSVC_VERSION: 9.0
       RUNTIME_LINKAGE: static
       BOOST_VERSION: 1.47.0
       BOOST_LINKAGE: static
       COVERAGE_BUILD_CANDIDATE: 1
-    - MSVC_VERSION: 14.0
+    - TOOLCHAIN: msvc
+      MSVC_VERSION: 14.0
       RUNTIME_LINKAGE: static
       CMAKE_VERSION: 3.15.1
       BOOST_VERSION: 1.70.0
@@ -105,7 +122,8 @@ environment:
       QT_LINKAGE: static
       ICU_VERSION: 57.1
       ICU_LINKAGE: static
-    - MSVC_VERSION: 14.0
+    - TOOLCHAIN: msvc
+      MSVC_VERSION: 14.0
       RUNTIME_LINKAGE: static
       CMAKE_VERSION: 3.15.1
       BOOST_VERSION: 1.69.0
@@ -114,14 +132,16 @@ environment:
       QT_LINKAGE: static
       ICU_VERSION: 57.1
       ICU_LINKAGE: static
-    - MSVC_VERSION: 14.0
+    - TOOLCHAIN: msvc
+      MSVC_VERSION: 14.0
       RUNTIME_LINKAGE: shared
       CMAKE_VERSION: 3.15.1
       BOOST_VERSION: 1.69.0
       BOOST_LINKAGE: static
       QT_VERSION: 5.10.1
       QT_LINKAGE: shared
-    - MSVC_VERSION: 14.0
+    - TOOLCHAIN: msvc
+      MSVC_VERSION: 14.0
       RUNTIME_LINKAGE: shared
       CMAKE_VERSION: 3.15.1
       BOOST_VERSION: 1.69.0
@@ -129,75 +149,110 @@ environment:
       QT_VERSION: 5.10.1
       QT_LINKAGE: shared
 
+matrix:
+  exclude:
+    - platform: Win32
+      TOOLCHAIN: mingw
+
 cache:
   - C:\projects\downloads -> .appveyor.yml
 
 install:
   - ps: |
       $env:OS_VERSION = (Get-WmiObject win32_operatingsystem).version
-      $env:WINDOWS_SDK_ENV_BATCH_FILE = ""
-      $env:WINDOWS_SDK_ENV_PARAMETERS = ""
-      $env:MSVS_HOME = "${env:ProgramFiles(x86)}\Microsoft Visual Studio ${env:MSVC_VERSION}"
-      $env:MSVC_VARS_BATCH_FILE = "${env:MSVS_HOME}\VC\vcvarsall.bat"
-      $env:MSVS_PATCH_FOLDER = ""
-      $env:MSVS_PATCH_BATCH_FILE = ""
-      switch (${env:PLATFORM}) {
-        "Win32" {
-          $env:MSVC_VARS_PLATFORM = "x86"
-        }
-        "x64" {
-          switch (${env:MSVC_VERSION}) {
-            "14.0" {
-              $env:MSVC_VARS_PLATFORM = "amd64"
+      $toolchain_id = ""
+      switch (${env:TOOLCHAIN}) {
+        "msvc" {
+          $env:TOOLCHAIN_ID = "${env:TOOLCHAIN}-${env:MSVC_VERSION}"
+          $env:WINDOWS_SDK_ENV_BATCH_FILE = ""
+          $env:WINDOWS_SDK_ENV_PARAMETERS = ""
+          $env:MSVS_HOME = "${env:ProgramFiles(x86)}\Microsoft Visual Studio ${env:MSVC_VERSION}"
+          $env:MSVC_VARS_BATCH_FILE = "${env:MSVS_HOME}\VC\vcvarsall.bat"
+          $env:MSVS_PATCH_FOLDER = ""
+          $env:MSVS_PATCH_BATCH_FILE = ""
+          switch (${env:PLATFORM}) {
+            "Win32" {
+              $env:MSVC_VARS_PLATFORM = "x86"
             }
-            "12.0" {
-              $env:MSVC_VARS_PLATFORM = "amd64"
-            }
-            "11.0" {
-              $env:MSVC_VARS_PLATFORM = "x86_amd64"
-            }
-            "10.0" {
-              $env:MSVC_VARS_BATCH_FILE = ""
-              $env:WINDOWS_SDK_ENV_BATCH_FILE = "${env:ProgramFiles}\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd"
-              $env:WINDOWS_SDK_ENV_PARAMETERS = "/x64 /${env:CONFIGURATION}"
-            }
-            "9.0" {
-              Write-Host "Selected MSVS version (${env:MSVC_VERSION}) and platform (${env:PLATFORM}) require patching"
-              $env:MSVS_PATCH_FOLDER = "${env:DEPENDENCIES_FOLDER}\vs2008_patch"
-              if (!(Test-Path -Path "${env:MSVS_PATCH_FOLDER}")) {
-                $msvs_patch_download_folder = "${env:DOWNLOADS_FOLDER}\condaci"
-                $msvs_patch_download_file = "${msvs_patch_download_folder}\vs2008_patch.zip"
-                if (!(Test-Path -Path "${msvs_patch_download_file}")) {
-                  $msvs2008_patch_url = "https://github.com/menpo/condaci.git"
-                  $msvs2008_patch_revision = "98d76b2089d494433ac2e3abd920123088a95a6d"
-                  $msvs_patch_download_folder_nix = "${msvs_patch_download_folder}" -replace "\\", "/"
-                  Write-Host "Going to download MSVS patch from ${msvs2008_patch_url} to ${msvs_patch_download_folder_nix}"
-                  git clone --quiet "${msvs2008_patch_url}" "${msvs_patch_download_folder_nix}"
-                  git -C "${msvs_patch_download_folder_nix}" checkout --quiet "${msvs2008_patch_revision}"
-                  if (${LastExitCode} -ne 0) {
-                    throw "Downloading of MSVS patch from ${msvs2008_patch_url} to ${msvs_patch_download_file} failed with exit code ${LastExitCode}."
+            "x64" {
+              switch (${env:MSVC_VERSION}) {
+                "14.0" {
+                  $env:MSVC_VARS_PLATFORM = "amd64"
+                }
+                "12.0" {
+                  $env:MSVC_VARS_PLATFORM = "amd64"
+                }
+                "11.0" {
+                  $env:MSVC_VARS_PLATFORM = "x86_amd64"
+                }
+                "10.0" {
+                  $env:MSVC_VARS_BATCH_FILE = ""
+                  $env:WINDOWS_SDK_ENV_BATCH_FILE = "${env:ProgramFiles}\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd"
+                  $env:WINDOWS_SDK_ENV_PARAMETERS = "/x64 /${env:CONFIGURATION}"
+                }
+                "9.0" {
+                  Write-Host "Selected MSVS version (${env:MSVC_VERSION}) and platform (${env:PLATFORM}) require patching"
+                  $env:MSVS_PATCH_FOLDER = "${env:DEPENDENCIES_FOLDER}\vs2008_patch"
+                  if (!(Test-Path -Path "${env:MSVS_PATCH_FOLDER}")) {
+                    $msvs_patch_download_folder = "${env:DOWNLOADS_FOLDER}\condaci"
+                    $msvs_patch_download_file = "${msvs_patch_download_folder}\vs2008_patch.zip"
+                    if (!(Test-Path -Path "${msvs_patch_download_file}")) {
+                      $msvs2008_patch_url = "https://github.com/menpo/condaci.git"
+                      $msvs2008_patch_revision = "98d76b2089d494433ac2e3abd920123088a95a6d"
+                      $msvs_patch_download_folder_nix = "${msvs_patch_download_folder}" -replace "\\", "/"
+                      Write-Host "Going to download MSVS patch from ${msvs2008_patch_url} to ${msvs_patch_download_folder_nix}"
+                      git clone --quiet "${msvs2008_patch_url}" "${msvs_patch_download_folder_nix}"
+                      git -C "${msvs_patch_download_folder_nix}" checkout --quiet "${msvs2008_patch_revision}"
+                      if (${LastExitCode} -ne 0) {
+                        throw "Downloading of MSVS patch from ${msvs2008_patch_url} to ${msvs_patch_download_file} failed with exit code ${LastExitCode}."
+                      }
+                      Write-Host "Downloading of MSVS patch from ${msvs2008_patch_url} to ${msvs_patch_download_file} completed successfully"
+                    }
+                    Write-Host "Extracting MSVS patch from ${msvs_patch_download_file} to ${env:MSVS_PATCH_FOLDER}"
+                    New-Item "${env:MSVS_PATCH_FOLDER}" -type directory | out-null
+                    7z.exe x "${msvs_patch_download_file}" -o"${env:MSVS_PATCH_FOLDER}" -aoa -y | out-null
+                    if (${LastExitCode} -ne 0) {
+                      throw "File extraction failed with exit code ${LastExitCode}."
+                    }
+                    Write-Host "Extracting of MSVS patch from ${msvs_patch_download_file} to ${env:MSVS_PATCH_FOLDER} completed successfully"
                   }
-                  Write-Host "Downloading of MSVS patch from ${msvs2008_patch_url} to ${msvs_patch_download_file} completed successfully"
+                  Write-Host "MSVS patch is located at ${env:MSVS_PATCH_FOLDER}"
+                  $env:MSVS_PATCH_BATCH_FILE = "${env:MSVS_PATCH_FOLDER}\setup_x64.bat"
+                  $env:MSVC_VARS_PLATFORM = "x86_amd64"
                 }
-                Write-Host "Extracting MSVS patch from ${msvs_patch_download_file} to ${env:MSVS_PATCH_FOLDER}"
-                New-Item "${env:MSVS_PATCH_FOLDER}" -type directory | out-null
-                7z.exe x "${msvs_patch_download_file}" -o"${env:MSVS_PATCH_FOLDER}" -aoa -y | out-null
-                if (${LastExitCode} -ne 0) {
-                  throw "File extraction failed with exit code ${LastExitCode}."
+                default {
+                  throw "Unsupported ${env:TOOLCHAIN} version: ${env:MSVC_VERSION}"
                 }
-                Write-Host "Extracting of MSVS patch from ${msvs_patch_download_file} to ${env:MSVS_PATCH_FOLDER} completed successfully"
               }
-              Write-Host "MSVS patch is located at ${env:MSVS_PATCH_FOLDER}"
-              $env:MSVS_PATCH_BATCH_FILE = "${env:MSVS_PATCH_FOLDER}\setup_x64.bat"
-              $env:MSVC_VARS_PLATFORM = "x86_amd64"
             }
             default {
-              throw "Unsupported MSVS version: ${env:MSVC_VERSION}"
+              throw "Unsupported platform for ${env:TOOLCHAIN} toolchain: ${env:PLATFORM}"
             }
           }
+          $env:ARTIFACT_PATH_SUFFIX = "\${env:CONFIGURATION}\"
+        }
+        "mingw" {
+          $env:TOOLCHAIN_ID = "${env:TOOLCHAIN}-${env:MINGW_VERSION}"
+          $mingw_platform_suffix = ""
+          $mingw_thread_model_suffix = ""
+          switch (${env:PLATFORM}) {
+            "Win32" {
+              $mingw_platform_suffix = "i686-"
+              $mingw_exception_suffix = "-dwarf"
+            }
+            "x64" {
+              $mingw_platform_suffix = "x86_64-"
+              $mingw_exception_suffix = "-seh"
+            }
+            default {
+              throw "Unsupported platform for ${env:TOOLCHAIN} toolchain: ${env:PLATFORM}"
+            }
+          }
+          $env:MINGW_HOME = "C:\mingw-w64\${mingw_platform_suffix}${env:MINGW_VERSION}-posix${mingw_exception_suffix}-rt_v${env:MINGW_RT_VERSION}-rev${env:MINGW_REVISION}\mingw64"
+          $env:ARTIFACT_PATH_SUFFIX = "\"
         }
         default {
-          throw "Unsupported platform: ${env:PLATFORM}"
+          throw "Unsupported toolchain: ${env:TOOLCHAIN}"
         }
       }
       $env:DETECTED_CMAKE_VERSION = (& cmake --version | Where-Object {$_ -match 'cmake version ([0-9]+\.[0-9]+\.[0-9]+)'}) -replace "cmake version ([0-9]+\.[0-9]+\.[0-9]+)", '$1'
@@ -238,7 +293,7 @@ install:
         }
       }
       $pre_installed_icu = $false
-      if (${env:ICU_VERSION}) {
+      if (Test-Path env:ICU_VERSION) {
         if (${pre_installed_icu}) {
           throw "Installed ICU is missing"
         } else {
@@ -251,20 +306,30 @@ install:
               $icu_platform_suffix = "-x64"
             }
             default {
-              throw "Unsupported platform: ${env:PLATFORM}"
+              throw "Unsupported platform for ICU: ${env:PLATFORM}"
             }
           }
           $icu_version_suffix = "-${env:ICU_VERSION}"
           $icu_toolchain_suffix = ""
-          switch (${env:MSVC_VERSION}) {
-            "14.0" {
-              $icu_toolchain_suffix = "-vs2015"
+          switch (${env:TOOLCHAIN}) {
+            "msvc" {
+              switch (${env:MSVC_VERSION}) {
+                "14.0" {
+                  $icu_toolchain_suffix = "-vs2015"
+                }
+                "12.0" {
+                  $icu_toolchain_suffix = "-vs2013"
+                }
+                default {
+                  throw "Unsupported ${env:TOOLCHAIN} version for ICU: ${env:MSVC_VERSION}"
+                }
+              }
             }
-            "12.0" {
-              $icu_toolchain_suffix = "-vs2013"
+            "mingw" {
+              $icu_toolchain_suffix = "-mingw${env:MINGW_VERSION}" -replace "([\d]+)\.([\d]+)(\.([\d]+))*", '$1$2'
             }
             default {
-              throw "Unsupported MSVS version: ${env:MSVC_VERSION}"
+              throw "Unsupported toolchain for ICU: ${env:TOOLCHAIN}"
             }
           }
           $icu_linkage_suffix = ""
@@ -278,7 +343,7 @@ install:
           }
           $icu_install_folder = "${env:DEPENDENCIES_FOLDER}\icu4c${icu_version_suffix}${icu_platform_suffix}${icu_toolchain_suffix}${icu_linkage_suffix}"
           if (!(Test-Path -Path "${icu_install_folder}")) {
-            Write-Host "ICU libraries are absent for the selected toolchain (msvc-${env:MSVC_VERSION}) and ICU version (${env:ICU_VERSION})"
+            Write-Host "ICU libraries are absent for the selected toolchain (${env:TOOLCHAIN_ID}) and ICU version (${env:ICU_VERSION})"
             $icu_archive_name = "icu4c${icu_version_suffix}${icu_platform_suffix}${icu_toolchain_suffix}${icu_linkage_suffix}.7z"
             $icu_archive_file = "${env:DOWNLOADS_FOLDER}\${icu_archive_name}"
             if (!(Test-Path -Path "${icu_archive_file}")) {
@@ -307,21 +372,25 @@ install:
           $env:ICU_ROOT = "${icu_install_folder}"
           $env:ICU_LIBRARY_FOLDER = "${icu_install_folder}\lib"
         }
-        if (${env:RUNTIME_LINKAGE} -eq "static" -and -not (${env:ICU_LINKAGE} -eq "static")) {
+        if ((${env:RUNTIME_LINKAGE} -eq "static") -and (${env:ICU_LINKAGE} -ne "static")) {
           throw "Incompatible type of linkage of ICU: ${env:ICU_LINKAGE} for the specified type of linkage of C/C++ runtime: ${env:RUNTIME_LINKAGE}"
         }
       }
-      if (${env:BOOST_VERSION}) {
+      if (Test-Path env:BOOST_VERSION) {
         $pre_installed_boost = $false
-        switch (${env:MSVC_VERSION}) {
-          "15.0" {
-            $pre_installed_boost = (${env:BOOST_VERSION} -eq "1.69.0") -or (${env:BOOST_VERSION} -eq "1.67.0") -or (${env:BOOST_VERSION} -eq "1.66.0") -or (${env:BOOST_VERSION} -eq "1.65.1") -or (${env:BOOST_VERSION} -eq "1.63.0")
-          }
-          "14.0" {
-            $pre_installed_boost = (${env:BOOST_VERSION} -eq "1.69.0") -or (${env:BOOST_VERSION} -eq "1.67.0") -or (${env:BOOST_VERSION} -eq "1.66.0") -or (${env:BOOST_VERSION} -eq "1.65.1") -or (${env:BOOST_VERSION} -eq "1.63.0")
-          }
-          "12.0" {
-            $pre_installed_boost = (${env:BOOST_VERSION} -eq "1.58.0")
+        switch (${env:TOOLCHAIN}) {
+          "msvc" {
+            switch (${env:MSVC_VERSION}) {
+              "15.0" {
+                $pre_installed_boost = (${env:BOOST_VERSION} -eq "1.69.0") -or (${env:BOOST_VERSION} -eq "1.67.0") -or (${env:BOOST_VERSION} -eq "1.66.0") -or (${env:BOOST_VERSION} -eq "1.65.1") -or (${env:BOOST_VERSION} -eq "1.63.0")
+              }
+              "14.0" {
+                $pre_installed_boost = (${env:BOOST_VERSION} -eq "1.69.0") -or (${env:BOOST_VERSION} -eq "1.67.0") -or (${env:BOOST_VERSION} -eq "1.66.0") -or (${env:BOOST_VERSION} -eq "1.65.1") -or (${env:BOOST_VERSION} -eq "1.63.0")
+              }
+              "12.0" {
+                $pre_installed_boost = (${env:BOOST_VERSION} -eq "1.58.0")
+              }
+            }
           }
         }
         if (${pre_installed_boost}) {
@@ -339,51 +408,60 @@ install:
               $boost_library_folder_platform_suffix = "lib64"
             }
             default {
-              throw "Unsupported platform: ${env:PLATFORM}"
+              throw "Unsupported platform for Boost libraries: ${env:PLATFORM}"
             }
           }
           $boost_library_folder_toolchain_suffix = "-msvc-${env:MSVC_VERSION}"
           $env:BOOST_INCLUDE_FOLDER = "${boost_home}"
           $env:BOOST_LIBRARY_FOLDER = "${boost_home}\${boost_library_folder_platform_suffix}${boost_library_folder_toolchain_suffix}"
         } else {
-          $boost_platform_suffix = ""
           switch (${env:PLATFORM}) {
             "Win32" {
-              $boost_platform_suffix = "-x86"
+              $env:BOOST_PLATFORM_SUFFIX = "-x86"
             }
             "x64" {
-              $boost_platform_suffix = "-x64"
+              $env:BOOST_PLATFORM_SUFFIX = "-x64"
             }
             default {
-              throw "Unsupported platform: ${env:PLATFORM}"
+              throw "Unsupported platform for Boost libraries: ${env:PLATFORM}"
             }
           }
           $boost_version_suffix = "-${env:BOOST_VERSION}"
           $boost_toolchain_suffix = ""
-          switch (${env:MSVC_VERSION}) {
-            "14.0" {
-              $boost_toolchain_suffix = "-vs2015"
+          switch (${env:TOOLCHAIN}) {
+            "msvc" {
+              switch (${env:MSVC_VERSION}) {
+                "14.0" {
+                  $boost_toolchain_suffix = "-vs2015"
+                }
+                "12.0" {
+                  $boost_toolchain_suffix = "-vs2013"
+                }
+                "11.0" {
+                  $boost_toolchain_suffix = "-vs2012"
+                }
+                "10.0" {
+                  $boost_toolchain_suffix = "-vs2010"
+                }
+                "9.0" {
+                  $boost_toolchain_suffix = "-vs2008"
+                }
+                default {
+                  throw "Unsupported ${env:TOOLCHAIN} version for Boost libraries: ${env:MSVC_VERSION}"
+                }
+              }
             }
-            "12.0" {
-              $boost_toolchain_suffix = "-vs2013"
-            }
-            "11.0" {
-              $boost_toolchain_suffix = "-vs2012"
-            }
-            "10.0" {
-              $boost_toolchain_suffix = "-vs2010"
-            }
-            "9.0" {
-              $boost_toolchain_suffix = "-vs2008"
+            "mingw" {
+              $boost_toolchain_suffix = "-mingw${env:MINGW_VERSION}" -replace "([\d]+)\.([\d]+)\.([\d]+)", '$1$2'
             }
             default {
-              throw "Unsupported MSVS version: ${env:MSVC_VERSION}"
+              throw "Unsupported toolchain for Boost libraries: ${env:TOOLCHAIN}"
             }
           }
-          $boost_install_folder = "${env:DEPENDENCIES_FOLDER}\boost${boost_version_suffix}${boost_platform_suffix}${boost_toolchain_suffix}"
+          $boost_install_folder = "${env:DEPENDENCIES_FOLDER}\boost${boost_version_suffix}${env:BOOST_PLATFORM_SUFFIX}${boost_toolchain_suffix}"
           if (!(Test-Path -Path "${boost_install_folder}")) {
-            Write-Host "Boost libraries are absent for the selected toolchain (msvc-${env:MSVC_VERSION}) and Boost version (${env:BOOST_VERSION}) at ${boost_install_folder}"
-            $boost_archive_name = "boost${boost_version_suffix}${boost_platform_suffix}${boost_toolchain_suffix}.7z"
+            Write-Host "Boost libraries are absent for the selected toolchain (${env:TOOLCHAIN_ID}) and Boost version (${env:BOOST_VERSION}) at ${boost_install_folder}"
+            $boost_archive_name = "boost${boost_version_suffix}${env:BOOST_PLATFORM_SUFFIX}${boost_toolchain_suffix}.7z"
             $boost_archive_file = "${env:DOWNLOADS_FOLDER}\${boost_archive_name}"
             if (!(Test-Path -Path "${boost_archive_file}")) {
               $boost_download_url = "https://dl.bintray.com/mabrarov/generic/boost/${env:BOOST_VERSION}/${boost_archive_name}"
@@ -412,8 +490,8 @@ install:
           $env:BOOST_INCLUDE_FOLDER = "${boost_install_folder}\include\boost${boost_include_folder_version_suffix}"
           $env:BOOST_LIBRARY_FOLDER = "${boost_install_folder}\lib"
         }
-        if (${env:RUNTIME_LINKAGE} -eq "static" -and -not (${env:BOOST_LINKAGE} -eq "static")) {
-          throw "Incompatible type of linkage of Boost: ${env:BOOST_LINKAGE} for the specified type of linkage of C/C++ runtime: ${env:RUNTIME_LINKAGE}"
+        if ((${env:RUNTIME_LINKAGE} -eq "static") -and (${env:BOOST_LINKAGE} -ne "static")) {
+          throw "Incompatible type of linkage of Boost libraries: ${env:BOOST_LINKAGE} for the specified type of linkage of C/C++ runtime: ${env:RUNTIME_LINKAGE}"
         }
         switch (${env:BOOST_LINKAGE}) {
           "static" {
@@ -424,50 +502,77 @@ install:
           }
         }
       }
-      if (${env:QT_VERSION}) {
+      if (Test-Path env:QT_VERSION) {
         $pre_installed_qt = $false
         if (!(${env:QT_LINKAGE} -eq "static")) {
-          switch (${env:MSVC_VERSION}) {
-            "14.0" {
-              $pre_installed_qt = ((${env:QT_VERSION} -eq "5.12.2") -and (${env:PLATFORM} -eq "x64")) -or (${env:QT_VERSION} -eq "5.11.3") -or (${env:QT_VERSION} -eq "5.10.1") -or (${env:QT_VERSION} -eq "5.9.5") -or (${env:QT_VERSION} -eq "5.6.3")
+          switch (${env:TOOLCHAIN}) {
+            "msvc" {
+              switch (${env:MSVC_VERSION}) {
+                "14.0" {
+                  $pre_installed_qt = ((${env:QT_VERSION} -eq "5.12.2") -and (${env:PLATFORM} -eq "x64")) -or (${env:QT_VERSION} -eq "5.11.3") -or (${env:QT_VERSION} -eq "5.10.1") -or (${env:QT_VERSION} -eq "5.9.5") -or (${env:QT_VERSION} -eq "5.6.3")
+                }
+                "12.0" {
+                  $pre_installed_qt = ((${env:QT_VERSION} -eq "5.10.1") -and (${env:PLATFORM} -eq "x64")) -or ((${env:QT_VERSION} -eq "5.9.5") -and (${env:PLATFORM} -eq "x64")) -or (${env:QT_VERSION} -eq "5.6.3")
+                }
+              }
             }
-            "12.0" {
-              $pre_installed_qt = ((${env:QT_VERSION} -eq "5.10.1") -and (${env:PLATFORM} -eq "x64")) -or ((${env:QT_VERSION} -eq "5.9.5") -and (${env:PLATFORM} -eq "x64")) -or (${env:QT_VERSION} -eq "5.6.3")
+            "mingw" {
+              switch (${env:MINGW_VERSION}) {
+                "7.3.0" {
+                  $pre_installed_qt = ${env:QT_VERSION} -eq "5.12.2"
+                }
+                "5.3.0" {
+                  $pre_installed_qt = ((${env:QT_VERSION} -eq "5.11.3") -and (${env:PLATFORM} -eq "Win32")) -or ((${env:QT_VERSION} -eq "5.10.1") -and (${env:PLATFORM} -eq "Win32")) -or ((${env:QT_VERSION} -eq "5.9.7") -and (${env:PLATFORM} -eq "Win32")) -or ((${env:QT_VERSION} -eq "5.7.0") -and (${env:PLATFORM} -eq "Win32"))
+                }
+              }
             }
           }
         }
         if (${pre_installed_qt}) {
           $qt_folder_toolchain_suffix = ""
-          switch (${env:MSVC_VERSION}) {
-            "14.0" {
-              $qt_folder_toolchain_suffix = "msvc2015"
+          switch (${env:TOOLCHAIN}) {
+            "msvc" {
+              switch (${env:MSVC_VERSION}) {
+                "14.0" {
+                  $qt_folder_toolchain_suffix = "msvc2015"
+                }
+                "12.0" {
+                  $qt_folder_toolchain_suffix = "msvc2013"
+                }
+                "11.0" {
+                  $qt_folder_toolchain_suffix = "msvc2012"
+                }
+                "10.0" {
+                  $qt_folder_toolchain_suffix = "msvc2010"
+                }
+                "9.0" {
+                  $qt_folder_toolchain_suffix = "msvc2008"
+                }
+                default {
+                  throw "Unsupported ${env:TOOLCHAIN} version for Qt: ${env:MSVC_VERSION}"
+                }
+              }
             }
-            "12.0" {
-              $qt_folder_toolchain_suffix = "msvc2013"
-            }
-            "11.0" {
-              $qt_folder_toolchain_suffix = "msvc2012"
-            }
-            "10.0" {
-              $qt_folder_toolchain_suffix = "msvc2010"
-            }
-            "9.0" {
-              $qt_folder_toolchain_suffix = "msvc2008"
+            "mingw" {
+              $qt_folder_toolchain_suffix = "mingw${env:MINGW_VERSION}" -replace "([\d]+)\.([\d]+)(\.([\d]+))*", '$1$2'
             }
             default {
-              throw "Unsupported MSVS version: ${env:MSVC_VERSION}"
+              throw "Unsupported toolchain for Qt: ${env:TOOLCHAIN}"
             }
           }
           $qt_folder_platform_suffix = ""
           switch (${env:PLATFORM}) {
             "Win32" {
               $qt_folder_platform_suffix = ""
+              if (${env:TOOLCHAIN} -eq "mingw") {
+                $qt_folder_platform_suffix = "_32"
+              }
             }
             "x64" {
               $qt_folder_platform_suffix = "_64"
             }
             default {
-              throw "Unsupported platform: ${env:PLATFORM}"
+              throw "Unsupported platform for Qt: ${env:PLATFORM}"
             }
           }
           $qt_opengl_suffix = ""
@@ -492,7 +597,7 @@ install:
               $qt_platform_suffix = "-x64"
             }
             default {
-              throw "Unsupported platform: ${env:PLATFORM}"
+              throw "Unsupported platform for Qt: ${env:PLATFORM}"
             }
           }
           $qt_version_suffix = ""
@@ -502,24 +607,34 @@ install:
             $qt_version_suffix = "-${env:QT_VERSION}"
           }
           $qt_toolchain_suffix = ""
-          switch (${env:MSVC_VERSION}) {
-            "14.0" {
-              $qt_toolchain_suffix = "-vs2015"
+          switch (${env:TOOLCHAIN}) {
+            "msvc" {
+              switch (${env:MSVC_VERSION}) {
+                "14.0" {
+                  $qt_toolchain_suffix = "-vs2015"
+                }
+                "12.0" {
+                  $qt_toolchain_suffix = "-vs2013"
+                }
+                "11.0" {
+                  $qt_toolchain_suffix = "-vs2012"
+                }
+                "10.0" {
+                  $qt_toolchain_suffix = "-vs2010"
+                }
+                "9.0" {
+                  $qt_toolchain_suffix = "-vs2008"
+                }
+                default {
+                  throw "Unsupported ${env:TOOLCHAIN} version for Qt: ${env:MSVC_VERSION}"
+                }
+              }
             }
-            "12.0" {
-              $qt_toolchain_suffix = "-vs2013"
-            }
-            "11.0" {
-              $qt_toolchain_suffix = "-vs2012"
-            }
-            "10.0" {
-              $qt_toolchain_suffix = "-vs2010"
-            }
-            "9.0" {
-              $qt_toolchain_suffix = "-vs2008"
+            "mingw" {
+              $qt_toolchain_suffix = "-mingw${env:MINGW_VERSION}" -replace "([\d]+)\.([\d]+)\.([\d]+)", '$1$2'
             }
             default {
-              throw "Unsupported MSVS version: ${env:MSVC_VERSION}"
+              throw "Unsupported toolchain for Qt: ${env:TOOLCHAIN}"
             }
           }
           $qt_linkage_suffix = ""
@@ -533,7 +648,7 @@ install:
           }
           $qt_install_folder = "${env:DEPENDENCIES_FOLDER}\qt${qt_version_suffix}${qt_platform_suffix}${qt_toolchain_suffix}${qt_linkage_suffix}"
           if (!(Test-Path -Path "${qt_install_folder}")) {
-            Write-Host "Qt libraries are absent for the selected toolchain (msvc-${env:MSVC_VERSION}) and Qt version (${env:QT_VERSION}) and Qt linkage (${env:QT_LINKAGE}) at ${qt_install_folder}"
+            Write-Host "Qt libraries are absent for the selected toolchain (${env:TOOLCHAIN_ID}) and Qt version (${env:QT_VERSION}) and Qt linkage (${env:QT_LINKAGE}) at ${qt_install_folder}"
             $qt_archive_name = "qt${qt_version_suffix}${qt_platform_suffix}${qt_toolchain_suffix}${qt_linkage_suffix}.7z"
             $qt_archive_file = "${env:DOWNLOADS_FOLDER}\${qt_archive_name}"
             if (!(Test-Path -Path "${qt_archive_file}")) {
@@ -581,63 +696,82 @@ install:
           throw "Unsupported build configuration: ${env:CONFIGURATION}"
         }
       }
-      $cmake_generator_msvc_version_suffx = " ${env:MSVC_VERSION}" -replace "([\d]+)\.([\d]+)", '$1'
-      switch (${env:MSVC_VERSION}) {
-        "14.0" {
-          $cmake_generator_msvc_version_suffx = "${cmake_generator_msvc_version_suffx} 2015"
-        }
-        "12.0" {
-          $cmake_generator_msvc_version_suffx = "${cmake_generator_msvc_version_suffx} 2013"
-        }
-        "11.0" {
-          $cmake_generator_msvc_version_suffx = "${cmake_generator_msvc_version_suffx} 2012"
-        }
-        "10.0" {
-          $cmake_generator_msvc_version_suffx = "${cmake_generator_msvc_version_suffx} 2010"
-        }
-        "9.0" {
-          $cmake_generator_msvc_version_suffx = "${cmake_generator_msvc_version_suffx} 2008"
-        }
-        default {
-          throw "Unsupported MSVS version: ${env:MSVC_VERSION}"
-        }
-      }
-      $cmake_generator_platform_suffix = ""
-      switch (${env:PLATFORM}) {
-        "Win32" {
+      switch (${env:TOOLCHAIN}) {
+        "msvc" {
+          $cmake_generator_msvc_version_suffix = " ${env:MSVC_VERSION}" -replace "([\d]+)\.([\d]+)", '$1'
+          switch (${env:MSVC_VERSION}) {
+            "14.0" {
+              $cmake_generator_msvc_version_suffix = "${cmake_generator_msvc_version_suffix} 2015"
+            }
+            "12.0" {
+              $cmake_generator_msvc_version_suffix = "${cmake_generator_msvc_version_suffix} 2013"
+            }
+            "11.0" {
+              $cmake_generator_msvc_version_suffix = "${cmake_generator_msvc_version_suffix} 2012"
+            }
+            "10.0" {
+              $cmake_generator_msvc_version_suffix = "${cmake_generator_msvc_version_suffix} 2010"
+            }
+            "9.0" {
+              $cmake_generator_msvc_version_suffix = "${cmake_generator_msvc_version_suffix} 2008"
+            }
+            default {
+              throw "Unsupported ${env:TOOLCHAIN} version for CMake generator: ${env:MSVC_VERSION}"
+            }
+          }
           $cmake_generator_platform_suffix = ""
+          switch (${env:PLATFORM}) {
+            "Win32" {
+              $cmake_generator_platform_suffix = ""
+            }
+            "x64" {
+              $cmake_generator_platform_suffix = " Win64"
+            }
+            default {
+              throw "Unsupported platform for CMake generator: ${env:PLATFORM}"
+            }
+          }
+          $env:CMAKE_GENERATOR = "Visual Studio${cmake_generator_msvc_version_suffix}${cmake_generator_platform_suffix}"
         }
-        "x64" {
-          $cmake_generator_platform_suffix = " Win64"
+        "mingw" {
+          $env:CMAKE_GENERATOR = "MinGW Makefiles"
         }
-        default {
-          throw "Unsupported platform: ${env:PLATFORM}"
+        "default" {
+          throw "Unsupported toolchain for CMake generator: ${env:TOOLCHAIN}"
         }
       }
-      $env:CMAKE_GENERATOR = "Visual Studio${cmake_generator_msvc_version_suffx}${cmake_generator_platform_suffix}"
       $env:COVERITY_SCAN_BUILD = (${env:COVERITY_SCAN_CANDIDATE} -eq "1") -and (${env:APPVEYOR_REPO_BRANCH} -eq "coverity_scan") -and (${env:CONFIGURATION} -eq "Release") -and (${env:PLATFORM} -eq "x64")
       $env:COVERAGE_BUILD = (${env:COVERAGE_BUILD_CANDIDATE} -eq "1") -and (${env:CONFIGURATION} -eq "Debug") -and (${env:PLATFORM} -eq "x64")
-      $env:CODECOV_FLAG = "windows_${env:OS_VERSION}__${env:PLATFORM}__msvc_${env:MSVC_VERSION}"
-      if (${env:BOOST_VERSION}) {
+      $env:CODECOV_FLAG = "windows_${env:OS_VERSION}__${env:PLATFORM}__${env:TOOLCHAIN_ID}"
+      if (Test-Path env:BOOST_VERSION) {
         $env:CODECOV_FLAG = "${env:CODECOV_FLAG}__boost_${env:BOOST_VERSION}"
       }
-      if (${env:QT_VERSION}) {
+      if (Test-Path env:QT_VERSION) {
         $env:CODECOV_FLAG = "${env:CODECOV_FLAG}__qt_${env:QT_VERSION}"
       }
       $env:CODECOV_FLAG = "${env:CODECOV_FLAG}" -replace "[\.-]", "_"
       Write-Host "PLATFORM                  : ${env:PLATFORM}"
       Write-Host "CONFIGURATION             : ${env:CONFIGURATION}"
-      Write-Host "MSVS_PATCH_FOLDER         : ${env:MSVS_PATCH_FOLDER}"
-      Write-Host "MSVS_PATCH_BATCH_FILE     : ${env:MSVS_PATCH_BATCH_FILE}"
-      Write-Host "WINDOWS_SDK_ENV_BATCH_FILE: ${env:WINDOWS_SDK_ENV_BATCH_FILE}"
-      Write-Host "WINDOWS_SDK_ENV_PARAMETERS: ${env:WINDOWS_SDK_ENV_PARAMETERS}"
-      Write-Host "MSVC_VARS_BATCH_FILE      : ${env:MSVC_VARS_BATCH_FILE}"
-      Write-Host "MSVC_VARS_PLATFORM        : ${env:MSVC_VARS_PLATFORM}"
+      Write-Host "TOOLCHAIN_ID              : ${env:TOOLCHAIN_ID}"
+      switch (${env:TOOLCHAIN}) {
+        "msvc" {
+          Write-Host "MSVS_PATCH_FOLDER         : ${env:MSVS_PATCH_FOLDER}"
+          Write-Host "MSVS_PATCH_BATCH_FILE     : ${env:MSVS_PATCH_BATCH_FILE}"
+          Write-Host "WINDOWS_SDK_ENV_BATCH_FILE: ${env:WINDOWS_SDK_ENV_BATCH_FILE}"
+          Write-Host "WINDOWS_SDK_ENV_PARAMETERS: ${env:WINDOWS_SDK_ENV_PARAMETERS}"
+          Write-Host "MSVC_VARS_BATCH_FILE      : ${env:MSVC_VARS_BATCH_FILE}"
+          Write-Host "MSVC_VARS_PLATFORM        : ${env:MSVC_VARS_PLATFORM}"
+        }
+        "mingw" {
+          Write-Host "MINGW_HOME                : ${env:MINGW_HOME}"
+        }
+      }
       Write-Host "APPVEYOR_BUILD_FOLDER     : ${env:APPVEYOR_BUILD_FOLDER}"
-      if (${env:ICU_ROOT}) {
+      if (Test-Path env:ICU_ROOT) {
         Write-Host "ICU_ROOT                  : ${env:ICU_ROOT}"
         Write-Host "ICU_LIBRARY_FOLDER        : ${env:ICU_LIBRARY_FOLDER}"
       }
+      Write-Host "ARTIFACT_PATH_SUFFIX      : ${env:ARTIFACT_PATH_SUFFIX}"
       Write-Host "BOOST_INCLUDE_FOLDER      : ${env:BOOST_INCLUDE_FOLDER}"
       Write-Host "BOOST_LIBRARY_FOLDER      : ${env:BOOST_LIBRARY_FOLDER}"
       Write-Host "BOOST_USE_STATIC_LIBS     : ${env:BOOST_USE_STATIC_LIBS}"
@@ -675,14 +809,17 @@ install:
   - cmd: if not "%WINDOWS_SDK_ENV_BATCH_FILE%"=="" call "%WINDOWS_SDK_ENV_BATCH_FILE%" %WINDOWS_SDK_ENV_PARAMETERS%
   - cmd: if not "%MSVC_VARS_BATCH_FILE%"=="" call "%MSVC_VARS_BATCH_FILE%" %MSVC_VARS_PLATFORM%
   - ps: |
-      if (${env:QT_VERSION}) {
+      if (Test-Path env:QT_VERSION) {
         $env:PATH = "${env:QT_BIN_FOLDER};${env:PATH}"
       }
-      if (${env:BOOST_VERSION} -and -not (${env:BOOST_LINKAGE} -eq "static")) {
+      if ((Test-Path env:BOOST_VERSION) -and (${env:BOOST_LINKAGE} -ne "static")) {
         $env:PATH = "${env:BOOST_LIBRARY_FOLDER};${env:PATH}"
       }
-      if (${env:ICU_VERSION} -and -not (${env:ICU_LINKAGE} -eq "static")) {
+      if ((Test-Path env:ICU_VERSION) -and (${env:ICU_LINKAGE} -ne "static")) {
         $env:PATH = "${env:ICU_LIBRARY_FOLDER};${env:PATH}"
+      }
+      if (Test-Path env:MINGW_HOME) {
+        $env:PATH = "${env:MINGW_HOME}\bin;${env:PATH}"
       }
 
 build_script:
@@ -690,11 +827,14 @@ build_script:
       New-Item "${env:APPVEYOR_BUILD_FOLDER}\build" -type directory | out-null
       Set-Location -Path "${env:APPVEYOR_BUILD_FOLDER}\build"
       $generate_cmd = "cmake"
+      if (${env:TOOLCHAIN} -eq "mingw") {
+        $generate_cmd = "${generate_cmd} -D CMAKE_SH=""CMAKE_SH-NOTFOUND"""
+      }
       switch (${env:RUNTIME_LINKAGE}) {
         "static" {
           $generate_cmd = "${generate_cmd} -D CMAKE_USER_MAKE_RULES_OVERRIDE=""${env:APPVEYOR_BUILD_FOLDER}\cmake\static_c_runtime_overrides.cmake"" -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX=""${env:APPVEYOR_BUILD_FOLDER}\cmake\static_cxx_runtime_overrides.cmake"""
-          if ((${env:QT_VERSION} -match "5\.*") -and (${env:QT_LINKAGE} -eq "static")) {
-            if (!(${env:ICU_ROOT})) {
+          if ((Test-Path env:QT_VERSION) -and (${env:QT_VERSION} -match "5\.*") -and (${env:QT_LINKAGE} -eq "static")) {
+            if (!(Test-Path env:ICU_ROOT)) {
               throw "ICU location is unspecified. Static Qt 5.x requires static ICU"
             }
             $generate_cmd = "${generate_cmd} -D ICU_ROOT=""${env:ICU_ROOT}"""
@@ -705,7 +845,10 @@ build_script:
         }
       }
       $generate_cmd = "${generate_cmd} -D BOOST_INCLUDEDIR=""${env:BOOST_INCLUDE_FOLDER}"" -D BOOST_LIBRARYDIR=""${env:BOOST_LIBRARY_FOLDER}"" -D Boost_USE_STATIC_LIBS=${env:BOOST_USE_STATIC_LIBS} -D Boost_NO_SYSTEM_PATHS=ON"
-      if (!(${env:QT_VERSION})) {
+      if ((${env:TOOLCHAIN} -eq "mingw") -and (Test-Path env:BOOST_PLATFORM_SUFFIX)) {
+        $generate_cmd = "${generate_cmd} -D Boost_ARCHITECTURE=""${env:BOOST_PLATFORM_SUFFIX}"""
+      }
+      if (!(Test-Path env:QT_VERSION)) {
         $generate_cmd = "${generate_cmd} -D MA_QT=OFF"
       } elseif (${env:QT_VERSION} -match "5\.*") {
         $generate_cmd = "${generate_cmd} -D Qt5Core_DIR=""${env:QT_HOME}\lib\cmake\Qt5Core"" -D Qt5Gui_DIR=""${env:QT_HOME}\lib\cmake\Qt5Gui"" -D Qt5Widgets_DIR=""${env:QT_HOME}\lib\cmake\Qt5Widgets"" -D MA_QT_MAJOR_VERSION=5"
@@ -714,6 +857,9 @@ build_script:
       } else {
         throw "Unsupported version of Qt: ${env:QT_VERSION}."
       }
+      if (${env:TOOLCHAIN} -eq "mingw") {
+        $generate_cmd = "${generate_cmd} -D CMAKE_BUILD_TYPE=""${env:CONFIGURATION}"""
+      }
       $generate_cmd = "${generate_cmd} -G ""${env:CMAKE_GENERATOR}"" ""${env:APPVEYOR_BUILD_FOLDER}"""
       Write-Host "CMake project generation command: ${generate_cmd}"
       Invoke-Expression "${generate_cmd}"
@@ -721,15 +867,14 @@ build_script:
         throw "Generation of project failed with exit code ${LastExitCode}."
       }
       $build_cmd = "cmake --build . --config ""${env:CONFIGURATION}"""
-      if (${env:MSVC_VERSION} -ne "9.0") {
+      if ((${env:TOOLCHAIN} -eq "msvc") -and (${env:MSVC_VERSION} -ne "9.0")) {
         $build_cmd = "${build_cmd} -- /maxcpucount /verbosity:normal /logger:""C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"""
       }
-      Write-Host "CMake project build command: ${build_cmd}"
       if (${env:COVERITY_SCAN_BUILD} -eq "True") {
-        Invoke-Expression "cov-build.exe --dir cov-int ${build_cmd}"
-      } else {
-        Invoke-Expression "${build_cmd}"
+        $build_cmd = "cov-build.exe --dir cov-int ${build_cmd}"
       }
+      Write-Host "CMake project build command: ${build_cmd}"
+      Invoke-Expression "${build_cmd}"
       if (${LastExitCode} -ne 0) {
         throw "Build failed with exit code ${LastExitCode}."
       }
@@ -752,25 +897,24 @@ build_script:
 test_script:
   - ps: |
       Set-Location -Path "${env:APPVEYOR_BUILD_FOLDER}\build"
+      $test_cmd = "ctest.exe --build-config ""${env:CONFIGURATION}"" --verbose"
       if (${env:COVERAGE_BUILD} -eq "True") {
         $coverage_report_folder = "${env:COVERAGE_WORK_FOLDER}\report"
         $coverage_report_archive = "${env:COVERAGE_WORK_FOLDER}\report.zip"
         New-Item "${env:COVERAGE_WORK_FOLDER}" -type directory | out-null
-        OpenCppCoverage.exe --quiet --export_type "html:${coverage_report_folder}" --export_type "cobertura:${env:COBERTURA_COVERAGE_FILE}" --sources "${env:APPVEYOR_BUILD_FOLDER}" --excluded_sources "${env:APPVEYOR_BUILD_FOLDER}\3rdparty" --excluded_sources "${env:APPVEYOR_BUILD_FOLDER}\examples" --excluded_sources "${env:APPVEYOR_BUILD_FOLDER}\tests" --modules "${env:APPVEYOR_BUILD_FOLDER}\build\tests" --cover_children --working_dir "${env:APPVEYOR_BUILD_FOLDER}\build" -- ctest.exe --build-config "${env:CONFIGURATION}" --verbose
-        if (${LastExitCode} -ne 0) {
-          throw "Tests failed with exit code ${LastExitCode}."
-        }
+        $test_cmd = "OpenCppCoverage.exe --quiet --export_type ""html:${coverage_report_folder}"" --export_type ""cobertura:${env:COBERTURA_COVERAGE_FILE}"" --sources ""${env:APPVEYOR_BUILD_FOLDER}"" --excluded_sources ""${env:APPVEYOR_BUILD_FOLDER}\3rdparty"" --excluded_sources ""${env:APPVEYOR_BUILD_FOLDER}\examples"" --excluded_sources ""${env:APPVEYOR_BUILD_FOLDER}\tests"" --modules ""${env:APPVEYOR_BUILD_FOLDER}\build\tests"" --cover_children --working_dir ""${env:APPVEYOR_BUILD_FOLDER}\build"" -- ${test_cmd}"
+      }
+      Invoke-Expression "${test_cmd}"
+      if (${LastExitCode} -ne 0) {
+        throw "Tests failed with exit code ${LastExitCode}."
+      }
+      if (${env:COVERAGE_BUILD} -eq "True") {
         7z.exe a -tzip "${coverage_report_archive}" "${coverage_report_folder}" | out-null
         if (${LastExitCode} -ne 0) {
           throw "Failed to archive coverage report located at ${coverage_report_folder} with exit code ${LastExitCode}."
         }
         Push-AppveyorArtifact "${coverage_report_archive}" -DeploymentName "${env:COVERAGE_ARTIFACT_NAME}"
         Push-AppveyorArtifact "${env:COBERTURA_COVERAGE_FILE}" -DeploymentName "${env:COVERAGE_ARTIFACT_NAME}"
-      } else {
-        ctest.exe --build-config "${env:CONFIGURATION}" --verbose
-        if (${LastExitCode} -ne 0) {
-          throw "Tests failed with exit code ${LastExitCode}."
-        }
       }
 
 after_test:
@@ -778,55 +922,55 @@ after_test:
   - cmd: if "%COVERAGE_BUILD%"=="True" codecov --token "%CODECOV_TOKEN%" --file "%COBERTURA_COVERAGE_FILE%" --root "%APPVEYOR_BUILD_FOLDER%" -X gcov -F "%CODECOV_FLAG%"
 
 artifacts:
-  - path: build\examples\ma_asio_performance_test_client\$(configuration)\*.exe
+  - path: build\examples\ma_asio_performance_test_client$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_asio_performance_test_client
-  - path: build\examples\ma_async_basics\$(configuration)\*.exe
+  - path: build\examples\ma_async_basics$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_async_basics
-  - path: build\examples\ma_async_basics2\$(configuration)\*.exe
+  - path: build\examples\ma_async_basics2$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_async_basics2
-  - path: build\examples\ma_echo_server\$(configuration)\*.exe
+  - path: build\examples\ma_echo_server$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_echo_server
-  - path: build\examples\ma_nmea_client\$(configuration)\*.exe
+  - path: build\examples\ma_nmea_client$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_nmea_client
-  - path: build\examples\ma_qt_echo_server\$(configuration)\*.exe
+  - path: build\examples\ma_qt_echo_server$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_qt_echo_server
-  - path: build\examples\asio_multicast_receiver\$(configuration)\*.exe
+  - path: build\examples\asio_multicast_receiver$(ARTIFACT_PATH_SUFFIX)*.exe
     name: asio_multicast_receiver
-  - path: build\examples\asio_multicast_sender\$(configuration)\*.exe
+  - path: build\examples\asio_multicast_sender$(ARTIFACT_PATH_SUFFIX)*.exe
     name: asio_multicast_sender
-  - path: build\tests\ma_async_connect_test\$(configuration)\*.exe
+  - path: build\tests\ma_async_connect_test$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_async_connect_test
-  - path: build\tests\ma_handler_storage_test\$(configuration)\*.exe
+  - path: build\tests\ma_handler_storage_test$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_handler_storage_test
-  - path: build\tests\ma_lockable_wrapper_test\$(configuration)\*.exe
+  - path: build\tests\ma_lockable_wrapper_test$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_lockable_wrapper_test
-  - path: build\tests\ma_shared_ptr_factory_test\$(configuration)\*.exe
+  - path: build\tests\ma_shared_ptr_factory_test$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_shared_ptr_factory_test
-  - path: build\tests\ma_sp_singleton_test\$(configuration)\*.exe
+  - path: build\tests\ma_sp_singleton_test$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_sp_singleton_test
-  - path: build\tests\ma_windows_console_signal_test\$(configuration)\*.exe
+  - path: build\tests\ma_windows_console_signal_test$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_windows_console_signal_test
-  - path: build\tests\ma_handler_allocator_test\$(configuration)\*.exe
+  - path: build\tests\ma_handler_allocator_test$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_handler_allocator_test
-  - path: build\tests\ma_custom_alloc_handler_test\$(configuration)\*.exe
+  - path: build\tests\ma_custom_alloc_handler_test$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_custom_alloc_handler_test
-  - path: build\tests\ma_cyclic_buffer_test\$(configuration)\*.exe
+  - path: build\tests\ma_cyclic_buffer_test$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_cyclic_buffer_test
-  - path: build\tests\ma_sp_intrusive_list_test\$(configuration)\*.exe
+  - path: build\tests\ma_sp_intrusive_list_test$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_sp_intrusive_list_test
-  - path: build\tests\ma_strand_test\$(configuration)\*.exe
+  - path: build\tests\ma_strand_test$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_strand_test
-  - path: build\tests\ma_context_alloc_handler_test\$(configuration)\*.exe
+  - path: build\tests\ma_context_alloc_handler_test$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_context_alloc_handler_test
-  - path: build\tests\ma_bind_handler_test\$(configuration)\*.exe
+  - path: build\tests\ma_bind_handler_test$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_bind_handler_test
-  - path: build\tests\ma_context_invoke_handler_test\$(configuration)\*.exe
+  - path: build\tests\ma_context_invoke_handler_test$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_context_invoke_handler_test
-  - path: build\tests\ma_context_wrapped_handler_test\$(configuration)\*.exe
+  - path: build\tests\ma_context_wrapped_handler_test$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_context_wrapped_handler_test
-  - path: build\tests\ma_limited_int_test\$(configuration)\*.exe
+  - path: build\tests\ma_limited_int_test$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_limited_int_test
-  - path: build\tests\ma_console_close_signal_test\$(configuration)\*.exe
+  - path: build\tests\ma_console_close_signal_test$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_console_close_signal_test
-  - path: build\tests\ma_intrusive_list_test\$(configuration)\*.exe
+  - path: build\tests\ma_intrusive_list_test$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_intrusive_list_test
