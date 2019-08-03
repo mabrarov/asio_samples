@@ -15,8 +15,8 @@ ENV PROJECT_DIR="/project" \
     BOOST_USE_STATIC_LIBS=ON \
     MA_QT=ON \
     MA_QT_MAJOR_VERSION=5 \
-    COVERAGE_BUILD=OFF \
-    CMAKE_VERSION=3.13.3 \
+    MA_COVERAGE=OFF \
+    CMAKE_VERSION=3.15.1 \
     PATH=/opt/cmake/bin:${PATH}
 
 ADD ["start.sh", "/app/"]

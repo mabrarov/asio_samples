@@ -8,15 +8,15 @@
 cmake_minimum_required(VERSION 3.0)
 project(asio_samples)
 
-option(ma_build_tests "Build tests" ON)
-option(ma_force_own_gtest "Use own (embedded) version of Google Test framework" OFF)
-option(ma_qt "Use Qt and do not skip all the code requiring Qt" ON)
-option(ma_coverage_build "Add coverage flags for compiler and linker" OFF)
+option(MA_TESTS "Build tests" ON)
+option(MA_OWN_GTEST "Use own (embedded) version of Google Test framework" OFF)
+option(MA_QT "Use Qt and do not skip all the code requiring Qt" ON)
+option(MA_COVERAGE "Add coverage flags for compiler and linker" OFF)
 
-# Use ma_force_qt_major_version to force usage of Qt 5.x or Qt 4.x:
-# -D ma_force_qt_major_version=4
+# Use MA_QT_MAJOR_VERSION to force usage of Qt 5.x or Qt 4.x:
+# -D MA_QT_MAJOR_VERSION=4
 # or
-# -D ma_force_qt_major_version=5
+# -D MA_QT_MAJOR_VERSION=5
 
 # Additional helpers
 include(cmake/internal_utils.cmake)
@@ -55,15 +55,15 @@ set(project_group_examples "examples")
 add_subdirectory(cmake/ma_coverage)
 
 # Google Test framework
-if(ma_build_tests)
-    if(NOT ma_force_own_gtest)
+if(MA_TESTS)
+    if(NOT MA_OWN_GTEST)
         find_package(GTest QUIET)
     endif()
-    if(ma_force_own_gtest OR NOT GTEST_FOUND)
+    if(MA_OWN_GTEST OR NOT GTEST_FOUND)
         add_subdirectory(3rdparty/gtest)
         set_target_properties(gtest PROPERTIES FOLDER "${project_group_3rdparty}/gtest")
         set_target_properties(gtest_main PROPERTIES FOLDER "${project_group_3rdparty}/gtest")
-        set(ma_own_gtest ON)
+        set(MA_OWN_GTEST_USED      ON)
         set(GTEST_LIBRARIES        gtest)
         set(GTEST_MAIN_LIBRARIES   gtest_main)
         set(GTEST_BOTH_LIBRARIES   gtest gtest_main)
@@ -94,7 +94,7 @@ add_subdirectory(cmake/ma_boost_regex)
 
 set(ma_qt4_msvs_project_support_files )
 set(ma_qt5_msvs_project_support_files )
-if(ma_qt)
+if(MA_QT)
     # Interface-only targets to simplify support of Qt 5
     add_subdirectory(cmake/ma_qt5_core_support)
     add_subdirectory(cmake/ma_qt5_gui_support)
@@ -113,7 +113,7 @@ if(ma_qt)
     endif()
 endif()
 
-if(ma_build_tests)
+if(MA_TESTS)
     # Interface-only target to simplify support of Google Test
     add_subdirectory(cmake/ma_gtest)
 endif()
@@ -198,7 +198,7 @@ add_subdirectory(libs/ma_windows_console_signal)
 set_target_properties(ma_windows_console_signal PROPERTIES FOLDER "${project_group_libs}")
 
 # Tests
-if(ma_build_tests)
+if(MA_TESTS)
     add_subdirectory(tests/ma_async_connect_test)
     set_target_properties(ma_async_connect_test PROPERTIES FOLDER "${project_group_tests}")
 
@@ -275,7 +275,7 @@ set_target_properties(ma_echo_server_core PROPERTIES FOLDER "${project_group_exa
 add_subdirectory(examples/ma_nmea_client)
 set_target_properties(ma_nmea_client PROPERTIES FOLDER "${project_group_examples}")
 
-if(ma_qt)
+if(MA_QT)
     add_subdirectory(examples/ma_qt_echo_server)
     set_target_properties(ma_qt_echo_server PROPERTIES FOLDER "${project_group_examples}")
 endif()

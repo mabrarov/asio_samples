@@ -103,10 +103,10 @@ cmake ... -G "${cmake_generator}" "${asio_samples_home_dir}"
 
 where `...` are optional parameters which are described below.
 
-Use `ma_build_tests` CMake variable to exclude tests from build (tests are included by default):
+Use `MA_TESTS` CMake variable to exclude tests from build (tests are included by default):
 
 ```
-cmake -D ma_build_tests=OFF ...
+cmake -D MA_TESTS=OFF ...
 ```
 
 CMake project uses CMake find modules, so most of parameters comes from these CMake modules:
@@ -208,7 +208,7 @@ CMake project uses CMake find modules, so most of parameters comes from these CM
     -D QT_QMAKE_EXECUTABLE="${qt4_home_dir}/bin/qmake.exe"
     ```
 
-  `ma_qt` CMake variable can be used to avoid usage of Qt and to skip examples using Qt.
+  `MA_QT` CMake variable can be used to avoid usage of Qt and to skip examples using Qt.
   Possible values are:
   
   * `ON` (default) - search for (require) and use Qt
@@ -294,20 +294,20 @@ To build with [static C/C++ runtime](https://gitlab.kitware.com/cmake/community/
 **Note** that on Windows `cmake-qt` searches for some system libraries (OpenGL) therefore to work correctly CMake should be executed after Windows SDK environment was set up (even if `Visual Studio` generator is used).
 
 The CMake project searches for Qt 5.x first and if Qt 5.x is not found then it searches for Qt 4.x.
-This can be changed with `ma_force_qt_major_version` CMake variable which can be specified in command line. 
+This can be changed with `MA_QT_MAJOR_VERSION` CMake variable which can be specified in command line. 
 
 Possible values are:
 
 * 4 - search for Qt 4.x only
 
   ```
-  -D ma_force_qt_major_version=4
+  -D MA_QT_MAJOR_VERSION=4
   ```
 
 * 5 - search for Qt 5.x only
 
   ```
-  -D ma_force_qt_major_version=5
+  -D MA_QT_MAJOR_VERSION=5
   ```
 
 Example of generation of Visual Studio 2015 project with:
@@ -343,7 +343,7 @@ Example of generation of makefiles on *nix with:
 ```bash
 cmake \
 -D Boost_USE_STATIC_LIBS=ON \
--D ma_force_qt_major_version=5 \
+-D MA_QT_MAJOR_VERSION=5 \
 -D CMAKE_BUILD_TYPE=${build_type} \
 -G "Unix Makefiles" \
 "${asio_samples_home_dir}"
