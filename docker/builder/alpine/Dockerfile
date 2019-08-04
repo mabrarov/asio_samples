@@ -5,7 +5,7 @@
 # file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
-FROM alpine:3.9
+FROM alpine:3.10.1
 
 LABEL name="abrarov/asio-samples-builder-alpine" \
     description="Builder of Asio samples project on Alpine Linux"
@@ -15,7 +15,7 @@ ENV PROJECT_DIR="/project" \
     BOOST_USE_STATIC_LIBS=ON \
     MA_QT=ON \
     MA_QT_MAJOR_VERSION=5 \
-    COVERAGE_BUILD=OFF
+    MA_COVERAGE=OFF
 
 ADD ["start.sh", "/app/"]
 

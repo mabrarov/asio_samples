@@ -12,7 +12,7 @@ set(cxx_compile_definitions )
 set(cxx_include_directories )
 set(cxx_libraries )
 
-if(NOT ma_own_gtest)
+if(NOT MA_OWN_GTEST_USED)
     find_package(GTest REQUIRED)
 endif()
 
