@@ -798,20 +798,20 @@ install:
     fi
 
 script:
-  - export CODECOV_FLAG="${TRAVIS_OS_NAME}__$(uname -r | sed -r 's/[[:space:]]|[\\\.\/:]/_/g')__${CXX_COMPILER_FAMILY}_$(${CXX_COMPILER} -dumpversion)__boost_${BOOST_VERSION}__qt_${QT_MAJOR_VERSION}"
-  - export CODECOV_FLAG="${CODECOV_FLAG//[.-]/_}"
-  - if [[ "${COVERITY_SCAN_BRANCH}" == 1 ]]; then
+  - export CODECOV_FLAG="${TRAVIS_OS_NAME}__$(uname -r | sed -r 's/[[:space:]]|[\\\.\/:]/_/g')__${CXX_COMPILER_FAMILY}_$(${CXX_COMPILER} -dumpversion)__boost_${BOOST_VERSION}__qt_${QT_MAJOR_VERSION}" &&
+    export CODECOV_FLAG="${CODECOV_FLAG//[.-]/_}" &&
+    if [[ "${COVERITY_SCAN_BRANCH}" == 1 ]]; then
       echo "Build was already perfomed with Coverity scan.";
     else
       echo "Preparing build dir at ${BUILD_HOME}" &&
       rm -rf "${BUILD_HOME}" && mkdir -p "${BUILD_HOME}";
-    fi
-  - export COVERAGE_BUILD=0;
-  - if [[ "${COVERAGE_BUILD_CANDIDATE}" != 0 ]]; then
+    fi &&
+    export COVERAGE_BUILD=0 &&
+    if [[ "${COVERAGE_BUILD_CANDIDATE}" != 0 ]]; then
       export COVERAGE_BUILD=1;
-    fi
-  - cd "${BUILD_HOME}"
-  - if [[ "${COVERITY_SCAN_BRANCH}" != 1 ]]; then
+    fi &&
+    cd "${BUILD_HOME}" &&
+    if [[ "${COVERITY_SCAN_BRANCH}" != 1 ]]; then
       export CMAKE_GENERATOR_COMMAND="cmake -D CMAKE_C_COMPILER=\"${C_COMPILER}\" -D CMAKE_CXX_COMPILER=\"${CXX_COMPILER}\" -D CMAKE_BUILD_TYPE=\"${BUILD_TYPE}\"" &&
       if [[ "${PRE_INSTALLED_BOOST}" != 0 ]]; then
         echo "Building with installed Boost ${BOOST_VERSION}";
@@ -830,26 +830,26 @@ script:
       echo "CMake project generation command ${CMAKE_GENERATOR_COMMAND}" &&
       eval ${CMAKE_GENERATOR_COMMAND} &&
       cmake --build "${BUILD_HOME}" --config "${BUILD_TYPE}";
-    fi
-  - if [[ "${COVERAGE_BUILD}" != 0 ]]; then
+    fi &&
+    if [[ "${COVERAGE_BUILD}" != 0 ]]; then
       echo "Preparing code coverage counters at ${BUILD_HOME}/lcov-base.info" &&
       lcov -z -d "${BUILD_HOME}" &&
       lcov -c -d "${BUILD_HOME}" -i -o lcov-base.info --rc lcov_branch_coverage=1;
-    fi
-  - ctest --build-config "${BUILD_TYPE}" --verbose
-  - if [[ "${COVERAGE_BUILD}" != 0 ]]; then
+    fi &&
+    ctest --build-config "${BUILD_TYPE}" --verbose &&
+    if [[ "${COVERAGE_BUILD}" != 0 ]]; then
       echo "Caclulating coverage at ${BUILD_HOME}/lcov-test.info" &&
       lcov -c -d "${BUILD_HOME}" -o lcov-test.info --rc lcov_branch_coverage=1 &&
       echo "Caclulating coverage delta at ${BUILD_HOME}/lcov.info" &&
       lcov -a lcov-base.info -a lcov-test.info -o lcov.info --rc lcov_branch_coverage=1 &&
       echo "Excluding 3rd party code from coverage data located at ${BUILD_HOME}/lcov.info" &&
       lcov -r lcov.info "ui_*.h*" "moc_*.c*" "/usr/*" "3rdparty/*" "examples/*" "tests/*" "${DEPENDENCIES_HOME}/*" -o lcov.info --rc lcov_branch_coverage=1;
-    fi
-  - cd "${TRAVIS_BUILD_DIR}"
+    fi &&
+    cd "${TRAVIS_BUILD_DIR}"
 
 after_success:
-  - cd "${TRAVIS_BUILD_DIR}"
-  - if [[ "${COVERAGE_BUILD}" != 0 ]]; then
+  - cd "${TRAVIS_BUILD_DIR}" &&
+    if [[ "${COVERAGE_BUILD}" != 0 ]]; then
       echo "Sending ${BUILD_HOME}/lcov.info coverage data to Codecov" &&
       bash <(curl --connect-timeout "${CURL_CONNECT_TIMEOUT}" --max-time "${CURL_MAX_TIME}" --retry "${CURL_RETRY}" --retry-delay "${CURL_RETRY_DELAY}" -s https://codecov.io/bash) -Z -f "${BUILD_HOME}/lcov.info" -R "${TRAVIS_BUILD_DIR}" -X gcov -F "${CODECOV_FLAG}";
     fi
