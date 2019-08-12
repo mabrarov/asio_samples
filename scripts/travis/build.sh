@@ -16,23 +16,23 @@ fi
 
 cd "${BUILD_HOME}"
 if [[ "${COVERITY_SCAN_BRANCH}" != 1 ]]; then
-  export CMAKE_GENERATOR_COMMAND="cmake -D CMAKE_C_COMPILER=\"${C_COMPILER}\" -D CMAKE_CXX_COMPILER=\"${CXX_COMPILER}\" -D CMAKE_BUILD_TYPE=\"${BUILD_TYPE}\""
+  generate_cmd="cmake -D CMAKE_C_COMPILER=\"${C_COMPILER}\" -D CMAKE_CXX_COMPILER=\"${CXX_COMPILER}\" -D CMAKE_BUILD_TYPE=\"${BUILD_TYPE}\""
   if [[ "${BOOST_FROM_PACKAGE}" != 0 ]]; then
     echo "Building with Boost ${BOOST_VERSION} installed from package"
   else
     echo "Building with Boost ${BOOST_VERSION} located at ${PREBUILT_BOOST_HOME}"
-    export CMAKE_GENERATOR_COMMAND="${CMAKE_GENERATOR_COMMAND} -D CMAKE_SKIP_BUILD_RPATH=ON -D Boost_NO_SYSTEM_PATHS=ON -D BOOST_INCLUDEDIR=\"${PREBUILT_BOOST_HOME}/include\" -D BOOST_LIBRARYDIR=\"${PREBUILT_BOOST_HOME}/lib\""
+    generate_cmd="${generate_cmd} -D CMAKE_SKIP_BUILD_RPATH=ON -D Boost_NO_SYSTEM_PATHS=ON -D BOOST_INCLUDEDIR=\"${PREBUILT_BOOST_HOME}/include\" -D BOOST_LIBRARYDIR=\"${PREBUILT_BOOST_HOME}/lib\""
   fi
-  export CMAKE_GENERATOR_COMMAND="${CMAKE_GENERATOR_COMMAND} -D MA_QT_MAJOR_VERSION=\"${QT_MAJOR_VERSION}\""
+  generate_cmd="${generate_cmd} -D MA_QT_MAJOR_VERSION=\"${QT_MAJOR_VERSION}\""
   if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
     if [[ "${QT_MAJOR_VERSION}" == 5 ]]; then
       export Qt5_DIR="/usr/local/opt/qt5/lib/cmake"
-      export CMAKE_GENERATOR_COMMAND="${CMAKE_GENERATOR_COMMAND} -D Qt5Core_DIR=\"${Qt5_DIR}/Qt5Core\" -D Qt5Gui_DIR=\"${Qt5_DIR}/Qt5Gui\" -D Qt5Widgets_DIR=\"${Qt5_DIR}/Qt5Widgets\""
+      generate_cmd="${generate_cmd} -D Qt5Core_DIR=\"${Qt5_DIR}/Qt5Core\" -D Qt5Gui_DIR=\"${Qt5_DIR}/Qt5Gui\" -D Qt5Widgets_DIR=\"${Qt5_DIR}/Qt5Widgets\""
     fi
   fi
-  export CMAKE_GENERATOR_COMMAND="${CMAKE_GENERATOR_COMMAND} -D MA_COVERAGE=\"${COVERAGE_BUILD}\" \"${TRAVIS_BUILD_DIR}\""
-  echo "CMake project generation command: ${CMAKE_GENERATOR_COMMAND}"
-  eval ${CMAKE_GENERATOR_COMMAND}
+  generate_cmd="${generate_cmd} -D MA_COVERAGE=\"${COVERAGE_BUILD}\" \"${TRAVIS_BUILD_DIR}\""
+  echo "CMake project generation command: ${generate_cmd}"
+  eval ${generate_cmd}
   cmake --build "${BUILD_HOME}" --config "${BUILD_TYPE}"
 fi
 
@@ -64,7 +64,7 @@ if [[ "${COVERAGE_BUILD}" != 0 ]]; then
     -Z \
     -f "${BUILD_HOME}/lcov.info" \
     -R "${TRAVIS_BUILD_DIR}" \
-    -X gcov
+    -X gcov \
     -F "${CODECOV_FLAG}"
 fi
 
