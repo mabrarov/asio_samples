@@ -25,6 +25,8 @@ env:
     - CURL_RETRY: 10
     - CURL_RETRY_DELAY: 10
 
+before_install: ./scripts/travis/before_install.sh
+
 matrix:
   include:
     # Default GCC, Boost 1.55.0, Qt 5.x. Used for collecting information about test coverage.
