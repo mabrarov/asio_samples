@@ -29,11 +29,9 @@ if (${env:COVERAGE_BUILD} -eq "True") {
   Push-AppveyorArtifact "${coverage_report_archive}" -DeploymentName "${env:COVERAGE_ARTIFACT_NAME}"
   Push-AppveyorArtifact "${env:COBERTURA_COVERAGE_FILE}" -DeploymentName "${env:COVERAGE_ARTIFACT_NAME}"
 
-  $cobertura_coverage_file = ${env:COBERTURA_COVERAGE_FILE} -replace "\\", "/"
+  $codecov_coverage_file = ${env:COBERTURA_COVERAGE_FILE} -replace "\\", "/"
   $codecov_root_folder = ${env:APPVEYOR_BUILD_FOLDER} -replace "\\", "/"
-  $codecov_cmd = "codecov --required --file ""${cobertura_coverage_file}"" --flags ""${env:CODECOV_FLAG}"" -X gcov --root ""${codecov_root_folder}"""
-  Write-Host "Calling: ${codecov_cmd}"
-  codecov --required --token "${env:CODECOV_TOKEN}" --file "${cobertura_coverage_file}" --flags "${env:CODECOV_FLAG}" -X gcov --root "${codecov_root_folder}"
+  codecov --required --token "${env:CODECOV_TOKEN}" --file "${codecov_coverage_file}" --flags "${env:CODECOV_FLAG}" -X gcov --root "${codecov_root_folder}"
   if (${LastExitCode} -ne 0) {
     throw "Codecov failed with exit code ${LastExitCode}"
   }
