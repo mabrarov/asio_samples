@@ -217,7 +217,6 @@ matrix:
       addons: &homebrew-boost169-qt5
         homebrew:
           packages:
-            - bash
             - gnu-sed
             - cmake
             - boost@1.69
@@ -725,9 +724,4 @@ matrix:
       addons: *apt-clang38-boost155-qt4
 
 install: source ./scripts/travis/install.sh
-script:
-  - if [[ "${COVERITY_SCAN_BRANCH}" == 1 ]]; then
-      echo "Build was already perfomed with Coverity scan.";
-    else
-      source ./scripts/travis/build.sh;
-    fi
+script: source ./scripts/travis/build.sh
