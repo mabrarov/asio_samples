@@ -5,21 +5,20 @@ set -e
 export CODECOV_FLAG="${TRAVIS_OS_NAME}__$(uname -r | sed -r 's/[[:space:]]|[\\\.\/:]/_/g')__${CXX_COMPILER_FAMILY}_$(${CXX_COMPILER} -dumpversion)__boost_${BOOST_VERSION}__qt_${QT_MAJOR_VERSION}"
 export CODECOV_FLAG="${CODECOV_FLAG//[.-]/_}"
 
-echo "Preparing build dir at ${BUILD_HOME}"
-rm -rf "${BUILD_HOME}"
-echo "Exit code: $?"
-mkdir -p "${BUILD_HOME}"
-echo "Exit code: $?"
-
 export COVERAGE_BUILD=0
 if [[ "${COVERAGE_BUILD_CANDIDATE}" != 0 ]]; then
   export COVERAGE_BUILD=1
 fi
 
-echo "Before CD"
+echo "Preparing build dir at ${BUILD_HOME}"
+rm -rf "${BUILD_HOME}"
+mkdir -p "${BUILD_HOME}"
+if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
+  cd "${BUILD_HOME}" || true
+else
+  cd "${BUILD_HOME}"
+fi
 
-cd "${BUILD_HOME}"
-echo "Exit code: $?"
 if [[ "${COVERITY_SCAN_BRANCH}" != 1 ]]; then
   generate_cmd="cmake -D CMAKE_C_COMPILER=\"${C_COMPILER}\" -D CMAKE_CXX_COMPILER=\"${CXX_COMPILER}\" -D CMAKE_BUILD_TYPE=\"${BUILD_TYPE}\""
   if [[ "${BOOST_FROM_PACKAGE}" != 0 ]]; then
