@@ -25,5 +25,10 @@ if (${env:COVERAGE_BUILD} -eq "True") {
   Push-AppveyorArtifact "${coverage_report_archive}" -DeploymentName "${env:COVERAGE_ARTIFACT_NAME}"
   Push-AppveyorArtifact "${env:COBERTURA_COVERAGE_FILE}" -DeploymentName "${env:COVERAGE_ARTIFACT_NAME}"
 
-  codecov --token "${env:CODECOV_TOKEN}" --file "${env:COBERTURA_COVERAGE_FILE}" --root "${env:APPVEYOR_BUILD_FOLDER}" -X gcov -F "${env:CODECOV_FLAG}"
+  codecov `
+    --token "${env:CODECOV_TOKEN}" `
+    --file "${env:COBERTURA_COVERAGE_FILE}" `
+    --root "${env:APPVEYOR_BUILD_FOLDER}" `
+    -X gcov `
+    -F "${env:CODECOV_FLAG}"
 }

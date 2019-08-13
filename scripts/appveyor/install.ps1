@@ -684,7 +684,7 @@ if (${env:COVERAGE_BUILD} -eq "True") {
   }
 
   Write-Host "Installing Codecov pip package"
-  pip install --disable-pip-version-check --retries "${env:PIP_RETRY}" codecov==2.0.9
+  pip install --disable-pip-version-check --retries "${env:PIP_RETRY}" codecov=="${env:CODECOV_VERSION}"
   if (${LastExitCode} -ne 0) {
     throw "Installation of Codecov pip package failed with exit code ${LastExitCode}"
   }
