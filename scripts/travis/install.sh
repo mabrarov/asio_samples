@@ -52,8 +52,7 @@ system_boost_home=0
 if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
   if [[ "${TRAVIS_DIST}" == "trusty" ]]; then
     if [[ "${BOOST_VERSION}" == "1.55.0" ]] \
-      || [[ "${BOOST_VERSION}" == "1.68.0" ]] \
-      || [[ "${BOOST_VERSION}" == "1.70.0" ]]; then
+      || [[ "${BOOST_VERSION}" == "1.68.0" ]]; then
       system_boost_home=1
     fi
   fi
