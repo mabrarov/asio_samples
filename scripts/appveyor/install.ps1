@@ -1,5 +1,9 @@
-# Stop immediately if any error happens
-$ErrorActionPreference = "Stop"
+#
+# Copyright (c) 2019 Marat Abrarov (abrarov@gmail.com)
+#
+# Distributed under the Boost Software License, Version 1.0. (See accompanying
+# file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
+#
 
 $env:OS_VERSION = (Get-WmiObject win32_operatingsystem).version
 $toolchain_id = ""
@@ -675,6 +679,9 @@ Write-Host "CMAKE_GENERATOR           : ${env:CMAKE_GENERATOR}"
 Write-Host "COVERITY_SCAN_BUILD       : ${env:COVERITY_SCAN_BUILD}"
 Write-Host "COVERAGE_BUILD            : ${env:COVERAGE_BUILD}"
 Write-Host "CODECOV_FLAG              : ${env:CODECOV_FLAG}"
+if (${env:COVERAGE_BUILD} -eq "True") {
+  Write-Host "COBERTURA_COVERAGE_FILE   : ${env:COBERTURA_COVERAGE_FILE"}"
+}
 
 if (${env:COVERAGE_BUILD} -eq "True") {
   Write-Host "Installing OpenCppCoverage Choco package"

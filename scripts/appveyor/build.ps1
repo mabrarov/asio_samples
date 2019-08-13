@@ -1,5 +1,9 @@
-# Stop immediately if any error happens
-$ErrorActionPreference = "Stop"
+#
+# Copyright (c) 2019 Marat Abrarov (abrarov@gmail.com)
+#
+# Distributed under the Boost Software License, Version 1.0. (See accompanying
+# file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
+#
 
 New-Item "${env:BUILD_HOME}" -type directory | out-null
 Set-Location -Path "${env:BUILD_HOME}"
@@ -55,17 +59,9 @@ if (${env:COVERITY_SCAN_BUILD} -eq "True") {
 }
 Write-Host "CMake project build command: ${build_cmd}"
 
-$saved_error_action_preference = ${ErrorActionPreference}
-if (${env:TOOLCHAIN} -eq "mingw") {
-  # MinGW returns non-zero exit code if warnings
-  $ErrorActionPreference = "Continue"
-}
 Invoke-Expression "${build_cmd}"
-$build_exit_code = ${LastExitCode}
-# Restore
-$ErrorActionPreference = "${saved_error_action_preference}"
-if (${build_exit_code} -ne 0) {
-  throw "Build failed with exit code ${build_exit_code}"
+if (${LastExitCode} -ne 0) {
+  throw "Build failed with exit code ${LastExitCode}"
 }
 
 if (${env:COVERITY_SCAN_BUILD} -eq "True") {

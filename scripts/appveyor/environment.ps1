@@ -1,5 +1,9 @@
-# Stop immediately if any error happens
-$ErrorActionPreference = "Stop"
+#
+# Copyright (c) 2019 Marat Abrarov (abrarov@gmail.com)
+#
+# Distributed under the Boost Software License, Version 1.0. (See accompanying
+# file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
+#
 
 if (Test-Path env:QT_VERSION) {
   $env:PATH = "${env:QT_BIN_FOLDER};${env:PATH}"

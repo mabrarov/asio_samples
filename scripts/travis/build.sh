@@ -1,5 +1,12 @@
 #!/bin/bash
 
+#
+# Copyright (c) 2019 Marat Abrarov (abrarov@gmail.com)
+#
+# Distributed under the Boost Software License, Version 1.0. (See accompanying
+# file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
+#
+
 set -e
 
 codecov_flag="${TRAVIS_OS_NAME}__$(uname -r | sed -r 's/[[:space:]]|[\\\.\/:]/_/g')__${CXX_COMPILER_FAMILY}_$(${CXX_COMPILER} -dumpversion)__boost_${BOOST_VERSION}__qt_${QT_MAJOR_VERSION}"

@@ -1,5 +1,9 @@
-# Stop immediately if any error happens
-$ErrorActionPreference = "Stop"
+#
+# Copyright (c) 2019 Marat Abrarov (abrarov@gmail.com)
+#
+# Distributed under the Boost Software License, Version 1.0. (See accompanying
+# file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
+#
 
 Set-Location -Path "${env:BUILD_HOME}"
 $test_cmd = "ctest.exe --build-config ""${env:CONFIGURATION}"" --verbose"
@@ -25,12 +29,14 @@ if (${env:COVERAGE_BUILD} -eq "True") {
   Push-AppveyorArtifact "${coverage_report_archive}" -DeploymentName "${env:COVERAGE_ARTIFACT_NAME}"
   Push-AppveyorArtifact "${env:COBERTURA_COVERAGE_FILE}" -DeploymentName "${env:COVERAGE_ARTIFACT_NAME}"
 
-  $saved_error_action_preference = ${ErrorActionPreference}
-  $ErrorActionPreference = "Continue"
-  codecov --required --token "${env:CODECOV_TOKEN}" --file "${env:COBERTURA_COVERAGE_FILE}" --flags "${env:CODECOV_FLAG}" -X gcov --root "${env:APPVEYOR_BUILD_FOLDER}"
-  $codecov_exit_code = ${LastExitCode}
-  $ErrorActionPreference = "${saved_error_action_preference}"
-  if (${codecov_exit_code} -ne 0) {
-    throw "Codecov failed with exit code ${codecov_exit_code}"
+  codecov `
+    --required `
+    --token "${env:CODECOV_TOKEN}" `
+    --file "${env:COBERTURA_COVERAGE_FILE}" `
+    --flags "${env:CODECOV_FLAG}" `
+    -X gcov `
+    --root "${env:APPVEYOR_BUILD_FOLDER}"
+  if (${LastExitCode} -ne 0) {
+    throw "Codecov failed with exit code ${LastExitCode}"
   }
 }
