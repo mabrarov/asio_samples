@@ -156,16 +156,16 @@ cache:
   - C:\projects\downloads -> .appveyor.yml
 
 install:
-  - ps: .\scripts\appveyor\install.ps1
+  - ps: "${env:APPVEYOR_BUILD_FOLDER}\scripts\appveyor\install.ps1"
   - cmd: if not "%WINDOWS_SDK_ENV_BATCH_FILE%"=="" call "%WINDOWS_SDK_ENV_BATCH_FILE%" %WINDOWS_SDK_ENV_PARAMETERS%
   - cmd: if not "%MSVC_VARS_BATCH_FILE%"=="" call "%MSVC_VARS_BATCH_FILE%" %MSVC_VARS_PLATFORM%
-  - ps: .\scripts\appveyor\environment.ps1
+  - ps: "${env:APPVEYOR_BUILD_FOLDER}\scripts\appveyor\environment.ps1"
 
 build_script:
-  - ps: .\scripts\appveyor\build.ps1
+  - ps: "${env:APPVEYOR_BUILD_FOLDER}\scripts\appveyor\build.ps1"
 
 test_script:
-  - ps: .\scripts\appveyor\test.ps1
+  - ps: "${env:APPVEYOR_BUILD_FOLDER}\scripts\appveyor\test.ps1"
 
 artifacts:
   - path: build\examples\ma_asio_performance_test_client$(ARTIFACT_PATH_SUFFIX)*.exe

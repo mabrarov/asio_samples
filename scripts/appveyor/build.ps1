@@ -75,3 +75,5 @@ if (${env:COVERITY_SCAN_BUILD} -eq "True") {
     throw "Failed to upload Coverity Scan results with exit code ${LastExitCode}."
   }
 }
+
+Set-Location -Path "${env:APPVEYOR_BUILD_FOLDER}"
