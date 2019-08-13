@@ -16,7 +16,9 @@ if [[ "${COVERAGE_BUILD_CANDIDATE}" != 0 ]]; then
   export COVERAGE_BUILD=1
 fi
 
-cd -L "${BUILD_HOME}"
+echo "Before CD"
+
+cd "${BUILD_HOME}"
 echo "Exit code: $?"
 if [[ "${COVERITY_SCAN_BRANCH}" != 1 ]]; then
   generate_cmd="cmake -D CMAKE_C_COMPILER=\"${C_COMPILER}\" -D CMAKE_CXX_COMPILER=\"${CXX_COMPILER}\" -D CMAKE_BUILD_TYPE=\"${BUILD_TYPE}\""
