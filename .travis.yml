@@ -25,7 +25,7 @@ env:
     - CURL_RETRY: 10
     - CURL_RETRY_DELAY: 10
 
-before_install: . "${TRAVIS_BUILD_DIR}/scripts/travis/before_install.sh"
+before_install: . ./scripts/travis/before_install.sh
 
 matrix:
   include:
@@ -723,10 +723,10 @@ matrix:
       compiler: clang
       addons: *apt-clang38-boost155-qt4
 
-install: . "${TRAVIS_BUILD_DIR}/scripts/travis/install.sh"
+install: . ./scripts/travis/install.sh
 script:
   - if [[ "${COVERITY_SCAN_BRANCH}" == 1 ]]; then
       echo "Build was already perfomed with Coverity scan.";
     else
-      . "${TRAVIS_BUILD_DIR}/scripts/travis/build.sh";
+      . ./scripts/travis/build.sh;
     fi
