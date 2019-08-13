@@ -25,5 +25,12 @@ if (${env:COVERAGE_BUILD} -eq "True") {
   Push-AppveyorArtifact "${coverage_report_archive}" -DeploymentName "${env:COVERAGE_ARTIFACT_NAME}"
   Push-AppveyorArtifact "${env:COBERTURA_COVERAGE_FILE}" -DeploymentName "${env:COVERAGE_ARTIFACT_NAME}"
 
+  $saved_error_action_preference = ${ErrorActionPreference}
+  $ErrorActionPreference = "Continue"
   codecov --required --token "${env:CODECOV_TOKEN}" --file "${env:COBERTURA_COVERAGE_FILE}" --flags "${env:CODECOV_FLAG}" -X gcov --root "${env:APPVEYOR_BUILD_FOLDER}"
+  $codecov_exit_code = ${LastExitCode}
+  $ErrorActionPreference = "${saved_error_action_preference}"
+  if (${codecov_exit_code} -ne 0) {
+    throw "Codecov failed with exit code ${codecov_exit_code}"
+  }
 }
