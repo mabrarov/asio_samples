@@ -63,6 +63,8 @@ if [[ "${COVERAGE_BUILD}" != 0 ]]; then
     -o lcov.info --rc lcov_branch_coverage=1
 fi
 
+cd "${TRAVIS_BUILD_DIR}"
+
 if [[ "${COVERAGE_BUILD}" != 0 ]]; then
   echo "Sending ${BUILD_HOME}/lcov.info coverage data to Codecov" &&
   codecov \
@@ -73,5 +75,3 @@ if [[ "${COVERAGE_BUILD}" != 0 ]]; then
     -X gcov \
     --root "${TRAVIS_BUILD_DIR}"
 fi
-
-cd "${TRAVIS_BUILD_DIR}"

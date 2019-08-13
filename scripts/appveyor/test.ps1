@@ -31,7 +31,13 @@ if (${env:COVERAGE_BUILD} -eq "True") {
 
   $codecov_coverage_file = ${env:COBERTURA_COVERAGE_FILE} -replace "\\", "/"
   $codecov_root_folder = ${env:APPVEYOR_BUILD_FOLDER} -replace "\\", "/"
-  codecov --required --token "${env:CODECOV_TOKEN}" --file "${codecov_coverage_file}" --flags "${env:CODECOV_FLAG}" -X gcov --root "${codecov_root_folder}"
+  codecov `
+    --required `
+    --token "${env:CODECOV_TOKEN}" `
+    --file "${codecov_coverage_file}" `
+    --flags "${env:CODECOV_FLAG}" `
+    -X gcov `
+    --root "${codecov_root_folder}"
   if (${LastExitCode} -ne 0) {
     throw "Codecov failed with exit code ${LastExitCode}"
   }
