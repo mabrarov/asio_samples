@@ -631,12 +631,11 @@ if (${env:COVERAGE_BUILD} -eq "True") {
     throw "Installation of OpenCppCoverage Chocolatey package failed with ${LastExitCode} exit code."
   }
 
-  pip install --retries "${env:PIP_RETRY}" codecov==2.0.9
-  # TODO: Fix handling of pip exit code
+  & pip install --retries "${env:PIP_RETRY}" codecov==2.0.9
   Write-Host "Codecov installation completed with ${LastExitCode} exit code."
-  #if (${LastExitCode} -ne 0) {
-  #  throw "Installation of Codecov failed with exit code ${LastExitCode}."
-  #}
+  if (${LastExitCode} -ne 0) {
+    throw "Installation of Codecov failed with exit code ${LastExitCode}."
+  }
 }
 
 if (Test-Path env:MSVS_PATCH_FOLDER) {
