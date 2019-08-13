@@ -724,4 +724,9 @@ matrix:
       addons: *apt-clang38-boost155-qt4
 
 install: source ./scripts/travis/install.sh
-script: source ./scripts/travis/build.sh
+script:
+  - if [[ "${COVERITY_SCAN_BRANCH}" == 1 ]]; then
+      echo "Build was already perfomed with Coverity scan.";
+    else
+      source ./scripts/travis/build.sh;
+    fi
