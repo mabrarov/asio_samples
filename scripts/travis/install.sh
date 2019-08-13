@@ -2,7 +2,7 @@
 
 set -e
 
-if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
+if [[ "${TRAVIS_OS_NAME}" = "osx" ]]; then
   export PATH="/usr/local/opt/gnu-sed/libexec/gnubin:${PATH}"
 fi
 
@@ -13,7 +13,7 @@ echo "Detected CMake of ${detected_cmake_version} version"
 if [[ -n "${CMAKE_VERSION+x}" ]]; then
   echo "CMake of ${CMAKE_VERSION} version is requested"
   if [[ "${CMAKE_VERSION}" != "${detected_cmake_version}" ]]; then
-    if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
+    if [[ "${TRAVIS_OS_NAME}" = "linux" ]]; then
       cmake_archive_base_name="cmake-${CMAKE_VERSION}-Linux-x86_64"
       cmake_home="${DEPENDENCIES_HOME}/${cmake_archive_base_name}"
       if [[ ! -d "${cmake_home}" ]]; then
@@ -49,25 +49,26 @@ if [[ -n "${CMAKE_VERSION+x}" ]]; then
 fi
 
 system_boost_home=0
-if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
-  if [[ "${TRAVIS_DIST}" == "trusty" ]]; then
-    if [[ "${BOOST_VERSION}" == "1.55.0" ]] \
-      || [[ "${BOOST_VERSION}" == "1.68.0" ]]; then
+if [[ "${TRAVIS_OS_NAME}" = "linux" ]]; then
+  if [[ "${TRAVIS_DIST}" = "trusty" ]]; then
+    if [[ "${BOOST_VERSION}" = "1.55.0" ]] \
+      || [[ "${BOOST_VERSION}" = "1.68.0" ]] \
+      || [[ "${BOOST_VERSION}" = "1.70.0" ]]; then
       system_boost_home=1
     fi
   fi
-elif [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
-  if [[ "${BOOST_VERSION}" == "1.55.0" ]] \
-    || [[ "${BOOST_VERSION}" == "1.57.0" ]] \
-    || [[ "${BOOST_VERSION}" == "1.59.0" ]] \
-    || [[ "${BOOST_VERSION}" == "1.60.0" ]] \
-    || [[ "${BOOST_VERSION}" == "1.69.0" ]] \
-    || [[ "${BOOST_VERSION}" == "1.70.0" ]]; then
+elif [[ "${TRAVIS_OS_NAME}" = "osx" ]]; then
+  if [[ "${BOOST_VERSION}" = "1.55.0" ]] \
+    || [[ "${BOOST_VERSION}" = "1.57.0" ]] \
+    || [[ "${BOOST_VERSION}" = "1.59.0" ]] \
+    || [[ "${BOOST_VERSION}" = "1.60.0" ]] \
+    || [[ "${BOOST_VERSION}" = "1.69.0" ]] \
+    || [[ "${BOOST_VERSION}" = "1.70.0" ]]; then
     system_boost_home=1
   fi
 fi
 
-if [[ "${system_boost_home}" = 0 ]]; then
+if [[ "${system_boost_home}" -eq 0 ]]; then
   boost_archive_base_name="boost-${BOOST_VERSION}-x64-gcc4.8"
   export BOOST_HOME="${DEPENDENCIES_HOME}/${boost_archive_base_name}"
   if [[ ! -d "${BOOST_HOME}" ]]; then

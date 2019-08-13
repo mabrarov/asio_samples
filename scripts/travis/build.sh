@@ -24,10 +24,10 @@ if [[ "${COVERITY_SCAN_BRANCH}" != 1 ]]; then
     echo "Building with Boost ${BOOST_VERSION} located at system paths"
   fi
   generate_cmd="${generate_cmd} -D MA_QT_MAJOR_VERSION=\"${QT_MAJOR_VERSION}\""
-  if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
-    if [[ "${QT_MAJOR_VERSION}" == 5 ]]; then
-      export Qt5_DIR="/usr/local/opt/qt5/lib/cmake"
-      generate_cmd="${generate_cmd} -D Qt5Core_DIR=\"${Qt5_DIR}/Qt5Core\" -D Qt5Gui_DIR=\"${Qt5_DIR}/Qt5Gui\" -D Qt5Widgets_DIR=\"${Qt5_DIR}/Qt5Widgets\""
+  if [[ "${TRAVIS_OS_NAME}" = "osx" ]]; then
+    if [[ "${QT_MAJOR_VERSION}" -eq 5 ]]; then
+      qt5_dir="/usr/local/opt/qt5/lib/cmake"
+      generate_cmd="${generate_cmd} -D Qt5Core_DIR=\"${qt5_dir}/Qt5Core\" -D Qt5Gui_DIR=\"${qt5_dir}/Qt5Gui\" -D Qt5Widgets_DIR=\"${qt5_dir}/Qt5Widgets\""
     fi
   fi
   generate_cmd="${generate_cmd} -D MA_COVERAGE=\"${coverage_build}\" \"${TRAVIS_BUILD_DIR}\""
@@ -50,7 +50,15 @@ if [[ "${coverage_build}" != 0 ]]; then
   echo "Caclulating coverage delta at ${BUILD_HOME}/lcov.info"
   lcov -a lcov-base.info -a lcov-test.info -o lcov.info --rc lcov_branch_coverage=1
   echo "Excluding 3rd party code from coverage data located at ${BUILD_HOME}/lcov.info"
-  lcov -r lcov.info "ui_*.h*" "moc_*.c*" "/usr/*" "3rdparty/*" "examples/*" "tests/*" "${DEPENDENCIES_HOME}/*" -o lcov.info --rc lcov_branch_coverage=1
+  lcov -r lcov.info \
+    "ui_*.h*" \
+    "moc_*.c*" \
+    "/usr/*" \
+    "3rdparty/*" \
+    "examples/*" \
+    "tests/*" \
+    "${DEPENDENCIES_HOME}/*" \
+    -o lcov.info --rc lcov_branch_coverage=1
 fi
 
 if [[ "${coverage_build}" != 0 ]]; then
