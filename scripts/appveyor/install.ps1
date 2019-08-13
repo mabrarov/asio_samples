@@ -629,7 +629,7 @@ if (${env:COVERAGE_BUILD} -eq "True") {
   $exit_code = 1
   $try_num = 0
   while ($true) {
-    choco install -y opencppcoverage
+    choco install -y --no-progress opencppcoverage
     $exit_code = ${LastExitCode}
     $try_num++
     if (${exit_code} -eq 0) {
