@@ -13,7 +13,6 @@ fi
 echo "Preparing build dir at ${BUILD_HOME}"
 rm -rf "${BUILD_HOME}"
 mkdir -p "${BUILD_HOME}"
-cd "${BUILD_HOME}"
 
 if [[ "${COVERITY_SCAN_BRANCH}" != 1 ]]; then
   generate_cmd="cmake -D CMAKE_C_COMPILER=\"${C_COMPILER}\" -D CMAKE_CXX_COMPILER=\"${CXX_COMPILER}\" -D CMAKE_BUILD_TYPE=\"${BUILD_TYPE}\""
@@ -32,7 +31,9 @@ if [[ "${COVERITY_SCAN_BRANCH}" != 1 ]]; then
   fi
   generate_cmd="${generate_cmd} -D MA_COVERAGE=\"${COVERAGE_BUILD}\" \"${TRAVIS_BUILD_DIR}\""
   echo "CMake project generation command: ${generate_cmd}"
-  eval ${generate_cmd}
+  cd "${BUILD_HOME}" && \
+    eval "${generate_cmd}" && \
+    cd "${TRAVIS_BUILD_DIR}"
   cmake --build "${BUILD_HOME}" --config "${BUILD_TYPE}"
 fi
 
@@ -48,9 +49,19 @@ if [[ "${COVERAGE_BUILD}" != 0 ]]; then
   echo "Caclulating coverage at ${BUILD_HOME}/lcov-test.info"
   lcov -c -d "${BUILD_HOME}" -o lcov-test.info --rc lcov_branch_coverage=1
   echo "Caclulating coverage delta at ${BUILD_HOME}/lcov.info"
-  lcov -a lcov-base.info -a lcov-test.info -o lcov.info --rc lcov_branch_coverage=1
+  lcov -d "${BUILD_HOME}" -a lcov-base.info -a lcov-test.info -o lcov.info \
+    --rc lcov_branch_coverage=1
   echo "Excluding 3rd party code from coverage data located at ${BUILD_HOME}/lcov.info"
-  lcov -r lcov.info "ui_*.h*" "moc_*.c*" "/usr/*" "3rdparty/*" "examples/*" "tests/*" "${DEPENDENCIES_HOME}/*" -o lcov.info --rc lcov_branch_coverage=1
+  lcov -d "${BUILD_HOME}" \
+    -r lcov.info \
+      "ui_*.h*" \
+      "moc_*.c*" \
+      "/usr/*" \
+      "3rdparty/*" \
+      "examples/*" \
+      "tests/*" \
+      "${DEPENDENCIES_HOME}/*" \
+    -o lcov.info --rc lcov_branch_coverage=1
 fi
 
 if [[ "${COVERAGE_BUILD}" != 0 ]]; then
@@ -67,5 +78,3 @@ if [[ "${COVERAGE_BUILD}" != 0 ]]; then
     -X gcov \
     -F "${CODECOV_FLAG}"
 fi
-
-cd "${TRAVIS_BUILD_DIR}"
