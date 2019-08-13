@@ -728,5 +728,5 @@ script:
   - if [[ "${COVERITY_SCAN_BRANCH}" == 1 ]]; then
       echo "Build was already perfomed with Coverity scan.";
     else
-      source ./scripts/travis/build.sh;
+      ./scripts/travis/build.sh;
     fi
