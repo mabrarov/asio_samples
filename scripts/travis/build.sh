@@ -2,12 +2,12 @@
 
 set -e
 
-export CODECOV_FLAG="${TRAVIS_OS_NAME}__$(uname -r | sed -r 's/[[:space:]]|[\\\.\/:]/_/g')__${CXX_COMPILER_FAMILY}_$(${CXX_COMPILER} -dumpversion)__boost_${BOOST_VERSION}__qt_${QT_MAJOR_VERSION}"
-export CODECOV_FLAG="${CODECOV_FLAG//[.-]/_}"
+codecov_flag="${TRAVIS_OS_NAME}__$(uname -r | sed -r 's/[[:space:]]|[\\\.\/:]/_/g')__${CXX_COMPILER_FAMILY}_$(${CXX_COMPILER} -dumpversion)__boost_${BOOST_VERSION}__qt_${QT_MAJOR_VERSION}"
+codecov_flag="${codecov_flag//[.-]/_}"
 
-export COVERAGE_BUILD=0
+coverage_build=0
 if [[ "${COVERAGE_BUILD_CANDIDATE}" != 0 ]]; then
-  export COVERAGE_BUILD=1
+  coverage_build=1
 fi
 
 echo "Preparing build dir at ${BUILD_HOME}"
@@ -17,11 +17,11 @@ cd "${BUILD_HOME}"
 
 if [[ "${COVERITY_SCAN_BRANCH}" != 1 ]]; then
   generate_cmd="cmake -D CMAKE_C_COMPILER=\"${C_COMPILER}\" -D CMAKE_CXX_COMPILER=\"${CXX_COMPILER}\" -D CMAKE_BUILD_TYPE=\"${BUILD_TYPE}\""
-  if [[ "${BOOST_FROM_PACKAGE}" != 0 ]]; then
-    echo "Building with Boost ${BOOST_VERSION} installed from package"
+  if [[ -n "${BOOST_HOME+x}" ]]; then
+    echo "Building with Boost ${BOOST_VERSION} located at ${BOOST_HOME}"
+    generate_cmd="${generate_cmd} -D CMAKE_SKIP_BUILD_RPATH=ON -D Boost_NO_SYSTEM_PATHS=ON -D BOOST_INCLUDEDIR=\"${BOOST_HOME}/include\" -D BOOST_LIBRARYDIR=\"${BOOST_HOME}/lib\""
   else
-    echo "Building with Boost ${BOOST_VERSION} located at ${PREBUILT_BOOST_HOME}"
-    generate_cmd="${generate_cmd} -D CMAKE_SKIP_BUILD_RPATH=ON -D Boost_NO_SYSTEM_PATHS=ON -D BOOST_INCLUDEDIR=\"${PREBUILT_BOOST_HOME}/include\" -D BOOST_LIBRARYDIR=\"${PREBUILT_BOOST_HOME}/lib\""
+    echo "Building with Boost ${BOOST_VERSION} located at system paths"
   fi
   generate_cmd="${generate_cmd} -D MA_QT_MAJOR_VERSION=\"${QT_MAJOR_VERSION}\""
   if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
@@ -30,13 +30,13 @@ if [[ "${COVERITY_SCAN_BRANCH}" != 1 ]]; then
       generate_cmd="${generate_cmd} -D Qt5Core_DIR=\"${Qt5_DIR}/Qt5Core\" -D Qt5Gui_DIR=\"${Qt5_DIR}/Qt5Gui\" -D Qt5Widgets_DIR=\"${Qt5_DIR}/Qt5Widgets\""
     fi
   fi
-  generate_cmd="${generate_cmd} -D MA_COVERAGE=\"${COVERAGE_BUILD}\" \"${TRAVIS_BUILD_DIR}\""
+  generate_cmd="${generate_cmd} -D MA_COVERAGE=\"${coverage_build}\" \"${TRAVIS_BUILD_DIR}\""
   echo "CMake project generation command: ${generate_cmd}"
-  eval ${generate_cmd}
+  eval "${generate_cmd}"
   cmake --build "${BUILD_HOME}" --config "${BUILD_TYPE}"
 fi
 
-if [[ "${COVERAGE_BUILD}" != 0 ]]; then
+if [[ "${coverage_build}" != 0 ]]; then
   echo "Preparing code coverage counters at ${BUILD_HOME}/lcov-base.info"
   lcov -z -d "${BUILD_HOME}"
   lcov -c -d "${BUILD_HOME}" -i -o lcov-base.info --rc lcov_branch_coverage=1
@@ -44,7 +44,7 @@ fi
 
 ctest --build-config "${BUILD_TYPE}" --verbose
 
-if [[ "${COVERAGE_BUILD}" != 0 ]]; then
+if [[ "${coverage_build}" != 0 ]]; then
   echo "Caclulating coverage at ${BUILD_HOME}/lcov-test.info"
   lcov -c -d "${BUILD_HOME}" -o lcov-test.info --rc lcov_branch_coverage=1
   echo "Caclulating coverage delta at ${BUILD_HOME}/lcov.info"
@@ -53,7 +53,7 @@ if [[ "${COVERAGE_BUILD}" != 0 ]]; then
   lcov -r lcov.info "ui_*.h*" "moc_*.c*" "/usr/*" "3rdparty/*" "examples/*" "tests/*" "${DEPENDENCIES_HOME}/*" -o lcov.info --rc lcov_branch_coverage=1
 fi
 
-if [[ "${COVERAGE_BUILD}" != 0 ]]; then
+if [[ "${coverage_build}" != 0 ]]; then
   echo "Sending ${BUILD_HOME}/lcov.info coverage data to Codecov" &&
   bash <(curl \
     --connect-timeout "${CURL_CONNECT_TIMEOUT}" \
@@ -65,7 +65,7 @@ if [[ "${COVERAGE_BUILD}" != 0 ]]; then
     -f "${BUILD_HOME}/lcov.info" \
     -R "${TRAVIS_BUILD_DIR}" \
     -X gcov \
-    -F "${CODECOV_FLAG}"
+    -F "${codecov_flag}"
 fi
 
 cd "${TRAVIS_BUILD_DIR}"

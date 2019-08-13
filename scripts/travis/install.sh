@@ -6,13 +6,13 @@ if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
   export PATH="/usr/local/opt/gnu-sed/libexec/gnubin:${PATH}"
 fi
 
-export DETECTED_CMAKE_VERSION="$(cmake --version \
+detected_cmake_version="$(cmake --version \
   | sed -r 's/cmake version ([0-9]+\.[0-9]+\.[0-9]+)/\1/;t;d')"
-echo "Detected CMake of ${DETECTED_CMAKE_VERSION} version"
+echo "Detected CMake of ${detected_cmake_version} version"
 
-if [[ ! -z "${CMAKE_VERSION+x}" ]]; then
+if [[ -n "${CMAKE_VERSION+x}" ]]; then
   echo "CMake of ${CMAKE_VERSION} version is requested"
-  if [[ "${CMAKE_VERSION}" != "${DETECTED_CMAKE_VERSION}" ]]; then
+  if [[ "${CMAKE_VERSION}" != "${detected_cmake_version}" ]]; then
     if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
       cmake_archive_base_name="cmake-${CMAKE_VERSION}-Linux-x86_64"
       cmake_home="${DEPENDENCIES_HOME}/${cmake_archive_base_name}"
@@ -48,13 +48,13 @@ if [[ ! -z "${CMAKE_VERSION+x}" ]]; then
   fi
 fi
 
-export BOOST_FROM_PACKAGE=0
+system_boost_home=0
 if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
   if [[ "${TRAVIS_DIST}" == "trusty" ]]; then
     if [[ "${BOOST_VERSION}" == "1.55.0" ]] \
       || [[ "${BOOST_VERSION}" == "1.68.0" ]] \
       || [[ "${BOOST_VERSION}" == "1.70.0" ]]; then
-      export BOOST_FROM_PACKAGE=1
+      system_boost_home=1
     fi
   fi
 elif [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
@@ -64,17 +64,15 @@ elif [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
     || [[ "${BOOST_VERSION}" == "1.60.0" ]] \
     || [[ "${BOOST_VERSION}" == "1.69.0" ]] \
     || [[ "${BOOST_VERSION}" == "1.70.0" ]]; then
-    export BOOST_FROM_PACKAGE=1
+    system_boost_home=1
   fi
 fi
 
-if [[ "${BOOST_FROM_PACKAGE}" != 0 ]]; then
-  echo "Boost ${BOOST_VERSION} is installed from package"
-else
+if [[ "${system_boost_home}" = 0 ]]; then
   boost_archive_base_name="boost-${BOOST_VERSION}-x64-gcc4.8"
-  export PREBUILT_BOOST_HOME="${DEPENDENCIES_HOME}/${boost_archive_base_name}"
-  if [[ ! -d "${PREBUILT_BOOST_HOME}" ]]; then
-    echo "Boost libraries are absent for the selected Boost version (${BOOST_VERSION}) at ${PREBUILT_BOOST_HOME}"
+  export BOOST_HOME="${DEPENDENCIES_HOME}/${boost_archive_base_name}"
+  if [[ ! -d "${BOOST_HOME}" ]]; then
+    echo "Boost libraries are absent for the selected Boost version (${BOOST_VERSION}) at ${BOOST_HOME}"
     boost_archive_name="${boost_archive_base_name}.tar.gz"
     boost_archive_file="${DOWNLOADS_HOME}/${boost_archive_name}"
     if [[ ! -f "${boost_archive_file}" ]]; then
@@ -96,6 +94,6 @@ else
     tar -xzf "${boost_archive_file}" -C "${DEPENDENCIES_HOME}"
     echo "Extracting of Boost libraries from ${boost_archive_file} to ${DEPENDENCIES_HOME} completed successfully"
   fi
-  echo "Boost ${BOOST_VERSION} is located at ${PREBUILT_BOOST_HOME}"
-  export LD_LIBRARY_PATH="${PREBUILT_BOOST_HOME}/lib:${LD_LIBRARY_PATH}"
+  echo "Boost ${BOOST_VERSION} is located at ${BOOST_HOME}"
+  export LD_LIBRARY_PATH="${BOOST_HOME}/lib:${LD_LIBRARY_PATH}"
 fi
