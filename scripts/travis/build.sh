@@ -6,8 +6,10 @@ export CODECOV_FLAG="${TRAVIS_OS_NAME}__$(uname -r | sed -r 's/[[:space:]]|[\\\.
 export CODECOV_FLAG="${CODECOV_FLAG//[.-]/_}"
 
 echo "Preparing build dir at ${BUILD_HOME}"
-rm -rf "${BUILD_HOME}" || true
+rm -rf "${BUILD_HOME}"
+echo "Exit code: $?"
 mkdir -p "${BUILD_HOME}"
+echo "Exit code: $?"
 
 export COVERAGE_BUILD=0
 if [[ "${COVERAGE_BUILD_CANDIDATE}" != 0 ]]; then
@@ -15,6 +17,7 @@ if [[ "${COVERAGE_BUILD_CANDIDATE}" != 0 ]]; then
 fi
 
 cd "${BUILD_HOME}"
+echo "Exit code: $?"
 if [[ "${COVERITY_SCAN_BRANCH}" != 1 ]]; then
   generate_cmd="cmake -D CMAKE_C_COMPILER=\"${C_COMPILER}\" -D CMAKE_CXX_COMPILER=\"${CXX_COMPILER}\" -D CMAKE_BUILD_TYPE=\"${BUILD_TYPE}\""
   if [[ "${BOOST_FROM_PACKAGE}" != 0 ]]; then
