@@ -6,7 +6,7 @@ export CODECOV_FLAG="${TRAVIS_OS_NAME}__$(uname -r | sed -r 's/[[:space:]]|[\\\.
 export CODECOV_FLAG="${CODECOV_FLAG//[.-]/_}"
 
 echo "Preparing build dir at ${BUILD_HOME}"
-rm -rf "${BUILD_HOME}"
+rm -rf "${BUILD_HOME}" || true
 mkdir -p "${BUILD_HOME}"
 
 export COVERAGE_BUILD=0
