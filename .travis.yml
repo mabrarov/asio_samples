@@ -217,6 +217,7 @@ matrix:
       addons: &homebrew-boost169-qt5
         homebrew:
           packages:
+            - bash
             - gnu-sed
             - cmake
             - boost@1.69
