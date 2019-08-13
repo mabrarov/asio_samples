@@ -97,3 +97,17 @@ if [[ "${system_boost_home}" -eq 0 ]]; then
   echo "Boost ${BOOST_VERSION} is located at ${BOOST_HOME}"
   export LD_LIBRARY_PATH="${BOOST_HOME}/lib:${LD_LIBRARY_PATH}"
 fi
+
+COVERAGE_BUILD=0
+if [[ "${COVERAGE_BUILD_CANDIDATE}" != 0 ]]; then
+  COVERAGE_BUILD=1
+fi
+export COVERAGE_BUILD
+
+if [[ "${COVERAGE_BUILD}" != 0 ]]; then
+  echo "Installing Codecov pip package"
+  pip install \
+    --disable-pip-version-check \
+    --retries "${PIP_RETRY}" \
+    codecov=="${CODECOV_VERSION}"
+fi

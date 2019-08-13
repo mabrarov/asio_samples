@@ -5,11 +5,6 @@ set -e
 codecov_flag="${TRAVIS_OS_NAME}__$(uname -r | sed -r 's/[[:space:]]|[\\\.\/:]/_/g')__${CXX_COMPILER_FAMILY}_$(${CXX_COMPILER} -dumpversion)__boost_${BOOST_VERSION}__qt_${QT_MAJOR_VERSION}"
 codecov_flag="${codecov_flag//[.-]/_}"
 
-coverage_build=0
-if [[ "${COVERAGE_BUILD_CANDIDATE}" != 0 ]]; then
-  coverage_build=1
-fi
-
 echo "Preparing build dir at ${BUILD_HOME}"
 rm -rf "${BUILD_HOME}"
 mkdir -p "${BUILD_HOME}"
@@ -30,13 +25,13 @@ if [[ "${COVERITY_SCAN_BRANCH}" != 1 ]]; then
       generate_cmd="${generate_cmd} -D Qt5Core_DIR=\"${qt5_dir}/Qt5Core\" -D Qt5Gui_DIR=\"${qt5_dir}/Qt5Gui\" -D Qt5Widgets_DIR=\"${qt5_dir}/Qt5Widgets\""
     fi
   fi
-  generate_cmd="${generate_cmd} -D MA_COVERAGE=\"${coverage_build}\" \"${TRAVIS_BUILD_DIR}\""
+  generate_cmd="${generate_cmd} -D MA_COVERAGE=\"${COVERAGE_BUILD}\" \"${TRAVIS_BUILD_DIR}\""
   echo "CMake project generation command: ${generate_cmd}"
   eval "${generate_cmd}"
   cmake --build "${BUILD_HOME}" --config "${BUILD_TYPE}"
 fi
 
-if [[ "${coverage_build}" != 0 ]]; then
+if [[ "${COVERAGE_BUILD}" != 0 ]]; then
   echo "Preparing code coverage counters at ${BUILD_HOME}/lcov-base.info"
   lcov -z -d "${BUILD_HOME}"
   lcov -c -d "${BUILD_HOME}" -i -o lcov-base.info --rc lcov_branch_coverage=1
@@ -44,7 +39,7 @@ fi
 
 ctest --build-config "${BUILD_TYPE}" --verbose
 
-if [[ "${coverage_build}" != 0 ]]; then
+if [[ "${COVERAGE_BUILD}" != 0 ]]; then
   echo "Caclulating coverage at ${BUILD_HOME}/lcov-test.info"
   lcov -c -d "${BUILD_HOME}" -o lcov-test.info --rc lcov_branch_coverage=1
   echo "Caclulating coverage delta at ${BUILD_HOME}/lcov.info"
@@ -61,17 +56,13 @@ if [[ "${coverage_build}" != 0 ]]; then
     -o lcov.info --rc lcov_branch_coverage=1
 fi
 
-if [[ "${coverage_build}" != 0 ]]; then
+if [[ "${COVERAGE_BUILD}" != 0 ]]; then
   echo "Sending ${BUILD_HOME}/lcov.info coverage data to Codecov" &&
-  bash <(curl \
-    --connect-timeout "${CURL_CONNECT_TIMEOUT}" \
-    --max-time "${CURL_MAX_TIME}" \
-    --retry "${CURL_RETRY}" \
-    --retry-delay "${CURL_RETRY_DELAY}" \
-    -s https://codecov.io/bash) \
+  codecov \
     -Z \
-    -f "${BUILD_HOME}/lcov.info" \
-    -R "${TRAVIS_BUILD_DIR}" \
+    --token "${CODECOV_TOKEN}" \
+    --file "${BUILD_HOME}/lcov.info" \
+    --root "${TRAVIS_BUILD_DIR}" \
     -X gcov \
     -F "${codecov_flag}"
 fi

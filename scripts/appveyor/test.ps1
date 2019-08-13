@@ -26,6 +26,7 @@ if (${env:COVERAGE_BUILD} -eq "True") {
   Push-AppveyorArtifact "${env:COBERTURA_COVERAGE_FILE}" -DeploymentName "${env:COVERAGE_ARTIFACT_NAME}"
 
   codecov `
+    -Z `
     --token "${env:CODECOV_TOKEN}" `
     --file "${env:COBERTURA_COVERAGE_FILE}" `
     --root "${env:APPVEYOR_BUILD_FOLDER}" `
