@@ -59,12 +59,12 @@ fi
 if [[ "${COVERAGE_BUILD}" != 0 ]]; then
   echo "Sending ${BUILD_HOME}/lcov.info coverage data to Codecov" &&
   codecov \
-    -Z \
+    --required \
     --token "${CODECOV_TOKEN}" \
     --file "${BUILD_HOME}/lcov.info" \
-    --root "${TRAVIS_BUILD_DIR}" \
+    --flags "${codecov_flag}" \
     -X gcov \
-    -F "${codecov_flag}"
+    --root "${TRAVIS_BUILD_DIR}"
 fi
 
 cd "${TRAVIS_BUILD_DIR}"
