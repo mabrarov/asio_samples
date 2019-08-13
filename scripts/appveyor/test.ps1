@@ -12,7 +12,7 @@ if (${env:COVERAGE_BUILD} -eq "True") {
 
 Invoke-Expression "${test_cmd}"
 if (${LastExitCode} -ne 0) {
-  throw "Tests failed with exit code ${LastExitCode}."
+  throw "Tests failed with exit code ${LastExitCode}"
 }
 
 Set-Location -Path "${env:APPVEYOR_BUILD_FOLDER}"
@@ -20,7 +20,7 @@ Set-Location -Path "${env:APPVEYOR_BUILD_FOLDER}"
 if (${env:COVERAGE_BUILD} -eq "True") {
   7z.exe a -tzip "${coverage_report_archive}" "${coverage_report_folder}" | out-null
   if (${LastExitCode} -ne 0) {
-    throw "Failed to archive coverage report located at ${coverage_report_folder} with exit code ${LastExitCode}."
+    throw "Failed to archive coverage report located at ${coverage_report_folder} with exit code ${LastExitCode}"
   }
   Push-AppveyorArtifact "${coverage_report_archive}" -DeploymentName "${env:COVERAGE_ARTIFACT_NAME}"
   Push-AppveyorArtifact "${env:COBERTURA_COVERAGE_FILE}" -DeploymentName "${env:COVERAGE_ARTIFACT_NAME}"

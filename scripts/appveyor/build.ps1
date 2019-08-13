@@ -33,7 +33,7 @@ if (!(Test-Path env:QT_VERSION)) {
 } elseif (${env:QT_VERSION} -match "4\.*") {
   $generate_cmd = "${generate_cmd} -D QT_QMAKE_EXECUTABLE=""${env:QT_QMAKE_EXECUTABLE}"" -D MA_QT_MAJOR_VERSION=4"
 } else {
-  throw "Unsupported version of Qt: ${env:QT_VERSION}."
+  throw "Unsupported version of Qt: ${env:QT_VERSION}"
 }
 if (${env:TOOLCHAIN} -eq "mingw") {
   $generate_cmd = "${generate_cmd} -D CMAKE_BUILD_TYPE=""${env:CONFIGURATION}"""
@@ -43,7 +43,7 @@ Write-Host "CMake project generation command: ${generate_cmd}"
 
 Invoke-Expression "${generate_cmd}"
 if (${LastExitCode} -ne 0) {
-  throw "Generation of project failed with exit code ${LastExitCode}."
+  throw "Generation of project failed with exit code ${LastExitCode}"
 }
 
 $build_cmd = "cmake --build . --config ""${env:CONFIGURATION}"""
@@ -65,7 +65,7 @@ $build_exit_code = ${LastExitCode}
 # Restore
 $ErrorActionPreference = "${saved_error_action_preference}"
 if (${build_exit_code} -ne 0) {
-  throw "Build failed with exit code ${build_exit_code}."
+  throw "Build failed with exit code ${build_exit_code}"
 }
 
 if (${env:COVERITY_SCAN_BUILD} -eq "True") {
@@ -73,7 +73,7 @@ if (${env:COVERITY_SCAN_BUILD} -eq "True") {
   Write-Host "Compressing Coverity Scan results..."
   7z.exe a -tzip "${env:BUILD_HOME}\${env:APPVEYOR_PROJECT_NAME}.zip" "${env:BUILD_HOME}\cov-int" -aoa -y | out-null
   if (${LastExitCode} -ne 0) {
-    throw "Failed to zip Coverity Scan results with exit code ${LastExitCode}."
+    throw "Failed to zip Coverity Scan results with exit code ${LastExitCode}"
   }
   # Upload results to Coverity server.
   $coverity_build_version = ${env:APPVEYOR_REPO_COMMIT}.Substring(0, 7)
@@ -91,7 +91,7 @@ if (${env:COVERITY_SCAN_BUILD} -eq "True") {
     --form description="Build submitted via AppVeyor CI" `
     "https://scan.coverity.com/builds?project=${env:APPVEYOR_REPO_NAME}"
   if (${LastExitCode} -ne 0) {
-    throw "Failed to upload Coverity Scan results with exit code ${LastExitCode}."
+    throw "Failed to upload Coverity Scan results with exit code ${LastExitCode}"
   }
 }
 
