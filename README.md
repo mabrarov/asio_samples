@@ -40,7 +40,7 @@ Refer to [docker/builder/README.md](docker/builder/README.md) for instruction on
 
 * [Boost](https://www.boost.org)
 
-  1.47+, the latest tested version is 1.69
+  1.47+, the latest tested version is 1.70
 
 * [Google Test](https://github.com/google/googletest) 
 
