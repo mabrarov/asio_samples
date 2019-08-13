@@ -13,11 +13,9 @@ fi
 echo "Preparing build dir at ${BUILD_HOME}"
 rm -rf "${BUILD_HOME}"
 mkdir -p "${BUILD_HOME}"
-if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
-  cd "${BUILD_HOME}" || true
-else
-  cd "${BUILD_HOME}"
-fi
+echo "Before CD"
+cd ${BUILD_HOME}
+echo "After CD"
 
 if [[ "${COVERITY_SCAN_BRANCH}" != 1 ]]; then
   generate_cmd="cmake -D CMAKE_C_COMPILER=\"${C_COMPILER}\" -D CMAKE_CXX_COMPILER=\"${CXX_COMPILER}\" -D CMAKE_BUILD_TYPE=\"${BUILD_TYPE}\""
