@@ -55,9 +55,17 @@ if (${env:COVERITY_SCAN_BUILD} -eq "True") {
 }
 Write-Host "CMake project build command: ${build_cmd}"
 
+$saved_error_action_preference = ${ErrorActionPreference}
+if (${env:TOOLCHAIN} -eq "mingw") {
+  # MinGW returns non-zero exit code if warnings
+  $ErrorActionPreference = "Continue"
+}
 Invoke-Expression "${build_cmd}"
-if (${LastExitCode} -ne 0) {
-  throw "Build failed with exit code ${LastExitCode}."
+$build_exit_code = ${LastExitCode}
+# Restore
+$ErrorActionPreference = "${saved_error_action_preference}"
+if (${build_exit_code} -ne 0) {
+  throw "Build failed with exit code ${build_exit_code}."
 }
 
 if (${env:COVERITY_SCAN_BUILD} -eq "True") {
