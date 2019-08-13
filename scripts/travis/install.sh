@@ -106,7 +106,7 @@ export COVERAGE_BUILD
 
 if [[ "${COVERAGE_BUILD}" != 0 ]]; then
   echo "Installing Codecov pip package"
-  pip install \
+  sudo pip install \
     --disable-pip-version-check \
     --retries "${PIP_RETRY}" \
     codecov=="${CODECOV_VERSION}"
