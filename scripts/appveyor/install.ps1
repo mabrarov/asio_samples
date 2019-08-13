@@ -677,11 +677,13 @@ Write-Host "COVERAGE_BUILD            : ${env:COVERAGE_BUILD}"
 Write-Host "CODECOV_FLAG              : ${env:CODECOV_FLAG}"
 
 if (${env:COVERAGE_BUILD} -eq "True") {
+  Write-Host "Installing OpenCppCoverage Choco package"
   appveyor-retry choco install -y --no-progress opencppcoverage
   if (${LastExitCode} -ne 0) {
     throw "Installation of OpenCppCoverage Chocolatey package failed with ${LastExitCode} exit code"
   }
 
+  Write-Host "Installing Codecov pip package"
   pip install --disable-pip-version-check --retries "${env:PIP_RETRY}" codecov==2.0.9
   if (${LastExitCode} -ne 0) {
     throw "Installation of Codecov pip package failed with exit code ${LastExitCode}"
