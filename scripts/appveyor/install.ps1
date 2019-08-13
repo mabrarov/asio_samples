@@ -631,10 +631,9 @@ if (${env:COVERAGE_BUILD} -eq "True") {
     throw "Installation of OpenCppCoverage Chocolatey package failed with ${LastExitCode} exit code."
   }
 
-  & pip install --retries "${env:PIP_RETRY}" codecov==2.0.9
-  Write-Host "Codecov installation completed with ${LastExitCode} exit code."
+  pip install --disable-pip-version-check --retries "${env:PIP_RETRY}" codecov==2.0.9
   if (${LastExitCode} -ne 0) {
-    throw "Installation of Codecov failed with exit code ${LastExitCode}."
+    throw "Installation of Codecov pip package failed with exit code ${LastExitCode}."
   }
 }
 
