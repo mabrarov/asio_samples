@@ -163,9 +163,11 @@ install:
   - cmd: if not "%MSVC_VARS_BATCH_FILE%"=="" call "%MSVC_VARS_BATCH_FILE%" %MSVC_VARS_PLATFORM%
   - ps: .\scripts\appveyor\environment.ps1
 
-build_script: .\scripts\appveyor\build.ps1
+build_script:
+  - ps: .\scripts\appveyor\build.ps1
 
-test_script: .\scripts\appveyor\test.ps1
+test_script:
+  - ps: .\scripts\appveyor\test.ps1
 
 artifacts:
   - path: build\examples\ma_asio_performance_test_client$(ARTIFACT_PATH_SUFFIX)*.exe

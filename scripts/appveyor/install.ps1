@@ -656,4 +656,9 @@ if (${env:COVERAGE_BUILD} -eq "True") {
 if (Test-Path env:MSVS_PATCH_FOLDER) {
   Set-Location -Path "${env:MSVS_PATCH_FOLDER}"
   & "${env:MSVS_PATCH_BATCH_FILE}"
+  if (${LastExitCode} -ne 0) {
+    throw "Patch of MSVC failed with exit code ${LastExitCode}."
+  }
 }
+
+Set-Location -Path "${env:APPVEYOR_BUILD_FOLDER}"
