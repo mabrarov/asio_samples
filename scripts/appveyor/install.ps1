@@ -46,7 +46,7 @@ switch (${env:TOOLCHAIN}) {
                 git clone --quiet "${msvs2008_patch_url}" "${msvs_patch_download_folder_nix}"
                 git -C "${msvs_patch_download_folder_nix}" checkout --quiet "${msvs2008_patch_revision}"
                 if (${LastExitCode} -ne 0) {
-                  throw "Downloading of MSVS patch from ${msvs2008_patch_url} to ${msvs_patch_download_file} failed with exit code ${LastExitCode}."
+                  throw "Downloading of MSVS patch from ${msvs2008_patch_url} to ${msvs_patch_download_file} failed with exit code ${LastExitCode}"
                 }
                 Write-Host "Downloading of MSVS patch from ${msvs2008_patch_url} to ${msvs_patch_download_file} completed successfully"
               }
@@ -54,7 +54,7 @@ switch (${env:TOOLCHAIN}) {
               New-Item "${env:MSVS_PATCH_FOLDER}" -type directory | out-null
               7z.exe x "${msvs_patch_download_file}" -o"${env:MSVS_PATCH_FOLDER}" -aoa -y | out-null
               if (${LastExitCode} -ne 0) {
-                throw "File extraction failed with exit code ${LastExitCode}."
+                throw "File extraction failed with exit code ${LastExitCode}"
               }
               Write-Host "Extracting of MSVS patch from ${msvs_patch_download_file} to ${env:MSVS_PATCH_FOLDER} completed successfully"
             }
@@ -97,11 +97,12 @@ switch (${env:TOOLCHAIN}) {
     throw "Unsupported toolchain: ${env:TOOLCHAIN}"
   }
 }
-$env:DETECTED_CMAKE_VERSION = (& cmake --version | Where-Object {$_ -match 'cmake version ([0-9]+\.[0-9]+\.[0-9]+)'}) -replace "cmake version ([0-9]+\.[0-9]+\.[0-9]+)", '$1'
-Write-Host "Detected CMake of ${env:DETECTED_CMAKE_VERSION} version"
+$detected_cmake_version = (& cmake --version | Where-Object {$_ -match 'cmake version ([0-9]+\.[0-9]+\.[0-9]+)'}) `
+  -replace "cmake version ([0-9]+\.[0-9]+\.[0-9]+)", '$1'
+Write-Host "Detected CMake of ${detected_cmake_version} version"
 if (Test-Path env:CMAKE_VERSION) {
   Write-Host "CMake of ${env:CMAKE_VERSION} version is requested"
-  if (${env:CMAKE_VERSION} -ne ${env:DETECTED_CMAKE_VERSION}) {
+  if (${env:CMAKE_VERSION} -ne ${detected_cmake_version}) {
     $cmake_archive_base_name = "cmake-${env:CMAKE_VERSION}-win64-x64"
     $cmake_home = "${env:DEPENDENCIES_FOLDER}\${cmake_archive_base_name}"
     if (!(Test-Path -Path "${cmake_home}")) {
@@ -114,9 +115,16 @@ if (Test-Path env:CMAKE_VERSION) {
         if (!(Test-Path -Path "${env:DOWNLOADS_FOLDER}")) {
           New-Item "${env:DOWNLOADS_FOLDER}" -type directory | out-null
         }
-        curl.exe --connect-timeout "${env:CURL_CONNECT_TIMEOUT}" --max-time "${env:CURL_MAX_TIME}" --retry "${env:CURL_RETRY}" --retry-delay "${env:CURL_RETRY_DELAY}" --show-error --silent --location --output "${cmake_archive_file}" "${cmake_download_url}"
+        curl.exe `
+          --connect-timeout "${env:CURL_CONNECT_TIMEOUT}" `
+          --max-time "${env:CURL_MAX_TIME}" `
+          --retry "${env:CURL_RETRY}" `
+          --retry-delay "${env:CURL_RETRY_DELAY}" `
+          --show-error --silent --location `
+          --output "${cmake_archive_file}" `
+          "${cmake_download_url}"
         if (${LastExitCode} -ne 0) {
-          throw "Downloading of CMake ${env:CMAKE_VERSION} from ${cmake_download_url} to ${cmake_archive_file} failed with exit code ${LastExitCode}."
+          throw "Downloading of CMake ${env:CMAKE_VERSION} from ${cmake_download_url} to ${cmake_archive_file} failed with exit code ${LastExitCode}"
         }
         Write-Host "Downloading of CMake ${env:CMAKE_VERSION} from ${cmake_download_url} to ${cmake_archive_file} completed successfully"
       }
@@ -126,7 +134,7 @@ if (Test-Path env:CMAKE_VERSION) {
       Write-Host "Extracting CMake ${env:CMAKE_VERSION} from ${cmake_archive_file} to ${env:DEPENDENCIES_FOLDER}"
       7z.exe x "${cmake_archive_file}" -o"${env:DEPENDENCIES_FOLDER}" -aoa -y | out-null
       if (${LastExitCode} -ne 0) {
-        throw "File extraction failed with exit code ${LastExitCode}."
+        throw "File extraction failed with exit code ${LastExitCode}"
       }
       Write-Host "Extracting of CMake ${env:CMAKE_VERSION} from ${cmake_archive_file} to ${env:DEPENDENCIES_FOLDER} completed successfully"
     }
@@ -194,9 +202,16 @@ if (Test-Path env:ICU_VERSION) {
           New-Item "${env:DOWNLOADS_FOLDER}" -type directory | out-null
         }
         Write-Host "Going to download ICU libraries from ${icu_download_url} to ${icu_archive_file}"
-        curl.exe --connect-timeout "${env:CURL_CONNECT_TIMEOUT}" --max-time "${env:CURL_MAX_TIME}" --retry "${env:CURL_RETRY}" --retry-delay "${env:CURL_RETRY_DELAY}" --show-error --silent --location --output "${icu_archive_file}" "${icu_download_url}"
+        curl.exe `
+          --connect-timeout "${env:CURL_CONNECT_TIMEOUT}" `
+          --max-time "${env:CURL_MAX_TIME}" `
+          --retry "${env:CURL_RETRY}" `
+          --retry-delay "${env:CURL_RETRY_DELAY}" `
+          --show-error --silent --location `
+          --output "${icu_archive_file}" `
+          "${icu_download_url}"
         if (${LastExitCode} -ne 0) {
-          throw "Downloading of ICU libraries from ${icu_download_url} to ${icu_archive_file} failed with exit code ${LastExitCode}."
+          throw "Downloading of ICU libraries from ${icu_download_url} to ${icu_archive_file} failed with exit code ${LastExitCode}"
         }
         Write-Host "Downloading of ICU libraries from ${icu_download_url} to ${icu_archive_file} completed successfully"
       }
@@ -206,7 +221,7 @@ if (Test-Path env:ICU_VERSION) {
       }
       7z.exe x "${icu_archive_file}" -o"${env:DEPENDENCIES_FOLDER}" -aoa -y | out-null
       if (${LastExitCode} -ne 0) {
-        throw "File extraction failed with exit code ${LastExitCode}."
+        throw "File extraction failed with exit code ${LastExitCode}"
       }
       Write-Host "Extracting of ICU libraries from ${icu_archive_file} to ${env:DEPENDENCIES_FOLDER} completed successfully"
     }
@@ -224,10 +239,18 @@ if (Test-Path env:BOOST_VERSION) {
     "msvc" {
       switch (${env:MSVC_VERSION}) {
         "15.0" {
-          $pre_installed_boost = (${env:BOOST_VERSION} -eq "1.69.0") -or (${env:BOOST_VERSION} -eq "1.67.0") -or (${env:BOOST_VERSION} -eq "1.66.0") -or (${env:BOOST_VERSION} -eq "1.65.1") -or (${env:BOOST_VERSION} -eq "1.63.0")
+          $pre_installed_boost = (${env:BOOST_VERSION} -eq "1.69.0") `
+            -or (${env:BOOST_VERSION} -eq "1.67.0") `
+            -or (${env:BOOST_VERSION} -eq "1.66.0") `
+            -or (${env:BOOST_VERSION} -eq "1.65.1") `
+            -or (${env:BOOST_VERSION} -eq "1.63.0")
         }
         "14.0" {
-          $pre_installed_boost = (${env:BOOST_VERSION} -eq "1.69.0") -or (${env:BOOST_VERSION} -eq "1.67.0") -or (${env:BOOST_VERSION} -eq "1.66.0") -or (${env:BOOST_VERSION} -eq "1.65.1") -or (${env:BOOST_VERSION} -eq "1.63.0")
+          $pre_installed_boost = (${env:BOOST_VERSION} -eq "1.69.0") `
+            -or (${env:BOOST_VERSION} -eq "1.67.0") `
+            -or (${env:BOOST_VERSION} -eq "1.66.0") `
+            -or (${env:BOOST_VERSION} -eq "1.65.1") `
+            -or (${env:BOOST_VERSION} -eq "1.63.0")
         }
         "12.0" {
           $pre_installed_boost = (${env:BOOST_VERSION} -eq "1.58.0")
@@ -311,9 +334,16 @@ if (Test-Path env:BOOST_VERSION) {
           New-Item "${env:DOWNLOADS_FOLDER}" -type directory | out-null
         }
         Write-Host "Going to download Boost libraries from ${boost_download_url} to ${boost_archive_file}"
-        curl.exe --connect-timeout "${env:CURL_CONNECT_TIMEOUT}" --max-time "${env:CURL_MAX_TIME}" --retry "${env:CURL_RETRY}" --retry-delay "${env:CURL_RETRY_DELAY}" --show-error --silent --location --output "${boost_archive_file}" "${boost_download_url}"
+        curl.exe `
+          --connect-timeout "${env:CURL_CONNECT_TIMEOUT}" `
+          --max-time "${env:CURL_MAX_TIME}" `
+          --retry "${env:CURL_RETRY}" `
+          --retry-delay "${env:CURL_RETRY_DELAY}" `
+          --show-error --silent --location `
+          --output "${boost_archive_file}" `
+          "${boost_download_url}"
         if (${LastExitCode} -ne 0) {
-          throw "Downloading of Boost libraries from ${boost_download_url} to ${boost_archive_file} failed with exit code ${LastExitCode}."
+          throw "Downloading of Boost libraries from ${boost_download_url} to ${boost_archive_file} failed with exit code ${LastExitCode}"
         }
         Write-Host "Downloading of Boost libraries from ${boost_download_url} to ${boost_archive_file} completed successfully"
       }
@@ -323,7 +353,7 @@ if (Test-Path env:BOOST_VERSION) {
       }
       7z.exe x "${boost_archive_file}" -o"${env:DEPENDENCIES_FOLDER}" -aoa -y | out-null
       if (${LastExitCode} -ne 0) {
-        throw "File extraction failed with exit code ${LastExitCode}."
+        throw "File extraction failed with exit code ${LastExitCode}"
       }
       Write-Host "Extracting of Boost libraries from ${boost_archive_file} to ${env:DEPENDENCIES_FOLDER} completed successfully"
     }
@@ -351,10 +381,16 @@ if (Test-Path env:QT_VERSION) {
       "msvc" {
         switch (${env:MSVC_VERSION}) {
           "14.0" {
-            $pre_installed_qt = ((${env:QT_VERSION} -eq "5.12.2") -and (${env:PLATFORM} -eq "x64")) -or (${env:QT_VERSION} -eq "5.11.3") -or (${env:QT_VERSION} -eq "5.10.1") -or (${env:QT_VERSION} -eq "5.9.5") -or (${env:QT_VERSION} -eq "5.6.3")
+            $pre_installed_qt = ((${env:QT_VERSION} -eq "5.12.2") -and (${env:PLATFORM} -eq "x64")) `
+              -or (${env:QT_VERSION} -eq "5.11.3") `
+              -or (${env:QT_VERSION} -eq "5.10.1") `
+              -or (${env:QT_VERSION} -eq "5.9.5") `
+              -or (${env:QT_VERSION} -eq "5.6.3")
           }
           "12.0" {
-            $pre_installed_qt = ((${env:QT_VERSION} -eq "5.10.1") -and (${env:PLATFORM} -eq "x64")) -or ((${env:QT_VERSION} -eq "5.9.5") -and (${env:PLATFORM} -eq "x64")) -or (${env:QT_VERSION} -eq "5.6.3")
+            $pre_installed_qt = ((${env:QT_VERSION} -eq "5.10.1") -and (${env:PLATFORM} -eq "x64")) `
+              -or ((${env:QT_VERSION} -eq "5.9.5") -and (${env:PLATFORM} -eq "x64")) `
+              -or (${env:QT_VERSION} -eq "5.6.3")
           }
         }
       }
@@ -364,7 +400,10 @@ if (Test-Path env:QT_VERSION) {
             $pre_installed_qt = ${env:QT_VERSION} -eq "5.12.2"
           }
           "5.3.0" {
-            $pre_installed_qt = ((${env:QT_VERSION} -eq "5.11.3") -and (${env:PLATFORM} -eq "Win32")) -or ((${env:QT_VERSION} -eq "5.10.1") -and (${env:PLATFORM} -eq "Win32")) -or ((${env:QT_VERSION} -eq "5.9.7") -and (${env:PLATFORM} -eq "Win32")) -or ((${env:QT_VERSION} -eq "5.7.0") -and (${env:PLATFORM} -eq "Win32"))
+            $pre_installed_qt = ((${env:QT_VERSION} -eq "5.11.3") -and (${env:PLATFORM} -eq "Win32")) `
+              -or ((${env:QT_VERSION} -eq "5.10.1") -and (${env:PLATFORM} -eq "Win32")) `
+              -or ((${env:QT_VERSION} -eq "5.9.7") -and (${env:PLATFORM} -eq "Win32")) `
+              -or ((${env:QT_VERSION} -eq "5.7.0") -and (${env:PLATFORM} -eq "Win32"))
           }
         }
       }
@@ -505,9 +544,16 @@ if (Test-Path env:QT_VERSION) {
           New-Item "${env:DOWNLOADS_FOLDER}" -type directory | out-null
         }
         Write-Host "Going to download Qt libraries from ${qt_download_url} to ${qt_archive_file}"
-        curl.exe --connect-timeout "${env:CURL_CONNECT_TIMEOUT}" --max-time "${env:CURL_MAX_TIME}" --retry "${env:CURL_RETRY}" --retry-delay "${env:CURL_RETRY_DELAY}" --show-error --silent --location --output "${qt_archive_file}" "${qt_download_url}"
+        curl.exe `
+          --connect-timeout "${env:CURL_CONNECT_TIMEOUT}" `
+          --max-time "${env:CURL_MAX_TIME}" `
+          --retry "${env:CURL_RETRY}" `
+          --retry-delay "${env:CURL_RETRY_DELAY}" `
+          --show-error --silent --location `
+          --output "${qt_archive_file}" `
+          "${qt_download_url}"
         if (${LastExitCode} -ne 0) {
-          throw "Downloading of Qt libraries ${qt_download_url} to ${qt_archive_file} failed with exit code ${LastExitCode}."
+          throw "Downloading of Qt libraries ${qt_download_url} to ${qt_archive_file} failed with exit code ${LastExitCode}"
         }
         Write-Host "Downloading of Qt libraries from ${qt_download_url} to ${qt_archive_file} completed successfully"
       }
@@ -517,7 +563,7 @@ if (Test-Path env:QT_VERSION) {
       }
       7z.exe x "${qt_archive_file}" -o"${env:DEPENDENCIES_FOLDER}" -aoa -y | out-null
       if (${LastExitCode} -ne 0) {
-        throw "File extraction failed with exit code ${LastExitCode}."
+        throw "File extraction failed with exit code ${LastExitCode}"
       }
       Write-Host "Extracting of Qt libraries from ${qt_archive_file} to ${env:DEPENDENCIES_FOLDER} completed successfully"
     }
@@ -582,8 +628,13 @@ switch (${env:TOOLCHAIN}) {
     throw "Unsupported toolchain for CMake generator: ${env:TOOLCHAIN}"
   }
 }
-$env:COVERITY_SCAN_BUILD = (${env:COVERITY_SCAN_CANDIDATE} -eq "1") -and (${env:APPVEYOR_REPO_BRANCH} -eq "coverity_scan") -and (${env:CONFIGURATION} -eq "Release") -and (${env:PLATFORM} -eq "x64")
-$env:COVERAGE_BUILD = (${env:COVERAGE_BUILD_CANDIDATE} -eq "1") -and (${env:CONFIGURATION} -eq "Debug") -and (${env:PLATFORM} -eq "x64")
+$env:COVERITY_SCAN_BUILD = (${env:COVERITY_SCAN_CANDIDATE} -eq "1") `
+  -and (${env:APPVEYOR_REPO_BRANCH} -eq "coverity_scan") `
+  -and (${env:CONFIGURATION} -eq "Release") `
+  -and (${env:PLATFORM} -eq "x64")
+$env:COVERAGE_BUILD = (${env:COVERAGE_BUILD_CANDIDATE} -eq "1") `
+  -and (${env:CONFIGURATION} -eq "Debug") `
+  -and (${env:PLATFORM} -eq "x64")
 $env:CODECOV_FLAG = "windows_${env:OS_VERSION}__${env:PLATFORM}__${env:TOOLCHAIN_ID}"
 if (Test-Path env:BOOST_VERSION) {
   $env:CODECOV_FLAG = "${env:CODECOV_FLAG}__boost_${env:BOOST_VERSION}"
@@ -628,12 +679,12 @@ Write-Host "CODECOV_FLAG              : ${env:CODECOV_FLAG}"
 if (${env:COVERAGE_BUILD} -eq "True") {
   appveyor-retry choco install -y --no-progress opencppcoverage
   if (${LastExitCode} -ne 0) {
-    throw "Installation of OpenCppCoverage Chocolatey package failed with ${LastExitCode} exit code."
+    throw "Installation of OpenCppCoverage Chocolatey package failed with ${LastExitCode} exit code"
   }
 
   pip install --disable-pip-version-check --retries "${env:PIP_RETRY}" codecov==2.0.9
   if (${LastExitCode} -ne 0) {
-    throw "Installation of Codecov pip package failed with exit code ${LastExitCode}."
+    throw "Installation of Codecov pip package failed with exit code ${LastExitCode}"
   }
 }
 
@@ -643,7 +694,7 @@ if (Test-Path env:MSVS_PATCH_FOLDER) {
 if (Test-Path env:MSVS_PATCH_BATCH_FILE) {
   & "${env:MSVS_PATCH_BATCH_FILE}"
   if (${LastExitCode} -ne 0) {
-    throw "Patch of MSVC failed with exit code ${LastExitCode}."
+    throw "Patch of MSVC failed with exit code ${LastExitCode}"
   }
 }
 

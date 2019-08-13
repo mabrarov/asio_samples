@@ -19,6 +19,7 @@ environment:
   PATH: 'C:\Program Files\OpenCppCoverage;C:\Python34;C:\Python34\Scripts;%PATH%'
   DEPENDENCIES_FOLDER: 'C:\projects\dependencies'
   DOWNLOADS_FOLDER: 'C:\projects\downloads'
+  BUILD_HOME: '%APPVEYOR_BUILD_FOLDER%\build'
   COVERAGE_WORK_FOLDER: '%APPVEYOR_BUILD_FOLDER%\build\coverage'
   COBERTURA_COVERAGE_FILE: '%APPVEYOR_BUILD_FOLDER%\build\coverage\coverage.xml'
   COVERITY_SCAN_CANDIDATE: 0

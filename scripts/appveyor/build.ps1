@@ -1,8 +1,8 @@
 # Stop immediately if any error happens
 $ErrorActionPreference = "Stop"
 
-New-Item "${env:APPVEYOR_BUILD_FOLDER}\build" -type directory | out-null
-Set-Location -Path "${env:APPVEYOR_BUILD_FOLDER}\build"
+New-Item "${env:BUILD_HOME}" -type directory | out-null
+Set-Location -Path "${env:BUILD_HOME}"
 
 $generate_cmd = "cmake"
 if (${env:TOOLCHAIN} -eq "mingw") {
@@ -71,14 +71,25 @@ if (${build_exit_code} -ne 0) {
 if (${env:COVERITY_SCAN_BUILD} -eq "True") {
   # Compress results.
   Write-Host "Compressing Coverity Scan results..."
-  7z.exe a -tzip "${env:APPVEYOR_BUILD_FOLDER}\build\${env:APPVEYOR_PROJECT_NAME}.zip" "${env:APPVEYOR_BUILD_FOLDER}\build\cov-int" -aoa -y | out-null
+  7z.exe a -tzip "${env:BUILD_HOME}\${env:APPVEYOR_PROJECT_NAME}.zip" "${env:BUILD_HOME}\cov-int" -aoa -y | out-null
   if (${LastExitCode} -ne 0) {
     throw "Failed to zip Coverity Scan results with exit code ${LastExitCode}."
   }
   # Upload results to Coverity server.
   $coverity_build_version = ${env:APPVEYOR_REPO_COMMIT}.Substring(0, 7)
   Write-Host "Uploading Coverity Scan results (version: ${coverity_build_version})..."
-  curl.exe --connect-timeout "${env:CURL_CONNECT_TIMEOUT}" --max-time "${env:CURL_MAX_TIME}" --retry "${env:CURL_RETRY}" --retry-delay "${env:CURL_RETRY_DELAY}" --show-error --silent --location --form token="${env:COVERITY_SCAN_TOKEN}" --form email="${env:COVERITY_SCAN_NOTIFICATION_EMAIL}" --form file=@"${env:APPVEYOR_BUILD_FOLDER}\build\${env:APPVEYOR_PROJECT_NAME}.zip" --form version="${coverity_build_version}" --form description="Build submitted via AppVeyor CI" "https://scan.coverity.com/builds?project=${env:APPVEYOR_REPO_NAME}"
+  curl.exe `
+    --connect-timeout "${env:CURL_CONNECT_TIMEOUT}" `
+    --max-time "${env:CURL_MAX_TIME}" `
+    --retry "${env:CURL_RETRY}" `
+    --retry-delay "${env:CURL_RETRY_DELAY}" `
+    --show-error --silent --location `
+    --form token="${env:COVERITY_SCAN_TOKEN}" `
+    --form email="${env:COVERITY_SCAN_NOTIFICATION_EMAIL}" `
+    --form file=@"${env:BUILD_HOME}\${env:APPVEYOR_PROJECT_NAME}.zip" `
+    --form version="${coverity_build_version}" `
+    --form description="Build submitted via AppVeyor CI" `
+    "https://scan.coverity.com/builds?project=${env:APPVEYOR_REPO_NAME}"
   if (${LastExitCode} -ne 0) {
     throw "Failed to upload Coverity Scan results with exit code ${LastExitCode}."
   }

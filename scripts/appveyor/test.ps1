@@ -1,13 +1,13 @@
 # Stop immediately if any error happens
 $ErrorActionPreference = "Stop"
 
-Set-Location -Path "${env:APPVEYOR_BUILD_FOLDER}\build"
+Set-Location -Path "${env:BUILD_HOME}"
 $test_cmd = "ctest.exe --build-config ""${env:CONFIGURATION}"" --verbose"
 if (${env:COVERAGE_BUILD} -eq "True") {
   $coverage_report_folder = "${env:COVERAGE_WORK_FOLDER}\report"
   $coverage_report_archive = "${env:COVERAGE_WORK_FOLDER}\report.zip"
   New-Item "${env:COVERAGE_WORK_FOLDER}" -type directory | out-null
-  $test_cmd = "OpenCppCoverage.exe --quiet --export_type ""html:${coverage_report_folder}"" --export_type ""cobertura:${env:COBERTURA_COVERAGE_FILE}"" --sources ""${env:APPVEYOR_BUILD_FOLDER}"" --excluded_sources ""${env:APPVEYOR_BUILD_FOLDER}\3rdparty"" --excluded_sources ""${env:APPVEYOR_BUILD_FOLDER}\examples"" --excluded_sources ""${env:APPVEYOR_BUILD_FOLDER}\tests"" --modules ""${env:APPVEYOR_BUILD_FOLDER}\build\tests"" --cover_children --working_dir ""${env:APPVEYOR_BUILD_FOLDER}\build"" -- ${test_cmd}"
+  $test_cmd = "OpenCppCoverage.exe --quiet --export_type ""html:${coverage_report_folder}"" --export_type ""cobertura:${env:COBERTURA_COVERAGE_FILE}"" --sources ""${env:APPVEYOR_BUILD_FOLDER}"" --excluded_sources ""${env:APPVEYOR_BUILD_FOLDER}\3rdparty"" --excluded_sources ""${env:APPVEYOR_BUILD_FOLDER}\examples"" --excluded_sources ""${env:APPVEYOR_BUILD_FOLDER}\tests"" --modules ""${env:BUILD_HOME}\tests"" --cover_children --working_dir ""${env:BUILD_HOME}"" -- ${test_cmd}"
 }
 
 Invoke-Expression "${test_cmd}"
