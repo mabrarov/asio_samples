@@ -626,23 +626,9 @@ Write-Host "COVERAGE_BUILD            : ${env:COVERAGE_BUILD}"
 Write-Host "CODECOV_FLAG              : ${env:CODECOV_FLAG}"
 
 if (${env:COVERAGE_BUILD} -eq "True") {
-  $exit_code = 1
-  $try_num = 0
-  while ($true) {
-    choco install -y --no-progress opencppcoverage
-    $exit_code = ${LastExitCode}
-    $try_num++
-    if (${exit_code} -eq 0) {
-      break
-    }
-    if (${try_num} -ge ${env:CHOCO_RETRY}) {
-      break
-    }
-    Write-Host "Sleeping for ${env:CHOCO_RETRY_DELAY} seconds before making next try to install OpenCppCoverage Chocolatey package"
-    Start-Sleep -Seconds "${env:CHOCO_RETRY_DELAY}"
-  }
-  if (${exit_code} -ne 0) {
-    throw "Installation of OpenCppCoverage Chocolatey package failed with ${exit_code} exit code after ${try_num} tries."
+  appveyor-retry choco install -y --no-progress opencppcoverage
+  if (${LastExitCode} -ne 0) {
+    throw "Installation of OpenCppCoverage Chocolatey package failed with ${LastExitCode} exit code"
   }
 }
 
