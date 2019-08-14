@@ -67,11 +67,5 @@ cd "${TRAVIS_BUILD_DIR}"
 
 if [[ "${COVERAGE_BUILD}" != 0 ]]; then
   echo "Sending ${BUILD_HOME}/lcov.info coverage data to Codecov" &&
-  codecov \
-    --required \
-    --token "${CODECOV_TOKEN}" \
-    --file "${BUILD_HOME}/lcov.info" \
-    --flags "${codecov_flag}" \
-    -X gcov \
-    --root "${TRAVIS_BUILD_DIR}"
+  travis_retry codecov --required --token "${CODECOV_TOKEN}" --file "${BUILD_HOME}/lcov.info" --flags "${codecov_flag}" -X gcov --root "${TRAVIS_BUILD_DIR}"
 fi
