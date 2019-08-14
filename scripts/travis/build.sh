@@ -9,6 +9,25 @@
 
 set -e
 
+travis_retry() {
+  local result=0
+  local count=1
+  while [[ "${count}" -le 3 ]]; do
+    [[ "${result}" -ne 0 ]] && {
+      echo -e "\\n${ANSI_RED}The command \"${*}\" failed. Retrying, ${count} of 3.${ANSI_RESET}\\n" >&2
+    }
+    "${@}" && { result=0 && break; } || result="${?}"
+    count="$((count + 1))"
+    sleep 1
+  done
+
+  [[ "${count}" -gt 3 ]] && {
+    echo -e "\\n${ANSI_RED}The command \"${*}\" failed 3 times.${ANSI_RESET}\\n" >&2
+  }
+
+  return "${result}"
+}
+
 codecov_flag="${TRAVIS_OS_NAME}__$(uname -r | sed -r 's/[[:space:]]|[\\\.\/:]/_/g')__${CXX_COMPILER_FAMILY}_$(${CXX_COMPILER} -dumpversion)__boost_${BOOST_VERSION}__qt_${QT_MAJOR_VERSION}"
 codecov_flag="${codecov_flag//[.-]/_}"
 
@@ -67,5 +86,11 @@ cd "${TRAVIS_BUILD_DIR}"
 
 if [[ "${COVERAGE_BUILD}" != 0 ]]; then
   echo "Sending ${BUILD_HOME}/lcov.info coverage data to Codecov" &&
-  travis_retry codecov --required --token "${CODECOV_TOKEN}" --file "${BUILD_HOME}/lcov.info" --flags "${codecov_flag}" -X gcov --root "${TRAVIS_BUILD_DIR}"
+  travis_retry codecov \
+    --required \
+    --token "${CODECOV_TOKEN}" \
+    --file "${BUILD_HOME}/lcov.info" \
+    --flags "${codecov_flag}" \
+    -X gcov \
+    --root "${TRAVIS_BUILD_DIR}"
 fi
