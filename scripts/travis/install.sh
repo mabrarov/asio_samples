@@ -39,17 +39,17 @@ if [[ -n "${CMAKE_VERSION+x}" ]]; then
             -jksSL
             "${cmake_download_url}" \
             --output "${cmake_archive_file}"
-          echo "Downloading of CMake ${CMAKE_VERSION} archive from ${cmake_download_url} to ${cmake_archive_file} completed successfully"
+          echo "Downloading of CMake archive completed successfully"
         fi
         mkdir -p "${DEPENDENCIES_HOME}"
         echo "Extracting CMake ${CMAKE_VERSION} from ${cmake_archive_file} to ${DEPENDENCIES_HOME}"
         tar -xzf "${cmake_archive_file}" -C "${DEPENDENCIES_HOME}"
-        echo "Extracting of CMake ${CMAKE_VERSION} from ${cmake_archive_file} to ${DEPENDENCIES_HOME} completed successfully"
+        echo "Extracting of CMake completed successfully"
       fi
       echo "CMake ${CMAKE_VERSION} is located at ${cmake_home}"
       export PATH="${cmake_home}/bin:${PATH}"
     else
-      echo "Custom version of CMake - ${CMAKE_VERSION} - is not supported for ${TRAVIS_OS_NAME} OS"
+      echo "Chosen version of CMake: ${CMAKE_VERSION} is not supported for OS: ${TRAVIS_OS_NAME}"
       exit 1
     fi
   fi
@@ -79,13 +79,13 @@ if [[ "${system_boost_home}" -eq 0 ]]; then
   boost_archive_base_name="boost-${BOOST_VERSION}-x64-gcc4.8"
   export BOOST_HOME="${DEPENDENCIES_HOME}/${boost_archive_base_name}"
   if [[ ! -d "${BOOST_HOME}" ]]; then
-    echo "Boost libraries are absent for the selected Boost version (${BOOST_VERSION}) at ${BOOST_HOME}"
+    echo "Boost is absent for the chosen Boost version (${BOOST_VERSION}) at ${BOOST_HOME}"
     boost_archive_name="${boost_archive_base_name}.tar.gz"
     boost_archive_file="${DOWNLOADS_HOME}/${boost_archive_name}"
     if [[ ! -f "${boost_archive_file}" ]]; then
       boost_download_url="${PREBUILT_BOOST_DOWNLOAD_URL}/${BOOST_VERSION}/${boost_archive_name}"
       mkdir -p "${DOWNLOADS_HOME}"
-      echo "Going to download Boost libraries from ${boost_download_url} to ${boost_archive_file}"
+      echo "Going to download Boost from ${boost_download_url} to ${boost_archive_file}"
       curl \
         --connect-timeout "${CURL_CONNECT_TIMEOUT}" \
         --max-time "${CURL_MAX_TIME}" \
@@ -94,12 +94,12 @@ if [[ "${system_boost_home}" -eq 0 ]]; then
         -jksSL \
         "${boost_download_url}" \
         --output "${boost_archive_file}"
-      echo "Downloading of Boost libraries from ${boost_download_url} to ${boost_archive_file} completed successfully"
+      echo "Downloading of Boost completed successfully"
     fi
-    echo "Extracting Boost libraries from ${boost_archive_file} to ${DEPENDENCIES_HOME}"
+    echo "Extracting Boost from ${boost_archive_file} to ${DEPENDENCIES_HOME}"
     mkdir -p "${DEPENDENCIES_HOME}"
     tar -xzf "${boost_archive_file}" -C "${DEPENDENCIES_HOME}"
-    echo "Extracting of Boost libraries from ${boost_archive_file} to ${DEPENDENCIES_HOME} completed successfully"
+    echo "Extracting of Boost completed successfully"
   fi
   echo "Boost ${BOOST_VERSION} is located at ${BOOST_HOME}"
   export LD_LIBRARY_PATH="${BOOST_HOME}/lib:${LD_LIBRARY_PATH}"
@@ -112,9 +112,10 @@ fi
 export COVERAGE_BUILD
 
 if [[ "${COVERAGE_BUILD}" != 0 ]]; then
-  echo "Installing Codecov pip package"
+  echo "Installing Codecov from pip package"
   sudo pip install \
     --disable-pip-version-check \
     --retries "${PIP_RETRY}" \
     codecov=="${CODECOV_VERSION}"
+  echo "Codecov installed"
 fi
