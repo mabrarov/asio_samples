@@ -101,7 +101,7 @@ switch (${env:TOOLCHAIN}) {
     throw "Unsupported toolchain: ${env:TOOLCHAIN}"
   }
 }
-$detected_cmake_version = (& cmake --version | Where-Object {$_ -match 'cmake version ([0-9]+\.[0-9]+\.[0-9]+)'}) `
+$detected_cmake_version = (cmake --version | Where-Object {$_ -match 'cmake version ([0-9]+\.[0-9]+\.[0-9]+)'}) `
   -replace "cmake version ([0-9]+\.[0-9]+\.[0-9]+)", '$1'
 Write-Host "Detected CMake of ${detected_cmake_version} version"
 if (Test-Path env:CMAKE_VERSION) {
