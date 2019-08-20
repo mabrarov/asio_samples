@@ -319,6 +319,7 @@ Example of generation of Visual Studio 2015 project with:
 * x64 build
 
 ```cmd
+set "cmake_generator=Visual Studio 14 2015 Win64" && ^
 cmake ^
 -D CMAKE_USER_MAKE_RULES_OVERRIDE="%asio_samples_home_dir%/cmake/static_c_runtime_overrides.cmake" ^
 -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX="%asio_samples_home_dir%/cmake/static_cxx_runtime_overrides.cmake" ^
@@ -330,7 +331,7 @@ cmake ^
 -D Qt5Core_DIR="%qt5_home_dir%/lib/cmake/Qt5Core" ^
 -D Qt5Gui_DIR="%qt5_home_dir%/lib/cmake/Qt5Gui" ^
 -D Qt5Widgets_DIR="%qt5_home_dir%/lib/cmake/Qt5Widgets" ^
--G "Visual Studio 14 2015 Win64" ^
+-G "%cmake_generator%" ^
 "%asio_samples_home_dir%"
 ```
 
@@ -341,11 +342,12 @@ Example of generation of makefiles on *nix with:
 * shared Qt 5.x
 
 ```bash
+cmake_generator="Unix Makefiles" && \
 cmake \
 -D Boost_USE_STATIC_LIBS=ON \
 -D MA_QT_MAJOR_VERSION=5 \
 -D CMAKE_BUILD_TYPE=${build_type} \
--G "Unix Makefiles" \
+-G "%cmake_generator%" \
 "${asio_samples_home_dir}"
 ```
 
@@ -358,6 +360,7 @@ Example of generation of Visual Studio 2015 project with:
 * x64 build
 
 ```cmd
+set "cmake_generator=Visual Studio 14 2015 Win64" && ^
 cmake ^
 -D BOOST_INCLUDEDIR="%boost_headers_dir%" ^
 -D BOOST_LIBRARYDIR="%boost_libs_dir%" ^
@@ -367,7 +370,7 @@ cmake ^
 -D Qt5Core_DIR="%qt5_home_dir%/lib/cmake/Qt5Core" ^
 -D Qt5Gui_DIR="%qt5_home_dir%/lib/cmake/Qt5Gui" ^
 -D Qt5Widgets_DIR="%qt5_home_dir%/lib/cmake/Qt5Widgets" ^
--G "Visual Studio 14 2015 Win64" ^
+-G "%cmake_generator%" ^
 "%asio_samples_home_dir%"
 ```
 
@@ -381,6 +384,7 @@ Example of generation of Visual Studio 2013 project with:
 * Intel C++ Compiler XE 2015
 
 ```cmd
+set "cmake_generator=Visual Studio 12 2013 Win64" && ^
 cmake ^
 -D CMAKE_USER_MAKE_RULES_OVERRIDE="%asio_samples_home_dir%/cmake/static_c_runtime_overrides.cmake" ^
 -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX="%asio_samples_home_dir%/cmake/static_cxx_runtime_overrides.cmake" ^
@@ -396,7 +400,7 @@ cmake ^
 -D CMAKE_C_COMPILER=icl ^
 -D CMAKE_CXX_COMPILER=icl ^
 -T "Intel C++ Compiler XE 15.0" ^
--G "Visual Studio 12 2013 Win64" ^
+-G "%cmake_generator%" ^
 "%asio_samples_home_dir%"
 ```
 
@@ -409,6 +413,7 @@ Example of generation of Visual Studio 2015 project with:
 * Intel C++ Compiler 2016
 
 ```cmd
+set "cmake_generator=Visual Studio 14 2015 Win64" && ^
 cmake ^
 -D BOOST_INCLUDEDIR="%boost_headers_dir%" ^
 -D BOOST_LIBRARYDIR="%boost_libs_dir%" ^
@@ -421,7 +426,7 @@ cmake ^
 -D CMAKE_C_COMPILER=icl ^
 -D CMAKE_CXX_COMPILER=icl ^
 -T "Intel C++ Compiler 16.0" ^
--G "Visual Studio 14 2015 Win64" ^
+-G "%cmake_generator%" ^
 "%asio_samples_home_dir%"
 ```
 
@@ -433,6 +438,7 @@ Example of generation of Visual Studio 2010 project with:
 * x86 build
 
 ```cmd
+set "cmake_generator=Visual Studio 10 2010" && ^
 cmake ^
 -D BOOST_INCLUDEDIR="%boost_headers_dir%" ^
 -D BOOST_LIBRARYDIR="%boost_libs_dir%" ^
@@ -440,7 +446,7 @@ cmake ^
 -D Boost_USE_STATIC_LIBS=ON ^
 -D gtest_force_shared_crt=ON ^
 -D QT_QMAKE_EXECUTABLE="%qt4_home_dir%/bin/qmake.exe" ^
--G "Visual Studio 10 2010" ^
+-G "%cmake_generator%" ^
 "%asio_samples_home_dir%"
 ```
 
@@ -452,6 +458,7 @@ Example of generation of Visual Studio 2008 project with:
 * x86 build
 
 ```cmd
+set "cmake_generator=Visual Studio 9 2008" && ^
 cmake ^
 -D CMAKE_USER_MAKE_RULES_OVERRIDE="%asio_samples_home_dir%/cmake/static_c_runtime_overrides.cmake" ^
 -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX="%asio_samples_home_dir%/cmake/static_cxx_runtime_overrides.cmake" ^
@@ -460,7 +467,7 @@ cmake ^
 -D Boost_NO_SYSTEM_PATHS=ON ^
 -D Boost_USE_STATIC_LIBS=ON ^
 -D QT_QMAKE_EXECUTABLE="%qt4_home_dir%/bin/qmake.exe" ^
--G "Visual Studio 9 2008" ^
+-G "%cmake_generator%" ^
 "%asio_samples_home_dir%"
 ```
 
@@ -468,18 +475,16 @@ cmake ^
 
 Building of generated project can be done using chosen (during generation of project) build system or using CMake.
 
-Assuming current directory is `asio_samples_build_dir`.
-
 CMake command to build generated project (Windows Command Prompt):
 
 ```cmd
-cmake --build . --config %build_type%
+cmake --build "%asio_samples_build_dir%" --config "%build_type%"
 ```
 
 CMake command to build generated project (*nix shell):
 
 ```bash
-cmake --build . --config ${build_type}
+cmake --build "${asio_samples_build_dir}" --config "${build_type}"
 ```
 
 ### Running tests
@@ -489,11 +494,11 @@ Assuming current directory is `asio_samples_build_dir`.
 [CTest](https://cmake.org/cmake/help/latest/manual/ctest.1.html) command to run built tests (Windows Command Prompt):
 
 ```cmd
-ctest --build-config %build_type%
+ctest --build-config "%build_type%"
 ```
 
 CTest command to run built tests (*nix shell):
 
 ```bash
-ctest --build-config ${build_type}
+ctest --build-config "${build_type}"
 ```
