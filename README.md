@@ -1,6 +1,7 @@
 # Asio samples
 
-[![Release](https://img.shields.io/github/release/mabrarov/asio_samples.svg)](https://github.com/mabrarov/asio_samples/releases/latest) [![License](https://img.shields.io/badge/license-BSL%201.0-brightgreen.svg)](https://github.com/mabrarov/asio_samples/tree/master/LICENSE) 
+[![Release](https://img.shields.io/github/release/mabrarov/asio_samples.svg)](https://github.com/mabrarov/asio_samples/releases/latest)
+[![License](https://img.shields.io/badge/license-BSL%201.0-brightgreen.svg)](https://github.com/mabrarov/asio_samples/tree/master/LICENSE) 
 
 Branch | Linux | Windows | Coverage | Coverity Scan
 -------|-------|---------|----------|--------------
