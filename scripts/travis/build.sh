@@ -10,6 +10,7 @@
 set -e
 
 this_path="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck source=travis_retry.sh
 source "${this_path}/travis_retry.sh"
 
 codecov_flag="${TRAVIS_OS_NAME}__$(uname -r | sed -r 's/[[:space:]]|[\\\.\/:]/_/g')__${CXX_COMPILER_FAMILY}_$(${CXX_COMPILER} -dumpversion)__boost_${BOOST_VERSION}__qt_${QT_MAJOR_VERSION}"

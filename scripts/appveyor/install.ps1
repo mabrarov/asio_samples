@@ -640,7 +640,8 @@ $env:COVERITY_SCAN_BUILD = (${env:COVERITY_SCAN_CANDIDATE} -eq "1") `
 $env:COVERAGE_BUILD = (${env:COVERAGE_BUILD_CANDIDATE} -eq "1") `
   -and (${env:CONFIGURATION} -eq "Debug") `
   -and (${env:PLATFORM} -eq "x64")
-if (-not (Test-Path -Path env:CODECOV_TOKEN) -or (${env:CODECOV_TOKEN} -eq "")) {
+if ((${env:COVERAGE_BUILD} -eq "True") -and `
+ -not (Test-Path -Path env:CODECOV_TOKEN) -or (${env:CODECOV_TOKEN} -eq "")) {
   throw "CODECOV_TOKEN environment variable is not defined but is required to upload coverage report to Codecov"
 }
 $env:CODECOV_FLAG = "windows_${env:OS_VERSION}__${env:PLATFORM}__${env:TOOLCHAIN_ID}"
