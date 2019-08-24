@@ -9,7 +9,7 @@
 
 set -e
 
-this_path="$(cd "$(dirname "$0")" && pwd)"
+this_path="$(cd "$(dirname "${0}")" && pwd)"
 # shellcheck source=travis_retry.sh
 source "${this_path}/travis_retry.sh"
 
