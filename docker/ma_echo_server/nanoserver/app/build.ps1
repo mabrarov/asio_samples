@@ -11,38 +11,6 @@ $ErrorActionPreference = "Stop"
 # Enable all versions of TLS
 [System.Net.ServicePointManager]::SecurityProtocol = @("Tls12","Tls11","Tls","Ssl3")
 
-& choco install git -y --no-progress --version "${env:GIT_VERSION}" --force -params "'/NoShellIntegration /NoGuiHereIntegration /NoShellHereIntegration'"
-if (${LastExitCode} -ne 0) {
-  throw "Failed to install Git ${env:GIT_VERSION}"
-}
-
-$cmake_archive_base_name = "cmake-${env:CMAKE_VERSION}-win64-x64"
-$env:CMAKE_HOME = "${env:DEPENDENCIES_FOLDER}\${cmake_archive_base_name}"
-if (!(Test-Path -Path "${env:CMAKE_HOME}")) {
-  Write-Host "CMake ${env:CMAKE_VERSION} not found at ${env:CMAKE_HOME}"
-  $cmake_archive_name = "${cmake_archive_base_name}.zip"
-  $cmake_archive_file = "${env:DOWNLOADS_FOLDER}\${cmake_archive_name}"
-  $cmake_download_url = "${env:CMAKE_URL}/v${env:CMAKE_VERSION}/${cmake_archive_name}"
-  if (!(Test-Path -Path "${cmake_archive_file}")) {
-    Write-Host "Going to download CMake ${env:CMAKE_VERSION} archive from ${cmake_download_url} to ${cmake_archive_file}"
-    if (!(Test-Path -Path "${env:DOWNLOADS_FOLDER}")) {
-      New-Item -Path "${env:DOWNLOADS_FOLDER}" -ItemType "directory" | out-null
-    }
-    (New-Object System.Net.WebClient).DownloadFile("${cmake_download_url}", "${cmake_archive_file}")
-    Write-Host "Downloading of CMake completed successfully"
-  }
-  if (!(Test-Path -Path "${env:DEPENDENCIES_FOLDER}")) {
-    New-Item -Path "${env:DEPENDENCIES_FOLDER}" -ItemType "directory" | out-null
-  }
-  Write-Host "Extracting CMake ${env:CMAKE_VERSION} from ${cmake_archive_file} to ${env:DEPENDENCIES_FOLDER}"
-  & "${env:SEVEN_ZIP_HOME}\7z.exe" x "${cmake_archive_file}" -o"${env:DEPENDENCIES_FOLDER}" -aoa -y -bd | out-null
-  if (${LastExitCode} -ne 0) {
-    throw "Extracting CMake failed with exit code ${LastExitCode}"
-  }
-  Write-Host "Extracting of CMake completed successfully"
-}
-Write-Host "CMake ${env:CMAKE_VERSION} is located at ${env:CMAKE_HOME}"
-
 $boost_version_suffix = "-${env:BOOST_VERSION}"
 $boost_platform_suffix = "-x64"
 $boost_toolchain_suffix = ""
