@@ -16,6 +16,7 @@ env:
   global:
     - PREBUILT_BOOST_DOWNLOAD_URL: "https://dl.bintray.com/mabrarov/generic/boost"
     - secure: "rxP3V/oY3YSGIaUkRjCK302ueka7zmxdEWBLnec4nW1We8ys0HS/WL//FkNyTQBHNILerfHCtKLMg4tX1ccxC9JPiS9biyDYDOMZQYlXv6UcJBoJBThcKUNcC8vxSrPc1rgSgbai+FvmwiXA/VmHPWInAhcUmsMqCocElR+lLf8gI9Y9VbiuEc3fOSq4KgeIdmblHfdA2BkCc96hR34gOa6r+C+gA0Y3eD3sQnAlzwYG0uXIaRcO0CPI2TJk0HJHc6Lzzpkvwd9vWNMlfRa7U2aKMtow44VPa9dQ+O2BI1H/+GT0eF+7wGPRZWYpkr9EKnzFJf+CFUnWz8BWULp5TsLUa6e6LCnkWiVfXeP/5+LNOrmYMZia6Ko0E9jY595y0aNKAPpzC535ecuYZ9PrV6W12ginutteKRgOjo0H1Rat7QkJ89FJiAXEmhQkiCu5D2FMsgRd6N6+3G06h4DEZeZ7wsUUZV3SpSSkl1wfQNUw0ddNDbTtOCw007md00LSTVPRaLVRuu7weyCKHqgY+h78yhvwAREKEK+qmnzcFBS6bwg5NReKYDiMK1JzgbiUPnqnvZ69rMEErfOWb4ET1FJ382dUtlGoUIbJIAY+1WlLRLTKkIBAeEnVWQFvDFPSYHeaLCxeNlacM76q9S5lBEY6XlC3g+nQidGnBLhGqZU="
+    - secure: "eDRrpgVrk6uAebz539SGhBLVIYfS/ljHdvSK8VuKSWxokrKAnQ1pPorDNSKj0VUFmsHHz8Y23suv00kVcrnuG6S8epKPBLNAwKPX3Wz6B2LyKTmtIG/9GWCsJ9lxAPr+jxEDbH2rKerlQL6Hox3iW2IAXYlw4znHtvjJtqbSYUxCtu3bco7LBTLDjnNSvEurc+JU3OmEdtHuoimzriv12BNQ33TVvPUjc7G9dldbRutjyrYiHhtLXzs4OfslZFKvrxwnxpy+Mk1Hnhl3m77u/I2LvmQYj4ihdDiYB/uGCqtrVB284EIqa+/Tr7Z3axwzpP8/kDVlviYq54t5PAM9KmJG/p0Egrh9etgTQj79f6v/lG6dIsKn0if0nNccjQF6gSSqxSY92/zk+iqFIR24SY+Z8V6+TU4p2r+Ucqcur/j6sZ9A0MP37MNUdd+8/UH2gENecbbXAEQvLAw49ln0aNxvSBrt8PaV5HYXzvuE0rMn9FhWa8WXlTpJPtI2fyeps0SpeRYsCLaFLxCZ2OkEVFXd7A5QGgNMptbPlZvcCFvRH+gGgBtDPq9UUfK92aDxMJxplEs8fGF0k2jp+SCRaJuYE7q2haUMypInPRuNa5+L7EJKHWKWnTvdMlr7aNaSeuRCpT0HCje4KSXZra/UHr8+K5HRhng3r+mlnunnVzo="
     - COVERAGE_BUILD_CANDIDATE: 0
     - DEPENDENCIES_HOME: ${HOME}/dependencies
     - DOWNLOADS_HOME: ${HOME}/downloads
@@ -24,9 +25,10 @@ env:
     - CURL_MAX_TIME: 1800
     - CURL_RETRY: 10
     - CURL_RETRY_DELAY: 10
+    - PIP_RETRY: 10
+    - CODECOV_VERSION: 2.0.15
 
-before_install:
-  - echo -n | openssl s_client -connect scan.coverity.com:443 | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' | sudo tee -a /etc/ssl/certs/ca-certificates.crt
+before_install: source ./scripts/travis/before_install.sh
 
 matrix:
   include:
@@ -51,7 +53,7 @@ matrix:
     # GCC 9, Boost 1.70.0, Qt 5.x.
     - os: linux
       dist: trusty
-      env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-9 CXX_COMPILER=g++-9 CMAKE_VERSION=3.15.1 BOOST_VERSION=1.70.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
+      env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-9 CXX_COMPILER=g++-9 CMAKE_VERSION=3.15.2 BOOST_VERSION=1.70.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
       compiler: gcc
       addons: &apt-gcc9-boost170-qt5
         apt:
@@ -67,13 +69,13 @@ matrix:
           sources: *gcc-package-sources
     - os: linux
       dist: trusty
-      env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-9 CXX_COMPILER=g++-9 CMAKE_VERSION=3.15.1 BOOST_VERSION=1.70.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
+      env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-9 CXX_COMPILER=g++-9 CMAKE_VERSION=3.15.2 BOOST_VERSION=1.70.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
       compiler: gcc
       addons: *apt-gcc9-boost170-qt5
     # GCC 8, Boost 1.70.0, Qt 5.x.
     - os: linux
       dist: trusty
-      env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-8 CXX_COMPILER=g++-8 CMAKE_VERSION=3.15.1 BOOST_VERSION=1.70.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
+      env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-8 CXX_COMPILER=g++-8 CMAKE_VERSION=3.15.2 BOOST_VERSION=1.70.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
       compiler: gcc
       addons: &apt-gcc8-boost170-qt5
         apt:
@@ -89,13 +91,13 @@ matrix:
           sources: *gcc-package-sources
     - os: linux
       dist: trusty
-      env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-8 CXX_COMPILER=g++-8 CMAKE_VERSION=3.15.1 BOOST_VERSION=1.70.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
+      env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-8 CXX_COMPILER=g++-8 CMAKE_VERSION=3.15.2 BOOST_VERSION=1.70.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
       compiler: gcc
       addons: *apt-gcc8-boost170-qt5
     # GCC 7, Boost 1.70.0, Qt 5.x.
     - os: linux
       dist: trusty
-      env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-7 CXX_COMPILER=g++-7 CMAKE_VERSION=3.15.1 BOOST_VERSION=1.70.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
+      env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-7 CXX_COMPILER=g++-7 CMAKE_VERSION=3.15.2 BOOST_VERSION=1.70.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
       compiler: gcc
       addons: &apt-gcc7-boost170-qt5
         apt:
@@ -111,13 +113,13 @@ matrix:
           sources: *gcc-package-sources
     - os: linux
       dist: trusty
-      env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-7 CXX_COMPILER=g++-7 CMAKE_VERSION=3.15.1 BOOST_VERSION=1.70.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
+      env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-7 CXX_COMPILER=g++-7 CMAKE_VERSION=3.15.2 BOOST_VERSION=1.70.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
       compiler: gcc
       addons: *apt-gcc7-boost170-qt5
     # Clang 8.0, Boost 1.70.0, Qt 5.x
     - os: linux
       dist: trusty
-      env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-8 CXX_COMPILER=clang++-8 CMAKE_VERSION=3.15.1 BOOST_VERSION=1.70.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
+      env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-8 CXX_COMPILER=clang++-8 CMAKE_VERSION=3.15.2 BOOST_VERSION=1.70.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
       compiler: clang
       addons: &apt-clang80-boost170-qt5
         apt:
@@ -135,13 +137,13 @@ matrix:
             - sourceline: 'ppa:mhier/libboost-latest'
     - os: linux
       dist: trusty
-      env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-8 CXX_COMPILER=clang++-8 CMAKE_VERSION=3.15.1 BOOST_VERSION=1.70.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
+      env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-8 CXX_COMPILER=clang++-8 CMAKE_VERSION=3.15.2 BOOST_VERSION=1.70.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
       compiler: clang
       addons: *apt-clang80-boost170-qt5
     # Clang 7.0, Boost 1.70.0, Qt 5.x
     - os: linux
       dist: trusty
-      env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-7 CXX_COMPILER=clang++-7 CMAKE_VERSION=3.15.1 BOOST_VERSION=1.70.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
+      env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-7 CXX_COMPILER=clang++-7 CMAKE_VERSION=3.15.2 BOOST_VERSION=1.70.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
       compiler: clang
       addons: &apt-clang70-boost170-qt5
         apt:
@@ -159,13 +161,13 @@ matrix:
             - sourceline: 'ppa:mhier/libboost-latest'
     - os: linux
       dist: trusty
-      env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-7 CXX_COMPILER=clang++-7 CMAKE_VERSION=3.15.1 BOOST_VERSION=1.70.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
+      env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-7 CXX_COMPILER=clang++-7 CMAKE_VERSION=3.15.2 BOOST_VERSION=1.70.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
       compiler: clang
       addons: *apt-clang70-boost170-qt5
     # Clang 6.0, Boost 1.70.0, Qt 5.x
     - os: linux
       dist: trusty
-      env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-6.0 CXX_COMPILER=clang++-6.0 CMAKE_VERSION=3.15.1 BOOST_VERSION=1.70.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
+      env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-6.0 CXX_COMPILER=clang++-6.0 CMAKE_VERSION=3.15.2 BOOST_VERSION=1.70.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
       compiler: clang
       addons: &apt-clang60-boost170-qt5
         apt:
@@ -183,13 +185,13 @@ matrix:
             - sourceline: 'ppa:mhier/libboost-latest'
     - os: linux
       dist: trusty
-      env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-6.0 CXX_COMPILER=clang++-6.0 CMAKE_VERSION=3.15.1 BOOST_VERSION=1.70.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
+      env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-6.0 CXX_COMPILER=clang++-6.0 CMAKE_VERSION=3.15.2 BOOST_VERSION=1.70.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
       compiler: clang
       addons: *apt-clang60-boost170-qt5
     # Clang 5.0, Boost 1.68.0, Qt 5.x
     - os: linux
       dist: trusty
-      env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-5.0 CXX_COMPILER=clang++-5.0 CMAKE_VERSION=3.15.1 BOOST_VERSION=1.68.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
+      env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-5.0 CXX_COMPILER=clang++-5.0 CMAKE_VERSION=3.15.2 BOOST_VERSION=1.68.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
       compiler: clang
       addons: &apt-clang50-boost168-qt5
         apt:
@@ -207,7 +209,7 @@ matrix:
             - sourceline: 'ppa:mhier/libboost-latest'
     - os: linux
       dist: trusty
-      env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-5.0 CXX_COMPILER=clang++-5.0 CMAKE_VERSION=3.15.1 BOOST_VERSION=1.68.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
+      env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-5.0 CXX_COMPILER=clang++-5.0 CMAKE_VERSION=3.15.2 BOOST_VERSION=1.68.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
       compiler: clang
       addons: *apt-clang50-boost168-qt5
     # MacOS, Clang Apple LLVM version 10.0.1, Boost 1.69.0, Qt 5.x
@@ -230,7 +232,7 @@ matrix:
     # GCC 7, Boost 1.68.0, Qt 5.x.
     - os: linux
       dist: trusty
-      env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-7 CXX_COMPILER=g++-7 CMAKE_VERSION=3.15.1 BOOST_VERSION=1.68.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
+      env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-7 CXX_COMPILER=g++-7 CMAKE_VERSION=3.15.2 BOOST_VERSION=1.68.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
       compiler: gcc
       addons: &apt-gcc7-boost168-qt5
         apt:
@@ -246,7 +248,7 @@ matrix:
           sources: *gcc-package-sources
     - os: linux
       dist: trusty
-      env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-7 CXX_COMPILER=g++-7 CMAKE_VERSION=3.15.1 BOOST_VERSION=1.68.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
+      env: CXX_COMPILER_FAMILY=gcc C_COMPILER=gcc-7 CXX_COMPILER=g++-7 CMAKE_VERSION=3.15.2 BOOST_VERSION=1.68.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
       compiler: gcc
       addons: *apt-gcc7-boost168-qt5
     # GCC 7, Boost 1.55.0, Qt 5.x
@@ -724,132 +726,10 @@ matrix:
       compiler: clang
       addons: *apt-clang38-boost155-qt4
 
-install:
-  - if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
-      export PATH="/usr/local/opt/gnu-sed/libexec/gnubin:${PATH}";
-    fi
-  - export DETECTED_CMAKE_VERSION="$(cmake --version | sed -r 's/cmake version ([0-9]+\.[0-9]+\.[0-9]+)/\1/;t;d')"
-  - echo "Detected CMake of ${DETECTED_CMAKE_VERSION} version"
-  - if [[ ! -z "${CMAKE_VERSION+x}" ]]; then
-      echo "CMake of ${CMAKE_VERSION} version is requested" &&
-      if [[ "${CMAKE_VERSION}" != "${DETECTED_CMAKE_VERSION}" ]]; then
-        if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
-          cmake_archive_base_name="cmake-${CMAKE_VERSION}-Linux-x86_64" &&
-          cmake_home="${DEPENDENCIES_HOME}/${cmake_archive_base_name}" &&
-          if [[ ! -d "${cmake_home}" ]]; then
-            echo "CMake ${CMAKE_VERSION} not found at ${cmake_home}" &&
-            cmake_archive_name="${cmake_archive_base_name}.tar.gz" &&
-            cmake_archive_file="${DOWNLOADS_HOME}/${cmake_archive_name}" &&
-            if [[ ! -f "${cmake_archive_file}" ]]; then
-              cmake_download_url="https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/${cmake_archive_name}" &&
-              echo "Going to download CMake ${CMAKE_VERSION} archive from ${cmake_download_url} to ${cmake_archive_file}" &&
-              mkdir -p "${DOWNLOADS_HOME}" &&
-              curl --connect-timeout "${CURL_CONNECT_TIMEOUT}" --max-time "${CURL_MAX_TIME}" --retry "${CURL_RETRY}" --retry-delay "${CURL_RETRY_DELAY}" -jksSL "${cmake_download_url}" --output "${cmake_archive_file}" &&
-              echo "Downloading of CMake ${CMAKE_VERSION} archive from ${cmake_download_url} to ${cmake_archive_file} completed successfully";
-            fi &&
-            mkdir -p "${DEPENDENCIES_HOME}" &&
-            echo "Extracting CMake ${CMAKE_VERSION} from ${cmake_archive_file} to ${DEPENDENCIES_HOME}" &&
-            tar -xzf "${cmake_archive_file}" -C "${DEPENDENCIES_HOME}" &&
-            echo "Extracting of CMake ${CMAKE_VERSION} from ${cmake_archive_file} to ${DEPENDENCIES_HOME} completed successfully";
-          fi &&
-          echo "CMake ${CMAKE_VERSION} is located at ${cmake_home}" &&
-          export PATH="${cmake_home}/bin:${PATH}";
-        else
-          echo "Custom version of CMake - ${CMAKE_VERSION} - is not supported for ${TRAVIS_OS_NAME} OS" &&
-          exit 1;
-        fi
-      fi
-    fi
-  - export PRE_INSTALLED_BOOST=0
-  - if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
-      if [[ "${TRAVIS_DIST}" == "trusty" ]]; then
-        if [[ "${BOOST_VERSION}" == "1.55.0" ]] || [[ "${BOOST_VERSION}" == "1.68.0" ]] || [[ "${BOOST_VERSION}" == "1.70.0" ]]; then
-          export PRE_INSTALLED_BOOST=1;
-        fi
-      fi
-    elif [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
-      if [[ "${BOOST_VERSION}" == "1.55.0" ]] || [[ "${BOOST_VERSION}" == "1.57.0" ]] || [[ "${BOOST_VERSION}" == "1.59.0" ]] || [[ "${BOOST_VERSION}" == "1.60.0" ]] || [[ "${BOOST_VERSION}" == "1.69.0" ]] || [[ "${BOOST_VERSION}" == "1.70.0" ]]; then
-        export PRE_INSTALLED_BOOST=1;
-      fi
-    fi
-  - if [[ "${PRE_INSTALLED_BOOST}" != 0 ]]; then
-      echo "Boost ${BOOST_VERSION} is installed";
-    else
-      boost_archive_base_name="boost-${BOOST_VERSION}-x64-gcc4.8" &&
-      export PREBUILT_BOOST_HOME="${DEPENDENCIES_HOME}/${boost_archive_base_name}" &&
-      if [[ ! -d "${PREBUILT_BOOST_HOME}" ]]; then
-        echo "Boost libraries are absent for the selected Boost version (${BOOST_VERSION}) at ${PREBUILT_BOOST_HOME}" &&
-        boost_archive_name="${boost_archive_base_name}.tar.gz" &&
-        boost_archive_file="${DOWNLOADS_HOME}/${boost_archive_name}" &&
-        if [[ ! -f "${boost_archive_file}" ]]; then
-          boost_download_url="${PREBUILT_BOOST_DOWNLOAD_URL}/${BOOST_VERSION}/${boost_archive_name}" &&
-          mkdir -p "${DOWNLOADS_HOME}" &&
-          echo "Going to download Boost libraries from ${boost_download_url} to ${boost_archive_file}" &&
-          curl --connect-timeout "${CURL_CONNECT_TIMEOUT}" --max-time "${CURL_MAX_TIME}" --retry "${CURL_RETRY}" --retry-delay "${CURL_RETRY_DELAY}" -jksSL "${boost_download_url}" --output "${boost_archive_file}" &&
-          echo "Downloading of Boost libraries from ${boost_download_url} to ${boost_archive_file} completed successfully";
-        fi &&
-        echo "Extracting Boost libraries from ${boost_archive_file} to ${DEPENDENCIES_HOME}" &&
-        mkdir -p "${DEPENDENCIES_HOME}" &&
-        tar -xzf "${boost_archive_file}" -C "${DEPENDENCIES_HOME}" &&
-        echo "Extracting of Boost libraries from ${boost_archive_file} to ${DEPENDENCIES_HOME} completed successfully";
-      fi &&
-      echo "Boost ${BOOST_VERSION} is located at ${PREBUILT_BOOST_HOME}" &&
-      export LD_LIBRARY_PATH="${PREBUILT_BOOST_HOME}/lib:${LD_LIBRARY_PATH}";
-    fi
-
+install: source ./scripts/travis/install.sh
 script:
-  - export CODECOV_FLAG="${TRAVIS_OS_NAME}__$(uname -r | sed -r 's/[[:space:]]|[\\\.\/:]/_/g')__${CXX_COMPILER_FAMILY}_$(${CXX_COMPILER} -dumpversion)__boost_${BOOST_VERSION}__qt_${QT_MAJOR_VERSION}" &&
-    export CODECOV_FLAG="${CODECOV_FLAG//[.-]/_}" &&
-    if [[ "${COVERITY_SCAN_BRANCH}" == 1 ]]; then
+  - if [[ "${COVERITY_SCAN_BRANCH}" == 1 ]]; then
       echo "Build was already perfomed with Coverity scan.";
     else
-      echo "Preparing build dir at ${BUILD_HOME}" &&
-      rm -rf "${BUILD_HOME}" && mkdir -p "${BUILD_HOME}";
-    fi &&
-    export COVERAGE_BUILD=0 &&
-    if [[ "${COVERAGE_BUILD_CANDIDATE}" != 0 ]]; then
-      export COVERAGE_BUILD=1;
-    fi &&
-    cd "${BUILD_HOME}" &&
-    if [[ "${COVERITY_SCAN_BRANCH}" != 1 ]]; then
-      export CMAKE_GENERATOR_COMMAND="cmake -D CMAKE_C_COMPILER=\"${C_COMPILER}\" -D CMAKE_CXX_COMPILER=\"${CXX_COMPILER}\" -D CMAKE_BUILD_TYPE=\"${BUILD_TYPE}\"" &&
-      if [[ "${PRE_INSTALLED_BOOST}" != 0 ]]; then
-        echo "Building with installed Boost ${BOOST_VERSION}";
-      else
-        echo "Building with Boost ${BOOST_VERSION} located at ${PREBUILT_BOOST_HOME}" &&
-        export CMAKE_GENERATOR_COMMAND="${CMAKE_GENERATOR_COMMAND} -D CMAKE_SKIP_BUILD_RPATH=ON -D Boost_NO_SYSTEM_PATHS=ON -D BOOST_INCLUDEDIR=\"${PREBUILT_BOOST_HOME}/include\" -D BOOST_LIBRARYDIR=\"${PREBUILT_BOOST_HOME}/lib\"";
-      fi &&
-      export CMAKE_GENERATOR_COMMAND="${CMAKE_GENERATOR_COMMAND} -D MA_QT_MAJOR_VERSION=\"${QT_MAJOR_VERSION}\"" &&
-      if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
-        if [[ "${QT_MAJOR_VERSION}" == 5 ]]; then
-          export Qt5_DIR="/usr/local/opt/qt5/lib/cmake" &&
-          export CMAKE_GENERATOR_COMMAND="${CMAKE_GENERATOR_COMMAND} -D Qt5Core_DIR=\"${Qt5_DIR}/Qt5Core\" -D Qt5Gui_DIR=\"${Qt5_DIR}/Qt5Gui\" -D Qt5Widgets_DIR=\"${Qt5_DIR}/Qt5Widgets\"";
-        fi
-      fi &&
-      export CMAKE_GENERATOR_COMMAND="${CMAKE_GENERATOR_COMMAND} -D MA_COVERAGE=\"${COVERAGE_BUILD}\" \"${TRAVIS_BUILD_DIR}\"" &&
-      echo "CMake project generation command ${CMAKE_GENERATOR_COMMAND}" &&
-      eval ${CMAKE_GENERATOR_COMMAND} &&
-      cmake --build "${BUILD_HOME}" --config "${BUILD_TYPE}";
-    fi &&
-    if [[ "${COVERAGE_BUILD}" != 0 ]]; then
-      echo "Preparing code coverage counters at ${BUILD_HOME}/lcov-base.info" &&
-      lcov -z -d "${BUILD_HOME}" &&
-      lcov -c -d "${BUILD_HOME}" -i -o lcov-base.info --rc lcov_branch_coverage=1;
-    fi &&
-    ctest --build-config "${BUILD_TYPE}" --verbose &&
-    if [[ "${COVERAGE_BUILD}" != 0 ]]; then
-      echo "Caclulating coverage at ${BUILD_HOME}/lcov-test.info" &&
-      lcov -c -d "${BUILD_HOME}" -o lcov-test.info --rc lcov_branch_coverage=1 &&
-      echo "Caclulating coverage delta at ${BUILD_HOME}/lcov.info" &&
-      lcov -a lcov-base.info -a lcov-test.info -o lcov.info --rc lcov_branch_coverage=1 &&
-      echo "Excluding 3rd party code from coverage data located at ${BUILD_HOME}/lcov.info" &&
-      lcov -r lcov.info "ui_*.h*" "moc_*.c*" "/usr/*" "3rdparty/*" "examples/*" "tests/*" "${DEPENDENCIES_HOME}/*" -o lcov.info --rc lcov_branch_coverage=1;
-    fi &&
-    cd "${TRAVIS_BUILD_DIR}"
-
-after_success:
-  - cd "${TRAVIS_BUILD_DIR}" &&
-    if [[ "${COVERAGE_BUILD}" != 0 ]]; then
-      echo "Sending ${BUILD_HOME}/lcov.info coverage data to Codecov" &&
-      bash <(curl --connect-timeout "${CURL_CONNECT_TIMEOUT}" --max-time "${CURL_MAX_TIME}" --retry "${CURL_RETRY}" --retry-delay "${CURL_RETRY_DELAY}" -s https://codecov.io/bash) -Z -f "${BUILD_HOME}/lcov.info" -R "${TRAVIS_BUILD_DIR}" -X gcov -F "${CODECOV_FLAG}";
+      ./scripts/travis/build.sh;
     fi
