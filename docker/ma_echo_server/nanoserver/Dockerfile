@@ -9,8 +9,9 @@ FROM abrarov/msvc-2015:2.5.0 as build
 
 ARG MA_REVISION=master
 
-ENV MSVC_VERSION=14.0 \
-    BOOST_URL=https://dl.bintray.com/mabrarov/generic/boost \
+ENV MSVC_VERSION="14.0" \
+    BOOST_VERSION="1.70.0" \
+    BOOST_URL="https://dl.bintray.com/mabrarov/generic/boost" \
     SOURCE_DIR="C:\\asio_samples" \
     BUILD_DIR="C:\\build" \
     DEPENDENCIES_DIR="C:\\dependencies" \
@@ -26,8 +27,6 @@ LABEL name="abrarov/tcp-echo" \
     description="TCP echo server from Asio samples project" \
     license="BSL-1.0"
 
-RUN powershell "New-Item -Path \"C:\Program Files\ma_echo_server\" -ItemType \"directory\" | out-null"
+COPY --from=build "C:\\build\\examples\\ma_echo_server\\Release\\ma_echo_server.exe" "C:\\ma_echo_server.exe"
 
-COPY --from=build "C:/build/examples/ma_echo_server/Release/ma_echo_server.exe" "C:/Program Files/ma_echo_server/ma_echo_server.exe"
-
-ENTRYPOINT ["C:/Program Files/ma_echo_server/ma_echo_server.exe"]
+ENTRYPOINT ["C:\\ma_echo_server.exe"]

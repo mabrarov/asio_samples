@@ -9,7 +9,7 @@ rem
 
 set exit_code=0
 
-call "%MSVC_BUILD_DIR%\%MSVC_CMD_BOOTSTRAP%" %MSVC_CMD_BOOTSTRAP_OPTIONS%
+call "%MSVC_BUILD_DIR%\%MSVC_CMD_BOOTSTRAP%"%MSVC_CMD_BOOTSTRAP_OPTIONS%
 set exit_code=%errorlevel%
 if %exit_code% neq 0 goto exit
 
@@ -22,13 +22,14 @@ cmake ^
   -D BOOST_LIBRARYDIR="%BOOST_LIBRARY_DIR%" ^
   -D Boost_NO_SYSTEM_PATHS=ON ^
   -D Boost_USE_STATIC_LIBS=ON ^
-  -D MA_QT=OFF
-  -G "%Visual Studio 14 2015 Win64%" ^
+  -D MA_TESTS=OFF ^
+  -D MA_QT=OFF ^
+  -G "%CMAKE_GENERATOR%" ^
   "%SOURCE_DIR%"
 set exit_code=%errorlevel%
 if %exit_code% neq 0 goto exit
 
-cmake --build . --config Release
+cmake --build . --config Release --target ma_echo_server
 set exit_code=%errorlevel%
 if %exit_code% neq 0 goto exit
 

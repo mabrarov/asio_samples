@@ -15,6 +15,9 @@ $boost_version_suffix = "-${env:BOOST_VERSION}"
 $boost_platform_suffix = "-x64"
 $boost_toolchain_suffix = ""
 switch (${env:MSVC_VERSION}) {
+  "15.0" {
+    $boost_toolchain_suffix = "-vs2017"
+  }
   "14.0" {
     $boost_toolchain_suffix = "-vs2015"
   }
@@ -50,17 +53,37 @@ $boost_include_folder_version_suffix = "-${env:BOOST_VERSION}" -replace "([\d]+)
 $env:BOOST_INCLUDE_DIR = "${boost_install_folder}\include\boost${boost_include_folder_version_suffix}"
 $env:BOOST_LIBRARY_DIR = "${boost_install_folder}\lib"
 
-$env:MSVS_INSTALL_DIR = &vswhere --% -legacy -latest -version [14.0,15.0) -property installationPath
-$env:MSVC_BUILD_DIR = "${env:MSVS_INSTALL_DIR}VC"
-$env:MSVC_CMD_BOOTSTRAP = "vcvarsall.bat"
-$env:MSVC_CMD_BOOTSTRAP_OPTIONS = "amd64"
+switch (${env:MSVC_VERSION}) {
+  "15.0" {
+    $env:MSVS_INSTALL_DIR = &vswhere --% -latest -products Microsoft.VisualStudio.Product.Community -version [15.0,16.0) -requires Microsoft.VisualStudio.Workload.NativeDesktop -property installationPath
+    $env:MSVC_AUXILARY_DIR = "${env:MSVS_INSTALL_DIR}\VC\Auxiliary"
+    $env:MSVC_BUILD_DIR = "${env:MSVC_AUXILARY_DIR}\Build"
+    $env:MSVC_CMD_BOOTSTRAP = "vcvars64.bat"
+    $env:MSVC_CMD_BOOTSTRAP_OPTIONS = ""
+    $env:CMAKE_GENERATOR = "Visual Studio 15 2017 Win64"
+  }
+  "14.0" {
+    $env:MSVS_INSTALL_DIR = &vswhere --% -legacy -latest -version [14.0,15.0) -property installationPath
+    $env:MSVC_BUILD_DIR = "${env:MSVS_INSTALL_DIR}VC"
+    $env:MSVC_CMD_BOOTSTRAP = "vcvarsall.bat"
+    $env:MSVC_CMD_BOOTSTRAP_OPTIONS = " amd64"
+    $env:CMAKE_GENERATOR = "Visual Studio 14 2015 Win64"
+  }
+  default {
+    throw "Unsupported MSVC version for Boost: ${env:MSVC_VERSION}"
+  }
+}
 
-New-Item -Path "${env:SOURCE_DIR}" -ItemType "directory" | out-null
+if (!(Test-Path -Path "${env:SOURCE_DIR}")) {
+  New-Item -Path "${env:SOURCE_DIR}" -ItemType "directory" | out-null
+}
 git clone https://github.com/mabrarov/asio_samples.git "${env:SOURCE_DIR}"
 Set-Location -Path "${env:SOURCE_DIR}"
 git checkout "${env:MA_REVISION}"
 
-New-Item -Path "${env:BUILD_DIR}" -ItemType "directory" | out-null
+if (!(Test-Path -Path "${env:BUILD_DIR}")) {
+  New-Item -Path "${env:BUILD_DIR}" -ItemType "directory" | out-null
+}
 Set-Location -Path "${env:BUILD_DIR}"
 
 & "${PSScriptRoot}\build.bat"

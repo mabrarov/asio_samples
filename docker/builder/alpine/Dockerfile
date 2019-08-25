@@ -11,11 +11,11 @@ LABEL name="abrarov/asio-samples-builder-alpine" \
     description="Builder of Asio samples project on Alpine Linux"
 
 ENV PROJECT_DIR="/project" \
-    BUILD_TYPE=RELEASE \
-    BOOST_USE_STATIC_LIBS=ON \
-    MA_QT=ON \
-    MA_QT_MAJOR_VERSION=5 \
-    MA_COVERAGE=OFF
+    BUILD_TYPE="RELEASE" \
+    BOOST_USE_STATIC_LIBS="ON" \
+    MA_QT="ON" \
+    MA_QT_MAJOR_VERSION="5" \
+    MA_COVERAGE="OFF"
 
 ADD ["start.sh", "/app/"]
 

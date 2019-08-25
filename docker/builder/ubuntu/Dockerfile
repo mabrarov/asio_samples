@@ -11,13 +11,13 @@ LABEL name="abrarov/asio-samples-builder-ubuntu" \
     description="Builder of Asio samples project on Ubuntu"
 
 ENV PROJECT_DIR="/project" \
-    BUILD_TYPE=RELEASE \
-    BOOST_USE_STATIC_LIBS=ON \
-    MA_QT=ON \
-    MA_QT_MAJOR_VERSION=5 \
-    MA_COVERAGE=OFF \
-    CMAKE_VERSION=3.15.2 \
-    PATH=/opt/cmake/bin:${PATH}
+    BUILD_TYPE="RELEASE" \
+    BOOST_USE_STATIC_LIBS="ON" \
+    MA_QT="ON" \
+    MA_QT_MAJOR_VERSION="5" \
+    MA_COVERAGE="OFF" \
+    CMAKE_VERSION="3.15.2" \
+    PATH="/opt/cmake/bin:${PATH}"
 
 ADD ["start.sh", "/app/"]
 
@@ -31,9 +31,9 @@ RUN apt-get update -y && \
       qtbase5-dev && \
     mkdir -p /opt && \
     curl -jksSL \
-      https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz \
+      "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz" \
       | tar -xzf - -C /opt && \
-    mv -f /opt/cmake-${CMAKE_VERSION}-Linux-x86_64 /opt/cmake && \
+    mv -f "/opt/cmake-${CMAKE_VERSION}-Linux-x86_64" /opt/cmake && \
     rm -rf /var/lib/apt/lists/* && \
     tr -d '\015' < /app/start.sh > /app/start-lf.sh && \
     mv -f /app/start-lf.sh /app/start.sh && \

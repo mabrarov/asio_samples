@@ -11,7 +11,7 @@ LABEL name="abrarov/tcp-echo" \
     description="TCP echo server from Asio samples project" \
     license="BSL-1.0"
 
-ARG MA_REVISION=master
+ARG MA_REVISION="master"
 
 RUN apk add --no-cache libstdc++ && \
     apk add --no-cache --virtual build-dependencies \
@@ -32,6 +32,7 @@ RUN apk add --no-cache libstdc++ && \
       -D CMAKE_SKIP_BUILD_RPATH=ON \
       -D CMAKE_BUILD_TYPE=RELEASE \
       -D Boost_USE_STATIC_LIBS=ON \
+      -D MA_TESTS=OFF \
       -D MA_QT=OFF \
       .. && \
     cmake --build . --target ma_echo_server && \

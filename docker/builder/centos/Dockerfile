@@ -11,14 +11,14 @@ LABEL name="abrarov/asio-samples-builder-centos" \
     description="Builder of Asio samples project on CentOS"
 
 ENV PROJECT_DIR="/project" \
-    BUILD_TYPE=RELEASE \
-    STATIC_RUNTIME=OFF \
-    BOOST_USE_STATIC_LIBS=ON \
-    MA_QT=ON \
-    MA_QT_MAJOR_VERSION=5 \
-    MA_COVERAGE=OFF \
-    CMAKE_VERSION=3.15.2 \
-    PATH=/opt/cmake/bin:${PATH}
+    BUILD_TYPE="RELEASE" \
+    STATIC_RUNTIME="OFF" \
+    BOOST_USE_STATIC_LIBS="ON" \
+    MA_QT="ON" \
+    MA_QT_MAJOR_VERSION="5" \
+    MA_COVERAGE="OFF" \
+    CMAKE_VERSION="3.15.2" \
+    PATH="/opt/cmake/bin:${PATH}"
 
 ADD ["start.sh", "/app/"]
 
@@ -28,9 +28,9 @@ RUN yum update -y && \
     yum install -y curl && \
     mkdir -p /opt && \
     curl -jksSL \
-      https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz \
+      "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz" \
       | tar -xzf - -C /opt && \
-    mv -f /opt/cmake-${CMAKE_VERSION}-Linux-x86_64 /opt/cmake && \
+    mv -f "/opt/cmake-${CMAKE_VERSION}-Linux-x86_64" /opt/cmake && \
     yum install -y glibc-static && \
     yum install -y libstdc++-static && \
     yum install -y lcov && \
