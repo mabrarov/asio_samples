@@ -16,21 +16,29 @@ ENV PROJECT_DIR="/project" \
     MA_QT=ON \
     MA_QT_MAJOR_VERSION=5 \
     MA_COVERAGE=OFF \
-    CMAKE_VERSION=3.15.1 \
+    CMAKE_VERSION=3.15.2 \
     PATH=/opt/cmake/bin:${PATH}
 
 ADD ["start.sh", "/app/"]
 
-RUN apt-get update -y &&\
-    apt-get install -y curl build-essential lcov libboost-all-dev libqt4-dev qtbase5-dev &&\
-    mkdir -p /opt &&\
-    curl -jksSL https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz | tar -xzf - -C /opt &&\
-    mv -f /opt/cmake-${CMAKE_VERSION}-Linux-x86_64 /opt/cmake &&\
-    rm -rf /var/lib/apt/lists/* &&\
-    tr -d '\015' < /app/start.sh > /app/start-lf.sh &&\
-    mv -f /app/start-lf.sh /app/start.sh &&\
-    chmod u+x /app/start.sh &&\
-    mkdir /project &&\
+RUN apt-get update -y && \
+    apt-get install -y \
+      curl \
+      build-essential \
+      lcov \
+      libboost-all-dev \
+      libqt4-dev \
+      qtbase5-dev && \
+    mkdir -p /opt && \
+    curl -jksSL \
+      https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz \
+      | tar -xzf - -C /opt && \
+    mv -f /opt/cmake-${CMAKE_VERSION}-Linux-x86_64 /opt/cmake && \
+    rm -rf /var/lib/apt/lists/* && \
+    tr -d '\015' < /app/start.sh > /app/start-lf.sh && \
+    mv -f /app/start-lf.sh /app/start.sh && \
+    chmod u+x /app/start.sh && \
+    mkdir /project && \
     mkdir /build
 
 VOLUME ["/project", "/build"]

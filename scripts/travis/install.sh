@@ -36,7 +36,7 @@ if [[ -n "${CMAKE_VERSION+x}" ]]; then
             --max-time "${CURL_MAX_TIME}" \
             --retry "${CURL_RETRY}" \
             --retry-delay "${CURL_RETRY_DELAY}" \
-            -jksSL
+            -jksSL \
             "${cmake_download_url}" \
             --output "${cmake_archive_file}"
           echo "Downloading of CMake archive completed successfully"

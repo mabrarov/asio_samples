@@ -13,7 +13,7 @@ LABEL name="abrarov/tcp-echo" \
 
 ARG MA_BUILD=pmqrgqi8u3gitamq
 
-RUN powershell "New-Item \"$env:ProgramFiles\ma_echo_server\" -type directory | out-null" && \
+RUN powershell "New-Item -Path \"$env:ProgramFiles\ma_echo_server\" -ItemType \"directory\" | out-null" && \
     powershell "Invoke-WebRequest -Uri \"https://ci.appveyor.com/api/buildjobs/${env:MA_BUILD}/artifacts/build%2Fexamples%2Fma_echo_server%2FRelease%2Fma_echo_server.exe\" -OutFile \"$env:ProgramFiles\ma_echo_server\ma_echo_server.exe\""
 
 ENTRYPOINT ["C:/Program Files/ma_echo_server/ma_echo_server.exe"]
