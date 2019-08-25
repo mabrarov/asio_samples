@@ -5,15 +5,33 @@
 # file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
+FROM abrarov/msvc-2015:2.5.0 as build
+
+ARG MA_REVISION=master
+
+ENV MSVC_VERSION=14.0 \
+    GIT_VERSION=2.23.0 \
+    CMAKE_VERSION=3.15.2 \
+    CMAKE_URL=https://github.com/Kitware/CMake/releases/download \
+    BOOST_VERSION=1.71.0 \
+    BOOST_URL=https://dl.bintray.com/mabrarov/generic/boost \
+    SOURCE_DIR="C:\\asio_samples" \
+    BUILD_DIR="C:\\build" \
+    DEPENDENCIES_DIR="C:\\dependencies" \
+    DOWNLOADS_DIR="C:\\downloads"
+
+ADD ["app", "C:/app/"]
+
+RUN powershell -ExecutionPolicy Bypass -File "C:\app\build.ps1"
+
 FROM microsoft/nanoserver:10.0.14393.1198
 
 LABEL name="abrarov/tcp-echo" \
     description="TCP echo server from Asio samples project" \
     license="BSL-1.0"
 
-ARG MA_BUILD=pmqrgqi8u3gitamq
+RUN powershell "New-Item -Path \"C:\Program Files\ma_echo_server\" -ItemType \"directory\" | out-null"
 
-RUN powershell "New-Item -Path \"$env:ProgramFiles\ma_echo_server\" -ItemType \"directory\" | out-null" && \
-    powershell "Invoke-WebRequest -Uri \"https://ci.appveyor.com/api/buildjobs/${env:MA_BUILD}/artifacts/build%2Fexamples%2Fma_echo_server%2FRelease%2Fma_echo_server.exe\" -OutFile \"$env:ProgramFiles\ma_echo_server\ma_echo_server.exe\""
+COPY --from=build "C:/build/examples/ma_echo_server/Release/ma_echo_server.exe" "C:/Program Files/ma_echo_server/ma_echo_server.exe"
 
 ENTRYPOINT ["C:/Program Files/ma_echo_server/ma_echo_server.exe"]
