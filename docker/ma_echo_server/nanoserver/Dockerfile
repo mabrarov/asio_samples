@@ -12,10 +12,10 @@ ARG MA_REVISION=master
 ENV MSVC_VERSION="14.0" \
     BOOST_VERSION="1.70.0" \
     BOOST_URL="https://dl.bintray.com/mabrarov/generic/boost" \
-    SOURCE_DIR="C:\\asio_samples" \
-    BUILD_DIR="C:\\build" \
-    DEPENDENCIES_DIR="C:\\dependencies" \
-    DOWNLOADS_DIR="C:\\downloads"
+    SOURCE_DIR="C:\asio_samples" \
+    BUILD_DIR="C:\build" \
+    DEPENDENCIES_DIR="C:\dependencies" \
+    DOWNLOADS_DIR="C:\downloads"
 
 ADD ["app", "C:/app/"]
 
