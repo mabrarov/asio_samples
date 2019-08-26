@@ -5,12 +5,11 @@
 # file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
-FROM abrarov/msvc-2015:2.5.0 as build
+FROM abrarov/msvc-2017:2.5.0 as build
 
 ARG MA_REVISION=master
 
-ENV MSVC_VERSION="14.0" \
-    BOOST_VERSION="1.70.0" \
+ENV BOOST_VERSION="1.70.0" \
     BOOST_URL="https://dl.bintray.com/mabrarov/generic/boost" \
     SOURCE_DIR="C:\asio_samples" \
     BUILD_DIR="C:\build" \
