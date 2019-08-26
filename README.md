@@ -320,7 +320,7 @@ Example of generation of Visual Studio 2015 project with:
 * x64 build
 
 ```cmd
-set "cmake_generator=Visual Studio 14 2015 Win64" && ^
+set "cmake_generator=Visual Studio 14 2015 Win64"
 cmake ^
 -D CMAKE_USER_MAKE_RULES_OVERRIDE="%asio_samples_home_dir%/cmake/static_c_runtime_overrides.cmake" ^
 -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX="%asio_samples_home_dir%/cmake/static_cxx_runtime_overrides.cmake" ^
@@ -361,7 +361,7 @@ Example of generation of Visual Studio 2015 project with:
 * x64 build
 
 ```cmd
-set "cmake_generator=Visual Studio 14 2015 Win64" && ^
+set "cmake_generator=Visual Studio 14 2015 Win64"
 cmake ^
 -D BOOST_INCLUDEDIR="%boost_headers_dir%" ^
 -D BOOST_LIBRARYDIR="%boost_libs_dir%" ^
@@ -385,7 +385,7 @@ Example of generation of Visual Studio 2013 project with:
 * Intel C++ Compiler XE 2015
 
 ```cmd
-set "cmake_generator=Visual Studio 12 2013 Win64" && ^
+set "cmake_generator=Visual Studio 12 2013 Win64"
 cmake ^
 -D CMAKE_USER_MAKE_RULES_OVERRIDE="%asio_samples_home_dir%/cmake/static_c_runtime_overrides.cmake" ^
 -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX="%asio_samples_home_dir%/cmake/static_cxx_runtime_overrides.cmake" ^
@@ -414,7 +414,7 @@ Example of generation of Visual Studio 2015 project with:
 * Intel C++ Compiler 2016
 
 ```cmd
-set "cmake_generator=Visual Studio 14 2015 Win64" && ^
+set "cmake_generator=Visual Studio 14 2015 Win64"
 cmake ^
 -D BOOST_INCLUDEDIR="%boost_headers_dir%" ^
 -D BOOST_LIBRARYDIR="%boost_libs_dir%" ^
@@ -439,7 +439,7 @@ Example of generation of Visual Studio 2010 project with:
 * x86 build
 
 ```cmd
-set "cmake_generator=Visual Studio 10 2010" && ^
+set "cmake_generator=Visual Studio 10 2010"
 cmake ^
 -D BOOST_INCLUDEDIR="%boost_headers_dir%" ^
 -D BOOST_LIBRARYDIR="%boost_libs_dir%" ^
@@ -459,7 +459,7 @@ Example of generation of Visual Studio 2008 project with:
 * x86 build
 
 ```cmd
-set "cmake_generator=Visual Studio 9 2008" && ^
+set "cmake_generator=Visual Studio 9 2008"
 cmake ^
 -D CMAKE_USER_MAKE_RULES_OVERRIDE="%asio_samples_home_dir%/cmake/static_c_runtime_overrides.cmake" ^
 -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX="%asio_samples_home_dir%/cmake/static_cxx_runtime_overrides.cmake" ^
