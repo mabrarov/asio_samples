@@ -19,7 +19,7 @@ Environment variables to control build process:
 All the Docker Run command line parameters specified after name of image are passed to CMake during generation of project as is, i.e. this command:
 
 ```bash
-docker run ... ${image_name} -D MY_PARAM=my_value
+docker run ... "${image_name}" -D MY_PARAM=my_value
 ```
 
 leads to passing `-D MY_PARAM=my_value` to CMake command line during generation of project.
@@ -45,9 +45,9 @@ docker run --rm \
 -e MA_QT_MAJOR_VERSION=5 \
 -e BUILD_TYPE=Debug \
 -e MA_COVERAGE=ON \
--v ${directory_with_project}:/project:ro \
--v ${directory_with_results_of_build}:/build \
-${image_name}
+-v "${directory_with_project}":/project:ro \
+-v "${directory_with_results_of_build}":/build \
+"${image_name}"
 ```
 
 Use below command to build release version with Qt 5.x:
@@ -55,9 +55,9 @@ Use below command to build release version with Qt 5.x:
 ```bash
 docker run --rm \
 -e MA_QT_MAJOR_VERSION=5 \
--v ${directory_with_project}:/project:ro \
--v ${directory_with_results_of_build}:/build \
-${image_name}
+-v "${directory_with_project}":/project:ro \
+-v "${directory_with_results_of_build}":/build \
+"${image_name}"
 ```
 
 Use below command to build with Qt 4.x and to calculate code coverage:
@@ -67,9 +67,9 @@ docker run --rm \
 -e MA_QT_MAJOR_VERSION=4 \
 -e BUILD_TYPE=Debug \
 -e MA_COVERAGE=ON \
--v ${directory_with_project}:/project:ro \
--v ${directory_with_results_of_build}:/build \
-${image_name}
+-v "${directory_with_project}":/project:ro \
+-v "${directory_with_results_of_build}":/build \
+"${image_name}"
 ```
 
 Use below command to build release version with Qt 4.x:
@@ -77,9 +77,9 @@ Use below command to build release version with Qt 4.x:
 ```bash
 docker run --rm \
 -e MA_QT_MAJOR_VERSION=4 \
--v ${directory_with_project}:/project:ro \
--v ${directory_with_results_of_build}:/build \
-${image_name}
+-v "${directory_with_project}":/project:ro \
+-v "${directory_with_results_of_build}":/build \
+"${image_name}"
 ```
 
 ## Building with static C/C++ runtime
@@ -97,10 +97,10 @@ Assuming built Boost C++ Libraries are installed into `${boost_install_root}`
 docker run --rm \
 -e STATIC_RUNTIME=ON \
 -e MA_QT=OFF \
--v ${directory_with_project}:/project:ro \
--v ${directory_with_results_of_build}:/build \
--v ${boost_install_root}:/boost:ro \
-${image_name} \
+-v "${directory_with_project}":/project:ro \
+-v "${directory_with_results_of_build}":/build \
+-v "${boost_install_root}":/boost:ro \
+"${image_name}" \
 -D Boost_NO_SYSTEM_PATHS=ON \
 -D BOOST_INCLUDEDIR=/boost/include \
 -D BOOST_LIBRARYDIR=/boost/lib
