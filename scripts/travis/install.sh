@@ -9,6 +9,9 @@
 
 set -e
 
+# shellcheck source=vercomp.sh
+source "${TRAVIS_BUILD_DIR}/scripts/travis/vercomp.sh"
+
 if [[ "${TRAVIS_OS_NAME}" = "osx" ]]; then
   export PATH="/usr/local/opt/gnu-sed/libexec/gnubin:${PATH}"
 fi
@@ -21,7 +24,12 @@ if [[ -n "${CMAKE_VERSION+x}" ]]; then
   echo "CMake of ${CMAKE_VERSION} version is requested"
   if [[ "${CMAKE_VERSION}" != "${detected_cmake_version}" ]]; then
     if [[ "${TRAVIS_OS_NAME}" = "linux" ]]; then
-      cmake_archive_base_name="cmake-${CMAKE_VERSION}-Linux-x86_64"
+      if [[ "$(vercomp "${CMAKE_VERSION}" "3.1.0")" -ge 0 ]]; then
+        cmake_archive_base_name="cmake-${CMAKE_VERSION}-Linux-x86_64"
+      else
+        # CMake x64 binary is not available for CMake version < 3.1.0
+        cmake_archive_base_name="cmake-${CMAKE_VERSION}-Linux-i386"
+      fi
       cmake_home="${DEPENDENCIES_HOME}/${cmake_archive_base_name}"
       if [[ ! -d "${cmake_home}" ]]; then
         echo "CMake ${CMAKE_VERSION} not found at ${cmake_home}"
