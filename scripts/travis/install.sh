@@ -16,7 +16,7 @@ if [[ "${TRAVIS_OS_NAME}" = "osx" ]]; then
   export PATH="/usr/local/opt/gnu-sed/libexec/gnubin:${PATH}"
 fi
 
-detected_cmake_version="$(cmake --version \
+detected_cmake_version="$({ cmake --version 2> /dev/null || echo ""; } \
   | sed -r 's/cmake version ([0-9]+\.[0-9]+\.[0-9]+)/\1/;t;d')"
 echo "Detected CMake of ${detected_cmake_version} version"
 
