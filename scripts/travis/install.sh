@@ -106,16 +106,14 @@ if [[ "${system_boost_home}" -eq 0 ]]; then
 fi
 
 COVERAGE_BUILD=0
-if [[ "${COVERAGE_BUILD_CANDIDATE}" != 0 ]]; then
+if [[ "${COVERAGE_BUILD_CANDIDATE}" -ne 0 ]]; then
   COVERAGE_BUILD=1
 fi
 export COVERAGE_BUILD
 
-if [[ "${COVERAGE_BUILD}" != 0 ]]; then
+if [[ "${COVERAGE_BUILD}" -ne 0 ]]; then
   echo "Installing Codecov from pip package"
-  sudo pip install \
-    --disable-pip-version-check \
-    --retries "${PIP_RETRY}" \
-    codecov=="${CODECOV_VERSION}"
+  travis_retry pip3 install --user --upgrade pip
+  pip3 install --user --retries "${PIP_RETRY}" codecov=="${CODECOV_VERSION}"
   echo "Codecov installed"
 fi
