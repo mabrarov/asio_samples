@@ -13,9 +13,9 @@
 
 | Image name  | Description |
 |---|---|
-| abrarov/asio-samples-builder-alpine | Builder on Alpine Linux 3.10 |
-| abrarov/asio-samples-builder-ubuntu | Builder on Ubuntu 18.04 |
-| abrarov/asio-samples-builder-centos | Builder on CentOS 7 |
+| abrarov/asio-samples-builder-alpine | Builder on Alpine Linux |
+| abrarov/asio-samples-builder-ubuntu | Builder on Ubuntu |
+| abrarov/asio-samples-builder-centos | Builder on CentOS |
 
 ## Environment variables
 
