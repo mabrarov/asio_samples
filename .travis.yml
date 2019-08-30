@@ -45,6 +45,7 @@ matrix:
             - cmake-data
             - libboost1.55-all-dev
             - qtbase5-dev
+            - python3-pip
           sources: &gcc-package-sources
             - george-edison55-precise-backports
             - ubuntu-toolchain-r-test

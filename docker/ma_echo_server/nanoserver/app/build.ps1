@@ -34,7 +34,7 @@ if (!(Test-Path -Path "${boost_install_folder}")) {
     if (!(Test-Path -Path "${env:DOWNLOADS_DIR}")) {
       New-Item -Path "${env:DOWNLOADS_DIR}" -ItemType "directory" | out-null
     }
-    Write-Host "Going to download Boost from ${boost_download_url} to ${boost_archive_file}"
+    Write-Host "Downloading Boost from ${boost_download_url} to ${boost_archive_file}"
     (New-Object System.Net.WebClient).DownloadFile("${boost_download_url}", "${boost_archive_file}")
     Write-Host "Downloading of Boost completed successfully"
   }

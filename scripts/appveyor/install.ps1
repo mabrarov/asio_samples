@@ -46,7 +46,7 @@ switch (${env:TOOLCHAIN}) {
                 $msvs2008_patch_url = "https://github.com/menpo/condaci.git"
                 $msvs2008_patch_revision = "98d76b2089d494433ac2e3abd920123088a95a6d"
                 $msvs_patch_download_folder_nix = "${msvs_patch_download_folder}" -replace "\\", "/"
-                Write-Host "Going to download MSVS patch from ${msvs2008_patch_url} to ${msvs_patch_download_folder_nix}"
+                Write-Host "Downloading MSVS patch from ${msvs2008_patch_url} to ${msvs_patch_download_folder_nix}"
                 git clone --quiet "${msvs2008_patch_url}" "${msvs_patch_download_folder_nix}"
                 git -C "${msvs_patch_download_folder_nix}" checkout --quiet "${msvs2008_patch_revision}"
                 if (${LastExitCode} -ne 0) {
@@ -101,13 +101,23 @@ switch (${env:TOOLCHAIN}) {
     throw "Unsupported toolchain: ${env:TOOLCHAIN}"
   }
 }
-$detected_cmake_version = (cmake --version | Where-Object {$_ -match 'cmake version ([0-9]+\.[0-9]+\.[0-9]+)'}) `
-  -replace "cmake version ([0-9]+\.[0-9]+\.[0-9]+)", '$1'
+try {
+  $detected_cmake_version = (cmake --version 2> $null `
+    | Where-Object {$_ -match 'cmake version ([0-9]+\.[0-9]+\.[0-9]+)'}) `
+    -replace "cmake version ([0-9]+\.[0-9]+\.[0-9]+)", '$1'
+} catch {
+  $detected_cmake_version = ""
+}
 Write-Host "Detected CMake of ${detected_cmake_version} version"
 if (Test-Path env:CMAKE_VERSION) {
   Write-Host "CMake of ${env:CMAKE_VERSION} version is requested"
   if (${env:CMAKE_VERSION} -ne ${detected_cmake_version}) {
-    $cmake_archive_base_name = "cmake-${env:CMAKE_VERSION}-win64-x64"
+    if ([System.Version] "${env:CMAKE_VERSION}" -ge [System.Version] "3.6.0") {
+      $cmake_archive_base_name = "cmake-${env:CMAKE_VERSION}-win64-x64"
+    } else {
+      # CMake x64 binary is not available for CMake version < 3.6.0
+      $cmake_archive_base_name = "cmake-${env:CMAKE_VERSION}-win32-x86"
+    }
     $cmake_home = "${env:DEPENDENCIES_FOLDER}\${cmake_archive_base_name}"
     if (!(Test-Path -Path "${cmake_home}")) {
       Write-Host "CMake ${env:CMAKE_VERSION} not found at ${cmake_home}"
@@ -115,7 +125,7 @@ if (Test-Path env:CMAKE_VERSION) {
       $cmake_archive_file = "${env:DOWNLOADS_FOLDER}\${cmake_archive_name}"
       $cmake_download_url = "https://github.com/Kitware/CMake/releases/download/v${env:CMAKE_VERSION}/${cmake_archive_name}"
       if (!(Test-Path -Path "${cmake_archive_file}")) {
-        Write-Host "Going to download CMake ${env:CMAKE_VERSION} archive from ${cmake_download_url} to ${cmake_archive_file}"
+        Write-Host "Downloading CMake ${env:CMAKE_VERSION} archive from ${cmake_download_url} to ${cmake_archive_file}"
         if (!(Test-Path -Path "${env:DOWNLOADS_FOLDER}")) {
           New-Item -Path "${env:DOWNLOADS_FOLDER}" -ItemType "directory" | out-null
         }
@@ -205,7 +215,7 @@ if (Test-Path env:ICU_VERSION) {
         if (!(Test-Path -Path "${env:DOWNLOADS_FOLDER}")) {
           New-Item -Path "${env:DOWNLOADS_FOLDER}" -ItemType "directory" | out-null
         }
-        Write-Host "Going to download ICU from ${icu_download_url} to ${icu_archive_file}"
+        Write-Host "Downloading ICU from ${icu_download_url} to ${icu_archive_file}"
         curl.exe `
           --connect-timeout "${env:CURL_CONNECT_TIMEOUT}" `
           --max-time "${env:CURL_MAX_TIME}" `
@@ -337,7 +347,7 @@ if (Test-Path env:BOOST_VERSION) {
         if (!(Test-Path -Path "${env:DOWNLOADS_FOLDER}")) {
           New-Item -Path "${env:DOWNLOADS_FOLDER}" -ItemType "directory" | out-null
         }
-        Write-Host "Going to download Boost from ${boost_download_url} to ${boost_archive_file}"
+        Write-Host "Downloading Boost from ${boost_download_url} to ${boost_archive_file}"
         curl.exe `
           --connect-timeout "${env:CURL_CONNECT_TIMEOUT}" `
           --max-time "${env:CURL_MAX_TIME}" `
@@ -548,7 +558,7 @@ if (Test-Path env:QT_VERSION) {
         if (!(Test-Path -Path "${env:DOWNLOADS_FOLDER}")) {
           New-Item -Path "${env:DOWNLOADS_FOLDER}" -ItemType "directory" | out-null
         }
-        Write-Host "Going to download Qt from ${qt_download_url} to ${qt_archive_file}"
+        Write-Host "Downloading Qt from ${qt_download_url} to ${qt_archive_file}"
         curl.exe `
           --connect-timeout "${env:CURL_CONNECT_TIMEOUT}" `
           --max-time "${env:CURL_MAX_TIME}" `

@@ -9,9 +9,8 @@
 
 set -e
 
-this_path="$(cd "$(dirname "${0}")" && pwd)"
 # shellcheck source=travis_retry.sh
-source "${this_path}/travis_retry.sh"
+source "${TRAVIS_BUILD_DIR}/scripts/travis/travis_retry.sh"
 
 codecov_flag="${TRAVIS_OS_NAME}__$(uname -r | sed -r 's/[[:space:]]|[\\\.\/:]/_/g')__${CXX_COMPILER_FAMILY}_$(${CXX_COMPILER} -dumpversion)__boost_${BOOST_VERSION}__qt_${QT_MAJOR_VERSION}"
 codecov_flag="${codecov_flag//[.-]/_}"
@@ -42,7 +41,7 @@ if [[ "${COVERITY_SCAN_BRANCH}" != 1 ]]; then
   cmake --build "${BUILD_HOME}" --config "${BUILD_TYPE}"
 fi
 
-if [[ "${COVERAGE_BUILD}" != 0 ]]; then
+if [[ "${COVERAGE_BUILD}" -ne 0 ]]; then
   echo "Preparing code coverage counters at ${BUILD_HOME}/lcov-base.info"
   lcov -z -d "${BUILD_HOME}"
   lcov -c -d "${BUILD_HOME}" -i -o lcov-base.info --rc lcov_branch_coverage=1
@@ -50,7 +49,7 @@ fi
 
 ctest --build-config "${BUILD_TYPE}" --verbose
 
-if [[ "${COVERAGE_BUILD}" != 0 ]]; then
+if [[ "${COVERAGE_BUILD}" -ne 0 ]]; then
   echo "Caclulating coverage at ${BUILD_HOME}/lcov-test.info"
   lcov -c -d "${BUILD_HOME}" -o lcov-test.info --rc lcov_branch_coverage=1
   echo "Caclulating coverage delta at ${BUILD_HOME}/lcov.info"
@@ -69,7 +68,7 @@ fi
 
 cd "${TRAVIS_BUILD_DIR}"
 
-if [[ "${COVERAGE_BUILD}" != 0 ]]; then
+if [[ "${COVERAGE_BUILD}" -ne 0 ]]; then
   echo "Sending ${BUILD_HOME}/lcov.info coverage data to Codecov"
   travis_retry codecov \
     --required \
