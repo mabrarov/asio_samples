@@ -37,7 +37,7 @@ if [[ -n "${CMAKE_VERSION+x}" ]]; then
         cmake_archive_file="${DOWNLOADS_HOME}/${cmake_archive_name}"
         if [[ ! -f "${cmake_archive_file}" ]]; then
           cmake_download_url="https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/${cmake_archive_name}"
-          echo "Going to download CMake ${CMAKE_VERSION} archive from ${cmake_download_url} to ${cmake_archive_file}"
+          echo "Downloading CMake ${CMAKE_VERSION} archive from ${cmake_download_url} to ${cmake_archive_file}"
           mkdir -p "${DOWNLOADS_HOME}"
           curl \
             --connect-timeout "${CURL_CONNECT_TIMEOUT}" \
@@ -93,7 +93,7 @@ if [[ "${system_boost_home}" -eq 0 ]]; then
     if [[ ! -f "${boost_archive_file}" ]]; then
       boost_download_url="${PREBUILT_BOOST_DOWNLOAD_URL}/${BOOST_VERSION}/${boost_archive_name}"
       mkdir -p "${DOWNLOADS_HOME}"
-      echo "Going to download Boost from ${boost_download_url} to ${boost_archive_file}"
+      echo "Downloading Boost from ${boost_download_url} to ${boost_archive_file}"
       curl \
         --connect-timeout "${CURL_CONNECT_TIMEOUT}" \
         --max-time "${CURL_MAX_TIME}" \
