@@ -46,7 +46,7 @@ switch (${env:TOOLCHAIN}) {
                 $msvs2008_patch_url = "https://github.com/menpo/condaci.git"
                 $msvs2008_patch_revision = "98d76b2089d494433ac2e3abd920123088a95a6d"
                 $msvs_patch_download_folder_nix = "${msvs_patch_download_folder}" -replace "\\", "/"
-                Write-Host "Going to download MSVS patch from ${msvs2008_patch_url} to ${msvs_patch_download_folder_nix}"
+                Write-Host "Downloading MSVS patch from ${msvs2008_patch_url} to ${msvs_patch_download_folder_nix}"
                 git clone --quiet "${msvs2008_patch_url}" "${msvs_patch_download_folder_nix}"
                 git -C "${msvs_patch_download_folder_nix}" checkout --quiet "${msvs2008_patch_revision}"
                 if (${LastExitCode} -ne 0) {
@@ -55,7 +55,7 @@ switch (${env:TOOLCHAIN}) {
                 Write-Host "Downloading of MSVS patch completed successfully"
               }
               Write-Host "Extracting MSVS patch from ${msvs_patch_download_file} to ${env:MSVS_PATCH_FOLDER}"
-              New-Item "${env:MSVS_PATCH_FOLDER}" -type directory | out-null
+              New-Item -Path "${env:MSVS_PATCH_FOLDER}" -ItemType "directory" | out-null
               7z.exe x "${msvs_patch_download_file}" -o"${env:MSVS_PATCH_FOLDER}" -aoa -y | out-null
               if (${LastExitCode} -ne 0) {
                 throw "Extracting MSVS patch failed with exit code ${LastExitCode}"
@@ -101,13 +101,23 @@ switch (${env:TOOLCHAIN}) {
     throw "Unsupported toolchain: ${env:TOOLCHAIN}"
   }
 }
-$detected_cmake_version = (cmake --version | Where-Object {$_ -match 'cmake version ([0-9]+\.[0-9]+\.[0-9]+)'}) `
-  -replace "cmake version ([0-9]+\.[0-9]+\.[0-9]+)", '$1'
+try {
+  $detected_cmake_version = (cmake --version 2> $null `
+    | Where-Object {$_ -match 'cmake version ([0-9]+\.[0-9]+\.[0-9]+)'}) `
+    -replace "cmake version ([0-9]+\.[0-9]+\.[0-9]+)", '$1'
+} catch {
+  $detected_cmake_version = ""
+}
 Write-Host "Detected CMake of ${detected_cmake_version} version"
 if (Test-Path env:CMAKE_VERSION) {
   Write-Host "CMake of ${env:CMAKE_VERSION} version is requested"
   if (${env:CMAKE_VERSION} -ne ${detected_cmake_version}) {
-    $cmake_archive_base_name = "cmake-${env:CMAKE_VERSION}-win64-x64"
+    if ([System.Version] "${env:CMAKE_VERSION}" -ge [System.Version] "3.6.0") {
+      $cmake_archive_base_name = "cmake-${env:CMAKE_VERSION}-win64-x64"
+    } else {
+      # CMake x64 binary is not available for CMake version < 3.6.0
+      $cmake_archive_base_name = "cmake-${env:CMAKE_VERSION}-win32-x86"
+    }
     $cmake_home = "${env:DEPENDENCIES_FOLDER}\${cmake_archive_base_name}"
     if (!(Test-Path -Path "${cmake_home}")) {
       Write-Host "CMake ${env:CMAKE_VERSION} not found at ${cmake_home}"
@@ -115,9 +125,9 @@ if (Test-Path env:CMAKE_VERSION) {
       $cmake_archive_file = "${env:DOWNLOADS_FOLDER}\${cmake_archive_name}"
       $cmake_download_url = "https://github.com/Kitware/CMake/releases/download/v${env:CMAKE_VERSION}/${cmake_archive_name}"
       if (!(Test-Path -Path "${cmake_archive_file}")) {
-        Write-Host "Going to download CMake ${env:CMAKE_VERSION} archive from ${cmake_download_url} to ${cmake_archive_file}"
+        Write-Host "Downloading CMake ${env:CMAKE_VERSION} archive from ${cmake_download_url} to ${cmake_archive_file}"
         if (!(Test-Path -Path "${env:DOWNLOADS_FOLDER}")) {
-          New-Item "${env:DOWNLOADS_FOLDER}" -type directory | out-null
+          New-Item -Path "${env:DOWNLOADS_FOLDER}" -ItemType "directory" | out-null
         }
         curl.exe `
           --connect-timeout "${env:CURL_CONNECT_TIMEOUT}" `
@@ -133,7 +143,7 @@ if (Test-Path env:CMAKE_VERSION) {
         Write-Host "Downloading of CMake completed successfully"
       }
       if (!(Test-Path -Path "${env:DEPENDENCIES_FOLDER}")) {
-        New-Item "${env:DEPENDENCIES_FOLDER}" -type directory | out-null
+        New-Item -Path "${env:DEPENDENCIES_FOLDER}" -ItemType "directory" | out-null
       }
       Write-Host "Extracting CMake ${env:CMAKE_VERSION} from ${cmake_archive_file} to ${env:DEPENDENCIES_FOLDER}"
       7z.exe x "${cmake_archive_file}" -o"${env:DEPENDENCIES_FOLDER}" -aoa -y | out-null
@@ -203,9 +213,9 @@ if (Test-Path env:ICU_VERSION) {
       if (!(Test-Path -Path "${icu_archive_file}")) {
         $icu_download_url = "https://dl.bintray.com/mabrarov/generic/icu/${env:ICU_VERSION}/${icu_archive_name}"
         if (!(Test-Path -Path "${env:DOWNLOADS_FOLDER}")) {
-          New-Item "${env:DOWNLOADS_FOLDER}" -type directory | out-null
+          New-Item -Path "${env:DOWNLOADS_FOLDER}" -ItemType "directory" | out-null
         }
-        Write-Host "Going to download ICU from ${icu_download_url} to ${icu_archive_file}"
+        Write-Host "Downloading ICU from ${icu_download_url} to ${icu_archive_file}"
         curl.exe `
           --connect-timeout "${env:CURL_CONNECT_TIMEOUT}" `
           --max-time "${env:CURL_MAX_TIME}" `
@@ -221,7 +231,7 @@ if (Test-Path env:ICU_VERSION) {
       }
       Write-Host "Extracting ICU from ${icu_archive_file} to ${env:DEPENDENCIES_FOLDER}"
       if (!(Test-Path -Path "${env:DEPENDENCIES_FOLDER}")) {
-        New-Item "${env:DEPENDENCIES_FOLDER}" -type directory | out-null
+        New-Item -Path "${env:DEPENDENCIES_FOLDER}" -ItemType "directory" | out-null
       }
       7z.exe x "${icu_archive_file}" -o"${env:DEPENDENCIES_FOLDER}" -aoa -y | out-null
       if (${LastExitCode} -ne 0) {
@@ -335,9 +345,9 @@ if (Test-Path env:BOOST_VERSION) {
       if (!(Test-Path -Path "${boost_archive_file}")) {
         $boost_download_url = "https://dl.bintray.com/mabrarov/generic/boost/${env:BOOST_VERSION}/${boost_archive_name}"
         if (!(Test-Path -Path "${env:DOWNLOADS_FOLDER}")) {
-          New-Item "${env:DOWNLOADS_FOLDER}" -type directory | out-null
+          New-Item -Path "${env:DOWNLOADS_FOLDER}" -ItemType "directory" | out-null
         }
-        Write-Host "Going to download Boost from ${boost_download_url} to ${boost_archive_file}"
+        Write-Host "Downloading Boost from ${boost_download_url} to ${boost_archive_file}"
         curl.exe `
           --connect-timeout "${env:CURL_CONNECT_TIMEOUT}" `
           --max-time "${env:CURL_MAX_TIME}" `
@@ -353,7 +363,7 @@ if (Test-Path env:BOOST_VERSION) {
       }
       Write-Host "Extracting Boost from ${boost_archive_file} to ${env:DEPENDENCIES_FOLDER}"
       if (!(Test-Path -Path "${env:DEPENDENCIES_FOLDER}")) {
-        New-Item "${env:DEPENDENCIES_FOLDER}" -type directory | out-null
+        New-Item -Path "${env:DEPENDENCIES_FOLDER}" -ItemType "directory" | out-null
       }
       7z.exe x "${boost_archive_file}" -o"${env:DEPENDENCIES_FOLDER}" -aoa -y | out-null
       if (${LastExitCode} -ne 0) {
@@ -385,7 +395,8 @@ if (Test-Path env:QT_VERSION) {
       "msvc" {
         switch (${env:MSVC_VERSION}) {
           "14.0" {
-            $pre_installed_qt = ((${env:QT_VERSION} -eq "5.12.2") -and (${env:PLATFORM} -eq "x64")) `
+            $pre_installed_qt = ((${env:QT_VERSION} -eq "5.13.0") -and (${env:PLATFORM} -eq "x64")) `
+              -or ((${env:QT_VERSION} -eq "5.12.2") -and (${env:PLATFORM} -eq "x64")) `
               -or (${env:QT_VERSION} -eq "5.11.3") `
               -or (${env:QT_VERSION} -eq "5.10.1") `
               -or (${env:QT_VERSION} -eq "5.9.5") `
@@ -545,9 +556,9 @@ if (Test-Path env:QT_VERSION) {
         }
         $qt_download_url = "https://dl.bintray.com/mabrarov/generic/qt${qt_version_url_suffix}/${qt_archive_name}"
         if (!(Test-Path -Path "${env:DOWNLOADS_FOLDER}")) {
-          New-Item "${env:DOWNLOADS_FOLDER}" -type directory | out-null
+          New-Item -Path "${env:DOWNLOADS_FOLDER}" -ItemType "directory" | out-null
         }
-        Write-Host "Going to download Qt from ${qt_download_url} to ${qt_archive_file}"
+        Write-Host "Downloading Qt from ${qt_download_url} to ${qt_archive_file}"
         curl.exe `
           --connect-timeout "${env:CURL_CONNECT_TIMEOUT}" `
           --max-time "${env:CURL_MAX_TIME}" `
@@ -563,7 +574,7 @@ if (Test-Path env:QT_VERSION) {
       }
       Write-Host "Extracting Qt from ${qt_archive_file} to ${env:DEPENDENCIES_FOLDER}"
       if (!(Test-Path -Path "${env:DEPENDENCIES_FOLDER}")) {
-        New-Item "${env:DEPENDENCIES_FOLDER}" -type directory | out-null
+        New-Item -Path "${env:DEPENDENCIES_FOLDER}" -ItemType "directory" | out-null
       }
       7z.exe x "${qt_archive_file}" -o"${env:DEPENDENCIES_FOLDER}" -aoa -y | out-null
       if (${LastExitCode} -ne 0) {
@@ -639,6 +650,10 @@ $env:COVERITY_SCAN_BUILD = (${env:COVERITY_SCAN_CANDIDATE} -eq "1") `
 $env:COVERAGE_BUILD = (${env:COVERAGE_BUILD_CANDIDATE} -eq "1") `
   -and (${env:CONFIGURATION} -eq "Debug") `
   -and (${env:PLATFORM} -eq "x64")
+if ((${env:COVERAGE_BUILD} -eq "True") -and `
+ -not (Test-Path -Path env:CODECOV_TOKEN) -or (${env:CODECOV_TOKEN} -eq "")) {
+  throw "CODECOV_TOKEN environment variable is not defined but is required to upload coverage report to Codecov"
+}
 $env:CODECOV_FLAG = "windows_${env:OS_VERSION}__${env:PLATFORM}__${env:TOOLCHAIN_ID}"
 if (Test-Path env:BOOST_VERSION) {
   $env:CODECOV_FLAG = "${env:CODECOV_FLAG}__boost_${env:BOOST_VERSION}"

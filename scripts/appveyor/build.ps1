@@ -5,7 +5,7 @@
 # file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
-New-Item "${env:BUILD_HOME}" -type directory | out-null
+New-Item -Path "${env:BUILD_HOME}" -ItemType "directory" | out-null
 Set-Location -Path "${env:BUILD_HOME}"
 
 $generate_cmd = "cmake"
