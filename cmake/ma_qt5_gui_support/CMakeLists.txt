@@ -63,6 +63,14 @@ if(Qt5Gui_FOUND)
             endif()
         endif()
 
+        if (NOT (Qt5Gui_VERSION VERSION_LESS 5.13.0))
+            find_package(Qt5EventDispatcherSupport REQUIRED)
+            find_package(Qt5LibPng REQUIRED)
+            list(APPEND cxx_libraries
+                Qt5::EventDispatcherSupport
+                Qt5::LibPng)
+        endif()
+
         list(APPEND cxx_libraries ma_qt5_core_support)
 
         # Qt CMake files use IMPORTED_LINK_DEPENDENT_LIBRARIES instead of
@@ -85,6 +93,15 @@ if(Qt5Gui_FOUND)
                 "ole32"
                 "user32"
                 "advapi32")
+        endif()
+
+        if (NOT (Qt5Gui_VERSION VERSION_LESS 5.13.0))
+            list(APPEND cxx_libraries
+                "Dwmapi"
+                "Wtsapi32"
+                "Version"
+                "Netapi32"
+                "Userenv")
         endif()
     endif()
 endif()

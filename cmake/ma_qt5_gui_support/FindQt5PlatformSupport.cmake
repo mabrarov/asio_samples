@@ -33,13 +33,19 @@ if(Qt5Gui_FOUND)
 
     set(${QT5_PLATFORM_SUPPORT_PRIVATE_VAR_NS}_LIBRARIES )
 
+    if (Qt5Gui_VERSION VERSION_LESS 5.13.0)
+        set(${QT5_PLATFORM_SUPPORT_PRIVATE_VAR_NS}_BASE_NAME "Qt5PlatformSupport")
+    else()
+        set(${QT5_PLATFORM_SUPPORT_PRIVATE_VAR_NS}_BASE_NAME "Qt5PlatformCompositorSupport")
+    endif()
+
     find_library(${QT5_PLATFORM_SUPPORT_PRIVATE_VAR_NS}_LIB_RELEASE 
-        "Qt5PlatformSupport"
+        "${${QT5_PLATFORM_SUPPORT_PRIVATE_VAR_NS}_BASE_NAME}"
         HINTS "${${QT5_PLATFORM_SUPPORT_PRIVATE_VAR_NS}_QT_GUI_DIR}"
         DOC "Release library of Qt5::PlatformSupport")
 
-    find_library(${QT5_PLATFORM_SUPPORT_PRIVATE_VAR_NS}_LIB_DEBUG 
-        "Qt5PlatformSupportd" 
+    find_library(${QT5_PLATFORM_SUPPORT_PRIVATE_VAR_NS}_LIB_DEBUG
+        "${${QT5_PLATFORM_SUPPORT_PRIVATE_VAR_NS}_BASE_NAME}d"
         HINTS "${${QT5_PLATFORM_SUPPORT_PRIVATE_VAR_NS}_QT_GUI_DIR}"
         DOC "Debug library of Qt5::PlatformSupport")
 

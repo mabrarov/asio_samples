@@ -33,13 +33,19 @@ if(Qt5Core_FOUND)
 
     set(${QT5_PCRE_PRIVATE_VAR_NS}_LIBRARIES )
 
+    if (Qt5Core_VERSION VERSION_LESS 5.13.0)
+        set(${QT5_PCRE_PRIVATE_VAR_NS}_BASE_NAME "qtpcre")
+    else()
+        set(${QT5_PCRE_PRIVATE_VAR_NS}_BASE_NAME "qtpcre2")
+    endif()
+
     find_library(${QT5_PCRE_PRIVATE_VAR_NS}_LIB_RELEASE 
-        "qtpcre"
+        "${${QT5_PCRE_PRIVATE_VAR_NS}_BASE_NAME}"
         HINTS "${${QT5_PCRE_PRIVATE_VAR_NS}_QT_CORE_DIR}"
         DOC "Release library of Qt5::PCRE")
 
-    find_library(${QT5_PCRE_PRIVATE_VAR_NS}_LIB_DEBUG 
-        "qtpcred" 
+    find_library(${QT5_PCRE_PRIVATE_VAR_NS}_LIB_DEBUG
+        "${${QT5_PCRE_PRIVATE_VAR_NS}_BASE_NAME}d"
         HINTS "${${QT5_PCRE_PRIVATE_VAR_NS}_QT_CORE_DIR}"
         DOC "Debug library of Qt5::PCRE")
 
