@@ -65,13 +65,18 @@ if(Qt5Gui_FOUND)
 
         if (NOT (Qt5Gui_VERSION VERSION_LESS 5.13.0))
             find_package(Qt5EventDispatcherSupport REQUIRED)
-            find_package(Qt5LibPng REQUIRED)
-            list(APPEND cxx_libraries
-                Qt5::EventDispatcherSupport
-                Qt5::LibPng)
+            list(APPEND cxx_libraries Qt5::EventDispatcherSupport)
         endif()
 
         list(APPEND cxx_libraries ma_qt5_core_support)
+
+        if (NOT (Qt5Gui_VERSION VERSION_LESS 5.13.0))
+            find_package(Qt5LibPng REQUIRED)
+            find_package(ZLIB REQUIRED)
+            list(APPEND cxx_libraries
+                Qt5::LibPng
+                ZLIB::ZLIB)
+        endif()
 
         # Qt CMake files use IMPORTED_LINK_DEPENDENT_LIBRARIES instead of
         # INTERFACE_LINK_LIBRARIES for OpenGL dependencies.

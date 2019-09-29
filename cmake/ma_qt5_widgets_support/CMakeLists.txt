@@ -23,8 +23,8 @@ if(Qt5Widgets_FOUND)
     endif()
 
     list(APPEND cxx_libraries
-        ma_qt5_core_support
-        ma_qt5_gui_support)
+        ma_qt5_gui_support
+        ma_qt5_core_support)
 endif()
 
 add_library(${PROJECT_NAME} INTERFACE)

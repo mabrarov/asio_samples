@@ -70,7 +70,7 @@ if(Qt5Gui_FOUND)
             set_target_properties(Qt5::PlatformSupport PROPERTIES IMPORTED_LOCATION_RELEASE 
                 "${${QT5_PLATFORM_SUPPORT_PRIVATE_VAR_NS}_LIB_RELEASE}")
             set_target_properties(Qt5::PlatformSupport PROPERTIES INTERFACE_LINK_LIBRARIES
-                "Qt5::Core;Qt5::Gui")
+                "Qt5::Gui;Qt5::Core")
             list(APPEND ${QT5_PLATFORM_SUPPORT_PUBLIC_VAR_NS}_LIBRARIES 
                 optimized ${${QT5_PLATFORM_SUPPORT_PRIVATE_VAR_NS}_LIB_RELEASE})
         endif()
