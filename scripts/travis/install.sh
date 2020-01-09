@@ -78,7 +78,8 @@ elif [[ "${TRAVIS_OS_NAME}" = "osx" ]]; then
     || [[ "${BOOST_VERSION}" = "1.59.0" ]] \
     || [[ "${BOOST_VERSION}" = "1.60.0" ]] \
     || [[ "${BOOST_VERSION}" = "1.69.0" ]] \
-    || [[ "${BOOST_VERSION}" = "1.70.0" ]]; then
+    || [[ "${BOOST_VERSION}" = "1.70.0" ]] \
+    || [[ "${BOOST_VERSION}" = "1.71.0" ]]; then
     system_boost_home=1
   fi
 fi
