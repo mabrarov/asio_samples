@@ -11,6 +11,8 @@ set -e
 
 # shellcheck source=travis_retry.sh
 source "${TRAVIS_BUILD_DIR}/scripts/travis/travis_retry.sh"
+# shellcheck source=vercomp.sh
+source "${TRAVIS_BUILD_DIR}/scripts/travis/vercomp.sh"
 
 codecov_flag="${TRAVIS_OS_NAME}__$(uname -r | sed -r 's/[[:space:]]|[\\\.\/:]/_/g')__${CXX_COMPILER_FAMILY}_$(${CXX_COMPILER} -dumpversion)__boost_${BOOST_VERSION}__qt_${QT_MAJOR_VERSION}"
 codecov_flag="${codecov_flag//[.-]/_}"
@@ -22,7 +24,7 @@ cd "${BUILD_HOME}"
 
 if [[ "${COVERITY_SCAN_BRANCH}" != 1 ]]; then
   generate_cmd="cmake -D CMAKE_C_COMPILER=\"${C_COMPILER}\" -D CMAKE_CXX_COMPILER=\"${CXX_COMPILER}\" -D CMAKE_BUILD_TYPE=\"${BUILD_TYPE}\""
-  if [[ "${TRAVIS_OS_NAME}" = "osx" ]] || [[ -n "${BOOST_HOME+x}" ]]; then
+  if [[ "$(vercomp "${BOOST_VERSION}" "1.71.0")" -ge 0 ]]; then
     generate_cmd="${generate_cmd} -D Boost_NO_BOOST_CMAKE=ON"
   fi
   if [[ -n "${BOOST_HOME+x}" ]]; then
