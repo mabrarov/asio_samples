@@ -5,7 +5,7 @@
 # file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
-FROM alpine:3.10.2
+FROM alpine:20191219
 
 LABEL name="abrarov/tcp-echo" \
     description="TCP echo server from Asio samples project" \
@@ -31,6 +31,7 @@ RUN apk add --no-cache libstdc++ && \
     cmake \
       -D CMAKE_SKIP_BUILD_RPATH=ON \
       -D CMAKE_BUILD_TYPE=RELEASE \
+      -D Boost_NO_BOOST_CMAKE=ON \
       -D Boost_USE_STATIC_LIBS=ON \
       -D MA_TESTS=OFF \
       -D MA_QT=OFF \
