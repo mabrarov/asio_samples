@@ -31,7 +31,6 @@ RUN apk add --no-cache libstdc++ && \
     cmake \
       -D CMAKE_SKIP_BUILD_RPATH=ON \
       -D CMAKE_BUILD_TYPE=RELEASE \
-      -D Boost_NO_BOOST_CMAKE=ON \
       -D Boost_USE_STATIC_LIBS=ON \
       -D MA_TESTS=OFF \
       -D MA_QT=OFF \

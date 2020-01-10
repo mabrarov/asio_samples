@@ -36,7 +36,6 @@ if [ "${STATIC_RUNTIME}" = "ON" ]; then
     -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX="${PROJECT_DIR}/cmake/static_cxx_runtime_overrides.cmake" \
     -D CMAKE_SKIP_BUILD_RPATH=ON \
     -D CMAKE_BUILD_TYPE="${BUILD_TYPE}" \
-    -D Boost_NO_BOOST_CMAKE=ON \
     -D Boost_USE_STATIC_LIBS="${BOOST_USE_STATIC_LIBS}" \
     -D MA_QT="${MA_QT}" -D MA_QT_MAJOR_VERSION="${MA_QT_MAJOR_VERSION}" \
     -D MA_COVERAGE="${MA_COVERAGE}" \
@@ -46,7 +45,6 @@ else
   cmake \
     -D CMAKE_SKIP_BUILD_RPATH=ON \
     -D CMAKE_BUILD_TYPE="${BUILD_TYPE}" \
-    -D Boost_NO_BOOST_CMAKE=ON \
     -D Boost_USE_STATIC_LIBS="${BOOST_USE_STATIC_LIBS}" \
     -D MA_QT="${MA_QT}" -D MA_QT_MAJOR_VERSION="${MA_QT_MAJOR_VERSION}" \
     -D MA_COVERAGE="${MA_COVERAGE}" \
