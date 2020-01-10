@@ -9,7 +9,8 @@ FROM abrarov/msvc-2017:2.5.0 as build
 
 ARG MA_REVISION=master
 
-ENV BOOST_VERSION="1.72.0" \
+ENV CMAKE_VERSION="3.16.2" \
+    BOOST_VERSION="1.72.0" \
     BOOST_URL="https://dl.bintray.com/mabrarov/generic/boost" \
     SOURCE_DIR="C:\asio_samples" \
     BUILD_DIR="C:\build" \
