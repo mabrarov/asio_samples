@@ -13,6 +13,7 @@
 #endif
 
 #include <gtest/gtest.h>
+#include <ma/config.hpp>
 #include <ma/console_close_guard.hpp>
 
 #if defined(MA_HAS_WINDOWS_CONSOLE_SIGNAL)
@@ -31,7 +32,7 @@ class instance_tracking_handler
 private:
   typedef instance_tracking_handler this_type;
 
-  this_type& operator=(const this_type&);
+  MA_DELETED_COPY_ASSIGNMENT_OPERATOR(this_type)
 
 public:
   instance_tracking_handler(detail::latch& instance_counter,

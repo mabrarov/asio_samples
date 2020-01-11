@@ -233,4 +233,32 @@
 
 #endif // BOOST_VERSION >= 106600
 
+#if BOOST_VERSION >= 105100
+
+#if defined(BOOST_NO_CXX11_DELETED_FUNCTIONS)
+#undef MA_CXX11_DELETED_FUNCTIONS
+#else
+#define MA_CXX11_DELETED_FUNCTIONS
+#endif
+
+#elif BOOST_VERSION >= 104700
+
+#if defined(BOOST_NO_DELETED_FUNCTIONS)
+#undef MA_CXX11_DELETED_FUNCTIONS
+#else
+#define MA_CXX11_DELETED_FUNCTIONS
+#endif
+
+#else // BOOST_VERSION >= 104700
+
+#error Unsupported version of Boost
+
+#endif // BOOST_VERSION >= 105100
+
+#if defined(MA_CXX11_DELETED_FUNCTIONS)
+#define MA_DELETED_COPY_ASSIGNMENT_OPERATOR(T) public: T& operator=(const T&) = delete;
+#else
+#define MA_DELETED_COPY_ASSIGNMENT_OPERATOR(T) private: T& operator=(const T&);
+#endif
+
 #endif // MA_CONFIG_HPP

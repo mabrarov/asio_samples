@@ -68,7 +68,7 @@ class simple_handler
 private:
   typedef simple_handler this_type;
 
-  this_type& operator=(const this_type&);
+  MA_DELETED_COPY_ASSIGNMENT_OPERATOR(this_type)
 
 public:
   explicit simple_handler(std::size_t& counter)
@@ -109,7 +109,7 @@ class hooked_handler
 private:
   typedef hooked_handler this_type;
 
-  this_type& operator=(const this_type&);
+  MA_DELETED_COPY_ASSIGNMENT_OPERATOR(this_type)
 
 public:
   hooked_handler(const handler_storage_ptr& handler_storage,
@@ -155,7 +155,7 @@ class active_destructing_handler
 private:
   typedef active_destructing_handler this_type;
 
-  this_type& operator=(const this_type&);
+  MA_DELETED_COPY_ASSIGNMENT_OPERATOR(this_type)
 
 public:
   typedef detail::function<void(void)> continuation;
@@ -348,7 +348,7 @@ class handler : public handler_base
 private:
   typedef handler this_type;
 
-  this_type& operator=(const this_type&);
+  MA_DELETED_COPY_ASSIGNMENT_OPERATOR(this_type)
 
 public:
   explicit handler(int& out, int value)
@@ -475,7 +475,7 @@ class handler
 private:
   typedef handler this_type;
 
-  this_type& operator=(const this_type&);
+  MA_DELETED_COPY_ASSIGNMENT_OPERATOR(this_type)
 
 public:
   explicit handler(int& out, int value)
@@ -505,7 +505,7 @@ private:
   typedef no_default_allocation_handler this_type;
   typedef handler                       base_type;
 
-  this_type& operator=(const this_type&);
+  MA_DELETED_COPY_ASSIGNMENT_OPERATOR(this_type)
 
 public:
   no_default_allocation_handler(int& out, int value)
@@ -629,7 +629,7 @@ class void_handler_without_target
 private:
   typedef void_handler_without_target this_type;
 
-  this_type& operator=(const this_type&);
+  MA_DELETED_COPY_ASSIGNMENT_OPERATOR(this_type)
 
 public:
   void_handler_without_target(int& out, int value, const continuation& cont)
@@ -656,7 +656,7 @@ class void_handler_with_target : public test_handler_base
 private:
   typedef void_handler_with_target this_type;
 
-  this_type& operator=(const this_type&);
+  MA_DELETED_COPY_ASSIGNMENT_OPERATOR(this_type)
 
 public:
   void_handler_with_target(int& out, int value, const continuation& cont)
@@ -688,7 +688,7 @@ class int_handler_without_target
 private:
   typedef int_handler_without_target this_type;
 
-  this_type& operator=(const this_type&);
+  MA_DELETED_COPY_ASSIGNMENT_OPERATOR(this_type)
 
 public:
   int_handler_without_target(int& out, const continuation& cont)
@@ -713,7 +713,7 @@ class int_handler_with_target : public test_handler_base
 private:
   typedef int_handler_with_target this_type;
 
-  this_type& operator=(const this_type&);
+  MA_DELETED_COPY_ASSIGNMENT_OPERATOR(this_type)
 
 public:
   int_handler_with_target(int& out, int value, const continuation& cont)
@@ -888,7 +888,7 @@ class trackable
 private:
   typedef trackable this_type;
 
-  this_type& operator=(const this_type&);
+  MA_DELETED_COPY_ASSIGNMENT_OPERATOR(this_type)
 
 public:
   typedef ma::detail::latch counter_type;
@@ -933,7 +933,7 @@ private:
   typedef test_handler this_type;
   typedef trackable    base_type;
 
-  this_type& operator=(const this_type&);
+  MA_DELETED_COPY_ASSIGNMENT_OPERATOR(this_type)
 
 public:
   test_handler(counter_type& instance_counter, counter_type& copy_counter)
@@ -975,7 +975,7 @@ private:
   typedef context_handler this_type;
   typedef trackable       base_type;
 
-  this_type& operator=(const this_type&);
+  MA_DELETED_COPY_ASSIGNMENT_OPERATOR(this_type)
 
 public:
   context_handler(counter_type& instance_counter, counter_type& copy_counter,
@@ -1079,7 +1079,7 @@ class trackable
 private:
   typedef trackable this_type;
 
-  this_type& operator=(const this_type&);
+  MA_DELETED_COPY_ASSIGNMENT_OPERATOR(this_type)
 
 public:
   typedef ma::detail::latch counter_type;
@@ -1119,7 +1119,7 @@ private:
   typedef test_handler this_type;
   typedef trackable    base_type;
 
-  this_type& operator=(const this_type&);
+  MA_DELETED_COPY_ASSIGNMENT_OPERATOR(this_type)
 
 public:
   explicit test_handler(counter_type& instance_counter)
