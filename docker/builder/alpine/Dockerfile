@@ -5,7 +5,7 @@
 # file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
-FROM alpine:3.10.2
+FROM alpine:20191219
 
 LABEL name="abrarov/asio-samples-builder-alpine" \
     description="Builder of Asio samples project on Alpine Linux"

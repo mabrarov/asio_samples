@@ -22,9 +22,6 @@ cd "${BUILD_HOME}"
 
 if [[ "${COVERITY_SCAN_BRANCH}" != 1 ]]; then
   generate_cmd="cmake -D CMAKE_C_COMPILER=\"${C_COMPILER}\" -D CMAKE_CXX_COMPILER=\"${CXX_COMPILER}\" -D CMAKE_BUILD_TYPE=\"${BUILD_TYPE}\""
-  if [[ "${TRAVIS_OS_NAME}" = "osx" ]] || [[ -n "${BOOST_HOME+x}" ]]; then
-    generate_cmd="${generate_cmd} -D Boost_NO_BOOST_CMAKE=ON"
-  fi
   if [[ -n "${BOOST_HOME+x}" ]]; then
     echo "Building with Boost ${BOOST_VERSION} located at ${BOOST_HOME}"
     generate_cmd="${generate_cmd} -D CMAKE_SKIP_BUILD_RPATH=ON -D Boost_NO_SYSTEM_PATHS=ON -D BOOST_INCLUDEDIR=\"${BOOST_HOME}/include\" -D BOOST_LIBRARYDIR=\"${BOOST_HOME}/lib\""

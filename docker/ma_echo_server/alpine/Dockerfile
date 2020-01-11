@@ -5,7 +5,7 @@
 # file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
-FROM alpine:3.10.2
+FROM alpine:20191219
 
 LABEL name="abrarov/tcp-echo" \
     description="TCP echo server from Asio samples project" \
