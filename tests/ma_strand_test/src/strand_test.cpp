@@ -39,7 +39,7 @@ class dispatcher
 private:
   typedef dispatcher<Context, Handler> this_type;
 
-  this_type& operator=(const this_type&);
+  MA_DELETED_COPY_ASSIGNMENT_OPERATOR(this_type)
 
 public:
   dispatcher(Context& context, MA_FWD_REF(Handler) handler)
@@ -75,7 +75,7 @@ class poster
 private:
   typedef poster<Context, Handler> this_type;
 
-  this_type& operator=(const this_type&);
+  MA_DELETED_COPY_ASSIGNMENT_OPERATOR(this_type)
 
 public:
   poster(Context& context, MA_FWD_REF(Handler) handler)
@@ -130,7 +130,7 @@ class tracking_handler
 private:
   typedef tracking_handler this_type;
 
-  this_type& operator=(const this_type&);
+  MA_DELETED_COPY_ASSIGNMENT_OPERATOR(this_type)
 
 public:
   tracking_handler(detail::latch& alloc_counter, detail::latch& dealloc_counter,

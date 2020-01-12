@@ -16,6 +16,7 @@
 #include <limits>
 #include <boost/assert.hpp>
 #include <boost/noncopyable.hpp>
+#include <ma/config.hpp>
 #include <ma/detail/memory.hpp>
 #include <ma/detail/thread.hpp>
 #include <ma/detail/latch.hpp>
@@ -64,11 +65,12 @@ private:
 
 public:  
   instance_guard(const this_type&);
-  ~instance_guard();  
+  ~instance_guard();
+
+  MA_DELETED_COPY_ASSIGNMENT_OPERATOR(this_type)
 
 private:
   explicit instance_guard(const latch_ptr&);
-  this_type& operator=(const this_type&);
 
   friend class sp_singleton<Value>;
 

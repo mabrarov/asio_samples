@@ -93,9 +93,9 @@ public:
 
   void operator()();
 
-private:
-  this_type& operator=(const this_type&);
+  MA_DELETED_COPY_ASSIGNMENT_OPERATOR(this_type)
 
+private:
   handler_list_owner_ptr handlers_;
   int signal_;
 }; // class console_signal_service::handler_list_binder

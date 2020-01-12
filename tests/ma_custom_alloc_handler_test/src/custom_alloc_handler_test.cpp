@@ -101,7 +101,7 @@ class no_default_allocation_handler
 private:
   typedef no_default_allocation_handler this_type;
 
-  this_type& operator=(const this_type&);
+  MA_DELETED_COPY_ASSIGNMENT_OPERATOR(this_type)
 
 public:
   void operator()() {}
@@ -180,7 +180,7 @@ class alloc_counting_handler
 private:
   typedef alloc_counting_handler this_type;
 
-  this_type& operator=(const this_type&);
+  MA_DELETED_COPY_ASSIGNMENT_OPERATOR(this_type)
 
 public:
   explicit alloc_counting_handler(detail::latch& counter)
@@ -230,7 +230,7 @@ class invoke_counting_handler : public no_default_allocation_handler
 private:
   typedef invoke_counting_handler this_type;
 
-  this_type& operator=(const this_type&);
+  MA_DELETED_COPY_ASSIGNMENT_OPERATOR(this_type)
 
 public:
   explicit invoke_counting_handler(detail::latch& counter)

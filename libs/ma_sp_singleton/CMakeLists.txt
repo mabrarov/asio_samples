@@ -32,7 +32,8 @@ list(APPEND cxx_sources
 list(APPEND cxx_public_libraries
     ma_boost_header_only
     ma_compat
-    ma_coverage)
+    ma_coverage
+    ma_config)
 
 add_library(${PROJECT_NAME} STATIC
     ${cxx_headers}
