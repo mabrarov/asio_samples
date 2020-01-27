@@ -5,7 +5,7 @@
 # file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
-FROM centos:7
+FROM centos:8
 
 LABEL name="abrarov/asio-samples-builder-centos" \
     description="Builder of Asio samples project on CentOS"
@@ -17,28 +17,30 @@ ENV PROJECT_DIR="/project" \
     MA_QT="ON" \
     MA_QT_MAJOR_VERSION="5" \
     MA_COVERAGE="OFF" \
-    CMAKE_VERSION="3.15.2" \
+    CMAKE_VERSION="3.16.3" \
     PATH="/opt/cmake/bin:${PATH}"
 
 ADD ["start.sh", "/app/"]
 
-RUN yum update -y && \
-    yum install -y epel-release && \
-    yum groupinstall -y 'Development Tools' && \
-    yum install -y curl && \
+RUN dnf update -y && \
+    dnf install -y epel-release && \
+    dnf install -y dnf-utils && \
+    dnf config-manager -y --set-enabled PowerTools && \
+    dnf groupinstall -y 'Development Tools' && \
+    dnf install -y curl && \
     mkdir -p /opt && \
     curl -jksSL \
       "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz" \
       | tar -xzf - -C /opt && \
     mv -f "/opt/cmake-${CMAKE_VERSION}-Linux-x86_64" /opt/cmake && \
-    yum install -y glibc-static && \
-    yum install -y libstdc++-static && \
-    yum install -y lcov && \
-    yum install -y boost-devel && \
-    yum install -y boost-static && \
-    yum install -y qt-devel && \
-    yum install -y qt5-qtbase-devel && \
-    yum clean -y all && \
+    dnf install -y glibc-static && \
+    dnf install -y libstdc++-static && \
+    dnf install -y lcov && \
+    dnf install -y boost-devel && \
+    dnf install -y boost-static && \
+    dnf install -y qt-devel && \
+    dnf install -y qt5-qtbase-devel && \
+    dnf clean -y all && \
     tr -d '\015' < /app/start.sh > /app/start-lf.sh && \
     mv -f /app/start-lf.sh /app/start.sh && \
     chmod u+x /app/start.sh && \
