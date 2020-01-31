@@ -4,8 +4,8 @@
 
 1. All commands use Bash syntax
 1. Current directory is directory where this repository is cloned
-1. [Docker](https://docs.microsoft.com/en-us/virtualization/windowscontainers/deploy-containers/deploy-containers-on-server) runs on [Windows Server 2016 1607 10.0.14393](https://docs.microsoft.com/en-us/windows-server/get-started/windows-server-release-info)
-1. Docker 17.06+
+1. [Docker](https://docs.microsoft.com/en-us/virtualization/windowscontainers/deploy-containers/deploy-containers-on-server) runs on [Windows Server 2019 1809](https://docs.microsoft.com/en-us/windows-server/get-started/windows-server-release-info)
+1. Docker 19.03+
 
 ## Building image
 

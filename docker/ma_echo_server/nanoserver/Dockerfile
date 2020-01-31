@@ -5,11 +5,11 @@
 # file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
-FROM abrarov/msvc-2017:2.5.0 as build
+FROM abrarov/msvc-2017:2.8.0 as build
 
 ARG MA_REVISION=master
 
-ENV CMAKE_VERSION="3.16.2" \
+ENV CMAKE_VERSION="3.16.3" \
     BOOST_VERSION="1.72.0" \
     BOOST_URL="https://dl.bintray.com/mabrarov/generic/boost" \
     SOURCE_DIR="C:\asio_samples" \
@@ -21,7 +21,7 @@ ADD ["app", "C:/app/"]
 
 RUN powershell -ExecutionPolicy Bypass -File "C:\app\build.ps1"
 
-FROM microsoft/nanoserver:10.0.14393.1198
+FROM mcr.microsoft.com/windows/nanoserver:1809
 
 LABEL name="abrarov/tcp-echo" \
     description="TCP echo server from Asio samples project" \
