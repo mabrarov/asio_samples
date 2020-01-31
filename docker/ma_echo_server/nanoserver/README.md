@@ -10,7 +10,7 @@
 ## Building image
 
 ```bash
-docker build -t abrarov/tcp-echo:latest-win docker/ma_echo_server/nanoserver
+docker build -t abrarov/tcp-echo:windows docker/ma_echo_server/nanoserver
 ```
 
 ## Using image
@@ -18,11 +18,11 @@ docker build -t abrarov/tcp-echo:latest-win docker/ma_echo_server/nanoserver
 Run ma_echo_server:
 
 ```bash
-docker run -d --name echo -p 9:9999 abrarov/tcp-echo:latest-win --port 9999 --inactivity-timeout 300
+docker run -d --name echo -p 9:9999 abrarov/tcp-echo:windows --port 9999 --inactivity-timeout 300
 ```
 
 Get help about supported parameters:
 
 ```bash
-docker run --rm abrarov/tcp-echo:latest-win --help
+docker run --rm abrarov/tcp-echo:windows --help
 ```

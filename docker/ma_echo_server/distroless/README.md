@@ -1,4 +1,4 @@
-# Docker image with ma_echo_server example on Alpine Linux
+# Docker image with ma_echo_server example on Google distroless image
 
 ## Assumptions
 
