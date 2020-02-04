@@ -42,15 +42,6 @@ environment:
   CODECOV_VERSION: 2.0.15
 
   matrix:
-    - APPVEYOR_BUILD_WORKER_IMAGE: 'Visual Studio 2017'
-      TOOLCHAIN: msvc
-      MSVC_VERSION: 14.1
-      RUNTIME_LINKAGE: shared
-      CMAKE_VERSION: 3.16.3
-      BOOST_VERSION: 1.71.0
-      BOOST_LINKAGE: static
-      QT_VERSION: 5.13.2
-      QT_LINKAGE: shared
     - TOOLCHAIN: msvc
       MSVC_VERSION: 14.0
       RUNTIME_LINKAGE: shared
@@ -61,6 +52,15 @@ environment:
       QT_LINKAGE: shared
       COVERITY_SCAN_CANDIDATE: 1
       COVERAGE_BUILD_CANDIDATE: 1
+    - APPVEYOR_BUILD_WORKER_IMAGE: 'Visual Studio 2017'
+      TOOLCHAIN: msvc
+      MSVC_VERSION: 14.1
+      RUNTIME_LINKAGE: shared
+      CMAKE_VERSION: 3.16.3
+      BOOST_VERSION: 1.71.0
+      BOOST_LINKAGE: static
+      QT_VERSION: 5.13.2
+      QT_LINKAGE: shared
     - TOOLCHAIN: mingw
       MINGW_VERSION: 8.1.0
       MINGW_RT_VERSION: 6
