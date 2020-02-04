@@ -8,8 +8,8 @@
 FROM alpine:20191219 as build
 
 ARG MA_REVISION="master"
-ARG BOOST_VERSION="1.69.0"
-ARG BOOST_URL="https://bintray.com/mabrarov/generic/download_file?file_path=boost%2F1.69.0%2Fboost-1.69.0-alpine39-x64-gcc820-static-runtime.tar.gz"
+ARG BOOST_VERSION="1.72.0"
+ARG BOOST_URL="https://bintray.com/mabrarov/generic/download_file?file_path=boost%2F1.72.0%2Fboost-1.72.0-x64-gcc9.2-musl-static-runtime.tar.gz"
 
 RUN apk add --no-cache \
       libstdc++ \
@@ -42,6 +42,7 @@ RUN mkdir -p "${DEPENDENCIES_DIR}" && \
 
 RUN mkdir -p "${BUILD_DIR}" && \
     cd "${BUILD_DIR}" && \
+    boost_dir="${DEPENDENCIES_DIR}/boost-${BOOST_VERSION}-x64-gcc9.2" && \
     cmake \
       -D CMAKE_SKIP_BUILD_RPATH=ON \
       -D CMAKE_BUILD_TYPE=RELEASE \
@@ -49,8 +50,8 @@ RUN mkdir -p "${BUILD_DIR}" && \
       -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX="${SOURCE_DIR}/cmake/static_cxx_runtime_overrides.cmake" \
       -D Boost_USE_STATIC_LIBS=ON \
       -D Boost_NO_SYSTEM_PATHS=ON \
-      -D BOOST_INCLUDEDIR="${DEPENDENCIES_DIR}/boost-${BOOST_VERSION}/include" \
-      -D BOOST_LIBRARYDIR="${DEPENDENCIES_DIR}/boost-${BOOST_VERSION}/lib" \
+      -D BOOST_INCLUDEDIR="${boost_dir}/include" \
+      -D BOOST_LIBRARYDIR="${boost_dir}/lib" \
       -D MA_TESTS=OFF \
       -D MA_QT=OFF \
       "${SOURCE_DIR}" && \
