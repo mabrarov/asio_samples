@@ -720,18 +720,34 @@ switch (${env:TOOLCHAIN}) {
         throw "Unsupported ${env:TOOLCHAIN} version for CMake generator: ${env:MSVC_VERSION}"
       }
     }
+    $cmake_generator_platform_suffix = ""
     switch (${env:PLATFORM}) {
       "Win32" {
-        $env:CMAKE_GENERATOR_PLATFORM = "Win32"
+        switch (${env:MSVC_VERSION}) {
+          "9.0" {
+            $env:CMAKE_GENERATOR_PLATFORM = ""
+          }
+          default {
+            $env:CMAKE_GENERATOR_PLATFORM = "Win32"
+          }
+        }
       }
       "x64" {
-        $env:CMAKE_GENERATOR_PLATFORM = "x64"
+        switch (${env:MSVC_VERSION}) {
+          "9.0" {
+            $cmake_generator_platform_suffix = " Win64"
+            $env:CMAKE_GENERATOR_PLATFORM = ""
+          }
+          default {
+            $env:CMAKE_GENERATOR_PLATFORM = "x64"
+          }
+        }
       }
       default {
         throw "Unsupported platform for CMake generator: ${env:PLATFORM}"
       }
     }
-    $env:CMAKE_GENERATOR = "Visual Studio${cmake_generator_msvc_version_suffix}"
+    $env:CMAKE_GENERATOR = "Visual Studio${cmake_generator_msvc_version_suffix}${cmake_generator_platform_suffix}"
   }
   "mingw" {
     $env:CMAKE_GENERATOR = "MinGW Makefiles"
