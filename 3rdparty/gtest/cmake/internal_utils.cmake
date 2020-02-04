@@ -74,6 +74,10 @@ macro(config_compiler_and_linker)
     if (MSVC_VERSION GREATER 1600 AND MSVC_VERSION LESS 1800)
       set(cxx_base_flags "${cxx_base_flags} -DGTEST_HAS_TR1_TUPLE=0")
     endif()
+    if (NOT (MSVC_VERSION LESS 1910))
+      # Workaround for compatibility with Visual Studio 2017+
+      set(cxx_base_flags "${cxx_base_flags} -D_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING")
+    endif()
 
     set(cxx_exception_flags "-EHsc -D_HAS_EXCEPTIONS=1")
     set(cxx_no_exception_flags "-D_HAS_EXCEPTIONS=0")
@@ -142,6 +146,11 @@ function(cxx_library_with_type name type cxx_flags)
     set_target_properties(${name}
       PROPERTIES
       COMPILE_DEFINITIONS "GTEST_CREATE_SHARED_LIBRARY=1")
+  endif()
+  if (MSVC AND NOT (MSVC_VERSION LESS 1910))
+    # Workaround for compatibility with Visual Studio 2017+
+    set_property(TARGET ${name} APPEND PROPERTY INTERFACE_COMPILE_DEFINITIONS
+      _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING)
   endif()
   if (CMAKE_USE_PTHREADS_INIT)
     target_link_libraries(${name} ${CMAKE_THREAD_LIBS_INIT})
