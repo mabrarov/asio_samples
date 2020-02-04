@@ -54,8 +54,8 @@ environment:
       MINGW_RT_VERSION: 6
       MINGW_REVISION: 0
       RUNTIME_LINKAGE: static
-      CMAKE_VERSION: 3.15.1
-      BOOST_VERSION: 1.70.0
+      CMAKE_VERSION: 3.16.2
+      BOOST_VERSION: 1.71.0
       BOOST_LINKAGE: static
     - TOOLCHAIN: msvc
       MSVC_VERSION: 14.0
