@@ -66,6 +66,16 @@ environment:
       QT_VERSION: 5.10.1
       QT_LINKAGE: shared
       COVERAGE_BUILD_CANDIDATE: 1
+    - TOOLCHAIN: mingw
+      MINGW_VERSION: 7.3.0
+      MINGW_RT_VERSION: 5
+      MINGW_REVISION: 0
+      RUNTIME_LINKAGE: shared
+      CMAKE_VERSION: 3.16.3
+      BOOST_VERSION: 1.72.0
+      BOOST_LINKAGE: static
+      QT_VERSION: 5.13.2
+      QT_LINKAGE: shared
     - TOOLCHAIN: msvc
       MSVC_VERSION: 12.0
       RUNTIME_LINKAGE: shared
