@@ -6,6 +6,39 @@
 #
 
 $env:OS_VERSION = (Get-WmiObject win32_operatingsystem).version
+
+$vswhere_home = "${env:DEPENDENCIES_FOLDER}\vswhere-${env:VSWHERE_VERSION}"
+$vswhere_executable = "${vswhere_home}\${env:VSWHERE_DIST_NAME}"
+if (!(Test-Path -Path "${vswhere_executable}")) {
+  Write-Host "Visual Studio Locator ${env:VSWHERE_VERSION} not found at ${vswhere_home}"
+  $vswhere_archive_file = "${env:DOWNLOADS_FOLDER}\${env:VSWHERE_DIST_NAME}"
+  $vswhere_download_url = "${env:VSWHERE_URL}/${env:VSWHERE_VERSION}/${env:VSWHERE_DIST_NAME}"
+  if (!(Test-Path -Path "${vswhere_archive_file}")) {
+    Write-Host "Downloading Visual Studio Locator ${env:VSWHERE_VERSION} from ${vswhere_download_url} to ${vswhere_archive_file}"
+    if (!(Test-Path -Path "${env:DOWNLOADS_FOLDER}")) {
+      New-Item -Path "${env:DOWNLOADS_FOLDER}" -ItemType "directory" | out-null
+    }
+    curl.exe `
+      --connect-timeout "${env:CURL_CONNECT_TIMEOUT}" `
+      --max-time "${env:CURL_MAX_TIME}" `
+      --retry "${env:CURL_RETRY}" `
+      --retry-delay "${env:CURL_RETRY_DELAY}" `
+      --show-error --silent --location `
+      --output "${vswhere_archive_file}" `
+      "${vswhere_download_url}"
+    if (${LastExitCode} -ne 0) {
+      throw "Downloading of Visual Studio Locator failed with exit code ${LastExitCode}"
+    }
+    Write-Host "Downloading of Visual Studio Locator completed successfully"
+  }
+  if (!(Test-Path -Path "${vswhere_home}")) {
+    New-Item -Path "${vswhere_home}" -ItemType "directory" | out-null
+  }
+  Write-Host "Copying Visual Studio Locator ${env:VSWHERE_VERSION} from ${vswhere_archive_file} to ${vswhere_home}"
+  Copy-Item -Path "${vswhere_archive_file}" -Destination "${vswhere_home}" -Force
+  Write-Host "Copying of Visual Studio Locator completed successfully"
+}
+
 $toolchain_id = ""
 switch (${env:TOOLCHAIN}) {
   "msvc" {
@@ -16,12 +49,41 @@ switch (${env:TOOLCHAIN}) {
     $env:MSVC_VARS_BATCH_FILE = "${env:MSVS_HOME}\VC\vcvarsall.bat"
     $env:MSVS_PATCH_FOLDER = ""
     $env:MSVS_PATCH_BATCH_FILE = ""
+    $msvs_install_dir = ""
+    switch (${env:MSVC_VERSION}) {
+      "14.2" {
+        $msvs_install_dir = &"${vswhere_executable}" --% -latest -products Microsoft.VisualStudio.Product.Community -version [16.0,17.0) -requires Microsoft.VisualStudio.Workload.NativeDesktop -property installationPath
+      }
+      "14.1" {
+        $msvs_install_dir = &"${vswhere_executable}" --% -latest -products Microsoft.VisualStudio.Product.Community -version [15.0,16.0) -requires Microsoft.VisualStudio.Workload.NativeDesktop -property installationPath
+      }
+    }
     switch (${env:PLATFORM}) {
       "Win32" {
-        $env:MSVC_VARS_PLATFORM = "x86"
+        switch (${env:MSVC_VERSION}) {
+          "14.2" {
+            $env:MSVC_VARS_BATCH_FILE = "${msvs_install_dir}\VC\Auxiliary\Build\vcvars32.bat"
+            $env:MSVC_VARS_PLATFORM = ""
+          }
+          "14.1" {
+            $env:MSVC_VARS_BATCH_FILE = "${msvs_install_dir}\VC\Auxiliary\Build\vcvars32.bat"
+            $env:MSVC_VARS_PLATFORM = ""
+          }
+          default {
+            $env:MSVC_VARS_PLATFORM = "x86"
+          }
+        }
       }
       "x64" {
         switch (${env:MSVC_VERSION}) {
+          "14.2" {
+            $env:MSVC_VARS_BATCH_FILE = "${msvs_install_dir}\VC\Auxiliary\Build\vcvars64.bat"
+            $env:MSVC_VARS_PLATFORM = ""
+          }
+          "14.1" {
+            $env:MSVC_VARS_BATCH_FILE = "${msvs_install_dir}\VC\Auxiliary\Build\vcvars64.bat"
+            $env:MSVC_VARS_PLATFORM = ""
+          }
           "14.0" {
             $env:MSVC_VARS_PLATFORM = "amd64"
           }
@@ -178,6 +240,12 @@ if (Test-Path env:ICU_VERSION) {
     switch (${env:TOOLCHAIN}) {
       "msvc" {
         switch (${env:MSVC_VERSION}) {
+          "14.2" {
+            $icu_toolchain_suffix = "-vs2019"
+          }
+          "14.1" {
+            $icu_toolchain_suffix = "-vs2017"
+          }
           "14.0" {
             $icu_toolchain_suffix = "-vs2015"
           }
@@ -252,12 +320,15 @@ if (Test-Path env:BOOST_VERSION) {
   switch (${env:TOOLCHAIN}) {
     "msvc" {
       switch (${env:MSVC_VERSION}) {
-        "15.0" {
+        "14.2" {
+          $pre_installed_boost = ${env:BOOST_VERSION} -eq "1.71.0"
+        }
+        "14.1" {
           $pre_installed_boost = (${env:BOOST_VERSION} -eq "1.69.0") `
             -or (${env:BOOST_VERSION} -eq "1.67.0") `
             -or (${env:BOOST_VERSION} -eq "1.66.0") `
             -or (${env:BOOST_VERSION} -eq "1.65.1") `
-            -or (${env:BOOST_VERSION} -eq "1.63.0")
+            -or (${env:BOOST_VERSION} -eq "1.64.0")
         }
         "14.0" {
           $pre_installed_boost = (${env:BOOST_VERSION} -eq "1.69.0") `
@@ -310,6 +381,12 @@ if (Test-Path env:BOOST_VERSION) {
     switch (${env:TOOLCHAIN}) {
       "msvc" {
         switch (${env:MSVC_VERSION}) {
+          "14.2" {
+            $boost_toolchain_suffix = "-vs2019"
+          }
+          "14.1" {
+            $boost_toolchain_suffix = "-vs2017"
+          }
           "14.0" {
             $boost_toolchain_suffix = "-vs2015"
           }
@@ -394,6 +471,11 @@ if (Test-Path env:QT_VERSION) {
     switch (${env:TOOLCHAIN}) {
       "msvc" {
         switch (${env:MSVC_VERSION}) {
+          "14.1" {
+            $pre_installed_qt = (${env:QT_VERSION} -eq "5.13.2") `
+              -or (${env:QT_VERSION} -eq "5.12.6") `
+              -or ((${env:QT_VERSION} -eq "5.10.1") -and (${env:PLATFORM} -eq "x64"))
+          }
           "14.0" {
             $pre_installed_qt = ((${env:QT_VERSION} -eq "5.13.0") -and (${env:PLATFORM} -eq "x64")) `
               -or ((${env:QT_VERSION} -eq "5.12.2") -and (${env:PLATFORM} -eq "x64")) `
@@ -429,6 +511,9 @@ if (Test-Path env:QT_VERSION) {
     switch (${env:TOOLCHAIN}) {
       "msvc" {
         switch (${env:MSVC_VERSION}) {
+          "14.1" {
+            $qt_folder_toolchain_suffix = "msvc2017"
+          }
           "14.0" {
             $qt_folder_toolchain_suffix = "msvc2015"
           }
@@ -506,6 +591,12 @@ if (Test-Path env:QT_VERSION) {
     switch (${env:TOOLCHAIN}) {
       "msvc" {
         switch (${env:MSVC_VERSION}) {
+          "14.2" {
+            $qt_toolchain_suffix = "-vs2019"
+          }
+          "14.1" {
+            $qt_toolchain_suffix = "-vs2017"
+          }
           "14.0" {
             $qt_toolchain_suffix = "-vs2015"
           }
@@ -599,10 +690,17 @@ switch (${env:CONFIGURATION}) {
     throw "Unsupported build configuration: ${env:CONFIGURATION}"
   }
 }
+$env:CMAKE_GENERATOR_PLATFORM = ""
 switch (${env:TOOLCHAIN}) {
   "msvc" {
     $cmake_generator_msvc_version_suffix = " ${env:MSVC_VERSION}" -replace "([\d]+)\.([\d]+)", '$1'
     switch (${env:MSVC_VERSION}) {
+      "14.2" {
+        $cmake_generator_msvc_version_suffix = " 16 2019"
+      }
+      "14.1" {
+        $cmake_generator_msvc_version_suffix = " 15 2017"
+      }
       "14.0" {
         $cmake_generator_msvc_version_suffix = "${cmake_generator_msvc_version_suffix} 2015"
       }
@@ -622,19 +720,18 @@ switch (${env:TOOLCHAIN}) {
         throw "Unsupported ${env:TOOLCHAIN} version for CMake generator: ${env:MSVC_VERSION}"
       }
     }
-    $cmake_generator_platform_suffix = ""
     switch (${env:PLATFORM}) {
       "Win32" {
-        $cmake_generator_platform_suffix = ""
+        $env:CMAKE_GENERATOR_PLATFORM = "Win32"
       }
       "x64" {
-        $cmake_generator_platform_suffix = " Win64"
+        $env:CMAKE_GENERATOR_PLATFORM = "x64"
       }
       default {
         throw "Unsupported platform for CMake generator: ${env:PLATFORM}"
       }
     }
-    $env:CMAKE_GENERATOR = "Visual Studio${cmake_generator_msvc_version_suffix}${cmake_generator_platform_suffix}"
+    $env:CMAKE_GENERATOR = "Visual Studio${cmake_generator_msvc_version_suffix}"
   }
   "mingw" {
     $env:CMAKE_GENERATOR = "MinGW Makefiles"
@@ -691,6 +788,7 @@ Write-Host "QT_HOME                   : ${env:QT_HOME}"
 Write-Host "QT_BIN_FOLDER             : ${env:QT_BIN_FOLDER}"
 Write-Host "QT_QMAKE_EXECUTABLE       : ${env:QT_QMAKE_EXECUTABLE}"
 Write-Host "CMAKE_GENERATOR           : ${env:CMAKE_GENERATOR}"
+Write-Host "CMAKE_GENERATOR_PLATFORM  : ${env:CMAKE_GENERATOR_PLATFORM}"
 Write-Host "COVERITY_SCAN_BUILD       : ${env:COVERITY_SCAN_BUILD}"
 Write-Host "COVERAGE_BUILD            : ${env:COVERAGE_BUILD}"
 Write-Host "CODECOV_FLAG              : ${env:CODECOV_FLAG}"

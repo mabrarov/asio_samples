@@ -42,7 +42,11 @@ if (!(Test-Path env:QT_VERSION)) {
 if (${env:TOOLCHAIN} -eq "mingw") {
   $generate_cmd = "${generate_cmd} -D CMAKE_BUILD_TYPE=""${env:CONFIGURATION}"""
 }
-$generate_cmd = "${generate_cmd} -G ""${env:CMAKE_GENERATOR}"" ""${env:APPVEYOR_BUILD_FOLDER}"""
+$generate_cmd = "${generate_cmd} -G ""${env:CMAKE_GENERATOR}"""
+if (${env:CMAKE_GENERATOR_PLATFORM}) {
+  $generate_cmd = "${generate_cmd} -A ""${env:CMAKE_GENERATOR_PLATFORM}"""
+}
+$generate_cmd = "${generate_cmd} ""${env:APPVEYOR_BUILD_FOLDER}"""
 Write-Host "CMake project generation command: ${generate_cmd}"
 
 Invoke-Expression "${generate_cmd}"
