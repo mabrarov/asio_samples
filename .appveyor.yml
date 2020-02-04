@@ -57,7 +57,7 @@ environment:
       MSVC_VERSION: 14.1
       RUNTIME_LINKAGE: shared
       CMAKE_VERSION: 3.16.3
-      BOOST_VERSION: 1.71.0
+      BOOST_VERSION: 1.72.0
       BOOST_LINKAGE: static
       QT_VERSION: 5.13.2
       QT_LINKAGE: shared
