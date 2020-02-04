@@ -37,7 +37,7 @@ Refer to [docker/builder/README.md](docker/builder/README.md) for instruction on
 
 * [CMake](https://cmake.org/)
 
-  3.0+, consider using the latest version of CMake because it supports recent versions of libraries
+  3.1+, consider using the latest version of CMake because it supports recent versions of libraries
 
 * [Boost](https://www.boost.org)
 
