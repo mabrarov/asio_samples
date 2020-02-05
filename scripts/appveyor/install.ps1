@@ -494,12 +494,13 @@ if (Test-Path env:QT_VERSION) {
       "mingw" {
         switch (${env:MINGW_VERSION}) {
           "7.3.0" {
-            $pre_installed_qt = ${env:QT_VERSION} -eq "5.12.2"
+            $pre_installed_qt = (${env:QT_VERSION} -eq "5.13.2") `
+              -or (${env:QT_VERSION} -eq "5.12.6")
           }
           "5.3.0" {
             $pre_installed_qt = ((${env:QT_VERSION} -eq "5.11.3") -and (${env:PLATFORM} -eq "Win32")) `
               -or ((${env:QT_VERSION} -eq "5.10.1") -and (${env:PLATFORM} -eq "Win32")) `
-              -or ((${env:QT_VERSION} -eq "5.9.7") -and (${env:PLATFORM} -eq "Win32")) `
+              -or ((${env:QT_VERSION} -eq "5.9.9") -and (${env:PLATFORM} -eq "Win32")) `
               -or ((${env:QT_VERSION} -eq "5.7.0") -and (${env:PLATFORM} -eq "Win32"))
           }
         }
