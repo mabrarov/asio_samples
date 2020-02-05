@@ -42,13 +42,6 @@ environment:
   CODECOV_VERSION: 2.0.15
 
   matrix:
-    - APPVEYOR_BUILD_WORKER_IMAGE: 'Visual Studio 2019'
-      TOOLCHAIN: msvc
-      MSVC_VERSION: 14.2
-      RUNTIME_LINKAGE: static
-      CMAKE_VERSION: 3.16.3
-      BOOST_VERSION: 1.72.0
-      BOOST_LINKAGE: static
     - TOOLCHAIN: msvc
       MSVC_VERSION: 14.0
       RUNTIME_LINKAGE: shared
@@ -59,6 +52,13 @@ environment:
       QT_LINKAGE: shared
       COVERITY_SCAN_CANDIDATE: 1
       COVERAGE_BUILD_CANDIDATE: 1
+    - APPVEYOR_BUILD_WORKER_IMAGE: 'Visual Studio 2019'
+      TOOLCHAIN: msvc
+      MSVC_VERSION: 14.2
+      RUNTIME_LINKAGE: static
+      CMAKE_VERSION: 3.16.3
+      BOOST_VERSION: 1.72.0
+      BOOST_LINKAGE: static
     - APPVEYOR_BUILD_WORKER_IMAGE: 'Visual Studio 2017'
       TOOLCHAIN: msvc
       MSVC_VERSION: 14.1
