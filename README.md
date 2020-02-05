@@ -37,7 +37,7 @@ Refer to [docker/builder/README.md](docker/builder/README.md) for instruction on
 
 * [CMake](https://cmake.org/)
 
-  3.0+, consider using the latest version of CMake because it supports recent versions of libraries
+  3.1+, consider using the latest version of CMake because it supports recent versions of libraries
 
 * [Boost](https://www.boost.org)
 
@@ -72,14 +72,19 @@ Refer to [docker/builder/README.md](docker/builder/README.md) for instruction on
   * Release
   * RelWithDebInfo
   * MinSizeRel
-* `cmake_generator` environment variable is [CMake generator](https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html) (underlying build system), like:
-  * `Visual Studio 14 2015 Win64` - Visual Studio 2015, x64
-  * `Visual Studio 12 2013 Win64` - Visual Studio 2013, x64
-  * `Visual Studio 10 2010` - Visual Studio 2010, x86
-  * `Visual Studio 9 2008` - Visual Studio 2008, x86
+* `cmake_generator` environment variable is [CMake generator](https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html)
+  * `Visual Studio 14 2015` - Visual Studio 2015
+  * `Visual Studio 15 2017` - Visual Studio 2017
+  * `Visual Studio 16 2019` - Visual Studio 2019
+  * `Visual Studio 12 2013` - Visual Studio 2013
+  * `Visual Studio 10 2010` - Visual Studio 2010
+  * `Visual Studio 9 2008` - Visual Studio 2008
   * `NMake Makefiles` - NMake
   * `MinGW Makefiles` - MinGW makefiles
   * `Unix Makefiles` - *nix makefiles
+* `cmake_platform` environment variable is [CMAKE_GENERATOR_PLATFORM](https://cmake.org/cmake/help/latest/variable/CMAKE_GENERATOR_PLATFORM.html)
+  * `Win32` - x86 platform when using Visual Studio
+  * `x64` - amd64 (x64) platform when using Visual Studio
 
 Building of CMake project is usually performed in 2 steps:
 
@@ -90,7 +95,13 @@ Building of CMake project is usually performed in 2 steps:
 
 Assuming current directory is `asio_samples_build_dir`.
 
-Windows Command Prompt:
+Windows Command Prompt, Visual Studio CMake generator:
+
+```cmd
+cmake ... -G "%cmake_generator%" -A "%cmake_platform%" "%asio_samples_home_dir%"
+```
+
+Windows Command Prompt, NMake / MinGW makefiles CMake generator
 
 ```cmd
 cmake ... -G "%cmake_generator%" "%asio_samples_home_dir%"
@@ -320,7 +331,8 @@ Example of generation of Visual Studio 2015 project with:
 * x64 build
 
 ```cmd
-set "cmake_generator=Visual Studio 14 2015 Win64"
+set "cmake_generator=Visual Studio 14 2015"
+set "cmake_platform=x64"
 cmake ^
 -D CMAKE_USER_MAKE_RULES_OVERRIDE="%asio_samples_home_dir%/cmake/static_c_runtime_overrides.cmake" ^
 -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX="%asio_samples_home_dir%/cmake/static_cxx_runtime_overrides.cmake" ^
@@ -333,6 +345,7 @@ cmake ^
 -D Qt5Gui_DIR="%qt5_home_dir%/lib/cmake/Qt5Gui" ^
 -D Qt5Widgets_DIR="%qt5_home_dir%/lib/cmake/Qt5Widgets" ^
 -G "%cmake_generator%" ^
+-A "%cmake_platform%" ^
 "%asio_samples_home_dir%"
 ```
 
@@ -361,7 +374,8 @@ Example of generation of Visual Studio 2015 project with:
 * x64 build
 
 ```cmd
-set "cmake_generator=Visual Studio 14 2015 Win64"
+set "cmake_generator=Visual Studio 14 2015"
+set "cmake_platform=x64"
 cmake ^
 -D BOOST_INCLUDEDIR="%boost_headers_dir%" ^
 -D BOOST_LIBRARYDIR="%boost_libs_dir%" ^
@@ -372,6 +386,7 @@ cmake ^
 -D Qt5Gui_DIR="%qt5_home_dir%/lib/cmake/Qt5Gui" ^
 -D Qt5Widgets_DIR="%qt5_home_dir%/lib/cmake/Qt5Widgets" ^
 -G "%cmake_generator%" ^
+-A "%cmake_platform%" ^
 "%asio_samples_home_dir%"
 ```
 
@@ -385,7 +400,8 @@ Example of generation of Visual Studio 2013 project with:
 * Intel C++ Compiler XE 2015
 
 ```cmd
-set "cmake_generator=Visual Studio 12 2013 Win64"
+set "cmake_generator=Visual Studio 12 2013"
+set "cmake_platform=x64"
 cmake ^
 -D CMAKE_USER_MAKE_RULES_OVERRIDE="%asio_samples_home_dir%/cmake/static_c_runtime_overrides.cmake" ^
 -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX="%asio_samples_home_dir%/cmake/static_cxx_runtime_overrides.cmake" ^
@@ -402,6 +418,7 @@ cmake ^
 -D CMAKE_CXX_COMPILER=icl ^
 -T "Intel C++ Compiler XE 15.0" ^
 -G "%cmake_generator%" ^
+-A "%cmake_platform%" ^
 "%asio_samples_home_dir%"
 ```
 
@@ -414,7 +431,8 @@ Example of generation of Visual Studio 2015 project with:
 * Intel C++ Compiler 2016
 
 ```cmd
-set "cmake_generator=Visual Studio 14 2015 Win64"
+set "cmake_generator=Visual Studio 14 2015"
+set "cmake_platform=x64"
 cmake ^
 -D BOOST_INCLUDEDIR="%boost_headers_dir%" ^
 -D BOOST_LIBRARYDIR="%boost_libs_dir%" ^
@@ -428,6 +446,7 @@ cmake ^
 -D CMAKE_CXX_COMPILER=icl ^
 -T "Intel C++ Compiler 16.0" ^
 -G "%cmake_generator%" ^
+-A "%cmake_platform%" ^
 "%asio_samples_home_dir%"
 ```
 
@@ -440,6 +459,7 @@ Example of generation of Visual Studio 2010 project with:
 
 ```cmd
 set "cmake_generator=Visual Studio 10 2010"
+set "cmake_platform=Win32"
 cmake ^
 -D BOOST_INCLUDEDIR="%boost_headers_dir%" ^
 -D BOOST_LIBRARYDIR="%boost_libs_dir%" ^
@@ -448,6 +468,7 @@ cmake ^
 -D gtest_force_shared_crt=ON ^
 -D QT_QMAKE_EXECUTABLE="%qt4_home_dir%/bin/qmake.exe" ^
 -G "%cmake_generator%" ^
+-A "%cmake_platform%" ^
 "%asio_samples_home_dir%"
 ```
 
@@ -460,6 +481,7 @@ Example of generation of Visual Studio 2008 project with:
 
 ```cmd
 set "cmake_generator=Visual Studio 9 2008"
+set "cmake_platform=Win32"
 cmake ^
 -D CMAKE_USER_MAKE_RULES_OVERRIDE="%asio_samples_home_dir%/cmake/static_c_runtime_overrides.cmake" ^
 -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX="%asio_samples_home_dir%/cmake/static_cxx_runtime_overrides.cmake" ^
@@ -469,6 +491,7 @@ cmake ^
 -D Boost_USE_STATIC_LIBS=ON ^
 -D QT_QMAKE_EXECUTABLE="%qt4_home_dir%/bin/qmake.exe" ^
 -G "%cmake_generator%" ^
+-A "%cmake_platform%" ^
 "%asio_samples_home_dir%"
 ```
 
