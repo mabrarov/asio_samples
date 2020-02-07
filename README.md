@@ -25,7 +25,7 @@ Refer to [docker/builder/README.md](docker/builder/README.md) for instruction on
 
   * Visual Studio (Visual C++)
 
-    2008, 2010, 2012, 2013, 2015 are tested versions
+    2008, 2010, 2012, 2013, 2015, 2017, 2019 are tested versions
 
   * GCC with make
 
