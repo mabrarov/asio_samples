@@ -361,7 +361,7 @@ cmake \
 -D Boost_USE_STATIC_LIBS=ON \
 -D MA_QT_MAJOR_VERSION=5 \
 -D CMAKE_BUILD_TYPE=${build_type} \
--G "%cmake_generator%" \
+-G "${cmake_generator}" \
 "${asio_samples_home_dir}"
 ```
 
