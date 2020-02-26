@@ -247,6 +247,7 @@ matrix:
             - cmake
             - boost
             - qt5
+          update: true
     - os: osx
       osx_image: xcode11.3
       env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang CXX_COMPILER=clang++ BOOST_VERSION=1.71.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
