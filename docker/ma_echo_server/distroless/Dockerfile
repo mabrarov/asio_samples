@@ -45,7 +45,7 @@ RUN mkdir -p "${BUILD_DIR}" && \
       "${SOURCE_DIR}" && \
     cmake --build . --target ma_echo_server
 
-FROM gcr.io/distroless/cc
+FROM gcr.io/distroless/cc-debian10@sha256:5879b3ff39847ee4ea875c25ecb48db59a284464b398f2490aa0f5445e53d46f
 
 LABEL name="abrarov/tcp-echo" \
     description="TCP echo server from Asio samples project" \
