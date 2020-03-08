@@ -25,6 +25,7 @@ cmake ^
   -D MA_TESTS=OFF ^
   -D MA_QT=OFF ^
   -G "%CMAKE_GENERATOR%" ^
+  -A "%CMAKE_GENERATOR_PLATFORM%" ^
   "%SOURCE_DIR%"
 set exit_code=%errorlevel%
 if %exit_code% neq 0 goto exit

@@ -110,15 +110,13 @@ private:
     ~handler_base();
     handler_base(const this_type&);
 
+    MA_DELETED_COPY_ASSIGNMENT_OPERATOR(this_type)
+
   private:
-    this_type& operator=(const this_type&);
-
 #if defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
-
     destroy_func_type destroy_func_;
     post_func_type    post_func_;
-
-#endif // defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
+#endif
   }; // class handler_base
 
   typedef detail::intrusive_forward_list<handler_base> handler_list;
@@ -219,9 +217,9 @@ public:
   ~handler_wrapper();
 #endif
 
-private:
-  this_type& operator=(const this_type&);
+  MA_DELETED_COPY_ASSIGNMENT_OPERATOR(this_type)
 
+private:
   static void do_destroy(base_type*);
   static void do_post(base_type*, const boost::system::error_code&, int);
 

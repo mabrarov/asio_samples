@@ -109,8 +109,8 @@ endfunction()
 # Changes existing (default) compiler options.
 # Parameters:
 #   result - name of list to store compile options.
-function(ma_change_default_compile_options orignal_compile_options result)
-    set(compile_options ${orignal_compile_options})
+function(ma_change_default_compile_options original_compile_options result)
+    set(compile_options ${original_compile_options})
     # Turn on more strict warning mode
     if(MSVC)
         if(compile_options MATCHES "/W[0-4]")
@@ -125,8 +125,8 @@ endfunction()
 # Changes existing (default) linker options.
 # Parameters:
 #   result - name of list to store link options.
-function(ma_change_default_link_options orignal_link_options result)
-    set(link_options ${orignal_link_options})
+function(ma_change_default_link_options original_link_options result)
+    set(link_options ${original_link_options})
     if(MSVC AND (${CMAKE_CXX_COMPILER_ID} STREQUAL "Intel"))
         # Disable incremental linking for Intel C++ Compiler because it leads to crash of linker.
         if(NOT (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "16"))
@@ -215,7 +215,7 @@ function(ma_config_public_compile_definitions result)
     if(MSVC AND (${CMAKE_CXX_COMPILER_ID} STREQUAL "Intel"))
         # If Intel C++ Compiler 16.0 and Visual Studio 2015+
         if((CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL "16") AND ((MSVC_VERSION EQUAL 1900) OR (MSVC_VERSION GREATER 1900)))
-            # Apply fix decribed at https://software.intel.com/en-us/articles/limits1120-error-identifier-builtin-nanf-is-undefined
+            # Apply fix described at https://software.intel.com/en-us/articles/limits1120-error-identifier-builtin-nanf-is-undefined
             list(APPEND compile_definitions
                 "__builtin_huge_val()=HUGE_VAL"
                 "__builtin_huge_valf()=HUGE_VALF"

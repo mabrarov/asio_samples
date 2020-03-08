@@ -78,7 +78,8 @@ elif [[ "${TRAVIS_OS_NAME}" = "osx" ]]; then
     || [[ "${BOOST_VERSION}" = "1.59.0" ]] \
     || [[ "${BOOST_VERSION}" = "1.60.0" ]] \
     || [[ "${BOOST_VERSION}" = "1.69.0" ]] \
-    || [[ "${BOOST_VERSION}" = "1.70.0" ]]; then
+    || [[ "${BOOST_VERSION}" = "1.70.0" ]] \
+    || [[ "${BOOST_VERSION}" = "1.71.0" ]]; then
     system_boost_home=1
   fi
 fi
@@ -121,7 +122,6 @@ export COVERAGE_BUILD
 
 if [[ "${COVERAGE_BUILD}" -ne 0 ]]; then
   echo "Installing Codecov from pip package"
-  travis_retry pip3 install --user --upgrade pip
-  pip3 install --user --retries "${PIP_RETRY}" codecov=="${CODECOV_VERSION}"
+  travis_retry pip3 install --user codecov=="${CODECOV_VERSION}"
   echo "Codecov installed"
 fi

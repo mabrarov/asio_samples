@@ -79,6 +79,9 @@ endif()
 # Interface-only target for turning on position idependent code compiler flag
 add_subdirectory(cmake/ma_pic_on)
 
+# Enforce search for Boost libraries each time FindBoost CMake module is used
+set(Boost_NO_BOOST_CMAKE ON)
+
 # Interface-only targets (wrappers) to simplify support of Boost
 add_subdirectory(cmake/ma_boost_link)
 add_subdirectory(cmake/ma_boost_header_only)

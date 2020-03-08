@@ -171,9 +171,9 @@ protected:
   ~stored_base();
   stored_base(const this_type&);
 
-private:
-  this_type& operator=(const this_type&);
+  MA_DELETED_COPY_ASSIGNMENT_OPERATOR(this_type)
 
+private:
 #if defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
   destroy_func_type destroy_func_;
 #endif
@@ -219,15 +219,13 @@ protected:
   ~handler_base();
   handler_base(const this_type&);
 
+  MA_DELETED_COPY_ASSIGNMENT_OPERATOR(this_type)
+
 private:
-  this_type& operator=(const this_type&);
-
 #if defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
-
   post_func_type   post_func_;
   target_func_type target_func_;
-
-#endif // defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
+#endif
 }; // class handler_storage_service::handler_base
 
 template <typename Target>
@@ -271,15 +269,13 @@ protected:
   ~handler_base();
   handler_base(const this_type&);
 
+  MA_DELETED_COPY_ASSIGNMENT_OPERATOR(this_type)
+
 private:
-  this_type& operator=(const this_type&);
-
 #if defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
-
   post_func_type   post_func_;
   target_func_type target_func_;
-
-#endif // defined(MA_TYPE_ERASURE_NOT_USE_VIRTUAL)
+#endif
 }; // class handler_storage_service::handler_base
 
 template <typename Handler, typename Arg, typename Target>
@@ -316,9 +312,9 @@ public:
   ~handler_wrapper();
 #endif
 
-private:
-  this_type& operator=(const this_type&);
+  MA_DELETED_COPY_ASSIGNMENT_OPERATOR(this_type)
 
+private:
   static void do_destroy(stored_base*);
   static void do_post(base_type*, const Arg&);
   static target_type* do_target(base_type*);
@@ -361,9 +357,9 @@ public:
   ~handler_wrapper();
 #endif
 
-private:
-  this_type& operator=(const this_type&);
+  MA_DELETED_COPY_ASSIGNMENT_OPERATOR(this_type)
 
+private:
   static void do_destroy(stored_base*);
   static void do_post(base_type*);
   static target_type* do_target(base_type*);
