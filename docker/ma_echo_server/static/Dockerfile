@@ -5,7 +5,7 @@
 # file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
-FROM alpine:20191219 as build
+FROM alpine:20191219 AS build
 
 ARG MA_REVISION="master"
 ARG BOOST_VERSION="1.72.0"

@@ -5,7 +5,7 @@
 # file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
-FROM abrarov/msvc-2019:2.8.0 as build
+FROM abrarov/msvc-2019:2.8.0 AS build
 
 ARG MA_REVISION=master
 
