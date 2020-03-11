@@ -5,7 +5,7 @@
 # file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
-FROM debian:10-slim as build
+FROM debian:10-slim AS build
 
 ARG MA_REVISION="master"
 ARG CMAKE_VERSION="3.16.3"
@@ -45,7 +45,7 @@ RUN mkdir -p "${BUILD_DIR}" && \
       "${SOURCE_DIR}" && \
     cmake --build . --target ma_echo_server
 
-FROM gcr.io/distroless/cc-debian10@sha256:5879b3ff39847ee4ea875c25ecb48db59a284464b398f2490aa0f5445e53d46f
+FROM gcr.io/distroless/cc-debian10
 
 LABEL name="abrarov/tcp-echo" \
     description="TCP echo server from Asio samples project" \
