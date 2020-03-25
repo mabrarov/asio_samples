@@ -205,6 +205,9 @@ if(MA_TESTS)
     add_subdirectory(tests/ma_async_connect_test)
     set_target_properties(ma_async_connect_test PROPERTIES FOLDER "${project_group_tests}")
 
+    add_subdirectory(tests/ma_codecvt_cast_test)
+    set_target_properties(ma_codecvt_cast_test PROPERTIES FOLDER "${project_group_tests}")
+
     add_subdirectory(tests/ma_handler_storage_test)
     set_target_properties(ma_handler_storage_test PROPERTIES FOLDER "${project_group_tests}")
 

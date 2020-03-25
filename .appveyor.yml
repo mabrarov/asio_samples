@@ -252,3 +252,5 @@ artifacts:
     name: ma_console_close_signal_test
   - path: build\tests\ma_intrusive_list_test$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_intrusive_list_test
+  - path: build\tests\ma_codecvt_cast_test$(ARTIFACT_PATH_SUFFIX)*.exe
+    name: ma_codecvt_cast_test
