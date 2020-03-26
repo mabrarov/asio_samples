@@ -32,27 +32,27 @@ public:
 }; // class bad_conversion
 
 template <typename CharType, typename Byte>
-const std::basic_string<CharType> in(
+std::basic_string<CharType> in(
     const std::basic_string<Byte>& external_str,
     const std::codecvt<CharType, Byte, std::mbstate_t>& codecvt)
 {
   typedef std::basic_string<CharType> wstring;
   typedef std::basic_string<Byte>     string;
+  typedef typename wstring::size_type wstring_size_type;
+  typedef typename string::size_type  string_size_type;
   typedef std::codecvt<CharType, Byte, std::mbstate_t> codecvt_type;
+  typedef typename codecvt_type::state_type codecvt_state_type;
 
-  typename string::size_type external_str_size = external_str.length();
+  string_size_type external_len = external_str.length();
   const Byte* first_external = external_str.data();
-  const Byte* last_external  = first_external + external_str_size;
+  const Byte* last_external  = first_external + external_len;
   const Byte* next_external  = last_external;
 
   wstring internal_str;
 
-  // Zero initialized
-  typename codecvt_type::state_type state = std::mbstate_t();
-  typename wstring::size_type out_buf_size =
-      static_cast<typename wstring::size_type>(
-          codecvt.length(state, first_external, last_external,
-              external_str_size));
+  codecvt_state_type len_state = codecvt_state_type();
+  wstring_size_type out_buf_size = static_cast<wstring_size_type>(
+      codecvt.length(len_state, first_external, last_external, external_len));
 
 #if defined(MA_USE_CXX11_STDLIB_MEMORY)
   detail::unique_ptr<CharType[]> out_buf(new CharType[out_buf_size]);
@@ -64,13 +64,14 @@ const std::basic_string<CharType> in(
   CharType* last_internal  = first_internal + out_buf_size;
   CharType* next_internal  = first_internal;
 
-  typename codecvt_type::result r = codecvt.in(state,
+  codecvt_state_type conv_state = codecvt_state_type();
+  typename codecvt_type::result r = codecvt.in(conv_state,
       first_external, last_external, next_external,
       first_internal, last_internal, next_internal);
 
   if (codecvt_type::ok == r)
   {
-    internal_str.assign(first_internal, last_internal);
+    internal_str.assign(first_internal, next_internal);
   }
   else if (codecvt_type::noconv == r)
   {
@@ -86,20 +87,26 @@ const std::basic_string<CharType> in(
 }
 
 template <typename CharType, typename Byte>
-const std::basic_string<Byte> out(
+std::basic_string<Byte> out(
     const std::basic_string<CharType>& internal_str,
     const std::codecvt<CharType, Byte, std::mbstate_t>& codecvt)
 {
   typedef std::basic_string<CharType> wstring;
   typedef std::basic_string<Byte>     string;
+  typedef typename wstring::size_type wstring_size_type;
+  typedef typename string::size_type  string_size_type;
   typedef std::codecvt<CharType, Byte, std::mbstate_t> codecvt_type;
+  typedef typename codecvt_type::state_type codecvt_state_type;
 
+  string_size_type internal_char_max_len =
+      static_cast<string_size_type>(codecvt.max_length());
+  wstring_size_type internal_len = internal_str.length();
   string external_str;
-
-  typename wstring::size_type internal_str_size = internal_str.length();
-  typename wstring::size_type out_buf_size =
-      static_cast<typename wstring::size_type>(codecvt.max_length()) *
-          internal_str_size;
+  string_size_type external_max_len = external_str.max_size();
+  string_size_type out_buf_size =
+      internal_len > external_max_len / internal_char_max_len
+          ? external_max_len
+          : static_cast<string_size_type>(internal_len * internal_char_max_len);
 
 #if defined(MA_USE_CXX11_STDLIB_MEMORY)
   detail::unique_ptr<Byte[]> out_buf(new Byte[out_buf_size]);
@@ -108,15 +115,14 @@ const std::basic_string<Byte> out(
 #endif
 
   const CharType* first_internal = internal_str.data();
-  const CharType* last_internal  = first_internal + internal_str_size;
+  const CharType* last_internal  = first_internal + internal_len;
   const CharType* next_internal  = first_internal;
 
   Byte* first_external = out_buf.get();
   Byte* last_external  = first_external + out_buf_size;
   Byte* next_external  = first_external;
 
-  // Zero initialized
-  typename codecvt_type::state_type state = std::mbstate_t();
+  codecvt_state_type state = codecvt_state_type();
   typename codecvt_type::result r = codecvt.out(state,
       first_internal, last_internal, next_internal,
       first_external, last_external, next_external);
