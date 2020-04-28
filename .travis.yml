@@ -235,24 +235,24 @@ matrix:
       env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-5.0 CXX_COMPILER=clang++-5.0 CMAKE_VERSION=3.15.3 BOOST_VERSION=1.68.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
       compiler: clang
       addons: *apt-clang50-boost168-qt5
-    # MacOS, Clang Apple LLVM version 11.3, Boost 1.71.0, Qt 5.x
+    # MacOS, Clang Apple LLVM version 11.3, Boost 1.60.0, Qt 5.x
     - os: osx
       osx_image: xcode11.3
-      env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang CXX_COMPILER=clang++ BOOST_VERSION=1.71.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
+      env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang CXX_COMPILER=clang++ BOOST_VERSION=1.60.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
       compiler: clang
-      addons: &homebrew-boost171-qt5
+      addons: &homebrew-boost160-qt5
         homebrew:
           packages:
             - gnu-sed
             - cmake
-            - boost
+            - boost@1.60
             - qt5
           update: true
     - os: osx
       osx_image: xcode11.3
-      env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang CXX_COMPILER=clang++ BOOST_VERSION=1.71.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
+      env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang CXX_COMPILER=clang++ BOOST_VERSION=1.60.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
       compiler: clang
-      addons: *homebrew-boost171-qt5
+      addons: *homebrew-boost160-qt5
     # GCC 7, Boost 1.68.0, Qt 5.x.
     - os: linux
       dist: trusty
