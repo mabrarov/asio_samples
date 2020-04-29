@@ -77,14 +77,16 @@ elif [[ "${TRAVIS_OS_NAME}" = "osx" ]]; then
     || [[ "${BOOST_VERSION}" = "1.57.0" ]] \
     || [[ "${BOOST_VERSION}" = "1.59.0" ]] \
     || [[ "${BOOST_VERSION}" = "1.60.0" ]] \
-    || [[ "${BOOST_VERSION}" = "1.69.0" ]] \
-    || [[ "${BOOST_VERSION}" = "1.70.0" ]] \
-    || [[ "${BOOST_VERSION}" = "1.71.0" ]]; then
+    || [[ "${BOOST_VERSION}" = "1.72.0" ]]; then
     system_boost_home=1
   fi
 fi
 
 if [[ "${system_boost_home}" -eq 0 ]]; then
+  if ! [[ "${TRAVIS_OS_NAME}" = "linux" ]]; then
+    echo "Chosen version of Boost: ${BOOST_VERSION} is not supported for OS: ${TRAVIS_OS_NAME}"
+    exit 1
+  fi
   boost_archive_base_name="boost-${BOOST_VERSION}-x64-gcc4.8"
   export BOOST_HOME="${DEPENDENCIES_HOME}/${boost_archive_base_name}"
   if [[ ! -d "${BOOST_HOME}" ]]; then
