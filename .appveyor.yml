@@ -39,7 +39,7 @@ environment:
   CURL_RETRY: 10
   CURL_RETRY_DELAY: 10
   PIP_RETRY: 10
-  CODECOV_VERSION: 2.0.15
+  CODECOV_VERSION: 2.1.7
 
   matrix:
     - TOOLCHAIN: msvc
