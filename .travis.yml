@@ -245,7 +245,7 @@ matrix:
           packages:
             - gnu-sed
             - cmake
-            - boost@1.72
+            - boost@1.73
             - qt5
           update: true
     - os: osx
