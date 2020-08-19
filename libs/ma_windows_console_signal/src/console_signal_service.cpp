@@ -155,18 +155,11 @@ BOOL WINAPI console_signal_service_base::system_service::windows_ctrl_handler(
   {
   case CTRL_C_EVENT:
   case CTRL_BREAK_EVENT:
-    if (instance->deliver_signal(SIGINT))
-    {
-      return TRUE;
-    }
-    return FALSE;
+    return instance->deliver_signal(SIGINT) ? TRUE : FALSE;
   case CTRL_CLOSE_EVENT:
   case CTRL_LOGOFF_EVENT:
   case CTRL_SHUTDOWN_EVENT:
-    if (instance->deliver_signal(SIGTERM))
-    {
-      return TRUE;
-    }
+    return instance->deliver_signal(SIGTERM) ? TRUE : FALSE;
   default:
     return FALSE;
   }

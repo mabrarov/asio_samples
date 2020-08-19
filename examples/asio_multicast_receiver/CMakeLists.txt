@@ -28,6 +28,7 @@ list(APPEND cxx_sources
 
 list(APPEND cxx_private_libraries
     ma_boost_header_only
+    ma_compat
     ma_boost_asio
     ma_coverage)
 
