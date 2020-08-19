@@ -71,6 +71,10 @@ if [[ "${TRAVIS_OS_NAME}" = "linux" ]]; then
       || [[ "${BOOST_VERSION}" = "1.70.0" ]]; then
       system_boost_home=1
     fi
+  elif [[ "${TRAVIS_DIST}" = "bionic" ]]; then
+    if [[ "${BOOST_VERSION}" = "1.65.1" ]]; then
+      system_boost_home=1
+    fi
   fi
 elif [[ "${TRAVIS_OS_NAME}" = "osx" ]]; then
   if [[ "${BOOST_VERSION}" = "1.55.0" ]] \
