@@ -12,7 +12,7 @@
 #include <string>
 #include <boost/lexical_cast.hpp>
 #include <boost/asio.hpp>
-#include "boost/bind.hpp"
+#include <ma/detail/functional.hpp>
 
 class receiver
 {
@@ -36,9 +36,8 @@ public:
 
     socket_.async_receive_from(
         boost::asio::buffer(data_, max_length), sender_endpoint_,
-        boost::bind(&receiver::handle_receive_from, this,
-          boost::asio::placeholders::error,
-          boost::asio::placeholders::bytes_transferred));
+        ma::detail::bind(&receiver::handle_receive_from, this,
+          ma::detail::placeholders::_1, ma::detail::placeholders::_2));
   }
 
   void handle_receive_from(const boost::system::error_code& error,
@@ -51,9 +50,8 @@ public:
 
       socket_.async_receive_from(
           boost::asio::buffer(data_, max_length), sender_endpoint_,
-          boost::bind(&receiver::handle_receive_from, this,
-            boost::asio::placeholders::error,
-            boost::asio::placeholders::bytes_transferred));
+          ma::detail::bind(&receiver::handle_receive_from, this,
+            ma::detail::placeholders::_1, ma::detail::placeholders::_2));
     }
   }
 

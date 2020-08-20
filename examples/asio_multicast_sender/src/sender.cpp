@@ -13,8 +13,8 @@
 #include <string>
 #include <boost/lexical_cast.hpp>
 #include <boost/asio.hpp>
-#include "boost/bind.hpp"
-#include "boost/date_time/posix_time/posix_time_types.hpp"
+#include <boost/date_time/posix_time/posix_time_types.hpp>
+#include <ma/detail/functional.hpp>
 
 const int max_message_count = 10;
 
@@ -35,8 +35,8 @@ public:
 
     socket_.async_send_to(
         boost::asio::buffer(message_), endpoint_,
-        boost::bind(&sender::handle_send_to, this,
-          boost::asio::placeholders::error));
+        ma::detail::bind(&sender::handle_send_to, this,
+          ma::detail::placeholders::_1));
   }
 
   void handle_send_to(const boost::system::error_code& error)
@@ -45,8 +45,8 @@ public:
     {
       timer_.expires_from_now(boost::posix_time::seconds(1));
       timer_.async_wait(
-          boost::bind(&sender::handle_timeout, this,
-            boost::asio::placeholders::error));
+          ma::detail::bind(&sender::handle_timeout, this,
+            ma::detail::placeholders::_1));
     }
   }
 
@@ -60,8 +60,8 @@ public:
 
       socket_.async_send_to(
           boost::asio::buffer(message_), endpoint_,
-          boost::bind(&sender::handle_send_to, this,
-            boost::asio::placeholders::error));
+          ma::detail::bind(&sender::handle_send_to, this,
+            ma::detail::placeholders::_1));
     }
   }
 

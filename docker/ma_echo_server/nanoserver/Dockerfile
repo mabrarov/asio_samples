@@ -5,12 +5,12 @@
 # file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
-FROM abrarov/msvc-2019:2.8.0 AS build
+FROM abrarov/msvc-2019:2.9.0 AS build
 
 ARG MA_REVISION=master
 
-ENV CMAKE_VERSION="3.16.3" \
-    BOOST_VERSION="1.72.0" \
+ENV CMAKE_VERSION="3.18.2" \
+    BOOST_VERSION="1.74.0" \
     BOOST_URL="https://dl.bintray.com/mabrarov/generic/boost" \
     SOURCE_DIR="C:\asio_samples" \
     BUILD_DIR="C:\build" \
