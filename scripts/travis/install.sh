@@ -83,14 +83,13 @@ if [[ -n "${BOOST_VERSION+x}" ]]; then
       fi
     done
   elif [[ "${TRAVIS_OS_NAME}" = "osx" ]]; then
-    echo "Check if Boost Brew formula installed"
-    brew list boost && brew list --versions boost
-    if [[ "${BOOST_VERSION}" = "1.55.0" ]] \
-      || [[ "${BOOST_VERSION}" = "1.57.0" ]] \
-      || [[ "${BOOST_VERSION}" = "1.59.0" ]] \
-      || [[ "${BOOST_VERSION}" = "1.60.0" ]] \
-      || [[ "${BOOST_VERSION}" = "1.72.0" ]]; then
-      system_boost_home=1
+    if brew list --versions boost > /dev/null; then
+      for system_boost_version in $(brew info boost | sed -r 's/^boost:.*[[:space:]]+([[:digit:]]+[^[:space:]]*)[[:space:]]+.*$/\1/;t;d'); do
+        if echo "${system_boost_version}" | grep -F "${BOOST_VERSION}" > /dev/null; then
+          system_boost_home=1
+          break
+        fi
+      done
     fi
   else
     echo "Unsupported OS: ${TRAVIS_OS_NAME}"
