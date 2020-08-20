@@ -73,7 +73,7 @@ if [[ -n "${BOOST_VERSION+x}" ]]; then
   system_boost_home=0
   if [[ "${TRAVIS_OS_NAME}" = "linux" ]]; then
     dashed_boost_version="$(echo "${BOOST_VERSION}" | sed -r 's/([[:digit:]]+)\.([[:digit:]]+)\.([[:digit:]]+)/\1.\2-\3/')"
-    for system_boost_version in $(dpkg -l | sed -r 's/^ii[[:space:]]+libboost.*\-dev(:[^[:space:]]+)*[[:space:]]+([^[:space:]]+)[[:space:]]+.*$/\2/;t;d'); do
+    for system_boost_version in $(dpkg -l | sed -r 's/^ii[[:space:]]+libboost[[:digit:]]+(\.[[:digit:]]+)*(\-all)?\-dev(:[^[:space:]]+)*[[:space:]]+([^[:space:]]+)[[:space:]]+.*$/\4/;t;d'); do
       echo "Detected Boost of ${system_boost_version} version"
       if echo "${system_boost_version}" | grep -F "${BOOST_VERSION}" > /dev/null; then
         system_boost_home=1
