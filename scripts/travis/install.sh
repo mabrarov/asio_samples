@@ -65,17 +65,16 @@ fi
 
 system_boost_home=0
 if [[ "${TRAVIS_OS_NAME}" = "linux" ]]; then
-  if [[ "${TRAVIS_DIST}" = "trusty" ]]; then
-    if [[ "${BOOST_VERSION}" = "1.55.0" ]] \
-      || [[ "${BOOST_VERSION}" = "1.68.0" ]] \
-      || [[ "${BOOST_VERSION}" = "1.70.0" ]]; then
+  dashed_boost_version="$(echo "${BOOST_VERSION}" | sed -r 's/([[:digit:]]+)\.([[:digit:]]+)\.([[:digit:]]+)/\1.\2-\3/')"
+  for system_boost_version in $(dpkg -l | sed -r 's/^ii[[:space:]]+libboost.*\-dev(:[^[:space:]]+)*[[:space:]]+([^[:space:]]+)[[:space:]]+.*$/\2/;t;d'); do
+    if echo "${system_boost_version}" | grep -F "${BOOST_VERSION}" &> /dev/null; then
       system_boost_home=1
-    fi
-  elif [[ "${TRAVIS_DIST}" = "bionic" ]]; then
-    if [[ "${BOOST_VERSION}" = "1.65.1" ]]; then
+      break
+    elif echo "${system_boost_version}" | grep -F "${dashed_boost_version}" &> /dev/null; then
       system_boost_home=1
+      break
     fi
-  fi
+  done
 elif [[ "${TRAVIS_OS_NAME}" = "osx" ]]; then
   if [[ "${BOOST_VERSION}" = "1.55.0" ]] \
     || [[ "${BOOST_VERSION}" = "1.57.0" ]] \
