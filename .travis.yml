@@ -259,12 +259,12 @@ matrix:
       env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-6.0 CXX_COMPILER=clang++-6.0 CMAKE_VERSION=3.15.3 BOOST_VERSION=1.70.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
       compiler: clang
       addons: *apt-clang60-boost170-qt5
-    # Clang 5.0, Boost 1.68.0, Qt 5.x
+    # Clang 5.0, Boost 1.70.0, Qt 5.x
     - os: linux
       dist: trusty
-      env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-5.0 CXX_COMPILER=clang++-5.0 CMAKE_VERSION=3.15.3 BOOST_VERSION=1.68.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
+      env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-5.0 CXX_COMPILER=clang++-5.0 CMAKE_VERSION=3.15.3 BOOST_VERSION=1.70.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
       compiler: clang
-      addons: &apt-clang50-boost168-qt5
+      addons: &apt-clang50-boost170-qt5
         apt:
           packages:
             - cmake
@@ -280,9 +280,9 @@ matrix:
             - sourceline: 'ppa:mhier/libboost-latest'
     - os: linux
       dist: trusty
-      env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-5.0 CXX_COMPILER=clang++-5.0 CMAKE_VERSION=3.15.3 BOOST_VERSION=1.68.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
+      env: CXX_COMPILER_FAMILY=clang C_COMPILER=clang-5.0 CXX_COMPILER=clang++-5.0 CMAKE_VERSION=3.15.3 BOOST_VERSION=1.70.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
       compiler: clang
-      addons: *apt-clang50-boost168-qt5
+      addons: *apt-clang50-boost170-qt5
     # MacOS, Clang Apple LLVM version 11.3, Boost 1.72.0, Qt 5.x
     - os: osx
       osx_image: xcode11.3
