@@ -8,7 +8,7 @@
 FROM debian:10-slim AS build
 
 ARG MA_REVISION="master"
-ARG CMAKE_VERSION="3.16.3"
+ARG CMAKE_VERSION="3.18.1"
 
 RUN apt-get update && \
     apt-get install -y \
