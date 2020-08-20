@@ -9,7 +9,7 @@ FROM alpine:3.12.0 AS build
 
 ARG MA_REVISION="master"
 ARG BOOST_VERSION="1.74.0"
-ARG BOOST_URL="https://bintray.com/mabrarov/generic/download_file"
+ARG BOOST_URL="https://dl.bintray.com/mabrarov/generic/boost"
 
 RUN apk add --no-cache \
       libstdc++ \
@@ -27,7 +27,7 @@ ENV SOURCE_DIR="/tmp/asio_samples/src" \
     DEPENDENCIES_DIR="/tmp/asio_samples/dependency"
 
 RUN mkdir -p "${DEPENDENCIES_DIR}" && \
-    boost_archive_url="${BOOST_URL}?file_path=boost%2F${BOOST_VERSION}%2Fboost-${BOOST_VERSION}-x64-gcc$(gcc -dumpversion | sed -r 's/^([[:digit:]]+)(\..*)?$/\1/;t;d')-musl-static-runtime.tar.gz" && \
+    boost_archive_url="${BOOST_URL}/${BOOST_VERSION}/boost-${BOOST_VERSION}-x64-gcc$(gcc -dumpversion | sed -r 's/^([[:digit:]]+)(\..*)?$/\1/;t;d')-musl-static-runtime.tar.gz" && \
     echo "Downloading Boost from ${boost_archive_url}" && \
     curl --connect-timeout 300 \
       --max-time 1800 \

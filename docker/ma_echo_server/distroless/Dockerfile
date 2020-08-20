@@ -10,7 +10,7 @@ FROM ubuntu:20.04 AS build
 ARG MA_REVISION="master"
 ARG CMAKE_VERSION="3.18.2"
 ARG BOOST_VERSION="1.74.0"
-ARG BOOST_URL="https://bintray.com/mabrarov/generic/download_file"
+ARG BOOST_URL="https://dl.bintray.com/mabrarov/generic/boost"
 
 ENV TZ=Europe/Moscow
 
@@ -36,7 +36,7 @@ RUN mkdir -p /opt && \
     mv -f "/opt/cmake-${CMAKE_VERSION}-Linux-x86_64" /opt/cmake
 
 RUN mkdir -p "${DEPENDENCIES_DIR}" && \
-    boost_archive_url="${BOOST_URL}?file_path=boost%2F${BOOST_VERSION}%2Fboost-${BOOST_VERSION}-x64-gcc$(gcc -dumpversion | sed -r 's/^([[:digit:]]+)(\..*)?$/\1/;t;d').tar.gz" && \
+    boost_archive_url="${BOOST_URL}/${BOOST_VERSION}/boost-${BOOST_VERSION}-x64-gcc$(gcc -dumpversion | sed -r 's/^([[:digit:]]+)(\..*)?$/\1/;t;d').tar.gz" && \
     echo "Downloading Boost from ${boost_archive_url}" && \
     curl --connect-timeout 300 \
       --max-time 1800 \
