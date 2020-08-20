@@ -36,7 +36,7 @@ RUN mkdir -p /opt && \
     mv -f "/opt/cmake-${CMAKE_VERSION}-Linux-x86_64" /opt/cmake
 
 RUN mkdir -p "${DEPENDENCIES_DIR}" && \
-    boost_archive_url="${BOOST_URL}?file_path=boost%2F${BOOST_VERSION}%2Fboost-${BOOST_VERSION}-x64-gcc$(gcc -dumpversion).tar.gz" && \
+    boost_archive_url="${BOOST_URL}?file_path=boost%2F${BOOST_VERSION}%2Fboost-${BOOST_VERSION}-x64-gcc$(gcc -dumpversion | sed -r 's/^([[:digit:]]+)(\..*)?$/\1/;t;d').tar.gz" && \
     echo "Downloading Boost from ${boost_archive_url}" && \
     curl --connect-timeout 300 \
       --max-time 1800 \
@@ -52,7 +52,7 @@ RUN mkdir -p "${SOURCE_DIR}" && \
 
 RUN mkdir -p "${BUILD_DIR}" && \
     cd "${BUILD_DIR}" && \
-    boost_dir="${DEPENDENCIES_DIR}/boost-${BOOST_VERSION}-x64-gcc$(gcc -dumpversion)" && \
+    boost_dir="${DEPENDENCIES_DIR}/boost-${BOOST_VERSION}-x64-gcc$(gcc -dumpversion | sed -r 's/^([[:digit:]]+)(\..*)?$/\1/;t;d')" && \
     cmake \
       -D CMAKE_SKIP_BUILD_RPATH=ON \
       -D CMAKE_BUILD_TYPE=RELEASE \

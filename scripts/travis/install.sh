@@ -110,7 +110,7 @@ if [[ "${system_boost_home}" -eq 0 ]] && [[ -n "${BOOST_VERSION+x}" ]]; then
     echo "Chosen compiler: ${cxx_compiler_family} is not supported by available prebuilt Boost downloads"
     exit 1
   fi
-  boost_archive_base_name="boost-${BOOST_VERSION}-x64-${cxx_compiler_family}$(gcc -dumpversion)"
+  boost_archive_base_name="boost-${BOOST_VERSION}-x64-${cxx_compiler_family}$(gcc -dumpversion | sed -r 's/^([[:digit:]]+)(\..*)?$/\1/;t;d')"
   export BOOST_HOME="${DEPENDENCIES_HOME}/${boost_archive_base_name}"
   if [[ ! -d "${BOOST_HOME}" ]]; then
     echo "Boost is absent for the chosen Boost version (${BOOST_VERSION}) at ${BOOST_HOME}"
