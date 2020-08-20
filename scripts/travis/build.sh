@@ -12,7 +12,8 @@ set -e
 # shellcheck source=travis_retry.sh
 source "${TRAVIS_BUILD_DIR}/scripts/travis/travis_retry.sh"
 
-codecov_flag="${TRAVIS_OS_NAME}__$(uname -r | sed -r 's/[[:space:]]|[\\\.\/:]/_/g')__${CXX_COMPILER_FAMILY}_$(${CXX_COMPILER} -dumpversion)__boost_${BOOST_VERSION}__qt_${QT_MAJOR_VERSION}"
+cxx_compiler_family="$(echo "${C_COMPILER:-gcc}" | sed -r 's/^(\w+)\-.*$/\1/;t;d')"
+codecov_flag="${TRAVIS_OS_NAME}__$(uname -r | sed -r 's/[[:space:]]|[\\\.\/:]/_/g')__${cxx_compiler_family}_$(${CXX_COMPILER} -dumpversion)__boost_${BOOST_VERSION}__qt_${QT_MAJOR_VERSION}"
 codecov_flag="${codecov_flag//[.-]/_}"
 
 echo "Preparing build dir at ${BUILD_HOME}"

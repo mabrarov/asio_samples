@@ -16,6 +16,8 @@ if [[ "${TRAVIS_OS_NAME}" = "osx" ]]; then
   export PATH="/usr/local/opt/gnu-sed/libexec/gnubin:${PATH}"
 fi
 
+cxx_compiler_family="$(echo "${C_COMPILER:-gcc}" | sed -r 's/^(\w+)\-.*$/\1/;t;d')"
+
 detected_cmake_version=""
 if which cmake > /dev/null; then
   detected_cmake_version="$({ cmake --version 2> /dev/null || echo ""; } \
@@ -104,7 +106,11 @@ if [[ "${system_boost_home}" -eq 0 ]] && [[ -n "${BOOST_VERSION+x}" ]]; then
     echo "Chosen version of Boost: ${BOOST_VERSION} is not supported for OS: ${TRAVIS_OS_NAME}"
     exit 1
   fi
-  boost_archive_base_name="boost-${BOOST_VERSION}-x64-gcc4.8"
+  if ! [[ "${cxx_compiler_family}" = "gcc" ]]; then
+    echo "Chosen compiler: ${cxx_compiler_family} is not supported by available prebuilt Boost downloads"
+    exit 1
+  fi
+  boost_archive_base_name="boost-${BOOST_VERSION}-x64-${cxx_compiler_family}$(gcc -dumpversion)"
   export BOOST_HOME="${DEPENDENCIES_HOME}/${boost_archive_base_name}"
   if [[ ! -d "${BOOST_HOME}" ]]; then
     echo "Boost is absent for the chosen Boost version (${BOOST_VERSION}) at ${BOOST_HOME}"
