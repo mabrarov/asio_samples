@@ -83,6 +83,8 @@ if [[ -n "${BOOST_VERSION+x}" ]]; then
       fi
     done
   elif [[ "${TRAVIS_OS_NAME}" = "osx" ]]; then
+    echo "Check if Boost Brew formula installed"
+    brew list boost && brew list --versions boost
     if [[ "${BOOST_VERSION}" = "1.55.0" ]] \
       || [[ "${BOOST_VERSION}" = "1.57.0" ]] \
       || [[ "${BOOST_VERSION}" = "1.59.0" ]] \
