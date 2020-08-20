@@ -16,9 +16,14 @@ if [[ "${TRAVIS_OS_NAME}" = "osx" ]]; then
   export PATH="/usr/local/opt/gnu-sed/libexec/gnubin:${PATH}"
 fi
 
-detected_cmake_version="$({ cmake --version 2> /dev/null || echo ""; } \
-  | sed -r 's/cmake version ([0-9]+\.[0-9]+\.[0-9]+)/\1/;t;d')"
-echo "Detected CMake of ${detected_cmake_version} version"
+detected_cmake_version=""
+if which cmake > /dev/null; then
+  detected_cmake_version="$({ cmake --version 2> /dev/null || echo ""; } \
+    | sed -r 's/cmake version ([0-9]+\.[0-9]+\.[0-9]+)/\1/;t;d')"
+  echo "Detected CMake of ${detected_cmake_version} version"
+else
+  echo "CMake not found"
+fi
 
 if [[ -n "${CMAKE_VERSION+x}" ]]; then
   echo "CMake of ${CMAKE_VERSION} version is requested"
@@ -63,29 +68,35 @@ if [[ -n "${CMAKE_VERSION+x}" ]]; then
   fi
 fi
 
-system_boost_home=0
-if [[ "${TRAVIS_OS_NAME}" = "linux" ]]; then
-  dashed_boost_version="$(echo "${BOOST_VERSION}" | sed -r 's/([[:digit:]]+)\.([[:digit:]]+)\.([[:digit:]]+)/\1.\2-\3/')"
-  for system_boost_version in $(dpkg -l | sed -r 's/^ii[[:space:]]+libboost.*\-dev(:[^[:space:]]+)*[[:space:]]+([^[:space:]]+)[[:space:]]+.*$/\2/;t;d'); do
-    if echo "${system_boost_version}" | grep -F "${BOOST_VERSION}" &> /dev/null; then
+system_boost_home=1
+if [[ -n "${BOOST_VERSION+x}" ]]; then
+  system_boost_home=0
+  if [[ "${TRAVIS_OS_NAME}" = "linux" ]]; then
+    dashed_boost_version="$(echo "${BOOST_VERSION}" | sed -r 's/([[:digit:]]+)\.([[:digit:]]+)\.([[:digit:]]+)/\1.\2-\3/')"
+    for system_boost_version in $(dpkg -l | sed -r 's/^ii[[:space:]]+libboost.*\-dev(:[^[:space:]]+)*[[:space:]]+([^[:space:]]+)[[:space:]]+.*$/\2/;t;d'); do
+      if echo "${system_boost_version}" | grep -F "${BOOST_VERSION}" > /dev/null; then
+        system_boost_home=1
+        break
+      elif echo "${system_boost_version}" | grep -F "${dashed_boost_version}" > /dev/null; then
+        system_boost_home=1
+        break
+      fi
+    done
+  elif [[ "${TRAVIS_OS_NAME}" = "osx" ]]; then
+    if [[ "${BOOST_VERSION}" = "1.55.0" ]] \
+      || [[ "${BOOST_VERSION}" = "1.57.0" ]] \
+      || [[ "${BOOST_VERSION}" = "1.59.0" ]] \
+      || [[ "${BOOST_VERSION}" = "1.60.0" ]] \
+      || [[ "${BOOST_VERSION}" = "1.72.0" ]]; then
       system_boost_home=1
-      break
-    elif echo "${system_boost_version}" | grep -F "${dashed_boost_version}" &> /dev/null; then
-      system_boost_home=1
-      break
     fi
-  done
-elif [[ "${TRAVIS_OS_NAME}" = "osx" ]]; then
-  if [[ "${BOOST_VERSION}" = "1.55.0" ]] \
-    || [[ "${BOOST_VERSION}" = "1.57.0" ]] \
-    || [[ "${BOOST_VERSION}" = "1.59.0" ]] \
-    || [[ "${BOOST_VERSION}" = "1.60.0" ]] \
-    || [[ "${BOOST_VERSION}" = "1.72.0" ]]; then
-    system_boost_home=1
+  else
+    echo "Unsupported OS: ${TRAVIS_OS_NAME}"
+    exit 1
   fi
 fi
 
-if [[ "${system_boost_home}" -eq 0 ]]; then
+if [[ "${system_boost_home}" -eq 0 ]] && [[ -n "${BOOST_VERSION+x}" ]]; then
   if ! [[ "${TRAVIS_OS_NAME}" = "linux" ]]; then
     echo "Chosen version of Boost: ${BOOST_VERSION} is not supported for OS: ${TRAVIS_OS_NAME}"
     exit 1
