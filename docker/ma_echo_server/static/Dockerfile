@@ -8,7 +8,7 @@
 FROM alpine:3.12.0 AS build
 
 ARG MA_REVISION="master"
-ARG BOOST_VERSION="1.72.0"
+ARG BOOST_VERSION="1.74.0"
 ARG BOOST_URL="https://bintray.com/mabrarov/generic/download_file"
 
 RUN apk add --no-cache \
@@ -27,7 +27,7 @@ ENV SOURCE_DIR="/tmp/asio_samples/src" \
     DEPENDENCIES_DIR="/tmp/asio_samples/dependency"
 
 RUN mkdir -p "${DEPENDENCIES_DIR}" && \
-    boost_archive_url="${BOOST_URL}?file_path=boost%2F${BOOST_VERSION}%2Fboost-${BOOST_VERSION}-x64-gcc9.2-musl-static-runtime.tar.gz" && \
+    boost_archive_url="${BOOST_URL}?file_path=boost%2F${BOOST_VERSION}%2Fboost-${BOOST_VERSION}-x64-gcc$(gcc -dumpversion | sed -r 's/^([[:digit:]]+)(\..*)?$/\1/;t;d')-musl-static-runtime.tar.gz" && \
     echo "Downloading Boost from ${boost_archive_url}" && \
     curl --connect-timeout 300 \
       --max-time 1800 \
@@ -43,7 +43,7 @@ RUN mkdir -p "${SOURCE_DIR}" && \
 
 RUN mkdir -p "${BUILD_DIR}" && \
     cd "${BUILD_DIR}" && \
-    boost_dir="${DEPENDENCIES_DIR}/boost-${BOOST_VERSION}-x64-gcc9.2" && \
+    boost_dir="${DEPENDENCIES_DIR}/boost-${BOOST_VERSION}-x64-gcc$(gcc -dumpversion | sed -r 's/^([[:digit:]]+)(\..*)?$/\1/;t;d')-musl" && \
     cmake \
       -D CMAKE_SKIP_BUILD_RPATH=ON \
       -D CMAKE_BUILD_TYPE=RELEASE \
