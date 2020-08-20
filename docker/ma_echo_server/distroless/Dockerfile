@@ -8,7 +8,7 @@
 FROM ubuntu:20.04 AS build
 
 ARG MA_REVISION="master"
-ARG CMAKE_VERSION="3.18.1"
+ARG CMAKE_VERSION="3.18.2"
 ARG BOOST_VERSION="1.74.0"
 ARG BOOST_URL="https://bintray.com/mabrarov/generic/download_file"
 
