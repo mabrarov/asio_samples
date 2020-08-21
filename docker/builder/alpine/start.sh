@@ -11,22 +11,9 @@
 set -e
 
 # Setup required version of Qt if needed
-if [ "${MA_QT}" = "ON" ]; then
-  if [ "${MA_QT_MAJOR_VERSION}" -ne 4 ]; then
-    # Remove Qt 4 to eliminate conflicts with another version of Qt
-    apk -q -f del qt-dev || true;
-  fi
-  if [ "${MA_QT_MAJOR_VERSION}" -ne 5 ]; then
-    # Remove Qt 5 to eliminate conflicts with another version of Qt
-    apk -q -f del qt5-qtbase-dev || true;
-  fi
-  # Install requested version of Qt
-  if [ "${MA_QT_MAJOR_VERSION}" -eq 4 ]; then
-    apk -f add --no-cache qt-dev;
-  fi
-  if [ "${MA_QT_MAJOR_VERSION}" -eq 5 ]; then
-    apk -f add --no-cache qt5-qtbase-dev;
-  fi
+if [ "${MA_QT}" = "ON" ] && [ "${MA_QT_MAJOR_VERSION}" -eq 4 ]; then
+  echo "Qt 4 is not supported by Alpine Linux anymore"
+  exit 1
 fi
 
 # Generate Makefile project

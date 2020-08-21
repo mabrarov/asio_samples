@@ -12,7 +12,7 @@ ARG CMAKE_VERSION="3.18.2"
 ARG BOOST_VERSION="1.74.0"
 ARG BOOST_URL="https://dl.bintray.com/mabrarov/generic/boost"
 
-ENV TZ=Europe/Moscow
+ENV TZ="Europe/Moscow"
 
 RUN ln -snf "/usr/share/zoneinfo/${TZ}" /etc/localtime && \
     echo "${TZ}" > /etc/timezone && \

@@ -10,6 +10,11 @@
 # Exit immediately if command fails
 set -e
 
+if [[ "${MA_QT}" = "ON" ]] && [[ "${MA_QT_MAJOR_VERSION}" -eq 4 ]]; then
+  echo "Qt 4 is not supported by Ubuntu Linux anymore"
+  exit 1
+fi
+
 # Generate Makefile project
 if [[ "${STATIC_RUNTIME}" = "ON" ]]; then
   cmake \
