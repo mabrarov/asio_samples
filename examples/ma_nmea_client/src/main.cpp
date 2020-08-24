@@ -32,13 +32,13 @@
 #include "frame.hpp"
 #include "cyclic_read_session.hpp"
 
-typedef std::codecvt<wchar_t, char, mbstate_t>    wcodecvt_type;
-typedef ma::nmea::cyclic_read_session             session;
-typedef ma::nmea::cyclic_read_session_ptr         session_ptr;
-typedef ma::nmea::frame_ptr                       frame_ptr;
-typedef ma::in_place_handler_allocator<128>       handler_allocator_type;
-typedef std::vector<frame_ptr>                    frame_buffer_type;
-typedef ma::detail::shared_ptr<frame_buffer_type> frame_buffer_ptr;
+typedef std::codecvt<wchar_t, char, std::mbstate_t> wcodecvt_type;
+typedef ma::nmea::cyclic_read_session               session;
+typedef ma::nmea::cyclic_read_session_ptr           session_ptr;
+typedef ma::nmea::frame_ptr                         frame_ptr;
+typedef ma::in_place_handler_allocator<128>         handler_allocator_type;
+typedef std::vector<frame_ptr>                      frame_buffer_type;
+typedef ma::detail::shared_ptr<frame_buffer_type>   frame_buffer_ptr;
 
 void handle_start(const session_ptr& the_session,
     handler_allocator_type& the_allocator,

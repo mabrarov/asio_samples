@@ -30,6 +30,7 @@ list(APPEND cxx_private_libraries
     ma_boost_header_only
     ma_boost_asio
     ma_boost_date_time
+    ma_compat
     ma_coverage)
 
 add_executable(${PROJECT_NAME}

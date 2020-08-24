@@ -321,7 +321,8 @@ if (Test-Path env:BOOST_VERSION) {
     "msvc" {
       switch (${env:MSVC_VERSION}) {
         "14.2" {
-          $pre_installed_boost = ${env:BOOST_VERSION} -eq "1.71.0"
+          $pre_installed_boost = (${env:BOOST_VERSION} -eq "1.71.0") `
+            -or (${env:BOOST_VERSION} -eq "1.73.0") `
         }
         "14.1" {
           $pre_installed_boost = (${env:BOOST_VERSION} -eq "1.69.0") `
@@ -335,7 +336,9 @@ if (Test-Path env:BOOST_VERSION) {
             -or (${env:BOOST_VERSION} -eq "1.67.0") `
             -or (${env:BOOST_VERSION} -eq "1.66.0") `
             -or (${env:BOOST_VERSION} -eq "1.65.1") `
-            -or (${env:BOOST_VERSION} -eq "1.63.0")
+            -or (${env:BOOST_VERSION} -eq "1.63.0") `
+            -or (${env:BOOST_VERSION} -eq "1.62.0") `
+            -or (${env:BOOST_VERSION} -eq "1.60.0")
         }
         "12.0" {
           $pre_installed_boost = (${env:BOOST_VERSION} -eq "1.58.0")
@@ -471,17 +474,21 @@ if (Test-Path env:QT_VERSION) {
     switch (${env:TOOLCHAIN}) {
       "msvc" {
         switch (${env:MSVC_VERSION}) {
+          "14.2" {
+            $pre_installed_qt = ${env:QT_VERSION} -eq "5.15.0"
+          }
           "14.1" {
             $pre_installed_qt = (${env:QT_VERSION} -eq "5.13.2") `
               -or (${env:QT_VERSION} -eq "5.12.6") `
               -or ((${env:QT_VERSION} -eq "5.10.1") -and (${env:PLATFORM} -eq "x64"))
           }
           "14.0" {
-            $pre_installed_qt = ((${env:QT_VERSION} -eq "5.13.0") -and (${env:PLATFORM} -eq "x64")) `
-              -or ((${env:QT_VERSION} -eq "5.12.2") -and (${env:PLATFORM} -eq "x64")) `
+            $pre_installed_qt = ((${env:QT_VERSION} -eq "5.13.2") -and (${env:PLATFORM} -eq "x64")) `
+              -or ((${env:QT_VERSION} -eq "5.12.6") -and (${env:PLATFORM} -eq "x64")) `
               -or (${env:QT_VERSION} -eq "5.11.3") `
               -or (${env:QT_VERSION} -eq "5.10.1") `
-              -or (${env:QT_VERSION} -eq "5.9.5") `
+              -or (${env:QT_VERSION} -eq "5.9.9") `
+              -or ((${env:QT_VERSION} -eq "5.7.0") -and (${env:PLATFORM} -eq "x86")) `
               -or (${env:QT_VERSION} -eq "5.6.3")
           }
           "12.0" {

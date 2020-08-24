@@ -5,11 +5,11 @@
 # file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
-FROM alpine:20191219 as build
+FROM alpine:3.12.0 AS build
 
 ARG MA_REVISION="master"
-ARG BOOST_VERSION="1.72.0"
-ARG BOOST_URL="https://bintray.com/mabrarov/generic/download_file?file_path=boost%2F1.72.0%2Fboost-1.72.0-x64-gcc9.2-musl-static-runtime.tar.gz"
+ARG BOOST_VERSION="1.74.0"
+ARG BOOST_URL="https://dl.bintray.com/mabrarov/generic/boost"
 
 RUN apk add --no-cache \
       libstdc++ \
@@ -26,23 +26,24 @@ ENV SOURCE_DIR="/tmp/asio_samples/src" \
     BUILD_DIR="/tmp/asio_samples/build" \
     DEPENDENCIES_DIR="/tmp/asio_samples/dependency"
 
-RUN mkdir -p "${SOURCE_DIR}" && \
-    git clone https://github.com/mabrarov/asio_samples.git "${SOURCE_DIR}" && \
-    cd "${SOURCE_DIR}" && \
-    git checkout "${MA_REVISION}"
-
 RUN mkdir -p "${DEPENDENCIES_DIR}" && \
-    echo "Downloading Boost from ${BOOST_URL}" && \
+    boost_archive_url="${BOOST_URL}/${BOOST_VERSION}/boost-${BOOST_VERSION}-x64-gcc$(gcc -dumpversion | sed -r 's/^([[:digit:]]+)(\..*)?$/\1/;t;d')-musl-static-runtime.tar.gz" && \
+    echo "Downloading Boost from ${boost_archive_url}" && \
     curl --connect-timeout 300 \
       --max-time 1800 \
       --retry 10 \
       --retry-delay 10 \
       -jksSL \
-      "${BOOST_URL}" | tar -xz -C "${DEPENDENCIES_DIR}"
+      "${boost_archive_url}" | tar -xz -C "${DEPENDENCIES_DIR}"
+
+RUN mkdir -p "${SOURCE_DIR}" && \
+    git clone https://github.com/mabrarov/asio_samples.git "${SOURCE_DIR}" && \
+    cd "${SOURCE_DIR}" && \
+    git checkout "${MA_REVISION}"
 
 RUN mkdir -p "${BUILD_DIR}" && \
     cd "${BUILD_DIR}" && \
-    boost_dir="${DEPENDENCIES_DIR}/boost-${BOOST_VERSION}-x64-gcc9.2" && \
+    boost_dir="${DEPENDENCIES_DIR}/boost-${BOOST_VERSION}-x64-gcc$(gcc -dumpversion | sed -r 's/^([[:digit:]]+)(\..*)?$/\1/;t;d')-musl" && \
     cmake \
       -D CMAKE_SKIP_BUILD_RPATH=ON \
       -D CMAKE_BUILD_TYPE=RELEASE \

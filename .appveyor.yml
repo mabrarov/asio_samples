@@ -39,14 +39,14 @@ environment:
   CURL_RETRY: 10
   CURL_RETRY_DELAY: 10
   PIP_RETRY: 10
-  CODECOV_VERSION: 2.0.15
+  CODECOV_VERSION: 2.1.7
 
   matrix:
     - TOOLCHAIN: msvc
       MSVC_VERSION: 14.0
       RUNTIME_LINKAGE: shared
-      CMAKE_VERSION: 3.16.2
-      BOOST_VERSION: 1.72.0
+      CMAKE_VERSION: 3.18.2
+      BOOST_VERSION: 1.74.0
       BOOST_LINKAGE: static
       QT_VERSION: 5.11.3
       QT_LINKAGE: shared
@@ -56,15 +56,15 @@ environment:
       TOOLCHAIN: msvc
       MSVC_VERSION: 14.2
       RUNTIME_LINKAGE: static
-      CMAKE_VERSION: 3.16.3
-      BOOST_VERSION: 1.72.0
+      CMAKE_VERSION: 3.18.2
+      BOOST_VERSION: 1.74.0
       BOOST_LINKAGE: static
     - APPVEYOR_BUILD_WORKER_IMAGE: 'Visual Studio 2017'
       TOOLCHAIN: msvc
       MSVC_VERSION: 14.1
       RUNTIME_LINKAGE: shared
-      CMAKE_VERSION: 3.16.3
-      BOOST_VERSION: 1.72.0
+      CMAKE_VERSION: 3.18.2
+      BOOST_VERSION: 1.74.0
       BOOST_LINKAGE: static
       QT_VERSION: 5.13.2
       QT_LINKAGE: shared
@@ -90,7 +90,7 @@ environment:
       MINGW_RT_VERSION: 5
       MINGW_REVISION: 0
       RUNTIME_LINKAGE: shared
-      CMAKE_VERSION: 3.16.3
+      CMAKE_VERSION: 3.17.2
       BOOST_VERSION: 1.72.0
       BOOST_LINKAGE: static
       QT_VERSION: 5.13.2
@@ -145,8 +145,8 @@ environment:
     - TOOLCHAIN: msvc
       MSVC_VERSION: 14.0
       RUNTIME_LINKAGE: static
-      CMAKE_VERSION: 3.16.2
-      BOOST_VERSION: 1.72.0
+      CMAKE_VERSION: 3.18.2
+      BOOST_VERSION: 1.74.0
       BOOST_LINKAGE: static
       QT_VERSION: 5.7
       QT_LINKAGE: static
@@ -252,3 +252,5 @@ artifacts:
     name: ma_console_close_signal_test
   - path: build\tests\ma_intrusive_list_test$(ARTIFACT_PATH_SUFFIX)*.exe
     name: ma_intrusive_list_test
+  - path: build\tests\ma_codecvt_cast_test$(ARTIFACT_PATH_SUFFIX)*.exe
+    name: ma_codecvt_cast_test

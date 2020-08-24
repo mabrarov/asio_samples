@@ -17,31 +17,28 @@ ENV PROJECT_DIR="/project" \
     MA_QT="ON" \
     MA_QT_MAJOR_VERSION="5" \
     MA_COVERAGE="OFF" \
-    CMAKE_VERSION="3.15.2" \
+    CMAKE_VERSION="3.18.2" \
     PATH="/opt/cmake/bin:${PATH}"
 
 ADD ["start.sh", "/app/"]
 
 RUN yum update -y && \
-    yum install -y epel-release && \
-    yum groupinstall -y 'Development Tools' && \
-    yum install -y curl && \
+    yum install --setopt=tsflags=nodocs -y epel-release && \
+    yum groupinstall --setopt=tsflags=nodocs -y 'Development Tools' && \
+    yum install --setopt=tsflags=nodocs -y curl && \
     mkdir -p /opt && \
     curl -jksSL \
       "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz" \
       | tar -xzf - -C /opt && \
     mv -f "/opt/cmake-${CMAKE_VERSION}-Linux-x86_64" /opt/cmake && \
-    yum install -y glibc-static && \
-    yum install -y libstdc++-static && \
-    yum install -y lcov && \
-    yum install -y boost-devel && \
-    yum install -y boost-static && \
-    yum install -y qt-devel && \
-    yum install -y qt5-qtbase-devel && \
+    yum install --setopt=tsflags=nodocs -y glibc-static && \
+    yum install --setopt=tsflags=nodocs -y libstdc++-static && \
+    yum install --setopt=tsflags=nodocs -y lcov && \
+    yum install --setopt=tsflags=nodocs -y boost-devel && \
+    yum install --setopt=tsflags=nodocs -y boost-static && \
+    yum install --setopt=tsflags=nodocs -y qt-devel && \
+    yum install --setopt=tsflags=nodocs -y qt5-qtbase-devel && \
     yum clean -y all && \
-    tr -d '\015' < /app/start.sh > /app/start-lf.sh && \
-    mv -f /app/start-lf.sh /app/start.sh && \
-    chmod u+x /app/start.sh && \
     mkdir /project && \
     mkdir /build
 

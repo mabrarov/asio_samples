@@ -1,12 +1,12 @@
 #
-# Copyright (c) 2017 Marat Abrarov (abrarov@gmail.com)
+# Copyright (c) 2020 Marat Abrarov (abrarov@gmail.com)
 #
 # Distributed under the Boost Software License, Version 1.0. (See accompanying
 # file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
 cmake_minimum_required(VERSION 3.0)
-project(asio_multicast_receiver)
+project(ma_codecvt_cast_test)
 
 set(project_base_dir "${PROJECT_SOURCE_DIR}")
 set(cxx_headers_dir  "${project_base_dir}/include")
@@ -24,12 +24,12 @@ ma_config_private_compile_definitions(cxx_private_compile_definitions)
 set(cxx_private_libraries )
 
 list(APPEND cxx_sources
-    "${cxx_sources_dir}/receiver.cpp")
+    "${cxx_sources_dir}/codecvt_cast_test.cpp")
 
 list(APPEND cxx_private_libraries
-    ma_boost_header_only
-    ma_compat
-    ma_boost_asio
+    ma_gtest
+    ma_config
+    ma_codecvt_cast
     ma_coverage)
 
 add_executable(${PROJECT_NAME}
@@ -59,3 +59,5 @@ if(NOT ma_no_cmake_dir_source_group)
     ma_dir_source_group("Header Files" "${cxx_headers_dir}" "${cxx_headers}")
     ma_dir_source_group("Source Files" "${cxx_sources_dir}" "${cxx_sources}")
 endif()
+
+add_test(NAME ${PROJECT_NAME} COMMAND ${PROJECT_NAME})
