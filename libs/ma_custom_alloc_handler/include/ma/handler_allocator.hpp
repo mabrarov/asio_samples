@@ -138,6 +138,10 @@ void in_place_handler_allocator<alloc_size>::deallocate(void* pointer)
 template <std::size_t alloc_size>
 bool in_place_handler_allocator<alloc_size>::owns(void* pointer) const
 {
+  if (!pointer)
+  {
+    return false;
+  }
   const byte_type* begin = static_cast<const byte_type*>(storage_.address());
   const byte_type* end = begin + alloc_size;
   const byte_type* p = static_cast<const byte_type*>(pointer);
@@ -199,12 +203,20 @@ inline void in_heap_handler_allocator::deallocate(void* pointer)
 
 inline bool in_heap_handler_allocator::owns(void* pointer) const
 {
+  if (!pointer)
+  {
+    return false;
+  }
   const byte_type* begin = storage_.get();
+  if (!begin)
+  {
+    return false;
+  }
   const byte_type* end = begin + size_;
   const byte_type* p = static_cast<const byte_type*>(pointer);
   //fixme: Undefined behavior - comparison of unrelated pointers
   // thanks to https://www.viva64.com/en/b/0576/
-  return (p >= begin) && (p < end) && begin && p;
+  return (p >= begin) && (p < end);
 }
 
 inline std::size_t in_heap_handler_allocator::size() const
