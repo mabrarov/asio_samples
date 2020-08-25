@@ -43,6 +43,9 @@ public:
 
   /// Checks if memory block of size 1 is owned by allocator - as allocated or
   /// as free.
+  /// pointer parameter doesn't support value shifted (increased or decreased)
+  /// comparing to value returned by allocate method, i.e. returns false for
+  /// such cases.
   bool owns(void* pointer) const;
 
   /// Returns max size allocator can allocate
@@ -79,6 +82,9 @@ public:
 
   /// Checks if memory block of size 1 is owned by allocator - as allocated or
   /// as free.
+  /// pointer parameter doesn't support value shifted (increased or decreased)
+  /// comparing to value returned by allocate method, i.e. returns false for
+  /// such cases.
   bool owns(void* pointer) const;
 
   /// Returns max size allocator can allocate
@@ -138,12 +144,8 @@ void in_place_handler_allocator<alloc_size>::deallocate(void* pointer)
 template <std::size_t alloc_size>
 bool in_place_handler_allocator<alloc_size>::owns(void* pointer) const
 {
-  const byte_type* begin = static_cast<const byte_type*>(storage_.address());
-  const byte_type* end = begin + alloc_size;
-  const byte_type* p = static_cast<const byte_type*>(pointer);
-  //fixme: Undefined behavior - comparison of unrelated pointers
-  // thanks to https://www.viva64.com/en/b/0576/
-  return (p >= begin) && (p < end);
+  const void* const begin = storage_.address();
+  return pointer && (begin == pointer);
 }
 
 template <std::size_t alloc_size>
@@ -199,12 +201,8 @@ inline void in_heap_handler_allocator::deallocate(void* pointer)
 
 inline bool in_heap_handler_allocator::owns(void* pointer) const
 {
-  const byte_type* begin = storage_.get();
-  const byte_type* end = begin + size_;
-  const byte_type* p = static_cast<const byte_type*>(pointer);
-  //fixme: Undefined behavior - comparison of unrelated pointers
-  // thanks to https://www.viva64.com/en/b/0576/
-  return (p >= begin) && (p < end) && begin && p;
+  const void* const begin = storage_.get();
+  return pointer && begin && (begin == pointer);
 }
 
 inline std::size_t in_heap_handler_allocator::size() const
