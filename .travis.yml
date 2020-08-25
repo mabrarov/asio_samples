@@ -5,803 +5,1176 @@
 # file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
-language: cpp
-sudo: required
+language: 'cpp'
+sudo: 'required'
 
 cache:
   directories:
-    - ${HOME}/downloads
+    - '${HOME}/downloads'
 
 env:
   global:
-    - PREBUILT_BOOST_DOWNLOAD_URL: "https://dl.bintray.com/mabrarov/generic/boost"
-    - secure: "rxP3V/oY3YSGIaUkRjCK302ueka7zmxdEWBLnec4nW1We8ys0HS/WL//FkNyTQBHNILerfHCtKLMg4tX1ccxC9JPiS9biyDYDOMZQYlXv6UcJBoJBThcKUNcC8vxSrPc1rgSgbai+FvmwiXA/VmHPWInAhcUmsMqCocElR+lLf8gI9Y9VbiuEc3fOSq4KgeIdmblHfdA2BkCc96hR34gOa6r+C+gA0Y3eD3sQnAlzwYG0uXIaRcO0CPI2TJk0HJHc6Lzzpkvwd9vWNMlfRa7U2aKMtow44VPa9dQ+O2BI1H/+GT0eF+7wGPRZWYpkr9EKnzFJf+CFUnWz8BWULp5TsLUa6e6LCnkWiVfXeP/5+LNOrmYMZia6Ko0E9jY595y0aNKAPpzC535ecuYZ9PrV6W12ginutteKRgOjo0H1Rat7QkJ89FJiAXEmhQkiCu5D2FMsgRd6N6+3G06h4DEZeZ7wsUUZV3SpSSkl1wfQNUw0ddNDbTtOCw007md00LSTVPRaLVRuu7weyCKHqgY+h78yhvwAREKEK+qmnzcFBS6bwg5NReKYDiMK1JzgbiUPnqnvZ69rMEErfOWb4ET1FJ382dUtlGoUIbJIAY+1WlLRLTKkIBAeEnVWQFvDFPSYHeaLCxeNlacM76q9S5lBEY6XlC3g+nQidGnBLhGqZU="
-    - secure: "eDRrpgVrk6uAebz539SGhBLVIYfS/ljHdvSK8VuKSWxokrKAnQ1pPorDNSKj0VUFmsHHz8Y23suv00kVcrnuG6S8epKPBLNAwKPX3Wz6B2LyKTmtIG/9GWCsJ9lxAPr+jxEDbH2rKerlQL6Hox3iW2IAXYlw4znHtvjJtqbSYUxCtu3bco7LBTLDjnNSvEurc+JU3OmEdtHuoimzriv12BNQ33TVvPUjc7G9dldbRutjyrYiHhtLXzs4OfslZFKvrxwnxpy+Mk1Hnhl3m77u/I2LvmQYj4ihdDiYB/uGCqtrVB284EIqa+/Tr7Z3axwzpP8/kDVlviYq54t5PAM9KmJG/p0Egrh9etgTQj79f6v/lG6dIsKn0if0nNccjQF6gSSqxSY92/zk+iqFIR24SY+Z8V6+TU4p2r+Ucqcur/j6sZ9A0MP37MNUdd+8/UH2gENecbbXAEQvLAw49ln0aNxvSBrt8PaV5HYXzvuE0rMn9FhWa8WXlTpJPtI2fyeps0SpeRYsCLaFLxCZ2OkEVFXd7A5QGgNMptbPlZvcCFvRH+gGgBtDPq9UUfK92aDxMJxplEs8fGF0k2jp+SCRaJuYE7q2haUMypInPRuNa5+L7EJKHWKWnTvdMlr7aNaSeuRCpT0HCje4KSXZra/UHr8+K5HRhng3r+mlnunnVzo="
-    - COVERAGE_BUILD_CANDIDATE: 0
-    - DEPENDENCIES_HOME: ${HOME}/dependencies
-    - DOWNLOADS_HOME: ${HOME}/downloads
-    - BUILD_HOME: ${TRAVIS_BUILD_DIR}/build
-    - CURL_CONNECT_TIMEOUT: 300
-    - CURL_MAX_TIME: 1800
-    - CURL_RETRY: 10
-    - CURL_RETRY_DELAY: 10
-    - PIP_RETRY: 10
-    - CODECOV_VERSION: 2.1.7
+    - PREBUILT_BOOST_DOWNLOAD_URL: 'https://dl.bintray.com/mabrarov/generic/boost'
+    - secure: 'rxP3V/oY3YSGIaUkRjCK302ueka7zmxdEWBLnec4nW1We8ys0HS/WL//FkNyTQBHNILerfHCtKLMg4tX1ccxC9JPiS9biyDYDOMZQYlXv6UcJBoJBThcKUNcC8vxSrPc1rgSgbai+FvmwiXA/VmHPWInAhcUmsMqCocElR+lLf8gI9Y9VbiuEc3fOSq4KgeIdmblHfdA2BkCc96hR34gOa6r+C+gA0Y3eD3sQnAlzwYG0uXIaRcO0CPI2TJk0HJHc6Lzzpkvwd9vWNMlfRa7U2aKMtow44VPa9dQ+O2BI1H/+GT0eF+7wGPRZWYpkr9EKnzFJf+CFUnWz8BWULp5TsLUa6e6LCnkWiVfXeP/5+LNOrmYMZia6Ko0E9jY595y0aNKAPpzC535ecuYZ9PrV6W12ginutteKRgOjo0H1Rat7QkJ89FJiAXEmhQkiCu5D2FMsgRd6N6+3G06h4DEZeZ7wsUUZV3SpSSkl1wfQNUw0ddNDbTtOCw007md00LSTVPRaLVRuu7weyCKHqgY+h78yhvwAREKEK+qmnzcFBS6bwg5NReKYDiMK1JzgbiUPnqnvZ69rMEErfOWb4ET1FJ382dUtlGoUIbJIAY+1WlLRLTKkIBAeEnVWQFvDFPSYHeaLCxeNlacM76q9S5lBEY6XlC3g+nQidGnBLhGqZU='
+    - secure: 'eDRrpgVrk6uAebz539SGhBLVIYfS/ljHdvSK8VuKSWxokrKAnQ1pPorDNSKj0VUFmsHHz8Y23suv00kVcrnuG6S8epKPBLNAwKPX3Wz6B2LyKTmtIG/9GWCsJ9lxAPr+jxEDbH2rKerlQL6Hox3iW2IAXYlw4znHtvjJtqbSYUxCtu3bco7LBTLDjnNSvEurc+JU3OmEdtHuoimzriv12BNQ33TVvPUjc7G9dldbRutjyrYiHhtLXzs4OfslZFKvrxwnxpy+Mk1Hnhl3m77u/I2LvmQYj4ihdDiYB/uGCqtrVB284EIqa+/Tr7Z3axwzpP8/kDVlviYq54t5PAM9KmJG/p0Egrh9etgTQj79f6v/lG6dIsKn0if0nNccjQF6gSSqxSY92/zk+iqFIR24SY+Z8V6+TU4p2r+Ucqcur/j6sZ9A0MP37MNUdd+8/UH2gENecbbXAEQvLAw49ln0aNxvSBrt8PaV5HYXzvuE0rMn9FhWa8WXlTpJPtI2fyeps0SpeRYsCLaFLxCZ2OkEVFXd7A5QGgNMptbPlZvcCFvRH+gGgBtDPq9UUfK92aDxMJxplEs8fGF0k2jp+SCRaJuYE7q2haUMypInPRuNa5+L7EJKHWKWnTvdMlr7aNaSeuRCpT0HCje4KSXZra/UHr8+K5HRhng3r+mlnunnVzo='
+    - COVERAGE_BUILD_CANDIDATE: '0'
+    - DEPENDENCIES_HOME: '${HOME}/dependencies'
+    - DOWNLOADS_HOME: '${HOME}/downloads'
+    - BUILD_HOME: '${TRAVIS_BUILD_DIR}/build'
+    - CURL_CONNECT_TIMEOUT: '300'
+    - CURL_MAX_TIME: '1800'
+    - CURL_RETRY: '10'
+    - CURL_RETRY_DELAY: '10'
+    - PIP_RETRY: '10'
+    - CODECOV_VERSION: '2.1.7'
 
-before_install: source ./scripts/travis/before_install.sh
+before_install: 'source ./scripts/travis/before_install.sh'
 
 matrix:
   include:
     # Default GCC, Boost 1.55.0, Qt 5.x. Used for collecting information about test coverage.
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=gcc CXX_COMPILER=g++ BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG COVERAGE_BUILD_CANDIDATE=1
-      compiler: gcc
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'gcc'
+        - CXX_COMPILER: 'g++'
+        - BOOST_VERSION: '1.55.0'
+        - QT_MAJOR_VERSION: '5'
+        - BUILD_TYPE: 'DEBUG'
+        - COVERAGE_BUILD_CANDIDATE: '1'
+      compiler: 'gcc'
       addons:
         apt:
           packages:
-            - lcov
-            - cmake
-            - cmake-data
-            - libboost1.55-all-dev
-            - qtbase5-dev
-            - python3-pip
+            - 'lcov'
+            - 'cmake'
+            - 'cmake-data'
+            - 'libboost1.55-all-dev'
+            - 'qtbase5-dev'
+            - 'python3-pip'
           sources: &gcc-package-sources
-            - george-edison55-precise-backports
-            - ubuntu-toolchain-r-test
-            - boost-latest
+            - 'george-edison55-precise-backports'
+            - 'ubuntu-toolchain-r-test'
+            - 'boost-latest'
             - sourceline: 'ppa:mhier/libboost-latest'
     # GCC 10, Boost 1.74.0, Qt 5.x.
-    - os: linux
-      dist: bionic
-      env: C_COMPILER=gcc-10 CXX_COMPILER=g++-10 CMAKE_VERSION=3.18.2 BOOST_VERSION=1.74.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
-      compiler: gcc
+    - os: 'linux'
+      dist: 'bionic'
+      env:
+        - C_COMPILER: 'gcc-10'
+        - CXX_COMPILER: 'g++-10'
+        - CMAKE_VERSION: '3.18.2'
+        - BOOST_VERSION: '1.74.0'
+        - QT_MAJOR_VERSION: '5'
+        - BUILD_TYPE: 'RELEASE'
+      compiler: 'gcc'
       addons: &apt-gcc10-boost174-qt5
         apt:
           packages:
-            - cmake
-            - cmake-data
-            - gcc-10
-            - g++-10
-            - curl
-            - ca-certificates
-            - libboost1.74-dev
-            - qtbase5-dev
+            - 'cmake'
+            - 'cmake-data'
+            - 'gcc-10'
+            - 'g++-10'
+            - 'curl'
+            - 'ca-certificates'
+            - 'libboost1.74-dev'
+            - 'qtbase5-dev'
           sources:
-            - ubuntu-toolchain-r-test
+            - 'ubuntu-toolchain-r-test'
             - sourceline: 'ppa:mhier/libboost-latest'
-    - os: linux
-      dist: bionic
-      env: C_COMPILER=gcc-10 CXX_COMPILER=g++-10 CMAKE_VERSION=3.18.2 BOOST_VERSION=1.74.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
-      compiler: gcc
+    - os: 'linux'
+      dist: 'bionic'
+      env:
+        - C_COMPILER: 'gcc-10'
+        - CXX_COMPILER: 'g++-10'
+        - CMAKE_VERSION: '3.18.2'
+        - BOOST_VERSION: '1.74.0'
+        - QT_MAJOR_VERSION: '5'
+        - BUILD_TYPE: 'DEBUG'
+      compiler: 'gcc'
       addons: *apt-gcc10-boost174-qt5
     # GCC 9, Boost 1.74.0, Qt 5.x.
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=gcc-9 CXX_COMPILER=g++-9 CMAKE_VERSION=3.18.2 BOOST_VERSION=1.74.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
-      compiler: gcc
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'gcc-9'
+        - CXX_COMPILER: 'g++-9'
+        - CMAKE_VERSION: '3.18.2'
+        - BOOST_VERSION: '1.74.0'
+        - QT_MAJOR_VERSION: '5'
+        - BUILD_TYPE: 'RELEASE'
+      compiler: 'gcc'
       addons: &apt-gcc9-boost174-qt5
         apt:
           packages:
-            - cmake
-            - cmake-data
-            - gcc-9
-            - g++-9
-            - curl
-            - ca-certificates
-            - libboost1.74-dev
-            - qtbase5-dev
+            - 'cmake'
+            - 'cmake-data'
+            - 'gcc-9'
+            - 'g++-9'
+            - 'curl'
+            - 'ca-certificates'
+            - 'libboost1.74-dev'
+            - 'qtbase5-dev'
           sources: *gcc-package-sources
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=gcc-9 CXX_COMPILER=g++-9 CMAKE_VERSION=3.18.2 BOOST_VERSION=1.74.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
-      compiler: gcc
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'gcc-9'
+        - CXX_COMPILER: 'g++-9'
+        - CMAKE_VERSION: '3.18.2'
+        - BOOST_VERSION: '1.74.0'
+        - QT_MAJOR_VERSION: '5'
+        - BUILD_TYPE: 'DEBUG'
+      compiler: 'gcc'
       addons: *apt-gcc9-boost174-qt5
     # GCC 8, Boost 1.70.0, Qt 5.x.
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=gcc-8 CXX_COMPILER=g++-8 CMAKE_VERSION=3.15.3 BOOST_VERSION=1.70.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
-      compiler: gcc
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'gcc-8'
+        - CXX_COMPILER: 'g++-8'
+        - CMAKE_VERSION: '3.15.3'
+        - BOOST_VERSION: '1.70.0'
+        - QT_MAJOR_VERSION: '5'
+        - BUILD_TYPE: 'RELEASE'
+      compiler: 'gcc'
       addons: &apt-gcc8-boost170-qt5
         apt:
           packages:
-            - cmake
-            - cmake-data
-            - gcc-8
-            - g++-8
-            - curl
-            - ca-certificates
-            - libboost1.70-dev
-            - qtbase5-dev
+            - 'cmake'
+            - 'cmake-data'
+            - 'gcc-8'
+            - 'g++-8'
+            - 'curl'
+            - 'ca-certificates'
+            - 'libboost1.70-dev'
+            - 'qtbase5-dev'
           sources: *gcc-package-sources
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=gcc-8 CXX_COMPILER=g++-8 CMAKE_VERSION=3.15.3 BOOST_VERSION=1.70.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
-      compiler: gcc
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'gcc-8'
+        - CXX_COMPILER: 'g++-8'
+        - CMAKE_VERSION: '3.15.3'
+        - BOOST_VERSION: '1.70.0'
+        - QT_MAJOR_VERSION: '5'
+        - BUILD_TYPE: 'DEBUG'
+      compiler: 'gcc'
       addons: *apt-gcc8-boost170-qt5
     # GCC 7, Boost 1.70.0, Qt 5.x.
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=gcc-7 CXX_COMPILER=g++-7 CMAKE_VERSION=3.15.3 BOOST_VERSION=1.70.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
-      compiler: gcc
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'gcc-7'
+        - CXX_COMPILER: 'g++-7'
+        - CMAKE_VERSION: '3.15.3'
+        - BOOST_VERSION: '1.70.0'
+        - QT_MAJOR_VERSION: '5'
+        - BUILD_TYPE: 'RELEASE'
+      compiler: 'gcc'
       addons: &apt-gcc7-boost170-qt5
         apt:
           packages:
-            - cmake
-            - cmake-data
-            - gcc-7
-            - g++-7
-            - curl
-            - ca-certificates
-            - libboost1.70-dev
-            - qtbase5-dev
+            - 'cmake'
+            - 'cmake-data'
+            - 'gcc-7'
+            - 'g++-7'
+            - 'curl'
+            - 'ca-certificates'
+            - 'libboost1.70-dev'
+            - 'qtbase5-dev'
           sources: *gcc-package-sources
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=gcc-7 CXX_COMPILER=g++-7 CMAKE_VERSION=3.15.3 BOOST_VERSION=1.70.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
-      compiler: gcc
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'gcc-7'
+        - CXX_COMPILER: 'g++-7'
+        - CMAKE_VERSION: '3.15.3'
+        - BOOST_VERSION: '1.70.0'
+        - QT_MAJOR_VERSION: '5'
+        - BUILD_TYPE: 'DEBUG'
+      compiler: 'gcc'
       addons: *apt-gcc7-boost170-qt5
     # Clang 10.0, Boost 1.74.0, Qt 5.x
-    - os: linux
-      dist: bionic
-      env: C_COMPILER=clang-10 CXX_COMPILER=clang++-10 CMAKE_VERSION=3.18.2 BOOST_VERSION=1.74.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
-      compiler: clang
+    - os: 'linux'
+      dist: 'bionic'
+      env:
+        - C_COMPILER: 'clang-10'
+        - CXX_COMPILER: 'clang++-10'
+        - CMAKE_VERSION: '3.18.2'
+        - BOOST_VERSION: '1.74.0'
+        - QT_MAJOR_VERSION: '5'
+        - BUILD_TYPE: 'RELEASE'
+      compiler: 'clang'
       addons: &apt-clang10-boost174-qt5
         apt:
           packages:
-            - cmake
-            - cmake-data
-            - clang-10
-            - libboost1.74-dev
-            - qtbase5-dev
+            - 'cmake'
+            - 'cmake-data'
+            - 'clang-10'
+            - 'libboost1.74-dev'
+            - 'qtbase5-dev'
           sources:
-            - ubuntu-toolchain-r-test
+            - 'ubuntu-toolchain-r-test'
             - sourceline: 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-10 main'
               key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
             - sourceline: 'ppa:mhier/libboost-latest'
-    - os: linux
-      dist: bionic
-      env: C_COMPILER=clang-10 CXX_COMPILER=clang++-10 CMAKE_VERSION=3.18.2 BOOST_VERSION=1.74.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
-      compiler: clang
+    - os: 'linux'
+      dist: 'bionic'
+      env:
+        - C_COMPILER: 'clang-10'
+        - CXX_COMPILER: 'clang++-10'
+        - CMAKE_VERSION: '3.18.2'
+        - BOOST_VERSION: '1.74.0'
+        - QT_MAJOR_VERSION: '5'
+        - BUILD_TYPE: 'DEBUG'
+      compiler: 'clang'
       addons: *apt-clang10-boost174-qt5
     # Clang 9.0, Boost 1.70.0, Qt 5.x
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=clang-9 CXX_COMPILER=clang++-9 CMAKE_VERSION=3.16.3 BOOST_VERSION=1.70.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
-      compiler: clang
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'clang-9'
+        - CXX_COMPILER: 'clang++-9'
+        - CMAKE_VERSION: '3.16.3'
+        - BOOST_VERSION: '1.70.0'
+        - QT_MAJOR_VERSION: '5'
+        - BUILD_TYPE: 'RELEASE'
+      compiler: 'clang'
       addons: &apt-clang90-boost170-qt5
         apt:
           packages:
-            - cmake
-            - cmake-data
-            - clang-9
-            - libboost1.70-dev
-            - qtbase5-dev
+            - 'cmake'
+            - 'cmake-data'
+            - 'clang-9'
+            - 'libboost1.70-dev'
+            - 'qtbase5-dev'
           sources:
-            - george-edison55-precise-backports
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty
+            - 'george-edison55-precise-backports'
+            - 'ubuntu-toolchain-r-test'
+            - 'llvm-toolchain-trusty'
             - sourceline: 'ppa:mhier/libboost-latest'
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=clang-9 CXX_COMPILER=clang++-9 CMAKE_VERSION=3.16.3 BOOST_VERSION=1.70.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
-      compiler: clang
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'clang-9'
+        - CXX_COMPILER: 'clang++-9'
+        - CMAKE_VERSION: '3.16.3'
+        - BOOST_VERSION: '1.70.0'
+        - QT_MAJOR_VERSION: '5'
+        - BUILD_TYPE: 'DEBUG'
+      compiler: 'clang'
       addons: *apt-clang90-boost170-qt5
     # Clang 8.0, Boost 1.70.0, Qt 5.x
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=clang-8 CXX_COMPILER=clang++-8 CMAKE_VERSION=3.15.3 BOOST_VERSION=1.70.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
-      compiler: clang
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'clang-8'
+        - CXX_COMPILER: 'clang++-8'
+        - CMAKE_VERSION: '3.15.3'
+        - BOOST_VERSION: '1.70.0'
+        - QT_MAJOR_VERSION: '5'
+        - BUILD_TYPE: 'RELEASE'
+      compiler: 'clang'
       addons: &apt-clang80-boost170-qt5
         apt:
           packages:
-            - cmake
-            - cmake-data
-            - clang-8
-            - libboost1.70-dev
-            - qtbase5-dev
+            - 'cmake'
+            - 'cmake-data'
+            - 'clang-8'
+            - 'libboost1.70-dev'
+            - 'qtbase5-dev'
           sources:
-            - george-edison55-precise-backports
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-8
-            - boost-latest
+            - 'george-edison55-precise-backports'
+            - 'ubuntu-toolchain-r-test'
+            - 'llvm-toolchain-trusty-8'
+            - 'boost-latest'
             - sourceline: 'ppa:mhier/libboost-latest'
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=clang-8 CXX_COMPILER=clang++-8 CMAKE_VERSION=3.15.3 BOOST_VERSION=1.70.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
-      compiler: clang
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'clang-8'
+        - CXX_COMPILER: 'clang++-8'
+        - CMAKE_VERSION: '3.15.3'
+        - BOOST_VERSION: '1.70.0'
+        - QT_MAJOR_VERSION: '5'
+        - BUILD_TYPE: 'DEBUG'
+      compiler: 'clang'
       addons: *apt-clang80-boost170-qt5
     # Clang 7.0, Boost 1.70.0, Qt 5.x
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=clang-7 CXX_COMPILER=clang++-7 CMAKE_VERSION=3.15.3 BOOST_VERSION=1.70.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
-      compiler: clang
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'clang-7'
+        - CXX_COMPILER: 'clang++-7'
+        - CMAKE_VERSION: '3.15.3'
+        - BOOST_VERSION: '1.70.0'
+        - QT_MAJOR_VERSION: '5'
+        - BUILD_TYPE: 'RELEASE'
+      compiler: 'clang'
       addons: &apt-clang70-boost170-qt5
         apt:
           packages:
-            - cmake
-            - cmake-data
-            - clang-7
-            - libboost1.70-dev
-            - qtbase5-dev
+            - 'cmake'
+            - 'cmake-data'
+            - 'clang-7'
+            - 'libboost1.70-dev'
+            - 'qtbase5-dev'
           sources:
-            - george-edison55-precise-backports
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-7
-            - boost-latest
+            - 'george-edison55-precise-backports'
+            - 'ubuntu-toolchain-r-test'
+            - 'llvm-toolchain-trusty-7'
+            - 'boost-latest'
             - sourceline: 'ppa:mhier/libboost-latest'
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=clang-7 CXX_COMPILER=clang++-7 CMAKE_VERSION=3.15.3 BOOST_VERSION=1.70.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
-      compiler: clang
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'clang-7'
+        - CXX_COMPILER: 'clang++-7'
+        - CMAKE_VERSION: '3.15.3'
+        - BOOST_VERSION: '1.70.0'
+        - QT_MAJOR_VERSION: '5'
+        - BUILD_TYPE: 'DEBUG'
+      compiler: 'clang'
       addons: *apt-clang70-boost170-qt5
     # Clang 6.0, Boost 1.70.0, Qt 5.x
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=clang-6.0 CXX_COMPILER=clang++-6.0 CMAKE_VERSION=3.15.3 BOOST_VERSION=1.70.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
-      compiler: clang
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'clang-6.0'
+        - CXX_COMPILER: 'clang++-6.0'
+        - CMAKE_VERSION: '3.15.3'
+        - BOOST_VERSION: '1.70.0'
+        - QT_MAJOR_VERSION: '5'
+        - BUILD_TYPE: 'RELEASE'
+      compiler: 'clang'
       addons: &apt-clang60-boost170-qt5
         apt:
           packages:
-            - cmake
-            - cmake-data
-            - clang-6.0
-            - libboost1.70-dev
-            - qtbase5-dev
+            - 'cmake'
+            - 'cmake-data'
+            - 'clang-6.0'
+            - 'libboost1.70-dev'
+            - 'qtbase5-dev'
           sources:
-            - george-edison55-precise-backports
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-6.0
-            - boost-latest
+            - 'george-edison55-precise-backports'
+            - 'ubuntu-toolchain-r-test'
+            - 'llvm-toolchain-trusty-6.0'
+            - 'boost-latest'
             - sourceline: 'ppa:mhier/libboost-latest'
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=clang-6.0 CXX_COMPILER=clang++-6.0 CMAKE_VERSION=3.15.3 BOOST_VERSION=1.70.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
-      compiler: clang
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'clang-6.0'
+        - CXX_COMPILER: 'clang++-6.0'
+        - CMAKE_VERSION: '3.15.3'
+        - BOOST_VERSION: '1.70.0'
+        - QT_MAJOR_VERSION: '5'
+        - BUILD_TYPE: 'DEBUG'
+      compiler: 'clang'
       addons: *apt-clang60-boost170-qt5
     # Clang 5.0, Boost 1.70.0, Qt 5.x
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=clang-5.0 CXX_COMPILER=clang++-5.0 CMAKE_VERSION=3.15.3 BOOST_VERSION=1.70.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
-      compiler: clang
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'clang-5.0'
+        - CXX_COMPILER: 'clang++-5.0'
+        - CMAKE_VERSION: '3.15.3'
+        - BOOST_VERSION: '1.70.0'
+        - QT_MAJOR_VERSION: '5'
+        - BUILD_TYPE: 'RELEASE'
+      compiler: 'clang'
       addons: &apt-clang50-boost170-qt5
         apt:
           packages:
-            - cmake
-            - cmake-data
-            - clang-5.0
-            - libboost1.70-dev
-            - qtbase5-dev
+            - 'cmake'
+            - 'cmake-data'
+            - 'clang-5.0'
+            - 'libboost1.70-dev'
+            - 'qtbase5-dev'
           sources: &llvm50-package-sources
-            - george-edison55-precise-backports
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-5.0
-            - boost-latest
+            - 'george-edison55-precise-backports'
+            - 'ubuntu-toolchain-r-test'
+            - 'llvm-toolchain-trusty-5.0'
+            - 'boost-latest'
             - sourceline: 'ppa:mhier/libboost-latest'
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=clang-5.0 CXX_COMPILER=clang++-5.0 CMAKE_VERSION=3.15.3 BOOST_VERSION=1.70.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
-      compiler: clang
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'clang-5.0'
+        - CXX_COMPILER: 'clang++-5.0'
+        - CMAKE_VERSION: '3.15.3'
+        - BOOST_VERSION: '1.70.0'
+        - QT_MAJOR_VERSION: '5'
+        - BUILD_TYPE: 'DEBUG'
+      compiler: 'clang'
       addons: *apt-clang50-boost170-qt5
     # MacOS, Clang Apple LLVM version 11.3, Boost 1.73.0, Qt 5.x
-    - os: osx
-      osx_image: xcode11.3
-      env: C_COMPILER=clang CXX_COMPILER=clang++ BOOST_VERSION=1.73.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
-      compiler: clang
+    - os: 'osx'
+      osx_image: 'xcode11.3'
+      env:
+        - C_COMPILER: 'clang'
+        - CXX_COMPILER: 'clang++'
+        - BOOST_VERSION: '1.73.0'
+        - QT_MAJOR_VERSION: '5'
+        - BUILD_TYPE: 'RELEASE'
+      compiler: 'clang'
       addons: &homebrew-boost173-qt5
         homebrew:
           packages:
-            - gnu-sed
-            - cmake
-            - boost@1.73
-            - qt5
+            - 'gnu-sed'
+            - 'cmake'
+            - 'boost@1.73'
+            - 'qt5'
           update: true
-    - os: osx
-      osx_image: xcode11.3
-      env: C_COMPILER=clang CXX_COMPILER=clang++ BOOST_VERSION=1.73.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
-      compiler: clang
+    - os: 'osx'
+      osx_image: 'xcode11.3'
+      env:
+        - C_COMPILER: 'clang'
+        - CXX_COMPILER: 'clang++'
+        - BOOST_VERSION: '1.73.0'
+        - QT_MAJOR_VERSION: '5'
+        - BUILD_TYPE: 'DEBUG'
+      compiler: 'clang'
       addons: *homebrew-boost173-qt5
     # GCC 7, Boost 1.68.0, Qt 5.x.
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=gcc-7 CXX_COMPILER=g++-7 CMAKE_VERSION=3.15.3 BOOST_VERSION=1.68.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
-      compiler: gcc
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'gcc-7'
+        - CXX_COMPILER: 'g++-7'
+        - CMAKE_VERSION: '3.15.3'
+        - BOOST_VERSION: '1.68.0'
+        - QT_MAJOR_VERSION: '5'
+        - BUILD_TYPE: 'RELEASE'
+      compiler: 'gcc'
       addons: &apt-gcc7-boost168-qt5
         apt:
           packages:
-            - cmake
-            - cmake-data
-            - gcc-7
-            - g++-7
-            - curl
-            - ca-certificates
-            - libboost1.68-dev
-            - qtbase5-dev
+            - 'cmake'
+            - 'cmake-data'
+            - 'gcc-7'
+            - 'g++-7'
+            - 'curl'
+            - 'ca-certificates'
+            - 'libboost1.68-dev'
+            - 'qtbase5-dev'
           sources: *gcc-package-sources
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=gcc-7 CXX_COMPILER=g++-7 CMAKE_VERSION=3.15.3 BOOST_VERSION=1.68.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
-      compiler: gcc
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'gcc-7'
+        - CXX_COMPILER: 'g++-7'
+        - CMAKE_VERSION: '3.15.3'
+        - BOOST_VERSION: '1.68.0'
+        - QT_MAJOR_VERSION: '5'
+        - BUILD_TYPE: 'DEBUG'
+      compiler: 'gcc'
       addons: *apt-gcc7-boost168-qt5
     # GCC 7, Boost 1.55.0, Qt 5.x
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=gcc-7 CXX_COMPILER=g++-7 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
-      compiler: gcc
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'gcc-7'
+        - CXX_COMPILER: 'g++-7'
+        - BOOST_VERSION: '1.55.0'
+        - QT_MAJOR_VERSION: '5'
+        - BUILD_TYPE: 'RELEASE'
+      compiler: 'gcc'
       addons: &apt-gcc7-boost155-qt5
         apt:
           packages:
-            - cmake
-            - cmake-data
-            - gcc-7
-            - g++-7
-            - libboost1.55-all-dev
-            - qtbase5-dev
+            - 'cmake'
+            - 'cmake-data'
+            - 'gcc-7'
+            - 'g++-7'
+            - 'libboost1.55-all-dev'
+            - 'qtbase5-dev'
           sources: *gcc-package-sources
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=gcc-7 CXX_COMPILER=g++-7 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
-      compiler: gcc
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'gcc-7'
+        - CXX_COMPILER: 'g++-7'
+        - BOOST_VERSION: '1.55.0'
+        - QT_MAJOR_VERSION: '5'
+        - BUILD_TYPE: 'DEBUG'
+      compiler: 'gcc'
       addons: *apt-gcc7-boost155-qt5
     # GCC 6, Boost 1.55.0, Qt 5.x
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=gcc-6 CXX_COMPILER=g++-6 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
-      compiler: gcc
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'gcc-6'
+        - CXX_COMPILER: 'g++-6'
+        - BOOST_VERSION: '1.55.0'
+        - QT_MAJOR_VERSION: '5'
+        - BUILD_TYPE: 'RELEASE'
+      compiler: 'gcc'
       addons: &apt-gcc6-boost155-qt5
         apt:
           packages:
-            - cmake
-            - cmake-data
-            - gcc-6
-            - g++-6
-            - libboost1.55-all-dev
-            - qtbase5-dev
+            - 'cmake'
+            - 'cmake-data'
+            - 'gcc-6'
+            - 'g++-6'
+            - 'libboost1.55-all-dev'
+            - 'qtbase5-dev'
           sources: *gcc-package-sources
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=gcc-6 CXX_COMPILER=g++-6 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
-      compiler: gcc
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'gcc-6'
+        - CXX_COMPILER: 'g++-6'
+        - BOOST_VERSION: '1.55.0'
+        - QT_MAJOR_VERSION: '5'
+        - BUILD_TYPE: 'DEBUG'
+      compiler: 'gcc'
       addons: *apt-gcc6-boost155-qt5
     # GCC 5, Boost 1.55.0, Qt 5.x
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=gcc-5 CXX_COMPILER=g++-5 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
-      compiler: gcc
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'gcc-5'
+        - CXX_COMPILER: 'g++-5'
+        - BOOST_VERSION: '1.55.0'
+        - QT_MAJOR_VERSION: '5'
+        - BUILD_TYPE: 'RELEASE'
+      compiler: 'gcc'
       addons: &apt-gcc5-boost155-qt5
         apt:
           packages:
-            - cmake
-            - cmake-data
-            - gcc-5
-            - g++-5
-            - libboost1.55-all-dev
-            - qtbase5-dev
+            - 'cmake'
+            - 'cmake-data'
+            - 'gcc-5'
+            - 'g++-5'
+            - 'libboost1.55-all-dev'
+            - 'qtbase5-dev'
           sources: *gcc-package-sources
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=gcc-5 CXX_COMPILER=g++-5 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
-      compiler: gcc
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'gcc-5'
+        - CXX_COMPILER: 'g++-5'
+        - BOOST_VERSION: '1.55.0'
+        - QT_MAJOR_VERSION: '5'
+        - BUILD_TYPE: 'DEBUG'
+      compiler: 'gcc'
       addons: *apt-gcc5-boost155-qt5
     # GCC 4.9, Boost 1.55.0, Qt 5.x
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=gcc-4.9 CXX_COMPILER=g++-4.9 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
-      compiler: gcc
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'gcc-4.9'
+        - CXX_COMPILER: 'g++-4.9'
+        - BOOST_VERSION: '1.55.0'
+        - QT_MAJOR_VERSION: '5'
+        - BUILD_TYPE: 'RELEASE'
+      compiler: 'gcc'
       addons: &apt-gcc49-boost155-qt5
         apt:
           packages:
-            - cmake
-            - cmake-data
-            - gcc-4.9
-            - g++-4.9
-            - libboost1.55-all-dev
-            - qtbase5-dev
+            - 'cmake'
+            - 'cmake-data'
+            - 'gcc-4.9'
+            - 'g++-4.9'
+            - 'libboost1.55-all-dev'
+            - 'qtbase5-dev'
           sources: *gcc-package-sources
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=gcc-4.9 CXX_COMPILER=g++-4.9 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
-      compiler: gcc
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'gcc-4.9'
+        - CXX_COMPILER: 'g++-4.9'
+        - BOOST_VERSION: '1.55.0'
+        - QT_MAJOR_VERSION: '5'
+        - BUILD_TYPE: 'DEBUG'
+      compiler: 'gcc'
       addons: *apt-gcc49-boost155-qt5
     # GCC 4.8, Boost 1.55.0, Qt 5.x
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=gcc-4.8 CXX_COMPILER=g++-4.8 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
-      compiler: gcc
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'gcc-4.8'
+        - CXX_COMPILER: 'g++-4.8'
+        - BOOST_VERSION: '1.55.0'
+        - QT_MAJOR_VERSION: '5'
+        - BUILD_TYPE: 'RELEASE'
+      compiler: 'gcc'
       addons: &apt-gcc48-boost155-qt5
         apt:
           packages:
-            - cmake
-            - cmake-data
-            - gcc-4.8
-            - g++-4.8
-            - libboost1.55-all-dev
-            - qtbase5-dev
+            - 'cmake'
+            - 'cmake-data'
+            - 'gcc-4.8'
+            - 'g++-4.8'
+            - 'libboost1.55-all-dev'
+            - 'qtbase5-dev'
           sources: *gcc-package-sources
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=gcc-4.8 CXX_COMPILER=g++-4.8 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
-      compiler: gcc
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'gcc-4.8'
+        - CXX_COMPILER: 'g++-4.8'
+        - BOOST_VERSION: '1.55.0'
+        - QT_MAJOR_VERSION: '5'
+        - BUILD_TYPE: 'DEBUG'
+      compiler: 'gcc'
       addons: *apt-gcc48-boost155-qt5
     # GCC 4.6, Boost 1.55.0, Qt 5.x
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=gcc-4.6 CXX_COMPILER=g++-4.6 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
-      compiler: gcc
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'gcc-4.6'
+        - CXX_COMPILER: 'g++-4.6'
+        - BOOST_VERSION: '1.55.0'
+        - QT_MAJOR_VERSION: '5'
+        - BUILD_TYPE: 'RELEASE'
+      compiler: 'gcc'
       addons: &apt-gcc46-boost155-qt5
         apt:
           packages:
-            - cmake
-            - cmake-data
-            - gcc-4.6
-            - g++-4.6
-            - libboost1.55-all-dev
-            - qtbase5-dev
+            - 'cmake'
+            - 'cmake-data'
+            - 'gcc-4.6'
+            - 'g++-4.6'
+            - 'libboost1.55-all-dev'
+            - 'qtbase5-dev'
           sources: *gcc-package-sources
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=gcc-4.6 CXX_COMPILER=g++-4.6 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
-      compiler: gcc
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'gcc-4.6'
+        - CXX_COMPILER: 'g++-4.6'
+        - BOOST_VERSION: '1.55.0'
+        - QT_MAJOR_VERSION: '5'
+        - BUILD_TYPE: 'DEBUG'
+      compiler: 'gcc'
       addons: *apt-gcc46-boost155-qt5
     # Clang 4.0, Boost 1.55.0, Qt 5.x
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=clang-4.0 CXX_COMPILER=clang++-4.0 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
-      compiler: clang
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'clang-4.0'
+        - CXX_COMPILER: 'clang++-4.0'
+        - BOOST_VERSION: '1.55.0'
+        - QT_MAJOR_VERSION: '5'
+        - BUILD_TYPE: 'RELEASE'
+      compiler: 'clang'
       addons: &apt-clang40-boost155-qt5
         apt:
           packages:
-            - cmake
-            - cmake-data
-            - clang-4.0
-            - libboost1.55-all-dev
-            - qtbase5-dev
+            - 'cmake'
+            - 'cmake-data'
+            - 'clang-4.0'
+            - 'libboost1.55-all-dev'
+            - 'qtbase5-dev'
           sources: &llvm40-package-sources
-            - george-edison55-precise-backports
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-4.0
-            - boost-latest
+            - 'george-edison55-precise-backports'
+            - 'ubuntu-toolchain-r-test'
+            - 'llvm-toolchain-trusty-4.0'
+            - 'boost-latest'
             - sourceline: 'ppa:mhier/libboost-latest'
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=clang-4.0 CXX_COMPILER=clang++-4.0 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
-      compiler: clang
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'clang-4.0'
+        - CXX_COMPILER: 'clang++-4.0'
+        - BOOST_VERSION: '1.55.0'
+        - QT_MAJOR_VERSION: '5'
+        - BUILD_TYPE: 'DEBUG'
+      compiler: 'clang'
       addons: *apt-clang40-boost155-qt5
     # Clang 3.9, Boost 1.55.0, Qt 5.x
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=clang-3.9 CXX_COMPILER=clang++-3.9 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
-      compiler: clang
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'clang-3.9'
+        - CXX_COMPILER: 'clang++-3.9'
+        - BOOST_VERSION: '1.55.0'
+        - QT_MAJOR_VERSION: '5'
+        - BUILD_TYPE: 'RELEASE'
+      compiler: 'clang'
       addons: &apt-clang39-boost155-qt5
         apt:
           packages:
-            - cmake
-            - cmake-data
-            - clang-3.9
-            - libboost1.55-all-dev
-            - qtbase5-dev
+            - 'cmake'
+            - 'cmake-data'
+            - 'clang-3.9'
+            - 'libboost1.55-all-dev'
+            - 'qtbase5-dev'
           sources: &llvm39-package-sources
-            - george-edison55-precise-backports
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-trusty-3.9
-            - boost-latest
+            - 'george-edison55-precise-backports'
+            - 'ubuntu-toolchain-r-test'
+            - 'llvm-toolchain-trusty-3.9'
+            - 'boost-latest'
             - sourceline: 'ppa:mhier/libboost-latest'
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=clang-3.9 CXX_COMPILER=clang++-3.9 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
-      compiler: clang
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'clang-3.9'
+        - CXX_COMPILER: 'clang++-3.9'
+        - BOOST_VERSION: '1.55.0'
+        - QT_MAJOR_VERSION: '5'
+        - BUILD_TYPE: 'DEBUG'
+      compiler: 'clang'
       addons: *apt-clang39-boost155-qt5
     # Clang 3.6, Boost 1.55.0, Qt 5.x
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=clang-3.6 CXX_COMPILER=clang++-3.6 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
-      compiler: clang
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'clang-3.6'
+        - CXX_COMPILER: 'clang++-3.6'
+        - BOOST_VERSION: '1.55.0'
+        - QT_MAJOR_VERSION: '5'
+        - BUILD_TYPE: 'RELEASE'
+      compiler: 'clang'
       addons: &apt-clang36-boost155-qt5
         apt:
           packages:
-            - cmake
-            - cmake-data
-            - clang-3.6
-            - libboost1.55-all-dev
-            - qtbase5-dev
+            - 'cmake'
+            - 'cmake-data'
+            - 'clang-3.6'
+            - 'libboost1.55-all-dev'
+            - 'qtbase5-dev'
           sources: &llvm36-package-sources
-            - george-edison55-precise-backports
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.6
-            - boost-latest
+            - 'george-edison55-precise-backports'
+            - 'ubuntu-toolchain-r-test'
+            - 'llvm-toolchain-precise-3.6'
+            - 'boost-latest'
             - sourceline: 'ppa:mhier/libboost-latest'
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=clang-3.6 CXX_COMPILER=clang++-3.6 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
-      compiler: clang
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'clang-3.6'
+        - CXX_COMPILER: 'clang++-3.6'
+        - BOOST_VERSION: '1.55.0'
+        - QT_MAJOR_VERSION: '5'
+        - BUILD_TYPE: 'DEBUG'
+      compiler: 'clang'
       addons: *apt-clang36-boost155-qt5
     # Clang 3.7, Boost 1.55.0, Qt 5.x
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=clang-3.7 CXX_COMPILER=clang++-3.7 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
-      compiler: clang
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'clang-3.7'
+        - CXX_COMPILER: 'clang++-3.7'
+        - BOOST_VERSION: '1.55.0'
+        - QT_MAJOR_VERSION: '5'
+        - BUILD_TYPE: 'RELEASE'
+      compiler: 'clang'
       addons: &apt-clang37-boost155-qt5
         apt:
           packages:
-            - cmake
-            - cmake-data
-            - clang-3.7
-            - libboost1.55-all-dev
-            - qtbase5-dev
+            - 'cmake'
+            - 'cmake-data'
+            - 'clang-3.7'
+            - 'libboost1.55-all-dev'
+            - 'qtbase5-dev'
           sources: &llvm37-package-sources
-            - george-edison55-precise-backports
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.7
-            - boost-latest
+            - 'george-edison55-precise-backports'
+            - 'ubuntu-toolchain-r-test'
+            - 'llvm-toolchain-precise-3.7'
+            - 'boost-latest'
             - sourceline: 'ppa:mhier/libboost-latest'
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=clang-3.7 CXX_COMPILER=clang++-3.7 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
-      compiler: clang
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'clang-3.7'
+        - CXX_COMPILER: 'clang++-3.7'
+        - BOOST_VERSION: '1.55.0'
+        - QT_MAJOR_VERSION: '5'
+        - BUILD_TYPE: 'DEBUG'
+      compiler: 'clang'
       addons: *apt-clang37-boost155-qt5
     # Clang 3.8, Boost 1.55.0, Qt 5.x
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=clang-3.8 CXX_COMPILER=clang++-3.8 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=RELEASE
-      compiler: clang
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'clang-3.8'
+        - CXX_COMPILER: 'clang++-3.8'
+        - BOOST_VERSION: '1.55.0'
+        - QT_MAJOR_VERSION: '5'
+        - BUILD_TYPE: 'RELEASE'
+      compiler: 'clang'
       addons: &apt-clang38-boost155-qt5
         apt:
           packages:
-            - cmake
-            - cmake-data
-            - clang-3.8
-            - libboost1.55-all-dev
-            - qtbase5-dev
+            - 'cmake'
+            - 'cmake-data'
+            - 'clang-3.8'
+            - 'libboost1.55-all-dev'
+            - 'qtbase5-dev'
           sources: &llvm38-package-sources
-            - george-edison55-precise-backports
-            - ubuntu-toolchain-r-test
-            - llvm-toolchain-precise-3.8
-            - boost-latest
+            - 'george-edison55-precise-backports'
+            - 'ubuntu-toolchain-r-test'
+            - 'llvm-toolchain-precise-3.8'
+            - 'boost-latest'
             - sourceline: 'ppa:mhier/libboost-latest'
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=clang-3.8 CXX_COMPILER=clang++-3.8 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=5 BUILD_TYPE=DEBUG
-      compiler: clang
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'clang-3.8'
+        - CXX_COMPILER: 'clang++-3.8'
+        - BOOST_VERSION: '1.55.0'
+        - QT_MAJOR_VERSION: '5'
+        - BUILD_TYPE: 'DEBUG'
+      compiler: 'clang'
       addons: *apt-clang38-boost155-qt5
     # GCC 7, Boost 1.55.0, Qt 4.x
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=gcc-7 CXX_COMPILER=g++-7 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=RELEASE
-      compiler: gcc
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'gcc-7'
+        - CXX_COMPILER: 'g++-7'
+        - BOOST_VERSION: '1.55.0'
+        - QT_MAJOR_VERSION: '4'
+        - BUILD_TYPE: 'RELEASE'
+      compiler: 'gcc'
       addons: &apt-gcc7-boost155-qt4
         apt:
           packages:
-            - cmake
-            - cmake-data
-            - gcc-7
-            - g++-7
-            - libboost1.55-all-dev
-            - libqt4-dev
+            - 'cmake'
+            - 'cmake-data'
+            - 'gcc-7'
+            - 'g++-7'
+            - 'libboost1.55-all-dev'
+            - 'libqt4-dev'
           sources: *gcc-package-sources
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=gcc-7 CXX_COMPILER=g++-7 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=DEBUG
-      compiler: gcc
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'gcc-7'
+        - CXX_COMPILER: 'g++-7'
+        - BOOST_VERSION: '1.55.0'
+        - QT_MAJOR_VERSION: '4'
+        - BUILD_TYPE: 'DEBUG'
+      compiler: 'gcc'
       addons: *apt-gcc7-boost155-qt4
     # GCC 6, Boost 1.55.0, Qt 4.x
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=gcc-6 CXX_COMPILER=g++-6 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=RELEASE
-      compiler: gcc
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'gcc-6'
+        - CXX_COMPILER: 'g++-6'
+        - BOOST_VERSION: '1.55.0'
+        - QT_MAJOR_VERSION: '4'
+        - BUILD_TYPE: 'RELEASE'
+      compiler: 'gcc'
       addons: &apt-gcc6-boost155-qt4
         apt:
           packages:
-            - cmake
-            - cmake-data
-            - gcc-6
-            - g++-6
-            - libboost1.55-all-dev
-            - libqt4-dev
+            - 'cmake'
+            - 'cmake-data'
+            - 'gcc-6'
+            - 'g++-6'
+            - 'libboost1.55-all-dev'
+            - 'libqt4-dev'
           sources: *gcc-package-sources
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=gcc-6 CXX_COMPILER=g++-6 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=DEBUG
-      compiler: gcc
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'gcc-6'
+        - CXX_COMPILER: 'g++-6'
+        - BOOST_VERSION: '1.55.0'
+        - QT_MAJOR_VERSION: '4'
+        - BUILD_TYPE: 'DEBUG'
+      compiler: 'gcc'
       addons: *apt-gcc6-boost155-qt4
     # GCC 5, Boost 1.55.0, Qt 4.x
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=gcc-5 CXX_COMPILER=g++-5 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=RELEASE
-      compiler: gcc
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'gcc-5'
+        - CXX_COMPILER: 'g++-5'
+        - BOOST_VERSION: '1.55.0'
+        - QT_MAJOR_VERSION: '4'
+        - BUILD_TYPE: 'RELEASE'
+      compiler: 'gcc'
       addons: &apt-gcc5-boost155-qt4
         apt:
           packages:
-            - cmake
-            - cmake-data
-            - gcc-5
-            - g++-5
-            - libboost1.55-all-dev
-            - libqt4-dev
+            - 'cmake'
+            - 'cmake-data'
+            - 'gcc-5'
+            - 'g++-5'
+            - 'libboost1.55-all-dev'
+            - 'libqt4-dev'
           sources: *gcc-package-sources
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=gcc-5 CXX_COMPILER=g++-5 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=DEBUG
-      compiler: gcc
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'gcc-5'
+        - CXX_COMPILER: 'g++-5'
+        - BOOST_VERSION: '1.55.0'
+        - QT_MAJOR_VERSION: '4'
+        - BUILD_TYPE: 'DEBUG'
+      compiler: 'gcc'
       addons: *apt-gcc5-boost155-qt4
     # GCC 4.9, Boost 1.55.0, Qt 4.x
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=gcc-4.9 CXX_COMPILER=g++-4.9 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=RELEASE
-      compiler: gcc
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'gcc-4.9'
+        - CXX_COMPILER: 'g++-4.9'
+        - BOOST_VERSION: '1.55.0'
+        - QT_MAJOR_VERSION: '4'
+        - BUILD_TYPE: 'RELEASE'
+      compiler: 'gcc'
       addons: &apt-gcc49-boost155-qt4
         apt:
           packages:
-            - cmake
-            - cmake-data
-            - gcc-4.9
-            - g++-4.9
-            - libboost1.55-all-dev
-            - libqt4-dev
+            - 'cmake'
+            - 'cmake-data'
+            - 'gcc-4.9'
+            - 'g++-4.9'
+            - 'libboost1.55-all-dev'
+            - 'libqt4-dev'
           sources: *gcc-package-sources
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=gcc-4.9 CXX_COMPILER=g++-4.9 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=DEBUG
-      compiler: gcc
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'gcc-4.9'
+        - CXX_COMPILER: 'g++-4.9'
+        - BOOST_VERSION: '1.55.0'
+        - QT_MAJOR_VERSION: '4'
+        - BUILD_TYPE: 'DEBUG'
+      compiler: 'gcc'
       addons: *apt-gcc49-boost155-qt4
     # GCC 4.8, Boost 1.55.0, Qt 4.x
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=gcc-4.8 CXX_COMPILER=g++-4.8 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=RELEASE
-      compiler: gcc
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'gcc-4.8'
+        - CXX_COMPILER: 'g++-4.8'
+        - BOOST_VERSION: '1.55.0'
+        - QT_MAJOR_VERSION: '4'
+        - BUILD_TYPE: 'RELEASE'
+      compiler: 'gcc'
       addons: &apt-gcc48-boost155-qt4
         apt:
           packages:
-            - cmake
-            - cmake-data
-            - gcc-4.8
-            - g++-4.8
-            - libboost1.55-all-dev
-            - libqt4-dev
+            - 'cmake'
+            - 'cmake-data'
+            - 'gcc-4.8'
+            - 'g++-4.8'
+            - 'libboost1.55-all-dev'
+            - 'libqt4-dev'
           sources: *gcc-package-sources
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=gcc-4.8 CXX_COMPILER=g++-4.8 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=DEBUG
-      compiler: gcc
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'gcc-4.8'
+        - CXX_COMPILER: 'g++-4.8'
+        - BOOST_VERSION: '1.55.0'
+        - QT_MAJOR_VERSION: '4'
+        - BUILD_TYPE: 'DEBUG'
+      compiler: 'gcc'
       addons: *apt-gcc48-boost155-qt4
     # GCC 4.6, Boost 1.55.0, Qt 4.x
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=gcc-4.6 CXX_COMPILER=g++-4.6 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=RELEASE
-      compiler: gcc
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'gcc-4.6'
+        - CXX_COMPILER: 'g++-4.6'
+        - BOOST_VERSION: '1.55.0'
+        - QT_MAJOR_VERSION: '4'
+        - BUILD_TYPE: 'RELEASE'
+      compiler: 'gcc'
       addons: &apt-gcc46-boost155-qt4
         apt:
           packages:
-            - cmake
-            - cmake-data
-            - gcc-4.6
-            - g++-4.6
-            - libboost1.55-all-dev
-            - libqt4-dev
+            - 'cmake'
+            - 'cmake-data'
+            - 'gcc-4.6'
+            - 'g++-4.6'
+            - 'libboost1.55-all-dev'
+            - 'libqt4-dev'
           sources: *gcc-package-sources
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=gcc-4.6 CXX_COMPILER=g++-4.6 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=DEBUG
-      compiler: gcc
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'gcc-4.6'
+        - CXX_COMPILER: 'g++-4.6'
+        - BOOST_VERSION: '1.55.0'
+        - QT_MAJOR_VERSION: '4'
+        - BUILD_TYPE: 'DEBUG'
+      compiler: 'gcc'
       addons: *apt-gcc46-boost155-qt4
     # Clang 5.0, Boost 1.55.0, Qt 4.x
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=clang-5.0 CXX_COMPILER=clang++-5.0 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=RELEASE
-      compiler: clang
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'clang-5.0'
+        - CXX_COMPILER: 'clang++-5.0'
+        - BOOST_VERSION: '1.55.0'
+        - QT_MAJOR_VERSION: '4'
+        - BUILD_TYPE: 'RELEASE'
+      compiler: 'clang'
       addons: &apt-clang50-boost155-qt4
         apt:
           packages:
-            - cmake
-            - cmake-data
-            - clang-5.0
-            - libboost1.55-all-dev
-            - libqt4-dev
+            - 'cmake'
+            - 'cmake-data'
+            - 'clang-5.0'
+            - 'libboost1.55-all-dev'
+            - 'libqt4-dev'
           sources: *llvm50-package-sources
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=clang-5.0 CXX_COMPILER=clang++-5.0 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=DEBUG
-      compiler: clang
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'clang-5.0'
+        - CXX_COMPILER: 'clang++-5.0'
+        - BOOST_VERSION: '1.55.0'
+        - QT_MAJOR_VERSION: '4'
+        - BUILD_TYPE: 'DEBUG'
+      compiler: 'clang'
       addons: *apt-clang50-boost155-qt4
     # Clang 4.0, Boost 1.55.0, Qt 4.x
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=clang-4.0 CXX_COMPILER=clang++-4.0 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=RELEASE
-      compiler: clang
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'clang-4.0'
+        - CXX_COMPILER: 'clang++-4.0'
+        - BOOST_VERSION: '1.55.0'
+        - QT_MAJOR_VERSION: '4'
+        - BUILD_TYPE: 'RELEASE'
+      compiler: 'clang'
       addons: &apt-clang40-boost155-qt4
         apt:
           packages:
-            - cmake
-            - cmake-data
-            - clang-4.0
-            - libboost1.55-all-dev
-            - libqt4-dev
+            - 'cmake'
+            - 'cmake-data'
+            - 'clang-4.0'
+            - 'libboost1.55-all-dev'
+            - 'libqt4-dev'
           sources: *llvm40-package-sources
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=clang-4.0 CXX_COMPILER=clang++-4.0 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=DEBUG
-      compiler: clang
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'clang-4.0'
+        - CXX_COMPILER: 'clang++-4.0'
+        - BOOST_VERSION: '1.55.0'
+        - QT_MAJOR_VERSION: '4'
+        - BUILD_TYPE: 'DEBUG'
+      compiler: 'clang'
       addons: *apt-clang40-boost155-qt4
     # Clang 3.9, Boost 1.55.0, Qt 4.x
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=clang-3.9 CXX_COMPILER=clang++-3.9 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=RELEASE
-      compiler: clang
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'clang-3.9'
+        - CXX_COMPILER: 'clang++-3.9'
+        - BOOST_VERSION: '1.55.0'
+        - QT_MAJOR_VERSION: '4'
+        - BUILD_TYPE: 'RELEASE'
+      compiler: 'clang'
       addons: &apt-clang39-boost155-qt4
         apt:
           packages:
-            - cmake
-            - cmake-data
-            - clang-3.9
-            - libboost1.55-all-dev
-            - libqt4-dev
+            - 'cmake'
+            - 'cmake-data'
+            - 'clang-3.9'
+            - 'libboost1.55-all-dev'
+            - 'libqt4-dev'
           sources: *llvm39-package-sources
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=clang-3.9 CXX_COMPILER=clang++-3.9 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=DEBUG
-      compiler: clang
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'clang-3.9'
+        - CXX_COMPILER: 'clang++-3.9'
+        - BOOST_VERSION: '1.55.0'
+        - QT_MAJOR_VERSION: '4'
+        - BUILD_TYPE: 'DEBUG'
+      compiler: 'clang'
       addons: *apt-clang39-boost155-qt4
     # Clang 3.6, Boost 1.55.0, Qt 4.x
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=clang-3.6 CXX_COMPILER=clang++-3.6 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=RELEASE
-      compiler: clang
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'clang-3.6'
+        - CXX_COMPILER: 'clang++-3.6'
+        - BOOST_VERSION: '1.55.0'
+        - QT_MAJOR_VERSION: '4'
+        - BUILD_TYPE: 'RELEASE'
+      compiler: 'clang'
       addons: &apt-clang36-boost155-qt4
         apt:
           packages:
-            - cmake
-            - cmake-data
-            - clang-3.6
-            - libboost1.55-all-dev
-            - libqt4-dev
+            - 'cmake'
+            - 'cmake-data'
+            - 'clang-3.6'
+            - 'libboost1.55-all-dev'
+            - 'libqt4-dev'
           sources: *llvm36-package-sources
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=clang-3.6 CXX_COMPILER=clang++-3.6 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=DEBUG
-      compiler: clang
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'clang-3.6'
+        - CXX_COMPILER: 'clang++-3.6'
+        - BOOST_VERSION: '1.55.0'
+        - QT_MAJOR_VERSION: '4'
+        - BUILD_TYPE: 'DEBUG'
+      compiler: 'clang'
       addons: *apt-clang36-boost155-qt4
     # Clang 3.7, Boost 1.55.0, Qt 4.x
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=clang-3.7 CXX_COMPILER=clang++-3.7 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=RELEASE
-      compiler: clang
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'clang-3.7'
+        - CXX_COMPILER: 'clang++-3.7'
+        - BOOST_VERSION: '1.55.0'
+        - QT_MAJOR_VERSION: '4'
+        - BUILD_TYPE: 'RELEASE'
+      compiler: 'clang'
       addons: &apt-clang37-boost155-qt4
         apt:
           packages:
-            - cmake
-            - cmake-data
-            - clang-3.7
-            - libboost1.55-all-dev
-            - libqt4-dev
+            - 'cmake'
+            - 'cmake-data'
+            - 'clang-3.7'
+            - 'libboost1.55-all-dev'
+            - 'libqt4-dev'
           sources: *llvm37-package-sources
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=clang-3.7 CXX_COMPILER=clang++-3.7 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=DEBUG
-      compiler: clang
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'clang-3.7'
+        - CXX_COMPILER: 'clang++-3.7'
+        - BOOST_VERSION: '1.55.0'
+        - QT_MAJOR_VERSION: '4'
+        - BUILD_TYPE: 'DEBUG'
+      compiler: 'clang'
       addons: *apt-clang37-boost155-qt4
     # Clang 3.8, Boost 1.55.0, Qt 4.x
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=clang-3.8 CXX_COMPILER=clang++-3.8 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=RELEASE
-      compiler: clang
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'clang-3.8'
+        - CXX_COMPILER: 'clang++-3.8'
+        - BOOST_VERSION: '1.55.0'
+        - QT_MAJOR_VERSION: '4'
+        - BUILD_TYPE: 'RELEASE'
+      compiler: 'clang'
       addons: &apt-clang38-boost155-qt4
         apt:
           packages:
-            - cmake
-            - cmake-data
-            - clang-3.8
-            - libboost1.55-all-dev
-            - libqt4-dev
+            - 'cmake'
+            - 'cmake-data'
+            - 'clang-3.8'
+            - 'libboost1.55-all-dev'
+            - 'libqt4-dev'
           sources: *llvm38-package-sources
-    - os: linux
-      dist: trusty
-      env: C_COMPILER=clang-3.8 CXX_COMPILER=clang++-3.8 BOOST_VERSION=1.55.0 QT_MAJOR_VERSION=4 BUILD_TYPE=DEBUG
-      compiler: clang
+    - os: 'linux'
+      dist: 'trusty'
+      env:
+        - C_COMPILER: 'clang-3.8'
+        - CXX_COMPILER: 'clang++-3.8'
+        - BOOST_VERSION: '1.55.0'
+        - QT_MAJOR_VERSION: '4'
+        - BUILD_TYPE: 'DEBUG'
+      compiler: 'clang'
       addons: *apt-clang38-boost155-qt4
 
-install: source ./scripts/travis/install.sh
-script:
-  - if [[ "${COVERITY_SCAN_BRANCH}" == 1 ]]; then
-      echo "Build was already perfomed with Coverity scan.";
-    else
-      ./scripts/travis/build.sh;
-    fi
+install: 'source ./scripts/travis/install.sh'
+script: './scripts/travis/build.sh'

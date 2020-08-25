@@ -1,29 +1,29 @@
 codecov:
-  max_report_age: off
+  max_report_age: 'off'
   notify:
     require_ci_to_pass: yes
 
 coverage:
   precision: 2
-  round: down
-  range: "70...100"
+  round: 'down'
+  range: '70...100'
   status:
     project:
       default:
-        target: auto
-        if_no_uploads: error
+        target: 'auto'
+        if_no_uploads: 'error'
     patch:
       default:
-        if_no_uploads: error
+        if_no_uploads: 'error'
     changes: true
 
 ignore:
-  - "3rdparty/*"
-  - "cmake/*"
-  - "doc/*"
-  - "examples/*"
-  - "tests/*"
+  - '3rdparty/*'
+  - 'cmake/*'
+  - 'doc/*'
+  - 'examples/*'
+  - 'tests/*'
 
 comment:
-  layout: "header, diff, changes, suggestions"
-  behavior: default
+  layout: 'header, diff, changes, suggestions'
+  behavior: 'default'
