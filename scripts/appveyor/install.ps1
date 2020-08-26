@@ -173,7 +173,7 @@ try {
 Write-Host "Detected CMake of ${detected_cmake_version} version"
 if (Test-Path env:CMAKE_VERSION) {
   Write-Host "CMake of ${env:CMAKE_VERSION} version is requested"
-  if (${env:CMAKE_VERSION} -ne ${detected_cmake_version}) {
+  if ([System.Version] "${env:CMAKE_VERSION}" -ne [System.Version] ${detected_cmake_version}) {
     if ([System.Version] "${env:CMAKE_VERSION}" -ge [System.Version] "3.6.0") {
       $cmake_archive_base_name = "cmake-${env:CMAKE_VERSION}-win64-x64"
     } else {

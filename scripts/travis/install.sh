@@ -12,11 +12,15 @@ set -e
 # shellcheck source=vercomp.sh
 source "${TRAVIS_BUILD_DIR}/scripts/travis/vercomp.sh"
 
+# shellcheck source=travis_retry.sh
+source "${TRAVIS_BUILD_DIR}/scripts/travis/travis_retry.sh"
+
 if [[ "${TRAVIS_OS_NAME}" = "osx" ]]; then
   export PATH="/usr/local/opt/gnu-sed/libexec/gnubin:${PATH}"
 fi
 
-cxx_compiler_family="$(echo "${C_COMPILER:-gcc}" | sed -r 's/^(\w+)\-.*$/\1/;t;d')"
+c_compiler_family="$(echo "${C_COMPILER:-gcc}" | sed -r 's/^([^\-]+)(\-.*)?$/\1/;t;d')"
+c_compiler_major_version="$(${C_COMPILER:-gcc} --version | sed -r "s/^(.*[[:space:]]+)?${c_compiler_family}[[:space:]]+[^[:digit:]]*([[:digit:]]+)(\..*)?$/\2/;t;d")"
 
 detected_cmake_version=""
 if which cmake > /dev/null; then
@@ -29,7 +33,7 @@ fi
 
 if [[ -n "${CMAKE_VERSION+x}" ]]; then
   echo "CMake of ${CMAKE_VERSION} version is requested"
-  if [[ "${CMAKE_VERSION}" != "${detected_cmake_version}" ]]; then
+  if [[ "$(vercomp "${CMAKE_VERSION}" "${detected_cmake_version}")" -ne 0 ]]; then
     if [[ "${TRAVIS_OS_NAME}" = "linux" ]]; then
       if [[ "$(vercomp "${CMAKE_VERSION}" "3.1.0")" -ge 0 ]]; then
         cmake_archive_base_name="cmake-${CMAKE_VERSION}-Linux-x86_64"
@@ -103,14 +107,14 @@ fi
 
 if [[ "${system_boost_home}" -eq 0 ]] && [[ -n "${BOOST_VERSION+x}" ]]; then
   if ! [[ "${TRAVIS_OS_NAME}" = "linux" ]]; then
-    echo "Chosen version of Boost: ${BOOST_VERSION} is not supported for OS: ${TRAVIS_OS_NAME}"
+    echo "Chosen version of Boost: ${BOOST_VERSION} and OS: ${TRAVIS_OS_NAME} is not supported by available prebuilt Boost downloads"
     exit 1
   fi
-  if ! [[ "${cxx_compiler_family}" = "gcc" ]]; then
-    echo "Chosen compiler: ${cxx_compiler_family} is not supported by available prebuilt Boost downloads"
+  if ! [[ "${c_compiler_family}" = "gcc" ]]; then
+    echo "Chosen compiler: ${c_compiler_family} is not supported by available prebuilt Boost downloads"
     exit 1
   fi
-  boost_archive_base_name="boost-${BOOST_VERSION}-x64-${cxx_compiler_family}$(gcc -dumpversion | sed -r 's/^([[:digit:]]+)(\..*)?$/\1/;t;d')"
+  boost_archive_base_name="boost-${BOOST_VERSION}-x64-${c_compiler_family}${c_compiler_major_version}"
   export BOOST_HOME="${DEPENDENCIES_HOME}/${boost_archive_base_name}"
   if [[ ! -d "${BOOST_HOME}" ]]; then
     echo "Boost is absent for the chosen Boost version (${BOOST_VERSION}) at ${BOOST_HOME}"
