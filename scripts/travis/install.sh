@@ -33,7 +33,7 @@ fi
 
 if [[ -n "${CMAKE_VERSION+x}" ]]; then
   echo "CMake of ${CMAKE_VERSION} version is requested"
-  if [[ "${CMAKE_VERSION}" != "${detected_cmake_version}" ]]; then
+  if [[ "$(vercomp "${CMAKE_VERSION}" "${detected_cmake_version}")" -ne 0 ]]; then
     if [[ "${TRAVIS_OS_NAME}" = "linux" ]]; then
       if [[ "$(vercomp "${CMAKE_VERSION}" "3.1.0")" -ge 0 ]]; then
         cmake_archive_base_name="cmake-${CMAKE_VERSION}-Linux-x86_64"
