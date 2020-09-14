@@ -384,7 +384,7 @@ void session::handle_read_at_work(const boost::system::error_code& error,
   // Handle read data
   buffer_.consume(bytes_transferred);
 
-  // If EOF is recieved then read activity (SM) is stopped
+  // If EOF is received then read activity (SM) is stopped
   if (boost::asio::error::eof == error)
   {
     read_state_ = read_state::stopped;
@@ -426,7 +426,7 @@ void session::handle_read_at_shutdown(const boost::system::error_code& error,
   // Handle read data
   buffer_.consume(bytes_transferred);
 
-  // If EOF is recieved then read activity is stopped
+  // If EOF is received then read activity is stopped
   if (boost::asio::error::eof == error)
   {
     read_state_ = read_state::stopped;
@@ -825,7 +825,7 @@ void session::start_shutdown(const boost::system::error_code& error,
   BOOST_ASSERT_MSG(intern_state::work == intern_state_,
       "Invalid internal state");
 
-  // Siwtch general internal SM
+  // Switch general internal SM
   intern_state_ = intern_state::shutdown;
 
   // Notify external wait handler if need
@@ -843,7 +843,7 @@ void session::start_stop(boost::system::error_code error)
       || (intern_state::shutdown == intern_state_),
       "Invalid internal state");
 
-  // Siwtch general internal SM
+  // Switch general internal SM
   intern_state_ = intern_state::stop;
 
   // Close the socket and register error if there was no stop error before
