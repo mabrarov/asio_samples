@@ -8,7 +8,7 @@
 ## Building image
 
 ```bash
-docker build -t abrarov/tcp-echo docker/ma_echo_server/alpine
+docker build -t abrarov/tcp-echo:alpine docker/ma_echo_server/alpine
 ```
 
 ## Using image
@@ -16,11 +16,11 @@ docker build -t abrarov/tcp-echo docker/ma_echo_server/alpine
 Run ma_echo_server:
 
 ```bash
-docker run -d --name echo -p 9:9999 abrarov/tcp-echo --port 9999 --inactivity-timeout 300
+docker run -d --name echo -p 9:9999 abrarov/tcp-echo:alpine --port 9999 --inactivity-timeout 300
 ```
 
 Get help about supported parameters:
 
 ```bash
-docker run --rm abrarov/tcp-echo --help
+docker run --rm abrarov/tcp-echo:alpine --help
 ```

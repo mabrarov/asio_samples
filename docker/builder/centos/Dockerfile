@@ -17,20 +17,20 @@ ENV PROJECT_DIR="/project" \
     MA_QT="ON" \
     MA_QT_MAJOR_VERSION="5" \
     MA_COVERAGE="OFF" \
-    CMAKE_VERSION="3.18.2" \
+    CMAKE_VERSION="3.18.4" \
     PATH="/opt/cmake/bin:${PATH}"
 
-ADD ["start.sh", "/app/"]
+ENTRYPOINT ["/app/start.sh"]
 
 RUN yum update -y && \
     yum install --setopt=tsflags=nodocs -y epel-release && \
     yum groupinstall --setopt=tsflags=nodocs -y 'Development Tools' && \
+    yum install --setopt=tsflags=nodocs -y ca-certificates && \
     yum install --setopt=tsflags=nodocs -y curl && \
-    mkdir -p /opt && \
+    mkdir -p /opt/cmake && \
     curl -jksSL \
       "https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz" \
-      | tar -xzf - -C /opt && \
-    mv -f "/opt/cmake-${CMAKE_VERSION}-Linux-x86_64" /opt/cmake && \
+      | tar -xzf - -C /opt/cmake --strip-components 1 && \
     yum install --setopt=tsflags=nodocs -y glibc-static && \
     yum install --setopt=tsflags=nodocs -y libstdc++-static && \
     yum install --setopt=tsflags=nodocs -y lcov && \
@@ -42,8 +42,6 @@ RUN yum update -y && \
     mkdir /project && \
     mkdir /build
 
-VOLUME ["/project", "/build"]
-
 WORKDIR /build
 
-ENTRYPOINT ["/app/start.sh"]
+ADD ["start.sh", "/app/"]

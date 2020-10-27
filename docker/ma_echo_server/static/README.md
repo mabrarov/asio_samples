@@ -17,29 +17,18 @@ docker build -t abrarov/tcp-echo:static docker/ma_echo_server/static
 List content of image:
 
 ```bash
-container_id="$(docker create abrarov/tcp-echo:static sh)" \
-  && docker export "${container_id}" | tar tf - --verbose && \
-  docker rm -fv "${container_id}" > /dev/null
+temp_dir="$(mktemp -d)" && \
+docker save abrarov/tcp-echo:static | tar xf - -C "${temp_dir}" && \
+tar tvf "${temp_dir}/"*"/layer.tar" && \
+rm -rf "${temp_dir}"
 ```
 
 Expected output looks like:
 
 ```text
--rwxr-xr-x 0/0               0 2020-02-03 02:27 .dockerenv
-drwxr-xr-x 0/0               0 2020-02-03 02:27 dev/
--rwxr-xr-x 0/0               0 2020-02-03 02:27 dev/console
-drwxr-xr-x 0/0               0 2020-02-03 02:27 dev/pts/
-drwxr-xr-x 0/0               0 2020-02-03 02:27 dev/shm/
-drwxr-xr-x 0/0               0 2020-02-03 02:27 etc/
--rwxr-xr-x 0/0               0 2020-02-03 02:27 etc/hostname
--rwxr-xr-x 0/0               0 2020-02-03 02:27 etc/hosts
-lrwxrwxrwx 0/0               0 2020-02-03 02:27 etc/mtab -> /proc/mounts
--rwxr-xr-x 0/0               0 2020-02-03 02:27 etc/resolv.conf
-drwxr-xr-x 0/0               0 2020-02-03 02:19 opt/
-drwxr-xr-x 0/0               0 2020-02-03 02:19 opt/ma_echo_server/
--rwxr-xr-x 0/0         8606944 2020-02-03 02:19 opt/ma_echo_server/ma_echo_server
-drwxr-xr-x 0/0               0 2020-02-03 02:27 proc/
-drwxr-xr-x 0/0               0 2020-02-03 02:27 sys/
+drwxr-xr-x 0/0               0 2020-10-27 23:22 opt/
+drwxr-xr-x 0/0               0 2020-10-27 23:22 opt/ma_echo_server/
+-rwxr-xr-x 0/0         8579200 2020-10-27 23:22 opt/ma_echo_server/ma_echo_server
 ```
 
 Run ma_echo_server:
