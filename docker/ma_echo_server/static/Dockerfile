@@ -63,4 +63,4 @@ LABEL name="abrarov/tcp-echo" \
 
 ENTRYPOINT ["/opt/ma_echo_server/ma_echo_server"]
 
-COPY --from=build /opt/ma_echo_server /opt/ma_echo_server
+COPY --from=build ["/opt/ma_echo_server", "/opt/ma_echo_server"]

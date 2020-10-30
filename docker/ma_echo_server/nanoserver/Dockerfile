@@ -29,4 +29,6 @@ LABEL name="abrarov/tcp-echo" \
 
 ENTRYPOINT ["C:\\ma_echo_server.exe"]
 
-COPY --from=build "C:\\build\\examples\\ma_echo_server\\Release\\ma_echo_server.exe" "C:\\ma_echo_server.exe"
+COPY --from=build \
+    ["C:\\\\build\\\\examples\\\\ma_echo_server\\\\Release\\\\ma_echo_server.exe", \
+     "C:\\\\ma_echo_server.exe"]

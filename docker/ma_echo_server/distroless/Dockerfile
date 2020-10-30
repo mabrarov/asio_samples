@@ -29,7 +29,8 @@ RUN mkdir -p "${CMAKE_HOME}" && \
     echo "Downloading CMake ${CMAKE_VERSION} from ${cmake_url} to ${CMAKE_HOME}" && \
     curl -jksSL "${cmake_url}" | tar -xzf - -C "${CMAKE_HOME}" --strip-components 1
 
-ENV BOOST_HOME="/usr/lib/boost"
+ENV PATH="${CMAKE_HOME}/bin:${PATH}" \
+    BOOST_HOME="/usr/lib/boost"
 
 RUN mkdir -p "${BOOST_HOME}" && \
     boost_archive_url="${BOOST_URL}/${BOOST_VERSION}/boost-${BOOST_VERSION}-x64-gcc$(gcc -dumpversion | sed -r 's/^([[:digit:]]+)(\..*)?$/\1/;t;d').tar.gz" && \
@@ -42,7 +43,7 @@ RUN source_dir="$(mktemp -d)" && \
     git clone "https://github.com/mabrarov/asio_samples.git" "${source_dir}" && \
     git -C "${source_dir}" checkout "${MA_REVISION}" && \
     build_dir="$(mktemp -d)" && \
-    "${CMAKE_HOME}/bin/cmake" \
+    cmake \
       -D CMAKE_SKIP_BUILD_RPATH=ON \
       -D CMAKE_BUILD_TYPE=RELEASE \
       -D Boost_USE_STATIC_LIBS=ON \
@@ -53,7 +54,7 @@ RUN source_dir="$(mktemp -d)" && \
       -D MA_QT=OFF \
       -S "${source_dir}" \
       -B "${build_dir}" && \
-    "${CMAKE_HOME}/bin/cmake" --build "${build_dir}" --target ma_echo_server && \
+    cmake --build "${build_dir}" --target ma_echo_server && \
     mkdir -p /opt/ma_echo_server && \
     mv -f "${build_dir}/examples/ma_echo_server/ma_echo_server" \
         /opt/ma_echo_server/ && \
@@ -68,4 +69,4 @@ LABEL name="abrarov/tcp-echo" \
 
 ENTRYPOINT ["/opt/ma_echo_server/ma_echo_server"]
 
-COPY --from=build /opt/ma_echo_server /opt/ma_echo_server
+COPY --from=build ["/opt/ma_echo_server", "/opt/ma_echo_server"]
