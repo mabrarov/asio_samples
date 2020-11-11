@@ -63,7 +63,7 @@ matrix:
       env:
         - C_COMPILER: 'gcc-10'
         - CXX_COMPILER: 'g++-10'
-        - CMAKE_VERSION: '3.18.2'
+        - CMAKE_VERSION: '3.18.4'
         - BOOST_VERSION: '1.74.0'
         - QT_MAJOR_VERSION: '5'
         - BUILD_TYPE: 'RELEASE'
@@ -87,7 +87,7 @@ matrix:
       env:
         - C_COMPILER: 'gcc-10'
         - CXX_COMPILER: 'g++-10'
-        - CMAKE_VERSION: '3.18.2'
+        - CMAKE_VERSION: '3.18.4'
         - BOOST_VERSION: '1.74.0'
         - QT_MAJOR_VERSION: '5'
         - BUILD_TYPE: 'DEBUG'
@@ -99,7 +99,7 @@ matrix:
       env:
         - C_COMPILER: 'gcc-9'
         - CXX_COMPILER: 'g++-9'
-        - CMAKE_VERSION: '3.18.2'
+        - CMAKE_VERSION: '3.18.4'
         - BOOST_VERSION: '1.74.0'
         - QT_MAJOR_VERSION: '5'
         - BUILD_TYPE: 'RELEASE'
@@ -121,7 +121,7 @@ matrix:
       env:
         - C_COMPILER: 'gcc-9'
         - CXX_COMPILER: 'g++-9'
-        - CMAKE_VERSION: '3.18.2'
+        - CMAKE_VERSION: '3.18.4'
         - BOOST_VERSION: '1.74.0'
         - QT_MAJOR_VERSION: '5'
         - BUILD_TYPE: 'DEBUG'
@@ -195,13 +195,48 @@ matrix:
         - BUILD_TYPE: 'DEBUG'
       compiler: 'gcc'
       addons: *apt-gcc7-boost170-qt5
+    # Clang 11.0, Boost 1.74.0, Qt 5.x
+    - os: 'linux'
+      dist: 'bionic'
+      env:
+        - C_COMPILER: 'clang-11'
+        - CXX_COMPILER: 'clang++-11'
+        - CMAKE_VERSION: '3.18.4'
+        - BOOST_VERSION: '1.74.0'
+        - QT_MAJOR_VERSION: '5'
+        - BUILD_TYPE: 'RELEASE'
+      compiler: 'clang'
+      addons: &apt-clang11-boost174-qt5
+        apt:
+          packages:
+            - 'cmake'
+            - 'cmake-data'
+            - 'clang-11'
+            - 'libboost1.74-dev'
+            - 'qtbase5-dev'
+          sources:
+            - 'ubuntu-toolchain-r-test'
+            - sourceline: 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-11 main'
+              key_url: 'https://apt.llvm.org/llvm-snapshot.gpg.key'
+            - sourceline: 'ppa:mhier/libboost-latest'
+    - os: 'linux'
+      dist: 'bionic'
+      env:
+        - C_COMPILER: 'clang-11'
+        - CXX_COMPILER: 'clang++-11'
+        - CMAKE_VERSION: '3.18.4'
+        - BOOST_VERSION: '1.74.0'
+        - QT_MAJOR_VERSION: '5'
+        - BUILD_TYPE: 'DEBUG'
+      compiler: 'clang'
+      addons: *apt-clang11-boost174-qt5
     # Clang 10.0, Boost 1.74.0, Qt 5.x
     - os: 'linux'
       dist: 'bionic'
       env:
         - C_COMPILER: 'clang-10'
         - CXX_COMPILER: 'clang++-10'
-        - CMAKE_VERSION: '3.18.2'
+        - CMAKE_VERSION: '3.18.4'
         - BOOST_VERSION: '1.74.0'
         - QT_MAJOR_VERSION: '5'
         - BUILD_TYPE: 'RELEASE'
@@ -224,7 +259,7 @@ matrix:
       env:
         - C_COMPILER: 'clang-10'
         - CXX_COMPILER: 'clang++-10'
-        - CMAKE_VERSION: '3.18.2'
+        - CMAKE_VERSION: '3.18.4'
         - BOOST_VERSION: '1.74.0'
         - QT_MAJOR_VERSION: '5'
         - BUILD_TYPE: 'DEBUG'
