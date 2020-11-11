@@ -23,21 +23,28 @@ rm -rf "${BUILD_HOME}"
 mkdir -p "${BUILD_HOME}"
 cd "${BUILD_HOME}"
 
-generate_cmd="cmake -D CMAKE_C_COMPILER=\"${C_COMPILER}\" -D CMAKE_CXX_COMPILER=\"${CXX_COMPILER}\" -D CMAKE_BUILD_TYPE=\"${BUILD_TYPE}\""
+generate_cmd="cmake -D CMAKE_C_COMPILER=$(printf "%q" "${C_COMPILER}")"
+generate_cmd="${generate_cmd} -D CMAKE_CXX_COMPILER=$(printf "%q" "${CXX_COMPILER}")"
+generate_cmd="${generate_cmd} -D CMAKE_BUILD_TYPE=$(printf "%q" "${BUILD_TYPE}")"
 if [[ -n "${BOOST_HOME+x}" ]]; then
   echo "Building with Boost ${BOOST_VERSION} located at ${BOOST_HOME}"
-  generate_cmd="${generate_cmd} -D CMAKE_SKIP_BUILD_RPATH=ON -D Boost_NO_SYSTEM_PATHS=ON -D BOOST_INCLUDEDIR=\"${BOOST_HOME}/include\" -D BOOST_LIBRARYDIR=\"${BOOST_HOME}/lib\""
+  generate_cmd="${generate_cmd} -D CMAKE_SKIP_BUILD_RPATH=ON -D Boost_NO_SYSTEM_PATHS=ON"
+  generate_cmd="${generate_cmd} -D BOOST_INCLUDEDIR=$(printf "%q" "${BOOST_HOME}/include")"
+  generate_cmd="${generate_cmd} -D BOOST_LIBRARYDIR=$(printf "%q" "${BOOST_HOME}/lib")"
 else
   echo "Building with Boost ${BOOST_VERSION} located at system paths"
 fi
-generate_cmd="${generate_cmd} -D MA_QT_MAJOR_VERSION=\"${QT_MAJOR_VERSION}\""
+generate_cmd="${generate_cmd} -D MA_QT_MAJOR_VERSION=$(printf "%q" "${QT_MAJOR_VERSION}")"
 if [[ "${TRAVIS_OS_NAME}" = "osx" ]]; then
   if [[ "${QT_MAJOR_VERSION}" -eq 5 ]]; then
     qt5_dir="/usr/local/opt/qt5/lib/cmake"
-    generate_cmd="${generate_cmd} -D Qt5Core_DIR=\"${qt5_dir}/Qt5Core\" -D Qt5Gui_DIR=\"${qt5_dir}/Qt5Gui\" -D Qt5Widgets_DIR=\"${qt5_dir}/Qt5Widgets\""
+    generate_cmd="${generate_cmd} -D Qt5Core_DIR=$(printf "%q" "${qt5_dir}/Qt5Core")"
+    generate_cmd="${generate_cmd} -D Qt5Gui_DIR=$(printf "%q" "${qt5_dir}/Qt5Gui")"
+    generate_cmd="${generate_cmd} -D Qt5Widgets_DIR=$(printf "%q" "${qt5_dir}/Qt5Widgets")"
   fi
 fi
-generate_cmd="${generate_cmd} -D MA_COVERAGE=\"${COVERAGE_BUILD}\" \"${TRAVIS_BUILD_DIR}\""
+generate_cmd="${generate_cmd} -D MA_COVERAGE=$(printf "%q" "${COVERAGE_BUILD}")"
+generate_cmd="${generate_cmd} $(printf "%q" "${TRAVIS_BUILD_DIR}")"
 echo "CMake project generation command: ${generate_cmd}"
 eval "${generate_cmd}"
 cmake --build "${BUILD_HOME}" --config "${BUILD_TYPE}"
