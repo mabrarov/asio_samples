@@ -17,7 +17,7 @@ ENV PROJECT_DIR="/project" \
     MA_QT_MAJOR_VERSION="5" \
     MA_COVERAGE="OFF"
 
-ADD ["start.sh", "/app/"]
+ENTRYPOINT ["/app/start.sh"]
 
 RUN echo http://nl.alpinelinux.org/alpine/edge/testing >> /etc/apk/repositories && \
     apk add --no-cache \
@@ -34,8 +34,6 @@ RUN echo http://nl.alpinelinux.org/alpine/edge/testing >> /etc/apk/repositories 
     mkdir /project && \
     mkdir /build
 
-VOLUME ["/project", "/build"]
-
 WORKDIR /build
 
-ENTRYPOINT ["/app/start.sh"]
+ADD ["start.sh", "/app/"]
