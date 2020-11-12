@@ -9,7 +9,7 @@ FROM abrarov/msvc-2019:2.9.0 AS build
 
 ARG MA_REVISION=master
 
-ENV CMAKE_VERSION="3.18.2" \
+ENV CMAKE_VERSION="3.18.4" \
     BOOST_VERSION="1.74.0" \
     BOOST_URL="https://dl.bintray.com/mabrarov/generic/boost" \
     SOURCE_DIR="C:\asio_samples" \
@@ -27,6 +27,8 @@ LABEL name="abrarov/tcp-echo" \
     description="TCP echo server from Asio samples project" \
     license="BSL-1.0"
 
-COPY --from=build "C:\\build\\examples\\ma_echo_server\\Release\\ma_echo_server.exe" "C:\\ma_echo_server.exe"
-
 ENTRYPOINT ["C:\\ma_echo_server.exe"]
+
+COPY --from=build \
+    ["C:\\\\build\\\\examples\\\\ma_echo_server\\\\Release\\\\ma_echo_server.exe", \
+     "C:\\\\ma_echo_server.exe"]

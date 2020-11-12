@@ -5,15 +5,15 @@
 # file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
-image: Visual Studio 2015
+image: 'Visual Studio 2015'
 
 platform:
-  - x64
-  - Win32
+  - 'x64'
+  - 'Win32'
 
 configuration:
-  - Debug
-  - Release
+  - 'Debug'
+  - 'Release'
 
 environment:
   PATH: 'C:\Program Files\OpenCppCoverage;C:\Python34;C:\Python34\Scripts;%PATH%'
@@ -25,8 +25,8 @@ environment:
   VSWHERE_URL: 'https://github.com/Microsoft/vswhere/releases/download'
   VSWHERE_VERSION: '2.8.4'
   VSWHERE_DIST_NAME: 'vswhere.exe'
-  COVERITY_SCAN_CANDIDATE: 0
-  COVERAGE_BUILD_CANDIDATE: 0
+  COVERITY_SCAN_CANDIDATE: '0'
+  COVERAGE_BUILD_CANDIDATE: '0'
   COVERAGE_ARTIFACT_NAME: 'coverage'
   COVERITY_SCAN_TOKEN:
     secure: '/xtA6PHQhEU4NSLYHHUDfqrvNq0uflDa4a2clvq5dmE='
@@ -34,223 +34,223 @@ environment:
     secure: 'ENSUMQl8WDP8x86q4eKd7B/o4WA5cEY9hqE7kOJA/io='
   CODECOV_TOKEN:
     secure: 'pgoFGLMJCfBPWsK4CU6SqrFdAevx5vjkKxr/erkcjoyTh9TcVQF8XCQucnT4KTtM'
-  CURL_CONNECT_TIMEOUT: 300
-  CURL_MAX_TIME: 1800
-  CURL_RETRY: 10
-  CURL_RETRY_DELAY: 10
-  PIP_RETRY: 10
-  CODECOV_VERSION: 2.1.7
+  CURL_CONNECT_TIMEOUT: '300'
+  CURL_MAX_TIME: '1800'
+  CURL_RETRY: '10'
+  CURL_RETRY_DELAY: '10'
+  PIP_RETRY: '10'
+  CODECOV_VERSION: '2.1.7'
 
   matrix:
-    - TOOLCHAIN: msvc
-      MSVC_VERSION: 14.0
-      RUNTIME_LINKAGE: shared
-      CMAKE_VERSION: 3.18.2
-      BOOST_VERSION: 1.74.0
-      BOOST_LINKAGE: static
-      QT_VERSION: 5.11.3
-      QT_LINKAGE: shared
-      COVERITY_SCAN_CANDIDATE: 1
-      COVERAGE_BUILD_CANDIDATE: 1
+    - TOOLCHAIN: 'msvc'
+      MSVC_VERSION: '14.0'
+      RUNTIME_LINKAGE: 'shared'
+      CMAKE_VERSION: '3.18.4'
+      BOOST_VERSION: '1.74.0'
+      BOOST_LINKAGE: 'static'
+      QT_VERSION: '5.11.3'
+      QT_LINKAGE: 'shared'
+      COVERITY_SCAN_CANDIDATE: '1'
+      COVERAGE_BUILD_CANDIDATE: '1'
     - APPVEYOR_BUILD_WORKER_IMAGE: 'Visual Studio 2019'
-      TOOLCHAIN: msvc
-      MSVC_VERSION: 14.2
-      RUNTIME_LINKAGE: static
-      CMAKE_VERSION: 3.18.2
-      BOOST_VERSION: 1.74.0
-      BOOST_LINKAGE: static
+      TOOLCHAIN: 'msvc'
+      MSVC_VERSION: '14.2'
+      RUNTIME_LINKAGE: 'static'
+      CMAKE_VERSION: '3.18.4'
+      BOOST_VERSION: '1.74.0'
+      BOOST_LINKAGE: 'static'
     - APPVEYOR_BUILD_WORKER_IMAGE: 'Visual Studio 2017'
-      TOOLCHAIN: msvc
-      MSVC_VERSION: 14.1
-      RUNTIME_LINKAGE: shared
-      CMAKE_VERSION: 3.18.2
-      BOOST_VERSION: 1.74.0
-      BOOST_LINKAGE: static
-      QT_VERSION: 5.13.2
-      QT_LINKAGE: shared
-    - TOOLCHAIN: mingw
-      MINGW_VERSION: 8.1.0
-      MINGW_RT_VERSION: 6
-      MINGW_REVISION: 0
-      RUNTIME_LINKAGE: static
-      CMAKE_VERSION: 3.16.2
-      BOOST_VERSION: 1.71.0
-      BOOST_LINKAGE: static
-    - TOOLCHAIN: msvc
-      MSVC_VERSION: 14.0
-      RUNTIME_LINKAGE: shared
-      CMAKE_VERSION: 3.15.1
-      BOOST_VERSION: 1.69.0
-      BOOST_LINKAGE: static
-      QT_VERSION: 5.10.1
-      QT_LINKAGE: shared
-      COVERAGE_BUILD_CANDIDATE: 1
-    - TOOLCHAIN: mingw
-      MINGW_VERSION: 7.3.0
-      MINGW_RT_VERSION: 5
-      MINGW_REVISION: 0
-      RUNTIME_LINKAGE: shared
-      CMAKE_VERSION: 3.17.2
-      BOOST_VERSION: 1.72.0
-      BOOST_LINKAGE: static
-      QT_VERSION: 5.13.2
-      QT_LINKAGE: shared
-    - TOOLCHAIN: msvc
-      MSVC_VERSION: 12.0
-      RUNTIME_LINKAGE: shared
-      CMAKE_VERSION: 3.15.1
-      BOOST_VERSION: 1.67.0
-      BOOST_LINKAGE: static
-      QT_VERSION: 5.6.3
-      QT_LINKAGE: shared
-      COVERAGE_BUILD_CANDIDATE: 1
-    - TOOLCHAIN: msvc
-      MSVC_VERSION: 11.0
-      RUNTIME_LINKAGE: static
-      CMAKE_VERSION: 3.15.1
-      BOOST_VERSION: 1.67.0
-      BOOST_LINKAGE: static
-      COVERAGE_BUILD_CANDIDATE: 1
-    - TOOLCHAIN: msvc
-      MSVC_VERSION: 10.0
-      RUNTIME_LINKAGE: shared
-      CMAKE_VERSION: 3.15.1
-      BOOST_VERSION: 1.67.0
-      BOOST_LINKAGE: static
-      QT_VERSION: 4.8.7
-      QT_LINKAGE: shared
-      COVERAGE_BUILD_CANDIDATE: 1
-    - TOOLCHAIN: msvc
-      MSVC_VERSION: 9.0
-      RUNTIME_LINKAGE: static
-      CMAKE_VERSION: 3.15.1
-      BOOST_VERSION: 1.67.0
-      BOOST_LINKAGE: static
-      COVERAGE_BUILD_CANDIDATE: 1
-    - TOOLCHAIN: msvc
-      MSVC_VERSION: 10.0
-      RUNTIME_LINKAGE: shared
-      BOOST_VERSION: 1.47.0
-      BOOST_LINKAGE: static
-      QT_VERSION: 4.8.7
-      QT_LINKAGE: shared
-      COVERAGE_BUILD_CANDIDATE: 1
-    - TOOLCHAIN: msvc
-      MSVC_VERSION: 9.0
-      RUNTIME_LINKAGE: static
-      CMAKE_VERSION: 3.1.0
-      BOOST_VERSION: 1.47.0
-      BOOST_LINKAGE: static
-      COVERAGE_BUILD_CANDIDATE: 1
-    - TOOLCHAIN: msvc
-      MSVC_VERSION: 14.0
-      RUNTIME_LINKAGE: static
-      CMAKE_VERSION: 3.18.2
-      BOOST_VERSION: 1.74.0
-      BOOST_LINKAGE: static
-      QT_VERSION: 5.7
-      QT_LINKAGE: static
-      ICU_VERSION: 57.1
-      ICU_LINKAGE: static
-    - TOOLCHAIN: msvc
-      MSVC_VERSION: 14.0
-      RUNTIME_LINKAGE: static
-      CMAKE_VERSION: 3.15.1
-      BOOST_VERSION: 1.69.0
-      BOOST_LINKAGE: static
-      QT_VERSION: 5.7
-      QT_LINKAGE: static
-      ICU_VERSION: 57.1
-      ICU_LINKAGE: static
-    - TOOLCHAIN: msvc
-      MSVC_VERSION: 14.0
-      RUNTIME_LINKAGE: shared
-      CMAKE_VERSION: 3.15.1
-      BOOST_VERSION: 1.69.0
-      BOOST_LINKAGE: static
-      QT_VERSION: 5.10.1
-      QT_LINKAGE: shared
-    - TOOLCHAIN: msvc
-      MSVC_VERSION: 14.0
-      RUNTIME_LINKAGE: shared
-      CMAKE_VERSION: 3.15.1
-      BOOST_VERSION: 1.69.0
-      BOOST_LINKAGE: shared
-      QT_VERSION: 5.10.1
-      QT_LINKAGE: shared
+      TOOLCHAIN: 'msvc'
+      MSVC_VERSION: '14.1'
+      RUNTIME_LINKAGE: 'shared'
+      CMAKE_VERSION: '3.18.4'
+      BOOST_VERSION: '1.74.0'
+      BOOST_LINKAGE: 'static'
+      QT_VERSION: '5.13.2'
+      QT_LINKAGE: 'shared'
+    - TOOLCHAIN: 'mingw'
+      MINGW_VERSION: '8.1.0'
+      MINGW_RT_VERSION: '6'
+      MINGW_REVISION: '0'
+      RUNTIME_LINKAGE: 'static'
+      CMAKE_VERSION: '3.16.2'
+      BOOST_VERSION: '1.71.0'
+      BOOST_LINKAGE: 'static'
+    - TOOLCHAIN: 'msvc'
+      MSVC_VERSION: '14.0'
+      RUNTIME_LINKAGE: 'shared'
+      CMAKE_VERSION: '3.15.1'
+      BOOST_VERSION: '1.69.0'
+      BOOST_LINKAGE: 'static'
+      QT_VERSION: '5.10.1'
+      QT_LINKAGE: 'shared'
+      COVERAGE_BUILD_CANDIDATE: '1'
+    - TOOLCHAIN: 'mingw'
+      MINGW_VERSION: '7.3.0'
+      MINGW_RT_VERSION: '5'
+      MINGW_REVISION: '0'
+      RUNTIME_LINKAGE: 'shared'
+      CMAKE_VERSION: '3.17.2'
+      BOOST_VERSION: '1.72.0'
+      BOOST_LINKAGE: 'static'
+      QT_VERSION: '5.13.2'
+      QT_LINKAGE: 'shared'
+    - TOOLCHAIN: 'msvc'
+      MSVC_VERSION: '12.0'
+      RUNTIME_LINKAGE: 'shared'
+      CMAKE_VERSION: '3.15.1'
+      BOOST_VERSION: '1.67.0'
+      BOOST_LINKAGE: 'static'
+      QT_VERSION: '5.6.3'
+      QT_LINKAGE: 'shared'
+      COVERAGE_BUILD_CANDIDATE: '1'
+    - TOOLCHAIN: 'msvc'
+      MSVC_VERSION: '11.0'
+      RUNTIME_LINKAGE: 'static'
+      CMAKE_VERSION: '3.15.1'
+      BOOST_VERSION: '1.67.0'
+      BOOST_LINKAGE: 'static'
+      COVERAGE_BUILD_CANDIDATE: '1'
+    - TOOLCHAIN: 'msvc'
+      MSVC_VERSION: '10.0'
+      RUNTIME_LINKAGE: 'shared'
+      CMAKE_VERSION: '3.15.1'
+      BOOST_VERSION: '1.67.0'
+      BOOST_LINKAGE: 'static'
+      QT_VERSION: '4.8.7'
+      QT_LINKAGE: 'shared'
+      COVERAGE_BUILD_CANDIDATE: '1'
+    - TOOLCHAIN: 'msvc'
+      MSVC_VERSION: '9.0'
+      RUNTIME_LINKAGE: 'static'
+      CMAKE_VERSION: '3.15.1'
+      BOOST_VERSION: '1.67.0'
+      BOOST_LINKAGE: 'static'
+      COVERAGE_BUILD_CANDIDATE: '1'
+    - TOOLCHAIN: 'msvc'
+      MSVC_VERSION: '10.0'
+      RUNTIME_LINKAGE: 'shared'
+      BOOST_VERSION: '1.47.0'
+      BOOST_LINKAGE: 'static'
+      QT_VERSION: '4.8.7'
+      QT_LINKAGE: 'shared'
+      COVERAGE_BUILD_CANDIDATE: '1'
+    - TOOLCHAIN: 'msvc'
+      MSVC_VERSION: '9.0'
+      RUNTIME_LINKAGE: 'static'
+      CMAKE_VERSION: '3.1.0'
+      BOOST_VERSION: '1.47.0'
+      BOOST_LINKAGE: 'static'
+      COVERAGE_BUILD_CANDIDATE: '1'
+    - TOOLCHAIN: 'msvc'
+      MSVC_VERSION: '14.0'
+      RUNTIME_LINKAGE: 'static'
+      CMAKE_VERSION: '3.18.4'
+      BOOST_VERSION: '1.74.0'
+      BOOST_LINKAGE: 'static'
+      QT_VERSION: '5.7'
+      QT_LINKAGE: 'static'
+      ICU_VERSION: '57.1'
+      ICU_LINKAGE: 'static'
+    - TOOLCHAIN: 'msvc'
+      MSVC_VERSION: '14.0'
+      RUNTIME_LINKAGE: 'static'
+      CMAKE_VERSION: '3.15.1'
+      BOOST_VERSION: '1.69.0'
+      BOOST_LINKAGE: 'static'
+      QT_VERSION: '5.7'
+      QT_LINKAGE: 'static'
+      ICU_VERSION: '57.1'
+      ICU_LINKAGE: 'static'
+    - TOOLCHAIN: 'msvc'
+      MSVC_VERSION: '14.0'
+      RUNTIME_LINKAGE: 'shared'
+      CMAKE_VERSION: '3.15.1'
+      BOOST_VERSION: '1.69.0'
+      BOOST_LINKAGE: 'static'
+      QT_VERSION: '5.10.1'
+      QT_LINKAGE: 'shared'
+    - TOOLCHAIN: 'msvc'
+      MSVC_VERSION: '14.0'
+      RUNTIME_LINKAGE: 'shared'
+      CMAKE_VERSION: '3.15.1'
+      BOOST_VERSION: '1.69.0'
+      BOOST_LINKAGE: 'shared'
+      QT_VERSION: '5.10.1'
+      QT_LINKAGE: 'shared'
 
 matrix:
   exclude:
-    - platform: Win32
-      TOOLCHAIN: mingw
+    - platform: 'Win32'
+      TOOLCHAIN: 'mingw'
 
 cache:
-  - C:\projects\downloads -> .appveyor.yml
+  - 'C:\projects\downloads -> .appveyor.yml'
 
 install:
-  - ps: .\scripts\appveyor\install.ps1
-  - cmd: if not "%WINDOWS_SDK_ENV_BATCH_FILE%"=="" call "%WINDOWS_SDK_ENV_BATCH_FILE%" %WINDOWS_SDK_ENV_PARAMETERS%
-  - cmd: if not "%MSVC_VARS_BATCH_FILE%"=="" call "%MSVC_VARS_BATCH_FILE%" %MSVC_VARS_PLATFORM%
-  - ps: .\scripts\appveyor\environment.ps1
+  - ps: '.\scripts\appveyor\install.ps1'
+  - cmd: 'if not "%WINDOWS_SDK_ENV_BATCH_FILE%"=="" call "%WINDOWS_SDK_ENV_BATCH_FILE%" %WINDOWS_SDK_ENV_PARAMETERS%'
+  - cmd: 'if not "%MSVC_VARS_BATCH_FILE%"=="" call "%MSVC_VARS_BATCH_FILE%" %MSVC_VARS_PLATFORM%'
+  - ps: '.\scripts\appveyor\environment.ps1'
 
 build_script:
-  - ps: .\scripts\appveyor\build.ps1
+  - ps: '.\scripts\appveyor\build.ps1'
 
 test_script:
-  - ps: .\scripts\appveyor\test.ps1
+  - ps: '.\scripts\appveyor\test.ps1'
 
 artifacts:
-  - path: build\examples\ma_asio_performance_test_client$(ARTIFACT_PATH_SUFFIX)*.exe
-    name: ma_asio_performance_test_client
-  - path: build\examples\ma_async_basics$(ARTIFACT_PATH_SUFFIX)*.exe
-    name: ma_async_basics
-  - path: build\examples\ma_async_basics2$(ARTIFACT_PATH_SUFFIX)*.exe
-    name: ma_async_basics2
-  - path: build\examples\ma_echo_server$(ARTIFACT_PATH_SUFFIX)*.exe
-    name: ma_echo_server
-  - path: build\examples\ma_nmea_client$(ARTIFACT_PATH_SUFFIX)*.exe
-    name: ma_nmea_client
-  - path: build\examples\ma_qt_echo_server$(ARTIFACT_PATH_SUFFIX)*.exe
-    name: ma_qt_echo_server
-  - path: build\examples\asio_multicast_receiver$(ARTIFACT_PATH_SUFFIX)*.exe
-    name: asio_multicast_receiver
-  - path: build\examples\asio_multicast_sender$(ARTIFACT_PATH_SUFFIX)*.exe
-    name: asio_multicast_sender
-  - path: build\tests\ma_async_connect_test$(ARTIFACT_PATH_SUFFIX)*.exe
-    name: ma_async_connect_test
-  - path: build\tests\ma_handler_storage_test$(ARTIFACT_PATH_SUFFIX)*.exe
-    name: ma_handler_storage_test
-  - path: build\tests\ma_lockable_wrapper_test$(ARTIFACT_PATH_SUFFIX)*.exe
-    name: ma_lockable_wrapper_test
-  - path: build\tests\ma_shared_ptr_factory_test$(ARTIFACT_PATH_SUFFIX)*.exe
-    name: ma_shared_ptr_factory_test
-  - path: build\tests\ma_sp_singleton_test$(ARTIFACT_PATH_SUFFIX)*.exe
-    name: ma_sp_singleton_test
-  - path: build\tests\ma_windows_console_signal_test$(ARTIFACT_PATH_SUFFIX)*.exe
-    name: ma_windows_console_signal_test
-  - path: build\tests\ma_handler_allocator_test$(ARTIFACT_PATH_SUFFIX)*.exe
-    name: ma_handler_allocator_test
-  - path: build\tests\ma_custom_alloc_handler_test$(ARTIFACT_PATH_SUFFIX)*.exe
-    name: ma_custom_alloc_handler_test
-  - path: build\tests\ma_cyclic_buffer_test$(ARTIFACT_PATH_SUFFIX)*.exe
-    name: ma_cyclic_buffer_test
-  - path: build\tests\ma_sp_intrusive_list_test$(ARTIFACT_PATH_SUFFIX)*.exe
-    name: ma_sp_intrusive_list_test
-  - path: build\tests\ma_strand_test$(ARTIFACT_PATH_SUFFIX)*.exe
-    name: ma_strand_test
-  - path: build\tests\ma_context_alloc_handler_test$(ARTIFACT_PATH_SUFFIX)*.exe
-    name: ma_context_alloc_handler_test
-  - path: build\tests\ma_bind_handler_test$(ARTIFACT_PATH_SUFFIX)*.exe
-    name: ma_bind_handler_test
-  - path: build\tests\ma_context_invoke_handler_test$(ARTIFACT_PATH_SUFFIX)*.exe
-    name: ma_context_invoke_handler_test
-  - path: build\tests\ma_context_wrapped_handler_test$(ARTIFACT_PATH_SUFFIX)*.exe
-    name: ma_context_wrapped_handler_test
-  - path: build\tests\ma_limited_int_test$(ARTIFACT_PATH_SUFFIX)*.exe
-    name: ma_limited_int_test
-  - path: build\tests\ma_console_close_signal_test$(ARTIFACT_PATH_SUFFIX)*.exe
-    name: ma_console_close_signal_test
-  - path: build\tests\ma_intrusive_list_test$(ARTIFACT_PATH_SUFFIX)*.exe
-    name: ma_intrusive_list_test
-  - path: build\tests\ma_codecvt_cast_test$(ARTIFACT_PATH_SUFFIX)*.exe
-    name: ma_codecvt_cast_test
+  - path: 'build\examples\ma_asio_performance_test_client$(ARTIFACT_PATH_SUFFIX)*.exe'
+    name: 'ma_asio_performance_test_client'
+  - path: 'build\examples\ma_async_basics$(ARTIFACT_PATH_SUFFIX)*.exe'
+    name: 'ma_async_basics'
+  - path: 'build\examples\ma_async_basics2$(ARTIFACT_PATH_SUFFIX)*.exe'
+    name: 'ma_async_basics2'
+  - path: 'build\examples\ma_echo_server$(ARTIFACT_PATH_SUFFIX)*.exe'
+    name: 'ma_echo_server'
+  - path: 'build\examples\ma_nmea_client$(ARTIFACT_PATH_SUFFIX)*.exe'
+    name: 'ma_nmea_client'
+  - path: 'build\examples\ma_qt_echo_server$(ARTIFACT_PATH_SUFFIX)*.exe'
+    name: 'ma_qt_echo_server'
+  - path: 'build\examples\asio_multicast_receiver$(ARTIFACT_PATH_SUFFIX)*.exe'
+    name: 'asio_multicast_receiver'
+  - path: 'build\examples\asio_multicast_sender$(ARTIFACT_PATH_SUFFIX)*.exe'
+    name: 'asio_multicast_sender'
+  - path: 'build\tests\ma_async_connect_test$(ARTIFACT_PATH_SUFFIX)*.exe'
+    name: 'ma_async_connect_test'
+  - path: 'build\tests\ma_handler_storage_test$(ARTIFACT_PATH_SUFFIX)*.exe'
+    name: 'ma_handler_storage_test'
+  - path: 'build\tests\ma_lockable_wrapper_test$(ARTIFACT_PATH_SUFFIX)*.exe'
+    name: 'ma_lockable_wrapper_test'
+  - path: 'build\tests\ma_shared_ptr_factory_test$(ARTIFACT_PATH_SUFFIX)*.exe'
+    name: 'ma_shared_ptr_factory_test'
+  - path: 'build\tests\ma_sp_singleton_test$(ARTIFACT_PATH_SUFFIX)*.exe'
+    name: 'ma_sp_singleton_test'
+  - path: 'build\tests\ma_windows_console_signal_test$(ARTIFACT_PATH_SUFFIX)*.exe'
+    name: 'ma_windows_console_signal_test'
+  - path: 'build\tests\ma_handler_allocator_test$(ARTIFACT_PATH_SUFFIX)*.exe'
+    name: 'ma_handler_allocator_test'
+  - path: 'build\tests\ma_custom_alloc_handler_test$(ARTIFACT_PATH_SUFFIX)*.exe'
+    name: 'ma_custom_alloc_handler_test'
+  - path: 'build\tests\ma_cyclic_buffer_test$(ARTIFACT_PATH_SUFFIX)*.exe'
+    name: 'ma_cyclic_buffer_test'
+  - path: 'build\tests\ma_sp_intrusive_list_test$(ARTIFACT_PATH_SUFFIX)*.exe'
+    name: 'ma_sp_intrusive_list_test'
+  - path: 'build\tests\ma_strand_test$(ARTIFACT_PATH_SUFFIX)*.exe'
+    name: 'ma_strand_test'
+  - path: 'build\tests\ma_context_alloc_handler_test$(ARTIFACT_PATH_SUFFIX)*.exe'
+    name: 'ma_context_alloc_handler_test'
+  - path: 'build\tests\ma_bind_handler_test$(ARTIFACT_PATH_SUFFIX)*.exe'
+    name: 'ma_bind_handler_test'
+  - path: 'build\tests\ma_context_invoke_handler_test$(ARTIFACT_PATH_SUFFIX)*.exe'
+    name: 'ma_context_invoke_handler_test'
+  - path: 'build\tests\ma_context_wrapped_handler_test$(ARTIFACT_PATH_SUFFIX)*.exe'
+    name: 'ma_context_wrapped_handler_test'
+  - path: 'build\tests\ma_limited_int_test$(ARTIFACT_PATH_SUFFIX)*.exe'
+    name: 'ma_limited_int_test'
+  - path: 'build\tests\ma_console_close_signal_test$(ARTIFACT_PATH_SUFFIX)*.exe'
+    name: 'ma_console_close_signal_test'
+  - path: 'build\tests\ma_intrusive_list_test$(ARTIFACT_PATH_SUFFIX)*.exe'
+    name: 'ma_intrusive_list_test'
+  - path: 'build\tests\ma_codecvt_cast_test$(ARTIFACT_PATH_SUFFIX)*.exe'
+    name: 'ma_codecvt_cast_test'
