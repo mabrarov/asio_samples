@@ -9,7 +9,9 @@ vercomp() {
   fi
   local IFS=.
   local i
+  # shellcheck disable=SC2206
   local ver1=(${1})
+  # shellcheck disable=SC2206
   local ver2=(${2})
   # fill empty fields in ver1 with zeros
   for ((i=${#ver1[@]}; i<${#ver2[@]}; i++)); do
