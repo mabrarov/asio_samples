@@ -7,8 +7,6 @@
 
 FROM abrarov/msvc-2019:2.9.0 AS build
 
-ARG MA_REVISION=master
-
 ENV CMAKE_VERSION="3.19.1" \
     BOOST_VERSION="1.74.0" \
     BOOST_URL="https://dl.bintray.com/mabrarov/generic/boost" \
@@ -18,6 +16,8 @@ ENV CMAKE_VERSION="3.19.1" \
     DOWNLOADS_DIR="C:\downloads"
 
 ADD ["app", "C:/app/"]
+
+ARG MA_REVISION=master
 
 RUN powershell -ExecutionPolicy Bypass -File "C:\app\build.ps1"
 

@@ -7,10 +7,6 @@
 
 FROM alpine:3.12.0 AS build
 
-ARG MA_REVISION="master"
-ARG BOOST_VERSION="1.74.0"
-ARG BOOST_URL="https://dl.bintray.com/mabrarov/generic/boost"
-
 RUN apk add --no-cache \
       libstdc++ \
       linux-headers \
@@ -24,12 +20,17 @@ RUN apk add --no-cache \
 
 ENV BOOST_HOME="/usr/lib/boost"
 
+ARG BOOST_VERSION="1.74.0"
+ARG BOOST_URL="https://dl.bintray.com/mabrarov/generic/boost"
+
 RUN mkdir -p "${BOOST_HOME}" && \
     boost_archive_url="${BOOST_URL}/${BOOST_VERSION}/boost-${BOOST_VERSION}-x64-gcc$(gcc -dumpversion | sed -r 's/^([[:digit:]]+)(\..*)?$/\1/;t;d')-musl-static-runtime.tar.gz" && \
     echo "Downloading Boost from ${boost_archive_url} into ${BOOST_HOME}" && \
     curl --connect-timeout 300 --max-time 1800 --retry 10 --retry-delay 10 \
       -jksSL "${boost_archive_url}" \
       | tar -xz -C "${BOOST_HOME}" --strip-components 1
+
+ARG MA_REVISION="master"
 
 RUN source_dir="$(mktemp -d)" && \
     git clone "https://github.com/mabrarov/asio_samples.git" "${source_dir}" && \

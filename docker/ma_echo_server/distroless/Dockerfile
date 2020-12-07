@@ -7,11 +7,6 @@
 
 FROM ubuntu:20.04 AS build
 
-ARG MA_REVISION="master"
-ARG CMAKE_VERSION="3.19.1"
-ARG BOOST_VERSION="1.74.0"
-ARG BOOST_URL="https://dl.bintray.com/mabrarov/generic/boost"
-
 RUN apt-get update && \
     apt-get install -y --no-install-suggests --no-install-recommends \
       ca-certificates \
@@ -24,6 +19,8 @@ RUN apt-get update && \
 
 ENV CMAKE_HOME="/opt/cmake"
 
+ARG CMAKE_VERSION="3.19.1"
+
 RUN mkdir -p "${CMAKE_HOME}" && \
     cmake_url="https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz" && \
     echo "Downloading CMake ${CMAKE_VERSION} from ${cmake_url} to ${CMAKE_HOME}" && \
@@ -32,12 +29,17 @@ RUN mkdir -p "${CMAKE_HOME}" && \
 ENV PATH="${CMAKE_HOME}/bin:${PATH}" \
     BOOST_HOME="/usr/lib/boost"
 
+ARG BOOST_VERSION="1.74.0"
+ARG BOOST_URL="https://dl.bintray.com/mabrarov/generic/boost"
+
 RUN mkdir -p "${BOOST_HOME}" && \
     boost_archive_url="${BOOST_URL}/${BOOST_VERSION}/boost-${BOOST_VERSION}-x64-gcc$(gcc -dumpversion | sed -r 's/^([[:digit:]]+)(\..*)?$/\1/;t;d').tar.gz" && \
     echo "Downloading Boost from ${boost_archive_url} to ${BOOST_HOME}" && \
     curl --connect-timeout 300 --max-time 1800 --retry 10 --retry-delay 10 \
       -jksSL "${boost_archive_url}" \
       | tar -xz -C "${BOOST_HOME}" --strip-components 1
+
+ARG MA_REVISION="master"
 
 RUN source_dir="$(mktemp -d)" && \
     git clone "https://github.com/mabrarov/asio_samples.git" "${source_dir}" && \
