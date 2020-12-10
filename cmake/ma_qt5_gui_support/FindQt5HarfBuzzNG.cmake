@@ -5,7 +5,7 @@
 # file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
-cmake_minimum_required(VERSION 2.8.11)
+cmake_minimum_required(VERSION 2.8.12)
 
 # Prefix for all Qt5::HarfBuzzNG relative public variables
 if(NOT DEFINED QT5_HARF_BUZZ_NG_PUBLIC_VAR_NS)
