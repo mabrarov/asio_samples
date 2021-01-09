@@ -5,7 +5,7 @@
 # file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
-FROM alpine:3.12.0 AS build
+FROM alpine:3.12.3 AS build
 
 RUN apk add --no-cache \
       libstdc++ \
@@ -20,7 +20,7 @@ RUN apk add --no-cache \
 
 ENV BOOST_HOME="/usr/lib/boost"
 
-ARG BOOST_VERSION="1.74.0"
+ARG BOOST_VERSION="1.75.0"
 ARG BOOST_URL="https://dl.bintray.com/mabrarov/generic/boost"
 
 RUN mkdir -p "${BOOST_HOME}" && \
