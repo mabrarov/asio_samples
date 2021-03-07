@@ -19,7 +19,7 @@ RUN apt-get update && \
 
 ENV CMAKE_HOME="/opt/cmake"
 
-ARG CMAKE_VERSION="3.19.2"
+ARG CMAKE_VERSION="3.19.6"
 
 RUN mkdir -p "${CMAKE_HOME}" && \
     cmake_url="https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz" && \
