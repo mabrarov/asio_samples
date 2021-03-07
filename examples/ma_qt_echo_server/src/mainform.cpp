@@ -21,6 +21,7 @@ TRANSLATOR ma::echo::server::qt::MainForm
 #include <QTextCursor>
 #include <QMessageBox>
 #include <QLineEdit>
+#include <QLocale>
 #include <QSpinBox>
 #include <ma/echo/server/error.hpp>
 #include <ma/echo/server/session_manager_stats.hpp>
@@ -557,7 +558,8 @@ void MainForm::showStats(const session_manager_stats& stats)
 void MainForm::writeLog(const QString& message)
 {
   QString logMessage = tr("[%1] %2").arg(
-      QTime::currentTime().toString(Qt::SystemLocaleLongDate)).arg(message);
+      QLocale::system().toString(QTime::currentTime(), QLocale::LongFormat))
+      .arg(message);
 
   ui_.logTextEdit->appendPlainText(logMessage);
   ui_.logTextEdit->moveCursor(QTextCursor::End);

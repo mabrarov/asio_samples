@@ -38,7 +38,7 @@ class MainForm : public QWidget
   Q_OBJECT //-V524
 
 public:
-  MainForm(Service& service, QWidget* parent = 0, Qt::WindowFlags flags = 0);
+  MainForm(Service& service, QWidget* parent = 0, Qt::WindowFlags flags = Qt::WindowFlags());
   ~MainForm();
 
 private slots:
