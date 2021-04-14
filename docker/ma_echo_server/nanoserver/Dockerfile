@@ -5,10 +5,9 @@
 # file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
-FROM abrarov/msvc-2019:2.9.0 AS build
+FROM abrarov/msvc-2019:2.12.1 AS build
 
-ENV CMAKE_VERSION="3.19.1" \
-    BOOST_VERSION="1.74.0" \
+ENV BOOST_VERSION="1.75.0" \
     BOOST_URL="https://dl.bintray.com/mabrarov/generic/boost" \
     SOURCE_DIR="C:\asio_samples" \
     BUILD_DIR="C:\build" \

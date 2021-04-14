@@ -15,13 +15,18 @@ set(cxx_include_directories )
 
 find_package(Qt5Widgets QUIET)
 if(Qt5Widgets_FOUND)
-    # Fix bug with FindQt and include directories
-    if(${Qt5Widgets_VERSION} VERSION_LESS "5.2")
-        list(APPEND cxx_compile_definitions ${Qt5Widgets_DEFINITIONS})
-        list(APPEND cxx_include_directories ${Qt5Widgets_INCLUDE_DIRS})
-        list(APPEND cxx_libraries ma_pic_on)
-    endif()
+    if(${Qt5Core_VERSION} VERSION_LESS "5.15")
+        # Prior to Qt 5.15 (maybe earlier) dependencies of Qt libraries
+        # are not linked by Qt CMake support, so there is a need to find
+        # and link these dependencies explicitly.
 
+        # Fix bug with FindQt and include directories
+        if(${Qt5Widgets_VERSION} VERSION_LESS "5.2")
+            list(APPEND cxx_compile_definitions ${Qt5Widgets_DEFINITIONS})
+            list(APPEND cxx_include_directories ${Qt5Widgets_INCLUDE_DIRS})
+            list(APPEND cxx_libraries ma_pic_on)
+        endif()
+    endif()
     list(APPEND cxx_libraries
         ma_qt5_core_support
         ma_qt5_gui_support)

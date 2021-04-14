@@ -5,7 +5,7 @@
 # file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
-FROM alpine:3.12.0 AS build
+FROM alpine:3.13.2 AS build
 
 RUN apk add --no-cache \
       libstdc++ \
@@ -20,11 +20,11 @@ RUN apk add --no-cache \
 
 ENV BOOST_HOME="/usr/lib/boost"
 
-ARG BOOST_VERSION="1.74.0"
+ARG BOOST_VERSION="1.75.0"
 ARG BOOST_URL="https://dl.bintray.com/mabrarov/generic/boost"
 
 RUN mkdir -p "${BOOST_HOME}" && \
-    boost_archive_url="${BOOST_URL}/${BOOST_VERSION}/boost-${BOOST_VERSION}-x64-gcc$(gcc -dumpversion | sed -r 's/^([[:digit:]]+)(\..*)?$/\1/;t;d')-musl-static-runtime.tar.gz" && \
+    boost_archive_url="${BOOST_URL}/${BOOST_VERSION}/boost-${BOOST_VERSION}-x64-gcc9-musl-static-runtime.tar.gz" && \
     echo "Downloading Boost from ${boost_archive_url} into ${BOOST_HOME}" && \
     curl --connect-timeout 300 --max-time 1800 --retry 10 --retry-delay 10 \
       -jksSL "${boost_archive_url}" \

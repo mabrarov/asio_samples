@@ -567,7 +567,7 @@ int echo_server::run_server(const echo_server::execution_config& exec_config,
 {
   namespace detail = ma::detail;
 
-  boost::asio::io_service   event_loop(1);
+  boost::asio::io_service   event_loop(ma::to_io_context_concurrency_hint(1));
   ma::steady_deadline_timer stop_timer(event_loop);
   ma::console_close_signal  close_signal(event_loop);
   execution_context context(exec_config, event_loop, stop_timer, close_signal);

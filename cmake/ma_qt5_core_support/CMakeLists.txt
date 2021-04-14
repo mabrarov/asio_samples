@@ -25,44 +25,48 @@ if(Qt5Core_FOUND)
     # Determine linkage type of Qt Core
     get_target_property(qt5_core_type Qt5::Core TYPE)
     if(${qt5_core_type} STREQUAL "STATIC_LIBRARY")
+        if(${Qt5Core_VERSION} VERSION_LESS "5.15")
+            # Prior to Qt 5.15 (maybe earlier) dependencies of Qt libraries
+            # are not linked by Qt CMake support, so there is a need to find
+            # and link these dependencies explicitly.
 
-        # Some Qt libraries have no cmake files so wee need to search them ourselves
-        # Refer to custom CMake modules:
-        #     FindICU.cmake
-        #     FindQt5PCRE.cmake
+            # Refer to custom CMake modules:
+            #     FindICU.cmake
+            #     FindQt5PCRE.cmake
 
-        list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
+            list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
 
-        # ICU_ROOT
-        if(POLICY CMP0074)
-            cmake_policy(PUSH)
-            cmake_policy(SET CMP0074 OLD)
-        endif()
-        find_package(ICU REQUIRED COMPONENTS i18n uc data)
-        if(POLICY CMP0074)
-            cmake_policy(POP)
-        endif()
-
-        list(APPEND cxx_libraries ${ICU_LIBRARIES})
-
-        # Starting from Qt 5.5.0 PCRE library is used by QtCore
-        if(WIN32 AND NOT(${Qt5Core_VERSION} VERSION_LESS "5.5.0"))
-            find_package(Qt5PCRE QUIET)
-            if(Qt5PCRE_FOUND)
-                list(APPEND cxx_libraries Qt5::PCRE)
+            # ICU_ROOT
+            if(POLICY CMP0074)
+                cmake_policy(PUSH)
+                cmake_policy(SET CMP0074 OLD)
             endif()
-        endif()
+            find_package(ICU REQUIRED COMPONENTS i18n uc data)
+            if(POLICY CMP0074)
+                cmake_policy(POP)
+            endif()
 
-        # Required platform libraries
-        if(WIN32)
-            list(APPEND cxx_libraries
-                "kernel32"
-                "user32"
-                "shell32"
-                "uuid"
-                "ole32"
-                "advapi32"
-                "ws2_32")
+            list(APPEND cxx_libraries ${ICU_LIBRARIES})
+
+            # Starting from Qt 5.5.0 PCRE library is used by QtCore
+            if(WIN32 AND NOT(${Qt5Core_VERSION} VERSION_LESS "5.5.0"))
+                find_package(Qt5PCRE QUIET)
+                if(Qt5PCRE_FOUND)
+                    list(APPEND cxx_libraries Qt5::PCRE)
+                endif()
+            endif()
+
+            # Platform libraries
+            if(WIN32)
+                list(APPEND cxx_libraries
+                    "kernel32"
+                    "user32"
+                    "shell32"
+                    "uuid"
+                    "ole32"
+                    "advapi32"
+                    "ws2_32")
+            endif()
         endif()
     endif()
 endif()
