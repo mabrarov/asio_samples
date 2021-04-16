@@ -17,7 +17,7 @@ ENV PROJECT_DIR="/project" \
     MA_QT="ON" \
     MA_QT_MAJOR_VERSION="5" \
     MA_COVERAGE="OFF" \
-    CMAKE_VERSION="3.18.4" \
+    CMAKE_VERSION="3.19.6" \
     PATH="/opt/cmake/bin:${PATH}"
 
 ENTRYPOINT ["/app/start.sh"]

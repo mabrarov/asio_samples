@@ -5,12 +5,9 @@
 # file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
-FROM abrarov/msvc-2019:2.9.0 AS build
+FROM abrarov/msvc-2019:2.12.1 AS build
 
-ARG MA_REVISION=master
-
-ENV CMAKE_VERSION="3.18.4" \
-    BOOST_VERSION="1.74.0" \
+ENV BOOST_VERSION="1.75.0" \
     BOOST_URL="https://dl.bintray.com/mabrarov/generic/boost" \
     SOURCE_DIR="C:\asio_samples" \
     BUILD_DIR="C:\build" \
@@ -18,6 +15,8 @@ ENV CMAKE_VERSION="3.18.4" \
     DOWNLOADS_DIR="C:\downloads"
 
 ADD ["app", "C:/app/"]
+
+ARG MA_REVISION=master
 
 RUN powershell -ExecutionPolicy Bypass -File "C:\app\build.ps1"
 

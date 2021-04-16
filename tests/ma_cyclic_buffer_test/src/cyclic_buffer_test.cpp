@@ -155,6 +155,55 @@ TEST_P(generic_test, commit_more_than_allocated)
   ASSERT_THROW(buffer.commit(1), std::length_error);
 }
 
+TEST(generic_test, data_contains_same_bytes_as_put_into_prepared)
+{
+  typedef ma::cyclic_buffer::const_buffers_type const_buffers_type;
+  typedef ma::cyclic_buffer::mutable_buffers_type mutable_buffers_type;
+  typedef boost::asio::buffers_iterator<const_buffers_type> const_buffers_iterator;
+  typedef boost::asio::buffers_iterator<mutable_buffers_type> mutable_buffers_iterator;
+  ma::cyclic_buffer buffer(16);
+  {
+    char num = 0;
+    mutable_buffers_type nonfilled = buffer.prepared(12);
+    for (mutable_buffers_iterator i = boost::asio::buffers_begin(nonfilled),
+        end = boost::asio::buffers_end(nonfilled); i != end; ++i)
+    {
+      *i = num++;
+    }
+  }
+  buffer.consume(12);
+  {
+    char num = 0;
+    const_buffers_type filled = buffer.data();
+    for (const_buffers_iterator i = boost::asio::buffers_begin(filled),
+        end = boost::asio::buffers_end(filled); i != end; ++i)
+    {
+      ASSERT_EQ(static_cast<int>(num++), static_cast<int>(*i));
+    }
+  }
+  buffer.commit(4);
+  {
+    char num = 12;
+    mutable_buffers_type nonfilled = buffer.prepared(8);
+    ASSERT_EQ(8U, boost::asio::buffer_size(nonfilled));
+    for (mutable_buffers_iterator i = boost::asio::buffers_begin(nonfilled),
+        end = boost::asio::buffers_end(nonfilled); i != end; ++i)
+    {
+      *i = num++;
+    }
+  }
+  buffer.consume(8);
+  {
+    char num = 4;
+    const_buffers_type filled = buffer.data();
+    for (const_buffers_iterator i = boost::asio::buffers_begin(filled),
+        end = boost::asio::buffers_end(filled); i != end; ++i)
+    {
+      ASSERT_EQ(static_cast<int>(num++), static_cast<int>(*i));
+    }
+  }
+}
+
 TEST(complex_test, looping_free_space)
 {
   typedef ma::cyclic_buffer::mutable_buffers_type mutable_buffers_type;

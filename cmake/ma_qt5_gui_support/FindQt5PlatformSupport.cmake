@@ -5,7 +5,7 @@
 # file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
-cmake_minimum_required(VERSION 2.8.11)
+cmake_minimum_required(VERSION 2.8.12)
 
 # Prefix for all Qt5::PlatformSupport relative public variables
 if(NOT DEFINED QT5_PLATFORM_SUPPORT_PUBLIC_VAR_NS)
@@ -15,6 +15,10 @@ endif()
 # Prefix for all Qt5::PlatformSupport relative internal variables
 if(NOT DEFINED QT5_PLATFORM_SUPPORT_PRIVATE_VAR_NS)
     set(QT5_PLATFORM_SUPPORT_PRIVATE_VAR_NS "_${QT5_PLATFORM_SUPPORT_PUBLIC_VAR_NS}")
+endif()
+
+if(NOT DEFINED ${QT5_PLATFORM_SUPPORT_PUBLIC_VAR_NS}_BASE_NAME)
+    set(${QT5_PLATFORM_SUPPORT_PUBLIC_VAR_NS}_BASE_NAME "Qt5PlatformSupport")
 endif()
 
 set(${QT5_PLATFORM_SUPPORT_PUBLIC_VAR_NS}_FOUND FALSE)
@@ -34,12 +38,12 @@ if(Qt5Gui_FOUND)
     set(${QT5_PLATFORM_SUPPORT_PRIVATE_VAR_NS}_LIBRARIES )
 
     find_library(${QT5_PLATFORM_SUPPORT_PRIVATE_VAR_NS}_LIB_RELEASE 
-        "Qt5PlatformSupport"
+        "${${QT5_PLATFORM_SUPPORT_PUBLIC_VAR_NS}_BASE_NAME}"
         HINTS "${${QT5_PLATFORM_SUPPORT_PRIVATE_VAR_NS}_QT_GUI_DIR}"
         DOC "Release library of Qt5::PlatformSupport")
 
     find_library(${QT5_PLATFORM_SUPPORT_PRIVATE_VAR_NS}_LIB_DEBUG 
-        "Qt5PlatformSupportd" 
+        "${${QT5_PLATFORM_SUPPORT_PUBLIC_VAR_NS}_BASE_NAME}d"
         HINTS "${${QT5_PLATFORM_SUPPORT_PRIVATE_VAR_NS}_QT_GUI_DIR}"
         DOC "Debug library of Qt5::PlatformSupport")
 

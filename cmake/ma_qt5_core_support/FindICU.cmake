@@ -1,4 +1,6 @@
-﻿# This module can find the International Components for Unicode (ICU) Library
+﻿cmake_minimum_required(VERSION 3.0)
+
+# This module can find the International Components for Unicode (ICU) Library
 #
 # Requirements:
 # - CMake >= 2.8.3 (for new version of find_package_handle_standard_args)

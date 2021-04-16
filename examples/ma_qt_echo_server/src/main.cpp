@@ -20,7 +20,7 @@
 #include "mainform.h"
 
 #if defined(QT_STATIC) || !(defined(QT_DLL) || defined(QT_SHARED))
-#if QT_VERSION >= 0x050000
+#if QT_VERSION >= 0x050000 && QT_VERSION < 0x050F00
 #if defined(WIN32)
 Q_IMPORT_PLUGIN(QWindowsIntegrationPlugin)
 #else
