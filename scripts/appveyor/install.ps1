@@ -174,11 +174,15 @@ Write-Host "Detected CMake of ${detected_cmake_version} version"
 if (Test-Path env:CMAKE_VERSION) {
   Write-Host "CMake of ${env:CMAKE_VERSION} version is requested"
   if ([System.Version] "${env:CMAKE_VERSION}" -ne [System.Version] ${detected_cmake_version}) {
-    if ([System.Version] "${env:CMAKE_VERSION}" -ge [System.Version] "3.6.0") {
-      $cmake_archive_base_name = "cmake-${env:CMAKE_VERSION}-win64-x64"
+    if ([System.Version] "${env:CMAKE_VERSION}" -ge [System.Version] "3.20.0") {
+      $cmake_archive_base_name = "cmake-${env:CMAKE_VERSION}-windows-x86_64"
     } else {
-      # CMake x64 binary is not available for CMake version < 3.6.0
-      $cmake_archive_base_name = "cmake-${env:CMAKE_VERSION}-win32-x86"
+      if ([System.Version] "${env:CMAKE_VERSION}" -ge [System.Version] "3.6.0") {
+        $cmake_archive_base_name = "cmake-${env:CMAKE_VERSION}-win64-x64"
+      } else {
+        # CMake x64 binary is not available for CMake version < 3.6.0
+        $cmake_archive_base_name = "cmake-${env:CMAKE_VERSION}-win32-x86"
+      }
     }
     $cmake_home = "${env:DEPENDENCIES_FOLDER}\${cmake_archive_base_name}"
     if (!(Test-Path -Path "${cmake_home}")) {
@@ -475,7 +479,8 @@ if (Test-Path env:QT_VERSION) {
       "msvc" {
         switch (${env:MSVC_VERSION}) {
           "14.2" {
-            $pre_installed_qt = ${env:QT_VERSION} -eq "5.15.0"
+            $pre_installed_qt = (${env:QT_VERSION} -eq "5.15.2") `
+              -or ((${env:QT_VERSION} -eq "6.0.1") -and (${env:PLATFORM} -eq "x64"))
           }
           "14.1" {
             $pre_installed_qt = (${env:QT_VERSION} -eq "5.13.2") `
@@ -500,6 +505,10 @@ if (Test-Path env:QT_VERSION) {
       }
       "mingw" {
         switch (${env:MINGW_VERSION}) {
+          "8.1.0" {
+            $pre_installed_qt = (${env:QT_VERSION} -eq "5.15.2") `
+              -or ((${env:QT_VERSION} -eq "6.0.1") -and (${env:PLATFORM} -eq "x64"))
+          }
           "7.3.0" {
             $pre_installed_qt = (${env:QT_VERSION} -eq "5.13.2") `
               -or (${env:QT_VERSION} -eq "5.12.6")
