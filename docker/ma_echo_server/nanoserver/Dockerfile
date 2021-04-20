@@ -7,7 +7,7 @@
 
 FROM abrarov/msvc-2019:2.12.1 AS build
 
-ENV BOOST_VERSION="1.75.0" \
+ENV BOOST_VERSION="1.76.0" \
     BOOST_URL="https://dl.bintray.com/mabrarov/generic/boost" \
     SOURCE_DIR="C:\asio_samples" \
     BUILD_DIR="C:\build" \

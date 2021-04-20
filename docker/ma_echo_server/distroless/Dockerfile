@@ -19,7 +19,7 @@ RUN apt-get update && \
 
 ENV CMAKE_HOME="/opt/cmake"
 
-ARG CMAKE_VERSION="3.19.6"
+ARG CMAKE_VERSION="3.20.1"
 
 RUN mkdir -p "${CMAKE_HOME}" && \
     cmake_url="https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz" && \
@@ -29,7 +29,7 @@ RUN mkdir -p "${CMAKE_HOME}" && \
 ENV PATH="${CMAKE_HOME}/bin:${PATH}" \
     BOOST_HOME="/usr/lib/boost"
 
-ARG BOOST_VERSION="1.75.0"
+ARG BOOST_VERSION="1.76.0"
 ARG BOOST_URL="https://dl.bintray.com/mabrarov/generic/boost"
 
 RUN mkdir -p "${BOOST_HOME}" && \
