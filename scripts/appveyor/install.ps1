@@ -147,16 +147,18 @@ switch (${env:TOOLCHAIN}) {
       "Win32" {
         $mingw_platform_suffix = "i686-"
         $mingw_exception_suffix = "-dwarf"
+        $mingw_platform_postfix = "mingw32"
       }
       "x64" {
         $mingw_platform_suffix = "x86_64-"
         $mingw_exception_suffix = "-seh"
+        $mingw_platform_postfix = "mingw64"
       }
       default {
         throw "Unsupported platform for ${env:TOOLCHAIN} toolchain: ${env:PLATFORM}"
       }
     }
-    $env:MINGW_HOME = "C:\mingw-w64\${mingw_platform_suffix}${env:MINGW_VERSION}-posix${mingw_exception_suffix}-rt_v${env:MINGW_RT_VERSION}-rev${env:MINGW_REVISION}\mingw64"
+    $env:MINGW_HOME = "C:\mingw-w64\${mingw_platform_suffix}${env:MINGW_VERSION}-posix${mingw_exception_suffix}-rt_v${env:MINGW_RT_VERSION}-rev${env:MINGW_REVISION}\${mingw_platform_postfix}"
     $env:ARTIFACT_PATH_SUFFIX = "\"
   }
   default {
@@ -375,9 +377,11 @@ if (Test-Path env:BOOST_VERSION) {
     switch (${env:PLATFORM}) {
       "Win32" {
         $env:BOOST_PLATFORM_SUFFIX = "-x86"
+        $env:BOOST_ARCHITECTURE = "-x32"
       }
       "x64" {
         $env:BOOST_PLATFORM_SUFFIX = "-x64"
+        $env:BOOST_ARCHITECTURE = "-x64"
       }
       default {
         throw "Unsupported platform for Boost: ${env:PLATFORM}"

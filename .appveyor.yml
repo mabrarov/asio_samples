@@ -68,13 +68,14 @@ environment:
       BOOST_LINKAGE: 'static'
       QT_VERSION: '5.13.2'
       QT_LINKAGE: 'shared'
-    - TOOLCHAIN: 'mingw'
+    - APPVEYOR_BUILD_WORKER_IMAGE: 'Visual Studio 2019'
+      TOOLCHAIN: 'mingw'
       MINGW_VERSION: '8.1.0'
       MINGW_RT_VERSION: '6'
       MINGW_REVISION: '0'
       RUNTIME_LINKAGE: 'static'
-      CMAKE_VERSION: '3.16.2'
-      BOOST_VERSION: '1.71.0'
+      CMAKE_VERSION: '3.20.1'
+      BOOST_VERSION: '1.76.0'
       BOOST_LINKAGE: 'static'
     - TOOLCHAIN: 'msvc'
       MSVC_VERSION: '14.0'
@@ -179,11 +180,6 @@ environment:
       BOOST_LINKAGE: 'shared'
       QT_VERSION: '5.10.1'
       QT_LINKAGE: 'shared'
-
-matrix:
-  exclude:
-    - platform: 'Win32'
-      TOOLCHAIN: 'mingw'
 
 cache:
   - 'C:\projects\downloads -> .appveyor.yml'
