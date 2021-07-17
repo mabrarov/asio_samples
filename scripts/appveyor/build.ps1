@@ -27,8 +27,8 @@ switch (${env:RUNTIME_LINKAGE}) {
   }
 }
 $generate_cmd = "${generate_cmd} -D BOOST_INCLUDEDIR=""${env:BOOST_INCLUDE_FOLDER}"" -D BOOST_LIBRARYDIR=""${env:BOOST_LIBRARY_FOLDER}"" -D Boost_USE_STATIC_LIBS=${env:BOOST_USE_STATIC_LIBS} -D Boost_NO_SYSTEM_PATHS=ON"
-if ((${env:TOOLCHAIN} -eq "mingw") -and (Test-Path env:BOOST_PLATFORM_SUFFIX)) {
-  $generate_cmd = "${generate_cmd} -D Boost_ARCHITECTURE=""${env:BOOST_PLATFORM_SUFFIX}"""
+if ((${env:TOOLCHAIN} -eq "mingw") -and (Test-Path env:BOOST_ARCHITECTURE)) {
+  $generate_cmd = "${generate_cmd} -D Boost_ARCHITECTURE=""${env:BOOST_ARCHITECTURE}"""
 }
 if (!(Test-Path env:QT_VERSION)) {
   $generate_cmd = "${generate_cmd} -D MA_QT=OFF"
