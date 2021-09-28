@@ -5,30 +5,62 @@
 # file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
-FROM alpine:3.13.5 AS build
+FROM alpine:3.13.6 AS build
 
 RUN apk add --no-cache \
-      libstdc++ \
-      linux-headers \
+      bash \
+      ca-certificates \
+      curl \
+      tar \
+      gzip \
+      git \
       g++ \
       make \
       cmake \
-      git \
-      curl \
-      tar \
-      gzip
+      libstdc++ \
+      linux-headers \
+      icu-dev \
+      python2-dev \
+      libzip-dev \
+      libbz2
 
-ENV BOOST_HOME="/usr/lib/boost"
+ARG BOOST_VERSION="1.77.0"
+ARG BOOST_RELEASE_URL="https://boostorg.jfrog.io/artifactory/main/release"
+ARG BOOST_BUILD_OPTIONS="--without-mpi --without-graph_parallel"
 
-ARG BOOST_VERSION="1.76.0"
-ARG BOOST_URL="https://dl.bintray.com/mabrarov/generic/boost"
+ENV BOOST_INSTALL_DIR="/opt/boost"
 
-RUN mkdir -p "${BOOST_HOME}" && \
-    boost_archive_url="${BOOST_URL}/${BOOST_VERSION}/boost-${BOOST_VERSION}-x64-gcc10-musl-static-runtime.tar.gz" && \
-    echo "Downloading Boost from ${boost_archive_url} into ${BOOST_HOME}" && \
-    curl --connect-timeout 300 --max-time 1800 --retry 10 --retry-delay 10 \
-      -jksSL "${boost_archive_url}" \
-      | tar -xz -C "${BOOST_HOME}" --strip-components 1
+RUN mkdir -p "${BOOST_INSTALL_DIR}" && \
+    boost_build_dir="$(mktemp -d)" && \
+    boost_download_url="${BOOST_RELEASE_URL}/${BOOST_VERSION}/source/boost_$(echo "${BOOST_VERSION}" | sed -r 's/\./_/g').tar.gz" && \
+    echo "Downloading Boost C++ Libraries (source code archive) from ${boost_download_url} into ${boost_build_dir} directory" && \
+    curl -jksSL "${boost_download_url}" | tar -xzf - -C "${boost_build_dir}" --strip-components 1 && \
+    b2_bin="${boost_build_dir}/b2" && \
+    b2_toolset="gcc" && \
+    boost_bootstrap="${boost_build_dir}/bootstrap.sh" && \
+    current_dir="$(pwd)" && \
+    cd "${boost_build_dir}" && \
+    echo "Building Boost.Build engine" && \
+    "${boost_bootstrap}" && \
+    boost_linkage="static" && \
+    boost_runtime_linkage="static" && \
+    echo "Building Boost C++ Libraries with these parameters:" && \
+    echo "B2_BIN               : ${b2_bin}" && \
+    echo "B2_TOOLSET           : ${b2_toolset}" && \
+    echo "BOOST_INSTALL_DIR    : ${BOOST_INSTALL_DIR}" && \
+    echo "BOOST_LINKAGE        : ${boost_linkage}" && \
+    echo "BOOST_RUNTIME_LINKAGE: ${boost_runtime_linkage}" && \
+    echo "BOOST_BUILD_OPTIONS  : ${BOOST_BUILD_OPTIONS}" && \
+    "${b2_bin}" \
+      --toolset="${b2_toolset}" \
+      link="${boost_linkage}" \
+      runtime-link="${boost_runtime_linkage}" \
+      install \
+      --prefix="${BOOST_INSTALL_DIR}" \
+      --layout=system \
+      ${BOOST_BUILD_OPTIONS} && \
+    cd "${current_dir}" && \
+    rm -rf "${boost_build_dir}"
 
 ARG MA_REVISION="master"
 
@@ -43,8 +75,8 @@ RUN source_dir="$(mktemp -d)" && \
       -D CMAKE_USER_MAKE_RULES_OVERRIDE_CXX="${source_dir}/cmake/static_cxx_runtime_overrides.cmake" \
       -D Boost_USE_STATIC_LIBS=ON \
       -D Boost_NO_SYSTEM_PATHS=ON \
-      -D BOOST_INCLUDEDIR="${BOOST_HOME}/include" \
-      -D BOOST_LIBRARYDIR="${BOOST_HOME}/lib" \
+      -D BOOST_INCLUDEDIR="${BOOST_INSTALL_DIR}/include" \
+      -D BOOST_LIBRARYDIR="${BOOST_INSTALL_DIR}/lib" \
       -D MA_TESTS=OFF \
       -D MA_QT=OFF \
       -S "${source_dir}" \
@@ -56,7 +88,7 @@ RUN source_dir="$(mktemp -d)" && \
     rm -rf "${build_dir}" && \
     rm -rf "${source_dir}"
 
-FROM scratch
+FROM gcr.io/distroless/static
 
 LABEL name="abrarov/tcp-echo" \
     description="TCP echo server from Asio samples project" \
