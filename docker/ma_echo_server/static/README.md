@@ -14,23 +14,6 @@ docker build -t abrarov/tcp-echo:static docker/ma_echo_server/static
 
 ## Using image
 
-List content of image:
-
-```bash
-temp_dir="$(mktemp -d)" && \
-docker save abrarov/tcp-echo:static | tar xf - -C "${temp_dir}" && \
-tar tvf "${temp_dir}/"*"/layer.tar" && \
-rm -rf "${temp_dir}"
-```
-
-Expected output looks like:
-
-```text
-drwxr-xr-x 0/0               0 2020-10-27 23:22 opt/
-drwxr-xr-x 0/0               0 2020-10-27 23:22 opt/ma_echo_server/
--rwxr-xr-x 0/0         8579200 2020-10-27 23:22 opt/ma_echo_server/ma_echo_server
-```
-
 Run ma_echo_server:
 
 ```bash
