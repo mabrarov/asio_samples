@@ -7,12 +7,18 @@
 
 FROM abrarov/msvc-2019:2.12.1 AS build
 
-ENV BOOST_VERSION="1.76.0" \
-    BOOST_URL="https://dl.bintray.com/mabrarov/generic/boost" \
-    SOURCE_DIR="C:\asio_samples" \
-    BUILD_DIR="C:\build" \
-    DEPENDENCIES_DIR="C:\dependencies" \
-    DOWNLOADS_DIR="C:\downloads"
+ENV DOWNLOADS_DIR="C:\download" \
+    BOOST_DIR="C:\dependencies\boost"
+
+ADD ["install", "C:/install/"]
+
+ARG BOOST_VERSION="1.77.0"
+ARG BOOST_URL="https://boostorg.jfrog.io/ui/api/v1/download?repoKey=main&path="
+
+RUN powershell -ExecutionPolicy Bypass -File "C:\install\install.ps1"
+
+ENV SOURCE_DIR="C:\asio_samples" \
+    BUILD_DIR="C:\build"
 
 ADD ["app", "C:/app/"]
 
