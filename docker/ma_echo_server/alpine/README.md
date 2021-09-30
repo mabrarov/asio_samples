@@ -11,6 +11,27 @@
 docker build -t abrarov/tcp-echo:alpine docker/ma_echo_server/alpine
 ```
 
+## Testing built image
+
+```bash
+port=9999 && \
+container_id="$(docker run -d abrarov/tcp-echo:alpine \
+  --port "${port}" --inactivity-timeout 60)" && \
+docker run --rm --link "${container_id}:echo" curlimages/curl \
+  sh -c "echo 'Hello World"'!'"' | timeout 1s curl -sf \"telnet://echo:${port}\" || true" && \
+docker stop -t 10 "${container_id}" >/dev/null && \
+docker inspect --format='{{.State.ExitCode}}' "${container_id}" && \
+docker rm -fv "${container_id}" >/dev/null
+```
+
+Expected output:
+
+```text
+Hello World!
+Terminated
+0
+```
+
 ## Using image
 
 Run ma_echo_server:
