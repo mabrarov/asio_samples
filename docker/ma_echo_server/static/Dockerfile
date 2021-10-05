@@ -88,7 +88,7 @@ RUN source_dir="$(mktemp -d)" && \
     rm -rf "${build_dir}" && \
     rm -rf "${source_dir}"
 
-FROM gcr.io/distroless/static
+FROM gcr.io/distroless/static-debian11
 
 LABEL name="abrarov/tcp-echo" \
     description="TCP echo server from Asio samples project" \
