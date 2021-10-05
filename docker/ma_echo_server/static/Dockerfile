@@ -5,7 +5,7 @@
 # file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
-FROM alpine:3.13.6 AS build
+FROM alpine:3.14.2 AS build
 
 RUN apk add --no-cache \
       bash \
@@ -88,7 +88,7 @@ RUN source_dir="$(mktemp -d)" && \
     rm -rf "${build_dir}" && \
     rm -rf "${source_dir}"
 
-FROM gcr.io/distroless/static
+FROM gcr.io/distroless/static-debian11
 
 LABEL name="abrarov/tcp-echo" \
     description="TCP echo server from Asio samples project" \
