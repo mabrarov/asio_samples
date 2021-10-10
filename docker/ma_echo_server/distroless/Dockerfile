@@ -5,7 +5,7 @@
 # file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
-FROM debian:11 AS build
+FROM debian:11-slim AS build
 
 ENV TZ="Europe/Moscow"
 
