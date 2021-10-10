@@ -4,6 +4,7 @@
 
 1. All commands use Bash syntax
 1. Current directory is directory where this repository is cloned
+1. Docker 19.03.12+ for building
 
 ## Building image
 
