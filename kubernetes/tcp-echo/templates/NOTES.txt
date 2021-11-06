@@ -1,0 +1,1 @@
+1. Application port: {{ .Values.service.nodePort }}
