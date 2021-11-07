@@ -6,6 +6,7 @@ All commands were tested using Bash on Ubuntu Server 18.04.
 
 1. Bash is used for execution of shell commands.
 1. Current directory is directory where this repository is cloned.
+1. Docker 19.03+
 
 ## kubectl Setup
 
@@ -41,7 +42,7 @@ In case of need in Kubernetes (K8s) instance one can use [Minikube](https://kube
 1. Create & start K8s instance
 
    ```bash
-   minikube start --driver=docker --addons=ingress,registry,dashboard
+   minikube start --driver=docker --addons=registry
    ```
 
 1. Configure Docker insecure registry for Minikube registry - add subnet of Minikube registry into
