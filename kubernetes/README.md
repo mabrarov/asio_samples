@@ -132,6 +132,21 @@ In case of need in Kubernetes (K8s) instance one can use [Minikube](https://kube
     Hello World!
     ```
 
+1. Connect to deployed application outside K8s and test echo
+
+    ```bash
+    port="$(kubectl get service -n "${k8s_namespace}" \
+      --selector="app.kubernetes.io/instance=${helm_release},app.kubernetes.io/name=${k8s_app}" \
+      -o=jsonpath='{.items[0].spec.ports[0].nodePort}')" && \
+    echo 'Hello outer World!' | timeout 1s nc "$(minikube ip)" "${port}" || true
+    ```
+    
+    Expected output is:
+    
+    ```text
+    Hello outer World!
+    ```
+
 1. Stop and remove K8s application, remove temporary image from local Docker registry
 
    ```bash
