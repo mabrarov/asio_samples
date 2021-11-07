@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ include "app.testPodName" . | quote }}
+  labels:
+    {{- include "app.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": "test"
+spec:
+  containers:
+    - name: "busybox"
+      image: "busybox"
+      command: [ "sh" ]
+      args:
+        - "-c"
+        - "message='Hello World!' && echo \"${message}\" | timeout 1s nc '{{ include "app.serviceName" . }}' '{{ .Values.service.port }}' || true | grep -m 1 -F -- \"${message}\" >/dev/null"
+  restartPolicy: Never

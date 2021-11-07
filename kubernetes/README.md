@@ -99,7 +99,7 @@ In case of need in Kubernetes (K8s) instance one can use [Minikube](https://kube
     docker push "${minikube_registry}/tcp-echo"
     ```
 
-1. Deploy application using [kubernetes/tcp-echo](kubernetes/tcp-echo) Helm chart and wait for completion of rollout
+1. Deploy application using [kubernetes/tcp-echo](tcp-echo) Helm chart and wait for completion of rollout
 
     ```bash
     helm upgrade "${helm_release}" kubernetes/tcp-echo \
@@ -108,7 +108,31 @@ In case of need in Kubernetes (K8s) instance one can use [Minikube](https://kube
      --install --wait
     ```
 
-1. Stop and remove K8s application, remove temporary images from local Docker registry
+1. Run the test for deployed application
+
+    ```bash
+    helm test "${helm_release}" -n "${k8s_namespace}" --logs
+    ```
+
+    Expected output looks like:
+
+    ```text
+    NAME: asio-samples
+    LAST DEPLOYED: ...
+    NAMESPACE: default
+    STATUS: deployed
+    REVISION: 1
+    TEST SUITE:     asio-samples-tcp-echo-test
+    ...
+    Phase:          Succeeded
+    NOTES:
+    1. Application port: 30007
+    
+    POD LOGS: asio-samples-tcp-echo-test
+    Hello World!
+    ```
+
+1. Stop and remove K8s application, remove temporary image from local Docker registry
 
    ```bash
    helm uninstall "${helm_release}" -n "${k8s_namespace}" && \

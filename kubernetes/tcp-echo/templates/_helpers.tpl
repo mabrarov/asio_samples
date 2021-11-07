@@ -98,3 +98,10 @@ Termination grace period.
 {{- define "app.terminationGracePeriod" -}}
 {{ add (.Values.tcpEcho.stopTimeout | default 60) 5 }}
 {{- end }}
+
+{{/*
+Name of test pod.
+*/}}
+{{- define "app.testPodName" -}}
+{{ include "app.fullname" . }}-test
+{{- end }}
