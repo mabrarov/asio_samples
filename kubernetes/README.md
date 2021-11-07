@@ -13,7 +13,7 @@ All commands were tested using Bash on Ubuntu Server 18.04.
 ```bash
 k8s_version="1.22.3" && \
 curl -Ls "https://storage.googleapis.com/kubernetes-release/release/v${k8s_version}/bin/linux/amd64/kubectl" \
-  | sudo tee /usr/local/bin/kubectl > /dev/null && \
+  | sudo tee /usr/local/bin/kubectl >/dev/null && \
 sudo chmod +x /usr/local/bin/kubectl
 ```
 
@@ -35,7 +35,7 @@ In case of need in Kubernetes (K8s) instance one can use [Minikube](https://kube
    minikube_version="1.24.0" && \
    curl -Ls "https://github.com/kubernetes/minikube/releases/download/v${minikube_version}/minikube-linux-amd64.tar.gz" \
      | tar -xzO --strip-components=1 "out/minikube-linux-amd64" \
-     | sudo tee /usr/local/bin/minikube > /dev/null && \
+     | sudo tee /usr/local/bin/minikube >/dev/null && \
    sudo chmod +x /usr/local/bin/minikube
    ```
 
