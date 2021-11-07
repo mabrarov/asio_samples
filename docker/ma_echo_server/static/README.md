@@ -4,7 +4,7 @@
 
 1. All commands use Bash syntax
 1. Current directory is directory where this repository is cloned
-1. Docker 17.06+ for building
+1. Docker 19.03.12+ for building
 
 ## Building image
 
@@ -12,24 +12,28 @@
 docker build -t abrarov/tcp-echo:static docker/ma_echo_server/static
 ```
 
-## Using image
-
-List content of image:
+## Testing built image
 
 ```bash
-temp_dir="$(mktemp -d)" && \
-docker save abrarov/tcp-echo:static | tar xf - -C "${temp_dir}" && \
-tar tvf "${temp_dir}/"*"/layer.tar" && \
-rm -rf "${temp_dir}"
+port=9999 && \
+container_id="$(docker run -d abrarov/tcp-echo:static \
+  --port "${port}" --inactivity-timeout 60)" && \
+docker run --rm --link "${container_id}:echo" curlimages/curl \
+  sh -c "echo 'Hello World"'!'"' | timeout 1s curl -sf \"telnet://echo:${port}\" || true" && \
+docker stop -t 10 "${container_id}" >/dev/null && \
+docker inspect --format='{{.State.ExitCode}}' "${container_id}" && \
+docker rm -fv "${container_id}" >/dev/null
 ```
 
-Expected output looks like:
+Expected output:
 
 ```text
-drwxr-xr-x 0/0               0 2020-10-27 23:22 opt/
-drwxr-xr-x 0/0               0 2020-10-27 23:22 opt/ma_echo_server/
--rwxr-xr-x 0/0         8579200 2020-10-27 23:22 opt/ma_echo_server/ma_echo_server
+Hello World!
+Terminated
+0
 ```
+
+## Using image
 
 Run ma_echo_server:
 
