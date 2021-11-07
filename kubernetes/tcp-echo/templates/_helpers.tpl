@@ -105,3 +105,10 @@ Name of test pod.
 {{- define "app.testPodName" -}}
 {{ include "app.fullname" . }}-test
 {{- end }}
+
+{{/*
+Test container image full name.
+*/}}
+{{- define "test.containerImageFullName" -}}
+{{ printf "%s:%s" .Values.test.image.repository (.Values.test.image.tag | default "latest") }}
+{{- end }}

@@ -11,6 +11,13 @@ container:
   readiness:
     initialDelay: 2
 
+test:
+  name: "tcp-echo-test"
+  image:
+    repository: "busybox"
+    tag: "latest"
+  message: "Hello World!"
+
 replicas: 1
 imagePullPolicy: "IfNotPresent"
 imagePullSecrets: []

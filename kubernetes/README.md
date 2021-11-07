@@ -7,6 +7,7 @@ All commands were tested using Bash on Ubuntu Server 18.04.
 1. Bash is used for execution of shell commands.
 1. Current directory is directory where this repository is cloned.
 1. Docker 19.03+
+1. Netcat for testing outside Kubernetes.
 
 ## kubectl Setup
 
@@ -103,9 +104,22 @@ In case of need in Kubernetes (K8s) instance one can use [Minikube](https://kube
 
     ```bash
     helm upgrade "${helm_release}" kubernetes/tcp-echo \
-     -n "${k8s_namespace}" \
-     --set nameOverride="${k8s_app}" \
-     --install --wait
+      -n "${k8s_namespace}" \
+      --set nameOverride="${k8s_app}" \
+      --install --wait
+    ```
+
+    Expected output looks like:
+    
+    ```text
+    Release "asio-samples" does not exist. Installing it now.
+    NAME: asio-samples
+    LAST DEPLOYED: ...
+    NAMESPACE: default
+    STATUS: deployed
+    REVISION: 1
+    NOTES:
+    1. Application port: 30007
     ```
 
 1. Run the test for deployed application
@@ -138,9 +152,9 @@ In case of need in Kubernetes (K8s) instance one can use [Minikube](https://kube
     port="$(kubectl get service -n "${k8s_namespace}" \
       --selector="app.kubernetes.io/instance=${helm_release},app.kubernetes.io/name=${k8s_app}" \
       -o=jsonpath='{.items[0].spec.ports[0].nodePort}')" && \
-    echo 'Hello outer World!' | timeout 1s nc "$(minikube ip)" "${port}" || true
+    { echo 'Hello outer World!' | timeout 1s nc "$(minikube ip)" "${port}" || true; }
     ```
-    
+
     Expected output is:
     
     ```text
