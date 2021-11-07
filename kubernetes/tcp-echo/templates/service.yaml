@@ -1,0 +1,15 @@
+apiVersion: "v1"
+kind: "Service"
+metadata:
+  name: {{ include "app.serviceName" . | quote }}
+  labels:
+    {{- include "app.labels" . | nindent 4 }}
+spec:
+  type: "NodePort"
+  ports:
+    - name: {{ include "app.servicePortName" . | quote }}
+      port: {{ .Values.service.port }}
+      targetPort: {{ include "app.containerPortName" . | quote }}
+      nodePort: {{ .Values.service.nodePort }}
+  selector:
+    {{- include "app.selectorLabels" . | nindent 4 }}

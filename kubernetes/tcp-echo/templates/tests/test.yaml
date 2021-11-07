@@ -1,0 +1,23 @@
+apiVersion: "v1"
+kind: "Pod"
+metadata:
+  name: {{ include "app.testPodName" . | quote }}
+  labels:
+    {{- include "app.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": "test"
+spec:
+  {{- with .Values.imagePullSecrets }}
+  imagePullSecrets:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  containers:
+    - name: {{ .Values.test.name | quote }}
+      image: {{ include "test.containerImageFullName" . | quote }}
+      imagePullPolicy: {{ .Values.imagePullPolicy | quote }}
+      command:
+      - "sh"
+      args:
+        - "-c"
+        - "message={{ (printf "'%s'" (.Values.test.message | replace "'" "'\"'\"'")) | replace "\\" "\\\\" | replace "\"" "\\\"" }} && echo \"${message}\" | timeout 1s nc '{{ include "app.serviceName" . }}' '{{ .Values.service.port }}' || true | grep -m 1 -F -- \"${message}\" >/dev/null"
+  restartPolicy: Never

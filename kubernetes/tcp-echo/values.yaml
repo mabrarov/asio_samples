@@ -1,0 +1,40 @@
+nameOverride: ""
+fullnameOverride: ""
+
+container:
+  name: "tcp-echo"
+  image:
+    repository: "localhost:5000/tcp-echo"
+    tag: "latest"
+  liveness:
+    initialDelay: 2
+  readiness:
+    initialDelay: 2
+
+test:
+  name: "tcp-echo-test"
+  image:
+    repository: "busybox"
+    tag: "latest"
+  message: "Hello World!"
+
+replicas: 1
+imagePullPolicy: "IfNotPresent"
+imagePullSecrets: []
+
+securityContext:
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 1000
+
+service:
+  port: 9007
+  nodePort: 30007
+
+tcpEcho:
+  port: 9007
+  listenBacklog: 6
+  inactivityTimeout: 60
+  stopTimeout: 120
+  maxSessions: 10000
+  bufferSize: 4096
