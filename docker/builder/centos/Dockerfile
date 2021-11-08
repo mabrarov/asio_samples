@@ -5,7 +5,7 @@
 # file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
-FROM centos:7
+FROM centos:7.9.2009
 
 LABEL name="abrarov/asio-samples-builder-centos" \
     description="Builder of Asio samples project on CentOS"
@@ -17,7 +17,7 @@ ENV PROJECT_DIR="/project" \
     MA_QT="ON" \
     MA_QT_MAJOR_VERSION="5" \
     MA_COVERAGE="OFF" \
-    CMAKE_VERSION="3.21.3" \
+    CMAKE_VERSION="3.21.4" \
     PATH="/opt/cmake/bin:${PATH}"
 
 ENTRYPOINT ["/app/start.sh"]

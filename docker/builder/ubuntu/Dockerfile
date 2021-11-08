@@ -17,7 +17,7 @@ ENV TZ="Europe/Moscow" \
     MA_QT="ON" \
     MA_QT_MAJOR_VERSION="5" \
     MA_COVERAGE="OFF" \
-    CMAKE_VERSION="3.21.3" \
+    CMAKE_VERSION="3.21.4" \
     PATH="/opt/cmake/bin:${PATH}"
 
 ENTRYPOINT ["/app/start.sh"]
