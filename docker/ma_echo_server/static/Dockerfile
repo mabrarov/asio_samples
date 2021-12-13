@@ -5,7 +5,7 @@
 # file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
-FROM alpine:3.14.2 AS build
+FROM alpine:3.15.0 AS build
 
 RUN apk add --no-cache \
       bash \
@@ -22,13 +22,18 @@ RUN apk add --no-cache \
       icu-dev \
       python2-dev \
       libzip-dev \
-      libbz2
+      libbz2 \
+      dos2unix \
+      patch
 
-ARG BOOST_VERSION="1.77.0"
+ADD ["patch", "/opt/patch"]
+
+ARG BOOST_VERSION="1.78.0"
 ARG BOOST_RELEASE_URL="https://boostorg.jfrog.io/artifactory/main/release"
 ARG BOOST_BUILD_OPTIONS="--without-mpi --without-graph_parallel"
 
-ENV BOOST_INSTALL_DIR="/opt/boost"
+ENV BOOST_INSTALL_DIR="/opt/boost" \
+    BOOST_PATCH_DIR="/opt/patch"
 
 RUN mkdir -p "${BOOST_INSTALL_DIR}" && \
     boost_build_dir="$(mktemp -d)" && \
@@ -40,6 +45,11 @@ RUN mkdir -p "${BOOST_INSTALL_DIR}" && \
     boost_bootstrap="${boost_build_dir}/bootstrap.sh" && \
     current_dir="$(pwd)" && \
     cd "${boost_build_dir}" && \
+    boost_patch_file="${BOOST_PATCH_DIR}/boost-${BOOST_VERSION}.patch" && \
+    if [[ -f "${boost_patch_file}" ]]; then \
+      echo "Patching Boost C++ Libraries using ${boost_patch_file}" && \
+      dos2unix <"${boost_patch_file}" | patch -uNf -p0 ; \
+    fi && \
     echo "Building Boost.Build engine" && \
     "${boost_bootstrap}" && \
     boost_linkage="static" && \
