@@ -8,8 +8,8 @@ spec:
   type: "NodePort"
   ports:
     - name: {{ include "app.servicePortName" . | quote }}
-      port: {{ .Values.service.port }}
+      port: {{ .Values.service.port | int }}
       targetPort: {{ include "app.containerPortName" . | quote }}
-      nodePort: {{ .Values.service.nodePort }}
+      nodePort: {{ .Values.service.nodePort | int }}
   selector:
     {{- include "app.selectorLabels" . | nindent 4 }}
