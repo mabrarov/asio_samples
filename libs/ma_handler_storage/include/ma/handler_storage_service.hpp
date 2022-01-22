@@ -127,7 +127,7 @@ private:
   // Double-linked intrusive list of active implementations.
   impl_base_list impl_list_;
   // Shutdown state flag.
-  bool shutdown_;
+  volatile bool shutdown_;
 }; // class handler_storage_service
 
 inline bad_handler_call::bad_handler_call()
