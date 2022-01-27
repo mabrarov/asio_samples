@@ -19,5 +19,5 @@ spec:
         - "sh"
       args:
         - "-c"
-        - {{ (printf "message='%s' && echo \"${message}\" | timeout 1s nc '%s' %d || true | grep -m 1 -F -- \"${message}\" >/dev/null" (.Values.test.message | replace "'" "'\"'\"'") (include "app.serviceName" . | replace "'" "'\"'\"'") (.Values.service.port | int)) | quote }}
+        - {{ (printf "message='%s' && echo \"${message}\" | timeout 1s nc '%s' %d || true | grep -m 1 -F -- \"${message}\" >/dev/null" (.Values.test.message | replace "'" "'\"'\"'") (include "app.serviceName" . | replace "'" "'\"'\"'") (int .Values.service.port)) | quote }}
   restartPolicy: Never

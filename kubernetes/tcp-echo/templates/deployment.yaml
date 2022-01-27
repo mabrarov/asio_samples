@@ -37,15 +37,15 @@ spec:
             - {{ .Values.tcpEcho.bufferSize | default 4096 | quote }}
           ports:
             - name: {{ include "app.containerPortName" . | quote }}
-              containerPort: {{ .Values.tcpEcho.port | int }}
+              containerPort: {{ .Values.tcpEcho.port }}
           livenessProbe:
             tcpSocket:
               port: {{ include "app.containerPortName" . | quote }}
-            initialDelaySeconds: {{ .Values.container.liveness.initialDelay | int }}
+            initialDelaySeconds: {{ .Values.container.liveness.initialDelay }}
           readinessProbe:
             tcpSocket:
               port: {{ include "app.containerPortName" . | quote }}
-            initialDelaySeconds: {{ .Values.container.readiness.initialDelay | int }}
+            initialDelaySeconds: {{ .Values.container.readiness.initialDelay }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-      terminationGracePeriodSeconds: {{ include "app.terminationGracePeriod" . | int }}
+      terminationGracePeriodSeconds: {{ include "app.terminationGracePeriod" . }}
