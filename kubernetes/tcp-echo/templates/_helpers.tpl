@@ -1,7 +1,7 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "app.name" -}}
+{{- define "tcp-echo.name" -}}
 {{- .Values.nameOverride | default .Chart.Name | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
@@ -10,7 +10,7 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "app.fullname" -}}
+{{- define "tcp-echo.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -26,90 +26,90 @@ If release name contains chart name it will be used as a full name.
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "app.chart" -}}
+{{- define "tcp-echo.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Common labels
 */}}
-{{- define "app.labels" -}}
-helm.sh/chart: {{ include "app.chart" . | quote }}
-{{ include "app.selectorLabels" . }}
+{{- define "tcp-echo.labels" -}}
+helm.sh/chart: {{ include "tcp-echo.chart" . | quote }}
+{{ include "tcp-echo.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
-app: {{ include "app.name" . | quote }}
+app: {{ include "tcp-echo.name" . | quote }}
 {{- end }}
 
 {{/*
 Selector labels
 */}}
-{{- define "app.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "app.name" . | quote }}
+{{- define "tcp-echo.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "tcp-echo.name" . | quote }}
 app.kubernetes.io/instance: {{ .Release.Name | quote }}
 {{- end }}
 
 {{/*
 Name of deployment.
 */}}
-{{- define "app.deploymentName" -}}
-{{ include "app.fullname" . }}
+{{- define "tcp-echo.deploymentName" -}}
+{{ include "tcp-echo.fullname" . }}
 {{- end }}
 
 {{/*
 Name of service.
 */}}
-{{- define "app.serviceName" -}}
-{{ include "app.fullname" . }}
+{{- define "tcp-echo.serviceName" -}}
+{{ include "tcp-echo.fullname" . }}
 {{- end }}
 
 {{/*
 Name of container port.
 */}}
-{{- define "app.containerPortName" -}}
+{{- define "tcp-echo.containerPortName" -}}
 tcp-echo
 {{- end }}
 
 {{/*
 Name of service port.
 */}}
-{{- define "app.servicePortName" -}}
+{{- define "tcp-echo.servicePortName" -}}
 tcp-echo
 {{- end }}
 
 {{/*
 Container image tag.
 */}}
-{{- define "app.containerImageTag" -}}
+{{- define "tcp-echo.containerImageTag" -}}
 {{ .Values.container.image.tag | default .Chart.AppVersion }}
 {{- end }}
 
 {{/*
 Container image full name.
 */}}
-{{- define "app.containerImageFullName" -}}
-{{ printf "%s:%s" .Values.container.image.repository (include "app.containerImageTag" . ) }}
+{{- define "tcp-echo.containerImageFullName" -}}
+{{ printf "%s:%s" .Values.container.image.repository (include "tcp-echo.containerImageTag" . ) }}
 {{- end }}
 
 {{/*
 Termination grace period.
 */}}
-{{- define "app.terminationGracePeriod" -}}
+{{- define "tcp-echo.terminationGracePeriod" -}}
 {{ add (.Values.tcpEcho.stopTimeout | default 60) 5 }}
 {{- end }}
 
 {{/*
 Name of test pod.
 */}}
-{{- define "app.testPodName" -}}
-{{ include "app.fullname" . }}-test
+{{- define "tcp-echo.testPodName" -}}
+{{ include "tcp-echo.fullname" . }}-test
 {{- end }}
 
 {{/*
 Test container image full name.
 */}}
-{{- define "test.containerImageFullName" -}}
+{{- define "tcp-echo.testContainerImageFullName" -}}
 {{ printf "%s:%s" .Values.test.image.repository (.Values.test.image.tag | default "latest") }}
 {{- end }}

@@ -1,18 +1,18 @@
 apiVersion: "apps/v1"
 kind: "Deployment"
 metadata:
-  name: {{ include "app.deploymentName" . | quote }}
+  name: {{ include "tcp-echo.deploymentName" . | quote }}
   labels:
-    {{- include "app.labels" . | nindent 4 }}
+    {{- include "tcp-echo.labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicas }}
   selector:
     matchLabels:
-      {{- include "app.selectorLabels" . | nindent 6 }}
+      {{- include "tcp-echo.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        {{- include "app.labels" . | nindent 8 }}
+        {{- include "tcp-echo.labels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -20,7 +20,7 @@ spec:
       {{- end }}
       containers:
         - name: {{ .Values.container.name | quote }}
-          image: {{ include "app.containerImageFullName" . | quote }}
+          image: {{ include "tcp-echo.containerImageFullName" . | quote }}
           imagePullPolicy: {{ .Values.imagePullPolicy | quote }}
           args:
             - "--port"
@@ -36,16 +36,16 @@ spec:
             - "--buffer"
             - {{ .Values.tcpEcho.bufferSize | default 4096 | quote }}
           ports:
-            - name: {{ include "app.containerPortName" . | quote }}
+            - name: {{ include "tcp-echo.containerPortName" . | quote }}
               containerPort: {{ .Values.tcpEcho.port }}
           livenessProbe:
             tcpSocket:
-              port: {{ include "app.containerPortName" . | quote }}
+              port: {{ include "tcp-echo.containerPortName" . | quote }}
             initialDelaySeconds: {{ .Values.container.liveness.initialDelay }}
           readinessProbe:
             tcpSocket:
-              port: {{ include "app.containerPortName" . | quote }}
+              port: {{ include "tcp-echo.containerPortName" . | quote }}
             initialDelaySeconds: {{ .Values.container.readiness.initialDelay }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-      terminationGracePeriodSeconds: {{ include "app.terminationGracePeriod" . }}
+      terminationGracePeriodSeconds: {{ include "tcp-echo.terminationGracePeriod" . }}
