@@ -46,7 +46,7 @@ RUN mkdir -p "${BOOST_INSTALL_DIR}" && \
     current_dir="$(pwd)" && \
     cd "${boost_build_dir}" && \
     boost_patch_file="${BOOST_PATCH_DIR}/boost-${BOOST_VERSION}.patch" && \
-    if [[ -f "${boost_patch_file}" ]]; then \
+    if [ -f "${boost_patch_file}" ]; then \
       echo "Patching Boost C++ Libraries using ${boost_patch_file}" && \
       dos2unix <"${boost_patch_file}" | patch -uNf -p0 ; \
     fi && \
@@ -94,7 +94,7 @@ RUN source_dir="$(mktemp -d)" && \
     cmake --build "${build_dir}" --target ma_echo_server && \
     mkdir -p /opt/ma_echo_server && \
     mv -f "${build_dir}/examples/ma_echo_server/ma_echo_server" \
-        /opt/ma_echo_server/ && \
+      /opt/ma_echo_server/ && \
     rm -rf "${build_dir}" && \
     rm -rf "${source_dir}"
 

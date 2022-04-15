@@ -39,7 +39,7 @@ RUN apk add --no-cache libstdc++ && \
     cmake --build "${build_dir}" --target ma_echo_server && \
     mkdir -p /opt/ma_echo_server && \
     mv -f "${build_dir}/examples/ma_echo_server/ma_echo_server" \
-        /opt/ma_echo_server/ && \
+      /opt/ma_echo_server/ && \
     rm -rf "${build_dir}" && \
     rm -rf "${source_dir}" && \
     apk del build-dependencies
