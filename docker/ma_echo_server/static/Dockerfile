@@ -5,7 +5,7 @@
 # file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
-FROM alpine:3.15.0 AS build
+FROM alpine:3.15.4 AS build
 
 RUN apk add --no-cache \
       bash \
