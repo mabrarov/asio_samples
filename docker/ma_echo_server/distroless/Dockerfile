@@ -53,7 +53,7 @@ RUN mkdir -p "${BOOST_INSTALL_DIR}" && \
     echo "Building Boost.Build engine" && \
     "${boost_bootstrap}" && \
     boost_linkage="static" && \
-    boost_runtime_linkage="static" && \
+    boost_runtime_linkage="shared" && \
     echo "Building Boost C++ Libraries with these parameters:" && \
     echo "B2_BIN               : ${b2_bin}" && \
     echo "B2_TOOLSET           : ${b2_toolset}" && \
