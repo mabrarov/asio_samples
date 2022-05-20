@@ -59,10 +59,26 @@ Name of deployment.
 {{- end }}
 
 {{/*
+Name of image pull secret.
+*/}}
+{{- define "tcp-echo.imagePullSecretName" -}}
+{{ include "tcp-echo.fullname" . }}
+{{- end }}
+
+{{/*
 Name of service.
 */}}
 {{- define "tcp-echo.serviceName" -}}
 {{ include "tcp-echo.fullname" . }}
+{{- end }}
+
+{{/*
+Docker authentication config for image registry.
+*/}}
+{{- define "tcp-echo.dockerRegistryAuthConfig" }}
+{{- with .Values.container.image }}
+{{- printf "{\"auths\":{\"%s\":{\"username\":\"%s\",\"password\":\"%s\",\"email\":\"%s\",\"auth\":\"%s\"}}}" .registry .pull.secret.username .pull.secret.password .pull.secret.email (printf "%s:%s" .pull.secret.username .pull.secret.password | b64enc) | b64enc }}
+{{- end }}
 {{- end }}
 
 {{/*
@@ -90,7 +106,7 @@ Container image tag.
 Container image full name.
 */}}
 {{- define "tcp-echo.containerImageFullName" -}}
-{{ printf "%s:%s" .Values.container.image.repository (include "tcp-echo.containerImageTag" . ) }}
+{{ printf "%s/%s:%s" .Values.container.image.registry .Values.container.image.name (include "tcp-echo.containerImageTag" . ) }}
 {{- end }}
 
 {{/*
@@ -108,8 +124,24 @@ Name of test pod.
 {{- end }}
 
 {{/*
+Name of test image pull secret.
+*/}}
+{{- define "tcp-echo.testImagePullSecretName" -}}
+{{ include "tcp-echo.fullname" . }}-test
+{{- end }}
+
+{{/*
 Test container image full name.
 */}}
 {{- define "tcp-echo.testContainerImageFullName" -}}
-{{ printf "%s:%s" .Values.test.image.repository (.Values.test.image.tag | default "latest") }}
+{{ printf "%s/%s:%s" .Values.test.image.registry .Values.test.image.name (.Values.test.image.tag | default "latest") }}
+{{- end }}
+
+{{/*
+Docker authentication config for test image registry.
+*/}}
+{{- define "tcp-echo.dockerTestRegistryAuthConfig" }}
+{{- with .Values.test.image }}
+{{- printf "{\"auths\":{\"%s\":{\"username\":\"%s\",\"password\":\"%s\",\"email\":\"%s\",\"auth\":\"%s\"}}}" .registry .pull.secret.username .pull.secret.password .pull.secret.email (printf "%s:%s" .pull.secret.username .pull.secret.password | b64enc) | b64enc }}
+{{- end }}
 {{- end }}

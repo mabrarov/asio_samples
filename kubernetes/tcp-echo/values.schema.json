@@ -5,8 +5,6 @@
     "container",
     "test",
     "replicas",
-    "imagePullPolicy",
-    "imagePullSecrets",
     "securityContext",
     "service",
     "tcpEcho"
@@ -20,6 +18,7 @@
     },
     "container": {
       "description": "configuration of application pod container",
+      "type": "object",
       "required": [
         "name",
         "image",
@@ -34,15 +33,56 @@
         "image": {
           "type": "object",
           "required": [
-            "repository"
+            "registry",
+            "name",
+            "pull"
           ],
           "properties": {
-            "repository": {
+            "registry": {
+              "type": "string",
+              "minLength": 1
+            },
+            "name": {
               "type": "string",
               "minLength": 1
             },
             "tag": {
               "type": "string"
+            },
+            "pull": {
+              "type": "object",
+              "required": [
+                "policy"
+              ],
+              "properties": {
+                "policy": {
+                  "type": "string",
+                  "pattern": "^(Always|Never|IfNotPresent)$"
+                },
+                "secret": {
+                  "description": "docker authentication credentials for image registry",
+                  "type": "object",
+                  "required": [
+                    "username",
+                    "password",
+                    "email"
+                  ],
+                  "properties": {
+                    "username": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "password": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "email": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                }
+              }
             }
           }
         },
@@ -88,15 +128,56 @@
         "image": {
           "type": "object",
           "required": [
-            "repository"
+            "registry",
+            "name",
+            "pull"
           ],
           "properties": {
-            "repository": {
+            "registry": {
+              "type": "string",
+              "minLength": 1
+            },
+            "name": {
               "type": "string",
               "minLength": 1
             },
             "tag": {
               "type": "string"
+            },
+            "pull": {
+              "type": "object",
+              "required": [
+                "policy"
+              ],
+              "properties": {
+                "policy": {
+                  "type": "string",
+                  "pattern": "^(Always|Never|IfNotPresent)$"
+                },
+                "secret": {
+                  "description": "docker authentication credentials for image registry",
+                  "type": "object",
+                  "required": [
+                    "username",
+                    "password",
+                    "email"
+                  ],
+                  "properties": {
+                    "username": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "password": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "email": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                }
+              }
             }
           }
         },
@@ -110,16 +191,6 @@
     "replicas": {
       "type": "integer",
       "minimum": 1
-    },
-    "imagePullPolicy": {
-      "type": "string",
-      "pattern": "^(Always|Never|IfNotPresent)$"
-    },
-    "imagePullSecrets": {
-      "type": "array",
-      "items": {
-        "type": "object"
-      }
     },
     "securityContext": {
       "type": "object",

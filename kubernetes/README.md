@@ -108,6 +108,8 @@ In case of need in Kubernetes (K8s) instance one can use [Minikube](https://kube
    helm upgrade "${helm_release}" kubernetes/tcp-echo \
      -n "${k8s_namespace}" \
      --set nameOverride="${k8s_app}" \
+     --set container.image.registry='localhost:5000' \
+     --set container.image.name='tcp-echo' \
      --install --wait
    ```
 
@@ -293,7 +295,7 @@ In case of need in OpenShift instance one can use [OKD](https://www.okd.io/) to 
      --insecure-skip-tls-verify=true "${openshift_address}:8443" && \
    docker login -p "$(oc whoami -t)" -u unused "${openshift_registry}" && \
    docker push "${openshift_registry}/${openshift_namespace}/tcp-echo"
-    ```
+   ```
 
 1. Deploy application using [kubernetes/tcp-echo](tcp-echo) Helm chart and wait for completion of rollout
 
@@ -305,7 +307,8 @@ In case of need in OpenShift instance one can use [OKD](https://www.okd.io/) to 
      -n "${openshift_namespace}" \
      --set nameOverride="${openshift_app}" \
      --set securityContext.runAsUser=null \
-     --set container.image.repository="${openshift_registry}/${openshift_namespace}/tcp-echo" \
+     --set container.image.registry="${openshift_registry}" \
+     --set container.image.name="${openshift_namespace}/tcp-echo" \
      --install --wait
    ```
 

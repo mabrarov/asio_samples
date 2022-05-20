@@ -4,8 +4,11 @@ fullnameOverride: ""
 container:
   name: "tcp-echo"
   image:
-    repository: "localhost:5000/tcp-echo"
+    registry: "docker.io"
+    name: "abrarov/tcp-echo"
     tag: "latest"
+    pull:
+      policy: "IfNotPresent"
   liveness:
     initialDelay: 2
   readiness:
@@ -14,13 +17,14 @@ container:
 test:
   name: "tcp-echo-test"
   image:
-    repository: "busybox"
+    registry: "docker.io"
+    name: "busybox"
     tag: "latest"
+    pull:
+      policy: "IfNotPresent"
   message: "Hello World!"
 
 replicas: 1
-imagePullPolicy: "IfNotPresent"
-imagePullSecrets: []
 
 securityContext:
   readOnlyRootFilesystem: true
