@@ -19,5 +19,8 @@ spec:
         - "sh"
       args:
         - "-c"
-        - {{ (printf "message='%s' && echo \"${message}\" | timeout 1s nc '%s' %d || true | grep -m 1 -F -- \"${message}\" >/dev/null" (.Values.test.message | replace "'" "'\"'\"'") (include "tcp-echo.serviceName" . | replace "'" "'\"'\"'") (int .Values.service.port)) | quote }}
+        - {{ (printf "echo \"${TEST_MESSAGE}\" | timeout 1s nc '%s' %d || true | grep -m 1 -F -- \"${TEST_MESSAGE}\" >/dev/null" (include "tcp-echo.serviceName" . | replace "'" "'\"'\"'") (int .Values.service.port)) | quote }}
+      env:
+        - name: "TEST_MESSAGE"
+          value: {{ .Values.test.message | quote }}
   restartPolicy: Never
