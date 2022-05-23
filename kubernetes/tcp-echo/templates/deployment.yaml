@@ -14,14 +14,14 @@ spec:
       labels:
         {{- include "tcp-echo.labels" . | nindent 8 }}
     spec:
-      {{- if .Values.container.image.pull.secret }}
+      {{- if .Values.image.pull.secret }}
       imagePullSecrets:
         - name: {{ include "tcp-echo.imagePullSecretName" . | quote }}
       {{- end }}
       containers:
-        - name: {{ .Values.container.name | quote }}
-          image: {{ include "tcp-echo.containerImageFullName" . | quote }}
-          imagePullPolicy: {{ .Values.container.image.pull.policy | quote }}
+        - name: {{ .Values.containerName | quote }}
+          image: {{ include "tcp-echo.imageFullName" . | quote }}
+          imagePullPolicy: {{ .Values.image.pull.policy | quote }}
           args:
             - "--port"
             - {{ .Values.tcpEcho.port | quote }}
@@ -41,11 +41,11 @@ spec:
           livenessProbe:
             tcpSocket:
               port: {{ include "tcp-echo.containerPortName" . | quote }}
-            initialDelaySeconds: {{ .Values.container.liveness.initialDelay }}
+            initialDelaySeconds: {{ .Values.liveness.initialDelay }}
           readinessProbe:
             tcpSocket:
               port: {{ include "tcp-echo.containerPortName" . | quote }}
-            initialDelaySeconds: {{ .Values.container.readiness.initialDelay }}
+            initialDelaySeconds: {{ .Values.readiness.initialDelay }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
       terminationGracePeriodSeconds: {{ include "tcp-echo.terminationGracePeriod" . }}

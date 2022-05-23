@@ -74,7 +74,7 @@ Name of service.
 
 {{/*
 Docker authentication config for image registry.
-{{ include "tcp-echo.dockerRegistryAuthenticationConfig" (dict "imageRegistry" .Values.container.image.registry "credentials" .Values.container.image.pull.secret) }}
+{{ include "tcp-echo.dockerRegistryAuthenticationConfig" (dict "imageRegistry" .Values.image.registry "credentials" .Values.image.pull.secret) }}
 */}}
 {{- define "tcp-echo.dockerRegistryAuthenticationConfig" -}}
 {{- $registry := .imageRegistry }}
@@ -101,8 +101,8 @@ tcp-echo
 {{/*
 Container image full name.
 */}}
-{{- define "tcp-echo.containerImageFullName" -}}
-{{ printf "%s/%s:%s" .Values.container.image.registry .Values.container.image.name (.Values.container.image.tag | default .Chart.AppVersion) }}
+{{- define "tcp-echo.imageFullName" -}}
+{{ printf "%s/%s:%s" .Values.image.registry .Values.image.name (.Values.image.tag | default .Chart.AppVersion) }}
 {{- end }}
 
 {{/*
@@ -129,6 +129,6 @@ Name of test image pull secret.
 {{/*
 Test container image full name.
 */}}
-{{- define "tcp-echo.testContainerImageFullName" -}}
+{{- define "tcp-echo.testImageFullName" -}}
 {{ printf "%s/%s:%s" .Values.test.image.registry .Values.test.image.name (.Values.test.image.tag | default "latest") }}
 {{- end }}

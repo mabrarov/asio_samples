@@ -12,8 +12,8 @@ spec:
     - name: {{ include "tcp-echo.testImagePullSecretName" . | quote }}
   {{- end }}
   containers:
-    - name: {{ .Values.test.name | quote }}
-      image: {{ include "tcp-echo.testContainerImageFullName" . | quote }}
+    - name: {{ .Values.test.containerName | quote }}
+      image: {{ include "tcp-echo.testImageFullName" . | quote }}
       imagePullPolicy: {{ .Values.test.image.pull.policy | quote }}
       command:
         - "sh"

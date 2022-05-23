@@ -108,8 +108,8 @@ In case of need in Kubernetes (K8s) instance one can use [Minikube](https://kube
    helm upgrade "${helm_release}" kubernetes/tcp-echo \
      -n "${k8s_namespace}" \
      --set nameOverride="${k8s_app}" \
-     --set container.image.registry='localhost:5000' \
-     --set container.image.name='tcp-echo' \
+     --set image.registry='localhost:5000' \
+     --set image.name='tcp-echo' \
      --install --wait
    ```
 
@@ -307,8 +307,8 @@ In case of need in OpenShift instance one can use [OKD](https://www.okd.io/) to 
      -n "${openshift_namespace}" \
      --set nameOverride="${openshift_app}" \
      --set securityContext.runAsUser=null \
-     --set container.image.registry="${openshift_registry}" \
-     --set container.image.name="${openshift_namespace}/tcp-echo" \
+     --set image.registry="${openshift_registry}" \
+     --set image.name="${openshift_namespace}/tcp-echo" \
      --install --wait
    ```
 

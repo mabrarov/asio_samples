@@ -1,28 +1,17 @@
 nameOverride: ""
 fullnameOverride: ""
 
-container:
-  name: "tcp-echo"
-  image:
-    registry: "docker.io"
-    name: "abrarov/tcp-echo"
-    tag: "latest"
-    pull:
-      policy: "IfNotPresent"
-  liveness:
-    initialDelay: 2
-  readiness:
-    initialDelay: 2
-
-test:
-  name: "tcp-echo-test"
-  image:
-    registry: "docker.io"
-    name: "busybox"
-    tag: "latest"
-    pull:
-      policy: "IfNotPresent"
-  message: "Hello World!"
+containerName: "tcp-echo"
+image:
+  registry: "docker.io"
+  name: "abrarov/tcp-echo"
+  tag: "latest"
+  pull:
+    policy: "IfNotPresent"
+liveness:
+  initialDelay: 2
+readiness:
+  initialDelay: 2
 
 replicas: 1
 
@@ -42,3 +31,13 @@ tcpEcho:
   stopTimeout: 120
   maxSessions: 10000
   bufferSize: 4096
+
+test:
+  containerName: "tcp-echo-test"
+  image:
+    registry: "docker.io"
+    name: "busybox"
+    tag: "latest"
+    pull:
+      policy: "IfNotPresent"
+  message: "Hello World!"
