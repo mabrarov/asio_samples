@@ -47,5 +47,12 @@ spec:
               port: {{ include "tcp-echo.containerPortName" . | quote }}
             initialDelaySeconds: {{ .Values.readiness.initialDelay }}
           securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
+            readOnlyRootFilesystem: {{ .Values.securityContext.readOnlyRootFilesystem }}
+            runAsNonRoot: {{ .Values.securityContext.readOnlyRootFilesystem }}
+            {{- if .Values.securityContext.runAsUser }}
+            runAsUser: {{ .Values.securityContext.runAsUser }}
+            {{- end }}
+            {{- if .Values.securityContext.runAsGroup }}
+            runAsGroup: {{ .Values.securityContext.runAsGroup }}
+            {{- end }}
       terminationGracePeriodSeconds: {{ include "tcp-echo.terminationGracePeriod" . }}

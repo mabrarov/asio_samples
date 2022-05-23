@@ -109,6 +109,10 @@
     },
     "securityContext": {
       "type": "object",
+      "required": [
+        "readOnlyRootFilesystem",
+        "runAsNonRoot"
+      ],
       "properties": {
         "readOnlyRootFilesystem": {
           "type": "boolean"
@@ -117,6 +121,10 @@
           "type": "boolean"
         },
         "runAsUser": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "runAsGroup": {
           "type": "integer",
           "minimum": 0
         }
