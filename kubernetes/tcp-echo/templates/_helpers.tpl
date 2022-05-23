@@ -74,11 +74,14 @@ Name of service.
 
 {{/*
 Docker authentication config for image registry.
+{{ include "tcp-echo.dockerRegistryAuthenticationConfig" (dict "imageRegistry" .Values.container.image.registry "credentials" .Values.container.image.pull.secret) }}
 */}}
-{{- define "tcp-echo.dockerRegistryAuthConfig" }}
-{{- with .Values.container.image }}
-{{- printf "{\"auths\":{\"%s\":{\"username\":\"%s\",\"password\":\"%s\",\"email\":\"%s\",\"auth\":\"%s\"}}}" .registry .pull.secret.username .pull.secret.password .pull.secret.email (printf "%s:%s" .pull.secret.username .pull.secret.password | b64enc) | b64enc }}
-{{- end }}
+{{- define "tcp-echo.dockerRegistryAuthenticationConfig" -}}
+{{- $registry := .imageRegistry }}
+{{- $username := .credentials.username }}
+{{- $password := .credentials.password }}
+{{- $email := .credentials.email }}
+{{- printf "{\"auths\":{\"%s\":{\"username\":\"%s\",\"password\":\"%s\",\"email\":\"%s\",\"auth\":\"%s\"}}}" $registry $username $password $email (printf "%s:%s" $username $password | b64enc) | b64enc }}
 {{- end }}
 
 {{/*
@@ -96,17 +99,10 @@ tcp-echo
 {{- end }}
 
 {{/*
-Container image tag.
-*/}}
-{{- define "tcp-echo.containerImageTag" -}}
-{{ .Values.container.image.tag | default .Chart.AppVersion }}
-{{- end }}
-
-{{/*
 Container image full name.
 */}}
 {{- define "tcp-echo.containerImageFullName" -}}
-{{ printf "%s/%s:%s" .Values.container.image.registry .Values.container.image.name (include "tcp-echo.containerImageTag" . ) }}
+{{ printf "%s/%s:%s" .Values.container.image.registry .Values.container.image.name (.Values.container.image.tag | default .Chart.AppVersion) }}
 {{- end }}
 
 {{/*
@@ -135,13 +131,4 @@ Test container image full name.
 */}}
 {{- define "tcp-echo.testContainerImageFullName" -}}
 {{ printf "%s/%s:%s" .Values.test.image.registry .Values.test.image.name (.Values.test.image.tag | default "latest") }}
-{{- end }}
-
-{{/*
-Docker authentication config for test image registry.
-*/}}
-{{- define "tcp-echo.dockerTestRegistryAuthConfig" }}
-{{- with .Values.test.image }}
-{{- printf "{\"auths\":{\"%s\":{\"username\":\"%s\",\"password\":\"%s\",\"email\":\"%s\",\"auth\":\"%s\"}}}" .registry .pull.secret.username .pull.secret.password .pull.secret.email (printf "%s:%s" .pull.secret.username .pull.secret.password | b64enc) | b64enc }}
-{{- end }}
 {{- end }}
