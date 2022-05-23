@@ -2,14 +2,17 @@ nameOverride: ""
 fullnameOverride: ""
 
 containerName: "tcp-echo"
+
 image:
   registry: "docker.io"
   name: "abrarov/tcp-echo"
   tag: "latest"
   pull:
     policy: "IfNotPresent"
+
 liveness:
   initialDelay: 2
+
 readiness:
   initialDelay: 2
 
