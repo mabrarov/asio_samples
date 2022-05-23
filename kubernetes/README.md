@@ -14,7 +14,7 @@ All commands were tested using Bash on Ubuntu Server 18.04.
 ### kubectl Setup
 
 ```bash
-k8s_version="1.23.2" && \
+k8s_version="1.24.0" && \
 curl -Ls "https://storage.googleapis.com/kubernetes-release/release/v${k8s_version}/bin/linux/amd64/kubectl" \
   | sudo tee /usr/local/bin/kubectl >/dev/null && \
 sudo chmod +x /usr/local/bin/kubectl
