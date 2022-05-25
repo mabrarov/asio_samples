@@ -14,14 +14,14 @@ spec:
       labels:
         {{- include "tcp-echo.labels" . | nindent 8 }}
     spec:
-      {{- with .Values.imagePullSecrets }}
+      {{- if .Values.image.pull.secret }}
       imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
+        - name: {{ include "tcp-echo.imagePullSecretName" . | quote }}
       {{- end }}
       containers:
-        - name: {{ .Values.container.name | quote }}
-          image: {{ include "tcp-echo.containerImageFullName" . | quote }}
-          imagePullPolicy: {{ .Values.imagePullPolicy | quote }}
+        - name: {{ .Values.containerName | quote }}
+          image: {{ include "tcp-echo.imageFullName" . | quote }}
+          imagePullPolicy: {{ .Values.image.pull.policy | quote }}
           args:
             - "--port"
             - {{ .Values.tcpEcho.port | quote }}
@@ -41,11 +41,18 @@ spec:
           livenessProbe:
             tcpSocket:
               port: {{ include "tcp-echo.containerPortName" . | quote }}
-            initialDelaySeconds: {{ .Values.container.liveness.initialDelay }}
+            initialDelaySeconds: {{ .Values.liveness.initialDelay }}
           readinessProbe:
             tcpSocket:
               port: {{ include "tcp-echo.containerPortName" . | quote }}
-            initialDelaySeconds: {{ .Values.container.readiness.initialDelay }}
+            initialDelaySeconds: {{ .Values.readiness.initialDelay }}
           securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
+            readOnlyRootFilesystem: {{ .Values.securityContext.readOnlyRootFilesystem }}
+            runAsNonRoot: {{ .Values.securityContext.readOnlyRootFilesystem }}
+            {{- if .Values.securityContext.runAsUser }}
+            runAsUser: {{ .Values.securityContext.runAsUser }}
+            {{- end }}
+            {{- if .Values.securityContext.runAsGroup }}
+            runAsGroup: {{ .Values.securityContext.runAsGroup }}
+            {{- end }}
       terminationGracePeriodSeconds: {{ include "tcp-echo.terminationGracePeriod" . }}

@@ -7,17 +7,20 @@ metadata:
   annotations:
     "helm.sh/hook": "test"
 spec:
-  {{- with .Values.imagePullSecrets }}
+  {{- if .Values.test.image.pull.secret }}
   imagePullSecrets:
-    {{- toYaml . | nindent 4 }}
+    - name: {{ include "tcp-echo.testImagePullSecretName" . | quote }}
   {{- end }}
   containers:
-    - name: {{ .Values.test.name | quote }}
-      image: {{ include "tcp-echo.testContainerImageFullName" . | quote }}
-      imagePullPolicy: {{ .Values.imagePullPolicy | quote }}
+    - name: {{ .Values.test.containerName | quote }}
+      image: {{ include "tcp-echo.testImageFullName" . | quote }}
+      imagePullPolicy: {{ .Values.test.image.pull.policy | quote }}
       command:
         - "sh"
       args:
         - "-c"
-        - {{ (printf "message='%s' && echo \"${message}\" | timeout 1s nc '%s' %d || true | grep -m 1 -F -- \"${message}\" >/dev/null" (.Values.test.message | replace "'" "'\"'\"'") (include "tcp-echo.serviceName" . | replace "'" "'\"'\"'") (int .Values.service.port)) | quote }}
+        - {{ (printf "echo \"${TEST_MESSAGE}\" | timeout 1s nc '%s' %d || true | grep -m 1 -F -- \"${TEST_MESSAGE}\" >/dev/null" (include "tcp-echo.serviceName" . | replace "'" "'\"'\"'") (int .Values.service.port)) | quote }}
+      env:
+        - name: "TEST_MESSAGE"
+          value: {{ .Values.test.message | quote }}
   restartPolicy: Never

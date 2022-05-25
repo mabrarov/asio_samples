@@ -14,7 +14,7 @@ All commands were tested using Bash on Ubuntu Server 18.04.
 ### kubectl Setup
 
 ```bash
-k8s_version="1.23.2" && \
+k8s_version="1.24.0" && \
 curl -Ls "https://storage.googleapis.com/kubernetes-release/release/v${k8s_version}/bin/linux/amd64/kubectl" \
   | sudo tee /usr/local/bin/kubectl >/dev/null && \
 sudo chmod +x /usr/local/bin/kubectl
@@ -23,7 +23,7 @@ sudo chmod +x /usr/local/bin/kubectl
 ### Helm Setup
 
 ```bash
-helm_version="3.8.0" && \
+helm_version="3.9.0" && \
 curl -Ls "https://get.helm.sh/helm-v${helm_version}-linux-amd64.tar.gz" \
   | sudo tar -xz --strip-components=1 -C /usr/local/bin "linux-amd64/helm"
 ```
@@ -35,7 +35,7 @@ In case of need in Kubernetes (K8s) instance one can use [Minikube](https://kube
 1. Download Minikube executable (minikube)
 
    ```bash
-   minikube_version="1.25.1" && \
+   minikube_version="1.25.2" && \
    curl -Ls "https://github.com/kubernetes/minikube/releases/download/v${minikube_version}/minikube-linux-amd64.tar.gz" \
      | tar -xzO --strip-components=1 "out/minikube-linux-amd64" \
      | sudo tee /usr/local/bin/minikube >/dev/null && \
@@ -108,6 +108,8 @@ In case of need in Kubernetes (K8s) instance one can use [Minikube](https://kube
    helm upgrade "${helm_release}" kubernetes/tcp-echo \
      -n "${k8s_namespace}" \
      --set nameOverride="${k8s_app}" \
+     --set image.registry='localhost:5000' \
+     --set image.name='tcp-echo' \
      --install --wait
    ```
 
@@ -293,7 +295,7 @@ In case of need in OpenShift instance one can use [OKD](https://www.okd.io/) to 
      --insecure-skip-tls-verify=true "${openshift_address}:8443" && \
    docker login -p "$(oc whoami -t)" -u unused "${openshift_registry}" && \
    docker push "${openshift_registry}/${openshift_namespace}/tcp-echo"
-    ```
+   ```
 
 1. Deploy application using [kubernetes/tcp-echo](tcp-echo) Helm chart and wait for completion of rollout
 
@@ -305,7 +307,8 @@ In case of need in OpenShift instance one can use [OKD](https://www.okd.io/) to 
      -n "${openshift_namespace}" \
      --set nameOverride="${openshift_app}" \
      --set securityContext.runAsUser=null \
-     --set container.image.repository="${openshift_registry}/${openshift_namespace}/tcp-echo" \
+     --set image.registry="${openshift_registry}" \
+     --set image.name="${openshift_namespace}/tcp-echo" \
      --install --wait
    ```
 

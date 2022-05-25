@@ -2,14 +2,15 @@
   "$schema": "https://json-schema.org/schema#",
   "type": "object",
   "required": [
-    "container",
-    "test",
+    "containerName",
+    "image",
+    "liveness",
+    "readiness",
     "replicas",
-    "imagePullPolicy",
-    "imagePullSecrets",
     "securityContext",
     "service",
-    "tcpEcho"
+    "tcpEcho",
+    "test"
   ],
   "properties": {
     "nameOverride": {
@@ -18,92 +19,87 @@
     "fullnameOverride": {
       "type": "string"
     },
-    "container": {
-      "description": "configuration of application pod container",
+    "containerName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "image": {
+      "type": "object",
       "required": [
+        "registry",
         "name",
-        "image",
-        "liveness",
-        "readiness"
+        "pull"
       ],
       "properties": {
+        "registry": {
+          "type": "string",
+          "minLength": 1
+        },
         "name": {
           "type": "string",
           "minLength": 1
         },
-        "image": {
+        "tag": {
+          "type": "string"
+        },
+        "pull": {
           "type": "object",
           "required": [
-            "repository"
+            "policy"
           ],
           "properties": {
-            "repository": {
+            "policy": {
               "type": "string",
-              "minLength": 1
+              "pattern": "^(Always|Never|IfNotPresent)$"
             },
-            "tag": {
-              "type": "string"
-            }
-          }
-        },
-        "liveness": {
-          "type": "object",
-          "required": [
-            "initialDelay"
-          ],
-          "properties": {
-            "initialDelay": {
-              "type": "integer",
-              "minimum": 1
-            }
-          }
-        },
-        "readiness": {
-          "type": "object",
-          "required": [
-            "initialDelay"
-          ],
-          "properties": {
-            "initialDelay": {
-              "type": "integer",
-              "minimum": 1
+            "secret": {
+              "description": "docker authentication credentials for image registry",
+              "type": "object",
+              "required": [
+                "username",
+                "password",
+                "email"
+              ],
+              "properties": {
+                "username": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "password": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "email": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
             }
           }
         }
       }
     },
-    "test": {
-      "description": "configuration of test pod container",
+    "liveness": {
       "type": "object",
       "required": [
-        "name",
-        "image",
-        "message"
+        "initialDelay"
       ],
       "properties": {
-        "name": {
-          "type": "string",
-          "minLength": 1
-        },
-        "image": {
-          "type": "object",
-          "required": [
-            "repository"
-          ],
-          "properties": {
-            "repository": {
-              "type": "string",
-              "minLength": 1
-            },
-            "tag": {
-              "type": "string"
-            }
-          }
-        },
-        "message": {
-          "description": "message to send for the test",
-          "type": "string",
-          "minLength": 1
+        "initialDelay": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "readiness": {
+      "type": "object",
+      "required": [
+        "initialDelay"
+      ],
+      "properties": {
+        "initialDelay": {
+          "type": "integer",
+          "minimum": 1
         }
       }
     },
@@ -111,18 +107,12 @@
       "type": "integer",
       "minimum": 1
     },
-    "imagePullPolicy": {
-      "type": "string",
-      "pattern": "^(Always|Never|IfNotPresent)$"
-    },
-    "imagePullSecrets": {
-      "type": "array",
-      "items": {
-        "type": "object"
-      }
-    },
     "securityContext": {
       "type": "object",
+      "required": [
+        "readOnlyRootFilesystem",
+        "runAsNonRoot"
+      ],
       "properties": {
         "readOnlyRootFilesystem": {
           "type": "boolean"
@@ -131,6 +121,10 @@
           "type": "boolean"
         },
         "runAsUser": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "runAsGroup": {
           "type": "integer",
           "minimum": 0
         }
@@ -194,6 +188,82 @@
           "description": "session's buffer size (bytes)",
           "type": "integer",
           "minimum": 1
+        }
+      }
+    },
+    "test": {
+      "description": "configuration of test pod container",
+      "type": "object",
+      "required": [
+        "containerName",
+        "image",
+        "message"
+      ],
+      "properties": {
+        "containerName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "image": {
+          "type": "object",
+          "required": [
+            "registry",
+            "name",
+            "pull"
+          ],
+          "properties": {
+            "registry": {
+              "type": "string",
+              "minLength": 1
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "tag": {
+              "type": "string"
+            },
+            "pull": {
+              "type": "object",
+              "required": [
+                "policy"
+              ],
+              "properties": {
+                "policy": {
+                  "type": "string",
+                  "pattern": "^(Always|Never|IfNotPresent)$"
+                },
+                "secret": {
+                  "description": "docker authentication credentials for image registry",
+                  "type": "object",
+                  "required": [
+                    "username",
+                    "password",
+                    "email"
+                  ],
+                  "properties": {
+                    "username": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "password": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "email": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "message": {
+          "description": "message to send for the test",
+          "type": "string",
+          "minLength": 1
         }
       }
     }

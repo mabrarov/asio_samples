@@ -59,10 +59,29 @@ Name of deployment.
 {{- end }}
 
 {{/*
+Name of image pull secret.
+*/}}
+{{- define "tcp-echo.imagePullSecretName" -}}
+{{ include "tcp-echo.fullname" . }}
+{{- end }}
+
+{{/*
 Name of service.
 */}}
 {{- define "tcp-echo.serviceName" -}}
 {{ include "tcp-echo.fullname" . }}
+{{- end }}
+
+{{/*
+Docker authentication config for image registry.
+{{ include "tcp-echo.dockerRegistryAuthenticationConfig" (dict "imageRegistry" .Values.image.registry "credentials" .Values.image.pull.secret) }}
+*/}}
+{{- define "tcp-echo.dockerRegistryAuthenticationConfig" -}}
+{{- $registry := .imageRegistry }}
+{{- $username := .credentials.username }}
+{{- $password := .credentials.password }}
+{{- $email := .credentials.email }}
+{{- printf "{\"auths\":{\"%s\":{\"username\":\"%s\",\"password\":\"%s\",\"email\":\"%s\",\"auth\":\"%s\"}}}" $registry $username $password $email (printf "%s:%s" $username $password | b64enc) | b64enc }}
 {{- end }}
 
 {{/*
@@ -80,17 +99,10 @@ tcp-echo
 {{- end }}
 
 {{/*
-Container image tag.
-*/}}
-{{- define "tcp-echo.containerImageTag" -}}
-{{ .Values.container.image.tag | default .Chart.AppVersion }}
-{{- end }}
-
-{{/*
 Container image full name.
 */}}
-{{- define "tcp-echo.containerImageFullName" -}}
-{{ printf "%s:%s" .Values.container.image.repository (include "tcp-echo.containerImageTag" . ) }}
+{{- define "tcp-echo.imageFullName" -}}
+{{ printf "%s/%s:%s" .Values.image.registry .Values.image.name (.Values.image.tag | default .Chart.AppVersion) }}
 {{- end }}
 
 {{/*
@@ -108,8 +120,15 @@ Name of test pod.
 {{- end }}
 
 {{/*
+Name of test image pull secret.
+*/}}
+{{- define "tcp-echo.testImagePullSecretName" -}}
+{{ include "tcp-echo.fullname" . }}-test
+{{- end }}
+
+{{/*
 Test container image full name.
 */}}
-{{- define "tcp-echo.testContainerImageFullName" -}}
-{{ printf "%s:%s" .Values.test.image.repository (.Values.test.image.tag | default "latest") }}
+{{- define "tcp-echo.testImageFullName" -}}
+{{ printf "%s/%s:%s" .Values.test.image.registry .Values.test.image.name (.Values.test.image.tag | default "latest") }}
 {{- end }}
