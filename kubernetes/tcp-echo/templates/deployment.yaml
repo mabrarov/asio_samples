@@ -4,15 +4,18 @@ metadata:
   name: {{ include "tcp-echo.deploymentName" . | quote }}
   labels:
     {{- include "tcp-echo.labels" . | nindent 4 }}
+    {{- include "tcp-echo.componentLabels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicas }}
   selector:
     matchLabels:
-      {{- include "tcp-echo.selectorLabels" . | nindent 6 }}
+      {{- include "tcp-echo.matchLabels" . | nindent 6 }}
+      {{- include "tcp-echo.componentLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
         {{- include "tcp-echo.labels" . | nindent 8 }}
+        {{- include "tcp-echo.componentLabels" . | nindent 8 }}
     spec:
       {{- if .Values.image.pull.secret }}
       imagePullSecrets:

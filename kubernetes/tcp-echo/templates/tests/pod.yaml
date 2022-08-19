@@ -1,19 +1,20 @@
 apiVersion: "v1"
 kind: "Pod"
 metadata:
-  name: {{ include "tcp-echo.testPodName" . | quote }}
+  name: {{ include "tcp-echo.test.podName" . | quote }}
   labels:
     {{- include "tcp-echo.labels" . | nindent 4 }}
+    {{- include "tcp-echo.test.componentLabels" . | nindent 4 }}
   annotations:
     "helm.sh/hook": "test"
 spec:
   {{- if .Values.test.image.pull.secret }}
   imagePullSecrets:
-    - name: {{ include "tcp-echo.testImagePullSecretName" . | quote }}
+    - name: {{ include "tcp-echo.test.imagePullSecretName" . | quote }}
   {{- end }}
   containers:
     - name: {{ .Values.test.containerName | quote }}
-      image: {{ include "tcp-echo.testImageFullName" . | quote }}
+      image: {{ include "tcp-echo.test.imageFullName" . | quote }}
       imagePullPolicy: {{ .Values.test.image.pull.policy | quote }}
       command:
         - "sh"

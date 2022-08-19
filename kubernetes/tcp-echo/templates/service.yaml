@@ -4,6 +4,7 @@ metadata:
   name: {{ include "tcp-echo.serviceName" . | quote }}
   labels:
     {{- include "tcp-echo.labels" . | nindent 4 }}
+    {{- include "tcp-echo.componentLabels" . | nindent 4 }}
 spec:
   type: "NodePort"
   ports:
@@ -12,4 +13,5 @@ spec:
       targetPort: {{ include "tcp-echo.containerPortName" . | quote }}
       nodePort: {{ .Values.service.nodePort }}
   selector:
-    {{- include "tcp-echo.selectorLabels" . | nindent 4 }}
+    {{- include "tcp-echo.matchLabels" . | nindent 4 }}
+    {{- include "tcp-echo.componentLabels" . | nindent 4 }}
