@@ -48,7 +48,7 @@ helm.sh/chart: {{ include "tcp-echo.chart" . | quote }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
-app: {{ include "tcp-echo.name" . | quote }}
+app: {{ include "tcp-echo.fullname" . | quote }}
 {{- end }}
 
 {{/*
