@@ -12,7 +12,7 @@ ENV DOWNLOADS_DIR="C:\download" \
 
 ADD ["install", "C:/install/"]
 
-ARG BOOST_VERSION="1.79.0"
+ARG BOOST_VERSION="1.80.0"
 ARG BOOST_URL="https://boostorg.jfrog.io/ui/api/v1/download?repoKey=main&path="
 
 RUN powershell -ExecutionPolicy Bypass -File "C:\install\install.ps1"
