@@ -15,6 +15,9 @@ $boost_version_suffix = "${env:BOOST_VERSION}" -replace "\.", '_'
 $boost_platform_suffix = "-64"
 $boost_toolchain_suffix = "-msvc"
 switch (${env:MSVS_VERSION}) {
+  "17" {
+    $boost_toolchain_suffix = "${boost_toolchain_suffix}-14.3"
+  }
   "16" {
     $boost_toolchain_suffix = "${boost_toolchain_suffix}-14.2"
   }
