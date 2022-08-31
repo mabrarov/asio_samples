@@ -19,6 +19,24 @@
     "fullnameOverride": {
       "type": "string"
     },
+    "labels": {
+      "type": ["object", "string"]
+    },
+    "annotations": {
+      "type": ["object", "string"]
+    },
+    "deploymentLabels": {
+      "type": ["object", "string"]
+    },
+    "deploymentAnnotations": {
+      "type": ["object", "string"]
+    },
+    "podLabels": {
+      "type": ["object", "string"]
+    },
+    "podAnnotations": {
+      "type": ["object", "string"]
+    },
     "containerName": {
       "type": "string",
       "minLength": 1
@@ -137,6 +155,12 @@
         "nodePort"
       ],
       "properties": {
+        "labels": {
+          "type": ["object", "string"]
+        },
+        "annotations": {
+          "type": ["object", "string"]
+        },
         "port": {
           "description": "service port",
           "type": "integer",
@@ -200,6 +224,12 @@
         "message"
       ],
       "properties": {
+        "podLabels": {
+          "type": ["object", "string"]
+        },
+        "podAnnotations": {
+          "type": ["object", "string"]
+        },
         "containerName": {
           "type": "string",
           "minLength": 1

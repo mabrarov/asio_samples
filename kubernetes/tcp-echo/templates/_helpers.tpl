@@ -31,24 +31,31 @@ Create chart name and version as used by the chart label.
 {{- end }}
 
 {{/*
+Selector labels
+*/}}
+{{- define "tcp-echo.matchLabels" -}}
+app.kubernetes.io/name: {{ include "tcp-echo.name" . | quote }}
+app.kubernetes.io/instance: {{ .Release.Name | quote }}
+{{- end }}
+
+{{/*
 Common labels
 */}}
 {{- define "tcp-echo.labels" -}}
 helm.sh/chart: {{ include "tcp-echo.chart" . | quote }}
-{{ include "tcp-echo.selectorLabels" . }}
+{{ include "tcp-echo.matchLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
-app: {{ include "tcp-echo.name" . | quote }}
+app: {{ include "tcp-echo.fullname" . | quote }}
 {{- end }}
 
 {{/*
-Selector labels
+Component labels
 */}}
-{{- define "tcp-echo.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "tcp-echo.name" . | quote }}
-app.kubernetes.io/instance: {{ .Release.Name | quote }}
+{{- define "tcp-echo.componentLabels" -}}
+app.kubernetes.io/component: "tcp-echo"
 {{- end }}
 
 {{/*
@@ -113,22 +120,42 @@ Termination grace period.
 {{- end }}
 
 {{/*
+Test component labels
+*/}}
+{{- define "tcp-echo.test.componentLabels" -}}
+app.kubernetes.io/component: "test"
+{{- end }}
+
+{{/*
 Name of test pod.
 */}}
-{{- define "tcp-echo.testPodName" -}}
+{{- define "tcp-echo.test.podName" -}}
 {{ include "tcp-echo.fullname" . }}-test
 {{- end }}
 
 {{/*
 Name of test image pull secret.
 */}}
-{{- define "tcp-echo.testImagePullSecretName" -}}
+{{- define "tcp-echo.test.imagePullSecretName" -}}
 {{ include "tcp-echo.fullname" . }}-test
 {{- end }}
 
 {{/*
 Test container image full name.
 */}}
-{{- define "tcp-echo.testImageFullName" -}}
+{{- define "tcp-echo.test.imageFullName" -}}
 {{ printf "%s/%s:%s" .Values.test.image.registry .Values.test.image.name (.Values.test.image.tag | default "latest") }}
 {{- end }}
+
+{{/*
+Renders a value that contains template.
+Usage:
+{{ include "tcp-echo.tplValuesRender" ( dict "value" .Values.path.to.the.Value "context" $) }}
+*/}}
+{{- define "tcp-echo.tplValuesRender" -}}
+{{- if typeIs "string" .value }}
+{{- tpl .value .context }}
+{{- else }}
+{{- tpl (.value | toYaml) .context }}
+{{- end }}
+{{- end -}}

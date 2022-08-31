@@ -4,15 +4,48 @@ metadata:
   name: {{ include "tcp-echo.deploymentName" . | quote }}
   labels:
     {{- include "tcp-echo.labels" . | nindent 4 }}
+    {{- include "tcp-echo.componentLabels" . | nindent 4 }}
+    {{- if .Values.labels }}
+    {{- include "tcp-echo.tplValuesRender" ( dict "value" .Values.labels "context" $ ) | nindent 4 }}
+    {{- end }}
+    {{- if .Values.deploymentLabels }}
+    {{- include "tcp-echo.tplValuesRender" ( dict "value" .Values.deploymentLabels "context" $ ) | nindent 4 }}
+    {{- end }}
+  {{- if or .Values.annotations .Values.deploymentAnnotations }}
+  annotations:
+    {{- if .Values.annotations }}
+    {{- include "tcp-echo.tplValuesRender" ( dict "value" .Values.annotations "context" $ ) | nindent 4 }}
+    {{- end }}
+    {{- if .Values.deploymentAnnotations }}
+    {{- include "tcp-echo.tplValuesRender" ( dict "value" .Values.deploymentAnnotations "context" $ ) | nindent 4 }}
+    {{- end }}
+  {{- end }}
 spec:
   replicas: {{ .Values.replicas }}
   selector:
     matchLabels:
-      {{- include "tcp-echo.selectorLabels" . | nindent 6 }}
+      {{- include "tcp-echo.matchLabels" . | nindent 6 }}
+      {{- include "tcp-echo.componentLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
         {{- include "tcp-echo.labels" . | nindent 8 }}
+        {{- include "tcp-echo.componentLabels" . | nindent 8 }}
+        {{- if .Values.labels }}
+        {{- include "tcp-echo.tplValuesRender" ( dict "value" .Values.labels "context" $ ) | nindent 8 }}
+        {{- end }}
+        {{- if .Values.podLabels }}
+        {{- include "tcp-echo.tplValuesRender" ( dict "value" .Values.podLabels "context" $ ) | nindent 8 }}
+        {{- end }}
+      {{- if or .Values.annotations .Values.podAnnotations }}
+      annotations:
+        {{- if .Values.annotations }}
+        {{- include "tcp-echo.tplValuesRender" ( dict "value" .Values.annotations "context" $ ) | nindent 8 }}
+        {{- end }}
+        {{- if .Values.podAnnotations }}
+        {{- include "tcp-echo.tplValuesRender" ( dict "value" .Values.podAnnotations "context" $ ) | nindent 8 }}
+        {{- end }}
+      {{- end }}
     spec:
       {{- if .Values.image.pull.secret }}
       imagePullSecrets:
