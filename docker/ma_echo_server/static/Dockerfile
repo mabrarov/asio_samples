@@ -5,7 +5,7 @@
 # file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
-FROM alpine:3.15.4 AS build
+FROM alpine:3.16.2 AS build
 
 RUN apk add --no-cache \
       bash \
@@ -20,7 +20,7 @@ RUN apk add --no-cache \
       libstdc++ \
       linux-headers \
       icu-dev \
-      python2-dev \
+      python3-dev \
       libzip-dev \
       libbz2 \
       dos2unix \

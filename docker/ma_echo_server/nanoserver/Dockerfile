@@ -5,7 +5,7 @@
 # file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
-FROM abrarov/msvc-2019:2.13.0 AS build
+FROM abrarov/msvc-2022:2.15.0 AS build
 
 ENV DOWNLOADS_DIR="C:\download" \
     BOOST_DIR="C:\dependencies\boost"
