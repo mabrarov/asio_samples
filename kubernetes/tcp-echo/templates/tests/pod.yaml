@@ -5,8 +5,20 @@ metadata:
   labels:
     {{- include "tcp-echo.labels" . | nindent 4 }}
     {{- include "tcp-echo.test.componentLabels" . | nindent 4 }}
+    {{- if .Values.labels }}
+    {{- include "tcp-echo.tplValuesRender" ( dict "value" .Values.labels "context" $ ) | nindent 4 }}
+    {{- end }}
+    {{- if .Values.test.podLabels }}
+    {{- include "tcp-echo.tplValuesRender" ( dict "value" .Values.test.podLabels "context" $ ) | nindent 4 }}
+    {{- end }}
   annotations:
     "helm.sh/hook": "test"
+    {{- if .Values.annotations }}
+    {{- include "tcp-echo.tplValuesRender" ( dict "value" .Values.annotations "context" $ ) | nindent 4 }}
+    {{- end }}
+    {{- if .Values.test.podAnnotations }}
+    {{- include "tcp-echo.tplValuesRender" ( dict "value" .Values.test.podAnnotations "context" $ ) | nindent 4 }}
+    {{- end }}
 spec:
   {{- if .Values.test.image.pull.secret }}
   imagePullSecrets:

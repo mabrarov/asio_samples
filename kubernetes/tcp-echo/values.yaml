@@ -1,6 +1,13 @@
 nameOverride: ""
 fullnameOverride: ""
 
+labels: { }
+annotations: { }
+deploymentLabels: { }
+deploymentAnnotations: { }
+podLabels: { }
+podAnnotations: { }
+
 containerName: "tcp-echo"
 
 image:
@@ -24,6 +31,8 @@ securityContext:
   runAsUser: 1000140001
 
 service:
+  labels: { }
+  annotations: { }
   port: 9007
   nodePort: 30007
 
@@ -36,6 +45,8 @@ tcpEcho:
   bufferSize: 4096
 
 test:
+  podLabels: { }
+  podAnnotations: { }
   containerName: "tcp-echo-test"
   image:
     registry: "docker.io"

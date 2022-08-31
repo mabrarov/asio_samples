@@ -55,7 +55,7 @@ app: {{ include "tcp-echo.fullname" . | quote }}
 Component labels
 */}}
 {{- define "tcp-echo.componentLabels" -}}
-app.kubernetes.io/component: {{ include "tcp-echo.name" . | quote }}
+app.kubernetes.io/component: "tcp-echo"
 {{- end }}
 
 {{/*
@@ -146,3 +146,16 @@ Test container image full name.
 {{- define "tcp-echo.test.imageFullName" -}}
 {{ printf "%s/%s:%s" .Values.test.image.registry .Values.test.image.name (.Values.test.image.tag | default "latest") }}
 {{- end }}
+
+{{/*
+Renders a value that contains template.
+Usage:
+{{ include "tcp-echo.tplValuesRender" ( dict "value" .Values.path.to.the.Value "context" $) }}
+*/}}
+{{- define "tcp-echo.tplValuesRender" -}}
+{{- if typeIs "string" .value }}
+{{- tpl .value .context }}
+{{- else }}
+{{- tpl (.value | toYaml) .context }}
+{{- end }}
+{{- end -}}

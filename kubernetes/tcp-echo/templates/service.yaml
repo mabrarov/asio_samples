@@ -5,6 +5,21 @@ metadata:
   labels:
     {{- include "tcp-echo.labels" . | nindent 4 }}
     {{- include "tcp-echo.componentLabels" . | nindent 4 }}
+    {{- if .Values.labels }}
+    {{- include "tcp-echo.tplValuesRender" ( dict "value" .Values.labels "context" $ ) | nindent 4 }}
+    {{- end }}
+    {{- if .Values.service.labels }}
+    {{- include "tcp-echo.tplValuesRender" ( dict "value" .Values.service.labels "context" $ ) | nindent 4 }}
+    {{- end }}
+  {{- if or .Values.annotations .Values.service.annotations }}
+  annotations:
+    {{- if .Values.annotations }}
+    {{- include "tcp-echo.tplValuesRender" ( dict "value" .Values.annotations "context" $ ) | nindent 4 }}
+    {{- end }}
+    {{- if .Values.service.annotations }}
+    {{- include "tcp-echo.tplValuesRender" ( dict "value" .Values.service.annotations "context" $ ) | nindent 4 }}
+    {{- end }}
+  {{- end }}
 spec:
   type: "NodePort"
   ports:
