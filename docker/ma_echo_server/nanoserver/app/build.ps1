@@ -9,6 +9,14 @@
 $ErrorActionPreference = "Stop"
 
 switch (${env:MSVS_VERSION}) {
+  "17" {
+    $env:MSVS_INSTALL_DIR = &vswhere --% -latest -products Microsoft.VisualStudio.Product.BuildTools -version [17.0,18.0) -requires Microsoft.VisualStudio.Workload.VCTools -property installationPath
+    $env:MSVC_AUXILARY_DIR = "${env:MSVS_INSTALL_DIR}\VC\Auxiliary"
+    $env:MSVC_BUILD_DIR = "${env:MSVC_AUXILARY_DIR}\Build"
+    $env:MSVC_CMD_BOOTSTRAP = "vcvars64.bat"
+    $env:MSVC_CMD_BOOTSTRAP_OPTIONS = ""
+    $env:CMAKE_GENERATOR = "Visual Studio 17 2022"
+  }
   "16" {
     $env:MSVS_INSTALL_DIR = &vswhere --% -latest -products Microsoft.VisualStudio.Product.Community -version [16.0,17.0) -requires Microsoft.VisualStudio.Workload.NativeDesktop -property installationPath
     $env:MSVC_AUXILARY_DIR = "${env:MSVS_INSTALL_DIR}\VC\Auxiliary"
