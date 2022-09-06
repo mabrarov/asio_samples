@@ -1,12 +1,12 @@
 {
-  "$schema": "https://json-schema.org/schema#",
+  "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
   "required": [
     "containerName",
     "image",
-    "liveness",
-    "readiness",
-    "replicas",
+    "livenessProbe",
+    "readinessProbe",
+    "replicaCount",
     "securityContext",
     "service",
     "tcpEcho",
@@ -45,59 +45,51 @@
       "type": "object",
       "required": [
         "registry",
-        "name",
-        "pull"
+        "repository",
+        "pullPolicy"
       ],
       "properties": {
         "registry": {
           "type": "string",
           "minLength": 1
         },
-        "name": {
+        "repository": {
           "type": "string",
           "minLength": 1
         },
         "tag": {
           "type": "string"
         },
-        "pull": {
+        "pullPolicy": {
+          "type": "string",
+          "pattern": "^(Always|Never|IfNotPresent)$"
+        },
+        "pullSecret": {
+          "description": "docker authentication credentials for image registry",
           "type": "object",
           "required": [
-            "policy"
+            "username",
+            "password",
+            "email"
           ],
           "properties": {
-            "policy": {
+            "username": {
               "type": "string",
-              "pattern": "^(Always|Never|IfNotPresent)$"
+              "minLength": 1
             },
-            "secret": {
-              "description": "docker authentication credentials for image registry",
-              "type": "object",
-              "required": [
-                "username",
-                "password",
-                "email"
-              ],
-              "properties": {
-                "username": {
-                  "type": "string",
-                  "minLength": 1
-                },
-                "password": {
-                  "type": "string",
-                  "minLength": 1
-                },
-                "email": {
-                  "type": "string",
-                  "minLength": 1
-                }
-              }
+            "password": {
+              "type": "string",
+              "minLength": 1
+            },
+            "email": {
+              "type": "string",
+              "minLength": 1
             }
           }
         }
       }
     },
-    "liveness": {
+    "livenessProbe": {
       "type": "object",
       "required": [
         "initialDelay"
@@ -109,7 +101,7 @@
         }
       }
     },
-    "readiness": {
+    "readinessProbe": {
       "type": "object",
       "required": [
         "initialDelay"
@@ -121,7 +113,7 @@
         }
       }
     },
-    "replicas": {
+    "replicaCount": {
       "type": "integer",
       "minimum": 1
     },
@@ -238,53 +230,45 @@
           "type": "object",
           "required": [
             "registry",
-            "name",
-            "pull"
+            "repository",
+            "pullPolicy"
           ],
           "properties": {
             "registry": {
               "type": "string",
               "minLength": 1
             },
-            "name": {
+            "repository": {
               "type": "string",
               "minLength": 1
             },
             "tag": {
               "type": "string"
             },
-            "pull": {
+            "pullPolicy": {
+              "type": "string",
+              "pattern": "^(Always|Never|IfNotPresent)$"
+            },
+            "pullSecret": {
+              "description": "docker authentication credentials for image registry",
               "type": "object",
               "required": [
-                "policy"
+                "username",
+                "password",
+                "email"
               ],
               "properties": {
-                "policy": {
+                "username": {
                   "type": "string",
-                  "pattern": "^(Always|Never|IfNotPresent)$"
+                  "minLength": 1
                 },
-                "secret": {
-                  "description": "docker authentication credentials for image registry",
-                  "type": "object",
-                  "required": [
-                    "username",
-                    "password",
-                    "email"
-                  ],
-                  "properties": {
-                    "username": {
-                      "type": "string",
-                      "minLength": 1
-                    },
-                    "password": {
-                      "type": "string",
-                      "minLength": 1
-                    },
-                    "email": {
-                      "type": "string",
-                      "minLength": 1
-                    }
-                  }
+                "password": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "email": {
+                  "type": "string",
+                  "minLength": 1
                 }
               }
             }
