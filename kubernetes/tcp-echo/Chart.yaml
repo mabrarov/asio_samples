@@ -2,5 +2,5 @@ apiVersion: "v2"
 name: "tcp-echo"
 description: "A Helm chart for ma_echo_server example"
 type: "application"
-version: 1.0.0
-appVersion: "1.0.0"
+version: 1.0.1
+appVersion: "1.6.4"

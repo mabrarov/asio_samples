@@ -12,18 +12,17 @@ containerName: "tcp-echo"
 
 image:
   registry: "docker.io"
-  name: "abrarov/tcp-echo"
+  repository: "abrarov/tcp-echo"
   tag: "latest"
-  pull:
-    policy: "IfNotPresent"
+  pullPolicy: "IfNotPresent"
 
-liveness:
+livenessProbe:
   initialDelay: 2
 
-readiness:
+readinessProbe:
   initialDelay: 2
 
-replicas: 1
+replicaCount: 1
 
 securityContext:
   readOnlyRootFilesystem: true
@@ -50,8 +49,7 @@ test:
   containerName: "tcp-echo-test"
   image:
     registry: "docker.io"
-    name: "busybox"
+    repository: "busybox"
     tag: "latest"
-    pull:
-      policy: "IfNotPresent"
+    pullPolicy: "IfNotPresent"
   message: "Hello World!"
