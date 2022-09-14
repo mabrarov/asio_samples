@@ -6,22 +6,22 @@ metadata:
     {{- include "tcp-echo.labels" . | nindent 4 }}
     {{- include "tcp-echo.componentLabels" . | nindent 4 }}
     {{- if .Values.labels }}
-    {{- include "tcp-echo.tplValuesRender" ( dict "value" .Values.labels "context" $ ) | nindent 4 }}
+    {{- include "tcp-echo.tplValuesRender" (dict "value" .Values.labels "context" $) | nindent 4 }}
     {{- end }}
     {{- if .Values.deploymentLabels }}
-    {{- include "tcp-echo.tplValuesRender" ( dict "value" .Values.deploymentLabels "context" $ ) | nindent 4 }}
+    {{- include "tcp-echo.tplValuesRender" (dict "value" .Values.deploymentLabels "context" $) | nindent 4 }}
     {{- end }}
   {{- if or .Values.annotations .Values.deploymentAnnotations }}
   annotations:
     {{- if .Values.annotations }}
-    {{- include "tcp-echo.tplValuesRender" ( dict "value" .Values.annotations "context" $ ) | nindent 4 }}
+    {{- include "tcp-echo.tplValuesRender" (dict "value" .Values.annotations "context" $) | nindent 4 }}
     {{- end }}
     {{- if .Values.deploymentAnnotations }}
-    {{- include "tcp-echo.tplValuesRender" ( dict "value" .Values.deploymentAnnotations "context" $ ) | nindent 4 }}
+    {{- include "tcp-echo.tplValuesRender" (dict "value" .Values.deploymentAnnotations "context" $) | nindent 4 }}
     {{- end }}
   {{- end }}
 spec:
-  replicas: {{ .Values.replicas }}
+  replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
       {{- include "tcp-echo.matchLabels" . | nindent 6 }}
@@ -32,29 +32,29 @@ spec:
         {{- include "tcp-echo.labels" . | nindent 8 }}
         {{- include "tcp-echo.componentLabels" . | nindent 8 }}
         {{- if .Values.labels }}
-        {{- include "tcp-echo.tplValuesRender" ( dict "value" .Values.labels "context" $ ) | nindent 8 }}
+        {{- include "tcp-echo.tplValuesRender" (dict "value" .Values.labels "context" $) | nindent 8 }}
         {{- end }}
         {{- if .Values.podLabels }}
-        {{- include "tcp-echo.tplValuesRender" ( dict "value" .Values.podLabels "context" $ ) | nindent 8 }}
+        {{- include "tcp-echo.tplValuesRender" (dict "value" .Values.podLabels "context" $) | nindent 8 }}
         {{- end }}
       {{- if or .Values.annotations .Values.podAnnotations }}
       annotations:
         {{- if .Values.annotations }}
-        {{- include "tcp-echo.tplValuesRender" ( dict "value" .Values.annotations "context" $ ) | nindent 8 }}
+        {{- include "tcp-echo.tplValuesRender" (dict "value" .Values.annotations "context" $) | nindent 8 }}
         {{- end }}
         {{- if .Values.podAnnotations }}
-        {{- include "tcp-echo.tplValuesRender" ( dict "value" .Values.podAnnotations "context" $ ) | nindent 8 }}
+        {{- include "tcp-echo.tplValuesRender" (dict "value" .Values.podAnnotations "context" $) | nindent 8 }}
         {{- end }}
       {{- end }}
     spec:
-      {{- if .Values.image.pull.secret }}
+      {{- if .Values.image.pullSecret }}
       imagePullSecrets:
         - name: {{ include "tcp-echo.imagePullSecretName" . | quote }}
       {{- end }}
       containers:
         - name: {{ .Values.containerName | quote }}
           image: {{ include "tcp-echo.imageFullName" . | quote }}
-          imagePullPolicy: {{ .Values.image.pull.policy | quote }}
+          imagePullPolicy: {{ .Values.image.pullPolicy | quote }}
           args:
             - "--port"
             - {{ .Values.tcpEcho.port | quote }}
@@ -74,11 +74,11 @@ spec:
           livenessProbe:
             tcpSocket:
               port: {{ include "tcp-echo.containerPortName" . | quote }}
-            initialDelaySeconds: {{ .Values.liveness.initialDelay }}
+            initialDelaySeconds: {{ .Values.livenessProbe.initialDelay }}
           readinessProbe:
             tcpSocket:
               port: {{ include "tcp-echo.containerPortName" . | quote }}
-            initialDelaySeconds: {{ .Values.readiness.initialDelay }}
+            initialDelaySeconds: {{ .Values.readinessProbe.initialDelay }}
           securityContext:
             readOnlyRootFilesystem: {{ .Values.securityContext.readOnlyRootFilesystem }}
             runAsNonRoot: {{ .Values.securityContext.readOnlyRootFilesystem }}

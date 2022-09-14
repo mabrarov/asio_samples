@@ -48,7 +48,7 @@ helm.sh/chart: {{ include "tcp-echo.chart" . | quote }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
-app: {{ include "tcp-echo.fullname" . | quote }}
+app: {{ .Release.Name | quote }}
 {{- end }}
 
 {{/*
@@ -81,7 +81,7 @@ Name of service.
 
 {{/*
 Docker authentication config for image registry.
-{{ include "tcp-echo.dockerRegistryAuthenticationConfig" (dict "imageRegistry" .Values.image.registry "credentials" .Values.image.pull.secret) }}
+{{ include "tcp-echo.dockerRegistryAuthenticationConfig" (dict "imageRegistry" .Values.image.registry "credentials" .Values.image.pullSecret) }}
 */}}
 {{- define "tcp-echo.dockerRegistryAuthenticationConfig" -}}
 {{- $registry := .imageRegistry }}
@@ -109,7 +109,7 @@ tcp-echo
 Container image full name.
 */}}
 {{- define "tcp-echo.imageFullName" -}}
-{{ printf "%s/%s:%s" .Values.image.registry .Values.image.name (.Values.image.tag | default .Chart.AppVersion) }}
+{{ printf "%s/%s:%s" .Values.image.registry .Values.image.repository (.Values.image.tag | default .Chart.AppVersion) }}
 {{- end }}
 
 {{/*
@@ -144,13 +144,13 @@ Name of test image pull secret.
 Test container image full name.
 */}}
 {{- define "tcp-echo.test.imageFullName" -}}
-{{ printf "%s/%s:%s" .Values.test.image.registry .Values.test.image.name (.Values.test.image.tag | default "latest") }}
+{{ printf "%s/%s:%s" .Values.test.image.registry .Values.test.image.repository (.Values.test.image.tag | default "latest") }}
 {{- end }}
 
 {{/*
 Renders a value that contains template.
 Usage:
-{{ include "tcp-echo.tplValuesRender" ( dict "value" .Values.path.to.the.Value "context" $) }}
+{{ include "tcp-echo.tplValuesRender" (dict "value" .Values.path.to.the.Value "context" $) }}
 */}}
 {{- define "tcp-echo.tplValuesRender" -}}
 {{- if typeIs "string" .value }}
