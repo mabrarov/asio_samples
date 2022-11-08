@@ -80,7 +80,11 @@
         },
         "pullPolicy": {
           "type": "string",
-          "pattern": "^(Always|Never|IfNotPresent)$"
+          "enum": [
+            "Always",
+            "Never",
+            "IfNotPresent"
+          ]
         },
         "pullSecret": {
           "description": "docker authentication credentials for image registry",
@@ -277,7 +281,11 @@
             },
             "pullPolicy": {
               "type": "string",
-              "pattern": "^(Always|Never|IfNotPresent)$"
+              "enum": [
+                "Always",
+                "Never",
+                "IfNotPresent"
+              ]
             },
             "pullSecret": {
               "description": "docker authentication credentials for image registry",
