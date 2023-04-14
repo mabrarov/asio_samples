@@ -57,7 +57,7 @@ environment:
       MSVC_VERSION: '14.2'
       RUNTIME_LINKAGE: 'static'
       CMAKE_VERSION: '3.23.1'
-      BOOST_VERSION: '1.76.0'
+      BOOST_VERSION: '1.77.0'
       BOOST_LINKAGE: 'static'
     - APPVEYOR_BUILD_WORKER_IMAGE: 'Visual Studio 2017'
       TOOLCHAIN: 'msvc'
