@@ -28,7 +28,7 @@ RUN apt-get update && \
 
 ADD ["patch", "/opt/patch"]
 
-ARG BOOST_VERSION="1.80.0"
+ARG BOOST_VERSION="1.82.0"
 ARG BOOST_RELEASE_URL="https://boostorg.jfrog.io/artifactory/main/release"
 ARG BOOST_BUILD_OPTIONS="--with-chrono --with-atomic --with-date_time --with-thread --with-timer --with-headers --with-program_options --with-regex --with-system --with-exception"
 
@@ -74,7 +74,7 @@ RUN mkdir -p "${BOOST_INSTALL_DIR}" && \
 
 ENV CMAKE_HOME="/opt/cmake"
 
-ARG CMAKE_VERSION="3.24.1"
+ARG CMAKE_VERSION="3.26.3"
 
 RUN mkdir -p "${CMAKE_HOME}" && \
     cmake_url="https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz" && \

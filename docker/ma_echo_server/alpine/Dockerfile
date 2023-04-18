@@ -28,7 +28,7 @@ RUN apk add --no-cache \
 
 ADD ["patch", "/opt/patch"]
 
-ARG BOOST_VERSION="1.80.0"
+ARG BOOST_VERSION="1.82.0"
 ARG BOOST_RELEASE_URL="https://boostorg.jfrog.io/artifactory/main/release"
 ARG BOOST_BUILD_OPTIONS="--with-chrono --with-atomic --with-date_time --with-thread --with-timer --with-headers --with-program_options --with-regex --with-system --with-exception"
 
