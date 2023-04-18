@@ -26,7 +26,7 @@ ARG MA_REVISION=master
 
 RUN powershell -ExecutionPolicy Bypass -File "C:\app\build.ps1"
 
-FROM mcr.microsoft.com/windows/nanoserver:1809
+FROM mcr.microsoft.com/windows/nanoserver:ltsc2019
 
 LABEL name="abrarov/tcp-echo" \
     description="TCP echo server from Asio samples project" \
