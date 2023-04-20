@@ -1,0 +1,39 @@
+apiVersion: "v1"
+kind: "Pod"
+metadata:
+  name: {{ include "tcp-echo.test.podName" . | quote }}
+  labels:
+    {{- include "tcp-echo.labels" . | nindent 4 }}
+    {{- include "tcp-echo.test.componentLabels" . | nindent 4 }}
+    {{- if .Values.labels }}
+    {{- include "tcp-echo.tplValuesRender" (dict "value" .Values.labels "context" $) | nindent 4 }}
+    {{- end }}
+    {{- if .Values.test.podLabels }}
+    {{- include "tcp-echo.tplValuesRender" (dict "value" .Values.test.podLabels "context" $) | nindent 4 }}
+    {{- end }}
+  annotations:
+    "helm.sh/hook": "test"
+    {{- if .Values.annotations }}
+    {{- include "tcp-echo.tplValuesRender" (dict "value" .Values.annotations "context" $) | nindent 4 }}
+    {{- end }}
+    {{- if .Values.test.podAnnotations }}
+    {{- include "tcp-echo.tplValuesRender" (dict "value" .Values.test.podAnnotations "context" $) | nindent 4 }}
+    {{- end }}
+spec:
+  {{- if .Values.test.image.pullSecret }}
+  imagePullSecrets:
+    - name: {{ include "tcp-echo.test.imagePullSecretName" . | quote }}
+  {{- end }}
+  containers:
+    - name: {{ .Values.test.containerName | quote }}
+      image: {{ include "tcp-echo.test.imageFullName" . | quote }}
+      imagePullPolicy: {{ .Values.test.image.pullPolicy | quote }}
+      command:
+        - "sh"
+      args:
+        - "-c"
+        - {{ (printf "echo \"${TEST_MESSAGE}\" | timeout 1s nc '%s' %d || true | grep -m 1 -F -- \"${TEST_MESSAGE}\" >/dev/null" (include "tcp-echo.serviceName" . | replace "'" "'\"'\"'") (int .Values.service.port)) | quote }}
+      env:
+        - name: "TEST_MESSAGE"
+          value: {{ .Values.test.message | quote }}
+  restartPolicy: Never

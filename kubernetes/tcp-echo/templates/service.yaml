@@ -1,15 +1,32 @@
 apiVersion: "v1"
 kind: "Service"
 metadata:
-  name: {{ include "app.serviceName" . | quote }}
+  name: {{ include "tcp-echo.serviceName" . | quote }}
   labels:
-    {{- include "app.labels" . | nindent 4 }}
+    {{- include "tcp-echo.labels" . | nindent 4 }}
+    {{- include "tcp-echo.componentLabels" . | nindent 4 }}
+    {{- if .Values.labels }}
+    {{- include "tcp-echo.tplValuesRender" (dict "value" .Values.labels "context" $) | nindent 4 }}
+    {{- end }}
+    {{- if .Values.service.labels }}
+    {{- include "tcp-echo.tplValuesRender" (dict "value" .Values.service.labels "context" $) | nindent 4 }}
+    {{- end }}
+  {{- if or .Values.annotations .Values.service.annotations }}
+  annotations:
+    {{- if .Values.annotations }}
+    {{- include "tcp-echo.tplValuesRender" (dict "value" .Values.annotations "context" $) | nindent 4 }}
+    {{- end }}
+    {{- if .Values.service.annotations }}
+    {{- include "tcp-echo.tplValuesRender" (dict "value" .Values.service.annotations "context" $) | nindent 4 }}
+    {{- end }}
+  {{- end }}
 spec:
   type: "NodePort"
   ports:
-    - name: {{ include "app.servicePortName" . | quote }}
+    - name: {{ include "tcp-echo.servicePortName" . | quote }}
       port: {{ .Values.service.port }}
-      targetPort: {{ include "app.containerPortName" . | quote }}
+      targetPort: {{ include "tcp-echo.containerPortName" . | quote }}
       nodePort: {{ .Values.service.nodePort }}
   selector:
-    {{- include "app.selectorLabels" . | nindent 4 }}
+    {{- include "tcp-echo.matchLabels" . | nindent 4 }}
+    {{- include "tcp-echo.componentLabels" . | nindent 4 }}

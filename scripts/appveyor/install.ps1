@@ -327,8 +327,8 @@ if (Test-Path env:BOOST_VERSION) {
     "msvc" {
       switch (${env:MSVC_VERSION}) {
         "14.2" {
-          $pre_installed_boost = (${env:BOOST_VERSION} -eq "1.71.0") `
-            -or (${env:BOOST_VERSION} -eq "1.73.0") `
+          $pre_installed_boost = (${env:BOOST_VERSION} -eq "1.73.0") `
+            -or (${env:BOOST_VERSION} -eq "1.77.0") `
         }
         "14.1" {
           $pre_installed_boost = (${env:BOOST_VERSION} -eq "1.69.0") `
@@ -426,43 +426,64 @@ if (Test-Path env:BOOST_VERSION) {
       }
     }
     $boost_install_folder = "${env:DEPENDENCIES_FOLDER}\boost${boost_version_suffix}${env:BOOST_PLATFORM_SUFFIX}${boost_toolchain_suffix}"
+    switch (${env:TOOLCHAIN}) {
+      "msvc" {
+        $boost_dist_toolchain_suffix = "-msvc-${env:MSVC_VERSION}"
+      }
+      default {
+        throw "Unsupported toolchain for Boost: ${env:TOOLCHAIN}"
+      }
+    }
+    switch (${env:PLATFORM}) {
+      "Win32" {
+        $boost_dist_platform_suffix = "32"
+      }
+      "x64" {
+        $boost_dist_platform_suffix = "64"
+      }
+      default {
+        throw "Unsupported platform for Boost: ${env:PLATFORM}"
+      }
+    }
     if (!(Test-Path -Path "${boost_install_folder}")) {
       Write-Host "Boost is absent for the chosen toolchain (${env:TOOLCHAIN_ID}) and Boost version (${env:BOOST_VERSION}) at ${boost_install_folder}"
-      $boost_archive_name = "boost${boost_version_suffix}${env:BOOST_PLATFORM_SUFFIX}${boost_toolchain_suffix}.7z"
-      $boost_archive_file = "${env:DOWNLOADS_FOLDER}\${boost_archive_name}"
-      if (!(Test-Path -Path "${boost_archive_file}")) {
-        $boost_download_url = "https://dl.bintray.com/mabrarov/generic/boost/${env:BOOST_VERSION}/${boost_archive_name}"
+      $boost_dist_version_suffix = "${env:BOOST_VERSION}" -replace "\.", '_'
+      $boost_installer_file_name = "boost_${boost_dist_version_suffix}${boost_dist_toolchain_suffix}-${boost_dist_platform_suffix}.exe"
+      $boost_dist_file = "${env:DOWNLOADS_FOLDER}\${boost_installer_file_name}"
+      if (!(Test-Path -Path "${boost_dist_file}")) {
+        $boost_download_url = "https://boostorg.jfrog.io/artifactory/main/release/${env:BOOST_VERSION}/binaries/${boost_installer_file_name}"
         if (!(Test-Path -Path "${env:DOWNLOADS_FOLDER}")) {
           New-Item -Path "${env:DOWNLOADS_FOLDER}" -ItemType "directory" | out-null
         }
-        Write-Host "Downloading Boost from ${boost_download_url} to ${boost_archive_file}"
+        Write-Host "Downloading Boost from ${boost_download_url} to ${boost_dist_file}"
         curl.exe `
           --connect-timeout "${env:CURL_CONNECT_TIMEOUT}" `
           --max-time "${env:CURL_MAX_TIME}" `
           --retry "${env:CURL_RETRY}" `
           --retry-delay "${env:CURL_RETRY_DELAY}" `
           --show-error --silent --location `
-          --output "${boost_archive_file}" `
+          --output "${boost_dist_file}" `
           "${boost_download_url}"
         if (${LastExitCode} -ne 0) {
           throw "Downloading of Boost failed with exit code ${LastExitCode}"
         }
         Write-Host "Downloading of Boost completed successfully"
       }
-      Write-Host "Extracting Boost from ${boost_archive_file} to ${env:DEPENDENCIES_FOLDER}"
+      Write-Host "Installing Boost from ${boost_dist_file} to ${boost_install_folder}"
       if (!(Test-Path -Path "${env:DEPENDENCIES_FOLDER}")) {
         New-Item -Path "${env:DEPENDENCIES_FOLDER}" -ItemType "directory" | out-null
       }
-      7z.exe x "${boost_archive_file}" -o"${env:DEPENDENCIES_FOLDER}" -aoa -y | out-null
-      if (${LastExitCode} -ne 0) {
-        throw "Extracting of Boost failed with exit code ${LastExitCode}"
+      $p = Start-Process -FilePath "${boost_dist_file}" `
+        -ArgumentList ("/SP-", "/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/NOICONS", "/ALLUSERS", "/DIR=""${boost_install_folder}""") `
+        -Wait -PassThru
+      if (${p}.ExitCode -ne 0) {
+        throw "Failed to install Boost"
       }
-      Write-Host "Extracting of Boost completed successfully"
+      Write-Host "Installation of Boost completed successfully"
     }
     Write-Host "Boost ${env:BOOST_VERSION} is located at ${boost_install_folder}"
-    $boost_include_folder_version_suffix = "-${env:BOOST_VERSION}" -replace "([\d]+)\.([\d]+)(\.[\d]+)*", '$1_$2'
-    $env:BOOST_INCLUDE_FOLDER = "${boost_install_folder}\include\boost${boost_include_folder_version_suffix}"
-    $env:BOOST_LIBRARY_FOLDER = "${boost_install_folder}\lib"
+    $env:BOOST_INCLUDE_FOLDER = "${boost_install_folder}"
+    $env:BOOST_LIBRARY_FOLDER = "${boost_install_folder}\lib${boost_dist_platform_suffix}${boost_dist_toolchain_suffix}"
   }
   if ((${env:RUNTIME_LINKAGE} -eq "static") -and (${env:BOOST_LINKAGE} -ne "static")) {
     throw "Incompatible type of linkage of Boost: ${env:BOOST_LINKAGE} for the specified type of linkage of C/C++ runtime: ${env:RUNTIME_LINKAGE}"

@@ -5,7 +5,7 @@
 # file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
-FROM alpine:3.15.0 AS build
+FROM alpine:3.16.2 AS build
 
 RUN apk add --no-cache \
       bash \
@@ -20,7 +20,7 @@ RUN apk add --no-cache \
       libstdc++ \
       linux-headers \
       icu-dev \
-      python2-dev \
+      python3-dev \
       libzip-dev \
       libbz2 \
       dos2unix \
@@ -28,9 +28,9 @@ RUN apk add --no-cache \
 
 ADD ["patch", "/opt/patch"]
 
-ARG BOOST_VERSION="1.78.0"
+ARG BOOST_VERSION="1.82.0"
 ARG BOOST_RELEASE_URL="https://boostorg.jfrog.io/artifactory/main/release"
-ARG BOOST_BUILD_OPTIONS="--without-mpi --without-graph_parallel"
+ARG BOOST_BUILD_OPTIONS="--with-chrono --with-atomic --with-date_time --with-thread --with-timer --with-headers --with-program_options --with-regex --with-system --with-exception"
 
 ENV BOOST_INSTALL_DIR="/opt/boost" \
     BOOST_PATCH_DIR="/opt/patch"
@@ -46,7 +46,7 @@ RUN mkdir -p "${BOOST_INSTALL_DIR}" && \
     current_dir="$(pwd)" && \
     cd "${boost_build_dir}" && \
     boost_patch_file="${BOOST_PATCH_DIR}/boost-${BOOST_VERSION}.patch" && \
-    if [[ -f "${boost_patch_file}" ]]; then \
+    if [ -f "${boost_patch_file}" ]; then \
       echo "Patching Boost C++ Libraries using ${boost_patch_file}" && \
       dos2unix <"${boost_patch_file}" | patch -uNf -p0 ; \
     fi && \
@@ -94,7 +94,7 @@ RUN source_dir="$(mktemp -d)" && \
     cmake --build "${build_dir}" --target ma_echo_server && \
     mkdir -p /opt/ma_echo_server && \
     mv -f "${build_dir}/examples/ma_echo_server/ma_echo_server" \
-        /opt/ma_echo_server/ && \
+      /opt/ma_echo_server/ && \
     rm -rf "${build_dir}" && \
     rm -rf "${source_dir}"
 

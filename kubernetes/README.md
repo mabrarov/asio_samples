@@ -14,7 +14,7 @@ All commands were tested using Bash on Ubuntu Server 18.04.
 ### kubectl Setup
 
 ```bash
-k8s_version="1.22.3" && \
+k8s_version='1.24.4' && \
 curl -Ls "https://storage.googleapis.com/kubernetes-release/release/v${k8s_version}/bin/linux/amd64/kubectl" \
   | sudo tee /usr/local/bin/kubectl >/dev/null && \
 sudo chmod +x /usr/local/bin/kubectl
@@ -23,7 +23,7 @@ sudo chmod +x /usr/local/bin/kubectl
 ### Helm Setup
 
 ```bash
-helm_version="3.7.1" && \
+helm_version='3.9.3' && \
 curl -Ls "https://get.helm.sh/helm-v${helm_version}-linux-amd64.tar.gz" \
   | sudo tar -xz --strip-components=1 -C /usr/local/bin "linux-amd64/helm"
 ```
@@ -35,7 +35,7 @@ In case of need in Kubernetes (K8s) instance one can use [Minikube](https://kube
 1. Download Minikube executable (minikube)
 
    ```bash
-   minikube_version="1.24.0" && \
+   minikube_version='1.26.1' && \
    curl -Ls "https://github.com/kubernetes/minikube/releases/download/v${minikube_version}/minikube-linux-amd64.tar.gz" \
      | tar -xzO --strip-components=1 "out/minikube-linux-amd64" \
      | sudo tee /usr/local/bin/minikube >/dev/null && \
@@ -89,9 +89,9 @@ In case of need in Kubernetes (K8s) instance one can use [Minikube](https://kube
    e.g.
 
    ```bash
-   k8s_namespace="default" && \
-   k8s_app="tcp-echo" && \
-   helm_release="asio-samples"
+   k8s_namespace='default' && \
+   k8s_app='tcp-echo' && \
+   helm_release='asio-samples'
    ```
 
 1. Push abrarov/tcp-echo:latest docker image into Minikube registry
@@ -108,6 +108,8 @@ In case of need in Kubernetes (K8s) instance one can use [Minikube](https://kube
    helm upgrade "${helm_release}" kubernetes/tcp-echo \
      -n "${k8s_namespace}" \
      --set nameOverride="${k8s_app}" \
+     --set image.registry='localhost:5000' \
+     --set image.repository='tcp-echo' \
      --install --wait
    ```
 
@@ -206,7 +208,7 @@ All commands were tested using Bash on CentOS 7.
 Setup of oc commandline tool from oc Client Tools can be done using following command
 
 ```bash
-openshift_version="3.11.0" && openshift_build="0cbc58b" && \
+openshift_version='3.11.0' && openshift_build='0cbc58b' && \
 curl -Ls "https://github.com/openshift/origin/releases/download/v${openshift_version}/openshift-origin-client-tools-v${openshift_version}-${openshift_build}-linux-64bit.tar.gz" \
   | sudo tar -xz --strip-components=1 -C /usr/bin "openshift-origin-client-tools-v${openshift_version}-${openshift_build}-linux-64bit/oc"
 ```
@@ -241,7 +243,7 @@ In case of need in OpenShift instance one can use [OKD](https://www.okd.io/) to 
 1. Create & start OKD instance
 
    ```bash
-   openshift_version="3.11.0" && \
+   openshift_version='3.11.0' && \
    openshift_short_version="$(echo ${openshift_version} \
      | sed -r 's/^([0-9]+\.[0-9]+)\.[0-9]+$/\1/')" && \
    docker pull "docker.io/openshift/origin-control-plane:v${openshift_short_version}" && \
@@ -251,12 +253,11 @@ In case of need in OpenShift instance one can use [OKD](https://www.okd.io/) to 
    docker pull "docker.io/openshift/origin-pod:v${openshift_short_version}" && \
    docker pull "docker.io/openshift/origin-deployer:v${openshift_short_version}" && \
    docker pull "docker.io/openshift/origin-cli:v${openshift_short_version}" && \
-   docker pull "docker.io/openshift/origin-docker-registry:v${openshift_short_version}" && \
    docker pull "docker.io/openshift/origin-service-serving-cert-signer:v${openshift_short_version}" && \
    oc cluster up \
      --base-dir="${HOME}/openshift.local.clusterup" \
      --public-hostname="${openshift_address}" \
-     --enable="registry"
+     --enable=""
    ```
 
 ### Deployment into OpenShift
@@ -266,7 +267,6 @@ In case of need in OpenShift instance one can use [OKD](https://www.okd.io/) to 
    1. OpenShift API server address (FQDN or IP address) is defined by `openshift_address` environment variable
    1. OpenShift API server user name is defined by `openshift_user` environment variable
    1. OpenShift API server user password is defined by `openshift_password` environment variable
-   1. OpenShift registry is defined by `openshift_registry` environment variable
    1. Name of OpenShift namespace for deployment is defined by `openshift_namespace` environment variable
    1. Name of OpenShift application is defined by `openshift_app` environment variable
    1. Name of Helm release is defined by `helm_release` environment variable
@@ -277,23 +277,12 @@ In case of need in OpenShift instance one can use [OKD](https://www.okd.io/) to 
    openshift_address="$(ip address show \
      | sed -r 's/^[[:space:]]*inet (192(\.[0-9]{1,3}){3})\/[0-9]+ brd (([0-9]{1,3}\.){3}[0-9]{1,3}) scope global .*$/\1/;t;d' \
      | head -n 1)" && \
-   openshift_user="developer" && \
-   openshift_password="developer" && \
-   openshift_registry="172.30.1.1:5000" && \
-   openshift_namespace="myproject" && \
-   openshift_app="tcp-echo" && \
-   helm_release="asio-samples"
+   openshift_user='developer' && \
+   openshift_password='developer' && \
+   openshift_namespace='myproject' && \
+   openshift_app='tcp-echo' && \
+   helm_release='asio-samples'
    ```
-
-1. Push abrarov/tcp-echo:latest docker image into OpenShift registry
-
-   ```bash
-   docker tag abrarov/tcp-echo "${openshift_registry}/${openshift_namespace}/tcp-echo" && \
-   oc login -u "${openshift_user}" -p "${openshift_password}" \
-     --insecure-skip-tls-verify=true "${openshift_address}:8443" && \
-   docker login -p "$(oc whoami -t)" -u unused "${openshift_registry}" && \
-   docker push "${openshift_registry}/${openshift_namespace}/tcp-echo"
-    ```
 
 1. Deploy application using [kubernetes/tcp-echo](tcp-echo) Helm chart and wait for completion of rollout
 
@@ -305,7 +294,6 @@ In case of need in OpenShift instance one can use [OKD](https://www.okd.io/) to 
      -n "${openshift_namespace}" \
      --set nameOverride="${openshift_app}" \
      --set securityContext.runAsUser=null \
-     --set container.image.repository="${openshift_registry}/${openshift_namespace}/tcp-echo" \
      --install --wait
    ```
 
@@ -368,16 +356,14 @@ In case of need in OpenShift instance one can use [OKD](https://www.okd.io/) to 
    Hello outer World!
    ```
 
-1. Stop and remove OpenShift application, remove image from OpenShift registry and remove temporary image from local Docker registry
+1. Stop and remove OpenShift application
 
    ```bash
    oc login -u "${openshift_user}" -p "${openshift_password}" \
      --insecure-skip-tls-verify=true "${openshift_address}:8443" && \
    helm uninstall "${helm_release}" \
      --kube-apiserver "https://${openshift_address}:8443" \
-     -n "${openshift_namespace}" && \
-   oc delete imagestream "${openshift_app}" && \
-   docker rmi "${openshift_registry}/${openshift_namespace}/tcp-echo"
+     -n "${openshift_namespace}"
    ```
 
 ### OKD Removal

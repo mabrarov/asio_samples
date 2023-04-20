@@ -5,7 +5,7 @@
 # file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
-FROM alpine:3.15.0
+FROM alpine:3.16.2
 
 LABEL name="abrarov/asio-samples-builder-alpine" \
     description="Builder of Asio samples project on Alpine Linux"
@@ -19,7 +19,7 @@ ENV PROJECT_DIR="/project" \
 
 ENTRYPOINT ["/app/start.sh"]
 
-RUN echo 'http://nl.alpinelinux.org/alpine/edge/testing' >> /etc/apk/repositories && \
+RUN echo 'https://nl.alpinelinux.org/alpine/edge/testing' >> /etc/apk/repositories && \
     apk add --no-cache \
       g++ \
       make \

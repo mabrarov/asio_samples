@@ -1,0 +1,323 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": [
+    "containerName",
+    "image",
+    "livenessProbe",
+    "readinessProbe",
+    "replicaCount",
+    "securityContext",
+    "service",
+    "tcpEcho",
+    "test"
+  ],
+  "properties": {
+    "nameOverride": {
+      "type": "string"
+    },
+    "fullnameOverride": {
+      "type": "string"
+    },
+    "labels": {
+      "type": [
+        "object",
+        "string"
+      ]
+    },
+    "annotations": {
+      "type": [
+        "object",
+        "string"
+      ]
+    },
+    "deploymentLabels": {
+      "type": [
+        "object",
+        "string"
+      ]
+    },
+    "deploymentAnnotations": {
+      "type": [
+        "object",
+        "string"
+      ]
+    },
+    "podLabels": {
+      "type": [
+        "object",
+        "string"
+      ]
+    },
+    "podAnnotations": {
+      "type": [
+        "object",
+        "string"
+      ]
+    },
+    "containerName": {
+      "type": "string",
+      "minLength": 1
+    },
+    "image": {
+      "type": "object",
+      "required": [
+        "registry",
+        "repository",
+        "pullPolicy"
+      ],
+      "properties": {
+        "registry": {
+          "type": "string",
+          "minLength": 1
+        },
+        "repository": {
+          "type": "string",
+          "minLength": 1
+        },
+        "tag": {
+          "type": "string"
+        },
+        "pullPolicy": {
+          "type": "string",
+          "enum": [
+            "Always",
+            "Never",
+            "IfNotPresent"
+          ]
+        },
+        "pullSecret": {
+          "description": "docker authentication credentials for image registry",
+          "type": "object",
+          "required": [
+            "username",
+            "password",
+            "email"
+          ],
+          "properties": {
+            "username": {
+              "type": "string",
+              "minLength": 1
+            },
+            "password": {
+              "type": "string",
+              "minLength": 1
+            },
+            "email": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    },
+    "livenessProbe": {
+      "type": "object",
+      "required": [
+        "initialDelay"
+      ],
+      "properties": {
+        "initialDelay": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "readinessProbe": {
+      "type": "object",
+      "required": [
+        "initialDelay"
+      ],
+      "properties": {
+        "initialDelay": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "replicaCount": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "securityContext": {
+      "type": "object",
+      "required": [
+        "readOnlyRootFilesystem",
+        "runAsNonRoot"
+      ],
+      "properties": {
+        "readOnlyRootFilesystem": {
+          "type": "boolean"
+        },
+        "runAsNonRoot": {
+          "type": "boolean"
+        },
+        "runAsUser": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "runAsGroup": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "service": {
+      "type": "object",
+      "required": [
+        "port",
+        "nodePort"
+      ],
+      "properties": {
+        "labels": {
+          "type": [
+            "object",
+            "string"
+          ]
+        },
+        "annotations": {
+          "type": [
+            "object",
+            "string"
+          ]
+        },
+        "port": {
+          "description": "service port",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535
+        },
+        "nodePort": {
+          "description": "node port to expose the service on",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535
+        }
+      }
+    },
+    "tcpEcho": {
+      "description": "configuration of application",
+      "type": "object",
+      "required": [
+        "port"
+      ],
+      "properties": {
+        "port": {
+          "description": "TCP port number for incoming connections' listening",
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535
+        },
+        "listenBacklog": {
+          "description": "size of TCP listen backlog",
+          "type": "integer",
+          "minimum": 1
+        },
+        "inactivityTimeout": {
+          "description": "timeout at one's expiration session will be considered as inactive and will be closed (seconds)",
+          "type": "integer",
+          "minimum": 0
+        },
+        "stopTimeout": {
+          "description": "stop timeout at one's expiration server work will be terminated (seconds)",
+          "type": "integer",
+          "minimum": 0
+        },
+        "maxSessions": {
+          "description": "maximum number of simultaneously active sessions",
+          "type": "integer",
+          "minimum": 1
+        },
+        "bufferSize": {
+          "description": "session's buffer size (bytes)",
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "test": {
+      "description": "configuration of test pod container",
+      "type": "object",
+      "required": [
+        "containerName",
+        "image",
+        "message"
+      ],
+      "properties": {
+        "podLabels": {
+          "type": [
+            "object",
+            "string"
+          ]
+        },
+        "podAnnotations": {
+          "type": [
+            "object",
+            "string"
+          ]
+        },
+        "containerName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "image": {
+          "type": "object",
+          "required": [
+            "registry",
+            "repository",
+            "pullPolicy"
+          ],
+          "properties": {
+            "registry": {
+              "type": "string",
+              "minLength": 1
+            },
+            "repository": {
+              "type": "string",
+              "minLength": 1
+            },
+            "tag": {
+              "type": "string"
+            },
+            "pullPolicy": {
+              "type": "string",
+              "enum": [
+                "Always",
+                "Never",
+                "IfNotPresent"
+              ]
+            },
+            "pullSecret": {
+              "description": "docker authentication credentials for image registry",
+              "type": "object",
+              "required": [
+                "username",
+                "password",
+                "email"
+              ],
+              "properties": {
+                "username": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "password": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "email": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        },
+        "message": {
+          "description": "message to send for the test",
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    }
+  }
+}
