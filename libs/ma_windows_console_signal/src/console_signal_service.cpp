@@ -373,6 +373,7 @@ void console_signal_service::shutdown_service()
     {
       handlers.list.insert_front(impl->handlers_);
     }
+    impl_list_.clear();
   }
 }
 

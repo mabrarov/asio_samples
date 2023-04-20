@@ -12,7 +12,7 @@ ENV DOWNLOADS_DIR="C:\download" \
 
 ADD ["install", "C:/install/"]
 
-ARG BOOST_VERSION="1.80.0"
+ARG BOOST_VERSION="1.82.0"
 ARG BOOST_URL="https://boostorg.jfrog.io/ui/api/v1/download?repoKey=main&path="
 
 RUN powershell -ExecutionPolicy Bypass -File "C:\install\install.ps1"
@@ -26,7 +26,7 @@ ARG MA_REVISION=master
 
 RUN powershell -ExecutionPolicy Bypass -File "C:\app\build.ps1"
 
-FROM mcr.microsoft.com/windows/nanoserver:1809
+FROM mcr.microsoft.com/windows/nanoserver:ltsc2019
 
 LABEL name="abrarov/tcp-echo" \
     description="TCP echo server from Asio samples project" \

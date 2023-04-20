@@ -961,6 +961,7 @@ inline void handler_storage_service::shutdown_service()
         impl->handler_ = 0;
       }
     }
+    impl_list_.clear();
   }
   // Destroy all handlers
   for (stored_base* handler = handlers.front(); handler; )
