@@ -989,9 +989,16 @@ void StackLowerThanAddress(const void* ptr, bool* result) {
 }
 
 bool StackGrowsDown() {
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
   int dummy;
   bool result;
   StackLowerThanAddress(&dummy, &result);
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
   return result;
 }
 
