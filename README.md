@@ -10,6 +10,8 @@ Branch | Linux | Windows | Coverage | Coverity Scan
 
 Extended examples for [Boost.Asio](http://www.boost.org/doc/libs/release/doc/html/boost_asio.html).
 
+> :warning: Boost 1.84.0+ is not supported yet.
+
 ## Building with Docker container
 
 Refer to [docker/builder/README.md](docker/builder/README.md) for instruction on how to build Linux version with existing Docker images.
