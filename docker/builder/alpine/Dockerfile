@@ -5,7 +5,7 @@
 # file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
-FROM alpine:3.16.2
+FROM alpine:3.20.3
 
 LABEL name="abrarov/asio-samples-builder-alpine" \
     description="Builder of Asio samples project on Alpine Linux"
@@ -25,11 +25,12 @@ RUN echo 'https://nl.alpinelinux.org/alpine/edge/testing' >> /etc/apk/repositori
       make \
       cmake \
       lcov \
+      gzip \
       musl-dev \
       libgcc \
       libstdc++ \
-      boost-dev \
-      boost-static \
+      boost1.82-dev \
+      boost1.82-static \
       qt5-qtbase-dev && \
     mkdir /project && \
     mkdir /build
