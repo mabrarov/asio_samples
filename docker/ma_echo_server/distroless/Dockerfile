@@ -5,7 +5,7 @@
 # file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
-FROM debian:11-slim AS build
+FROM debian:12-slim AS build
 
 ENV TZ="Europe/Moscow"
 
@@ -19,7 +19,7 @@ RUN apt-get update && \
       g++ \
       make \
       libicu-dev \
-      python2-dev \
+      python3-dev \
       libzip-dev \
       libbz2-dev \
       dos2unix \
@@ -28,7 +28,7 @@ RUN apt-get update && \
 
 ADD ["patch", "/opt/patch"]
 
-ARG BOOST_VERSION="1.82.0"
+ARG BOOST_VERSION="1.83.0"
 ARG BOOST_RELEASE_URL="https://boostorg.jfrog.io/artifactory/main/release"
 ARG BOOST_BUILD_OPTIONS="--with-chrono --with-atomic --with-date_time --with-thread --with-timer --with-headers --with-program_options --with-regex --with-system --with-exception"
 
@@ -74,7 +74,7 @@ RUN mkdir -p "${BOOST_INSTALL_DIR}" && \
 
 ENV CMAKE_HOME="/opt/cmake"
 
-ARG CMAKE_VERSION="3.26.3"
+ARG CMAKE_VERSION="3.30.5"
 
 RUN mkdir -p "${CMAKE_HOME}" && \
     cmake_url="https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-Linux-x86_64.tar.gz" && \
@@ -107,7 +107,7 @@ RUN source_dir="$(mktemp -d)" && \
     rm -rf "${build_dir}" && \
     rm -rf "${source_dir}"
 
-FROM gcr.io/distroless/cc-debian11
+FROM gcr.io/distroless/cc-debian12
 
 LABEL name="abrarov/tcp-echo" \
     description="TCP echo server from Asio samples project" \
