@@ -5,7 +5,7 @@
 # file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 
 LABEL name="abrarov/asio-samples-builder-ubuntu" \
     description="Builder of Asio samples project on Ubuntu"
@@ -17,7 +17,7 @@ ENV TZ="Europe/Moscow" \
     MA_QT="ON" \
     MA_QT_MAJOR_VERSION="5" \
     MA_COVERAGE="OFF" \
-    CMAKE_VERSION="3.26.3" \
+    CMAKE_VERSION="3.30.5" \
     PATH="/opt/cmake/bin:${PATH}"
 
 ENTRYPOINT ["/app/start.sh"]
