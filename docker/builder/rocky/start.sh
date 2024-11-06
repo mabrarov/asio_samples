@@ -40,7 +40,7 @@ cmake --build . --config "${BUILD_TYPE}"
 if [[ "${MA_COVERAGE}" = "ON" ]]; then
   lcov -z -d .
   lcov -c -d . -i -o lcov-base.info \
-    --rc branch_coverage=1
+    --rc lcov_branch_coverage=1
 fi
 
 # Run tests
@@ -49,9 +49,9 @@ ctest --build-config "${BUILD_TYPE}" --verbose
 # Calculate difference to get code coverage statistic and generate HTML report
 if [[ "${MA_COVERAGE}" = "ON" ]]; then
   lcov -c -d . -o lcov-test.info \
-    --rc branch_coverage=1
+    --rc lcov_branch_coverage=1
   lcov -a lcov-base.info -a lcov-test.info -o lcov.info \
-    --rc branch_coverage=1
+    --rc lcov_branch_coverage=1
   lcov -r lcov.info \
     "$(pwd)/**/ui_*.h*" \
     "$(pwd)/**/moc_*.c*" \
@@ -60,8 +60,8 @@ if [[ "${MA_COVERAGE}" = "ON" ]]; then
     "${PROJECT_DIR}/examples/*" \
     "${PROJECT_DIR}/tests/*" \
     -o lcov.info \
-    --rc branch_coverage=1
+    --rc lcov_branch_coverage=1
   genhtml -o coverage lcov.info \
     --branch-coverage \
-    --rc branch_coverage=1
+    --rc lcov_branch_coverage=1
 fi
