@@ -4,8 +4,8 @@
 
 1. All commands use Powershell syntax
 1. Current directory is directory where this repository is cloned
-1. [Docker](https://docs.microsoft.com/en-us/virtualization/windowscontainers/deploy-containers/deploy-containers-on-server) runs on [Windows Server 2019 1809](https://docs.microsoft.com/en-us/windows-server/get-started/windows-server-release-info)
-1. Docker 19.03+
+1. [Docker](https://docs.microsoft.com/en-us/virtualization/windowscontainers/deploy-containers/deploy-containers-on-server) runs on [Windows Server 2022 LTSC](https://docs.microsoft.com/en-us/windows-server/get-started/windows-server-release-info)
+1. Docker 20.10+
 
 ## Building image
 

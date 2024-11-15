@@ -1,4 +1,4 @@
-# Docker image building Asio samples on CentOS
+# Docker image building Asio samples on Rocky Linux
 
 ## Assumptions
 
@@ -8,7 +8,7 @@
 ## Building image
 
 ```bash
-docker build -t abrarov/asio-samples-builder-centos docker/builder/centos
+docker build -t abrarov/asio-samples-builder-rocky docker/builder/rocky
 ```
 
 ## Using image
