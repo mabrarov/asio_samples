@@ -5,7 +5,7 @@
 # file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
-FROM alpine:3.16.2 AS build
+FROM alpine:3.20.3 AS build
 
 RUN apk add --no-cache \
       bash \
@@ -28,7 +28,7 @@ RUN apk add --no-cache \
 
 ADD ["patch", "/opt/patch"]
 
-ARG BOOST_VERSION="1.82.0"
+ARG BOOST_VERSION="1.83.0"
 ARG BOOST_RELEASE_URL="https://boostorg.jfrog.io/artifactory/main/release"
 ARG BOOST_BUILD_OPTIONS="--with-chrono --with-atomic --with-date_time --with-thread --with-timer --with-headers --with-program_options --with-regex --with-system --with-exception"
 
@@ -98,7 +98,7 @@ RUN source_dir="$(mktemp -d)" && \
     rm -rf "${build_dir}" && \
     rm -rf "${source_dir}"
 
-FROM gcr.io/distroless/static-debian11
+FROM gcr.io/distroless/static-debian12
 
 LABEL name="abrarov/tcp-echo" \
     description="TCP echo server from Asio samples project" \

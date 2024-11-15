@@ -15,7 +15,7 @@
 |---|---|
 | abrarov/asio-samples-builder-alpine | Builder on Alpine Linux |
 | abrarov/asio-samples-builder-ubuntu | Builder on Ubuntu |
-| abrarov/asio-samples-builder-centos | Builder on CentOS |
+| abrarov/asio-samples-builder-rocky | Builder on Rocky Linux |
 
 ## Environment variables
 
