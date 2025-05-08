@@ -51,6 +51,9 @@ switch (${env:TOOLCHAIN}) {
     $env:MSVS_PATCH_BATCH_FILE = ""
     $msvs_install_dir = ""
     switch (${env:MSVC_VERSION}) {
+      "14.3" {
+        $msvs_install_dir = &"${vswhere_executable}" --% -latest -products Microsoft.VisualStudio.Product.Community -version [17.0,18.0) -requires Microsoft.VisualStudio.Workload.NativeDesktop -property installationPath
+      }
       "14.2" {
         $msvs_install_dir = &"${vswhere_executable}" --% -latest -products Microsoft.VisualStudio.Product.Community -version [16.0,17.0) -requires Microsoft.VisualStudio.Workload.NativeDesktop -property installationPath
       }
@@ -61,6 +64,10 @@ switch (${env:TOOLCHAIN}) {
     switch (${env:PLATFORM}) {
       "Win32" {
         switch (${env:MSVC_VERSION}) {
+          "14.3" {
+            $env:MSVC_VARS_BATCH_FILE = "${msvs_install_dir}\VC\Auxiliary\Build\vcvars32.bat"
+            $env:MSVC_VARS_PLATFORM = ""
+          }
           "14.2" {
             $env:MSVC_VARS_BATCH_FILE = "${msvs_install_dir}\VC\Auxiliary\Build\vcvars32.bat"
             $env:MSVC_VARS_PLATFORM = ""
@@ -76,6 +83,10 @@ switch (${env:TOOLCHAIN}) {
       }
       "x64" {
         switch (${env:MSVC_VERSION}) {
+          "14.3" {
+            $env:MSVC_VARS_BATCH_FILE = "${msvs_install_dir}\VC\Auxiliary\Build\vcvars64.bat"
+            $env:MSVC_VARS_PLATFORM = ""
+          }
           "14.2" {
             $env:MSVC_VARS_BATCH_FILE = "${msvs_install_dir}\VC\Auxiliary\Build\vcvars64.bat"
             $env:MSVC_VARS_PLATFORM = ""
@@ -246,6 +257,9 @@ if (Test-Path env:ICU_VERSION) {
     switch (${env:TOOLCHAIN}) {
       "msvc" {
         switch (${env:MSVC_VERSION}) {
+          "14.3" {
+            $icu_toolchain_suffix = "-vs2022"
+          }
           "14.2" {
             $icu_toolchain_suffix = "-vs2019"
           }
@@ -326,9 +340,15 @@ if (Test-Path env:BOOST_VERSION) {
   switch (${env:TOOLCHAIN}) {
     "msvc" {
       switch (${env:MSVC_VERSION}) {
+        "14.3" {
+          $pre_installed_boost = (${env:BOOST_VERSION} -eq "1.83.0") `
+            -or (${env:BOOST_VERSION} -eq "1.84.0") `
+            -or (${env:BOOST_VERSION} -eq "1.85.0") `
+            -or (${env:BOOST_VERSION} -eq "1.86.0")
+        }
         "14.2" {
           $pre_installed_boost = (${env:BOOST_VERSION} -eq "1.73.0") `
-            -or (${env:BOOST_VERSION} -eq "1.77.0") `
+            -or (${env:BOOST_VERSION} -eq "1.77.0")
         }
         "14.1" {
           $pre_installed_boost = (${env:BOOST_VERSION} -eq "1.69.0") `
@@ -392,6 +412,9 @@ if (Test-Path env:BOOST_VERSION) {
     switch (${env:TOOLCHAIN}) {
       "msvc" {
         switch (${env:MSVC_VERSION}) {
+          "14.3" {
+            $boost_toolchain_suffix = "-vs2022"
+          }
           "14.2" {
             $boost_toolchain_suffix = "-vs2019"
           }
@@ -633,6 +656,9 @@ if (Test-Path env:QT_VERSION) {
     switch (${env:TOOLCHAIN}) {
       "msvc" {
         switch (${env:MSVC_VERSION}) {
+          "14.3" {
+            $qt_toolchain_suffix = "-vs2022"
+          }
           "14.2" {
             $qt_toolchain_suffix = "-vs2019"
           }
@@ -737,6 +763,9 @@ switch (${env:TOOLCHAIN}) {
   "msvc" {
     $cmake_generator_msvc_version_suffix = " ${env:MSVC_VERSION}" -replace "([\d]+)\.([\d]+)", '$1'
     switch (${env:MSVC_VERSION}) {
+      "14.3" {
+        $cmake_generator_msvc_version_suffix = " 17 2022"
+      }
       "14.2" {
         $cmake_generator_msvc_version_suffix = " 16 2019"
       }
