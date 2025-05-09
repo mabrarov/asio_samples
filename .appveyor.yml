@@ -23,7 +23,7 @@ environment:
   COVERAGE_WORK_FOLDER: '%APPVEYOR_BUILD_FOLDER%\build\coverage'
   COBERTURA_COVERAGE_FILE: '%APPVEYOR_BUILD_FOLDER%\build\coverage\coverage.xml'
   VSWHERE_URL: 'https://github.com/Microsoft/vswhere/releases/download'
-  VSWHERE_VERSION: '2.8.4'
+  VSWHERE_VERSION: '3.1.7'
   VSWHERE_DIST_NAME: 'vswhere.exe'
   COVERITY_SCAN_CANDIDATE: '0'
   COVERAGE_BUILD_CANDIDATE: '0'
