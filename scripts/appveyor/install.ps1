@@ -474,7 +474,7 @@ if (Test-Path env:BOOST_VERSION) {
       $boost_installer_file_name = "boost_${boost_dist_version_suffix}${boost_dist_toolchain_suffix}-${boost_dist_platform_suffix}.exe"
       $boost_dist_file = "${env:DOWNLOADS_FOLDER}\${boost_installer_file_name}"
       if (!(Test-Path -Path "${boost_dist_file}")) {
-        $boost_download_url = "https://boostorg.jfrog.io/artifactory/main/release/${env:BOOST_VERSION}/binaries/${boost_installer_file_name}"
+        $boost_download_url = "https://master.dl.sourceforge.net/project/boost/boost-binaries/${env:BOOST_VERSION}/${boost_installer_file_name}?viasf=1"
         if (!(Test-Path -Path "${env:DOWNLOADS_FOLDER}")) {
           New-Item -Path "${env:DOWNLOADS_FOLDER}" -ItemType "directory" | out-null
         }
