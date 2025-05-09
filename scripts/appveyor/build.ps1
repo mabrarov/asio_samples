@@ -82,7 +82,8 @@ if (${env:COVERITY_SCAN_BUILD} -eq "True") {
     --connect-timeout "${env:CURL_CONNECT_TIMEOUT}" `
     --max-time "${env:CURL_MAX_TIME}" `
     --retry "${env:CURL_RETRY}" `
-    --retry-delay "${env:CURL_RETRY_DELAY}" `
+    --retry-max-time "${env:CURL_RETRY_MAX_TIME}" `
+    --retry-connrefused `
     --show-error --silent --location `
     --form token="${env:COVERITY_SCAN_TOKEN}" `
     --form email="${env:COVERITY_SCAN_NOTIFICATION_EMAIL}" `

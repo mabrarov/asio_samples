@@ -22,7 +22,8 @@ if (!(Test-Path -Path "${vswhere_executable}")) {
       --connect-timeout "${env:CURL_CONNECT_TIMEOUT}" `
       --max-time "${env:CURL_MAX_TIME}" `
       --retry "${env:CURL_RETRY}" `
-      --retry-delay "${env:CURL_RETRY_DELAY}" `
+      --retry-max-time "${env:CURL_RETRY_MAX_TIME}" `
+      --retry-connrefused `
       --show-error --silent --location `
       --output "${vswhere_archive_file}" `
       "${vswhere_download_url}"
@@ -212,7 +213,8 @@ if (Test-Path env:CMAKE_VERSION) {
           --connect-timeout "${env:CURL_CONNECT_TIMEOUT}" `
           --max-time "${env:CURL_MAX_TIME}" `
           --retry "${env:CURL_RETRY}" `
-          --retry-delay "${env:CURL_RETRY_DELAY}" `
+          --retry-max-time "${env:CURL_RETRY_MAX_TIME}" `
+          --retry-connrefused `
           --show-error --silent --location `
           --output "${cmake_archive_file}" `
           "${cmake_download_url}"
@@ -308,7 +310,8 @@ if (Test-Path env:ICU_VERSION) {
           --connect-timeout "${env:CURL_CONNECT_TIMEOUT}" `
           --max-time "${env:CURL_MAX_TIME}" `
           --retry "${env:CURL_RETRY}" `
-          --retry-delay "${env:CURL_RETRY_DELAY}" `
+          --retry-max-time "${env:CURL_RETRY_MAX_TIME}" `
+          --retry-connrefused `
           --show-error --silent --location `
           --output "${icu_archive_file}" `
           "${icu_download_url}"
@@ -483,7 +486,8 @@ if (Test-Path env:BOOST_VERSION) {
           --connect-timeout "${env:CURL_CONNECT_TIMEOUT}" `
           --max-time "${env:CURL_MAX_TIME}" `
           --retry "${env:CURL_RETRY}" `
-          --retry-delay "${env:CURL_RETRY_DELAY}" `
+          --retry-max-time "${env:CURL_RETRY_MAX_TIME}" `
+          --retry-connrefused `
           --show-error --silent --location `
           --output "${boost_dist_file}" `
           "${boost_download_url}"
@@ -722,7 +726,8 @@ if (Test-Path env:QT_VERSION) {
           --connect-timeout "${env:CURL_CONNECT_TIMEOUT}" `
           --max-time "${env:CURL_MAX_TIME}" `
           --retry "${env:CURL_RETRY}" `
-          --retry-delay "${env:CURL_RETRY_DELAY}" `
+          --retry-max-time "${env:CURL_RETRY_MAX_TIME}" `
+          --retry-connrefused `
           --show-error --silent --location `
           --output "${qt_archive_file}" `
           "${qt_download_url}"
