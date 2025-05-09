@@ -280,7 +280,7 @@ if (Test-Path env:ICU_VERSION) {
         }
       }
       "mingw" {
-        $icu_toolchain_suffix = "-mingw${env:MINGW_VERSION}" -replace "([\d]+)\.([\d]+)(\.([\d]+))*", '$1$2'
+        $icu_toolchain_suffix = "-mingw$("${env:MINGW_VERSION}" -replace "([\d]+)\.([\d]+)(\.([\d]+))*", '$1$2')"
       }
       default {
         throw "Unsupported toolchain for ICU: ${env:TOOLCHAIN}"
@@ -410,7 +410,6 @@ if (Test-Path env:BOOST_VERSION) {
         throw "Unsupported platform for Boost: ${env:PLATFORM}"
       }
     }
-    $boost_version_suffix = "-${env:BOOST_VERSION}"
     $boost_toolchain_suffix = ""
     switch (${env:TOOLCHAIN}) {
       "msvc" {
@@ -445,16 +444,19 @@ if (Test-Path env:BOOST_VERSION) {
         }
       }
       "mingw" {
-        $boost_toolchain_suffix = "-mingw${env:MINGW_VERSION}" -replace "([\d]+)\.([\d]+)\.([\d]+)", '$1$2'
+        $boost_toolchain_suffix = "-mingw$("${env:MINGW_VERSION}" -replace "([\d]+)\.([\d]+)(\.[\d]+)?", '$1$2')"
       }
       default {
         throw "Unsupported toolchain for Boost: ${env:TOOLCHAIN}"
       }
     }
-    $boost_install_folder = "${env:DEPENDENCIES_FOLDER}\boost${boost_version_suffix}${env:BOOST_PLATFORM_SUFFIX}${boost_toolchain_suffix}"
+    $boost_install_folder = "${env:DEPENDENCIES_FOLDER}\boost-${env:BOOST_VERSION}${env:BOOST_PLATFORM_SUFFIX}${boost_toolchain_suffix}"
     switch (${env:TOOLCHAIN}) {
       "msvc" {
         $boost_dist_toolchain_suffix = "-msvc-${env:MSVC_VERSION}"
+      }
+      "mingw" {
+        $boost_dist_toolchain_suffix = "${boost_toolchain_suffix}"
       }
       default {
         throw "Unsupported toolchain for Boost: ${env:TOOLCHAIN}"
@@ -473,11 +475,23 @@ if (Test-Path env:BOOST_VERSION) {
     }
     if (!(Test-Path -Path "${boost_install_folder}")) {
       Write-Host "Boost is absent for the chosen toolchain (${env:TOOLCHAIN_ID}) and Boost version (${env:BOOST_VERSION}) at ${boost_install_folder}"
-      $boost_dist_version_suffix = "${env:BOOST_VERSION}" -replace "\.", '_'
-      $boost_installer_file_name = "boost_${boost_dist_version_suffix}${boost_dist_toolchain_suffix}-${boost_dist_platform_suffix}.exe"
+      switch (${env:TOOLCHAIN}) {
+        "msvc" {
+          $boost_installer_type = "boost-sf-exe"
+          $boost_installer_file_name = "boost_$("${env:BOOST_VERSION}" -replace "\.", '_')${boost_dist_toolchain_suffix}-${boost_dist_platform_suffix}.exe"
+          $boost_download_url = "https://master.dl.sourceforge.net/project/boost/boost-binaries/${env:BOOST_VERSION}/${boost_installer_file_name}?viasf=1"
+        }
+        "mingw" {
+          $boost_installer_type = "mabrarov-7z"
+          $boost_installer_file_name = "boost-${env:BOOST_VERSION}${env:BOOST_PLATFORM_SUFFIX}${boost_dist_toolchain_suffix}.7z"
+          $boost_download_url = "https://master.dl.sourceforge.net/project/asio-samples/boost/${env:BOOST_VERSION}/${boost_installer_file_name}?viasf=1"
+        }
+        default {
+          throw "Unsupported toolchain for Boost download: ${env:TOOLCHAIN}"
+        }
+      }
       $boost_dist_file = "${env:DOWNLOADS_FOLDER}\${boost_installer_file_name}"
       if (!(Test-Path -Path "${boost_dist_file}")) {
-        $boost_download_url = "https://master.dl.sourceforge.net/project/boost/boost-binaries/${env:BOOST_VERSION}/${boost_installer_file_name}?viasf=1"
         if (!(Test-Path -Path "${env:DOWNLOADS_FOLDER}")) {
           New-Item -Path "${env:DOWNLOADS_FOLDER}" -ItemType "directory" | out-null
         }
@@ -496,21 +510,40 @@ if (Test-Path env:BOOST_VERSION) {
         }
         Write-Host "Downloading of Boost completed successfully"
       }
-      Write-Host "Installing Boost from ${boost_dist_file} to ${boost_install_folder}"
       if (!(Test-Path -Path "${env:DEPENDENCIES_FOLDER}")) {
         New-Item -Path "${env:DEPENDENCIES_FOLDER}" -ItemType "directory" | out-null
       }
-      $p = Start-Process -FilePath "${boost_dist_file}" `
-        -ArgumentList ("/SP-", "/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/NOICONS", "/ALLUSERS", "/DIR=""${boost_install_folder}""") `
-        -Wait -PassThru
-      if (${p}.ExitCode -ne 0) {
-        throw "Failed to install Boost"
+      switch ($boost_installer_type) {
+        "boost-sf-exe" {
+          Write-Host "Installing Boost from ${boost_dist_file} to ${boost_install_folder}"
+          $p = Start-Process -FilePath "${boost_dist_file}" `
+            -ArgumentList ("/SP-", "/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/NOICONS", "/ALLUSERS", "/DIR=""${boost_install_folder}""") `
+            -Wait -PassThru
+          if (${p}.ExitCode -ne 0) {
+            throw "Failed to install Boost"
+          }
+          $env:BOOST_INCLUDE_FOLDER = "${boost_install_folder}"
+          $env:BOOST_LIBRARY_FOLDER = "${boost_install_folder}\lib${boost_dist_platform_suffix}${boost_dist_toolchain_suffix}"
+        }
+        "mabrarov-7z" {
+          Write-Host "Extracting Boost from ${boost_dist_file} to ${env:DEPENDENCIES_FOLDER}"
+          7z.exe x "${boost_dist_file}" -o"${env:DEPENDENCIES_FOLDER}" -aoa -y -bd | out-null
+          if (${LastExitCode} -ne 0) {
+            throw "Failed to extract Boost"
+          }
+          if (!(Test-Path -Path ${boost_install_folder})) {
+            throw "Failed to find extracted Boost at ${boost_install_folder}"
+          }
+          $env:BOOST_INCLUDE_FOLDER = "${boost_install_folder}\include\boost-$("${env:BOOST_VERSION}" -replace "([\d]+)\.([\d]+)(\.[\d]+)?", '$1_$2')"
+          $env:BOOST_LIBRARY_FOLDER = "${boost_install_folder}\lib"
+        }
+        default {
+          throw "Unknown Boost installer type: $boost_installer_type"
+        }
       }
       Write-Host "Installation of Boost completed successfully"
     }
     Write-Host "Boost ${env:BOOST_VERSION} is located at ${boost_install_folder}"
-    $env:BOOST_INCLUDE_FOLDER = "${boost_install_folder}"
-    $env:BOOST_LIBRARY_FOLDER = "${boost_install_folder}\lib${boost_dist_platform_suffix}${boost_dist_toolchain_suffix}"
   }
   if ((${env:RUNTIME_LINKAGE} -eq "static") -and (${env:BOOST_LINKAGE} -ne "static")) {
     throw "Incompatible type of linkage of Boost: ${env:BOOST_LINKAGE} for the specified type of linkage of C/C++ runtime: ${env:RUNTIME_LINKAGE}"
@@ -604,7 +637,7 @@ if (Test-Path env:QT_VERSION) {
         }
       }
       "mingw" {
-        $qt_folder_toolchain_suffix = "mingw${env:MINGW_VERSION}" -replace "([\d]+)\.([\d]+)(\.([\d]+))*", '$1$2'
+        $qt_folder_toolchain_suffix = "mingw$("${env:MINGW_VERSION}" -replace "([\d]+)\.([\d]+)(\.([\d]+))*", '$1$2')"
       }
       default {
         throw "Unsupported toolchain for Qt: ${env:TOOLCHAIN}"
@@ -690,7 +723,7 @@ if (Test-Path env:QT_VERSION) {
         }
       }
       "mingw" {
-        $qt_toolchain_suffix = "-mingw${env:MINGW_VERSION}" -replace "([\d]+)\.([\d]+)\.([\d]+)", '$1$2'
+        $qt_toolchain_suffix = "-mingw$("${env:MINGW_VERSION}" -replace "([\d]+)\.([\d]+)\.([\d]+)", '$1$2')"
       }
       default {
         throw "Unsupported toolchain for Qt: ${env:TOOLCHAIN}"
