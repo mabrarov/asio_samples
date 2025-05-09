@@ -34,8 +34,7 @@ switch (${env:MSVS_VERSION}) {
 $boost_installer_file_name = "boost_${boost_version_suffix}${boost_toolchain_suffix}${boost_platform_suffix}.exe"
 $boost_installer_file = "${env:DOWNLOADS_DIR}\${boost_installer_file_name}"
 
-Add-Type -AssemblyName System.Web
-$boost_download_url = "${env:BOOST_URL}" + [System.Web.HttpUtility]::UrlEncode([System.Web.HttpUtility]::UrlEncode("release/${env:BOOST_VERSION}/binaries/${boost_installer_file_name}"))
+$boost_download_url = "${env:BOOST_URL}/${env:BOOST_VERSION}/${boost_installer_file_name}?viasf=1"
 if (-not (Test-Path -Path "${env:DOWNLOADS_DIR}")) {
   New-Item -Path "${env:DOWNLOADS_DIR}" -ItemType "directory" | out-null
 }
