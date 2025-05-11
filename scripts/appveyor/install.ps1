@@ -154,7 +154,6 @@ switch (${env:TOOLCHAIN}) {
   "mingw" {
     $env:TOOLCHAIN_ID = "${env:TOOLCHAIN}-${env:MINGW_VERSION}"
     $mingw_platform_suffix = ""
-    $mingw_thread_model_suffix = ""
     switch (${env:PLATFORM}) {
       "Win32" {
         $mingw_platform_suffix = "i686-"
@@ -301,7 +300,7 @@ if (Test-Path env:ICU_VERSION) {
       $icu_archive_name = "icu4c${icu_version_suffix}${icu_platform_suffix}${icu_toolchain_suffix}${icu_linkage_suffix}.7z"
       $icu_archive_file = "${env:DOWNLOADS_FOLDER}\${icu_archive_name}"
       if (!(Test-Path -Path "${icu_archive_file}")) {
-        $icu_download_url = "https://dl.bintray.com/mabrarov/generic/icu/${env:ICU_VERSION}/${icu_archive_name}"
+        $icu_download_url = "https://master.dl.sourceforge.net/project/asio-samples/icu/${env:ICU_VERSION}/${icu_archive_name}?viasf=1"
         if (!(Test-Path -Path "${env:DOWNLOADS_FOLDER}")) {
           New-Item -Path "${env:DOWNLOADS_FOLDER}" -ItemType "directory" | out-null
         }
