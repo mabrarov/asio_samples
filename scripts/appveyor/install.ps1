@@ -482,9 +482,15 @@ if (Test-Path env:BOOST_VERSION) {
       Write-Host "Boost is absent for the chosen toolchain (${env:TOOLCHAIN_ID}) and Boost version (${env:BOOST_VERSION}) at ${boost_install_folder}"
       switch (${env:TOOLCHAIN}) {
         "msvc" {
-          $boost_installer_type = "boost-sf-exe"
-          $boost_installer_file_name = "boost_$("${env:BOOST_VERSION}" -replace "\.", '_')${boost_dist_toolchain_suffix}-${boost_dist_platform_suffix}.exe"
-          $boost_download_url = "https://master.dl.sourceforge.net/project/boost/boost-binaries/${env:BOOST_VERSION}/${boost_installer_file_name}?viasf=1"
+          if ([System.Version] "${env:BOOST_VERSION}" -lt [System.Version] "1.53.0") {
+            $boost_installer_type = "mabrarov-7z"
+            $boost_installer_file_name = "boost-${env:BOOST_VERSION}${env:BOOST_PLATFORM_SUFFIX}${boost_toolchain_suffix}.7z"
+            $boost_download_url = "https://master.dl.sourceforge.net/project/asio-samples/boost/${env:BOOST_VERSION}/${boost_installer_file_name}?viasf=1"
+          } else {
+            $boost_installer_type = "boost-sf-exe"
+            $boost_installer_file_name = "boost_$( "${env:BOOST_VERSION}" -replace "\.", '_' )${boost_dist_toolchain_suffix}-${boost_dist_platform_suffix}.exe"
+            $boost_download_url = "https://master.dl.sourceforge.net/project/boost/boost-binaries/${env:BOOST_VERSION}/${boost_installer_file_name}?viasf=1"
+          }
         }
         "mingw" {
           $boost_installer_type = "mabrarov-7z"
