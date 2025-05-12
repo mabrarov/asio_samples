@@ -188,6 +188,11 @@ environment:
       QT_VERSION: '5.10.1'
       QT_LINKAGE: 'shared'
 
+matrix:
+  exclude:
+    - platform: 'x64'
+      QT_VERSION: '4.8.7'
+
 cache:
   - 'C:\projects\downloads -> .appveyor.yml'
 

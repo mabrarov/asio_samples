@@ -230,6 +230,9 @@ if (Test-Path env:CMAKE_VERSION) {
       if (${LastExitCode} -ne 0) {
         throw "Extracting CMake failed with exit code ${LastExitCode}"
       }
+      if (!(Test-Path -Path ${cmake_home})) {
+        throw "Failed to find extracted CMake at ${cmake_home}"
+      }
       Write-Host "Extracting of CMake completed successfully"
     }
     Write-Host "CMake ${env:CMAKE_VERSION} is located at ${cmake_home}"
@@ -326,6 +329,9 @@ if (Test-Path env:ICU_VERSION) {
       7z.exe x "${icu_archive_file}" -o"${env:DEPENDENCIES_FOLDER}" -aoa -y | out-null
       if (${LastExitCode} -ne 0) {
         throw "Extracting ICU failed with exit code ${LastExitCode}"
+      }
+      if (!(Test-Path -Path ${icu_install_folder})) {
+        throw "Failed to find extracted ICU at ${icu_install_folder}"
       }
       Write-Host "Extracting of ICU completed successfully"
     }
@@ -682,12 +688,11 @@ if (Test-Path env:QT_VERSION) {
         throw "Unsupported platform for Qt: ${env:PLATFORM}"
       }
     }
-    $qt_version_suffix = ""
+    $qt_version_full = "${env:QT_VERSION}"
     if (!(${env:QT_VERSION} -match "[\d]+\.[\d]+\.[\d]+")) {
-      $qt_version_suffix = "-${env:QT_VERSION}.0"
-    } else {
-      $qt_version_suffix = "-${env:QT_VERSION}"
+      $qt_version_full = "${env:QT_VERSION}.0"
     }
+    $qt_version_suffix = "-${qt_version_full}"
     $qt_toolchain_suffix = ""
     switch (${env:TOOLCHAIN}) {
       "msvc" {
@@ -743,13 +748,7 @@ if (Test-Path env:QT_VERSION) {
       $qt_archive_name = "qt${qt_version_suffix}${qt_platform_suffix}${qt_toolchain_suffix}${qt_linkage_suffix}.7z"
       $qt_archive_file = "${env:DOWNLOADS_FOLDER}\${qt_archive_name}"
       if (!(Test-Path -Path "${qt_archive_file}")) {
-        $qt_version_url_suffix = ""
-        if (!(${env:QT_VERSION} -match "[\d]+\.[\d]+\.[\d]+")) {
-          $qt_version_url_suffix = "/${env:QT_VERSION}.0"
-        } else {
-          $qt_version_url_suffix = "/${env:QT_VERSION}"
-        }
-        $qt_download_url = "https://dl.bintray.com/mabrarov/generic/qt${qt_version_url_suffix}/${qt_archive_name}"
+        $qt_download_url = "https://master.dl.sourceforge.net/project/asio-samples/qt/${qt_version_full}/${qt_archive_name}?viasf=1"
         if (!(Test-Path -Path "${env:DOWNLOADS_FOLDER}")) {
           New-Item -Path "${env:DOWNLOADS_FOLDER}" -ItemType "directory" | out-null
         }
@@ -775,6 +774,9 @@ if (Test-Path env:QT_VERSION) {
       7z.exe x "${qt_archive_file}" -o"${env:DEPENDENCIES_FOLDER}" -aoa -y | out-null
       if (${LastExitCode} -ne 0) {
         throw "Extracting of Qt failed with exit code ${LastExitCode}"
+      }
+      if (!(Test-Path -Path ${qt_install_folder})) {
+        throw "Failed to find extracted Qt at ${qt_install_folder}"
       }
       Write-Host "Extracting of Qt completed successfully"
     }
