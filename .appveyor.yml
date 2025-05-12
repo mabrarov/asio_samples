@@ -126,8 +126,6 @@ environment:
       CMAKE_VERSION: '3.15.1'
       BOOST_VERSION: '1.67.0'
       BOOST_LINKAGE: 'static'
-      QT_VERSION: '4.8.7'
-      QT_LINKAGE: 'shared'
       COVERAGE_BUILD_CANDIDATE: '1'
     - TOOLCHAIN: 'msvc'
       MSVC_VERSION: '9.0'
@@ -141,8 +139,6 @@ environment:
       RUNTIME_LINKAGE: 'shared'
       BOOST_VERSION: '1.47.0'
       BOOST_LINKAGE: 'static'
-      QT_VERSION: '4.8.7'
-      QT_LINKAGE: 'shared'
       COVERAGE_BUILD_CANDIDATE: '1'
     - TOOLCHAIN: 'msvc'
       MSVC_VERSION: '9.0'
@@ -187,11 +183,6 @@ environment:
       BOOST_LINKAGE: 'shared'
       QT_VERSION: '5.10.1'
       QT_LINKAGE: 'shared'
-
-matrix:
-  exclude:
-    - platform: 'x64'
-      QT_VERSION: '4.8.7'
 
 cache:
   - 'C:\projects\downloads -> .appveyor.yml'
