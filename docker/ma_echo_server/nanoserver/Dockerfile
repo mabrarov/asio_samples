@@ -5,7 +5,7 @@
 # file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
 #
 
-FROM abrarov/msvc-2022:2.16.0 AS build
+FROM abrarov/msvc-2022:2.18.0 AS build
 
 ENV DOWNLOADS_DIR="C:\download" \
     BOOST_DIR="C:\dependencies\boost"
@@ -13,7 +13,7 @@ ENV DOWNLOADS_DIR="C:\download" \
 ADD ["install", "C:/install/"]
 
 ARG BOOST_VERSION="1.83.0"
-ARG BOOST_URL="https://boostorg.jfrog.io/ui/api/v1/download?repoKey=main&path="
+ARG BOOST_URL="https://master.dl.sourceforge.net/project/boost/boost-binaries"
 
 RUN powershell -ExecutionPolicy Bypass -File "C:\install\install.ps1"
 

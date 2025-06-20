@@ -22,7 +22,8 @@ if (!(Test-Path -Path "${vswhere_executable}")) {
       --connect-timeout "${env:CURL_CONNECT_TIMEOUT}" `
       --max-time "${env:CURL_MAX_TIME}" `
       --retry "${env:CURL_RETRY}" `
-      --retry-delay "${env:CURL_RETRY_DELAY}" `
+      --retry-max-time "${env:CURL_RETRY_MAX_TIME}" `
+      --retry-connrefused `
       --show-error --silent --location `
       --output "${vswhere_archive_file}" `
       "${vswhere_download_url}"
@@ -51,6 +52,9 @@ switch (${env:TOOLCHAIN}) {
     $env:MSVS_PATCH_BATCH_FILE = ""
     $msvs_install_dir = ""
     switch (${env:MSVC_VERSION}) {
+      "14.3" {
+        $msvs_install_dir = &"${vswhere_executable}" --% -latest -products Microsoft.VisualStudio.Product.Community -version [17.0,18.0) -requires Microsoft.VisualStudio.Workload.NativeDesktop -property installationPath
+      }
       "14.2" {
         $msvs_install_dir = &"${vswhere_executable}" --% -latest -products Microsoft.VisualStudio.Product.Community -version [16.0,17.0) -requires Microsoft.VisualStudio.Workload.NativeDesktop -property installationPath
       }
@@ -61,6 +65,10 @@ switch (${env:TOOLCHAIN}) {
     switch (${env:PLATFORM}) {
       "Win32" {
         switch (${env:MSVC_VERSION}) {
+          "14.3" {
+            $env:MSVC_VARS_BATCH_FILE = "${msvs_install_dir}\VC\Auxiliary\Build\vcvars32.bat"
+            $env:MSVC_VARS_PLATFORM = ""
+          }
           "14.2" {
             $env:MSVC_VARS_BATCH_FILE = "${msvs_install_dir}\VC\Auxiliary\Build\vcvars32.bat"
             $env:MSVC_VARS_PLATFORM = ""
@@ -76,6 +84,10 @@ switch (${env:TOOLCHAIN}) {
       }
       "x64" {
         switch (${env:MSVC_VERSION}) {
+          "14.3" {
+            $env:MSVC_VARS_BATCH_FILE = "${msvs_install_dir}\VC\Auxiliary\Build\vcvars64.bat"
+            $env:MSVC_VARS_PLATFORM = ""
+          }
           "14.2" {
             $env:MSVC_VARS_BATCH_FILE = "${msvs_install_dir}\VC\Auxiliary\Build\vcvars64.bat"
             $env:MSVC_VARS_PLATFORM = ""
@@ -142,7 +154,6 @@ switch (${env:TOOLCHAIN}) {
   "mingw" {
     $env:TOOLCHAIN_ID = "${env:TOOLCHAIN}-${env:MINGW_VERSION}"
     $mingw_platform_suffix = ""
-    $mingw_thread_model_suffix = ""
     switch (${env:PLATFORM}) {
       "Win32" {
         $mingw_platform_suffix = "i686-"
@@ -201,7 +212,8 @@ if (Test-Path env:CMAKE_VERSION) {
           --connect-timeout "${env:CURL_CONNECT_TIMEOUT}" `
           --max-time "${env:CURL_MAX_TIME}" `
           --retry "${env:CURL_RETRY}" `
-          --retry-delay "${env:CURL_RETRY_DELAY}" `
+          --retry-max-time "${env:CURL_RETRY_MAX_TIME}" `
+          --retry-connrefused `
           --show-error --silent --location `
           --output "${cmake_archive_file}" `
           "${cmake_download_url}"
@@ -217,6 +229,9 @@ if (Test-Path env:CMAKE_VERSION) {
       7z.exe x "${cmake_archive_file}" -o"${env:DEPENDENCIES_FOLDER}" -aoa -y | out-null
       if (${LastExitCode} -ne 0) {
         throw "Extracting CMake failed with exit code ${LastExitCode}"
+      }
+      if (!(Test-Path -Path ${cmake_home})) {
+        throw "Failed to find extracted CMake at ${cmake_home}"
       }
       Write-Host "Extracting of CMake completed successfully"
     }
@@ -246,6 +261,9 @@ if (Test-Path env:ICU_VERSION) {
     switch (${env:TOOLCHAIN}) {
       "msvc" {
         switch (${env:MSVC_VERSION}) {
+          "14.3" {
+            $icu_toolchain_suffix = "-vs2022"
+          }
           "14.2" {
             $icu_toolchain_suffix = "-vs2019"
           }
@@ -264,7 +282,7 @@ if (Test-Path env:ICU_VERSION) {
         }
       }
       "mingw" {
-        $icu_toolchain_suffix = "-mingw${env:MINGW_VERSION}" -replace "([\d]+)\.([\d]+)(\.([\d]+))*", '$1$2'
+        $icu_toolchain_suffix = "-mingw$("${env:MINGW_VERSION}" -replace "([\d]+)\.([\d]+)(\.([\d]+))*", '$1$2')"
       }
       default {
         throw "Unsupported toolchain for ICU: ${env:TOOLCHAIN}"
@@ -285,7 +303,7 @@ if (Test-Path env:ICU_VERSION) {
       $icu_archive_name = "icu4c${icu_version_suffix}${icu_platform_suffix}${icu_toolchain_suffix}${icu_linkage_suffix}.7z"
       $icu_archive_file = "${env:DOWNLOADS_FOLDER}\${icu_archive_name}"
       if (!(Test-Path -Path "${icu_archive_file}")) {
-        $icu_download_url = "https://dl.bintray.com/mabrarov/generic/icu/${env:ICU_VERSION}/${icu_archive_name}"
+        $icu_download_url = "https://master.dl.sourceforge.net/project/asio-samples/icu/${env:ICU_VERSION}/${icu_archive_name}?viasf=1"
         if (!(Test-Path -Path "${env:DOWNLOADS_FOLDER}")) {
           New-Item -Path "${env:DOWNLOADS_FOLDER}" -ItemType "directory" | out-null
         }
@@ -294,7 +312,8 @@ if (Test-Path env:ICU_VERSION) {
           --connect-timeout "${env:CURL_CONNECT_TIMEOUT}" `
           --max-time "${env:CURL_MAX_TIME}" `
           --retry "${env:CURL_RETRY}" `
-          --retry-delay "${env:CURL_RETRY_DELAY}" `
+          --retry-max-time "${env:CURL_RETRY_MAX_TIME}" `
+          --retry-connrefused `
           --show-error --silent --location `
           --output "${icu_archive_file}" `
           "${icu_download_url}"
@@ -311,6 +330,9 @@ if (Test-Path env:ICU_VERSION) {
       if (${LastExitCode} -ne 0) {
         throw "Extracting ICU failed with exit code ${LastExitCode}"
       }
+      if (!(Test-Path -Path ${icu_install_folder})) {
+        throw "Failed to find extracted ICU at ${icu_install_folder}"
+      }
       Write-Host "Extracting of ICU completed successfully"
     }
     Write-Host "ICU ${env:ICU_VERSION} is located at ${icu_install_folder}"
@@ -326,9 +348,15 @@ if (Test-Path env:BOOST_VERSION) {
   switch (${env:TOOLCHAIN}) {
     "msvc" {
       switch (${env:MSVC_VERSION}) {
+        "14.3" {
+          $pre_installed_boost = (${env:BOOST_VERSION} -eq "1.83.0") `
+            -or (${env:BOOST_VERSION} -eq "1.84.0") `
+            -or (${env:BOOST_VERSION} -eq "1.85.0") `
+            -or (${env:BOOST_VERSION} -eq "1.86.0")
+        }
         "14.2" {
           $pre_installed_boost = (${env:BOOST_VERSION} -eq "1.73.0") `
-            -or (${env:BOOST_VERSION} -eq "1.77.0") `
+            -or (${env:BOOST_VERSION} -eq "1.77.0")
         }
         "14.1" {
           $pre_installed_boost = (${env:BOOST_VERSION} -eq "1.69.0") `
@@ -387,11 +415,13 @@ if (Test-Path env:BOOST_VERSION) {
         throw "Unsupported platform for Boost: ${env:PLATFORM}"
       }
     }
-    $boost_version_suffix = "-${env:BOOST_VERSION}"
     $boost_toolchain_suffix = ""
     switch (${env:TOOLCHAIN}) {
       "msvc" {
         switch (${env:MSVC_VERSION}) {
+          "14.3" {
+            $boost_toolchain_suffix = "-vs2022"
+          }
           "14.2" {
             $boost_toolchain_suffix = "-vs2019"
           }
@@ -419,16 +449,19 @@ if (Test-Path env:BOOST_VERSION) {
         }
       }
       "mingw" {
-        $boost_toolchain_suffix = "-mingw${env:MINGW_VERSION}" -replace "([\d]+)\.([\d]+)\.([\d]+)", '$1$2'
+        $boost_toolchain_suffix = "-mingw$("${env:MINGW_VERSION}" -replace "([\d]+)\.([\d]+)(\.[\d]+)?", '$1$2')"
       }
       default {
         throw "Unsupported toolchain for Boost: ${env:TOOLCHAIN}"
       }
     }
-    $boost_install_folder = "${env:DEPENDENCIES_FOLDER}\boost${boost_version_suffix}${env:BOOST_PLATFORM_SUFFIX}${boost_toolchain_suffix}"
+    $boost_install_folder = "${env:DEPENDENCIES_FOLDER}\boost-${env:BOOST_VERSION}${env:BOOST_PLATFORM_SUFFIX}${boost_toolchain_suffix}"
     switch (${env:TOOLCHAIN}) {
       "msvc" {
         $boost_dist_toolchain_suffix = "-msvc-${env:MSVC_VERSION}"
+      }
+      "mingw" {
+        $boost_dist_toolchain_suffix = "${boost_toolchain_suffix}"
       }
       default {
         throw "Unsupported toolchain for Boost: ${env:TOOLCHAIN}"
@@ -447,11 +480,29 @@ if (Test-Path env:BOOST_VERSION) {
     }
     if (!(Test-Path -Path "${boost_install_folder}")) {
       Write-Host "Boost is absent for the chosen toolchain (${env:TOOLCHAIN_ID}) and Boost version (${env:BOOST_VERSION}) at ${boost_install_folder}"
-      $boost_dist_version_suffix = "${env:BOOST_VERSION}" -replace "\.", '_'
-      $boost_installer_file_name = "boost_${boost_dist_version_suffix}${boost_dist_toolchain_suffix}-${boost_dist_platform_suffix}.exe"
+      switch (${env:TOOLCHAIN}) {
+        "msvc" {
+          if ([System.Version] "${env:BOOST_VERSION}" -lt [System.Version] "1.53.0") {
+            $boost_installer_type = "mabrarov-7z"
+            $boost_installer_file_name = "boost-${env:BOOST_VERSION}${env:BOOST_PLATFORM_SUFFIX}${boost_toolchain_suffix}.7z"
+            $boost_download_url = "https://master.dl.sourceforge.net/project/asio-samples/boost/${env:BOOST_VERSION}/${boost_installer_file_name}?viasf=1"
+          } else {
+            $boost_installer_type = "boost-sf-exe"
+            $boost_installer_file_name = "boost_$( "${env:BOOST_VERSION}" -replace "\.", '_' )${boost_dist_toolchain_suffix}-${boost_dist_platform_suffix}.exe"
+            $boost_download_url = "https://master.dl.sourceforge.net/project/boost/boost-binaries/${env:BOOST_VERSION}/${boost_installer_file_name}?viasf=1"
+          }
+        }
+        "mingw" {
+          $boost_installer_type = "mabrarov-7z"
+          $boost_installer_file_name = "boost-${env:BOOST_VERSION}${env:BOOST_PLATFORM_SUFFIX}${boost_dist_toolchain_suffix}.7z"
+          $boost_download_url = "https://master.dl.sourceforge.net/project/asio-samples/boost/${env:BOOST_VERSION}/${boost_installer_file_name}?viasf=1"
+        }
+        default {
+          throw "Unsupported toolchain for Boost download: ${env:TOOLCHAIN}"
+        }
+      }
       $boost_dist_file = "${env:DOWNLOADS_FOLDER}\${boost_installer_file_name}"
       if (!(Test-Path -Path "${boost_dist_file}")) {
-        $boost_download_url = "https://boostorg.jfrog.io/artifactory/main/release/${env:BOOST_VERSION}/binaries/${boost_installer_file_name}"
         if (!(Test-Path -Path "${env:DOWNLOADS_FOLDER}")) {
           New-Item -Path "${env:DOWNLOADS_FOLDER}" -ItemType "directory" | out-null
         }
@@ -460,7 +511,8 @@ if (Test-Path env:BOOST_VERSION) {
           --connect-timeout "${env:CURL_CONNECT_TIMEOUT}" `
           --max-time "${env:CURL_MAX_TIME}" `
           --retry "${env:CURL_RETRY}" `
-          --retry-delay "${env:CURL_RETRY_DELAY}" `
+          --retry-max-time "${env:CURL_RETRY_MAX_TIME}" `
+          --retry-connrefused `
           --show-error --silent --location `
           --output "${boost_dist_file}" `
           "${boost_download_url}"
@@ -469,21 +521,40 @@ if (Test-Path env:BOOST_VERSION) {
         }
         Write-Host "Downloading of Boost completed successfully"
       }
-      Write-Host "Installing Boost from ${boost_dist_file} to ${boost_install_folder}"
       if (!(Test-Path -Path "${env:DEPENDENCIES_FOLDER}")) {
         New-Item -Path "${env:DEPENDENCIES_FOLDER}" -ItemType "directory" | out-null
       }
-      $p = Start-Process -FilePath "${boost_dist_file}" `
-        -ArgumentList ("/SP-", "/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/NOICONS", "/ALLUSERS", "/DIR=""${boost_install_folder}""") `
-        -Wait -PassThru
-      if (${p}.ExitCode -ne 0) {
-        throw "Failed to install Boost"
+      switch ($boost_installer_type) {
+        "boost-sf-exe" {
+          Write-Host "Installing Boost from ${boost_dist_file} to ${boost_install_folder}"
+          $p = Start-Process -FilePath "${boost_dist_file}" `
+            -ArgumentList ("/SP-", "/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/NOICONS", "/ALLUSERS", "/DIR=""${boost_install_folder}""") `
+            -Wait -PassThru
+          if (${p}.ExitCode -ne 0) {
+            throw "Failed to install Boost"
+          }
+          $env:BOOST_INCLUDE_FOLDER = "${boost_install_folder}"
+          $env:BOOST_LIBRARY_FOLDER = "${boost_install_folder}\lib${boost_dist_platform_suffix}${boost_dist_toolchain_suffix}"
+        }
+        "mabrarov-7z" {
+          Write-Host "Extracting Boost from ${boost_dist_file} to ${env:DEPENDENCIES_FOLDER}"
+          7z.exe x "${boost_dist_file}" -o"${env:DEPENDENCIES_FOLDER}" -aoa -y -bd | out-null
+          if (${LastExitCode} -ne 0) {
+            throw "Failed to extract Boost"
+          }
+          if (!(Test-Path -Path ${boost_install_folder})) {
+            throw "Failed to find extracted Boost at ${boost_install_folder}"
+          }
+          $env:BOOST_INCLUDE_FOLDER = "${boost_install_folder}\include\boost-$("${env:BOOST_VERSION}" -replace "([\d]+)\.([\d]+)(\.[\d]+)?", '$1_$2')"
+          $env:BOOST_LIBRARY_FOLDER = "${boost_install_folder}\lib"
+        }
+        default {
+          throw "Unknown Boost installer type: $boost_installer_type"
+        }
       }
       Write-Host "Installation of Boost completed successfully"
     }
     Write-Host "Boost ${env:BOOST_VERSION} is located at ${boost_install_folder}"
-    $env:BOOST_INCLUDE_FOLDER = "${boost_install_folder}"
-    $env:BOOST_LIBRARY_FOLDER = "${boost_install_folder}\lib${boost_dist_platform_suffix}${boost_dist_toolchain_suffix}"
   }
   if ((${env:RUNTIME_LINKAGE} -eq "static") -and (${env:BOOST_LINKAGE} -ne "static")) {
     throw "Incompatible type of linkage of Boost: ${env:BOOST_LINKAGE} for the specified type of linkage of C/C++ runtime: ${env:RUNTIME_LINKAGE}"
@@ -577,7 +648,7 @@ if (Test-Path env:QT_VERSION) {
         }
       }
       "mingw" {
-        $qt_folder_toolchain_suffix = "mingw${env:MINGW_VERSION}" -replace "([\d]+)\.([\d]+)(\.([\d]+))*", '$1$2'
+        $qt_folder_toolchain_suffix = "mingw$("${env:MINGW_VERSION}" -replace "([\d]+)\.([\d]+)(\.([\d]+))*", '$1$2')"
       }
       default {
         throw "Unsupported toolchain for Qt: ${env:TOOLCHAIN}"
@@ -623,16 +694,18 @@ if (Test-Path env:QT_VERSION) {
         throw "Unsupported platform for Qt: ${env:PLATFORM}"
       }
     }
-    $qt_version_suffix = ""
+    $qt_version_full = "${env:QT_VERSION}"
     if (!(${env:QT_VERSION} -match "[\d]+\.[\d]+\.[\d]+")) {
-      $qt_version_suffix = "-${env:QT_VERSION}.0"
-    } else {
-      $qt_version_suffix = "-${env:QT_VERSION}"
+      $qt_version_full = "${env:QT_VERSION}.0"
     }
+    $qt_version_suffix = "-${qt_version_full}"
     $qt_toolchain_suffix = ""
     switch (${env:TOOLCHAIN}) {
       "msvc" {
         switch (${env:MSVC_VERSION}) {
+          "14.3" {
+            $qt_toolchain_suffix = "-vs2022"
+          }
           "14.2" {
             $qt_toolchain_suffix = "-vs2019"
           }
@@ -660,7 +733,7 @@ if (Test-Path env:QT_VERSION) {
         }
       }
       "mingw" {
-        $qt_toolchain_suffix = "-mingw${env:MINGW_VERSION}" -replace "([\d]+)\.([\d]+)\.([\d]+)", '$1$2'
+        $qt_toolchain_suffix = "-mingw$("${env:MINGW_VERSION}" -replace "([\d]+)\.([\d]+)\.([\d]+)", '$1$2')"
       }
       default {
         throw "Unsupported toolchain for Qt: ${env:TOOLCHAIN}"
@@ -681,13 +754,7 @@ if (Test-Path env:QT_VERSION) {
       $qt_archive_name = "qt${qt_version_suffix}${qt_platform_suffix}${qt_toolchain_suffix}${qt_linkage_suffix}.7z"
       $qt_archive_file = "${env:DOWNLOADS_FOLDER}\${qt_archive_name}"
       if (!(Test-Path -Path "${qt_archive_file}")) {
-        $qt_version_url_suffix = ""
-        if (!(${env:QT_VERSION} -match "[\d]+\.[\d]+\.[\d]+")) {
-          $qt_version_url_suffix = "/${env:QT_VERSION}.0"
-        } else {
-          $qt_version_url_suffix = "/${env:QT_VERSION}"
-        }
-        $qt_download_url = "https://dl.bintray.com/mabrarov/generic/qt${qt_version_url_suffix}/${qt_archive_name}"
+        $qt_download_url = "https://master.dl.sourceforge.net/project/asio-samples/qt/${qt_version_full}/${qt_archive_name}?viasf=1"
         if (!(Test-Path -Path "${env:DOWNLOADS_FOLDER}")) {
           New-Item -Path "${env:DOWNLOADS_FOLDER}" -ItemType "directory" | out-null
         }
@@ -696,7 +763,8 @@ if (Test-Path env:QT_VERSION) {
           --connect-timeout "${env:CURL_CONNECT_TIMEOUT}" `
           --max-time "${env:CURL_MAX_TIME}" `
           --retry "${env:CURL_RETRY}" `
-          --retry-delay "${env:CURL_RETRY_DELAY}" `
+          --retry-max-time "${env:CURL_RETRY_MAX_TIME}" `
+          --retry-connrefused `
           --show-error --silent --location `
           --output "${qt_archive_file}" `
           "${qt_download_url}"
@@ -712,6 +780,9 @@ if (Test-Path env:QT_VERSION) {
       7z.exe x "${qt_archive_file}" -o"${env:DEPENDENCIES_FOLDER}" -aoa -y | out-null
       if (${LastExitCode} -ne 0) {
         throw "Extracting of Qt failed with exit code ${LastExitCode}"
+      }
+      if (!(Test-Path -Path ${qt_install_folder})) {
+        throw "Failed to find extracted Qt at ${qt_install_folder}"
       }
       Write-Host "Extracting of Qt completed successfully"
     }
@@ -737,6 +808,9 @@ switch (${env:TOOLCHAIN}) {
   "msvc" {
     $cmake_generator_msvc_version_suffix = " ${env:MSVC_VERSION}" -replace "([\d]+)\.([\d]+)", '$1'
     switch (${env:MSVC_VERSION}) {
+      "14.3" {
+        $cmake_generator_msvc_version_suffix = " 17 2022"
+      }
       "14.2" {
         $cmake_generator_msvc_version_suffix = " 16 2019"
       }
